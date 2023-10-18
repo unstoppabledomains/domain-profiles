@@ -1,0 +1,7 @@
+{
+  "name": "@unstoppabledomains/config",
+  "version": "0.0.1",
+  "private": true,
+  "main": "build/src/index.js",
+  "typings": "build/src/index.d.ts"
+}

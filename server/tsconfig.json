@@ -1,0 +1,30 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "target": "es2019",
+    "lib": ["es6", "dom", "es2019"],
+    "module": "esnext",
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "noEmit": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "ignoreDeprecations": "5.0",
+    "rootDirs": ["./", "../packages"]
+  },
+  "paths": {
+    // After adding paths here, don't forget to sync them with jest.config.js.
+    "@unstoppabledomains/*": ["../packages/src/*"],
+    "@unstoppabledomains": ["../packages/src"],
+    "*": ["*"]
+  },
+  "references": [
+    {
+      "path": "../packages"
+    }
+  ],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "**/node_modules"]
+}

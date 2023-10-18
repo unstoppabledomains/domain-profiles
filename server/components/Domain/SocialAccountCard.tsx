@@ -13,7 +13,6 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import CopyToClipboard from 'components/CopyToClipboard';
-import LensIcon from 'components/Image/LensIcon';
 import Link from 'components/Link';
 import useTranslationContext from 'lib/i18n';
 import type {SocialAccountUserInfo} from 'lib/types/domain';
@@ -23,6 +22,7 @@ import {
 } from 'lib/types/domain';
 import React from 'react';
 
+import {LensIcon} from '@unstoppabledomains/ui-components';
 import DiscordIcon from '@unstoppabledomains/ui-kit/icons/Discord';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 

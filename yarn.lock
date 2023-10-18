@@ -4230,7 +4230,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:<18.0.0, @types/react-dom@npm:^17.0.2":
+"@types/react-dom@npm:<18.0.0":
   version: 17.0.21
   resolution: "@types/react-dom@npm:17.0.21"
   dependencies:
@@ -4239,7 +4239,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:>=16.9.0":
+"@types/react-dom@npm:>=16.9.0, @types/react-dom@npm:^18.0.0, @types/react-dom@npm:^18.2.0":
   version: 18.2.13
   resolution: "@types/react-dom@npm:18.2.13"
   dependencies:
@@ -4299,16 +4299,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:17.0.2":
-  version: 17.0.2
-  resolution: "@types/react@npm:17.0.2"
-  dependencies:
-    "@types/prop-types": "*"
-    csstype: ^3.0.2
-  checksum: a5198857165feddcbfc7d33e3322460ac62b8894d702414496a825b0c82272911ec33a42ef7c9d623a59308070eef4dfee6ff834b0674aa3f87eeb644196ee3b
-  languageName: node
-  linkType: hard
-
 "@types/react@npm:^17":
   version: 17.0.68
   resolution: "@types/react@npm:17.0.68"
@@ -4317,6 +4307,17 @@ __metadata:
     "@types/scheduler": "*"
     csstype: ^3.0.2
   checksum: c6ca4415b53b1abe91162b29af541a1797a56a6f462ef796e8ebda3eaa4d0609205f4f17b3fce8d9a12235d4ffd8a67c47b5e018ed85c2f3bee0fba8f54638c1
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:^18.0.0, @types/react@npm:^18.2.0":
+  version: 18.2.29
+  resolution: "@types/react@npm:18.2.29"
+  dependencies:
+    "@types/prop-types": "*"
+    "@types/scheduler": "*"
+    csstype: ^3.0.2
+  checksum: 3d09ac61a683fa976512a28ac175b9d823f0368adc5fb2abf53f64ab030e8ad866a201a8029f92ff48246c8e326f7517ebe165f976ecb412627c65c6f9a7c9d3
   languageName: node
   linkType: hard
 
@@ -4557,7 +4558,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unstoppabledomains/config@workspace:packages/config":
+"@unstoppabledomains/config@workspace:^, @unstoppabledomains/config@workspace:packages/config":
   version: 0.0.0-use.local
   resolution: "@unstoppabledomains/config@workspace:packages/config"
   languageName: unknown
@@ -4575,6 +4576,92 @@ __metadata:
   checksum: 3deaae15c0ff9699a30306a5c2a4ff09a5fc9bd9f2c4e9ab22621e85bad7109cff5bfe8bebe2f334cf7b76e602e25b9af659a4d5f5dab44738b41a0b60d8d608
   languageName: node
   linkType: hard
+
+"@unstoppabledomains/ui-components@workspace:^, @unstoppabledomains/ui-components@workspace:packages/ui-components":
+  version: 0.0.0-use.local
+  resolution: "@unstoppabledomains/ui-components@workspace:packages/ui-components"
+  dependencies:
+    "@braintree/sanitize-url": ^6.0.4
+    "@emotion/react": ^11.11.1
+    "@emotion/server": ^11.4.0
+    "@emotion/styled": ^11.11.0
+    "@jedmao/redux-mock-store": ^3.0.5
+    "@mui/icons-material": ^5.14.13
+    "@mui/material": ^5.14.13
+    "@pushprotocol/restapi": ^1.4.15
+    "@pushprotocol/socket": ^0.5.1
+    "@pushprotocol/uiweb": ^1.1.13
+    "@reduxjs/toolkit": ^1.6.2
+    "@testing-library/react": ^12.1.2
+    "@testing-library/react-hooks": ^7.0.2
+    "@types/bluebird": 3.5.34
+    "@types/jest": ^29.5.5
+    "@types/lodash": ^4.14.199
+    "@types/lodash.merge": ^4.6.7
+    "@types/node": 17.0.24
+    "@types/numeral": ^2.0.2
+    "@types/qs": ^6.9.8
+    "@types/ramda": ^0.29.6
+    "@types/react": ^18.2.0
+    "@types/react-cookies": ^0.1.1
+    "@types/react-dom": ^18.2.0
+    "@types/react-lazy-load-image-component": ^1.6.0
+    "@types/react-redux": ^7.1.24
+    "@uauth/js": ^2.8.0
+    "@unstoppabledomains/resolution": ^8.5.0
+    "@unstoppabledomains/ui-kit": ^0.3.15
+    "@web3-react/core": ^8.2.2
+    "@xmtp/content-type-remote-attachment": ^1.0.7
+    "@xmtp/proto": ^3.27.0
+    "@xmtp/xmtp-js": ^11.1.1
+    bluebird: ^3.7.2
+    clipboard-copy: ^4.0.1
+    date-fns: ^2.16.1
+    eslint-plugin-i18n-json: ^3.1.0
+    filesize: ^10.0.8
+    font-awesome: ^4.7.0
+    hash.js: ^1.1.7
+    jest: ^29.1.0
+    js-base64: ^3.7.5
+    lodash: ^4.17.21
+    lodash.merge: ^4.6.2
+    next: ^12.3.4
+    next-redux-wrapper: ^6.0.2
+    next-seo: ^6.1.0
+    next-transpile-modules: ^10.0.0
+    notistack: ^2.0.5
+    numeral: ^2.0.6
+    prettier: ^3.0.3
+    prettier-plugin-organize-imports: ^3.2.3
+    qs: ^6.11.2
+    ramda: ^0.27.1
+    react: ^18.2.0
+    react-cookies: ^0.1.1
+    react-dom: ^18.2.0
+    react-emoji-render: ^2.0.1
+    react-hook-form: ^7.42.1
+    react-infinite-scroll-component: ^6.1.0
+    react-is-mounted-hook: ^1.1.2
+    react-lazy-load-image-component: ^1.6.0
+    react-medium-image-zoom: ^5.1.6
+    react-qrcode-logo: ^2.8.0
+    react-query: ^3.39.3
+    react-redux: ^7.2.5
+    react-visibility-sensor: ^5.1.1
+    redux: ^4.1.1
+    redux-devtools-extension: ^2.13.9
+    redux-thunk: ^2.3.0
+    rooks: ^5.7.0
+    styled-components: ^5.3.5
+    swiper: 6.8.4
+    title-case: ^3.0.3
+    truncate-eth-address: ^1.0.2
+    tss-react: ^4.0.0
+    typescript: 5.0.4
+    wagmi: ^1.4.4
+    web3.storage: ^4.5.5
+  languageName: unknown
+  linkType: soft
 
 "@unstoppabledomains/ui-kit@npm:^0.3.15":
   version: 0.3.15
@@ -5225,6 +5312,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@xmtp/proto@npm:^3.24.0":
+  version: 3.29.0
+  resolution: "@xmtp/proto@npm:3.29.0"
+  dependencies:
+    long: ^5.2.0
+    protobufjs: ^7.0.0
+    rxjs: ^7.8.0
+    undici: ^5.8.1
+  checksum: ceb28c9a2917e791ebe3edbae8b435ce42c6e896c044e9b2d4cdb17af3145f8046fd9d2f107ebab1ae5a7b54e56630bcf1afd517430251e68f2d1ebbde0c90fe
+  languageName: node
+  linkType: hard
+
 "@xmtp/proto@npm:^3.27.0, @xmtp/proto@npm:^3.28.0-beta.1":
   version: 3.28.0
   resolution: "@xmtp/proto@npm:3.28.0"
@@ -5234,6 +5333,20 @@ __metadata:
     rxjs: ^7.8.0
     undici: ^5.8.1
   checksum: 517016070568082ac8d6bfb1ebd51980b4119c2d05700b00b71b7af7be642cf798aa74e94a234ae692ff857ccd1505270685a7d826e5ee6b1fbb83e8167864d1
+  languageName: node
+  linkType: hard
+
+"@xmtp/xmtp-js@npm:^10.0.0":
+  version: 10.2.1
+  resolution: "@xmtp/xmtp-js@npm:10.2.1"
+  dependencies:
+    "@noble/secp256k1": ^1.5.2
+    "@xmtp/proto": ^3.24.0
+    async-mutex: ^0.4.0
+    elliptic: ^6.5.4
+    ethers: ^5.5.3
+    long: ^5.2.0
+  checksum: de318002768ebb9e6c1580b0e78e8f597a1f615a965c1e5baba454187421da87883c421ac4e9f8eb7101a5e457f869d528987bd982037bbfd211bb1ab7af5546
   languageName: node
   linkType: hard
 
@@ -7203,6 +7316,15 @@ __metadata:
   dependencies:
     ssr-window: ^3.0.0-alpha.1
   checksum: 5a1b8979ed35afb9cc6714ff048ce4599a24fd8a11069bb52a61ccae1bdc0716c2bd6b07c4338856d5664d984c0bee9f6b7616a01ffa09daaebfe02fee016e66
+  languageName: node
+  linkType: hard
+
+"dom7@npm:^4.0.4":
+  version: 4.0.6
+  resolution: "dom7@npm:4.0.6"
+  dependencies:
+    ssr-window: ^4.0.0
+  checksum: 616a68cbae59eaea2e717ada5855346f0ffa4ac10ab96713bb42b90efabce367213c3c491c4bf5502d177b0865c63d8abd298cc8e12bdda171340c853d6b515a
   languageName: node
   linkType: hard
 
@@ -13895,16 +14017,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:^17.0.2":
-  version: 17.0.2
-  resolution: "react-dom@npm:17.0.2"
+"react-dom@npm:^18.0.0, react-dom@npm:^18.2.0":
+  version: 18.2.0
+  resolution: "react-dom@npm:18.2.0"
   dependencies:
     loose-envify: ^1.1.0
-    object-assign: ^4.1.1
-    scheduler: ^0.20.2
+    scheduler: ^0.23.0
   peerDependencies:
-    react: 17.0.2
-  checksum: 1c1eaa3bca7c7228d24b70932e3d7c99e70d1d04e13bb0843bbf321582bc25d7961d6b8a6978a58a598af2af496d1cedcfb1bf65f6b0960a0a8161cb8dab743c
+    react: ^18.2.0
+  checksum: 7d323310bea3a91be2965f9468d552f201b1c27891e45ddc2d6b8f717680c95a75ae0bc1e3f5cf41472446a2589a75aed4483aee8169287909fcd59ad149e8cc
   languageName: node
   linkType: hard
 
@@ -14189,13 +14310,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:17.0.2":
-  version: 17.0.2
-  resolution: "react@npm:17.0.2"
+"react@npm:^18.0.0, react@npm:^18.2.0":
+  version: 18.2.0
+  resolution: "react@npm:18.2.0"
   dependencies:
     loose-envify: ^1.1.0
-    object-assign: ^4.1.1
-  checksum: b254cc17ce3011788330f7bbf383ab653c6848902d7936a87b09d835d091e3f295f7e9dd1597c6daac5dc80f90e778c8230218ba8ad599f74adcc11e33b9d61b
+  checksum: 88e38092da8839b830cda6feef2e8505dec8ace60579e46aa5490fc3dc9bba0bd50336507dc166f43e3afc1c42939c09fe33b25fae889d6f402721dcd78fca1b
   languageName: node
   linkType: hard
 
@@ -14717,13 +14837,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"scheduler@npm:^0.20.2":
-  version: 0.20.2
-  resolution: "scheduler@npm:0.20.2"
+"scheduler@npm:^0.23.0":
+  version: 0.23.0
+  resolution: "scheduler@npm:0.23.0"
   dependencies:
     loose-envify: ^1.1.0
-    object-assign: ^4.1.1
-  checksum: c4b35cf967c8f0d3e65753252d0f260271f81a81e427241295c5a7b783abf4ea9e905f22f815ab66676f5313be0a25f47be582254db8f9241b259213e999b8fc
+  checksum: d79192eeaa12abef860c195ea45d37cbf2bbf5f66e3c4dcd16f54a7da53b17788a70d109ee3d3dde1a0fd50e6a8fc171f4300356c5aee4fc0171de526bf35f8a
   languageName: node
   linkType: hard
 
@@ -14795,18 +14914,20 @@ __metadata:
     "@types/numeral": ^2.0.2
     "@types/qs": ^6.9.8
     "@types/ramda": ^0.29.6
-    "@types/react": 17.0.2
+    "@types/react": ^18.0.0
     "@types/react-cookies": ^0.1.1
-    "@types/react-dom": ^17.0.2
+    "@types/react-dom": ^18.0.0
     "@types/react-lazy-load-image-component": ^1.6.0
     "@types/react-redux": ^7.1.24
     "@uauth/js": ^2.8.0
+    "@unstoppabledomains/config": "workspace:^"
     "@unstoppabledomains/resolution": ^8.5.0
+    "@unstoppabledomains/ui-components": "workspace:^"
     "@unstoppabledomains/ui-kit": ^0.3.15
     "@web3-react/core": ^8.2.2
     "@xmtp/content-type-remote-attachment": ^1.0.7
     "@xmtp/proto": ^3.27.0
-    "@xmtp/xmtp-js": ^11.1.1
+    "@xmtp/xmtp-js": ^10.0.0
     bluebird: ^3.7.2
     clipboard-copy: ^4.0.1
     date-fns: ^2.16.1
@@ -14828,9 +14949,9 @@ __metadata:
     prettier-plugin-organize-imports: ^3.2.3
     qs: ^6.11.2
     ramda: ^0.27.1
-    react: 17.0.2
+    react: ^18.0.0
     react-cookies: ^0.1.1
-    react-dom: ^17.0.2
+    react-dom: ^18.0.0
     react-emoji-render: ^2.0.1
     react-hook-form: ^7.42.1
     react-infinite-scroll-component: ^6.1.0
@@ -14846,7 +14967,7 @@ __metadata:
     redux-thunk: ^2.3.0
     rooks: ^5.7.0
     styled-components: ^5.3.5
-    swiper: 6.8.4
+    swiper: ^8.0.0
     title-case: ^3.0.3
     truncate-eth-address: ^1.0.2
     tss-react: ^4.0.0
@@ -15175,6 +15296,13 @@ __metadata:
   version: 3.0.0
   resolution: "ssr-window@npm:3.0.0"
   checksum: e619db7437874c89d2f4cea94ca8cbdfb4eed9f20d86fa193c29a17829c26d7ceefae344ac1699cc24ebb8d397fd0937a1043b5177a140c2504c9fda58bb5652
+  languageName: node
+  linkType: hard
+
+"ssr-window@npm:^4.0.0, ssr-window@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "ssr-window@npm:4.0.2"
+  checksum: df182600927f4f3225224cf8c02338ea637c9750519505bbfb9a9236741a2a7ec088386fb948bca7b447b8303d9109e7dc7672e3de041c79ac2a0e03665af7d2
   languageName: node
   linkType: hard
 
@@ -15608,6 +15736,16 @@ __metadata:
     dom7: ^3.0.0
     ssr-window: ^3.0.0
   checksum: 613239e71135b48378453a74abed9a33d56f147e704e3803f5ea960dbf9833a93e557ef0b75e7c2849328eb1b48fafab54f7ac5b88e8c3727283536c7740b13f
+  languageName: node
+  linkType: hard
+
+"swiper@npm:^8.0.0":
+  version: 8.4.7
+  resolution: "swiper@npm:8.4.7"
+  dependencies:
+    dom7: ^4.0.4
+    ssr-window: ^4.0.2
+  checksum: c52be6105e12984ba024f8cb4c0627919d4069172c0021ed7c5743c3709b5a814dd50d134813ea4f7019048be6ff9dda96db8f1adf38e317c8bb285574fcd006
   languageName: node
   linkType: hard
 

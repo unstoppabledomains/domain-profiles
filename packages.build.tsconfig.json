@@ -21,5 +21,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
   },
-  "references": [{"path": "packages/config"}]
+  "references": [
+    {"path": "packages/config"},
+    {"path": "packages/ui-components"}
+  ]
 }

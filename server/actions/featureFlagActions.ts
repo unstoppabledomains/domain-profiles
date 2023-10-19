@@ -1,5 +1,9 @@
+import {notifyError} from 'lib/error';
 import {fetchApi} from 'lib/fetchApi';
 import {useQuery} from 'react-query';
+
+import {getLaunchDarklyDefaults} from '@unstoppabledomains/config';
+import type {LaunchDarklyCamelFlagSet} from '@unstoppabledomains/config';
 
 const BASE_QUERY_KEY = 'featureFlags';
 const queryKey = {
@@ -7,20 +11,24 @@ const queryKey = {
 };
 
 export type FeatureFlags = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  variations?: Record<string, any>;
+  variations?: LaunchDarklyCamelFlagSet;
 };
 
 export const DEFAULT_FEATURE_FLAGS = {
-  variations: {},
+  variations: getLaunchDarklyDefaults(),
 } as FeatureFlags;
 
 export const fetchFeatureFlags = async (
   domainName: string = '',
 ): Promise<FeatureFlags> => {
-  const queryString = domainName ? `?domainName=${domainName}` : '';
-  const featureFlags = await fetchApi(`/feature-flags${queryString}`);
-  return {...DEFAULT_FEATURE_FLAGS, ...featureFlags};
+  try {
+    const queryString = domainName ? `?domainName=${domainName}` : '';
+    const featureFlags = await fetchApi(`/feature-flags${queryString}`, {});
+    return {...DEFAULT_FEATURE_FLAGS, ...featureFlags};
+  } catch (e) {
+    notifyError(e);
+  }
+  return DEFAULT_FEATURE_FLAGS;
 };
 
 export const useFeatureFlags = (

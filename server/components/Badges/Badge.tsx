@@ -262,14 +262,8 @@ const Badge: React.FC<Props> = ({
                   classes.badgeIconContainerWithCircle,
                   classes.badgeTierStandard,
                   {
-                    [classes.badgeTierFeatured2]:
-                      gallery?.tier === 2 &&
-                      featureFlags.variations
-                        ?.ecommerceServiceEnablePartnerTokenGallery,
-                    [classes.badgeTierFeatured3]:
-                      gallery?.tier === 3 &&
-                      featureFlags.variations
-                        ?.ecommerceServiceEnablePartnerTokenGallery,
+                    [classes.badgeTierFeatured2]: gallery?.tier === 2,
+                    [classes.badgeTierFeatured3]: gallery?.tier === 3,
                   },
                 )}
                 src={logo}

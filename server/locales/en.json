@@ -1,4 +1,7 @@
 {
+  "auth": {
+    "loginWithUnstoppable": "Login with Unstoppable"
+  },
   "apps": { 
     "clearAll": "Clear all", 
     "featured": "Featured"

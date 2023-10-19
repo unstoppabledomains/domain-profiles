@@ -3,5 +3,11 @@
   "version": "0.0.1",
   "private": true,
   "main": "build/src/index.js",
-  "typings": "build/src/index.d.ts"
+  "typings": "build/src/index.d.ts",
+  "dependencies": {
+    "@types/lodash": "^4.14.199",
+    "@types/lodash.merge": "^4.6.7",
+    "lodash": "^4.17.21",
+    "lodash.merge": "^4.6.2"
+  }
 }

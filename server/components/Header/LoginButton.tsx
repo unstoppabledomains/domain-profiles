@@ -169,7 +169,7 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
     >
       {isGoogle || isTwitter || (isEmail && big) || (isWallet && big)
         ? getLoginMethodIcon(method, classes, isWhiteBg)
-        : t(`auth.buttons.${method}`)}
+        : t(`auth.loginWithUnstoppable`)}
     </Button>
   );
 };

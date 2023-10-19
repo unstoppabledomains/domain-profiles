@@ -4987,6 +4987,11 @@ __metadata:
 "@unstoppabledomains/config@workspace:^, @unstoppabledomains/config@workspace:packages/config":
   version: 0.0.0-use.local
   resolution: "@unstoppabledomains/config@workspace:packages/config"
+  dependencies:
+    "@types/lodash": ^4.14.199
+    "@types/lodash.merge": ^4.6.7
+    lodash: ^4.17.21
+    lodash.merge: ^4.6.2
   languageName: unknown
   linkType: soft
 

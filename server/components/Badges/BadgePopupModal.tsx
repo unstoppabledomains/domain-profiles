@@ -133,7 +133,7 @@ const BadgePopupModal = ({
     void router.push(`${config.UD_ME_BASE_URL}/badge/${badgeCode}`);
   };
 
-  const getSponsorsTooltip = (): React.ReactFragment => {
+  const getSponsorsTooltip = () => {
     return (
       <div>
         <Typography variant="body1" className={classes.sponsorName}>

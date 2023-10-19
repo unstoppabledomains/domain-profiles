@@ -13,7 +13,8 @@
     "dev": "../setenv.sh development next dev -p 3000",
     "format": "prettier -w .",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "resolutions": {
     "@types/react": "^18.0.0",
@@ -103,8 +104,10 @@
   "devDependencies": {
     "@jedmao/redux-mock-store": "^3.0.5",
     "@swc/jest": "^0.2.22",
+    "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^12.1.2",
     "@testing-library/react-hooks": "^7.0.2",
+    "@testing-library/user-event": "^13.5.0",
     "eslint": "^8.22.0",
     "eslint-plugin-i18n-json": "^3.1.0"
   },

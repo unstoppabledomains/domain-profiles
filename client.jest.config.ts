@@ -9,9 +9,13 @@ const sharedModules = readdirSync(sharedBasePath).filter(name => {
 
 const config: InitialOptionsTsJest = {
   preset: 'ts-jest',
+  testEnvironment: '<rootDir>/test/jest-environment-jsdom.ts',
   resolver: '<rootDir>/test/resolver.js',
   setupFiles: ['<rootDir>/test/setupTests.ts'],
-  setupFilesAfterEnv: ['jest-extended/all'],
+  setupFilesAfterEnv: [
+    '<rootDir>/test/setupTestsAfterEnv.ts',
+    'jest-extended/all',
+  ],
   testMatch: ['<rootDir>/**/?(*.)+(spec|test).[jt]sx'],
   transform: {
     '^.+\\.(ts|tsx)$': [
@@ -22,7 +26,7 @@ const config: InitialOptionsTsJest = {
       },
     ],
   },
-  testPathIgnorePatterns: ['/node_modules/', '/build/', '/e2e/'],
+  testPathIgnorePatterns: ['/node_modules/', '/build/'],
   moduleNameMapper: {
     '@xmtp/xmtp-js': '<rootDir>/test/mocks/xmtp/mock.js',
     ...sharedModules.reduce(

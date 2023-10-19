@@ -99,7 +99,6 @@ web_modules/
 
 # Yarn Integrity file
 .yarn-integrity
-.yarn/
 
 # Jest
 .jest-cache

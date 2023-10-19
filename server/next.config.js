@@ -11,6 +11,10 @@ const withNtm = require('next-transpile-modules')([
 const nextConfig = {
   reactStrictMode: true,
   pageExtensions: ['page.tsx', 'api.ts'],
+  experimental: {
+    externalDir: true,
+    forceSwcTransforms: true,
+  },
   typescript: {
     ignoreBuildErrors: true,
   },

@@ -7,9 +7,8 @@ import type {SerializedCryptoWalletBadge} from 'lib/types/badge';
 import type {SerializedNftMetadata} from 'lib/types/nfts';
 import React, {useEffect, useState} from 'react';
 import SwiperCore, {Autoplay, Navigation} from 'swiper';
+import 'swiper/css/bundle';
 import {Swiper, SwiperSlide} from 'swiper/react';
-import 'swiper/swiper-bundle.css';
-import 'swiper/swiper.min.css';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 

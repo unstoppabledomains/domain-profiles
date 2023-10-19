@@ -1,22 +1,19 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../../packages.base.tsconfig.json",
   "compilerOptions": {
+    "outDir": "build",
     "target": "es2019",
     "lib": ["es6", "dom", "es2019"],
     "module": "esnext",
     "isolatedModules": true,
     "skipLibCheck": true,
-    "jsx": "preserve",
+    "jsx": "react",
     "baseUrl": ".",
-    "noEmit": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "ignoreDeprecations": "5.0",
-    "rootDirs": ["./", "../packages"]
+    "rootDirs": ["./", "../../packages"]
   },
-  "paths": {
-    "*": ["*"]
-  },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["./src/**/*"],
   "exclude": ["node_modules", "**/node_modules"]
 }

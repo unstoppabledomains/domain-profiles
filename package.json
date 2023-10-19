@@ -16,6 +16,9 @@
     "test": "DOTENV_CONFIG_PATH=./.env.test jest"
   },
   "devDependencies": {
+    "@swc/cli": "^0.1.57",
+    "@swc/core": "^1.2.219",
+    "@swc/jest": "^0.2.22",
     "@trivago/prettier-plugin-sort-imports": "3.2.0",
     "@types/classnames": "^2.2.11",
     "@types/node": "^16.11.21",
@@ -56,6 +59,9 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.1.0",
     "typescript": "5.0.4"
+  },
+  "optionalDependencies": {
+    "@next/swc-linux-x64-gnu": "^12.2.5"
   },
   "packageManager": "yarn@3.6.4"
 }

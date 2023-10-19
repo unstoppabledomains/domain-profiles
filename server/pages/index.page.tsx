@@ -1,12 +1,20 @@
 import type {GetServerSideProps, NextPage} from 'next';
 import React from 'react';
 
+import config from '@unstoppabledomains/config';
+
 export interface HomePageProps {
-  domain: string;
+  now: number;
 }
 
-const HomePage: NextPage<HomePageProps> = ({domain}) => {
-  return <div>Hello {domain}!</div>;
+const HomePage: NextPage<HomePageProps> = ({now}) => {
+  return (
+    <>
+      <div>Hello world, it is {now}!</div>
+      <h3>Config</h3>
+      <pre>{JSON.stringify(config, undefined, 2)}</pre>
+    </>
+  );
 };
 
 export const getServerSideProps: GetServerSideProps<
@@ -14,7 +22,7 @@ export const getServerSideProps: GetServerSideProps<
 > = async () => {
   return {
     props: {
-      domain: 'world',
+      now: Date.now(),
     },
   };
 };

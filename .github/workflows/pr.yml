@@ -23,7 +23,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Build Shared
-        run: yarn shared-build
+        run: yarn build
 
       - name: Typecheck
         run: yarn typecheck

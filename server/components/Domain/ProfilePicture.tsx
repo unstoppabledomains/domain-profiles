@@ -2,7 +2,6 @@ import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {useFeatureFlags} from 'actions/featureFlagActions';
 import useTranslationContext from 'lib/i18n';
 import React, {useEffect, useState} from 'react';
 
@@ -174,8 +173,6 @@ const ProfilePicture: React.FC<Props> = ({
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
   const [isNft, setIsNft] = useState<boolean>(false);
-  const {data: featureFlags} = useFeatureFlags(false, domain);
-  const showQR = featureFlags.variations?.ecommerceNftQrCode;
 
   useEffect(() => {
     setIsNft(() => imageType === 'onChain');
@@ -211,55 +208,35 @@ const ProfilePicture: React.FC<Props> = ({
         </Box>
       )}
       <div>
-        <div
-          className={showQR ? classes.theCardHover : classes.theCard}
-          data-testid={'avatar'}
-        >
+        <div className={classes.theCardHover} data-testid={'avatar'}>
           {src && imageType !== 'default' ? (
             <>
-              {showQR && (
-                <div className={cx(classes.theBack)}>
-                  <div>
-                    <ProfileQrCode
-                      domain={domain}
-                      className={cx(
-                        'profile-qr-code',
-                        classes.round,
-
-                        featureFlags.variations?.ecommerceServiceNftPfpStyle &&
-                          isNft
-                          ? classes.nftPFPstyleBorder
-                          : '',
-                      )}
-                    />
-                  </div>
+              <div className={cx(classes.theBack)}>
+                <div>
+                  <ProfileQrCode
+                    domain={domain}
+                    className={cx(
+                      'profile-qr-code',
+                      classes.round,
+                      isNft ? classes.nftPFPstyleBorder : '',
+                    )}
+                  />
                 </div>
-              )}
+              </div>
               <div className={classes.theFront}>
                 <div
-                  data-testid={
-                    featureFlags.variations?.ecommerceServiceNftPfpStyle &&
-                    isNft
-                      ? 'hexagonBorder'
-                      : 'imageBorder'
-                  }
+                  data-testid={isNft ? 'hexagonBorder' : 'imageBorder'}
                   className={cx(
                     'pfp',
                     classes.round,
-                    featureFlags.variations?.ecommerceServiceNftPfpStyle &&
-                      isNft
-                      ? classes.nftPFPstyleBorder
-                      : '',
+                    isNft ? classes.nftPFPstyleBorder : '',
                   )}
                 >
                   <img
                     className={cx(
                       'pfp',
                       classes.round,
-                      featureFlags.variations?.ecommerceServiceNftPfpStyle &&
-                        isNft
-                        ? classes.nftPFPstyle
-                        : '',
+                      isNft ? classes.nftPFPstyle : '',
                     )}
                     src={src}
                     width={80}
@@ -273,12 +250,7 @@ const ProfilePicture: React.FC<Props> = ({
             <>
               <div className={classes.theFront}>
                 <div
-                  data-testid={
-                    featureFlags.variations?.ecommerceServiceNftPfpStyle &&
-                    isNft
-                      ? 'hexagonBorder'
-                      : 'imageBorder'
-                  }
+                  data-testid={isNft ? 'hexagonBorder' : 'imageBorder'}
                   className={cx(
                     classes.round,
                     classes.profilePlaceholderContainer,
@@ -290,16 +262,14 @@ const ProfilePicture: React.FC<Props> = ({
                   />
                 </div>
               </div>
-              {showQR && (
-                <div className={cx(classes.theBack)}>
-                  <div>
-                    <ProfileQrCode
-                      domain={domain}
-                      className={cx('profile-qr-code', classes.round)}
-                    />
-                  </div>
+              <div className={cx(classes.theBack)}>
+                <div>
+                  <ProfileQrCode
+                    domain={domain}
+                    className={cx('profile-qr-code', classes.round)}
+                  />
                 </div>
-              )}
+              </div>
             </>
           )}
         </div>

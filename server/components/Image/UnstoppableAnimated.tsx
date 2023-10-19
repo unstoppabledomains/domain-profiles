@@ -84,6 +84,7 @@ const UnstoppableAnimated: React.FC<Props> = ({theme, hovering}) => {
               width={22}
               height={22}
               alt="wallet"
+              unoptimized={true}
             />
           </Box>
         ))}

@@ -5,7 +5,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {useFeatureFlags} from 'actions/featureFlagActions';
 import {CryptoIcon} from 'components/Image/CryptoIcon';
 import useTranslationContext from 'lib/i18n';
 import type {AllCurrenciesType} from 'lib/types/blockchain';
@@ -78,7 +77,6 @@ const NftCard = ({nft, domain, placeholder}: Props) => {
   const [isVisible, setIsVisible] = useState(false);
   const {classes, cx} = useStyles();
   const [open, setOpen] = useState<boolean>(false);
-  const {data: featureFlags} = useFeatureFlags(false, domain);
 
   const css = `
   .NFT-container {
@@ -165,11 +163,7 @@ const NftCard = ({nft, domain, placeholder}: Props) => {
     if (!nft.link) {
       return;
     }
-    if (featureFlags.variations?.ecommerceServicePublicProfileNftGallery) {
-      setOpen(true);
-      return;
-    }
-    window.open(nft.link, '_blank');
+    setOpen(true);
   };
 
   useEffect(() => {

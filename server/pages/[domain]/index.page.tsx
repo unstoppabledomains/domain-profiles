@@ -79,7 +79,6 @@ import {useStyles} from 'styles/pages/domain.styles';
 import {titleCase} from 'title-case';
 
 import config from '@unstoppabledomains/config';
-import {Logo as UnstoppableLogo} from '@unstoppabledomains/ui-kit/components';
 import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
 type DomainProfileServerSideProps = GetServerSideProps & {
@@ -142,10 +141,6 @@ const DomainProfile = ({
   const [optimisticFollowCount, setOptimisticFollowCount] = useState(0);
 
   const isExternalDomain = isExternalDomainValidForManagement(domain);
-  const isDisabledEthPage =
-    isExternalDomain &&
-    !featureFlags?.variations?.ecommerceServiceFreshDomainPublicProfileEnable;
-
   const {data: ethDomainStatus} = useEnsDomainStatus(domain, isExternalDomain);
 
   // format social platform data
@@ -389,20 +384,6 @@ const DomainProfile = ({
     );
   }
 
-  if (isFeatureFlagFetched && isDisabledEthPage) {
-    return (
-      <div className={classes.disabledPageWrapper}>
-        <UnstoppableLogo className={classes.unstoppableLogo} />
-        <Typography variant="h4">{t('common.comingSoon')}</Typography>
-        <Typography className={classes.disabledPageDescription}>
-          {t('profile.ethPlaceholder', {
-            ethDomainName: domain,
-          })}
-        </Typography>
-      </div>
-    );
-  }
-
   // getNftsForContract retrieves NFTs matching one of the specified smart
   // contract addresses
   const getNftsForContract = (contracts: string[]) => {
@@ -464,9 +445,9 @@ const DomainProfile = ({
     return retData;
   };
 
-  const hasUdBlueBadge =
-    featureFlags.variations?.ecommerceServiceUdBlueSubscriptionEnabled &&
-    badges?.list?.some(badge => badge.code === UD_BLUE_BADGE_CODE);
+  const hasUdBlueBadge = badges?.list?.some(
+    badge => badge.code === UD_BLUE_BADGE_CODE,
+  );
 
   return (
     <Box className={classes.container}>
@@ -523,39 +504,37 @@ const DomainProfile = ({
             <div className={classes.searchContainer}>
               <ProfileSearchBar setWeb3Deps={setWeb3Deps} />
             </div>
-            {featureFlags?.variations
-              ?.ecommerceServiceUsersPublicProfileLoginButton && (
-              <div className={classes.loginContainer}>
-                {authDomain ? (
-                  <>
-                    {featureFlags?.variations
-                      ?.ecommerceServiceUsersEnableChat && (
-                      <div className={classes.chatContainer}>
-                        <UnstoppableMessaging
-                          address={authAddress}
-                          domain={authDomain}
-                          disableSupportBubble
-                        />
-                      </div>
-                    )}
-                    <AccountButton
-                      domain={domain}
-                      domainOwner={ownerAddress}
-                      authAddress={authAddress}
-                      authDomain={authDomain}
-                    />
-                  </>
-                ) : (
-                  <LoginButton
-                    method={LoginMethod.Uauth}
-                    loading={false}
-                    isWhiteBg
-                    hidden={false}
-                    onClick={handleLoginClicked}
+
+            <div className={classes.loginContainer}>
+              {authDomain ? (
+                <>
+                  {featureFlags?.variations
+                    ?.ecommerceServiceUsersEnableChat && (
+                    <div className={classes.chatContainer}>
+                      <UnstoppableMessaging
+                        address={authAddress}
+                        domain={authDomain}
+                        disableSupportBubble
+                      />
+                    </div>
+                  )}
+                  <AccountButton
+                    domain={domain}
+                    domainOwner={ownerAddress}
+                    authAddress={authAddress}
+                    authDomain={authDomain}
                   />
-                )}
-              </div>
-            )}
+                </>
+              ) : (
+                <LoginButton
+                  method={LoginMethod.Uauth}
+                  loading={false}
+                  isWhiteBg
+                  hidden={false}
+                  onClick={handleLoginClicked}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -663,106 +642,106 @@ const DomainProfile = ({
                 </Typography>
               </Box>
             ) : null}
-            {profileData?.webacy &&
-              featureFlags.variations?.ecommerceServiceEnableWebacyScore && (
-                <Box className={classes.riskScoreContainer}>
-                  <Avatar
-                    src="https://storage.googleapis.com/unstoppable-client-assets/images/webacy/logo.png"
-                    className={classes.riskScoreLogo}
-                    onClick={() => window.open('https://webacy.com', '_blank')}
-                  />
-                  <Typography className={classes.emailAndLocation}>
-                    {t('webacy.riskScore')}:
-                  </Typography>
-                  <Tooltip
-                    title={
-                      profileData.webacy.issues.length > 0 ? (
-                        profileData.webacy.issues.map(issue => (
-                          <>
-                            <Typography variant="caption">
-                              {
-                                issue.categories.wallet_characteristics
-                                  .description
-                              }
-                            </Typography>
-                            <List dense sx={{listStyleType: 'disc', pl: 4}}>
-                              {issue.tags.map(tag => (
-                                <ListItem sx={{display: 'list-item'}}>
-                                  <Typography variant="caption">
-                                    {tag.name}
-                                  </Typography>
-                                </ListItem>
-                              ))}
-                            </List>
-                          </>
-                        ))
+            {profileData?.webacy && (
+              <Box className={classes.riskScoreContainer}>
+                <Avatar
+                  src="https://storage.googleapis.com/unstoppable-client-assets/images/webacy/logo.png"
+                  className={classes.riskScoreLogo}
+                  onClick={() => window.open('https://webacy.com', '_blank')}
+                />
+                <Typography className={classes.emailAndLocation}>
+                  {t('webacy.riskScore')}:
+                </Typography>
+                <Tooltip
+                  title={
+                    profileData.webacy.issues.length > 0 ? (
+                      profileData.webacy.issues.map(issue => (
+                        <>
+                          <Typography variant="caption">
+                            {
+                              issue.categories.wallet_characteristics
+                                .description
+                            }
+                          </Typography>
+                          <List dense sx={{listStyleType: 'disc', pl: 4}}>
+                            {issue.tags.map(tag => (
+                              <ListItem
+                                sx={{display: 'list-item'}}
+                                key={tag.key}
+                              >
+                                <Typography variant="caption">
+                                  {tag.name}
+                                </Typography>
+                              </ListItem>
+                            ))}
+                          </List>
+                        </>
+                      ))
+                    ) : (
+                      <Typography variant="caption">
+                        {t('webacy.riskScoreDescription', {
+                          risk: profileData.webacy.high
+                            ? t('webacy.high').toLowerCase()
+                            : profileData.webacy.medium
+                            ? t('webacy.medium').toLowerCase()
+                            : t('webacy.low').toLowerCase(),
+                        })}
+                      </Typography>
+                    )
+                  }
+                >
+                  <Chip
+                    color={
+                      profileData.webacy.high
+                        ? 'error'
+                        : profileData.webacy.medium
+                        ? 'warning'
+                        : 'success'
+                    }
+                    size="small"
+                    icon={
+                      profileData.webacy.high ? (
+                        <OutlinedFlagIcon className={classes.riskScoreIcon} />
+                      ) : profileData.webacy.medium ? (
+                        <WarningOutlinedIcon
+                          className={classes.riskScoreIcon}
+                        />
                       ) : (
-                        <Typography variant="caption">
-                          {t('webacy.riskScoreDescription', {
-                            risk: profileData.webacy.high
-                              ? t('webacy.high').toLowerCase()
-                              : profileData.webacy.medium
-                              ? t('webacy.medium').toLowerCase()
-                              : t('webacy.low').toLowerCase(),
-                          })}
-                        </Typography>
+                        <CheckCircleOutlinedIcon
+                          className={classes.riskScoreIcon}
+                        />
                       )
                     }
-                  >
-                    <Chip
-                      color={
-                        profileData.webacy.high
-                          ? 'error'
-                          : profileData.webacy.medium
-                          ? 'warning'
-                          : 'success'
+                    label={
+                      profileData.webacy.high
+                        ? t('webacy.high')
+                        : profileData.webacy.medium
+                        ? t('webacy.medium')
+                        : t('webacy.low')
+                    }
+                  />
+                </Tooltip>
+                {isOwner &&
+                  !profileData.webacy.high &&
+                  !profileData.webacy.medium && (
+                    <Tooltip
+                      title={
+                        <Typography variant="caption">
+                          {t('webacy.share')}
+                        </Typography>
                       }
-                      size="small"
-                      icon={
-                        profileData.webacy.high ? (
-                          <OutlinedFlagIcon className={classes.riskScoreIcon} />
-                        ) : profileData.webacy.medium ? (
-                          <WarningOutlinedIcon
-                            className={classes.riskScoreIcon}
-                          />
-                        ) : (
-                          <CheckCircleOutlinedIcon
-                            className={classes.riskScoreIcon}
-                          />
-                        )
-                      }
-                      label={
-                        profileData.webacy.high
-                          ? t('webacy.high')
-                          : profileData.webacy.medium
-                          ? t('webacy.medium')
-                          : t('webacy.low')
-                      }
-                    />
-                  </Tooltip>
-                  {isOwner &&
-                    !profileData.webacy.high &&
-                    !profileData.webacy.medium && (
-                      <Tooltip
-                        title={
-                          <Typography variant="caption">
-                            {t('webacy.share')}
-                          </Typography>
-                        }
+                    >
+                      <IconButton
+                        size="small"
+                        className={classes.riskScoreShareButton}
+                        onClick={handleShareRiskScore}
                       >
-                        <IconButton
-                          size="small"
-                          className={classes.riskScoreShareButton}
-                          onClick={handleShareRiskScore}
-                        >
-                          <IosShareIcon
-                            className={classes.riskScoreShareIcon}
-                          />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                </Box>
-              )}
+                        <IosShareIcon className={classes.riskScoreShareIcon} />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+              </Box>
+            )}
             {hasAddresses && (
               <CryptoAddresses
                 onCryptoAddressCopied={handleClickToCopy}
@@ -888,10 +867,7 @@ const DomainProfile = ({
         <Grid item xs={12} sm={12} md={8} className={classes.item}>
           <TokenGallery
             domain={domain}
-            enabled={
-              !isExternalDomain &&
-              featureFlags.variations?.ecommerceServicePublicProfileNftGallery
-            }
+            enabled={!isExternalDomain && isFeatureFlagFetched}
             isOwner={isOwner}
             ownerAddress={ownerAddress}
             profileServiceUrl={config.PROFILE.HOST_URL}
@@ -903,11 +879,7 @@ const DomainProfile = ({
             <>
               {badgeTypes.map((badgeType, index) => {
                 const badgeList = badges.list?.filter(
-                  b =>
-                    b.type === badgeType &&
-                    (b.code !== UD_BLUE_BADGE_CODE ||
-                      featureFlags.variations
-                        ?.ecommerceServiceUdBlueSubscriptionEnabled),
+                  b => b.type === badgeType,
                 );
                 return (
                   <>
@@ -959,9 +931,7 @@ const DomainProfile = ({
                 );
               })}
               <Box sx={{marginTop: '25px'}} />
-              {featureFlags.variations
-                ?.ecommerceServiceEnablePartnerTokenGallery &&
-                (isOwner || showFeaturedPartner) &&
+              {(isOwner || showFeaturedPartner) &&
                 featuredPartners &&
                 featuredPartners.length > 0 && (
                   <>
@@ -1062,9 +1032,7 @@ const DomainProfile = ({
                     )}
                   </>
                 )}
-              {featureFlags.variations
-                ?.ecommerceServiceEnablePartnerTokenGallery &&
-                (isOwner || showFeaturedCommunity) &&
+              {(isOwner || showFeaturedCommunity) &&
                 featuredCommunities &&
                 featuredCommunities.length > 0 &&
                 nfts &&

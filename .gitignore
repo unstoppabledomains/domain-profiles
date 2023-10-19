@@ -101,6 +101,9 @@ web_modules/
 .yarn-integrity
 .yarn/
 
+# Jest
+.jest-cache
+
 # dotenv environment variable files
 !scripts/**/.env
 .env.development.local

@@ -85,8 +85,8 @@ export const CommunityConversationBubble: React.FC<
         <Box>
           <Emoji>
             {typeof message.messageObj === 'string'
-              ? message.messageObj
-              : message.messageObj.content}
+              ? (message.messageObj as string)
+              : (message.messageObj.content as string)}
           </Emoji>
         </Box>,
       );

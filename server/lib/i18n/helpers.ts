@@ -1,7 +1,8 @@
-import type {DeepPartial} from 'config/env/types';
 import localesConfig from 'locales.json';
 import en_us from 'locales/en.json';
 import {clone} from 'ramda';
+
+import type {DeepPartial} from '@unstoppabledomains/config';
 
 import type {AvailableLocales} from './types';
 import {DEFAULT_LOCALE} from './types';

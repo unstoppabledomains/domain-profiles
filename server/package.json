@@ -13,7 +13,8 @@
     "dev": "../setenv.sh development next dev -p 3000",
     "format": "prettier -w .",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "resolutions": {
     "@types/react": "^18.0.0",

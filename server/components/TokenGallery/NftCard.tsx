@@ -210,7 +210,9 @@ const NftCard = ({nft, domain, placeholder}: Props) => {
       <div className={'NFT-container'} data-testid={'nft-card'}>
         <div className={'NFT-image-container'}>
           {shouldRenderVideo() ? (
-            <VisibilitySensor onChange={isVis => setIsVisible(isVis)}>
+            <VisibilitySensor
+              onChange={(isVis: boolean) => setIsVisible(isVis)}
+            >
               <video
                 onClick={handleClick}
                 muted

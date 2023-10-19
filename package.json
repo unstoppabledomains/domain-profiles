@@ -13,7 +13,9 @@
     "format": "prettier -w .",
     "husky": "[ -z \"${CI:-}\" ] && husky install",
     "lint": "eslint --fix .",
-    "test": "DOTENV_CONFIG_PATH=./.env.test jest"
+    "test": "DOTENV_CONFIG_PATH=./.env.test jest",
+    "test:ci": "yarn test --coverage --ci --no-colors --runInBand --forceExit --cacheDirectory .jest-cache",
+    "typecheck": "yarn workspace server run typecheck"
   },
   "devDependencies": {
     "@swc/cli": "^0.1.57",

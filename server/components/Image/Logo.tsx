@@ -23,17 +23,21 @@ const useStyles = makeStyles()(() => ({
   },
 }));
 
-type Props = {
+type LogoProps = {
   className?: string;
   inverse?: boolean;
   absoluteUrl?: boolean;
 };
 
-const Logo: React.FC<Props> = ({className = '', inverse, absoluteUrl}) => {
+type HomeLinkProps = {
+  children: React.ReactNode;
+};
+
+const Logo: React.FC<LogoProps> = ({className = '', inverse, absoluteUrl}) => {
   const {classes, cx} = useStyles();
   const logoIconTheme = inverse ? LogoTheme.White : LogoTheme.Primary;
 
-  const HomeLink: React.FC = ({children}) => {
+  const HomeLink: React.FC<HomeLinkProps> = ({children}) => {
     return (
       <Link
         href={config.UNSTOPPABLE_WEBSITE_URL}

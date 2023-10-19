@@ -14,7 +14,7 @@ module.exports = {
     project: './tsconfig.json',
   },
   plugins: ['@typescript-eslint', 'unused-imports', 'promise'],
-  ignorePatterns: ['.eslintrc.js'],
+  ignorePatterns: ['.eslintrc.js', 'test/*', '*.js'],
   rules: {
     // TODO: Rules to review with the team
     '@typescript-eslint/default-param-last': 'off',

@@ -3,12 +3,13 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "next build",
-    "build:development": "../setenv.sh development yarn build",
-    "build:e2e": "../setenv.sh e2e yarn build",
-    "build:production": "../setenv.sh production yarn build",
-    "build:staging": "../setenv.sh staging yarn build",
-    "build:test": "../setenv.sh test yarn build",
+    "build:docker:production": "docker build ../ --build-arg -t domain-profiles",
+    "build:docker:staging": "docker build ../ --build-arg APP_ENV=staging --build-arg CLIENT_URL=https://ud-me-staging.com -t domain-profiles",
+    "build:next": "next build",
+    "build:next:development": "../setenv.sh development yarn build:next",
+    "build:next:production": "../setenv.sh production yarn build:next",
+    "build:next:staging": "../setenv.sh staging yarn build:next",
+    "build:next:test": "../setenv.sh test yarn build:next",
     "dev": "../setenv.sh development next dev -p 3000",
     "format": "prettier -w .",
     "lint": "next lint",
@@ -29,6 +30,8 @@
     "@pushprotocol/socket": "^0.5.1",
     "@pushprotocol/uiweb": "^1.1.13",
     "@reduxjs/toolkit": "^1.6.2",
+    "@swc/cli": "^0.1.57",
+    "@swc/core": "^1.2.219",
     "@types/bluebird": "3.5.34",
     "@types/jest": "^29.5.5",
     "@types/lodash": "^4.14.199",
@@ -99,8 +102,13 @@
   },
   "devDependencies": {
     "@jedmao/redux-mock-store": "^3.0.5",
+    "@swc/jest": "^0.2.22",
     "@testing-library/react": "^12.1.2",
     "@testing-library/react-hooks": "^7.0.2",
+    "eslint": "^8.22.0",
     "eslint-plugin-i18n-json": "^3.1.0"
+  },
+  "optionalDependencies": {
+    "@next/swc-linux-x64-gnu": "^12.2.5"
   }
 }

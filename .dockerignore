@@ -1,0 +1,6 @@
+/.husky/
+/.openapi/
+/.vscode/
+/examples/
+node_modules/
+/test/

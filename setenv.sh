@@ -1,25 +1,20 @@
 #!/bin/bash
 
 setenv() {
-  if [ "$1" = "development" ] || [ "$1" = "test" ] || [ "$1" = "e2e" ]; then
+  echo "Setting app env to ${1}..."
+  if [ "$1" = "development" ] || [ "$1" = "test" ]; then
     APP_ENV="$1"
-    DEPLOYMENT="staging"
-    API_BASE_URL="http://localhost:8080"
     CLIENT_URL="http://localhost:3000"
   fi
 
   if [ "$1" = "staging" ]; then
-    APP_ENV="$1"
-    DEPLOYMENT="staging"
-    API_BASE_URL="https://api.ud-staging.com"
-    CLIENT_URL="https://www.ud-staging.com"
+    APP_ENV="staging"
+    CLIENT_URL="https://www.ud-me-staging.com"
   fi
 
   if [ "$1" = "production" ]; then
     APP_ENV="production"
-    DEPLOYMENT="production"
-    API_BASE_URL="https://unstoppabledomains.com"
-    CLIENT_URL="https://unstoppabledomains.com"
+    CLIENT_URL="https://ud.me"
   fi
 
   GIT_SHA="$(git rev-parse HEAD)"
@@ -32,11 +27,9 @@ setenv() {
   fi
 
   export NODE_OPTIONS="--max_old_space_size=6144"
-  export API_BASE_URL="${API_BASE_URL}"
   export APP_ENV="${APP_ENV}"
   export CLIENT_URL="${CLIENT_URL}"
   export COMMIT_SHA="${GIT_SHA}"
-  export DEPLOYMENT="${DEPLOYMENT}"
   "${@:2}" 2>&1
 }
 

@@ -13,6 +13,7 @@ ARG CLIENT_URL=https://ud.me
 ENV NODE_ENV development
 ENV APP_ENV $APP_ENV
 ENV CLIENT_URL $CLIENT_URL
+ENV NEXT_TELEMETRY_DISABLED 1
 
 # Prepare dependencies
 RUN install_node v16.13.0
@@ -37,23 +38,17 @@ RUN rm -rf .yarn/cache
 ###########################################################
 FROM launcher.gcr.io/google/nodejs
 
-# Prepare arguments
+# Runtime environment variables
 ARG service
-ARG APP_ENV=production
-ARG CLIENT_URL=https://ud.me
+ENV NEXT_TELEMETRY_DISABLED 1
 
-# Prepare dependencies
+# Runtime dependencies
 RUN install_node v16.13.0
 RUN yarn set version 3.2.0
 
 # Copy project files
 WORKDIR /app
 COPY --from=builder /app  .
-
-# Setup env vars
-ENV NODE_ENV production
-ENV APP_ENV $APP_ENV
-ENV CLIENT_URL $CLIENT_URL
 
 # Server start command
 CMD ["yarn", "workspace", "server", "run", "start"]

@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build:docker:production": "docker build ../ --build-arg -t domain-profiles",
+    "build:docker:production": "docker build ../ -t domain-profiles",
     "build:docker:staging": "docker build ../ --build-arg APP_ENV=staging --build-arg CLIENT_URL=https://ud-staging.com/d -t domain-profiles",
     "build:next": "next build",
     "build:next:development": "../setenv.sh development yarn build:next",

@@ -32,6 +32,10 @@ steps:
       - >-
         --labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID
       - '--region=$_DEPLOY_REGION'
+      - '--allow-unauthenticated'
+      - '--memory=1Gi'
+      - '--min-instances=3'
+      - '--max-instances=10'
       - '--quiet'
     id: Deploy
     entrypoint: gcloud

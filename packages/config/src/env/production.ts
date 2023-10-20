@@ -35,8 +35,8 @@ export default function getProductionConfig(): ConfigOverride {
       },
     },
     LOGIN_WITH_UNSTOPPABLE: {
-      CLIENT_ID: '799c7c9d-27b2-4419-bf03-97507554c301',
-      REDIRECT_URI: 'https://ud.me',
+      CLIENT_ID: 'c3af833f-3fd5-46fd-ac3e-bfc136624d1b',
+      REDIRECT_URI: 'https://domain-profiles-wnjctwcyaa-uc.a.run.app',
     },
     MESSAGING: {
       EMAIL_DOMAIN: 'ud.me',

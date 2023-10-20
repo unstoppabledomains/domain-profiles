@@ -34,6 +34,7 @@ steps:
       - '--memory=1024Mi'
       - '--min-instances=3'
       - '--max-instances=10'
+      - '--update-env-vars=APP_VERSION=$COMMIT_SHA'
       - '--quiet'
     id: Deploy
     entrypoint: gcloud

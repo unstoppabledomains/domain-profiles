@@ -12,9 +12,11 @@ export const fetchApi = async <T = any>(
   path: string,
   options: FetchOptions = {},
 ): Promise<T> => {
-  // prepare the request URL
+  // prepare the request URL from the provided path string
   const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
-  const url = options.host
+  const url = normalizedPath.startsWith('https://')
+    ? normalizedPath
+    : options.host
     ? `${options.host}/${normalizedPath}`
     : `${config.UNSTOPPABLE_API_URL}/api/${normalizedPath}`;
 

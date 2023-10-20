@@ -12,6 +12,8 @@ steps:
       - '--build-arg'
       - APP_ENV=$_APP_ENV
       - '--build-arg'
+      - APP_VERSION=$COMMIT_SHA
+      - '--build-arg'
       - CLIENT_URL=$_CLIENT_URL
     id: Build
   - name: gcr.io/cloud-builders/docker

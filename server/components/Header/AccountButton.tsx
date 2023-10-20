@@ -1,12 +1,10 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Button from '@mui/material/Button';
 import type {Theme} from '@mui/material/styles';
-import {getMetadataDomainsRecords} from 'actions/backendActions';
 import {getProfileData} from 'actions/domainProfile';
 import DropDownMenu from 'components/DropDownMenu';
 import getImageUrl from 'lib/domain/getImageUrl';
 import type {SerializedPublicDomainProfileData} from 'lib/types/domain';
-import type {MetadataDomainRecords} from 'lib/types/records';
 import React, {useEffect, useState} from 'react';
 
 import ProfilePlaceholder from '@unstoppabledomains/ui-kit/icons/ProfilePlaceholder';
@@ -97,20 +95,12 @@ export const AccountButton: React.FC<Props> = ({
     }
 
     const fetchData = async (domainName: string) => {
-      let data;
-      let meta;
+      let profileData;
       try {
-        data = await getProfileData(domainName);
-      } catch {}
-      try {
-        const {data: metaDomainsRecords} = await getMetadataDomainsRecords({
-          domains: [domainName],
-          key: 'social.picture.value',
-        });
-        meta = metaDomainsRecords[0]?.records;
+        profileData = await getProfileData(domainName);
       } catch {}
       setAuthDomainAvatar(
-        getDomainAvatarFromProfileAndMetadata(domainName, data, meta),
+        getDomainAvatarFromProfileAndMetadata(domainName, profileData),
       );
     };
 
@@ -126,9 +116,8 @@ export const AccountButton: React.FC<Props> = ({
   const getDomainAvatarFromProfileAndMetadata = (
     avatarDomain: string,
     profile?: SerializedPublicDomainProfileData,
-    metadata?: MetadataDomainRecords,
   ): string => {
-    const metadataImage = metadata?.['social.picture.value']
+    const metadataImage = profile?.records?.['social.picture.value']
       ? `https://api.unstoppabledomains.com/metadata/image-src/${avatarDomain}?withOverlay=false`
       : null;
     const uploadedImagePath = profile?.profile.imagePath

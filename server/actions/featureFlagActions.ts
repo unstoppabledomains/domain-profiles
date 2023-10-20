@@ -2,7 +2,7 @@ import {notifyError} from 'lib/error';
 import {fetchApi} from 'lib/fetchApi';
 import {useQuery} from 'react-query';
 
-import {getLaunchDarklyDefaults} from '@unstoppabledomains/config';
+import config, {getLaunchDarklyDefaults} from '@unstoppabledomains/config';
 import type {LaunchDarklyCamelFlagSet} from '@unstoppabledomains/config';
 
 const BASE_QUERY_KEY = 'featureFlags';
@@ -22,9 +22,16 @@ export const fetchFeatureFlags = async (
   domainName: string = '',
 ): Promise<FeatureFlags> => {
   try {
-    const queryString = domainName ? `?domainName=${domainName}` : '';
-    const featureFlags = await fetchApi(`/feature-flags${queryString}`, {});
-    return {...DEFAULT_FEATURE_FLAGS, ...featureFlags};
+    const queryString = domainName ? `?domain=${domainName}` : '';
+    const featureFlags = await fetchApi<LaunchDarklyCamelFlagSet>(
+      `/feature-flags${queryString}`,
+      {
+        host: config.PROFILE.HOST_URL,
+      },
+    );
+    return {
+      variations: {...DEFAULT_FEATURE_FLAGS.variations, ...featureFlags},
+    };
   } catch (e) {
     notifyError(e);
   }

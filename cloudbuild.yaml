@@ -12,6 +12,8 @@ steps:
       - '--build-arg'
       - APP_ENV=$_APP_ENV
       - '--build-arg'
+      - APP_VERSION=$COMMIT_SHA
+      - '--build-arg'
       - CLIENT_URL=$_CLIENT_URL
     id: Build
   - name: gcr.io/cloud-builders/docker
@@ -23,15 +25,18 @@ steps:
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
     args:
       - run
-      - services
-      - update
+      - deploy
       - $_SERVICE_NAME
       - '--platform=managed'
-      - >-
-        --image=$_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
-      - >-
-        --labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID
+      - '--image=$_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
+      - '--labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID'
       - '--region=$_DEPLOY_REGION'
+      - '--allow-unauthenticated'
+      - '--cpu-boost'
+      - '--memory=1024Mi'
+      - '--min-instances=3'
+      - '--max-instances=10'
+      - '--update-env-vars=APP_VERSION=$COMMIT_SHA'
       - '--quiet'
     id: Deploy
     entrypoint: gcloud

@@ -5,8 +5,8 @@ export default function getStagingConfig(): ConfigOverride {
     APP_ENV: 'staging',
     UD_ME_BASE_URL: 'https://www.ud-me-staging.com',
     LOGIN_WITH_UNSTOPPABLE: {
-      CLIENT_ID: '93d7efca-a5c6-409c-94b5-91adf1b33904',
-      REDIRECT_URI: process.env.NEXT_PUBLIC_CLIENT_URL,
+      CLIENT_ID: '65637020-9d14-4d7d-880b-6a5c497d9540',
+      REDIRECT_URI: 'https://domain-profiles-vf5eblhuka-uc.a.run.app',
     },
   };
 }

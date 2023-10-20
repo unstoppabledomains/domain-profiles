@@ -6,12 +6,14 @@ FROM launcher.gcr.io/google/nodejs AS builder
 # Prepare arguments
 ARG service
 ARG APP_ENV=production
+ARG APP_VERSION=docker-build
 ARG CLIENT_URL=https://ud.me
 
 # Use development environment during build to allow development dependencies
 # to be installed which includes build tools
 ENV NODE_ENV development
 ENV APP_ENV $APP_ENV
+ENV APP_VERSION $APP_VERSION
 ENV CLIENT_URL $CLIENT_URL
 ENV NEXT_TELEMETRY_DISABLED 1
 

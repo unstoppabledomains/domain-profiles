@@ -7,7 +7,7 @@ import type {NextSeoProps} from 'next-seo';
 import config from '@unstoppabledomains/config';
 
 export const getSeoTags = (props: GetSeoTagsProps): NextSeoProps => {
-  const title = `${props.domain} | ${config.UNSTOPPABLE_DOMAINS}`;
+  const title = props.domain ? `${props.domain} | ${props.title}` : props.title;
 
   if (!props.profileData) {
     return {

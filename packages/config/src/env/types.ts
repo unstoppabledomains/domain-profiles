@@ -44,7 +44,6 @@ export type Config = {
   };
   ASSETS_BUCKET_URL: string;
   UD_ME_BASE_URL: string;
-  UNSTOPPABLE_DOMAINS: string;
   UNSTOPPABLE_WEBSITE_URL: string;
   UNSTOPPABLE_API_URL: string;
   UNSTOPPABLE_METADATA_ENDPOINT: string;

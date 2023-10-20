@@ -214,6 +214,7 @@ const DomainProfile = ({
   const {label, sld, extension} = splitDomain(domain);
   const seoTags = getSeoTags({
     domain,
+    title: t('nftCollection.unstoppableDomains'),
     profileData,
     socialsInfo,
     domainAvatar: uploadedImagePath,

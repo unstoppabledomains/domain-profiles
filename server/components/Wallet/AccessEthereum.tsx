@@ -2,12 +2,15 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import type {GetWalletClientResult} from '@wagmi/core';
 import Link from 'components/Link';
 import WalletButton from 'components/Wallet/WalletButton';
 import type {Signer} from 'ethers';
+import useTranslationContext from 'lib/i18n';
 import type {WagmiConnectorType, WalletName} from 'lib/types/wallet';
 import {WalletOptions} from 'lib/types/wallet';
 import type {Web3Dependencies} from 'lib/types/web3';
+import {WalletClientSigner} from 'lib/wallet/signer';
 import React, {useEffect, useState} from 'react';
 import type {Connector} from 'wagmi';
 import {useAccount, useConnect, useDisconnect, useWalletClient} from 'wagmi';
@@ -34,6 +37,7 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
   onError,
 }) => {
   const {classes} = useStyles();
+  const [t] = useTranslationContext();
   const [isReady, setIsReady] = useState(false);
   const [selectedWallet, setSelectedWallet] = useState<WalletName>();
 
@@ -41,13 +45,7 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
   const {disconnect} = useDisconnect();
   const {data: connectedSigner} = useWalletClient();
   const {address: connectedAddress, isConnected} = useAccount();
-  const {
-    connect,
-    connectors,
-    error: wagmiError,
-    isLoading,
-    pendingConnector,
-  } = useConnect();
+  const {connect, connectors, error: wagmiError, isLoading} = useConnect();
 
   useEffect(() => {
     if (isLoading || isReady) {
@@ -64,10 +62,7 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
     if (!isConnected || !isReady || !connectedAddress || !connectedSigner) {
       return;
     }
-    void handleConnected(
-      connectedAddress,
-      connectedSigner as unknown as Signer,
-    );
+    void handleConnected(connectedAddress, connectedSigner);
   }, [connectedAddress, connectedSigner, isConnected, isReady]);
 
   useEffect(() => {
@@ -84,13 +79,20 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
     connect({connector});
   };
 
-  const handleConnected = async (address: string, signer: Signer) => {
-    if (onError) {
-      onError('');
+  const handleConnected = async (
+    address: string,
+    signer: GetWalletClientResult,
+  ) => {
+    if (!signer) {
+      if (onError) {
+        onError('wallet not found');
+      }
+      return;
     }
+    const walletClientSigner = new WalletClientSigner(address, signer);
     onComplete({
       address,
-      signer,
+      signer: walletClientSigner as unknown as Signer,
     });
   };
 
@@ -102,15 +104,15 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
     <>
       <Box mb={2}>
         <Typography gutterBottom align="center">
-          Access your Ethereum browser wallet.
+          {t('auth.accessWalletDescription')}
         </Typography>
         <Typography align="center">
-          For more information please see this{' '}
+          {t('auth.moreInfo')}{' '}
           <Link
             external
             to="https://support.unstoppabledomains.com/support/solutions/articles/48001181696-claim-your-domain"
           >
-            guide.
+            {t('common.guide')}.
           </Link>
         </Typography>
       </Box>

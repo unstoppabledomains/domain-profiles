@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import AccessEthereum from 'components/Wallet/AccessEthereum';
+import useTranslationContext from 'lib/i18n';
 import type {Web3Dependencies} from 'lib/types/web3';
 import React, {useState} from 'react';
 import useSettingsStyles from 'styles/pages/settings.styles';
@@ -56,6 +57,7 @@ type Props = {
 const AccessWallet = (props: Props) => {
   const {classes: settingsClasses} = useSettingsStyles();
   const [error, setError] = useState('');
+  const [t] = useTranslationContext();
 
   // Set up wagmi config
   const {chains, publicClient, webSocketPublicClient} = configureChains(
@@ -104,7 +106,10 @@ const AccessWallet = (props: Props) => {
     } else {
       const expectedAddress = props.address;
       setError(
-        `Accessed wallet (${web3Deps?.address.toLowerCase()}) does not match address: ${expectedAddress}`,
+        t('auth.walletAddressIncorrect', {
+          actual: web3Deps?.address.toLowerCase() || t('common.address'),
+          expected: expectedAddress,
+        }),
       );
     }
   };
@@ -126,7 +131,7 @@ const AccessWallet = (props: Props) => {
               className={settingsClasses.prompt}
               component="div"
             >
-              Wallet address:
+              {t('auth.walletAddress')}:
               <div className={settingsClasses.ethWalletAddress}>
                 {props.address}
               </div>
@@ -151,6 +156,7 @@ type ModalProps = Props & {
 
 export const AccessWalletModal = (props: ModalProps) => {
   const {classes, theme} = useStyles();
+  const [t] = useTranslationContext();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const ConnectWalletWrapper = isMobile ? Popover : Dialog;
 
@@ -174,9 +180,9 @@ export const AccessWalletModal = (props: ModalProps) => {
         : {})}
     >
       <div className={classes.modalHeader} data-testid={'access-wallet-modal'}>
-        <Typography
-          className={classes.modalTitle}
-        >{`Access Wallet`}</Typography>
+        <Typography className={classes.modalTitle}>
+          {t('auth.accessWallet')}
+        </Typography>
         <IconButton onClick={props.onClose} size="medium">
           <CloseIcon />
         </IconButton>

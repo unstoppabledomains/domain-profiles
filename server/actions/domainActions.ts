@@ -54,7 +54,7 @@ export const getEnsDomainStatus = async (
 export const getReverseResolution = async (
   address: string,
 ): Promise<string | undefined> => {
-  const resolutionResponse = await fetchApi(`/public/resolve/${address}`, {
+  const resolutionResponse = await fetchApi(`/resolve/${address}`, {
     host: config.PROFILE.HOST_URL,
   });
   return resolutionResponse?.name;

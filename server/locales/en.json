@@ -1,11 +1,16 @@
 {
-  "auth": {
-    "loginWithUnstoppable": "Login with Unstoppable"
-  },
-  "apps": { 
-    "clearAll": "Clear all", 
+  "apps": {
+    "clearAll": "Clear all",
     "featured": "Featured"
-  }, 
+  },
+  "auth": {
+    "accessWallet": "Access Wallet",
+    "accessWalletDescription": "Access your Ethereum browser wallet.",
+    "loginWithUnstoppable": "Login with Unstoppable",
+    "moreInfo": "For more information please see this",
+    "walletAddress": "Wallet address",
+    "walletAddressIncorrect": "Accessed wallet {{actual}} does not match address {{expected}}"
+  },
   "badge": {
     "badge": "Badge",
     "badgeHolders": "Badge Holders",
@@ -84,6 +89,7 @@
   "common": {
     "account": "Account",
     "addDomainCue": "Add a Web3 domain to start your journey on the decentralized web.",
+    "address": "address",
     "and": "and",
     "appStore": "App Store",
     "avatars": "avatars",
@@ -123,6 +129,7 @@
     "go": "Go",
     "goBack": "Go Back",
     "googlePlay": "Google Play",
+    "guide": "guide",
     "here": "here",
     "howItWorks": "How it works",
     "images": "images",
@@ -183,9 +190,9 @@
   },
   "domainSuggestion": {
     "hide": "Hide",
-    "show": "Show",
     "saveFailed": "Unable to update your preference, Please try later",
-    "saveSuccess": "Your preference updated successfully"
+    "saveSuccess": "Your preference updated successfully",
+    "show": "Show"
   },
   "header": {
     "signOut": "Sign Out"
@@ -331,8 +338,8 @@
     "manageMyProfile": "Manage my profile",
     "messaging": {
       "compose": "Compose Message",
-      "ctaUrl": "CTA URL",
       "ctaDescription": "This will show your audience a clickable button to the url link you will provide",
+      "ctaUrl": "CTA URL",
       "enterMessage": "Enter a message",
       "enterSubject": "Enter a subject",
       "failedToSend": "Message failed to send.",
@@ -393,8 +400,8 @@
     "chatSupport": "Chat with support",
     "chatWithSelf": "Cannot message your own wallet {{address}}",
     "communities": "Communities",
-    "communitiesNotReady": "Communities are not yet enabled",
     "communitiesCollect": "Collect a badge with your domain to join a community",
+    "communitiesNotReady": "Communities are not yet enabled",
     "configure": "Enable Unstoppable Messaging on this device for {{domain}}",
     "dropToUpload": "Drop file to upload...",
     "emptyNotifications": "No App Notifications",
@@ -411,8 +418,8 @@
     "joined": "Joined group",
     "leave": "Leave group",
     "leaveCommunityError": "Error leaving community",
-    "linkCancelBlock": "Cancel & block user",
     "linkCancel": "Cancel",
+    "linkCancelBlock": "Cancel & block user",
     "linkOpen": "Open link",
     "linkWarning": "Opening links can result in the loss of your crypto assets. Do not open this link unless you are sure it is from a safe source.",
     "loading": "Initializing Unstoppable Messaging for {{domain}}",
@@ -431,10 +438,9 @@
     "newNotification": "New notification",
     "noPrimaryDomain": "Select a domain and setup reverse resolution to enable Unstoppable Messaging",
     "notifications": "App Notifications",
-    "notificationsShort": "Apps",
     "notificationsNotReady": "App notifications not yet enabled",
+    "notificationsShort": "Apps",
     "open": "Show messages for {{domain}}",
-    "showRequests": "View chat requests ({{count}})",
     "searchChat": "Search wallets or domains",
     "searchCommunities": "Search communities",
     "searchNotification": "Search notifications",
@@ -465,6 +471,7 @@
       "supportDescription": "Send a message to **{{supportHandle}}** for help, feedback or just to say hello.",
       "title": "Unstoppable Messaging"
     },
+    "showRequests": "View chat requests ({{count}})",
     "spamWarning": "Others have reported this sender as spam",
     "typeMessage": "Type your message...",
     "unsupportedContent": "Unsupported content type",
@@ -488,11 +495,11 @@
     }
   },
   "webacy": {
-    "riskScore": "Risk score",
-    "riskScoreDescription": "Webacy analysis indicates a {{risk}} risk when interacting with the account owning this domain.",
     "high": "High",
     "low": "Low",
     "medium": "Medium",
+    "riskScore": "Risk score",
+    "riskScoreDescription": "Webacy analysis indicates a {{risk}} risk when interacting with the account owning this domain.",
     "share": "Share your Webacy risk score on X",
     "shareMessage": "Check out my Web3 Risk Score powered by @unstoppableweb and @mywebacy. What's your score?"
   }

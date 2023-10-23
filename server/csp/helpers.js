@@ -3,7 +3,7 @@
 // Helper utils for constructing CSP
 const {URL} = require('node:url');
 
-const toWildcardDomain = (domain) => {
+const toWildcardDomain = domain => {
   if (!domain) {
     return domain;
   }

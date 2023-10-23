@@ -38,7 +38,7 @@ const CollectionStats: React.FC<Props> = ({badgeData}) => {
       return '';
     }
     if (num < 1000) {
-      return num.toString();
+      return num.toFixed(3);
     }
 
     const units = ['', 'K', 'M', 'B', 'T'];

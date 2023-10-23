@@ -6,7 +6,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import InputBase from '@mui/material/InputBase';
 import Tooltip from '@mui/material/Tooltip';
-import config from '@unstoppabledomains/config';
 import type {Conversation, DecodedMessage} from '@xmtp/xmtp-js';
 import {ProfileManager} from 'components/Wallet/ProfileManager';
 import useTranslationContext from 'lib/i18n';
@@ -15,6 +14,8 @@ import {DomainProfileKeys} from 'lib/types/domain';
 import type {Web3Dependencies} from 'lib/types/web3';
 import type {DragEvent} from 'react';
 import React, {useEffect, useRef, useState} from 'react';
+
+import config from '@unstoppabledomains/config';
 
 import {formatFileSize, sendRemoteAttachment} from '../../protocol/xmtp';
 import {useConversationComposeStyles} from '../styles';

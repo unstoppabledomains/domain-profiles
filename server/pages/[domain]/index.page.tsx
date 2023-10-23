@@ -1012,7 +1012,7 @@ const DomainProfile = ({
                               autoPlay={false}
                               minNftCount={2}
                               maxNftCount={4}
-                              showPlaceholder
+                              showPlaceholder={true}
                               badgeData={badge}
                             />
                           </Grid>

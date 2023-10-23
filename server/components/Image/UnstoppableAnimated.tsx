@@ -1,11 +1,13 @@
 import Box from '@mui/material/Box';
 import type {Theme} from '@mui/material/styles';
-import {Logo, type LogoTheme} from '@unstoppabledomains/ui-kit/components';
-import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
-import config from '@unstoppabledomains/config';
 import Image from 'next/image';
 import React, {useEffect, useState} from 'react';
 import {useIntervalWhen} from 'rooks';
+
+import config from '@unstoppabledomains/config';
+import type {LogoTheme} from '@unstoppabledomains/ui-kit/components';
+import {Logo} from '@unstoppabledomains/ui-kit/components';
+import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 type Props = {
   theme: LogoTheme;

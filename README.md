@@ -8,11 +8,15 @@ This repository contains the following:
 1. Reusable React components, found in the `packages` directory
 
 ## Endpoints
-The UD.me profile service is hosted on both `testnet` (staging) and `mainnet` (production) environments. *The
-endpoints below are temporary, until the go-live date.*
+
+The UD.me profile service is hosted on both `testnet` (staging) and `mainnet`
+(production) environments. _The endpoints below are temporary, until the go-live
+date._
 
 ### Staging
+
 https://domain-profiles-vf5eblhuka-uc.a.run.app/aaron.x
 
 ### Production
+
 https://domain-profiles-wnjctwcyaa-uc.a.run.app/quirk.x

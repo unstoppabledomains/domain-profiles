@@ -32,8 +32,8 @@ RUN yarn build
 RUN NODE_ENV=production yarn workspace server build:next
 
 ## Remove extra files to reduce image size
-RUN rm -rf node_modules && \
-  NODE_ENV=production yarn install
+RUN rm -rf node_modules \
+  && NODE_ENV=production yarn install
 RUN rm -rf .yarn/cache
 
 ###########################################################
@@ -52,7 +52,7 @@ RUN yarn set version 3.2.0
 
 # Copy project files
 WORKDIR /app
-COPY --from=builder /app  .
+COPY --from=builder /app .
 
 # Server start command
 CMD ["yarn", "workspace", "server", "run", "start"]

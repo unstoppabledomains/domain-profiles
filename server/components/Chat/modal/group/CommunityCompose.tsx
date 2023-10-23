@@ -7,7 +7,6 @@ import IconButton from '@mui/material/IconButton';
 import InputBase from '@mui/material/InputBase';
 import Tooltip from '@mui/material/Tooltip';
 import type {IMessageIPFS} from '@pushprotocol/restapi';
-import config from '@unstoppabledomains/config';
 import {useFeatureFlags} from 'actions/featureFlagActions';
 import {ProfileManager} from 'components/Wallet/ProfileManager';
 import useTranslationContext from 'lib/i18n';
@@ -16,6 +15,8 @@ import {DomainProfileKeys} from 'lib/types/domain';
 import type {Web3Dependencies} from 'lib/types/web3';
 import type {DragEvent} from 'react';
 import React, {useEffect, useRef, useState} from 'react';
+
+import config from '@unstoppabledomains/config';
 
 import {sendMessage, sendRemoteAttachment} from '../../protocol/push';
 import {formatFileSize} from '../../protocol/xmtp';

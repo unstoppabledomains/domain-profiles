@@ -131,7 +131,7 @@ const BadgePopupModal = ({
   };
 
   const handleViewBadgePageClick = () => {
-    void router.push(`${config.UD_ME_BASE_URL}/badge/${badgeCode}`);
+    void router.push(`/badge/${badgeCode}`);
   };
 
   const getSponsorsTooltip = () => {

@@ -35,6 +35,25 @@ export const getDomainBadges = async (
       expired: false,
     };
   });
+
+  // add partner badges to the response if available
+  data?.partners?.map((partnerBadge: SerializedCryptoWalletBadge) => {
+    const holdsBadge = badges.filter(
+      (existingBadge: SerializedCryptoWalletBadge) =>
+        existingBadge.code === partnerBadge.code,
+    );
+    if (holdsBadge.length > 0) {
+      holdsBadge[0].marketplace = partnerBadge.marketplace;
+      return;
+    }
+    badges.push({
+      ...partnerBadge,
+      configId: 0,
+      active: false,
+      expired: false,
+    });
+  });
+
   return {
     list: badges,
     countTotal: badges.length,

@@ -1,7 +1,8 @@
 import * as PushAPI from '@pushprotocol/restapi';
 import {ENV} from '@pushprotocol/uiweb';
-import config from '@unstoppabledomains/config';
 import {useCallback, useState} from 'react';
+
+import config from '@unstoppabledomains/config';
 
 import type {PushNotification} from '../types';
 

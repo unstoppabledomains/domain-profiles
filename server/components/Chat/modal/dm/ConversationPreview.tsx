@@ -2,8 +2,8 @@
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import type {Theme} from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import type {Theme} from '@mui/material/styles';
 import type {Conversation} from '@xmtp/xmtp-js';
 import {isAddressSpam} from 'actions/messageActions';
 import useTranslationContext from 'lib/i18n';

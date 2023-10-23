@@ -2,6 +2,7 @@
 const google = require('./csp/google.js');
 const socialMedia = require('./csp/socialMedia.js');
 const unstoppabledomains = require('./csp/unstoppable.js');
+const opensea = require('./csp/opensea.js');
 const push = require('./csp/push.js');
 const xmtp = require('./csp/xmtp.js');
 
@@ -24,11 +25,7 @@ module.exports = {
 
     defaultSrc: "'self'",
 
-    fontSrc: [
-      "'self'",
-      ...unstoppabledomains.fontSrc,
-      ...google.fontSrc,
-    ],
+    fontSrc: ["'self'", ...unstoppabledomains.fontSrc, ...google.fontSrc],
 
     formAction: ["'self'"],
 
@@ -49,12 +46,10 @@ module.exports = {
       ...socialMedia.imgSrc,
       ...push.imgSrc,
       ...xmtp.imgSrc,
+      ...opensea.imgSrc,
     ],
 
-    mediaSrc: [
-      ...google.mediaSrc,
-      ...unstoppabledomains.mediaSrc,
-    ],
+    mediaSrc: [...google.mediaSrc, ...unstoppabledomains.mediaSrc],
 
     objectSrc: ['data:'],
 
@@ -67,11 +62,7 @@ module.exports = {
       ...socialMedia.scriptSrc,
     ],
 
-    styleSrc: [
-      "'self'",
-      "'unsafe-inline'",
-      ...google.styleSrc,
-    ],
+    styleSrc: ["'self'", "'unsafe-inline'", ...google.styleSrc],
 
     // blob: seems to be required to connect to MEW wallet and datadog session replays
     workerSrc: ['blob:'],

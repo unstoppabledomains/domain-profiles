@@ -17,13 +17,12 @@ import IconButton from '@mui/material/IconButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import {styled} from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import config from '@unstoppabledomains/config';
+import {styled} from '@mui/material/styles';
 import type {
-  Conversation as XmtpConversation,
   DecodedMessage,
+  Conversation as XmtpConversation,
 } from '@xmtp/xmtp-js';
 import {SortDirection} from '@xmtp/xmtp-js';
 import useTranslationContext from 'lib/i18n';
@@ -33,6 +32,8 @@ import type {MouseEvent} from 'react';
 import React, {useEffect, useState} from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import truncateEthAddress from 'truncate-eth-address';
+
+import config from '@unstoppabledomains/config';
 
 import {registerClientTopics} from '../../protocol/registration';
 import {getAddressMetadata} from '../../protocol/resolution';

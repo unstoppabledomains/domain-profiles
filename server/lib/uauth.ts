@@ -1,6 +1,6 @@
 import type UAuth from '@uauth/js';
-import config from '@unstoppabledomains/config';
 
+import config from '@unstoppabledomains/config';
 import Resolution from '@unstoppabledomains/resolution';
 
 import {loadUnstoppableDomainsResolution} from './resolution/unstoppableDomainsLoader';

@@ -3,10 +3,10 @@ import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import type {Theme} from '@mui/material/styles';
-import config from '@unstoppabledomains/config';
 import useTranslationContext from 'lib/i18n';
 import React, {useState} from 'react';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import CustomBadgesDialog from './CustomBadgesDialog';

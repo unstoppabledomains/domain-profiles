@@ -9,8 +9,8 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import CircularProgress from '@mui/material/CircularProgress';
-import type {Theme} from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import type {Theme} from '@mui/material/styles';
 import useTranslationContext from 'lib/i18n';
 import React, {useState} from 'react';
 

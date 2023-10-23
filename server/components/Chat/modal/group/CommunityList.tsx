@@ -2,19 +2,19 @@ import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
-import type {Theme} from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import config from '@unstoppabledomains/config';
+import type {Theme} from '@mui/material/styles';
 import {getDomainBadges} from 'actions/domainActions';
+import {getProfileData} from 'actions/domainProfile';
 import Bluebird from 'bluebird';
 import useTranslationContext from 'lib/i18n';
 import type {SerializedCryptoWalletBadge} from 'lib/types/badge';
 import {UD_BLUE_BADGE_CODE} from 'lib/types/domain';
 import React, {useEffect, useState} from 'react';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getProfileData} from 'actions/domainProfile';
 import {getGroupInfo} from '../../protocol/push';
 import CommunityPreview from './CommunityPreview';
 

@@ -30,15 +30,6 @@
     "suppressImplicitAnyIndexErrors": true,
     "target": "ESNext"
   },
-  "exclude": [
-    "node_modules",
-    "**/node_modules",
-    "test",
-    "**/test"
-  ],
-  "include": [
-    "**/*.d.ts",
-    "**/*.ts",
-    "**/*.tsx"
-  ]
+  "exclude": ["node_modules", "**/node_modules", "test", "**/test"],
+  "include": ["**/*.d.ts", "**/*.ts", "**/*.tsx"]
 }

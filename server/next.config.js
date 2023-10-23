@@ -6,9 +6,7 @@ const contentSecurityPolicy = require('./contentSecurityPolicy');
 const locales = require('./locales.json');
 
 // transpile any required modules
-const withNtm = require('next-transpile-modules')([
-  '@pushprotocol/uiweb',
-]);
+const withNtm = require('next-transpile-modules')(['@pushprotocol/uiweb']);
 
 /**
  * By default, NextJS returns Cache-Control headers for immutable assets, telling Fastly to cache the response
@@ -127,7 +125,7 @@ const nextConfig = {
     // Fastly cache expires after just 1 minute. We can increase the Fastly cache HIT rate by using
     // stale-while-revalidate to serve stale cached content while revalidating.
     // NextJS default cache headers returns stale-while-revalidate, but without seconds:
-    // > Cache-Control: s-maxage=60, stale-while-revalidate
+    // > Cache-Control: stale-maxage=60, stale-while-revalidate
     // But Fastly requires stale-while-revalidate seconds, so override the default.
     return [
       // Default headers for any path
@@ -136,9 +134,7 @@ const nextConfig = {
         headers,
       },
       // Headers for homepage
-      ...[
-        '/',
-      ].map((source) => ({
+      ...['/'].map(source => ({
         source,
         headers: fastlyCacheHeaders({
           staleIfError: 86400, // 1 day
@@ -161,8 +157,22 @@ const nextConfig = {
           },
         ],
       },
+      // Headers for badge page
+      {
+        source: '/badge/:badgeCode',
+        headers: [
+          ...fastlyCacheHeaders({
+            ttl: 86400,
+          }),
+          {
+            key: 'Content-Security-Policy',
+            value:
+              'connect-src * data: blob:; img-src * data: blob:; object-src *',
+          },
+        ],
+      },
     ];
   },
-}
+};
 
 module.exports = withNtm(nextConfig);

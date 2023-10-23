@@ -15,11 +15,10 @@ import IconButton from '@mui/material/IconButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import {styled} from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import {styled} from '@mui/material/styles';
 import type {IMessageIPFS} from '@pushprotocol/restapi';
-import config from '@unstoppabledomains/config';
 import {joinBadgeGroupChat} from 'actions/messageActions';
 import useTranslationContext from 'lib/i18n';
 import type {SerializedCryptoWalletBadge} from 'lib/types/badge';
@@ -29,7 +28,9 @@ import type {MouseEvent} from 'react';
 import React, {useEffect, useState} from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
-import {decryptMessage, getMessages, PUSH_PAGE_SIZE} from '../../protocol/push';
+import config from '@unstoppabledomains/config';
+
+import {PUSH_PAGE_SIZE, decryptMessage, getMessages} from '../../protocol/push';
 import {useConversationStyles} from '../styles';
 import CommunityCompose from './CommunityCompose';
 import CommunityConversationBubble from './CommunityConversationBubble';

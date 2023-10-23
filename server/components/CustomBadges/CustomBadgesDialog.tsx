@@ -10,16 +10,16 @@ import DialogTitle from '@mui/material/DialogTitle';
 import FormGroup from '@mui/material/FormGroup';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
-import type {Theme} from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import config from '@unstoppabledomains/config';
+import type {Theme} from '@mui/material/styles';
+import {getBadge, getMarketplaceBadgeDetails} from 'actions/badgeActions';
 import useTranslationContext from 'lib/i18n';
 import React, {useEffect, useState} from 'react';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getBadge, getMarketplaceBadgeDetails} from 'actions/badgeActions';
 import headerPhoto from './header.png';
 
 const useStyles = makeStyles()((theme: Theme) => ({

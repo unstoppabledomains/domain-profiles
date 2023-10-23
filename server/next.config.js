@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+const assert = require('assert');
 const path = require('path');
+const {createSecureHeaders} = require('next-secure-headers');
+const contentSecurityPolicy = require('./contentSecurityPolicy');
 const locales = require('./locales.json');
 
 // transpile any required modules
@@ -7,8 +10,64 @@ const withNtm = require('next-transpile-modules')([
   '@pushprotocol/uiweb',
 ]);
 
+/**
+ * By default, NextJS returns Cache-Control headers for immutable assets, telling Fastly to cache the response
+ * https://nextjs.org/docs/going-to-production#caching
+ * This includes pages with getStaticProps, but not pages with getServerSideProps.
+ * Use this helper if you need to override the default NextJS cache headers.
+ */
+const fastlyCacheHeaders = ({
+  purgableBy, // keys for purging the cache (optional)
+  staleWhileRevalidate, // in seconds (optional, default: 0)
+  staleIfError, // in seconds (optional, default: 0)
+  ttl, // in seconds (required)
+}) => {
+  assert(typeof ttl === 'number', 'fastlyCacheHeaders ttl required');
+  return [
+    // Enable fastly cache.
+    // Note that Fastly deletes these header before sending the response to the browser.
+    // Fastly supports the max-age, stale-if-error, and stale-while-revalidate parameters by default.
+    // https://docs.fastly.com/en/guides/controlling-caching#setting-different-ttls-for-fastly-cache-and-web-browsers
+    // https://developer.fastly.com/learning/concepts/cache-freshness/
+    ...(purgableBy
+      ? [
+          {
+            key: 'Surrogate-Key',
+            value: purgableBy.join(' '),
+          },
+        ]
+      : []),
+    {
+      key: 'Surrogate-Control',
+      value: [
+        `stale-if-error=${staleIfError ?? 0}`,
+        `stale-while-revalidate=${staleWhileRevalidate ?? 0}`,
+        `max-age=${ttl ?? 0}`,
+      ].join(', '),
+    },
+
+    // Disable browser cache since Fastly can't invalidate the browser cache
+    // https://docs.fastly.com/en/guides/temporarily-disabling-caching
+    // https://docs.fastly.com/en/guides/controlling-caching#setting-different-ttls-for-fastly-cache-and-web-browsers
+    {
+      key: 'Cache-Control',
+      value:
+        'no-cache, no-store, private, must-revalidate, max-age=0, max-stale=0, post-check=0, pre-check=0',
+    },
+    {
+      key: 'Pragma',
+      value: 'no-cache',
+    },
+    {
+      key: 'Expires',
+      value: '0',
+    },
+  ];
+};
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  compress: false,
   reactStrictMode: true,
   pageExtensions: ['page.tsx', 'api.ts'],
   experimental: {
@@ -49,6 +108,58 @@ const nextConfig = {
       {
         source: '/robots.txt',
         destination: '/api/robots',
+      },
+    ];
+  },
+  async headers() {
+    const headers = createSecureHeaders({
+      contentSecurityPolicy,
+      forceHTTPSRedirect: [
+        true,
+        {
+          maxAge: 31536000, // 1 year
+          includeSubDomains: true,
+          preload: true,
+        },
+      ],
+    });
+
+    // Fastly cache expires after just 1 minute. We can increase the Fastly cache HIT rate by using
+    // stale-while-revalidate to serve stale cached content while revalidating.
+    // NextJS default cache headers returns stale-while-revalidate, but without seconds:
+    // > Cache-Control: s-maxage=60, stale-while-revalidate
+    // But Fastly requires stale-while-revalidate seconds, so override the default.
+    return [
+      // Default headers for any path
+      {
+        source: '/:path*',
+        headers,
+      },
+      // Headers for homepage
+      ...[
+        '/',
+      ].map((source) => ({
+        source,
+        headers: fastlyCacheHeaders({
+          staleIfError: 86400, // 1 day
+          staleWhileRevalidate: 86400, // 1 day
+          ttl: 3600, // 1 hour
+        }),
+      })),
+      // Headers for domain profile
+      {
+        source: '/:domain',
+        headers: [
+          ...fastlyCacheHeaders({
+            ttl: 86400, // 1 day
+            purgableBy: ['Domain/:domain', 'CryptoWallet/update'],
+          }),
+          {
+            key: 'Content-Security-Policy',
+            value:
+              'connect-src * data: blob:; img-src * data: blob:; object-src *',
+          },
+        ],
       },
     ];
   },

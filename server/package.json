@@ -69,6 +69,7 @@
     "lodash.merge": "^4.6.2",
     "next": "^12.3.4",
     "next-redux-wrapper": "^6.0.2",
+    "next-secure-headers": "^2.2.0",
     "next-seo": "^6.1.0",
     "next-transpile-modules": "^10.0.0",
     "notistack": "^2.0.5",

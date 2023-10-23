@@ -92,6 +92,7 @@ const BadgePopupModal = ({
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
   const {setOpenCommunity} = useUnstoppableMessaging();
+  const {chatUser} = useUnstoppableMessaging();
   const [openPopover, setOpenPopover] = useState(false);
   const [openComposeMessageModal, setOpenComposeMessageModal] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
@@ -362,7 +363,7 @@ const BadgePopupModal = ({
                         </IconButton>
                       </LightTooltip>
                     )}
-                    {groupChatAvailable && (
+                    {chatUser && groupChatAvailable && (
                       <LightTooltip title={t('push.join')} arrow>
                         <IconButton
                           id={`group-chat-button`}

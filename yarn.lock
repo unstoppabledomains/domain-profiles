@@ -13731,6 +13731,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"next-secure-headers@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "next-secure-headers@npm:2.2.0"
+  checksum: 17eefce9ecd3e77a2a81b7b2377f352e3725eda61aec07381eb5101215f0577d7fc093af168121689c42099d7ca6441032b93dd6f372ae27bf98a2417c15378e
+  languageName: node
+  linkType: hard
+
 "next-seo@npm:^6.1.0":
   version: 6.1.0
   resolution: "next-seo@npm:6.1.0"
@@ -16075,6 +16082,7 @@ __metadata:
     lodash.merge: ^4.6.2
     next: ^12.3.4
     next-redux-wrapper: ^6.0.2
+    next-secure-headers: ^2.2.0
     next-seo: ^6.1.0
     next-transpile-modules: ^10.0.0
     notistack: ^2.0.5

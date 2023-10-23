@@ -73,6 +73,9 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     [theme.breakpoints.down('sm')]: {
       left: theme.spacing(2),
     },
+    [theme.breakpoints.down('sm')]: {
+      zIndex: 0,
+    },
   },
   profilePicture: {
     display: 'flex',
@@ -374,14 +377,23 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     },
     '& div:nth-of-type(1)': {
       zIndex: 103,
+      [theme.breakpoints.down('sm')]: {
+        zIndex: 0,
+      },
     },
     '& div:nth-of-type(2)': {
       zIndex: 102,
       marginLeft: '20px',
+      [theme.breakpoints.down('sm')]: {
+        zIndex: 0,
+      },
     },
     '& div:nth-of-type(3)': {
       zIndex: 101,
       marginLeft: '40px',
+      [theme.breakpoints.down('sm')]: {
+        zIndex: 0,
+      },
     },
   },
   followersPreviewTyp: {

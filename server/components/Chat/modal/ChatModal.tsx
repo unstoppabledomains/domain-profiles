@@ -65,7 +65,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '450px',
     height: '600px',
     margin: theme.spacing(1),
-    zIndex: 100,
+    zIndex: 200,
     [theme.breakpoints.down('sm')]: {
       width: '100%',
       height: '100%',

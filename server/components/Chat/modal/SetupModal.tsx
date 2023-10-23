@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
 import LocalGasStationIcon from '@mui/icons-material/LocalGasStationOutlined';
 import LockIcon from '@mui/icons-material/LockOutlined';
@@ -96,6 +97,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   successIcon: {
     color: theme.palette.success.main,
+    marginTop: theme.spacing(5),
+    marginBottom: theme.spacing(1),
+    width: '65px',
+    height: '65px',
+  },
+  errorIcon: {
+    color: theme.palette.error.main,
     marginTop: theme.spacing(5),
     marginBottom: theme.spacing(1),
     width: '65px',
@@ -232,11 +240,13 @@ export const SetupModal: React.FC<SetupModalProps> = ({
               </Box>
             )
           )}
-          {disabled && configState !== ConfigurationState.Complete && (
-            <Box className={classes.loadingContainer}>
-              <CircularProgress size="50px" />
-            </Box>
-          )}
+          {disabled &&
+            configState !== ConfigurationState.Complete &&
+            configState !== ConfigurationState.Error && (
+              <Box className={classes.loadingContainer}>
+                <CircularProgress size="50px" />
+              </Box>
+            )}
           {configState === ConfigurationState.Complete && (
             <Box className={classes.loadingContainer}>
               <CheckCircleOutlineOutlinedIcon className={classes.successIcon} />
@@ -248,6 +258,20 @@ export const SetupModal: React.FC<SetupModalProps> = ({
                 className={cx(classes.infoBody, classes.successText)}
               >
                 {t('push.setup.successDescription')}
+              </Typography>
+            </Box>
+          )}
+          {configState === ConfigurationState.Error && (
+            <Box className={classes.loadingContainer}>
+              <ErrorOutlineIcon className={classes.errorIcon} />
+              <Typography variant="subtitle2" className={classes.infoTitle}>
+                {t('push.setup.error')}
+              </Typography>
+              <Typography
+                variant="body2"
+                className={cx(classes.infoBody, classes.successText)}
+              >
+                {t('push.setup.errorDescription')}
               </Typography>
             </Box>
           )}

@@ -494,6 +494,8 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       }
     } catch (e) {
       notifyError(e);
+      setConfigState(ConfigurationState.Error);
+      return;
     }
 
     // remove the modal from view
@@ -879,7 +881,9 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         onClose={() => setWalletModalIsOpen(false)}
       />
       <SetupModal
-        disabled={chatWalletConnected}
+        disabled={
+          chatWalletConnected && configState !== ConfigurationState.Error
+        }
         domain={domain}
         isNewUser={signatureInProgress === MessagingSignatureType.NewUser}
         isNewNotification={

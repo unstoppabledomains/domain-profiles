@@ -61,13 +61,16 @@ const useStyles = makeStyles()((theme: Theme) => ({
   domainName: {
     maxWidth: '300px',
     overflow: 'hidden',
-    wordBreak: 'break-word',
-    [theme.breakpoints.down('sm')]: {
-      maxWidth: '220px',
+    whiteSpace: 'nowrap',
+    [theme.breakpoints.down('md')]: {
+      display: 'none',
     },
   },
   expandMore: {
     marginLeft: '10px',
+    [theme.breakpoints.down('md')]: {
+      marginLeft: 0,
+    },
   },
 }));
 

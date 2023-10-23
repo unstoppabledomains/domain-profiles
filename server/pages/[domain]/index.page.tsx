@@ -7,7 +7,6 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import LanguageIcon from '@mui/icons-material/Language';
 import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
-import WarningOutlinedIcon from '@mui/icons-material/WarningOutlined';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -646,9 +645,16 @@ const DomainProfile = ({
             {profileData?.webacy && (
               <Box className={classes.riskScoreContainer}>
                 <Avatar
-                  src="https://storage.googleapis.com/unstoppable-client-assets/images/webacy/logo.png"
+                  src={
+                    'https://storage.googleapis.com/unstoppable-client-assets/images/webacy/logo.png'
+                  }
                   className={classes.riskScoreLogo}
-                  onClick={() => window.open('https://webacy.com', '_blank')}
+                  onClick={() =>
+                    window.open(
+                      `https://dapp.webacy.com/unstoppable/${ownerAddress}`,
+                      '_blank',
+                    )
+                  }
                 />
                 <Typography className={classes.emailAndLocation}>
                   {t('webacy.riskScore')}:
@@ -666,10 +672,7 @@ const DomainProfile = ({
                           </Typography>
                           <List dense sx={{listStyleType: 'disc', pl: 4}}>
                             {issue.tags.map(tag => (
-                              <ListItem
-                                sx={{display: 'list-item'}}
-                                key={tag.key}
-                              >
+                              <ListItem sx={{display: 'list-item'}}>
                                 <Typography variant="caption">
                                   {tag.name}
                                 </Typography>
@@ -680,13 +683,7 @@ const DomainProfile = ({
                       ))
                     ) : (
                       <Typography variant="caption">
-                        {t('webacy.riskScoreDescription', {
-                          risk: profileData.webacy.high
-                            ? t('webacy.high').toLowerCase()
-                            : profileData.webacy.medium
-                            ? t('webacy.medium').toLowerCase()
-                            : t('webacy.low').toLowerCase(),
-                        })}
+                        {t('webacy.riskScoreDescription')}
                       </Typography>
                     )
                   }
@@ -696,7 +693,7 @@ const DomainProfile = ({
                       profileData.webacy.high
                         ? 'error'
                         : profileData.webacy.medium
-                        ? 'warning'
+                        ? 'default'
                         : 'success'
                     }
                     size="small"
@@ -704,7 +701,7 @@ const DomainProfile = ({
                       profileData.webacy.high ? (
                         <OutlinedFlagIcon className={classes.riskScoreIcon} />
                       ) : profileData.webacy.medium ? (
-                        <WarningOutlinedIcon
+                        <CheckCircleOutlinedIcon
                           className={classes.riskScoreIcon}
                         />
                       ) : (

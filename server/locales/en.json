@@ -450,6 +450,8 @@
       "chat": "Configuring Web3 chat...",
       "chatDescription": "Sign the messages with your wallet to enable this device for Web3 messaging.",
       "choosePrimaryDomain": "Choose Primary Domain",
+      "error": "Setup error",
+      "errorDescription": "There was a problem setting up Unstoppable Messaging on your device. Make sure to connect your wallet and sign the requested messages.",
       "existingUserDescription": "We found an existing messaging account for {{domain}}. A wallet signature is required to decrypt your messages on this device.",
       "existingUserNeedsNotifications": "We found an existing messaging account for {{domain}}. You'll be prompted for a wallet signature required to decrypt your messages on this device, along with an optional signature to subscribe to notifications.",
       "isGasRequired": "No transaction fees",
@@ -468,8 +470,6 @@
       "subscriptionsDescription": "Checking your account to make sure it's ready for the best messaging experience.",
       "success": "Success",
       "successDescription": "Your device is ready for Unstoppable Messaging!",
-      "error": "Setup error",
-      "errorDescription" : "There was a problem setting up Unstoppable Messaging on your device. Make sure to connect your wallet and sign the requested messages.",
       "support": "We'd love to hear from you.",
       "supportDescription": "Send a message to **{{supportHandle}}** for help, feedback or just to say hello.",
       "title": "Unstoppable Messaging"
@@ -498,12 +498,12 @@
     }
   },
   "webacy": {
-    "high": "High",
-    "low": "Low",
-    "medium": "Medium",
-    "riskScore": "Risk score",
-    "riskScoreDescription": "Webacy analysis indicates a {{risk}} risk when interacting with the account owning this domain.",
-    "share": "Share your Webacy risk score on X",
-    "shareMessage": "Check out my Web3 Risk Score powered by @unstoppableweb and @mywebacy. What's your score?"
+    "high": "Unsafe",
+    "low": "Safest",
+    "medium": "Safe",
+    "riskScore": "Safety Score",
+    "riskScoreDescription": "Webacy analysis indicates a Safety Score to measure risk when interacting with the account owning this domain.",
+    "share": "Share your Webacy Safety Score on X",
+    "shareMessage": "Check out my Safety Score powered by @unstoppableweb and @mywebacy on my UD profile #safetyscore #walletrisk"
   }
 }

@@ -72,6 +72,19 @@ const AccessWallet = (props: Props) => {
         chains,
         options: {
           projectId: config.WALLETCONNECT_PROJECT_ID,
+          qrModalOptions: {
+            themeVariables: {
+              '--wcm-z-index': '100000',
+            },
+          },
+          metadata: {
+            name: t('nftCollection.unstoppableDomains'),
+            description: t('nftCollection.unstoppableDomainsDescription'),
+            url: config.UD_ME_BASE_URL,
+            icons: [
+              'https://storage.googleapis.com/unstoppable-client-assets/images/favicon/favicon-v3.ico',
+            ],
+          },
         },
       }),
       new CoinbaseWalletConnector({

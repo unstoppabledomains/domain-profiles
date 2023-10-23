@@ -283,6 +283,7 @@
     "tokenId": "Token ID",
     "unableToDetectABrowserWallet": "Unable to detect a browser wallet",
     "unstoppableDomains": "Unstoppable Domains",
+    "unstoppableDomainsDescription": "It's your name. Own it.",
     "untilThenYouCanSeeA": "Until then, you can see a",
     "useAnotherDomain": "Use Another Domain",
     "verifyYouOwnThisDomainByAcceptingTheSignature": "Verify you own this domain by accepting the signature request from your browser Wallet",

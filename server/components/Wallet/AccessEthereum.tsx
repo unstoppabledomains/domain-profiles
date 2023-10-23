@@ -110,7 +110,7 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
           {t('auth.moreInfo')}{' '}
           <Link
             external
-            to="https://support.unstoppabledomains.com/support/solutions/articles/48001181696-claim-your-domain"
+            to="https://unstoppabledomains.com/learn/web3-terms-101"
           >
             {t('common.guide')}.
           </Link>

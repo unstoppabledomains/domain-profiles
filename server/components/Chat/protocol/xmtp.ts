@@ -23,6 +23,7 @@ import {
 import type {Signer} from 'ethers';
 import {sha256} from 'ethers/lib/utils';
 import {filesize} from 'filesize';
+import {notifyError} from 'lib/error';
 import {Web3Storage} from 'web3.storage';
 
 import config from '@unstoppabledomains/config';
@@ -173,7 +174,8 @@ export const initXmtpAccount = async (address: string, signer: Signer) => {
     );
     await conversation.send(`GM from Unstoppable Domains 👋`);
   } catch (e) {
-    console.log('error creating xmtp user', e);
+    notifyError(e);
+    throw e;
   }
 };
 

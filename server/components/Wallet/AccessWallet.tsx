@@ -81,9 +81,7 @@ const AccessWallet = (props: Props) => {
             name: t('nftCollection.unstoppableDomains'),
             description: t('nftCollection.unstoppableDomainsDescription'),
             url: config.UD_ME_BASE_URL,
-            icons: [
-              'https://storage.googleapis.com/unstoppable-client-assets/images/favicon/favicon-v3.ico',
-            ],
+            icons: [config.UD_LOGO_URL],
           },
         },
       }),

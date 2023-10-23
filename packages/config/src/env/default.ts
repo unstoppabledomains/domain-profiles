@@ -41,6 +41,8 @@ export default function getDefaultConfig(): Config {
         OPEN_SEA_BASE_URL: 'https://testnets.opensea.io/assets/mumbai/',
       },
     },
+    UD_LOGO_URL:
+      'https://storage.googleapis.com/unstoppable-client-assets/images/favicon/favicon-v3.ico',
     UD_ME_BASE_URL: 'https://ud.me',
     UNSTOPPABLE_WEBSITE_URL: 'https://www.ud-staging.com',
     UNSTOPPABLE_API_URL: 'https://api.ud-staging.com',

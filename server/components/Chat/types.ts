@@ -13,6 +13,7 @@ export enum ConfigurationState {
   RegisterXmtp = 'xmtp',
   QuerySubscriptions = 'query',
   Complete = 'complete',
+  Error = 'error',
 }
 
 export enum TabType {

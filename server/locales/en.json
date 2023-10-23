@@ -468,6 +468,8 @@
       "subscriptionsDescription": "Checking your account to make sure it's ready for the best messaging experience.",
       "success": "Success",
       "successDescription": "Your device is ready for Unstoppable Messaging!",
+      "error": "Setup error",
+      "errorDescription" : "There was a problem setting up Unstoppable Messaging on your device. Make sure to connect your wallet and sign the requested messages.",
       "support": "We'd love to hear from you.",
       "supportDescription": "Send a message to **{{supportHandle}}** for help, feedback or just to say hello.",
       "title": "Unstoppable Messaging"

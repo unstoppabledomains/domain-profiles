@@ -27,8 +27,6 @@
     "@emotion/react": "^11.11.1",
     "@emotion/server": "^11.4.0",
     "@emotion/styled": "^11.11.0",
-    "@mui/icons-material": "^5.14.13",
-    "@mui/material": "^5.14.13",
     "@pushprotocol/restapi": "^1.4.15",
     "@pushprotocol/socket": "^0.5.1",
     "@pushprotocol/uiweb": "^1.1.13",

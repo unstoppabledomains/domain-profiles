@@ -20,8 +20,6 @@ import React, {useEffect, useState} from 'react';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import headerPhoto from './header.png';
-
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     '& .MuiDialogContent-root': {
@@ -319,7 +317,7 @@ const CustomBadgesDialog: React.FC<Props> = ({open, handleClose}) => {
           key={'initial-dialog'}
         >
           <DialogContent className={classes.headerPhoto}>
-            <img src={headerPhoto.src} alt={'Web3 Custom Badges'} />
+            <img src={'TODO'} alt={'Web3 Custom Badges'} />
           </DialogContent>
           <DialogTitle>
             <IconButton

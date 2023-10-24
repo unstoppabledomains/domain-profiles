@@ -23,8 +23,9 @@
     "strict": true,
     "strictNullChecks": true,
     "suppressImplicitAnyIndexErrors": true,
-    "target": "ESNext"
-  },
+    "target": "ESNext",
+    "baseUrl": "./server"
+  }, 
   "exclude": ["node_modules", "**/node_modules", "test", "**/test"],
   "include": ["**/*.d.ts", "**/*.ts", "**/*.tsx"]
 }

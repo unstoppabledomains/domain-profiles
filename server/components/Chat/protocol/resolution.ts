@@ -1,4 +1,4 @@
-import {getProfileResolution} from 'actions/domainProfile';
+import {getProfileResolution} from 'actions/domainProfileActions';
 
 import {getCachedResolution, setCachedResolution} from '../storage';
 import type {AddressResolution} from '../types';

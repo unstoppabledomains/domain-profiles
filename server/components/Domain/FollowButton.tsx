@@ -9,7 +9,7 @@ import {
   followDomainProfile,
   unfollowDomainProfile,
   useDomainProfileFollowStatus,
-} from 'actions/domainProfile';
+} from 'actions/domainProfileActions';
 import {ProfileManager} from 'components/Wallet/ProfileManager';
 import useTranslationContext from 'lib/i18n';
 import type {Web3Dependencies} from 'lib/types/web3';

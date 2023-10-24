@@ -5,7 +5,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {getDomainBadges} from 'actions/domainActions';
-import {getProfileData} from 'actions/domainProfile';
+import {getProfileData} from 'actions/domainProfileActions';
 import Bluebird from 'bluebird';
 import useTranslationContext from 'lib/i18n';
 import type {SerializedCryptoWalletBadge} from 'lib/types/badge';

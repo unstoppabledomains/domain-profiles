@@ -9,7 +9,7 @@ setenv() {
 
   if [ "$1" = "staging" ]; then
     APP_ENV="staging"
-    CLIENT_URL="https://www.ud-me-staging.com"
+    CLIENT_URL="https://staging.ud.me"
   fi
 
   if [ "$1" = "production" ]; then

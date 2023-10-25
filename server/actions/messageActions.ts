@@ -7,7 +7,7 @@ import type {SendMessageParams} from 'lib/types/message';
 import config from '@unstoppabledomains/config';
 
 export const sendBadgeMessage = async (params: SendMessageParams) => {
-  return await fetchApi(`/api/push/notification/badge`, {
+  return await fetchApi(`/push/notification/badge`, {
     method: 'POST',
     mode: 'cors',
     host: config.MESSAGING.HOST_URL,
@@ -24,7 +24,7 @@ export const sendBadgeMessage = async (params: SendMessageParams) => {
 
 export const isAddressSpam = async (address: string): Promise<boolean> => {
   const spamData = await fetchApi(
-    `${config.MESSAGING.HOST_URL}/api/xmtp/spam/${address}`,
+    `${config.MESSAGING.HOST_URL}/xmtp/spam/${address}`,
     {host: config.MESSAGING.HOST_URL},
   );
   return spamData.isSpam === true;
@@ -37,19 +37,16 @@ export const joinBadgeGroupChat = async (
   leave?: boolean,
 ): Promise<SerializedCryptoWalletBadge | undefined> => {
   const signedBadgeCode = await signMessage(badgeCode, pushKey);
-  const badgeData = await fetchApi(
-    `/api/push/group/${leave ? 'leave' : 'join'}`,
-    {
-      method: 'POST',
-      host: config.MESSAGING.HOST_URL,
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        badgeCode,
-        address: userAddress,
-        signature: signedBadgeCode,
-      }),
-    },
-  );
+  const badgeData = await fetchApi(`/push/group/${leave ? 'leave' : 'join'}`, {
+    method: 'POST',
+    host: config.MESSAGING.HOST_URL,
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      badgeCode,
+      address: userAddress,
+      signature: signedBadgeCode,
+    }),
+  });
   if (!badgeData) {
     throw new Error('Unable to join group');
   }
@@ -65,7 +62,7 @@ export const registerXmtpTopic = async (
   signedPublicKey: string,
   registrations: TopicRegistration[],
 ): Promise<number> => {
-  const responseJson = await fetchApi(`/api/xmtp/topics/register`, {
+  const responseJson = await fetchApi(`/xmtp/topics/register`, {
     method: 'POST',
     host: config.MESSAGING.HOST_URL,
     headers: {'Content-Type': 'application/json'},

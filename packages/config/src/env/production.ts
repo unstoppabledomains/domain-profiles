@@ -40,10 +40,10 @@ export default function getProductionConfig(): ConfigOverride {
     },
     MESSAGING: {
       EMAIL_DOMAIN: 'ud.me',
-      HOST_URL: 'https://messaging.unstoppabledomains.com',
+      HOST_URL: 'https://api.unstoppabledomains.com/messaging',
     },
     IDENTITY: {
-      HOST_URL: 'https://identity.unstoppabledomains.com',
+      HOST_URL: 'https://api.unstoppabledomains.com/identity',
     },
     PROFILE: {
       HOST_URL: 'https://api.unstoppabledomains.com/profile',

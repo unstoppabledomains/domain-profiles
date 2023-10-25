@@ -7,10 +7,10 @@ export default function getDevelopmentConfig(): ConfigOverride {
     UNSTOPPABLE_WEBSITE_URL: 'http://localhost:3000',
     UNSTOPPABLE_API_URL: 'http://localhost:8080',
     MESSAGING: {
-      HOST_URL: 'http://localhost:5003',
+      HOST_URL: 'http://localhost:5003/api',
     },
     IDENTITY: {
-      HOST_URL: 'http://localhost:5002',
+      HOST_URL: 'http://localhost:5002/api',
     },
     LOGIN_WITH_UNSTOPPABLE: {
       CLIENT_ID: '00000000-0000-0000-0000-000000000000',

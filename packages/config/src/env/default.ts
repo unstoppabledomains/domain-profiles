@@ -71,10 +71,10 @@ export default function getDefaultConfig(): Config {
     },
     MESSAGING: {
       EMAIL_DOMAIN: 'ud-staging.com',
-      HOST_URL: 'https://messaging.ud-staging.com',
+      HOST_URL: 'https://api.ud-staging.com/messaging',
     },
     IDENTITY: {
-      HOST_URL: 'https://identity.ud-staging.com/',
+      HOST_URL: 'https://api.ud-staging.com/identity',
     },
     PROFILE: {
       HOST_URL: 'https://api.ud-staging.com/profile',

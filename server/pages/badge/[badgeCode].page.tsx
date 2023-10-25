@@ -4,8 +4,10 @@ import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import {useTheme} from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import {getBadge, getSponsorRankings} from 'actions/badgeActions';
-import {getDomainRankings, getReverseResolution} from 'actions/domainActions';
+import {getDomainRankings} from 'actions/domainActions';
 import {useFeatureFlags} from 'actions/featureFlagActions';
 import BadgeRankings from 'components/Badges/BadgeRankings';
 import CollectionStats from 'components/Badges/CollectionStats';
@@ -22,7 +24,6 @@ import useTranslationContext from 'lib/i18n';
 import type {SerializedBadgeInfo} from 'lib/types/badge';
 import type {SerializedDomainRank} from 'lib/types/domain';
 import {DomainProfileKeys} from 'lib/types/domain';
-import {getUAuth} from 'lib/uauth';
 import type {GetServerSideProps} from 'next';
 import {NextSeo} from 'next-seo';
 import {useSnackbar} from 'notistack';
@@ -90,8 +91,10 @@ const BadgePage = ({
 }: BadgePageProps) => {
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
+  const theme = useTheme();
   const isMounted = useIsMounted();
   const {enqueueSnackbar} = useSnackbar();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // general state management
   const [authAddress, setAuthAddress] = useState('');
@@ -128,41 +131,15 @@ const BadgePage = ({
     enqueueSnackbar(t('common.copied'), {variant: 'success'});
   };
 
-  const handleLoginClicked = async (): Promise<void> => {
-    try {
-      if (authDomain) {
-        return;
-      }
-
-      // complete the login with UD flow
-      const uauth = await getUAuth({
-        clientId: config.LOGIN_WITH_UNSTOPPABLE.CLIENT_ID,
-        redirectUri: config.LOGIN_WITH_UNSTOPPABLE.REDIRECT_URI,
-      });
-      const authorization = await uauth.loginWithPopup();
-      if (!authorization.idToken.wallet_address) {
-        throw new Error('wallet address not provided in claims');
-      }
-
-      // determine the user's primary domain (if available)
-      const authOwnerAddress = authorization.idToken.wallet_address;
-      const authPrimaryDomain = await getReverseResolution(authOwnerAddress);
-
-      // store the domain to be displayed in the UX, defaulting to the
-      // user's primary domain if available and falling back to the one
-      // provided at login time if not available
-      localStorage.setItem(
-        DomainProfileKeys.AuthDomain,
-        authPrimaryDomain || authorization.idToken.sub,
-      );
-      setAuthDomain(authPrimaryDomain || authorization.idToken.sub);
-
-      // store the wallet address that was authenticated
-      localStorage.setItem(DomainProfileKeys.AuthAddress, authOwnerAddress);
-      setAuthAddress(authOwnerAddress);
-    } catch (loginError) {
-      console.error('login error', loginError);
+  const handleLoginComplete = (newAddress: string, newDomain: string) => {
+    // ensure values are set
+    if (!newAddress || !newDomain) {
+      return;
     }
+
+    // update state based on login result
+    setAuthAddress(newAddress);
+    setAuthDomain(newDomain);
   };
 
   useEffect(() => {
@@ -227,11 +204,11 @@ const BadgePage = ({
                 </>
               ) : (
                 <LoginButton
-                  method={LoginMethod.Uauth}
+                  method={isMobile ? LoginMethod.Wallet : LoginMethod.Uauth}
                   loading={false}
                   isWhiteBg
                   hidden={false}
-                  onClick={handleLoginClicked}
+                  onLoginComplete={handleLoginComplete}
                 />
               )}
             </div>

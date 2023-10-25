@@ -71,6 +71,7 @@ const Badges: React.FC<Props> = ({
   const [t] = useTranslationContext();
   const [showMore, setShowMore] = useState<boolean>(false);
   const [badgeModalOpen, setBadgeModalOpen] = useState<boolean>(false);
+  const keyBase = list.map(b => b.code).join('-');
 
   const handleShowMore = () => {
     setShowMore(true);
@@ -98,13 +99,13 @@ const Badges: React.FC<Props> = ({
 
   return (
     <>
-      <Grid container spacing={2}>
-        {badges.map(badge => (
+      <Grid container spacing={2} key={`badgeListContainer-${keyBase}`}>
+        {badges.map((badge, i) => (
           <Grid
             item
             xs={3}
             sm={2}
-            key={badge.configId}
+            key={`badge-${keyBase}-${badge.configId}-${i}`}
             className={classes.badgeContainer}
           >
             <Badge
@@ -120,15 +121,21 @@ const Badges: React.FC<Props> = ({
             />
           </Grid>
         ))}
-        {[...Array(placeholderCount)].map(badge => (
-          <Grid item xs={3} sm={2} className={classes.badgeContainer}>
+        {[...Array(placeholderCount)].map((badge, i) => (
+          <Grid
+            item
+            xs={3}
+            sm={2}
+            className={classes.badgeContainer}
+            key={`badgePlaceholder-${keyBase}-${i}`}
+          >
             <div onClick={handleOpenBadgeModal} className={classes.placeHolder}>
               <AddIcon className={classes.placeholderIcon} />
             </div>
           </Grid>
         ))}
         {!showMore && countActive > MAX_COUNT_FOR_FIRST_VIEW && (
-          <Grid item xs={12}>
+          <Grid item xs={12} key={`badgeShowMoreButton-${keyBase}`}>
             <Button
               variant="outlined"
               onClick={handleShowMore}

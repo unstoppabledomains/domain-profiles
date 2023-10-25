@@ -9,11 +9,11 @@ const sharedModules = readdirSync(sharedBasePath).filter(name => {
 
 const config: InitialOptionsTsJest = {
   preset: 'ts-jest',
-  testEnvironment: '<rootDir>/test/jest-environment-jsdom.ts',
-  resolver: '<rootDir>/test/resolver.js',
-  setupFiles: ['<rootDir>/test/setupTests.ts'],
+  testEnvironment: '<rootDir>/tests/jest-environment-jsdom.ts',
+  resolver: '<rootDir>/tests/resolver.js',
+  setupFiles: ['<rootDir>/tests/setupTests.ts', 'jest-canvas-mock'],
   setupFilesAfterEnv: [
-    '<rootDir>/test/setupTestsAfterEnv.ts',
+    '<rootDir>/tests/setupTestsAfterEnv.ts',
     'jest-extended/all',
   ],
   testMatch: ['<rootDir>/**/?(*.)+(spec|test).[jt]sx'],
@@ -28,11 +28,33 @@ const config: InitialOptionsTsJest = {
   },
   testPathIgnorePatterns: ['/node_modules/', '/build/'],
   moduleNameMapper: {
-    '@xmtp/xmtp-js': '<rootDir>/test/mocks/xmtp/mock.js',
+    ['@xmtp/(.*)']: '<rootDir>/tests/mocks/empty.js',
+    ['@pushprotocol/(.*)']: '<rootDir>/tests/mocks/empty.js',
+    'web3.storage': '<rootDir>/tests/mocks/empty.js',
+    ['wagmi']: '<rootDir>/tests/mocks/empty.js',
+    'react-medium-image-zoom': '<rootDir>/tests/mocks/empty.js',
+    ['swiper(.*)']: '<rootDir>/tests/mocks/empty.js',
     ...sharedModules.reduce(
       (acc, name) => ({
         ...acc,
-        [`@unstoppabledomains/${name}(.*)$`]: `<rootDir>/packages/${name}/$1`,
+        [`@unstoppabledomains/${name}(.*)$`]: `<rootDir>/packages/${name}/src/$1`,
+      }),
+      {},
+    ),
+    [`^locales.json$`]: `<rootDir>/server/locales.json`,
+    ...[
+      'actions',
+      'components',
+      'hooks',
+      'lib',
+      'providers',
+      'locales',
+      'styles',
+      'tests',
+    ].reduce(
+      (acc, name) => ({
+        ...acc,
+        [`^${name}/(.*)$`]: `<rootDir>/server/${name}/$1`,
       }),
       {},
     ),

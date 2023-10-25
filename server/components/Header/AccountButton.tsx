@@ -1,7 +1,7 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Button from '@mui/material/Button';
 import type {Theme} from '@mui/material/styles';
-import {getProfileData} from 'actions/domainProfile';
+import {getProfileData} from 'actions/domainProfileActions';
 import DropDownMenu from 'components/DropDownMenu';
 import getImageUrl from 'lib/domain/getImageUrl';
 import type {SerializedPublicDomainProfileData} from 'lib/types/domain';

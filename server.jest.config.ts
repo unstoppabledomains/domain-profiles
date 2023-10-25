@@ -3,7 +3,7 @@ import type {InitialOptionsTsJest} from 'ts-jest/dist/types';
 const config: InitialOptionsTsJest = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  setupFiles: ['<rootDir>/test/setupTests.ts'],
+  setupFiles: ['<rootDir>/tests/setupTests.ts'],
   setupFilesAfterEnv: ['jest-extended/all'],
   testMatch: ['<rootDir>/**/?(*.)+(spec|test).[jt]s'],
   transform: {

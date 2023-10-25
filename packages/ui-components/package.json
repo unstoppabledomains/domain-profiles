@@ -5,16 +5,14 @@
   "main": "build/src/index.js",
   "typings": "build/src/index.d.ts",
   "resolutions": {
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0"
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0"
   },
   "dependencies": {
     "@braintree/sanitize-url": "^6.0.4",
     "@emotion/react": "^11.11.1",
     "@emotion/server": "^11.4.0",
     "@emotion/styled": "^11.11.0",
-    "@mui/icons-material": "^5.14.13",
-    "@mui/material": "^5.14.13",
     "@pushprotocol/restapi": "^1.4.15",
     "@pushprotocol/socket": "^0.5.1",
     "@pushprotocol/uiweb": "^1.1.13",
@@ -27,9 +25,9 @@
     "@types/numeral": "^2.0.2",
     "@types/qs": "^6.9.8",
     "@types/ramda": "^0.29.6",
-    "@types/react": "^18.2.0",
+    "@types/react": "^18.0.0",
     "@types/react-cookies": "^0.1.1",
-    "@types/react-dom": "^18.2.0",
+    "@types/react-dom": "^18.0.0",
     "@types/react-lazy-load-image-component": "^1.6.0",
     "@types/react-redux": "^7.1.24",
     "@uauth/js": "^2.8.0",
@@ -59,9 +57,9 @@
     "prettier-plugin-organize-imports": "^3.2.3",
     "qs": "^6.11.2",
     "ramda": "^0.27.1",
-    "react": "^18.2.0",
+    "react": "^18.0.0",
     "react-cookies": "^0.1.1",
-    "react-dom": "^18.2.0",
+    "react-dom": "^18.0.0",
     "react-emoji-render": "^2.0.1",
     "react-hook-form": "^7.42.1",
     "react-infinite-scroll-component": "^6.1.0",
@@ -89,9 +87,9 @@
     "@jedmao/redux-mock-store": "^3.0.5",
     "@testing-library/react": "^12.1.2",
     "@testing-library/react-hooks": "^7.0.2",
-    "@types/react": "^18.2.0",
+    "@types/react": "^18.0.0",
     "eslint-plugin-i18n-json": "^3.1.0",
-    "react": "^18.2.0"
+    "react": "^18.0.0"
   },
   "engines": {
     "node": "16.x.x",

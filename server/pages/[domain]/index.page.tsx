@@ -20,7 +20,7 @@ import ListItem from '@mui/material/ListItem';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import {getDomainBadges, getReverseResolution} from 'actions/domainActions';
-import {getFollowers, getProfileData} from 'actions/domainProfile';
+import {getFollowers, getProfileData} from 'actions/domainProfileActions';
 import {useFeatureFlags} from 'actions/featureFlagActions';
 import {getIdentity} from 'actions/identityActions';
 import Badges from 'components/Badges';
@@ -863,13 +863,15 @@ const DomainProfile = ({
         </Grid>
 
         <Grid item xs={12} sm={12} md={8} className={classes.item}>
-          <TokenGallery
-            domain={domain}
-            enabled={!isExternalDomain && isFeatureFlagFetched}
-            isOwner={isOwner}
-            ownerAddress={ownerAddress}
-            profileServiceUrl={config.PROFILE.HOST_URL}
-          />
+          {profileData?.profile.tokenGalleryEnabled && (
+            <TokenGallery
+              domain={domain}
+              enabled={!isExternalDomain && isFeatureFlagFetched}
+              isOwner={isOwner}
+              ownerAddress={ownerAddress}
+              profileServiceUrl={config.PROFILE.HOST_URL}
+            />
+          )}
           {isForSale && !nftShowAll && openSeaLink && (
             <ForSaleOnOpenSea email={ownerEmail} link={openSeaLink} />
           )}
@@ -880,7 +882,7 @@ const DomainProfile = ({
                   b => b.type === badgeType,
                 );
                 return (
-                  <>
+                  <div key={badgeType}>
                     <div className={classes.sectionHeaderContainer}>
                       <Typography
                         className={cx(
@@ -925,7 +927,7 @@ const DomainProfile = ({
                       authWallet={authAddress}
                       authDomain={authDomain}
                     />
-                  </>
+                  </div>
                 );
               })}
               <Box sx={{marginTop: '25px'}} />

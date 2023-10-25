@@ -43,7 +43,7 @@ export default function getDefaultConfig(): Config {
     },
     UD_LOGO_URL:
       'https://storage.googleapis.com/unstoppable-client-assets/images/favicon/favicon-v3.ico',
-    UD_ME_BASE_URL: 'https://ud.me',
+    UD_ME_BASE_URL: 'https://staging.ud.me',
     UNSTOPPABLE_WEBSITE_URL: 'https://www.ud-staging.com',
     UNSTOPPABLE_API_URL: 'https://api.ud-staging.com',
     ASSETS_BUCKET_URL:

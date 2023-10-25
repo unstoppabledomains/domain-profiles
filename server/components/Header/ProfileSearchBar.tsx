@@ -7,7 +7,7 @@ import InputBase from '@mui/material/InputBase';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {searchProfiles} from 'actions/domainProfile';
+import {searchProfiles} from 'actions/domainProfileActions';
 import {DomainPreview} from 'components/Domain/DomainPreview';
 import useTranslationContext from 'lib/i18n';
 import type {Web3Dependencies} from 'lib/types/web3';

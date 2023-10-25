@@ -13,8 +13,8 @@
     "format": "prettier -w .",
     "husky": "[ -z \"${CI:-}\" ] && husky install",
     "lint": "eslint --fix .",
-    "test": "DOTENV_CONFIG_PATH=./.env.test jest --maxWorkers 1",
-    "test:ci": "yarn test --coverage --ci --no-colors --runInBand --forceExit --cacheDirectory .jest-cache",
+    "test": "DOTENV_CONFIG_PATH=./.env.test jest --runInBand",
+    "test:ci": "yarn test --coverage --ci --no-colors --forceExit --cacheDirectory .jest-cache",
     "typecheck": "yarn workspace server run typecheck"
   },
   "devDependencies": {

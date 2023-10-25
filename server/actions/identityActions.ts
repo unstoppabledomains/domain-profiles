@@ -18,7 +18,7 @@ export const getIdentity = async (
   options: GetIdentityOptions | UseIdentityQueryOptions,
 ): Promise<PersonaIdentity | Record<string, PersonaIdentity>> => {
   return await fetchApi<PersonaIdentity | Record<string, PersonaIdentity>>(
-    `/api/persona/identity/findBy?${qs.stringify(options)}`,
+    `/persona/identity/findBy?${qs.stringify(options)}`,
     {host: config.IDENTITY.HOST_URL},
   );
 };

@@ -3,6 +3,9 @@
     "clearAll": "Clear all",
     "featured": "Featured"
   },
+  "config": {
+    "renderedAt": "Rendered at {{renderTime}}"
+  },
   "auth": {
     "accessWallet": "Access Wallet",
     "accessWalletDescription": "Access your Ethereum browser wallet.",

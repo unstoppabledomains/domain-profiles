@@ -17,7 +17,7 @@ export const loginWithAddress = async (
 
     if (address) {
       // wait for wallet connection
-      loginResult.address = address;
+      loginResult.address = address.toLowerCase();
       loginResult.domain =
         (await getReverseResolution(loginResult.address)) || 'Wallet';
     } else {
@@ -32,7 +32,7 @@ export const loginWithAddress = async (
       }
 
       // determine the user's primary domain (if available)
-      loginResult.address = authorization.idToken.wallet_address;
+      loginResult.address = authorization.idToken.wallet_address.toLowerCase();
       loginResult.domain =
         (await getReverseResolution(loginResult.address)) ||
         authorization.idToken.sub;
@@ -46,8 +46,14 @@ export const loginWithAddress = async (
     // store the domain to be displayed in the UX, defaulting to the
     // user's primary domain if available and falling back to the one
     // provided at login time if not available
-    localStorage.setItem(DomainProfileKeys.AuthDomain, loginResult.domain);
-    localStorage.setItem(DomainProfileKeys.AuthAddress, loginResult.address);
+    localStorage.setItem(
+      DomainProfileKeys.AuthDomain,
+      loginResult.domain.toLowerCase(),
+    );
+    localStorage.setItem(
+      DomainProfileKeys.AuthAddress,
+      loginResult.address.toLowerCase(),
+    );
 
     // return the login result
     return loginResult;

@@ -2,8 +2,7 @@ import AccountBalanceWalletOutlined from '@mui/icons-material/AccountBalanceWall
 import type {ButtonProps} from '@mui/material/Button';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
-import type {TextFieldProps} from '@mui/material/TextField';
-import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {AccessWalletModal} from 'components/Wallet/AccessWallet';
 import useWeb3Context from 'hooks/useWeb3Context';
@@ -20,7 +19,7 @@ import UnstoppableAnimated from '../Image/UnstoppableAnimated';
 const useStyles = makeStyles()((theme: Theme) => ({
   button: {
     padding: theme.spacing(1.25, 2),
-    maxHeight: 48,
+    maxHeight: 40,
     marginBottom: theme.spacing(2),
   },
   buttonBig: {
@@ -32,6 +31,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     verticalAlign: 'middle',
     display: 'inline-flex',
   },
+  buttonText: {
+    fontWeight: 'bold',
+    whiteSpace: 'nowrap',
+  },
   uauth: {
     background: theme.palette.primary.main,
   },
@@ -42,15 +45,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
       background: theme.palette.common.white,
       color: theme.palette.common.black,
     },
-  },
-  twitterIcon: {
-    fill: '#000',
-  },
-  formField: {
-    marginBottom: theme.spacing(2),
-  },
-  cancel: {
-    marginRight: theme.spacing(1),
   },
 }));
 
@@ -183,7 +177,9 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
         data-testid={`${method}-auth-button`}
         data-cy={`${method}-auth-button`}
       >
-        {isWallet ? t('common.connect') : t(`auth.loginWithUnstoppable`)}
+        <Typography variant="body1" className={classes.buttonText}>
+          {isWallet ? t('common.connect') : t(`auth.loginWithUnstoppable`)}
+        </Typography>
       </Button>
       <AccessWalletModal
         prompt={true}
@@ -193,52 +189,5 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
         onClose={() => setAccessWalletOpen(false)}
       />
     </>
-  );
-};
-
-export const SubmitButton: React.FC<ButtonProps> = ({children, ...props}) => {
-  const {classes, cx} = useStyles();
-
-  return (
-    <Button
-      {...props}
-      className={cx(classes.button, props.className)}
-      variant="contained"
-      color="primary"
-      type="submit"
-      size="large"
-    >
-      {children}
-    </Button>
-  );
-};
-
-export const FormField: React.FC<TextFieldProps> = props => {
-  const {classes} = useStyles();
-
-  return (
-    <TextField
-      {...props}
-      inputProps={{maxLength: 256}}
-      className={classes.formField}
-      size="small"
-      fullWidth
-      required
-    />
-  );
-};
-
-export const Cancel: React.FC<ButtonProps> = props => {
-  const {classes, cx} = useStyles();
-  const [t] = useTranslationContext();
-
-  return (
-    <Button
-      {...props}
-      size="large"
-      className={cx(classes.button, classes.cancel, props.className)}
-    >
-      {t('common.cancel')}
-    </Button>
   );
 };

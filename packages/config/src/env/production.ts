@@ -3,6 +3,7 @@ import type {ConfigOverride} from './types';
 export default function getProductionConfig(): ConfigOverride {
   return {
     APP_ENV: 'production',
+    UD_ME_BASE_URL: 'https://domain-profiles-wnjctwcyaa-uc.a.run.app',
     UNSTOPPABLE_API_URL: 'https://api.unstoppabledomains.com',
     UNSTOPPABLE_WEBSITE_URL: 'https://unstoppabledomains.com',
     UNSTOPPABLE_METADATA_ENDPOINT:

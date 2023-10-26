@@ -10,7 +10,6 @@ import useWeb3Context from 'hooks/useWeb3Context';
 import useTranslationContext from 'lib/i18n';
 import type {Web3Dependencies} from 'lib/types/web3';
 import {loginWithAddress} from 'lib/wallet/login';
-import type {ClassNameMap} from 'notistack';
 import React, {useEffect, useState} from 'react';
 
 import {LogoTheme} from '@unstoppabledomains/ui-kit/components';
@@ -57,7 +56,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 const getLoginMethodIcon = (
   method: LoginMethod,
-  classes: ClassNameMap,
   isWhiteBg?: boolean,
   hovering?: boolean,
 ) => {
@@ -158,6 +156,7 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
       setWeb3Deps(web3Dependencies);
       const loginResult = await loginWithAddress(web3Dependencies.address);
       props.onLoginComplete(loginResult.address, loginResult.domain);
+      setAccessWalletOpen(false);
     }
   };
 
@@ -178,7 +177,7 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
         startIcon={
           isWallet && big
             ? undefined
-            : getLoginMethodIcon(method, classes, isWhiteBg, hovering)
+            : getLoginMethodIcon(method, isWhiteBg, hovering)
         }
         disableElevation
         data-testid={`${method}-auth-button`}
@@ -190,6 +189,7 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
         prompt={true}
         onComplete={deps => handleAccessWalletComplete(deps)}
         open={accessWalletOpen}
+        message={t('auth.connectToLogin')}
         onClose={() => setAccessWalletOpen(false)}
       />
     </>

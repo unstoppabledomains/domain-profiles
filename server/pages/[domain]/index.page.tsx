@@ -111,7 +111,7 @@ const DomainProfile = ({
   const {enqueueSnackbar} = useSnackbar();
   const {chatUser, setOpenChat} = useUnstoppableMessaging();
   const {nfts, nftSymbolVisible, expanded: nftShowAll} = useTokenGallery();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const {setWeb3Deps} = useWeb3Context();
 
   // state management

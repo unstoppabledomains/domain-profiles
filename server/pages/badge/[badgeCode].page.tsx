@@ -94,7 +94,7 @@ const BadgePage = ({
   const theme = useTheme();
   const isMounted = useIsMounted();
   const {enqueueSnackbar} = useSnackbar();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // general state management
   const [authAddress, setAuthAddress] = useState('');

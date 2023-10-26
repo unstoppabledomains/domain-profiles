@@ -6,6 +6,7 @@
   "auth": {
     "accessWallet": "Access Wallet",
     "accessWalletDescription": "Access your Ethereum browser wallet.",
+    "connectToLogin": "Connect your wallet to login",
     "loginWithUnstoppable": "Unstoppable Login",
     "moreInfo": "For more information please see this",
     "walletAddress": "Wallet address",

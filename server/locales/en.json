@@ -211,6 +211,8 @@
     "unblock": "Unblock"
   },
   "nftCollection": {
+    "addOnchainAddress": "Your domain doesn't have any on-chain crypto addresses. Add some addresses to your domain to continue setting up the Token Gallery.",
+    "addAddress": "Add address",
     "addressWhereDomainIsStored": "Address where {{domain}} is stored:",
     "addToCollection": "{{value}} {{currency}}",
     "allClaimMethods": "All minting methods",

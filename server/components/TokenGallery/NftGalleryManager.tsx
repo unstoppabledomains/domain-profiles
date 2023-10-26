@@ -20,6 +20,7 @@ import type {Web3Dependencies} from 'lib/types/web3';
 import type {ReactElement} from 'react';
 import React, {useEffect, useState} from 'react';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {Nft} from './NftCard';
@@ -31,6 +32,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
     verticalAlign: 'center',
     textAlign: 'center',
     alignItems: 'center',
+  },
+  centeredContainer: {
+    marginTop: '0px',
+    display: 'flex',
+    verticalAlign: 'center',
+    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   symbolContainer: {
     display: 'flex',
@@ -155,6 +164,10 @@ export const NftGalleryManager: React.FC<NftGalleryManagerProps> = ({
     setSaveClicked(true);
   };
 
+  const handleAddAddress = () => {
+    window.location.href = `${config.UNSTOPPABLE_WEBSITE_URL}/manage?domain=${domain}&page=crypto`;
+  };
+
   return (
     <>
       {itemsToUpdate.length > 0 && (
@@ -205,7 +218,9 @@ export const NftGalleryManager: React.FC<NftGalleryManagerProps> = ({
         <DialogTitle>{t('nftCollection.manageTitle')}</DialogTitle>
         <DialogContent>
           <Typography sx={{marginBottom: '10px'}}>
-            {t('nftCollection.manageDescription')}
+            {records
+              ? t('nftCollection.manageDescription')
+              : t('nftCollection.addOnchainAddress')}
           </Typography>
           <Manager
             domain={domain}
@@ -241,15 +256,27 @@ export const NftGalleryManager: React.FC<NftGalleryManagerProps> = ({
           >
             {t('common.cancel')}
           </Button>
-          <Button
-            color={'primary'}
-            variant={'contained'}
-            onClick={handleSaveClicked}
-            data-testid={`nftGallery-modal-save`}
-            sx={{marginRight: '10px', marginBottom: '10px'}}
-          >
-            {t('common.save')}
-          </Button>
+          {records ? (
+            <Button
+              color={'primary'}
+              variant={'contained'}
+              onClick={handleSaveClicked}
+              data-testid={`nftGallery-modal-save`}
+              sx={{marginRight: '10px', marginBottom: '10px'}}
+            >
+              {t('common.save')}
+            </Button>
+          ) : (
+            <Button
+              color={'primary'}
+              variant={'contained'}
+              onClick={handleAddAddress}
+              data-testid={`nftGallery-modal-add-address`}
+              sx={{marginRight: '10px', marginBottom: '10px'}}
+            >
+              {t('nftCollection.addAddress')}
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     </>
@@ -263,13 +290,13 @@ export const Manager: React.FC<ManagerProps> = ({
   profileServiceUrl,
   itemsToUpdate,
   saveClicked,
+  setModalOpen,
   setSaveClicked,
   setRecords,
   setWeb3Deps,
   getNextNftPage,
 }) => {
   const {classes} = useStyles();
-
   const [symbolToggles, setSymbolToggles] = useState<ReactElement>();
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -330,6 +357,9 @@ export const Manager: React.FC<ManagerProps> = ({
       body: JSON.stringify(requestBody),
     });
 
+    // close the management dialogue
+    setModalOpen(false);
+
     // wait a moment before reloading
     await new Promise(resolve => setTimeout(resolve, 1000));
     await getNextNftPage(true);
@@ -366,13 +396,17 @@ export const Manager: React.FC<ManagerProps> = ({
   return (
     <Box>
       {records && (
-        <div className={classes.flexContainer}>
-          {!loading ? (
-            <div>{symbolToggles}</div>
-          ) : (
+        <div
+          className={
+            loading ? classes.centeredContainer : classes.flexContainer
+          }
+        >
+          {loading ? (
             <div className={classes.spinner}>
               <CircularProgress />
             </div>
+          ) : (
+            <div>{symbolToggles}</div>
           )}
           <ProfileManager
             domain={domain}

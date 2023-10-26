@@ -49,3 +49,8 @@ export const WalletOptions: Record<WalletName, walletProps> = {
     connectorType: 'walletConnect',
   },
 };
+
+export interface LoginResult {
+  address: string;
+  domain: string;
+}

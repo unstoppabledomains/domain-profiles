@@ -13,7 +13,7 @@ import type {Web3Dependencies} from 'lib/types/web3';
 import {WalletClientSigner} from 'lib/wallet/signer';
 import React, {useEffect, useState} from 'react';
 import type {Connector} from 'wagmi';
-import {useAccount, useConnect, useDisconnect, useWalletClient} from 'wagmi';
+import {useConnect, useDisconnect, useWalletClient} from 'wagmi';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -38,45 +38,52 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
-  const [isReady, setIsReady] = useState(false);
   const [selectedWallet, setSelectedWallet] = useState<WalletName>();
 
   // wagmi hooks
   const {disconnect} = useDisconnect();
   const {data: connectedSigner} = useWalletClient();
-  const {address: connectedAddress, isConnected} = useAccount();
-  const {connect, connectors, error: wagmiError, isLoading} = useConnect();
+  const {
+    connectAsync,
+    connectors,
+    error: connectError,
+    isLoading,
+  } = useConnect();
 
   useEffect(() => {
-    if (isLoading || isReady) {
-      return;
-    }
-    if (isConnected) {
+    try {
       disconnect();
-      return;
-    }
-    setIsReady(true);
-  }, [isLoading, isConnected]);
+    } catch (e) {}
+  }, []);
 
   useEffect(() => {
-    if (!isConnected || !isReady || !connectedAddress || !connectedSigner) {
+    if (!connectedSigner) {
       return;
     }
-    void handleConnected(connectedAddress, connectedSigner);
-  }, [connectedAddress, connectedSigner, isConnected, isReady]);
+    void handleConnected(connectedSigner.account.address, connectedSigner);
+  }, [connectedSigner]);
 
   useEffect(() => {
-    if (!wagmiError) {
+    if (!connectError) {
       return;
     }
     if (onError) {
-      onError(wagmiError.message);
+      onError(connectError.message);
     }
-  }, [wagmiError]);
+  }, [connectError]);
 
-  const handleClick = (walletName: WalletName, connector: Connector) => {
+  const handleClick = async (walletName: WalletName, connector: Connector) => {
     setSelectedWallet(walletName);
-    connect({connector});
+    for (let i = 0; i < 10; i++) {
+      try {
+        const connectedAddress = await connectAsync({connector});
+        if (!connectedAddress || connectedSigner) {
+          break;
+        }
+      } catch (e) {
+        break;
+      }
+    }
   };
 
   const handleConnected = async (
@@ -118,7 +125,7 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
       </Box>
       <>
         <Grid container className={classes.listContainer}>
-          {Object.keys(WalletOptions).map(k => {
+          {Object.keys(WalletOptions).map((k, i) => {
             const connector = getConnector(
               WalletOptions[k as WalletName].connectorType,
             );
@@ -126,9 +133,13 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
               return null;
             }
             return (
-              <Grid item xs={4} key={connector.id}>
+              <Grid
+                item
+                xs={4}
+                key={`walletButton-container-${connector.id}-${i}`}
+              >
                 <WalletButton
-                  key={connector.id}
+                  key={`walletButton-${connector.id}-${i}`}
                   name={k as WalletName}
                   disabled={!connector.ready}
                   loading={isLoading && selectedWallet === (k as WalletName)}

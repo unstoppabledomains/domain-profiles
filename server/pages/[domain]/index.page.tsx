@@ -19,7 +19,9 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import {getDomainBadges, getReverseResolution} from 'actions/domainActions';
+import {useTheme} from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import {getDomainBadges} from 'actions/domainActions';
 import {getFollowers, getProfileData} from 'actions/domainProfileActions';
 import {useFeatureFlags} from 'actions/featureFlagActions';
 import {getIdentity} from 'actions/identityActions';
@@ -67,7 +69,6 @@ import type {
 } from 'lib/types/domain';
 import {DomainProfileKeys, UD_BLUE_BADGE_CODE} from 'lib/types/domain';
 import type {PersonaIdentity} from 'lib/types/persona';
-import {getUAuth} from 'lib/uauth';
 import type {GetServerSideProps} from 'next';
 import {NextSeo} from 'next-seo';
 import {useSnackbar} from 'notistack';
@@ -103,15 +104,18 @@ const DomainProfile = ({
 }: DomainProfilePageProps) => {
   // hooks
   const [t] = useTranslationContext();
+  const theme = useTheme();
   const {classes, cx} = useStyles();
   const isMounted = useIsMounted();
   const [imagePath, setImagePath] = useState<string>();
   const {enqueueSnackbar} = useSnackbar();
   const {chatUser, setOpenChat} = useUnstoppableMessaging();
   const {nfts, nftSymbolVisible, expanded: nftShowAll} = useTokenGallery();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const {setWeb3Deps} = useWeb3Context();
 
   // state management
+  const [loginClicked, setLoginClicked] = useState<boolean>();
   const [authAddress, setAuthAddress] = useState('');
   const [authDomain, setAuthDomain] = useState('');
   const [displayQrCode, setDisplayQrCode] = useState(false);
@@ -258,44 +262,16 @@ const DomainProfile = ({
     );
   };
 
-  const handleLoginClicked = async (): Promise<void> => {
-    try {
-      if (authDomain) {
-        return;
-      }
-
-      // complete the login with UD flow
-      const uauth = await getUAuth({
-        clientId: config.LOGIN_WITH_UNSTOPPABLE.CLIENT_ID,
-        redirectUri: config.LOGIN_WITH_UNSTOPPABLE.REDIRECT_URI,
-      });
-      const authorization = await uauth.loginWithPopup();
-      if (!authorization.idToken.wallet_address) {
-        throw new Error('wallet address not provided in claims');
-      }
-
-      // determine the user's primary domain (if available)
-      const authOwnerAddress = authorization.idToken.wallet_address;
-      const authPrimaryDomain = await getReverseResolution(authOwnerAddress);
-
-      // store the domain to be displayed in the UX, defaulting to the
-      // user's primary domain if available and falling back to the one
-      // provided at login time if not available
-      localStorage.setItem(
-        DomainProfileKeys.AuthDomain,
-        authPrimaryDomain || authorization.idToken.sub,
-      );
-      setAuthDomain(authPrimaryDomain || authorization.idToken.sub);
-
-      // store the wallet address that was authenticated
-      localStorage.setItem(DomainProfileKeys.AuthAddress, authOwnerAddress);
-      setAuthAddress(authOwnerAddress);
-
-      // set ownership flag
-      setIsOwner(ownerAddress.toLowerCase() === authOwnerAddress.toLowerCase());
-    } catch (loginError) {
-      console.error('login error', loginError);
+  const handleLoginComplete = (newAddress: string, newDomain: string) => {
+    // ensure values are set
+    if (!newAddress || !newDomain) {
+      return;
     }
+
+    // update state based on login result
+    setAuthAddress(newAddress);
+    setAuthDomain(newDomain);
+    setIsOwner(ownerAddress.toLowerCase() === newAddress.toLowerCase());
   };
 
   const hasBadges =
@@ -490,7 +466,7 @@ const DomainProfile = ({
             )}
             {domain !== authDomain && (
               <FollowButton
-                handleLogin={handleLoginClicked}
+                handleLogin={() => setLoginClicked(true)}
                 setWeb3Deps={setWeb3Deps}
                 authDomain={authDomain}
                 domain={domain}
@@ -527,11 +503,12 @@ const DomainProfile = ({
                 </>
               ) : (
                 <LoginButton
-                  method={LoginMethod.Uauth}
+                  method={isMobile ? LoginMethod.Wallet : LoginMethod.Uauth}
                   loading={false}
                   isWhiteBg
                   hidden={false}
-                  onClick={handleLoginClicked}
+                  clicked={loginClicked}
+                  onLoginComplete={handleLoginComplete}
                 />
               )}
             </div>

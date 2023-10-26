@@ -136,7 +136,7 @@ const AccessWallet = (props: Props) => {
               {props.message}
             </Typography>
           )}
-          {props.prompt && (
+          {props.prompt && props.address && (
             <Typography
               align="center"
               className={settingsClasses.prompt}
@@ -168,7 +168,7 @@ type ModalProps = Props & {
 export const AccessWalletModal = (props: ModalProps) => {
   const {classes, theme} = useStyles();
   const [t] = useTranslationContext();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const ConnectWalletWrapper = isMobile ? Popover : Dialog;
 
   return (

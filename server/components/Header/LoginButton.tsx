@@ -1,18 +1,18 @@
 import AccountBalanceWalletOutlined from '@mui/icons-material/AccountBalanceWalletOutlined';
-import MailOutlinedIcon from '@mui/icons-material/MailOutlined';
 import type {ButtonProps} from '@mui/material/Button';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
 import type {TextFieldProps} from '@mui/material/TextField';
 import TextField from '@mui/material/TextField';
 import type {Theme} from '@mui/material/styles';
+import {AccessWalletModal} from 'components/Wallet/AccessWallet';
+import useWeb3Context from 'hooks/useWeb3Context';
 import useTranslationContext from 'lib/i18n';
-import type {ClassNameMap} from 'notistack';
-import React, {useState} from 'react';
+import type {Web3Dependencies} from 'lib/types/web3';
+import {loginWithAddress} from 'lib/wallet/login';
+import React, {useEffect, useState} from 'react';
 
 import {LogoTheme} from '@unstoppabledomains/ui-kit/components';
-import GoogleIcon from '@unstoppabledomains/ui-kit/icons/GoogleColored';
-import TwitterXIcon from '@unstoppabledomains/ui-kit/icons/TwitterX';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import UnstoppableAnimated from '../Image/UnstoppableAnimated';
@@ -56,13 +56,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 const getLoginMethodIcon = (
   method: LoginMethod,
-  classes: ClassNameMap,
   isWhiteBg?: boolean,
   hovering?: boolean,
 ) => {
   switch (method) {
-    case LoginMethod.Google:
-      return <GoogleIcon />;
     case LoginMethod.Wallet:
       return <AccountBalanceWalletOutlined />;
     case LoginMethod.Uauth:
@@ -72,10 +69,7 @@ const getLoginMethodIcon = (
           hovering={hovering ?? false}
         />
       );
-    case LoginMethod.Twitter:
-      return <TwitterXIcon className={classes.twitterIcon} fr={undefined} />;
-    case LoginMethod.Email:
-      return <MailOutlinedIcon />;
+
     default:
       return undefined;
   }
@@ -102,10 +96,7 @@ const ButtonSkeleton: React.FC<ButtonSkeletonProps> = ({big}) => {
 };
 
 export enum LoginMethod {
-  Email = 'email',
-  Google = 'google',
   Wallet = 'wallet',
-  Twitter = 'twitter',
   Uauth = 'uauth',
 }
 
@@ -115,6 +106,8 @@ type LoginButtonProps = ButtonProps & {
   loading?: boolean;
   hidden?: boolean;
   big?: boolean;
+  clicked?: boolean;
+  onLoginComplete: (address: string, domain: string) => void;
 };
 
 export const LoginButton: React.FC<LoginButtonProps> = ({
@@ -127,12 +120,17 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
 }) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
+  const {setWeb3Deps} = useWeb3Context();
   const [hovering, setHovering] = useState(false);
-  const isEmail = method === LoginMethod.Email;
+  const [accessWalletOpen, setAccessWalletOpen] = useState(false);
   const isUauth = method === LoginMethod.Uauth;
-  const isGoogle = method === LoginMethod.Google;
-  const isTwitter = method === LoginMethod.Twitter;
   const isWallet = method === LoginMethod.Wallet;
+
+  useEffect(() => {
+    if (props.clicked) {
+      void handleClick();
+    }
+  }, [props.clicked]);
 
   if (loading) {
     return <ButtonSkeleton big={big} />;
@@ -142,35 +140,59 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
     return null;
   }
 
+  const handleClick = async () => {
+    if (isWallet) {
+      setAccessWalletOpen(true);
+      return;
+    }
+    const loginResult = await loginWithAddress();
+    props.onLoginComplete(loginResult.address, loginResult.domain);
+  };
+
+  const handleAccessWalletComplete = async (
+    web3Dependencies?: Web3Dependencies,
+  ) => {
+    if (web3Dependencies) {
+      setWeb3Deps(web3Dependencies);
+      const loginResult = await loginWithAddress(web3Dependencies.address);
+      props.onLoginComplete(loginResult.address, loginResult.domain);
+      setAccessWalletOpen(false);
+    }
+  };
+
   return (
-    <Button
-      {...props}
-      variant={
-        ((isEmail && !isWhiteBg) || isUauth) && !big ? 'contained' : 'outlined'
-      }
-      color="primary"
-      fullWidth
-      size="large"
-      className={cx(classes.button, {
-        [classes.uauth]: isUauth && !isWhiteBg,
-        [classes.uauthWhite]: isUauth && isWhiteBg,
-        [classes.buttonBig]: big,
-      })}
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
-      startIcon={
-        isGoogle || isTwitter || (isEmail && big) || (isWallet && big)
-          ? undefined
-          : getLoginMethodIcon(method, classes, isWhiteBg, hovering)
-      }
-      disableElevation
-      data-testid={`${method}-auth-button`}
-      data-cy={`${method}-auth-button`}
-    >
-      {isGoogle || isTwitter || (isEmail && big) || (isWallet && big)
-        ? getLoginMethodIcon(method, classes, isWhiteBg)
-        : t(`auth.loginWithUnstoppable`)}
-    </Button>
+    <>
+      <Button
+        {...props}
+        variant="contained"
+        color="primary"
+        fullWidth
+        size="large"
+        className={cx(classes.button, {
+          [classes.uauthWhite]: isUauth || isWhiteBg,
+        })}
+        onClick={handleClick}
+        onMouseEnter={() => setHovering(true)}
+        onMouseLeave={() => setHovering(false)}
+        startIcon={
+          isWallet && big
+            ? undefined
+            : getLoginMethodIcon(method, isWhiteBg, hovering)
+        }
+        disableElevation
+        data-testid={`${method}-auth-button`}
+        data-cy={`${method}-auth-button`}
+      >
+        {isWallet ? t('common.connect') : t(`auth.loginWithUnstoppable`)}
+      </Button>
+      <AccessWalletModal
+        prompt={true}
+        onComplete={deps => handleAccessWalletComplete(deps)}
+        open={accessWalletOpen}
+        message={t('auth.connectToLogin')}
+        onClose={() => setAccessWalletOpen(false)}
+      />
+    </>
   );
 };
 

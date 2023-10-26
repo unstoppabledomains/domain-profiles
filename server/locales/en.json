@@ -3,12 +3,10 @@
     "clearAll": "Clear all",
     "featured": "Featured"
   },
-  "config": {
-    "renderedAt": "Rendered at {{renderTime}}"
-  },
   "auth": {
     "accessWallet": "Access Wallet",
     "accessWalletDescription": "Access your Ethereum browser wallet.",
+    "connectToLogin": "Connect your wallet to login",
     "loginWithUnstoppable": "Unstoppable Login",
     "moreInfo": "For more information please see this",
     "walletAddress": "Wallet address",
@@ -106,6 +104,7 @@
     "close": "Close",
     "comingSoon": "Coming soon",
     "confirm": "Confirm",
+    "connect": "Connect",
     "continue": "Continue",
     "copied": "Copied",
     "copy": "Copy",
@@ -190,6 +189,9 @@
     "year": "year",
     "yes": "Yes",
     "you": "You"
+  },
+  "config": {
+    "renderedAt": "Rendered at {{renderTime}}"
   },
   "domainSuggestion": {
     "hide": "Hide",

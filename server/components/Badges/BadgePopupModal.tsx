@@ -141,7 +141,9 @@ const BadgePopupModal = ({
           {t('badges.alsoSponsoredBy')}
         </Typography>
         {otherSponsors?.map(s => (
-          <Typography variant="body1">- {s}</Typography>
+          <Typography variant="body1" key={`sponsor-${badgeCode}-${s}`}>
+            - {s}
+          </Typography>
         ))}
       </div>
     );
@@ -303,6 +305,7 @@ const BadgePopupModal = ({
                   <Typography className={classes.modalUsageText}>
                     {holdersFeatured?.map(holdersDomain => (
                       <DomainPreview
+                        key={`holder-${badgeCode}-${holdersDomain}`}
                         domain={holdersDomain}
                         size={20}
                         setWeb3Deps={setWeb3Deps}

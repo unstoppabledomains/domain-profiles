@@ -8,20 +8,23 @@ This repository contains the following:
 
 1. The UD.me profile server, found in the `server` directory
 1. Reusable React components, found in the `packages/ui-components` directory
-1. Unstoppable Domains configuration variables, found in the `packages/config` directory
+1. Unstoppable Domains configuration variables, found in the `packages/config`
+   directory
 
 ## Public Endpoints
 
-The UD.me profile service is hosted on both `testnet` (staging) and `mainnet` (production)
-environments. Example Unstoppable Domains profiles for each environment are provided below.
+The UD.me profile service is hosted on both `testnet` (staging) and `mainnet`
+(production) environments. Example Unstoppable Domains profiles for each
+environment are provided below.
 
 - Staging: https://staging.ud.me/aaron.x
 - Production: https://ud.me/quirk.x
 
 ## Usage
 
-The React components contained in the `domain-profiles` project can be used in your own
-project, and imported directly from NPM. Some of the components available are:
+The React components contained in the `domain-profiles` project can be used in
+your own project, and imported directly from NPM. Some of the components
+available are:
 
 - Unstoppable Messaging
 - Token Gallery
@@ -29,8 +32,8 @@ project, and imported directly from NPM. Some of the components available are:
 
 ### Installation
 
-To use the Unstoppable Domains React components in your own project, install
-the package in your project directory:
+To use the Unstoppable Domains React components in your own project, install the
+package in your project directory:
 
 ```shell
 // with npm
@@ -40,8 +43,8 @@ npm install --save @unstoppabledomains/ui-components
 yarn add @unstoppabledomains/ui-components
 ```
 
-Note the `ui-components` package has peer dependencies on the React and the 
-React DOM. If you are not already using them in your project, you'll need to 
+Note the `ui-components` package has peer dependencies on the React and the
+React DOM. If you are not already using them in your project, you'll need to
 install them (version > 18):
 
 ```shell
@@ -64,7 +67,7 @@ cd domain-profiles
 
 # Build the project locally
 yarn install # install dependencies
-yarn build # build shared packages
+yarn build   # build shared packages
 
 # Run the development server
 yarn workspace server run dev

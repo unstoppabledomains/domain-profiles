@@ -1,28 +1,32 @@
 {
-  "include": ["packages/*/src/**/*"],
   "compilerOptions": {
-    "noEmit": true,
-    "skipLibCheck": true,
-
-    "jsx": "react",
-    "target": "ES5",
-    "module": "commonjs",
-    "moduleResolution": "node",
-
-    "resolveJsonModule": true,
+    "allowJs": false,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-
-    "strict": true,
+    "ignoreDeprecations": "5.0",
+    "importHelpers": true,
+    "jsx": "react",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noEmit": true,
+    "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "target": "ES5"
   },
+  "include": ["packages/*/src/**/*"],
   "references": [
-    {"path": "packages/config"},
-    {"path": "packages/ui-components"}
+    {
+      "path": "packages/config"
+    },
+    {
+      "path": "packages/ui-components"
+    }
   ]
 }

@@ -21,54 +21,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import {getDomainBadges} from 'actions/domainActions';
-import {getFollowers, getProfileData} from 'actions/domainProfileActions';
-import {useFeatureFlags} from 'actions/featureFlagActions';
-import {getIdentity} from 'actions/identityActions';
-import Badges from 'components/Badges';
-import Badge from 'components/Badges/Badge';
-import {UnstoppableMessaging} from 'components/Chat/UnstoppableMessaging';
-import useUnstoppableMessaging from 'components/Chat/hooks/useUnstoppableMessaging';
-import CopyToClipboard from 'components/CopyToClipboard';
-import CryptoAddresses from 'components/CryptoAddresses';
-import CustomBadges from 'components/CustomBadges';
-import {DomainListModal} from 'components/Domain/DomainListModal';
-import {DomainPreview} from 'components/Domain/DomainPreview';
-import FollowButton from 'components/Domain/FollowButton';
-import ProfilePicture from 'components/Domain/ProfilePicture';
-import ShareMenu from 'components/Domain/ShareMenu';
-import ShowHideButton from 'components/Domain/ShowHideButton';
-import SocialAccountCard from 'components/Domain/SocialAccountCard';
-import ForSaleOnOpenSea from 'components/ForSaleOnOpenSea';
-import {AccountButton} from 'components/Header/AccountButton';
-import {LoginButton, LoginMethod} from 'components/Header/LoginButton';
-import ProfileSearchBar from 'components/Header/ProfileSearchBar';
-import Logo from 'components/Image/Logo';
-import Link from 'components/Link';
-import NFTGalleryCarousel from 'components/TokenGallery/NFTGalleryCarousel';
-import TokenGallery from 'components/TokenGallery/TokenGallery';
 import {format, isPast} from 'date-fns';
-import {useEnsDomainStatus} from 'hooks/useEnsDomainStatus';
-import useTokenGallery from 'hooks/useTokenGallery';
-import useWeb3Context from 'hooks/useWeb3Context';
-import {
-  isExternalDomainValidForManagement,
-  splitDomain,
-} from 'lib/domain/format';
-import getImageUrl from 'lib/domain/getImageUrl';
-import {parseRecords} from 'lib/domain/records';
-import {formOpenSeaLink} from 'lib/formOpenseaLink';
-import useTranslationContext from 'lib/i18n';
-import {getSeoTags} from 'lib/seo';
-import type {DomainBadgesResponse} from 'lib/types/badge';
-import type {Blockchain} from 'lib/types/blockchain';
-import {Registry} from 'lib/types/blockchain';
-import type {
-  SerializedDomainProfileSocialAccountsUserInfo,
-  SerializedPublicDomainProfileData,
-} from 'lib/types/domain';
-import {DomainProfileKeys, UD_BLUE_BADGE_CODE} from 'lib/types/domain';
-import type {PersonaIdentity} from 'lib/types/persona';
 import type {GetServerSideProps} from 'next';
 import {NextSeo} from 'next-seo';
 import {useSnackbar} from 'notistack';
@@ -79,6 +32,56 @@ import {useStyles} from 'styles/pages/domain.styles';
 import {titleCase} from 'title-case';
 
 import config from '@unstoppabledomains/config';
+import type {
+  Blockchain,
+  DomainBadgesResponse,
+  PersonaIdentity,
+  SerializedDomainProfileSocialAccountsUserInfo,
+  SerializedPublicDomainProfileData,
+} from '@unstoppabledomains/ui-components';
+import {
+  AccountButton,
+  Badge,
+  Badges,
+  CopyToClipboard,
+  CryptoAddresses,
+  CustomBadges,
+  DomainListModal,
+  DomainPreview,
+  DomainProfileKeys,
+  FollowButton,
+  ForSaleOnOpenSea,
+  Link,
+  LoginButton,
+  LoginMethod,
+  Logo,
+  NFTGalleryCarousel,
+  ProfilePicture,
+  ProfileSearchBar,
+  Registry,
+  ShareMenu,
+  ShowHideButton,
+  SocialAccountCard,
+  TokenGallery,
+  UD_BLUE_BADGE_CODE,
+  UnstoppableMessaging,
+  formOpenSeaLink,
+  getDomainBadges,
+  getFollowers,
+  getIdentity,
+  getImageUrl,
+  getProfileData,
+  getSeoTags,
+  isExternalDomainValidForManagement,
+  parseRecords,
+  splitDomain,
+  useEnsDomainStatus,
+  useFeatureFlags,
+  useTokenGallery,
+  useTranslationContext,
+  useUnstoppableMessaging,
+  useWeb3Context,
+} from '@unstoppabledomains/ui-components';
 import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
 type DomainProfileServerSideProps = GetServerSideProps & {
@@ -332,7 +335,7 @@ const DomainProfile = ({
     }
     // retrieve badges
     const loadBadges = async () => {
-      const badgeData = await getDomainBadges(domain);
+      const badgeData: DomainBadgesResponse = await getDomainBadges(domain);
       setBadges(badgeData);
       setBadgeTypes([
         ...new Set(

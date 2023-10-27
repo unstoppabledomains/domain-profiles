@@ -19,7 +19,7 @@ module.exports = {
     project: ['./tsconfig.json'],
     sourceType: 'module',
   },
-  plugins: ['react', 'tss-unused-classes'],
+  plugins: ['react', 'tss-unused-classes', 'sort-exports'],
   extends: ['airbnb/hooks', 'plugin:@next/next/recommended'],
   rules: {
     'tss-unused-classes/unused-classes': 'off',
@@ -34,7 +34,7 @@ module.exports = {
     'jsx-a11y/no-noninteractive-tabindex': 'off',
     'jsx-a11y/no-static-element-interactions': 'off',
     'jsx-a11y/tabindex-no-positive': 'off',
-    'no-console': 'off',
+    'no-console': 2,
     'promise/prefer-await-to-then': 'off',
     'react/button-has-type': 'off',
     'react/destructuring-assignment': 'off',
@@ -62,7 +62,7 @@ module.exports = {
     'react/display-name': 'off',
     'react/prop-types': 'off',
     'import/no-duplicates': ['error'],
-
+    'sort-exports/sort-exports': ['error', {sortDir: 'asc'}],
     '@typescript-eslint/consistent-type-imports': [
       'error',
       {

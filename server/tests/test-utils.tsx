@@ -2,18 +2,14 @@ import type {Theme} from '@mui/material/styles';
 import {ThemeProvider} from '@mui/material/styles';
 import type {RenderResult} from '@testing-library/react';
 import {render} from '@testing-library/react';
-import * as featureFlagActions from 'actions/featureFlagActions';
-import UnstoppableMessagingProvider from 'components/Chat/provider/UnstoppableMessagingProvider';
-import {TranslationProvider} from 'lib/i18n';
 import * as nextRouter from 'next/router';
 import type {NextRouter} from 'next/router';
 import {SnackbarProvider} from 'notistack';
-import TokenGalleryProvider from 'providers/TokenGalleryProvider';
-import Web3ContextProvider from 'providers/Web3ContextProvider';
 import type {ReactElement} from 'react';
 import React from 'react';
 import {QueryClient, QueryClientProvider} from 'react-query';
 
+import * as uiComponents from '@unstoppabledomains/ui-components';
 import defaultTheme from '@unstoppabledomains/ui-kit/styles';
 
 // Instantiate query client for each render so that we do not leak state between tests
@@ -35,13 +31,15 @@ const createWrapper =
       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       <ThemeProvider theme={(theme || defaultTheme) as any}>
         <SnackbarProvider>
-          <Web3ContextProvider>
-            <TokenGalleryProvider>
-              <UnstoppableMessagingProvider>
-                <TranslationProvider>{children}</TranslationProvider>
-              </UnstoppableMessagingProvider>
-            </TokenGalleryProvider>
-          </Web3ContextProvider>
+          <uiComponents.Web3ContextProvider>
+            <uiComponents.TokenGalleryProvider>
+              <uiComponents.UnstoppableMessagingProvider>
+                <uiComponents.TranslationProvider>
+                  {children}
+                </uiComponents.TranslationProvider>
+              </uiComponents.UnstoppableMessagingProvider>
+            </uiComponents.TokenGalleryProvider>
+          </uiComponents.Web3ContextProvider>
         </SnackbarProvider>
       </ThemeProvider>
     </QueryClientProvider>
@@ -58,7 +56,7 @@ export const customRender = (
   // mock feature flag data if requested
   if (mockFlagsData) {
     (
-      jest.spyOn(featureFlagActions, 'useFeatureFlags') as jest.Mock
+      jest.spyOn(uiComponents, 'useFeatureFlags') as jest.Mock
     ).mockImplementation(() => ({
       data: mockFlagsData ?? {},
     }));

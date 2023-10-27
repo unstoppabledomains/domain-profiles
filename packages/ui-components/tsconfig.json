@@ -8,12 +8,11 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "jsx": "react",
-    "baseUrl": ".",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "ignoreDeprecations": "5.0",
-    "rootDirs": ["./", "../../packages"]
+    "rootDirs": ["./", "./src", "../../packages"]
   },
-  "include": ["./src/**/*"],
+  "include": ["./src/**/*", "./src/**/*.json"],
   "exclude": ["node_modules", "**/node_modules"]
 }

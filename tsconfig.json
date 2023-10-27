@@ -3,6 +3,7 @@
     "allowJs": false,
     "allowSyntheticDefaultImports": true,
     "allowUnreachableCode": true,
+    "baseUrl": "./server",
     "downlevelIteration": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -23,9 +24,8 @@
     "strict": true,
     "strictNullChecks": true,
     "suppressImplicitAnyIndexErrors": true,
-    "target": "ESNext",
-    "baseUrl": "./server"
-  }, 
+    "target": "ESNext"
+  },
   "exclude": ["node_modules", "**/node_modules", "test", "**/test"],
   "include": ["**/*.d.ts", "**/*.ts", "**/*.tsx"]
 }

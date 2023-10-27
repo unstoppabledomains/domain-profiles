@@ -4650,6 +4650,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-linkify@npm:^1.0.1":
+  version: 1.0.3
+  resolution: "@types/react-linkify@npm:1.0.3"
+  dependencies:
+    "@types/react": "*"
+  checksum: e34261df6fb905740dfb4b4e037abeaaf65944fe2beb866e7660b8876e73f1d7891d2a6cd9cfbba58041904f0957c2c5f3db71982a90e4f513ce31a7899059e3
+  languageName: node
+  linkType: hard
+
 "@types/react-redux@npm:^7.1.20, @types/react-redux@npm:^7.1.24":
   version: 7.1.27
   resolution: "@types/react-redux@npm:7.1.27"
@@ -5021,6 +5030,8 @@ __metadata:
     "@pushprotocol/socket": ^0.5.1
     "@pushprotocol/uiweb": ^1.1.13
     "@reduxjs/toolkit": ^1.6.2
+    "@swc/cli": ^0.1.57
+    "@swc/core": ^1.2.219
     "@testing-library/react": ^12.1.2
     "@testing-library/react-hooks": ^7.0.2
     "@types/bluebird": 3.5.34
@@ -5035,14 +5046,16 @@ __metadata:
     "@types/react-cookies": ^0.1.1
     "@types/react-dom": ^18.0.0
     "@types/react-lazy-load-image-component": ^1.6.0
+    "@types/react-linkify": ^1.0.1
     "@types/react-redux": ^7.1.24
     "@uauth/js": ^2.8.0
+    "@unstoppabledomains/config": "workspace:^"
     "@unstoppabledomains/resolution": ^8.5.0
     "@unstoppabledomains/ui-kit": ^0.3.15
     "@web3-react/core": ^8.2.2
     "@xmtp/content-type-remote-attachment": ^1.0.7
     "@xmtp/proto": ^3.27.0
-    "@xmtp/xmtp-js": ^11.1.1
+    "@xmtp/xmtp-js": ^10.0.0
     bluebird: ^3.7.2
     clipboard-copy: ^4.0.1
     date-fns: ^2.16.1
@@ -5056,6 +5069,7 @@ __metadata:
     lodash.merge: ^4.6.2
     next: ^12.3.4
     next-redux-wrapper: ^6.0.2
+    next-secure-headers: ^2.2.0
     next-seo: ^6.1.0
     next-transpile-modules: ^10.0.0
     notistack: ^2.0.5
@@ -5072,6 +5086,7 @@ __metadata:
     react-infinite-scroll-component: ^6.1.0
     react-is-mounted-hook: ^1.1.2
     react-lazy-load-image-component: ^1.6.0
+    react-linkify: ^1.0.0-alpha
     react-medium-image-zoom: ^5.1.6
     react-qrcode-logo: ^2.8.0
     react-query: ^3.39.3
@@ -5082,7 +5097,7 @@ __metadata:
     redux-thunk: ^2.3.0
     rooks: ^5.7.0
     styled-components: ^5.3.5
-    swiper: 6.8.4
+    swiper: ^8.0.0
     title-case: ^3.0.3
     truncate-eth-address: ^1.0.2
     tss-react: ^4.0.0
@@ -7953,15 +7968,6 @@ __metadata:
   version: 0.1.2
   resolution: "dom-walk@npm:0.1.2"
   checksum: 19eb0ce9c6de39d5e231530685248545d9cd2bd97b2cb3486e0bfc0f2a393a9addddfd5557463a932b52fdfcf68ad2a619020cd2c74a5fe46fbecaa8e80872f3
-  languageName: node
-  linkType: hard
-
-"dom7@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "dom7@npm:3.0.0"
-  dependencies:
-    ssr-window: ^3.0.0-alpha.1
-  checksum: 5a1b8979ed35afb9cc6714ff048ce4599a24fd8a11069bb52a61ccae1bdc0716c2bd6b07c4338856d5664d984c0bee9f6b7616a01ffa09daaebfe02fee016e66
   languageName: node
   linkType: hard
 
@@ -12344,6 +12350,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"linkify-it@npm:^2.0.3":
+  version: 2.2.0
+  resolution: "linkify-it@npm:2.2.0"
+  dependencies:
+    uc.micro: ^1.0.1
+  checksum: d198871d0b3f3cfdb745dae564bfd6743474f20cd0ef1057e6ca29451834749e7f3da52b59b4de44e98f31a1e5c71bdad160490d4ae54de251cbcde57e4d7837
+  languageName: node
+  linkType: hard
+
 "lint-staged@npm:^13.0.3":
   version: 13.3.0
   resolution: "lint-staged@npm:13.3.0"
@@ -15256,6 +15271,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-linkify@npm:^1.0.0-alpha":
+  version: 1.0.0-alpha
+  resolution: "react-linkify@npm:1.0.0-alpha"
+  dependencies:
+    linkify-it: ^2.0.3
+    tlds: ^1.199.0
+  checksum: abff36e1fdd9db822278292379e070d471d96ddda2d199565edd9ecff3d17faa31a3c83bd2be8fa4c0f9589dd97553ba77c553047b94cfd94e0f528b9e91fafa
+  languageName: node
+  linkType: hard
+
 "react-medium-image-zoom@npm:^5.1.6":
   version: 5.1.8
   resolution: "react-medium-image-zoom@npm:5.1.8"
@@ -16519,13 +16544,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ssr-window@npm:^3.0.0, ssr-window@npm:^3.0.0-alpha.1":
-  version: 3.0.0
-  resolution: "ssr-window@npm:3.0.0"
-  checksum: e619db7437874c89d2f4cea94ca8cbdfb4eed9f20d86fa193c29a17829c26d7ceefae344ac1699cc24ebb8d397fd0937a1043b5177a140c2504c9fda58bb5652
-  languageName: node
-  linkType: hard
-
 "ssr-window@npm:^4.0.0, ssr-window@npm:^4.0.2":
   version: 4.0.2
   resolution: "ssr-window@npm:4.0.2"
@@ -16980,16 +16998,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"swiper@npm:6.8.4":
-  version: 6.8.4
-  resolution: "swiper@npm:6.8.4"
-  dependencies:
-    dom7: ^3.0.0
-    ssr-window: ^3.0.0
-  checksum: 613239e71135b48378453a74abed9a33d56f147e704e3803f5ea960dbf9833a93e557ef0b75e7c2849328eb1b48fafab54f7ac5b88e8c3727283536c7740b13f
-  languageName: node
-  linkType: hard
-
 "swiper@npm:^8.0.0":
   version: 8.4.7
   resolution: "swiper@npm:8.4.7"
@@ -17215,6 +17223,15 @@ __metadata:
   version: 3.0.0
   resolution: "titleize@npm:3.0.0"
   checksum: 71fbbeabbfb36ccd840559f67f21e356e1d03da2915b32d2ae1a60ddcc13a124be2739f696d2feb884983441d159a18649e8d956648d591bdad35c430a6b6d28
+  languageName: node
+  linkType: hard
+
+"tlds@npm:^1.199.0":
+  version: 1.244.0
+  resolution: "tlds@npm:1.244.0"
+  bin:
+    tlds: bin.js
+  checksum: a7de63d1b1e6ea8b29ffca31d69ebe4bde0acc7999427dc3d4d52ff0b83637f7927ded9d479fa65854c19394a8a4c7151e3002e78556060ffbe3781a956394c7
   languageName: node
   linkType: hard
 
@@ -17679,6 +17696,13 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: d26b6ba97b6d163c55dbdffd9bbb4c211667ebebc743accfeb2c8c0154aace7afd097b51165a72a5bad2cf65a4612259344ff60f8e642362aa1695c760d303ac
+  languageName: node
+  linkType: hard
+
+"uc.micro@npm:^1.0.1":
+  version: 1.0.6
+  resolution: "uc.micro@npm:1.0.6"
+  checksum: 6898bb556319a38e9cf175e3628689347bd26fec15fc6b29fa38e0045af63075ff3fea4cf1fdba9db46c9f0cbf07f2348cd8844889dd31ebd288c29fe0d27e7a
   languageName: node
   linkType: hard
 

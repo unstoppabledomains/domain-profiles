@@ -1,9 +1,9 @@
 import type {Theme} from '@mui/material/styles';
+
 import {
   PROFILE_PICTURE_SIZE_DESKTOP,
   PROFILE_PICTURE_SIZE_MOBILE,
-} from 'components/Domain/ProfilePicture';
-
+} from '@unstoppabledomains/ui-components';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 const useStyles = makeStyles()((theme: Theme) => ({

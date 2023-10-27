@@ -16,7 +16,6 @@ module.exports = {
   plugins: ['@typescript-eslint', 'unused-imports', 'promise'],
   ignorePatterns: ['.eslintrc.js', 'tests/*', '*.js'],
   rules: {
-    // TODO: Rules to review with the team
     '@typescript-eslint/default-param-last': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off', // Obvious evil, lots of such methods in our code
     '@typescript-eslint/lines-between-class-members': 'off',

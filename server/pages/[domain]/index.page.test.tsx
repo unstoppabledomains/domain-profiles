@@ -1,13 +1,14 @@
 import {screen, waitFor} from '@testing-library/react';
-import * as badgeActions from 'actions/badgeActions';
-import * as domainActions from 'actions/domainActions';
-import * as domainProfileActions from 'actions/domainProfileActions';
-import * as featureFlagActions from 'actions/featureFlagActions';
-import * as identityActions from 'actions/identityActions';
-import type {DomainBadgesResponse} from 'lib/types/badge';
-import {PersonaInquiryStatus} from 'lib/types/persona';
 import React from 'react';
 import {customRender} from 'tests/test-utils';
+
+import type {DomainBadgesResponse} from '@unstoppabledomains/ui-components';
+import {PersonaInquiryStatus} from '@unstoppabledomains/ui-components';
+import * as badgeActions from '@unstoppabledomains/ui-components/src/actions/badgeActions';
+import * as domainActions from '@unstoppabledomains/ui-components/src/actions/domainActions';
+import * as domainProfileActions from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
+import * as featureFlagActions from '@unstoppabledomains/ui-components/src/actions/featureFlagActions';
+import * as identityActions from '@unstoppabledomains/ui-components/src/actions/identityActions';
 
 import type {DomainProfilePageProps} from './index.page';
 import DomainProfile from './index.page';

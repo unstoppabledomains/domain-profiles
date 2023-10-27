@@ -6,24 +6,6 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import {getBadge, getSponsorRankings} from 'actions/badgeActions';
-import {getDomainRankings} from 'actions/domainActions';
-import {useFeatureFlags} from 'actions/featureFlagActions';
-import BadgeRankings from 'components/Badges/BadgeRankings';
-import CollectionStats from 'components/Badges/CollectionStats';
-import UnlockSponsorsLeaderboard from 'components/Badges/UnlockSponsorsLeaderboard';
-import ProfilePicture from 'components/Domain/ProfilePicture';
-import ShareMenu from 'components/Domain/ShareMenu';
-import {AccountButton} from 'components/Header/AccountButton';
-import {LoginButton, LoginMethod} from 'components/Header/LoginButton';
-import Logo from 'components/Image/Logo';
-import Link from 'components/Link';
-import NftListing from 'components/TokenGallery/NftListing';
-import getImageUrl from 'lib/domain/getImageUrl';
-import useTranslationContext from 'lib/i18n';
-import type {SerializedBadgeInfo} from 'lib/types/badge';
-import type {SerializedDomainRank} from 'lib/types/domain';
-import {DomainProfileKeys} from 'lib/types/domain';
 import type {GetServerSideProps} from 'next';
 import {NextSeo} from 'next-seo';
 import {useSnackbar} from 'notistack';
@@ -32,6 +14,30 @@ import useIsMounted from 'react-is-mounted-hook';
 import useStyles from 'styles/pages/badge.styles';
 
 import config from '@unstoppabledomains/config';
+import type {
+  SerializedBadgeInfo,
+  SerializedDomainRank,
+} from '@unstoppabledomains/ui-components';
+import {
+  AccountButton,
+  BadgeRankings,
+  CollectionStats,
+  DomainProfileKeys,
+  Link,
+  LoginButton,
+  LoginMethod,
+  Logo,
+  NftListing,
+  ProfilePicture,
+  ShareMenu,
+  UnlockSponsorsLeaderboard,
+  getBadge,
+  getDomainRankings,
+  getImageUrl,
+  getSponsorRankings,
+  useFeatureFlags,
+  useTranslationContext,
+} from '@unstoppabledomains/ui-components';
 
 type BadgePageServerSideProps = GetServerSideProps & {
   params: {

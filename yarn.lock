@@ -5021,6 +5021,8 @@ __metadata:
     "@pushprotocol/socket": ^0.5.1
     "@pushprotocol/uiweb": ^1.1.13
     "@reduxjs/toolkit": ^1.6.2
+    "@swc/cli": ^0.1.57
+    "@swc/core": ^1.2.219
     "@testing-library/react": ^12.1.2
     "@testing-library/react-hooks": ^7.0.2
     "@types/bluebird": 3.5.34
@@ -5037,12 +5039,13 @@ __metadata:
     "@types/react-lazy-load-image-component": ^1.6.0
     "@types/react-redux": ^7.1.24
     "@uauth/js": ^2.8.0
+    "@unstoppabledomains/config": "workspace:^"
     "@unstoppabledomains/resolution": ^8.5.0
     "@unstoppabledomains/ui-kit": ^0.3.15
     "@web3-react/core": ^8.2.2
     "@xmtp/content-type-remote-attachment": ^1.0.7
     "@xmtp/proto": ^3.27.0
-    "@xmtp/xmtp-js": ^11.1.1
+    "@xmtp/xmtp-js": ^10.0.0
     bluebird: ^3.7.2
     clipboard-copy: ^4.0.1
     date-fns: ^2.16.1
@@ -5056,6 +5059,7 @@ __metadata:
     lodash.merge: ^4.6.2
     next: ^12.3.4
     next-redux-wrapper: ^6.0.2
+    next-secure-headers: ^2.2.0
     next-seo: ^6.1.0
     next-transpile-modules: ^10.0.0
     notistack: ^2.0.5
@@ -5082,7 +5086,7 @@ __metadata:
     redux-thunk: ^2.3.0
     rooks: ^5.7.0
     styled-components: ^5.3.5
-    swiper: 6.8.4
+    swiper: ^8.0.0
     title-case: ^3.0.3
     truncate-eth-address: ^1.0.2
     tss-react: ^4.0.0
@@ -7953,15 +7957,6 @@ __metadata:
   version: 0.1.2
   resolution: "dom-walk@npm:0.1.2"
   checksum: 19eb0ce9c6de39d5e231530685248545d9cd2bd97b2cb3486e0bfc0f2a393a9addddfd5557463a932b52fdfcf68ad2a619020cd2c74a5fe46fbecaa8e80872f3
-  languageName: node
-  linkType: hard
-
-"dom7@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "dom7@npm:3.0.0"
-  dependencies:
-    ssr-window: ^3.0.0-alpha.1
-  checksum: 5a1b8979ed35afb9cc6714ff048ce4599a24fd8a11069bb52a61ccae1bdc0716c2bd6b07c4338856d5664d984c0bee9f6b7616a01ffa09daaebfe02fee016e66
   languageName: node
   linkType: hard
 
@@ -16519,13 +16514,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ssr-window@npm:^3.0.0, ssr-window@npm:^3.0.0-alpha.1":
-  version: 3.0.0
-  resolution: "ssr-window@npm:3.0.0"
-  checksum: e619db7437874c89d2f4cea94ca8cbdfb4eed9f20d86fa193c29a17829c26d7ceefae344ac1699cc24ebb8d397fd0937a1043b5177a140c2504c9fda58bb5652
-  languageName: node
-  linkType: hard
-
 "ssr-window@npm:^4.0.0, ssr-window@npm:^4.0.2":
   version: 4.0.2
   resolution: "ssr-window@npm:4.0.2"
@@ -16977,16 +16965,6 @@ __metadata:
   version: 1.0.0
   resolution: "supports-preserve-symlinks-flag@npm:1.0.0"
   checksum: 53b1e247e68e05db7b3808b99b892bd36fb096e6fba213a06da7fab22045e97597db425c724f2bbd6c99a3c295e1e73f3e4de78592289f38431049e1277ca0ae
-  languageName: node
-  linkType: hard
-
-"swiper@npm:6.8.4":
-  version: 6.8.4
-  resolution: "swiper@npm:6.8.4"
-  dependencies:
-    dom7: ^3.0.0
-    ssr-window: ^3.0.0
-  checksum: 613239e71135b48378453a74abed9a33d56f147e704e3803f5ea960dbf9833a93e557ef0b75e7c2849328eb1b48fafab54f7ac5b88e8c3727283536c7740b13f
   languageName: node
   linkType: hard
 

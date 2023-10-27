@@ -11,7 +11,7 @@
     "noEmit": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "ignoreDeprecations": "5.0",
+    "ignoreDeprecations": "5.0"
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules", "**/node_modules"]

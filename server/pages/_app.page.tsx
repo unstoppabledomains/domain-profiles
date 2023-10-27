@@ -1,17 +1,21 @@
 import CssBaseline from '@mui/material/CssBaseline';
 import {ThemeProvider} from '@mui/material/styles';
-import UnstoppableMessagingProvider from 'components/Chat/provider/UnstoppableMessagingProvider';
-import {TranslationProvider} from 'lib/i18n';
 import type {NextPage} from 'next';
 import type {AppProps} from 'next/app';
 import Head from 'next/head';
 import {SnackbarProvider} from 'notistack';
-import TokenGalleryProvider from 'providers/TokenGalleryProvider';
-import Web3ContextProvider from 'providers/Web3ContextProvider';
 import React from 'react';
+import 'react-medium-image-zoom/dist/styles.css';
 import {QueryClient, QueryClientProvider} from 'react-query';
+import 'swiper/css/bundle';
 import {createEmotionSsrAdvancedApproach} from 'tss-react/nextJs';
 
+import {
+  TokenGalleryProvider,
+  TranslationProvider,
+  UnstoppableMessagingProvider,
+  Web3ContextProvider,
+} from '@unstoppabledomains/ui-components';
 import {darkTheme, lightTheme} from '@unstoppabledomains/ui-kit/styles';
 
 // setup query client

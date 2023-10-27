@@ -20,16 +20,6 @@ environment are provided below.
 - Staging: https://staging.ud.me/aaron.x
 - Production: https://ud.me/quirk.x
 
-## Usage
-
-The React components contained in the `domain-profiles` project can be used in
-your own project, and imported directly from NPM. Some of the components
-available are:
-
-- Unstoppable Messaging
-- Token Gallery
-- Wallet connect modal
-
 ### Installation
 
 To use the Unstoppable Domains React components in your own project, install the
@@ -55,7 +45,62 @@ npm install react react-dom
 yarn add react react-dom
 ```
 
-### Developing
+## Usage
+
+The React components contained in the `domain-profiles` project can be used in
+your own project, and imported directly from NPM. Some of the components
+available are:
+
+- Unstoppable Messaging
+- Token Gallery
+- Wallet connect modal
+
+As an example, the following demonstrates how to add Unstoppable Messaging to your
+existing Web3 React dApp.
+
+```typescript
+import Button from '@mui/material/Button';
+import {
+   UnstoppableMessaging,
+   UnstoppableMessagingProvider,
+   Web3ContextProvider,
+   useUnstoppableMessaging,
+} from '@unstoppabledomains/ui-components';
+
+// Hardcoded user information as an example. This information should come
+// from a connected wallet in a real world scenario.
+const myAddress = "0x123";
+const myDomain = "mydomain.x";
+
+const MyPage = () => {
+
+   // Hook provides utility methods, such as opening the Unstoppable
+   // Messaging window by clicking a button
+   const {setOpenChat} = useUnstoppableMessaging();
+
+   return (
+      <Web3ContextProvider>
+         <UnstoppableMessagingProvider>
+            <div>
+               <UnstoppableMessaging
+                  address={myAddress}
+                  domain={myDomain}
+               />
+            </div>
+            <Button
+               onClick={() => setOpenChat("friend.x")}
+            >
+               Open chat
+            </Button>
+         </UnstoppableMessagingProvider>
+      </Web3ContextProvider>
+   )
+}
+
+export default as MyPage;
+```
+
+## Contributing
 
 To contribute changes to the `domain-profiles` project, you'll need to clone the
 project and build it in your local environment.
@@ -78,8 +123,8 @@ yarn workspace server run dev
 To run the tests (`src/**/*.test.tsx` files):
 
 ```shell
-yarn test          # run all tests
-yarn test:coverage # run all tests and generate coverage report
+yarn test    # run all tests
+yarn test:ci # run all tests and generate coverage report
 ```
 
 ### Linting and code formatting

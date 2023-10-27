@@ -2,6 +2,16 @@
   "name": "@unstoppabledomains/config",
   "version": "0.0.1",
   "private": true,
+  "description": "Configuration variables for Unstoppable Domains environments",
+  "homepage": "https://github.com/unstoppabledomains/domain-profiles#readme",
+  "bugs": {
+    "url": "https://github.com/unstoppabledomains/domain-profiles/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unstoppabledomains/domain-profiles.git"
+  },
+  "license": "MIT",
   "main": "build/src/index.js",
   "typings": "build/src/index.d.ts",
   "dependencies": {
@@ -9,5 +19,9 @@
     "@types/lodash.merge": "^4.6.7",
     "lodash": "^4.17.21",
     "lodash.merge": "^4.6.2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

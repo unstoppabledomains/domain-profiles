@@ -9,10 +9,12 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "tsc --build packages.build.tsconfig.json",
+    "build": "rm -rf packages/**/build; tsc --build packages.build.tsconfig.json",
+    "copy-package-files": "./scripts/copyPackageFiles.sh",
+    "dist": "yarn build && yarn package-modules && yarn copy-package-files",
     "format": "prettier -w .",
-    "husky": "[ -z \"${CI:-}\" ] && husky install",
     "lint": "eslint --fix .",
+    "package-modules": "node ./scripts/createModulePackages.js",
     "test": "DOTENV_CONFIG_PATH=./.env.test jest --runInBand",
     "test:ci": "yarn test --coverage --ci --no-colors --forceExit --cacheDirectory .jest-cache",
     "typecheck": "yarn workspace server run typecheck"

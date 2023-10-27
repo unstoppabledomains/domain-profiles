@@ -2,6 +2,24 @@
   "name": "@unstoppabledomains/ui-components",
   "version": "0.0.1",
   "private": true,
+  "description": "An open and reusable suite of Unstoppable Domains management components",
+  "keywords": [
+    "react",
+    "react-component",
+    "mui",
+    "material-ui",
+    "ui",
+    "kit"
+  ],
+  "homepage": "https://github.com/unstoppabledomains/domain-profiles#readme",
+  "bugs": {
+    "url": "https://github.com/unstoppabledomains/domain-profiles/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unstoppabledomains/domain-profiles.git"
+  },
+  "license": "MIT",
   "main": "build/src/index.js",
   "typings": "build/src/index.d.ts",
   "resolutions": {
@@ -100,5 +118,9 @@
   "engines": {
     "node": "16.x.x",
     "yarn": "1.22.x"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

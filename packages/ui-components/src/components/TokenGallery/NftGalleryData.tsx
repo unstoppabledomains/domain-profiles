@@ -1,6 +1,7 @@
 import qs from 'qs';
 import {useState} from 'react';
 
+import {notifyError} from '../../lib/error';
 import type {Nft} from './NftCard';
 import type {NftMintItem, NftResponse} from './NftGalleryManager';
 
@@ -164,7 +165,7 @@ export const getNextNftPageFn = (
         return true;
       }
     } catch (e) {
-      console.warn('unable to parse url', url);
+      notifyError(e, {msg: 'unable to parse url'}, 'warning');
     }
     return false;
   };
@@ -183,7 +184,7 @@ export const getNextNftPageFn = (
       const response = await fetch(domainNftUrl);
       return await response.json();
     } catch (e) {
-      console.error('error retrieving NFT data', e);
+      notifyError(e, {msg: 'error retrieving NFT data'});
     } finally {
       props.setNftDataLoading(false);
     }

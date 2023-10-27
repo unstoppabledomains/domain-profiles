@@ -8,9 +8,11 @@ import Typography from '@mui/material/Typography';
 import type {IMessageIPFS} from '@pushprotocol/restapi';
 import React, {useEffect, useRef, useState} from 'react';
 import Emoji from 'react-emoji-render';
+import Linkify from 'react-linkify';
 import Zoom from 'react-medium-image-zoom';
 
 import {useFeatureFlags} from '../../../../actions/featureFlagActions';
+import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import {MessageType} from '../../protocol/push';
 import {getAddressMetadata} from '../../protocol/resolution';
@@ -39,7 +41,7 @@ export const CommunityConversationBubble: React.FC<
     try {
       void renderContent();
     } catch (e) {
-      console.log('error loading message', String(e));
+      notifyError(e, {msg: 'error loading message'});
       setRenderedContent(<Box>{t('push.errorLoadingMessage')}</Box>);
     }
   }, []);
@@ -70,15 +72,28 @@ export const CommunityConversationBubble: React.FC<
       await renderPeerAvatar();
     }
 
+    // decorator for links
+    const componentDecorator = (href: string, text: string, key: number) => (
+      <div
+        key={key}
+        className={classes.chatLink}
+        onClick={() => setClickedUrl(href)}
+      >
+        {text}
+      </div>
+    );
+
     // handling for text content type
     if (message.messageType === MessageType.Text) {
       setRenderedContent(
         <Box>
-          <Emoji>
-            {typeof message.messageObj === 'string'
-              ? (message.messageObj as string)
-              : (message.messageObj.content as string)}
-          </Emoji>
+          <Linkify componentDecorator={componentDecorator}>
+            <Emoji>
+              {typeof message.messageObj === 'string'
+                ? (message.messageObj as string)
+                : (message.messageObj.content as string)}
+            </Emoji>
+          </Linkify>
         </Box>,
       );
       // handling for remote attachments

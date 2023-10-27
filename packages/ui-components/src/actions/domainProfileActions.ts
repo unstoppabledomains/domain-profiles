@@ -90,14 +90,6 @@ export const getProfileResolution = async (
   });
 };
 
-export const getPublicDomainProfile = (
-  domain: string,
-): Promise<SerializedPublicDomainProfileData> => {
-  return fetchApi<SerializedPublicDomainProfileData>(
-    `/domains/${domain}/profile`,
-  );
-};
-
 export const searchProfiles = async (query: string): Promise<string[]> => {
   const data: Array<{name: string}> | undefined = await fetchApi(
     `/search?name=${query}`,

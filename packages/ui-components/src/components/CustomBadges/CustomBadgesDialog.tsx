@@ -19,6 +19,7 @@ import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getBadge, getMarketplaceBadgeDetails} from '../../actions/badgeActions';
+import {notifyError} from '../../lib/error';
 import useTranslationContext from '../../lib/i18n';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -252,7 +253,7 @@ const CustomBadgesDialog: React.FC<Props> = ({open, handleClose}) => {
             });
           }
         } catch (e) {
-          console.error(e);
+          notifyError(e);
           return e;
         }
       }
@@ -318,7 +319,12 @@ const CustomBadgesDialog: React.FC<Props> = ({open, handleClose}) => {
           key={'initial-dialog'}
         >
           <DialogContent className={classes.headerPhoto}>
-            <img src={'TODO'} alt={'Web3 Custom Badges'} />
+            <img
+              src={
+                'https://storage.googleapis.com/unstoppable-client-assets/images/badges/custom-badge-dialog-header.png'
+              }
+              alt={'Web3 Custom Badges'}
+            />
           </DialogContent>
           <DialogTitle>
             <IconButton

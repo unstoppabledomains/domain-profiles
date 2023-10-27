@@ -4,6 +4,7 @@ import {getReverseResolution} from '../../actions/domainActions';
 import {DomainProfileKeys} from '../../lib/types/domain';
 import type {LoginResult} from '../../lib/types/wallet';
 import {getUAuth} from '../../lib/uauth';
+import {notifyError} from '../error';
 
 export const loginWithAddress = async (
   address?: string,
@@ -58,7 +59,7 @@ export const loginWithAddress = async (
     // return the login result
     return loginResult;
   } catch (loginError) {
-    console.error('login error', loginError);
+    notifyError(loginError, {msg: 'login error'});
     throw loginError;
   }
 };

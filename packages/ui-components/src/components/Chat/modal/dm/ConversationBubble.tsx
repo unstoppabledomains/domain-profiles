@@ -8,8 +8,10 @@ import type {DecodedMessage} from '@xmtp/xmtp-js';
 import {ContentTypeText} from '@xmtp/xmtp-js';
 import React, {useEffect, useRef, useState} from 'react';
 import Emoji from 'react-emoji-render';
+import Linkify from 'react-linkify';
 import Zoom from 'react-medium-image-zoom';
 
+import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import {formatFileSize, getRemoteAttachment} from '../../protocol/xmtp';
 import LinkWarningModal from '../LinkWarningModal';
@@ -36,17 +38,30 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
     try {
       void renderContent();
     } catch (e) {
-      console.log('error loading message', String(e));
+      notifyError(e, {msg: 'error loading message'});
       setRenderedContent(<Box>{t('push.errorLoadingMessage')}</Box>);
     }
   }, []);
 
   const renderContent = async () => {
+    // decorator for links
+    const componentDecorator = (href: string, text: string, key: number) => (
+      <div
+        key={key}
+        className={classes.chatLink}
+        onClick={() => setClickedUrl(href)}
+      >
+        {text}
+      </div>
+    );
+
     // handling for text content type
     if (message.contentType.sameAs(ContentTypeText)) {
       setRenderedContent(
         <Box>
-          <Emoji>{message.content}</Emoji>
+          <Linkify componentDecorator={componentDecorator}>
+            <Emoji>{message.content}</Emoji>
+          </Linkify>
         </Box>,
       );
       // handling for remote attachments

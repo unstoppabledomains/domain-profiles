@@ -138,7 +138,7 @@ export const getRemoteAttachment = async (
     );
     return attachment;
   } catch (e) {
-    console.error('error loading remote attachment', String(e));
+    notifyError(e, {msg: 'error loading remote attachment'});
   }
 
   return;
@@ -270,8 +270,7 @@ export const sendRemoteAttachment = async (
   // send the attachment to the conversation
   return await conversation.send(remoteAttachment, {
     contentType: ContentTypeRemoteAttachment,
-    // TODO - this contentFallback used to be supported
-    //contentFallback: `Attachment: ${file.name} (${formatFileSize(file.size)})`,
+    contentFallback: `Attachment: ${file.name} (${formatFileSize(file.size)})`,
   });
 };
 

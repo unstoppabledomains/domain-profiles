@@ -20,6 +20,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {getBadge} from '../../../../actions/badgeActions';
 import {joinBadgeGroupChat} from '../../../../actions/messageActions';
 import LearnMoreUdBlue from '../../../../components/LearnMoreUdBlue';
+import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {
   SerializedBadgeInfo,
@@ -134,7 +135,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
       setActiveCommunity(badge);
     } catch (e) {
       // unable to join group
-      console.log('error joining group', e);
+      notifyError(e, {msg: 'error joining group'});
       setErrorMsg(t('push.joinCommunityError'));
     } finally {
       setJoining(false);
@@ -150,7 +151,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
       await joinBadgeGroupChat(badge.code, address, pushKey, true);
       await onReload();
     } catch (e) {
-      console.log('error leaving group', e);
+      notifyError(e, {msg: 'error leaving group'});
       setErrorMsg(t('push.leaveCommunityError'));
     } finally {
       setLeaving(false);

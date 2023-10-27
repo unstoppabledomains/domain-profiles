@@ -37,6 +37,7 @@ import {
   getDomainSignatureExpiryKey,
   getDomainSignatureValueKey,
 } from '../../../components/Wallet/ProfileManager';
+import {notifyError} from '../../../lib/error';
 import useTranslationContext from '../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../lib/types/badge';
 import type {SerializedUserDomainProfileData} from '../../../lib/types/domain';
@@ -322,7 +323,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         });
         return localConversations;
       } catch (e) {
-        console.log('error loading conversations', String(e));
+        notifyError(e, {msg: 'error loading conversations'}, 'info');
       } finally {
         if (!isAlreadyLoading) {
           setLoadingText(undefined);
@@ -374,7 +375,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         setAcceptedTopics(responseJSON.accepted_topics);
       }
     } catch (e) {
-      console.log('unable to load blocked topics', String(e));
+      notifyError(e, {msg: 'unable to load blocked topics'}, 'warning');
     }
   };
 
@@ -420,7 +421,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         }
       }
     } catch (e) {
-      console.log('unable to load user profile', String(e));
+      notifyError(e, {msg: 'unable to load user profile'}, 'warning');
     }
   };
 
@@ -581,7 +582,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         return await handleOpenChatFromAddress(peer);
       }
     } catch (e) {
-      console.log('error opening chat for user', String(e));
+      notifyError(e, {msg: 'error opening chat for user'}, 'warning');
     } finally {
       setLoadingText(undefined);
     }
@@ -625,7 +626,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         }
       }
     } catch (e) {
-      console.log('error opening chat from address', String(e));
+      notifyError(e, {msg: 'error opening chat from address'}, 'warning');
     } finally {
       setConversationMetadata(peer);
       setLoadingText(undefined);

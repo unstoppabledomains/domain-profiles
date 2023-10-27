@@ -8,6 +8,7 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {notifyError} from '../../lib/error';
 import useTranslationContext from '../../lib/i18n';
 import {useIsTabActive} from './hooks/useIsTabActive';
 import {getAddressMetadata} from './protocol/resolution';
@@ -85,7 +86,7 @@ export const IncomingChatSnackbar = React.forwardRef<
           setAvatarUrl(addressMetadata.avatarUrl);
         }
       } catch (e) {
-        console.warn('error looking up reverse resolution', String(e));
+        notifyError(e, {msg: 'error looking up reverse resolution'});
       }
       setSenderAddress(reverseAddress);
     };

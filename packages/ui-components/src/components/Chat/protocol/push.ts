@@ -7,6 +7,7 @@ import {Web3Storage} from 'web3.storage';
 
 import config from '@unstoppabledomains/config';
 
+import {notifyError} from '../../../lib/error';
 import {Upload} from './upload';
 import {formatFileSize} from './xmtp';
 
@@ -75,7 +76,7 @@ export const getGroupInfo = async (chatId?: string) => {
       chatId,
     });
   } catch (e) {
-    console.log('error getting group', e);
+    notifyError(e, {msg: 'error getting group'});
     return;
   }
 };

@@ -33,6 +33,7 @@ import truncateEthAddress from 'truncate-eth-address';
 import config from '@unstoppabledomains/config';
 
 import {DomainProfileKeys} from '../../../../lib';
+import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
 import {registerClientTopics} from '../../protocol/registration';
@@ -126,7 +127,7 @@ export const Conversation: React.FC<ConversationProps> = ({
         setXmtpMessages([...xmtpMessages, ...previousMessages.slice(1)]);
       }
     } catch (e) {
-      console.error('error fetching previous conversations', String(e));
+      notifyError(e, {msg: 'error fetching previous conversations'});
     }
   };
 
@@ -155,7 +156,7 @@ export const Conversation: React.FC<ConversationProps> = ({
         );
       }
     } catch (e) {
-      console.log('error loading conversation', String(e));
+      notifyError(e, {msg: 'error loading conversation'});
     } finally {
       // loading complete
       setIsLoading(false);

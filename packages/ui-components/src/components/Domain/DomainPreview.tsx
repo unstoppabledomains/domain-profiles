@@ -13,10 +13,12 @@ import React, {useEffect, useState} from 'react';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {getProfileData} from '../../actions';
 import {useFeatureFlags} from '../../actions/featureFlagActions';
 import useUnstoppableMessaging from '../../components/Chat/hooks/useUnstoppableMessaging';
 import {splitDomain} from '../../lib/domain/format';
 import getImageUrl from '../../lib/domain/getImageUrl';
+import {notifyError} from '../../lib/error';
 import useTranslationContext from '../../lib/i18n';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import {DomainProfileKeys, DomainSuffixes} from '../../lib/types/domain';
@@ -136,15 +138,12 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
     }
     const fetchData = async () => {
       try {
-        const r = await fetch(
-          `${config.PROFILE.HOST_URL}/public/${domain}?fields=profile`,
-        );
-        const profileJSON = await r.json();
+        const profileJSON = await getProfileData(domain);
         if (profileJSON) {
           setProfileData(profileJSON);
         }
       } catch (e) {
-        console.warn('error fetching profile data', String(e));
+        notifyError(e, {msg: 'error fetching profile data'});
       }
     };
     void fetchData();

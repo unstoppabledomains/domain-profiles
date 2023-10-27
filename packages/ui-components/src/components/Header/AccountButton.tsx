@@ -9,6 +9,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {getProfileData} from '../../actions/domainProfileActions';
 import DropDownMenu from '../../components/DropDownMenu';
 import getImageUrl from '../../lib/domain/getImageUrl';
+import {notifyError} from '../../lib/error';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -103,7 +104,7 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
 
     // set state
     setIsOwner(domainOwner.toLowerCase() === authAddress.toLowerCase());
-    fetchData(authDomain).catch(console.error);
+    fetchData(authDomain).catch(notifyError);
   }, [authAddress, authDomain]);
 
   const showDropDown = () => {

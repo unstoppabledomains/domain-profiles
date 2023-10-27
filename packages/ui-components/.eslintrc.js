@@ -34,7 +34,7 @@ module.exports = {
     'jsx-a11y/no-noninteractive-tabindex': 'off',
     'jsx-a11y/no-static-element-interactions': 'off',
     'jsx-a11y/tabindex-no-positive': 'off',
-    'no-console': 'off',
+    'no-console': 2,
     'promise/prefer-await-to-then': 'off',
     'react/button-has-type': 'off',
     'react/destructuring-assignment': 'off',

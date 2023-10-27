@@ -14,6 +14,7 @@ import config from '@unstoppabledomains/config';
 
 import {useFeatureFlags} from '../../../../actions/featureFlagActions';
 import {ProfileManager} from '../../../../components/Wallet/ProfileManager';
+import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedUserDomainProfileData} from '../../../../lib/types/domain';
 import {DomainProfileKeys} from '../../../../lib/types/domain';
@@ -128,7 +129,7 @@ export const CommunityCompose: React.FC<CommunityComposeProps> = ({
       setTextboxTerm('');
       setErrorMessage('');
     } catch (e) {
-      console.log('error sending message', String(e));
+      notifyError(e, {msg: 'error sending message'});
       setErrorMessage(t('push.errorSendingMessage'));
     } finally {
       setIsSending(false);
@@ -186,7 +187,7 @@ export const CommunityCompose: React.FC<CommunityComposeProps> = ({
         }
       }
     } catch (e) {
-      console.log('unable to load user profile', String(e));
+      notifyError(e, {msg: 'unable to load user profile'});
     }
   };
 
@@ -216,7 +217,7 @@ export const CommunityCompose: React.FC<CommunityComposeProps> = ({
         sendCallback(sentMessage);
         setErrorMessage('');
       } catch (e) {
-        console.log('error uploading file', String(e));
+        notifyError(e, {msg: 'error uploading file'});
         setErrorMessage(t('push.errorSendingAttachment'));
       } finally {
         setUploadFile(undefined);

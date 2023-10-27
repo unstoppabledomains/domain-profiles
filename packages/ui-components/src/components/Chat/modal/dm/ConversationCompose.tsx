@@ -13,6 +13,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import config from '@unstoppabledomains/config';
 
 import {ProfileManager} from '../../../../components/Wallet/ProfileManager';
+import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedUserDomainProfileData} from '../../../../lib/types/domain';
 import {DomainProfileKeys} from '../../../../lib/types/domain';
@@ -127,7 +128,7 @@ export const Compose: React.FC<ComposeProps> = ({
         setTextboxTerm('');
         setErrorMessage('');
       } catch (e) {
-        console.log('error sending message', String(e));
+        notifyError(e, {msg: 'error sending message'});
         setErrorMessage(t('push.errorSendingMessage'));
       } finally {
         setIsSending(false);
@@ -186,7 +187,7 @@ export const Compose: React.FC<ComposeProps> = ({
         }
       }
     } catch (e) {
-      console.log('unable to load user profile', String(e));
+      notifyError(e, {msg: 'unable to load user profile'});
     }
   };
 
@@ -206,7 +207,7 @@ export const Compose: React.FC<ComposeProps> = ({
         sendCallback(sentMessage);
         setErrorMessage('');
       } catch (e) {
-        console.log('error uploading file', String(e));
+        notifyError(e, {msg: 'error uploading file'});
         setErrorMessage(t('push.errorSendingAttachment'));
       } finally {
         setUploadFile(undefined);

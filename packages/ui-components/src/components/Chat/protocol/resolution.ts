@@ -1,4 +1,5 @@
 import {getProfileResolution} from '../../../actions/domainProfileActions';
+import {notifyError} from '../../../lib/error';
 import {getCachedResolution, setCachedResolution} from '../storage';
 import type {AddressResolution} from '../types';
 
@@ -23,7 +24,7 @@ export const getAddressMetadata = async (
       return resolution;
     }
   } catch (e) {
-    console.warn('error looking up reverse resolution', String(e));
+    notifyError(e, {msg: 'error looking up reverse resolution'});
   }
 
   // return the address metadata

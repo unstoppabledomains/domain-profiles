@@ -26,6 +26,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import config from '@unstoppabledomains/config';
 
 import {joinBadgeGroupChat} from '../../../../actions/messageActions';
+import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../../lib/types/badge';
 import {DomainProfileKeys} from '../../../../lib/types/domain';
@@ -129,7 +130,7 @@ export const Community: React.FC<CommunityProps> = ({
         setPushMessages([...pushMessages, ...previousMessages.slice(1)]);
       }
     } catch (e) {
-      console.error('error fetching previous conversations', String(e));
+      notifyError(e, {msg: 'error fetching previous conversations'});
     }
   };
 
@@ -149,7 +150,7 @@ export const Community: React.FC<CommunityProps> = ({
       setHasMoreMessages(initialMessages.length >= PUSH_PAGE_SIZE);
       setPushMessages(initialMessages);
     } catch (e) {
-      console.log('error loading conversation', String(e));
+      notifyError(e, {msg: 'error loading conversation'});
     } finally {
       // loading complete
       setIsLoading(false);
@@ -181,6 +182,15 @@ export const Community: React.FC<CommunityProps> = ({
     window.open(
       `${config.UD_ME_BASE_URL}/${authDomain}?openBadgeCode=${badge.code}`,
       '_blank',
+    );
+  };
+
+  const handleBlockSender = (id: string) => {
+    // TODO - placeholder to block sender of a group message
+    notifyError(
+      new Error('TODO - not yet implemented'),
+      {msg: `block sender ${id}`},
+      'warning',
     );
   };
 
@@ -299,7 +309,7 @@ export const Community: React.FC<CommunityProps> = ({
                       address={address}
                       message={message}
                       key={message.timestamp}
-                      onBlockTopic={() => console.log('TODO')}
+                      onBlockTopic={() => handleBlockSender(message.fromCAIP10)}
                       renderCallback={
                         pushMessages.length > 0 &&
                         message.timestamp! >= pushMessages[0].timestamp!

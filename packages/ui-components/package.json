@@ -118,5 +118,9 @@
   "engines": {
     "node": "16.x.x",
     "yarn": "1.22.x"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

@@ -67,11 +67,15 @@ import {
    useUnstoppableMessaging,
 } from '@unstoppabledomains/ui-components';
 
+// Hardcoded user information as an example. This information should come
+// from a connected wallet in a real world scenario.
 const myAddress = "0x123";
 const myDomain = "mydomain.x";
 
 const MyPage = () => {
 
+   // Hook provides utility methods, such as opening the Unstoppable
+   // Messaging window by clicking a button
    const {setOpenChat} = useUnstoppableMessaging();
 
    return (
@@ -119,8 +123,8 @@ yarn workspace server run dev
 To run the tests (`src/**/*.test.tsx` files):
 
 ```shell
-yarn test          # run all tests
-yarn test:coverage # run all tests and generate coverage report
+yarn test    # run all tests
+yarn test:ci # run all tests and generate coverage report
 ```
 
 ### Linting and code formatting

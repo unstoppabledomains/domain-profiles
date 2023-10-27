@@ -65,7 +65,7 @@ jobs:
             :tada: All your tests were successful!
 
             We detected changes in the following:
-            ${{ steps.changes.outputs.server == 'true' && '- UD.me Frontend' || '' }}
+            ${{ steps.changes.outputs.server == 'true' && '- UD.me frontend' || '' }}
             ${{ steps.changes.outputs.packages == 'true' && '- Shared packages' || '' }}
             ${{ steps.changes.outputs.npmUiComponentsChangeLog == 'true' && steps.changes.outputs.npmUiComponentsVersion == 'true' && '- NPM build: `@unstoppabledomains/ui-components`' || '' }}
             ${{ steps.changes.outputs.npmConfigChangeLog == 'true' && steps.changes.outputs.npmConfigVersion == 'true' && '- NPM build: `@unstoppabledomains/config`' || '' }}

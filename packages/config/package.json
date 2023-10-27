@@ -2,7 +2,7 @@
   "name": "@unstoppabledomains/config",
   "version": "0.0.1",
   "private": true,
-  "description": "Configuration variables for Unstoppable Domains development environments",
+  "description": "Configuration variables for Unstoppable Domains environments",
   "homepage": "https://github.com/unstoppabledomains/domain-profiles#readme",
   "bugs": {
     "url": "https://github.com/unstoppabledomains/domain-profiles/issues"

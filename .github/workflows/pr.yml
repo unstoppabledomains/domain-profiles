@@ -22,8 +22,8 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
-      - name: Build Shared
-        run: yarn build
+      - name: Build NPM packages
+        run: yarn dist
 
       - name: Typecheck
         run: yarn typecheck
@@ -38,6 +38,8 @@ jobs:
           filters: |-
             server: [server/**, packages/**]
             packages: [packages/**]
+            npmUiComponents: [packages/ui-components/CHANGELOG.md]
+            npmConfig: [packages/config/CHANGELOG.md]
 
       - name: Run Tests - UD.me Frontend
         if: ${{ steps.changes.outputs.server == 'true' }}
@@ -59,7 +61,9 @@ jobs:
 
             We detected changes in the following services:
             ${{ steps.changes.outputs.server == 'true' && '- UD.me Frontend' || '' }}
-            ${{ steps.changes.outputs.packages == 'true' && '- Shared Packages' || '' }}
+            ${{ steps.changes.outputs.packages == 'true' && '- Shared packages' || '' }}
+            ${{ steps.changes.outputs.npmUiComponents == 'true' && '- NPM build: @unstoppabledomains/ui-components' || '' }}
+            ${{ steps.changes.outputs.npmConfig == 'true' && '- NPM build: @unstoppabledomains/config' || '' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload test results to GitHub

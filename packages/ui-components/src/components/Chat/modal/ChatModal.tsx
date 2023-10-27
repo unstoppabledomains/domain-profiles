@@ -169,28 +169,6 @@ const StyledTabBadge = styled(Badge)<BadgeProps>(({theme}) => ({
   },
 }));
 
-export type ChatModalProps = {
-  pushAccount: string;
-  pushKey?: string;
-  xmtpAddress: string;
-  xmtpKey: Uint8Array;
-  open: boolean;
-  activeChat?: string;
-  activeCommunity?: SerializedCryptoWalletBadge;
-  activeTab?: TabType;
-  incomingGroup?: IMessageIPFS;
-  incomingMessage?: DecodedMessage;
-  incomingNotification?: PayloadData;
-  tabRefresh: Record<TabType, number>;
-  blockedTopics: string[];
-  setBlockedTopics: (v: string[]) => void;
-  setWeb3Deps: (value: Web3Dependencies | undefined) => void;
-  onClose(): void;
-  onInitPushAccount(): void;
-  setActiveChat: (v?: string) => void;
-  setActiveCommunity: (v?: SerializedCryptoWalletBadge) => void;
-};
-
 export const ChatModal: React.FC<ChatModalProps> = ({
   pushAccount,
   pushKey,
@@ -1030,6 +1008,28 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       )}
     </Card>
   );
+};
+
+export type ChatModalProps = {
+  pushAccount: string;
+  pushKey?: string;
+  xmtpAddress: string;
+  xmtpKey: Uint8Array;
+  open: boolean;
+  activeChat?: string;
+  activeCommunity?: SerializedCryptoWalletBadge;
+  activeTab?: TabType;
+  incomingGroup?: IMessageIPFS;
+  incomingMessage?: DecodedMessage;
+  incomingNotification?: PayloadData;
+  tabRefresh: Record<TabType, number>;
+  blockedTopics: string[];
+  setBlockedTopics: (v: string[]) => void;
+  setWeb3Deps: (value: Web3Dependencies | undefined) => void;
+  onClose(): void;
+  onInitPushAccount(): void;
+  setActiveChat: (v?: string) => void;
+  setActiveCommunity: (v?: SerializedCryptoWalletBadge) => void;
 };
 
 export default ChatModal;

@@ -6,22 +6,6 @@ import {fetchApi} from '../lib/fetchApi';
 import type {SerializedCryptoWalletBadge} from '../lib/types/badge';
 import type {SendMessageParams} from '../lib/types/message';
 
-export const sendBadgeMessage = async (params: SendMessageParams) => {
-  return await fetchApi(`/push/notification/badge`, {
-    method: 'POST',
-    mode: 'cors',
-    host: config.MESSAGING.HOST_URL,
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      'x-auth-domain': params.domain,
-      'x-auth-expires': params.expiry,
-      'x-auth-signature': params.signature,
-    },
-    body: JSON.stringify(params.body),
-  });
-};
-
 export const isAddressSpam = async (address: string): Promise<boolean> => {
   const spamData = await fetchApi(
     `${config.MESSAGING.HOST_URL}/xmtp/spam/${address}`,
@@ -76,4 +60,20 @@ export const registerXmtpTopic = async (
     return 0;
   }
   return responseJson.success;
+};
+
+export const sendBadgeMessage = async (params: SendMessageParams) => {
+  return await fetchApi(`/push/notification/badge`, {
+    method: 'POST',
+    mode: 'cors',
+    host: config.MESSAGING.HOST_URL,
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'x-auth-domain': params.domain,
+      'x-auth-expires': params.expiry,
+      'x-auth-signature': params.signature,
+    },
+    body: JSON.stringify(params.body),
+  });
 };

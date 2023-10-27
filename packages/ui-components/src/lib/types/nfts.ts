@@ -1,3 +1,13 @@
+export enum Network {
+  Mainnet = '1',
+  Goerli = '5',
+  Polygon = '137',
+  Mumbai = '80001',
+  Binance = '56',
+  Avalanche = '43114',
+  Fantom = '250',
+}
+
 export interface SerializedMarketplaceData {
   listings?: SerializedNftMetadata[];
   floorPrice?: SerializedPrice;
@@ -31,13 +41,3 @@ export type SerializedPrice = {
   currency: string;
   value: number;
 };
-
-export enum Network {
-  Mainnet = '1',
-  Goerli = '5',
-  Polygon = '137',
-  Mumbai = '80001',
-  Binance = '56',
-  Avalanche = '43114',
-  Fantom = '250',
-}

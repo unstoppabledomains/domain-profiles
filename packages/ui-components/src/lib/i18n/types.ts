@@ -1,13 +1,8 @@
 export type AvailableLocales = 'en-us';
 
-export type I18nInterpolations = Record<string, string | number>;
+export const DEFAULT_LOCALE: AvailableLocales = 'en-us';
 
-export type T = (
-  key: string,
-  interpolate?: I18nInterpolations,
-  locale?: AvailableLocales,
-  toLowerCase?: boolean,
-) => string;
+export type I18nInterpolations = Record<string, string | number>;
 
 export type Locale = {
   code: AvailableLocales;
@@ -21,4 +16,9 @@ export type Locales = {
   defaultLocale: 'en-us';
 };
 
-export const DEFAULT_LOCALE: AvailableLocales = 'en-us';
+export type T = (
+  key: string,
+  interpolate?: I18nInterpolations,
+  locale?: AvailableLocales,
+  toLowerCase?: boolean,
+) => string;

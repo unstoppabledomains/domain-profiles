@@ -79,12 +79,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export type LinkWarningModalProps = {
-  url?: string;
-  onBlockTopic: () => void;
-  onClose: () => void;
-};
-
 export const LinkWarningModal: React.FC<LinkWarningModalProps> = ({
   url,
   onBlockTopic,
@@ -149,6 +143,12 @@ export const LinkWarningModal: React.FC<LinkWarningModalProps> = ({
       </DialogContent>
     </Dialog>
   );
+};
+
+export type LinkWarningModalProps = {
+  url?: string;
+  onBlockTopic: () => void;
+  onClose: () => void;
 };
 
 export default LinkWarningModal;

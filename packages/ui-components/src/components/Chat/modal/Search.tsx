@@ -48,12 +48,6 @@ const useStyles = makeStyles<{searchFocus: boolean}>()(
   }),
 );
 
-export type SearchProps = {
-  handleSearch: (searchTerm: string) => void;
-  initialValue?: string;
-  tab: TabType;
-};
-
 export const Search: React.FC<SearchProps> = ({
   handleSearch,
   initialValue,
@@ -128,6 +122,12 @@ export const Search: React.FC<SearchProps> = ({
       />
     </Box>
   );
+};
+
+export type SearchProps = {
+  handleSearch: (searchTerm: string) => void;
+  initialValue?: string;
+  tab: TabType;
 };
 
 export default Search;

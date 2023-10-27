@@ -77,17 +77,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 const maxDescriptionLength = 125;
 
-export type CommunityPreviewProps = {
-  address: string;
-  badge: SerializedCryptoWalletBadge;
-  inGroup: boolean;
-  isUdBlue: boolean;
-  pushKey: string;
-  searchTerm?: string;
-  onReload: () => Promise<void>;
-  setActiveCommunity: (v: SerializedCryptoWalletBadge) => void;
-};
-
 export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
   address,
   badge,
@@ -267,6 +256,17 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
       )}
     </>
   ) : null;
+};
+
+export type CommunityPreviewProps = {
+  address: string;
+  badge: SerializedCryptoWalletBadge;
+  inGroup: boolean;
+  isUdBlue: boolean;
+  pushKey: string;
+  searchTerm?: string;
+  onReload: () => Promise<void>;
+  setActiveCommunity: (v: SerializedCryptoWalletBadge) => void;
 };
 
 export default CommunityPreview;

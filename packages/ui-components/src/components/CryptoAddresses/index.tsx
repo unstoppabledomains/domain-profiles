@@ -48,15 +48,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export type Props = {
-  records: ParsedRecords;
-  profileData?: SerializedPublicDomainProfileData | null;
-  ownerAddress?: string;
-  showWarning?: boolean;
-  domain?: string;
-  isOwner?: boolean;
-  onCryptoAddressCopied: () => void;
-};
+export {default as CryptoAddress} from './CryptoAddress';
 
 const CryptoAddresses: React.FC<Props> = ({
   records,
@@ -159,4 +151,12 @@ const CryptoAddresses: React.FC<Props> = ({
 };
 
 export default CryptoAddresses;
-export {default as CryptoAddress} from './CryptoAddress';
+export type Props = {
+  records: ParsedRecords;
+  profileData?: SerializedPublicDomainProfileData | null;
+  ownerAddress?: string;
+  showWarning?: boolean;
+  domain?: string;
+  isOwner?: boolean;
+  onCryptoAddressCopied: () => void;
+};

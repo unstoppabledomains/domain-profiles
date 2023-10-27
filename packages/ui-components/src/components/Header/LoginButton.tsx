@@ -89,21 +89,6 @@ const ButtonSkeleton: React.FC<ButtonSkeletonProps> = ({big}) => {
   );
 };
 
-export enum LoginMethod {
-  Wallet = 'wallet',
-  Uauth = 'uauth',
-}
-
-type LoginButtonProps = ButtonProps & {
-  method: LoginMethod;
-  isWhiteBg?: boolean;
-  loading?: boolean;
-  hidden?: boolean;
-  big?: boolean;
-  clicked?: boolean;
-  onLoginComplete: (address: string, domain: string) => void;
-};
-
 export const LoginButton: React.FC<LoginButtonProps> = ({
   method,
   loading,
@@ -191,3 +176,18 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
     </>
   );
 };
+
+type LoginButtonProps = ButtonProps & {
+  method: LoginMethod;
+  isWhiteBg?: boolean;
+  loading?: boolean;
+  hidden?: boolean;
+  big?: boolean;
+  clicked?: boolean;
+  onLoginComplete: (address: string, domain: string) => void;
+};
+
+export enum LoginMethod {
+  Wallet = 'wallet',
+  Uauth = 'uauth',
+}

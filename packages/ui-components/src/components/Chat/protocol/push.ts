@@ -10,40 +10,12 @@ import config from '@unstoppabledomains/config';
 import {Upload} from './upload';
 import {formatFileSize} from './xmtp';
 
-export const PUSH_PAGE_SIZE = 20;
-
 export enum MessageType {
   Text = 'Text',
   Media = 'MediaEmbed',
 }
 
-// getAddressAccount normalizes expected account format
-export const getAddressAccount = (address: string) => {
-  return `eip155:${ethers.utils.getAddress(address)}`;
-};
-
-// getPushUser defined here to allow for test mock
-export const getPushUser = async (
-  address: string,
-): Promise<PushAPI.IUser | undefined> => {
-  return await PushAPI.user.get({
-    account: getAddressAccount(address),
-    env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-  });
-};
-
-export const getGroupInfo = async (chatId?: string) => {
-  if (!chatId) return;
-  try {
-    return await PushAPI.chat.getGroup({
-      env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-      chatId,
-    });
-  } catch (e) {
-    console.log('error getting group', e);
-    return;
-  }
-};
+export const PUSH_PAGE_SIZE = 20;
 
 export const acceptGroupInvite = async (
   chatId: string,
@@ -69,11 +41,80 @@ export const acceptGroupInvite = async (
   }
 };
 
-export const signMessage = async (
-  message: string,
+export const decryptMessage = async (
+  address: string,
   pushKey: string,
-): Promise<string> => {
-  return await sign({message, signingKey: pushKey});
+  msg: IMessageIPFS,
+): Promise<IMessageIPFS | undefined> => {
+  const connectedUser = await getPushUser(address);
+  if (!connectedUser) {
+    return undefined;
+  }
+  const decryptedMessage = await PushAPI.chat.decryptConversation({
+    env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+    pgpPrivateKey: pushKey,
+    messages: [msg],
+    connectedUser,
+  });
+  if (decryptedMessage.length > 0) {
+    return decryptedMessage[0];
+  }
+  return undefined;
+};
+
+// getAddressAccount normalizes expected account format
+export const getAddressAccount = (address: string) => {
+  return `eip155:${ethers.utils.getAddress(address)}`;
+};
+
+export const getGroupInfo = async (chatId?: string) => {
+  if (!chatId) return;
+  try {
+    return await PushAPI.chat.getGroup({
+      env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+      chatId,
+    });
+  } catch (e) {
+    console.log('error getting group', e);
+    return;
+  }
+};
+
+export const getMessages = async (
+  chatId: string,
+  address: string,
+  pushKey: string,
+  threadhash?: string,
+) => {
+  // get thread hash of the group chat
+  if (!threadhash) {
+    const hashResponse = await PushAPI.chat.conversationHash({
+      account: getAddressAccount(address),
+      env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+      conversationId: chatId,
+    });
+    threadhash = hashResponse.threadHash;
+  }
+
+  // retrieve the group chat
+  return await PushAPI.chat.history({
+    account: getAddressAccount(address),
+    env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+    threadhash,
+    pgpPrivateKey: pushKey,
+    toDecrypt: true,
+    limit: PUSH_PAGE_SIZE,
+  });
+};
+
+// getPushUser defined here to allow for test mock
+export const getPushUser = async (
+  address: string,
+): Promise<PushAPI.IUser | undefined> => {
+  return await PushAPI.user.get({
+    account: getAddressAccount(address),
+    env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+  });
 };
 
 export const sendMessage = async (
@@ -138,50 +179,9 @@ export const sendRemoteAttachment = async (
   });
 };
 
-export const getMessages = async (
-  chatId: string,
-  address: string,
+export const signMessage = async (
+  message: string,
   pushKey: string,
-  threadhash?: string,
-) => {
-  // get thread hash of the group chat
-  if (!threadhash) {
-    const hashResponse = await PushAPI.chat.conversationHash({
-      account: getAddressAccount(address),
-      env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-      conversationId: chatId,
-    });
-    threadhash = hashResponse.threadHash;
-  }
-
-  // retrieve the group chat
-  return await PushAPI.chat.history({
-    account: getAddressAccount(address),
-    env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-    threadhash,
-    pgpPrivateKey: pushKey,
-    toDecrypt: true,
-    limit: PUSH_PAGE_SIZE,
-  });
-};
-
-export const decryptMessage = async (
-  address: string,
-  pushKey: string,
-  msg: IMessageIPFS,
-): Promise<IMessageIPFS | undefined> => {
-  const connectedUser = await getPushUser(address);
-  if (!connectedUser) {
-    return undefined;
-  }
-  const decryptedMessage = await PushAPI.chat.decryptConversation({
-    env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-    pgpPrivateKey: pushKey,
-    messages: [msg],
-    connectedUser,
-  });
-  if (decryptedMessage.length > 0) {
-    return decryptedMessage[0];
-  }
-  return undefined;
+): Promise<string> => {
+  return await sign({message, signingKey: pushKey});
 };

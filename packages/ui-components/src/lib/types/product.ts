@@ -1,4 +1,4 @@
-export enum UdBlueFeatureEnum {
+enum UdBlueFeatureEnum {
   AI_AVATAR = 'AI Avatar',
   REWARDS_MULTIPLIER = 'Rewards Multiplier',
   UD_BLUE_BADGE = 'Unstoppable Blue badge',

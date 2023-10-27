@@ -1,8 +1,17 @@
+export interface LoginResult {
+  address: string;
+  domain: string;
+}
+
 export type WagmiConnectorType =
   | 'injected'
   | 'metaMask'
   | 'walletConnect'
   | 'coinbaseWallet';
+
+interface walletProps {
+  connectorType: WagmiConnectorType;
+}
 
 export enum WalletName {
   MetaMask = 'MetaMask',
@@ -14,10 +23,6 @@ export enum WalletName {
   Brave = 'Brave',
   Phantom = 'Phantom',
   Kresus = 'Kresus',
-}
-
-interface walletProps {
-  connectorType: WagmiConnectorType;
 }
 
 export const WalletOptions: Record<WalletName, walletProps> = {
@@ -49,8 +54,3 @@ export const WalletOptions: Record<WalletName, walletProps> = {
     connectorType: 'walletConnect',
   },
 };
-
-export interface LoginResult {
-  address: string;
-  domain: string;
-}

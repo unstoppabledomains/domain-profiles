@@ -34,11 +34,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export type NotificationPreviewProps = {
-  notification: PayloadData;
-  searchTerm?: string;
-};
-
 export const NotificationPreview: React.FC<NotificationPreviewProps> = ({
   notification,
   searchTerm,
@@ -117,6 +112,11 @@ export const NotificationPreview: React.FC<NotificationPreviewProps> = ({
       </CardContent>
     </Card>
   ) : null;
+};
+
+export type NotificationPreviewProps = {
+  notification: PayloadData;
+  searchTerm?: string;
 };
 
 export default NotificationPreview;

@@ -11,13 +11,13 @@ const queryKey = {
   featureFlags: () => [BASE_QUERY_KEY],
 };
 
-export type FeatureFlags = {
-  variations?: LaunchDarklyCamelFlagSet;
-};
-
 export const DEFAULT_FEATURE_FLAGS = {
   variations: getLaunchDarklyDefaults(),
 } as FeatureFlags;
+
+export type FeatureFlags = {
+  variations?: LaunchDarklyCamelFlagSet;
+};
 
 export const fetchFeatureFlags = async (
   domainName: string = '',

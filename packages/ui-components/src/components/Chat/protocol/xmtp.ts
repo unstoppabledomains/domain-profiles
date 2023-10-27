@@ -45,40 +45,20 @@ const xmtpOpts = {
   env: config.XMTP.ENVIRONMENT,
 };
 
-export const isXmtpUser = async (address: string): Promise<boolean> => {
-  return await Client.canMessage(address, xmtpOpts);
+export const formatFileSize = (bytes: number): string => {
+  return filesize(bytes, {base: 2, standard: 'jedec'}) as string;
 };
 
-export const getXmtpClient = async (
+export const getConversation = async (
   address: string,
-  signer?: Signer,
-): Promise<Client> => {
-  // established local encryption keys
-  let xmtpKey = getXmtpLocalKey(address);
-  if (!xmtpKey) {
-    if (!signer) {
-      throw new Error('signer is required to create a new account');
-    }
-    xmtpKey = await Client.getKeys(signer, xmtpOpts);
-    setXmtpLocalKey(address, xmtpKey);
+  peerAddress: string,
+): Promise<Conversation | undefined> => {
+  const xmtp = await getXmtpClient(address);
+  const isAvailable = await xmtp.canMessage(peerAddress);
+  if (!isAvailable) {
+    return undefined;
   }
-
-  // return existing client if available
-  if (xmtpClients[address.toLowerCase()]) {
-    return xmtpClients[address.toLowerCase()];
-  }
-
-  // create client from local encryption keys
-  const xmtpClient = await Client.create(null, {
-    persistConversations: true,
-    privateKeyOverride: xmtpKey,
-    keystoreProviders: [new StaticKeystoreProvider()],
-    ...xmtpOpts,
-  });
-  xmtpClient.registerCodec(new AttachmentCodec());
-  xmtpClient.registerCodec(new RemoteAttachmentCodec());
-  xmtpClients[address.toLowerCase()] = xmtpClient;
-  return xmtpClient;
+  return await xmtp.conversations.newConversation(peerAddress);
 };
 
 export const getConversations = async (
@@ -138,16 +118,30 @@ export const getConversations = async (
   );
 };
 
-export const getConversation = async (
-  address: string,
-  peerAddress: string,
-): Promise<Conversation | undefined> => {
-  const xmtp = await getXmtpClient(address);
-  const isAvailable = await xmtp.canMessage(peerAddress);
-  if (!isAvailable) {
-    return undefined;
+export const getEncodedPrivateKey = (address: string): string | undefined => {
+  const xmtpKey = getXmtpLocalKey(address);
+  if (!xmtpKey) {
+    return;
   }
-  return await xmtp.conversations.newConversation(peerAddress);
+  return fetcher.b64Encode(xmtpKey, 0, xmtpKey.length);
+};
+
+export const getRemoteAttachment = async (
+  message: DecodedMessage,
+): Promise<Attachment | undefined> => {
+  try {
+    const xmtp = await getXmtpClient(message.conversation.clientAddress);
+    const remoteAttachment: RemoteAttachment = message.content;
+    const attachment: Attachment = await RemoteAttachmentCodec.load(
+      remoteAttachment,
+      xmtp,
+    );
+    return attachment;
+  } catch (e) {
+    console.error('error loading remote attachment', String(e));
+  }
+
+  return;
 };
 
 export const getSignedPublicKey = async (
@@ -157,12 +151,36 @@ export const getSignedPublicKey = async (
   return xmtp.signedPublicKeyBundle;
 };
 
-export const getEncodedPrivateKey = (address: string): string | undefined => {
-  const xmtpKey = getXmtpLocalKey(address);
+export const getXmtpClient = async (
+  address: string,
+  signer?: Signer,
+): Promise<Client> => {
+  // established local encryption keys
+  let xmtpKey = getXmtpLocalKey(address);
   if (!xmtpKey) {
-    return;
+    if (!signer) {
+      throw new Error('signer is required to create a new account');
+    }
+    xmtpKey = await Client.getKeys(signer, xmtpOpts);
+    setXmtpLocalKey(address, xmtpKey);
   }
-  return fetcher.b64Encode(xmtpKey, 0, xmtpKey.length);
+
+  // return existing client if available
+  if (xmtpClients[address.toLowerCase()]) {
+    return xmtpClients[address.toLowerCase()];
+  }
+
+  // create client from local encryption keys
+  const xmtpClient = await Client.create(null, {
+    persistConversations: true,
+    privateKeyOverride: xmtpKey,
+    keystoreProviders: [new StaticKeystoreProvider()],
+    ...xmtpOpts,
+  });
+  xmtpClient.registerCodec(new AttachmentCodec());
+  xmtpClient.registerCodec(new RemoteAttachmentCodec());
+  xmtpClients[address.toLowerCase()] = xmtpClient;
+  return xmtpClient;
 };
 
 export const initXmtpAccount = async (address: string, signer: Signer) => {
@@ -179,39 +197,8 @@ export const initXmtpAccount = async (address: string, signer: Signer) => {
   }
 };
 
-export const waitForXmtpMessages = async (
-  address: string,
-  callback: (data: DecodedMessage) => void,
-  conversation?: Conversation,
-): Promise<void> => {
-  const xmtp = await getXmtpClient(address);
-  if (conversation) {
-    // stream a specific conversation
-    for await (const message of await conversation.streamMessages()) {
-      if (message.senderAddress.toLowerCase() !== xmtp.address.toLowerCase()) {
-        callback(message);
-      }
-    }
-  } else {
-    // stream all conversations
-    for await (const message of await xmtp.conversations.streamAllMessages()) {
-      if (message.senderAddress.toLowerCase() !== xmtp.address.toLowerCase()) {
-        callback(message);
-      }
-    }
-  }
-};
-
-export const signMessage = async (
-  walletAddress: string,
-  message: string,
-): Promise<signature.Signature> => {
-  const xmtp = await getXmtpClient(walletAddress);
-  return await xmtp.keystore.signDigest({
-    digest: new TextEncoder().encode(sha256(new TextEncoder().encode(message))),
-    identityKey: undefined,
-    prekeyIndex: 0,
-  });
+export const isXmtpUser = async (address: string): Promise<boolean> => {
+  return await Client.canMessage(address, xmtpOpts);
 };
 
 export const sendRemoteAttachment = async (
@@ -288,24 +275,37 @@ export const sendRemoteAttachment = async (
   });
 };
 
-export const getRemoteAttachment = async (
-  message: DecodedMessage,
-): Promise<Attachment | undefined> => {
-  try {
-    const xmtp = await getXmtpClient(message.conversation.clientAddress);
-    const remoteAttachment: RemoteAttachment = message.content;
-    const attachment: Attachment = await RemoteAttachmentCodec.load(
-      remoteAttachment,
-      xmtp,
-    );
-    return attachment;
-  } catch (e) {
-    console.error('error loading remote attachment', String(e));
-  }
-
-  return;
+export const signMessage = async (
+  walletAddress: string,
+  message: string,
+): Promise<signature.Signature> => {
+  const xmtp = await getXmtpClient(walletAddress);
+  return await xmtp.keystore.signDigest({
+    digest: new TextEncoder().encode(sha256(new TextEncoder().encode(message))),
+    identityKey: undefined,
+    prekeyIndex: 0,
+  });
 };
 
-export const formatFileSize = (bytes: number): string => {
-  return filesize(bytes, {base: 2, standard: 'jedec'}) as string;
+export const waitForXmtpMessages = async (
+  address: string,
+  callback: (data: DecodedMessage) => void,
+  conversation?: Conversation,
+): Promise<void> => {
+  const xmtp = await getXmtpClient(address);
+  if (conversation) {
+    // stream a specific conversation
+    for await (const message of await conversation.streamMessages()) {
+      if (message.senderAddress.toLowerCase() !== xmtp.address.toLowerCase()) {
+        callback(message);
+      }
+    }
+  } else {
+    // stream all conversations
+    for await (const message of await xmtp.conversations.streamAllMessages()) {
+      if (message.senderAddress.toLowerCase() !== xmtp.address.toLowerCase()) {
+        callback(message);
+      }
+    }
+  }
 };

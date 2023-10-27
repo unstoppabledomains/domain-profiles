@@ -2,9 +2,9 @@ import cookie from 'react-cookies';
 
 import config from '@unstoppabledomains/config';
 
-export type CookieName = 'NEXT_LOCALE' | 'cookie-consent';
-
 export type CookieCategory = 'marketing' | 'analytics' | 'essential';
+
+export type CookieName = 'NEXT_LOCALE' | 'cookie-consent';
 
 type CookieOptions = {
   maxAge?: number;

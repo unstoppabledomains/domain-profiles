@@ -22,15 +22,6 @@ import {sendMessage, sendRemoteAttachment} from '../../protocol/push';
 import {formatFileSize} from '../../protocol/xmtp';
 import {useConversationComposeStyles} from '../styles';
 
-export type CommunityComposeProps = {
-  address: string;
-  chatId: string;
-  pushKey: string;
-  storageApiKey?: string;
-  sendCallback: (message: IMessageIPFS) => void;
-  setWeb3Deps: (value: Web3Dependencies | undefined) => void;
-};
-
 export const CommunityCompose: React.FC<CommunityComposeProps> = ({
   address,
   chatId,
@@ -321,6 +312,15 @@ export const CommunityCompose: React.FC<CommunityComposeProps> = ({
       )}
     </Box>
   );
+};
+
+export type CommunityComposeProps = {
+  address: string;
+  chatId: string;
+  pushKey: string;
+  storageApiKey?: string;
+  sendCallback: (message: IMessageIPFS) => void;
+  setWeb3Deps: (value: Web3Dependencies | undefined) => void;
 };
 
 export default CommunityCompose;

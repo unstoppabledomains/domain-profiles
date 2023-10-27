@@ -1,29 +1,5 @@
 import type {SerializedMarketplaceData} from './nfts';
 
-export type SerializedCryptoWalletBadge = {
-  active: boolean;
-  name: string;
-  description: string;
-  logo: string;
-  linkUrl?: string | null;
-  configId: number;
-  code: string;
-  type: string;
-  videoUrl?: string;
-  coverImage?: string;
-  count?: number;
-  expired?: boolean;
-  status?: string;
-  symbols?: string[];
-  contracts?: string[];
-  marketplace?: SerializedMarketplaceData;
-  groupChatId?: string;
-  gallery?: {
-    enabled: boolean;
-    tier: number;
-  };
-};
-
 export type DomainBadgesResponse = {
   list: SerializedCryptoWalletBadge[];
   countActive: number;
@@ -53,3 +29,27 @@ export interface SerializedBadgeUsage {
   featured?: string[];
   rank?: number;
 }
+
+export type SerializedCryptoWalletBadge = {
+  active: boolean;
+  name: string;
+  description: string;
+  logo: string;
+  linkUrl?: string | null;
+  configId: number;
+  code: string;
+  type: string;
+  videoUrl?: string;
+  coverImage?: string;
+  count?: number;
+  expired?: boolean;
+  status?: string;
+  symbols?: string[];
+  contracts?: string[];
+  marketplace?: SerializedMarketplaceData;
+  groupChatId?: string;
+  gallery?: {
+    enabled: boolean;
+    tier: number;
+  };
+};

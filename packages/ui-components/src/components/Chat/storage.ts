@@ -7,28 +7,16 @@ export const getCacheKey = (prefix: string, address: string): string => {
   return `${DomainProfileKeys.Messaging}-${prefix}-${address}`;
 };
 
-export const setXmtpLocalKey = (address: string, key: Uint8Array) => {
-  localStorage.setItem(
-    getCacheKey('xmtpKey', address.toLowerCase()),
-    fetcher.b64Encode(key, 0, key.length),
+export const getCachedResolution = (
+  address: string,
+): AddressResolution | undefined => {
+  const cachedResolution = localStorage.getItem(
+    getCacheKey(DomainProfileKeys.Resolution, address.toLowerCase()),
   );
-};
-
-export const getXmtpLocalKey = (address: string): Uint8Array | undefined => {
-  const cachedKey = localStorage.getItem(
-    getCacheKey('xmtpKey', address.toLowerCase()),
-  );
-  if (cachedKey) {
-    return fetcher.b64Decode(cachedKey);
+  if (cachedResolution) {
+    return JSON.parse(cachedResolution);
   }
   return;
-};
-
-export const setPushLocalKey = (address: string, key: string) => {
-  localStorage.setItem(
-    getCacheKey('pushKey', address.toLowerCase()),
-    Buffer.from(key, 'utf8').toString('base64'),
-  );
 };
 
 export const getPushLocalKey = (address: string): string => {
@@ -41,6 +29,16 @@ export const getPushLocalKey = (address: string): string => {
   return '';
 };
 
+export const getXmtpLocalKey = (address: string): Uint8Array | undefined => {
+  const cachedKey = localStorage.getItem(
+    getCacheKey('xmtpKey', address.toLowerCase()),
+  );
+  if (cachedKey) {
+    return fetcher.b64Decode(cachedKey);
+  }
+  return;
+};
+
 export const setCachedResolution = (resolution: AddressResolution): void => {
   localStorage.setItem(
     getCacheKey(DomainProfileKeys.Resolution, resolution.address.toLowerCase()),
@@ -48,14 +46,16 @@ export const setCachedResolution = (resolution: AddressResolution): void => {
   );
 };
 
-export const getCachedResolution = (
-  address: string,
-): AddressResolution | undefined => {
-  const cachedResolution = localStorage.getItem(
-    getCacheKey(DomainProfileKeys.Resolution, address.toLowerCase()),
+export const setPushLocalKey = (address: string, key: string) => {
+  localStorage.setItem(
+    getCacheKey('pushKey', address.toLowerCase()),
+    Buffer.from(key, 'utf8').toString('base64'),
   );
-  if (cachedResolution) {
-    return JSON.parse(cachedResolution);
-  }
-  return;
+};
+
+export const setXmtpLocalKey = (address: string, key: Uint8Array) => {
+  localStorage.setItem(
+    getCacheKey('xmtpKey', address.toLowerCase()),
+    fetcher.b64Encode(key, 0, key.length),
+  );
 };

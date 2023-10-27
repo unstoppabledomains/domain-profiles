@@ -115,18 +115,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export type SetupModalProps = {
-  open: boolean;
-  domain?: string;
-  isNewUser: boolean;
-  isNewNotification: boolean;
-  disabled: boolean;
-  configState: ConfigurationState;
-  onClose(): void;
-  onChat(): void;
-  onConfirm(): void;
-};
-
 export const SetupModal: React.FC<SetupModalProps> = ({
   onClose,
   onChat,
@@ -358,6 +346,18 @@ export const SetupModal: React.FC<SetupModalProps> = ({
       </DialogContent>
     </Dialog>
   );
+};
+
+export type SetupModalProps = {
+  open: boolean;
+  domain?: string;
+  isNewUser: boolean;
+  isNewNotification: boolean;
+  disabled: boolean;
+  configState: ConfigurationState;
+  onClose(): void;
+  onChat(): void;
+  onConfirm(): void;
 };
 
 export default SetupModal;

@@ -103,16 +103,6 @@ type snackbarProps = {
   imageUrl?: string;
 };
 
-export type UnstoppableMessagingProps = {
-  address?: string;
-  domain?: string;
-  inheritStyle?: boolean;
-  large?: boolean;
-  label?: string;
-  disableSupportBubble?: boolean;
-  initCallback?: () => void;
-};
-
 export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
   address,
   domain,
@@ -935,4 +925,14 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       )}
     </>
   );
+};
+
+export type UnstoppableMessagingProps = {
+  address?: string;
+  domain?: string;
+  inheritStyle?: boolean;
+  large?: boolean;
+  label?: string;
+  disableSupportBubble?: boolean;
+  initCallback?: () => void;
 };

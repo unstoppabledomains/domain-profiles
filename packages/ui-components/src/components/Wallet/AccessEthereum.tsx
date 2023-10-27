@@ -18,6 +18,11 @@ import {WalletOptions} from '../../lib/types/wallet';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import {WalletClientSigner} from '../../lib/wallet/signer';
 
+export interface AccessEthereumProps {
+  onComplete: (web3Deps?: Web3Dependencies) => void;
+  onError?: (message: string) => void;
+}
+
 export const useStyles = makeStyles()((theme: Theme) => ({
   listContainer: {
     outline: `2px solid ${theme.palette.white}`,
@@ -27,11 +32,6 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     marginTop: theme.spacing(2),
   },
 }));
-
-export interface AccessEthereumProps {
-  onComplete: (web3Deps?: Web3Dependencies) => void;
-  onError?: (message: string) => void;
-}
 
 const AccessEthereum: React.FC<AccessEthereumProps> = ({
   onComplete,

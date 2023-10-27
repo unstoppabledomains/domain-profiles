@@ -3,10 +3,8 @@ import type {
   SerializedPublicDomainProfileData,
 } from './domain';
 
-export const UD_TWITTER_HANDLE = 'unstoppableweb';
 export const DEFAULT_SEO_DESCRIPTION =
   'Domain profiles give holders a way to associate extra pieces of metadata with their domains.';
-
 export type GetSeoTagsProps = {
   domain: string;
   title: string;
@@ -14,3 +12,5 @@ export type GetSeoTagsProps = {
   socialsInfo: SerializedDomainProfileSocialAccountsUserInfo;
   domainAvatar?: string | null;
 };
+
+export const UD_TWITTER_HANDLE = 'unstoppableweb';

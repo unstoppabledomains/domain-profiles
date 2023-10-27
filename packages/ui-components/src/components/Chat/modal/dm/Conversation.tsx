@@ -50,22 +50,6 @@ const CardContentNoPadding = styled(CardContent)(`
   }
 `);
 
-export type ConversationProps = {
-  conversation?: XmtpConversation;
-  metadata?: AddressResolution;
-  acceptedTopics: string[];
-  blockedTopics: string[];
-  storageApiKey?: string;
-  setAcceptedTopics: (v: string[]) => void;
-  setBlockedTopics: (v: string[]) => void;
-  setWeb3Deps: (value: Web3Dependencies | undefined) => void;
-  onNewMessage: (msg: DecodedMessage) => void;
-  onBack: () => void;
-  onClose: () => void;
-};
-
-const PAGE_SIZE = 10;
-
 export const Conversation: React.FC<ConversationProps> = ({
   conversation,
   metadata,
@@ -469,6 +453,22 @@ export const Conversation: React.FC<ConversationProps> = ({
       )}
     </Card>
   );
+};
+
+const PAGE_SIZE = 10;
+
+export type ConversationProps = {
+  conversation?: XmtpConversation;
+  metadata?: AddressResolution;
+  acceptedTopics: string[];
+  blockedTopics: string[];
+  storageApiKey?: string;
+  setAcceptedTopics: (v: string[]) => void;
+  setBlockedTopics: (v: string[]) => void;
+  setWeb3Deps: (value: Web3Dependencies | undefined) => void;
+  onNewMessage: (msg: DecodedMessage) => void;
+  onBack: () => void;
+  onClose: () => void;
 };
 
 export default Conversation;

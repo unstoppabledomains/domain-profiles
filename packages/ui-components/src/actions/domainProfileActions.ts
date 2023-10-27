@@ -14,14 +14,23 @@ const queryKey = {
   followStatus: () => ['domainProfile', 'followingStatus'],
 };
 
-export const getProfileData = async (
-  domain: string,
-  expiry?: number,
-): Promise<SerializedPublicDomainProfileData | undefined> => {
-  const domainProfileUrl = `/public/${domain}${
-    expiry ? `?expiry=${expiry}` : ''
-  }`;
-  return await fetchApi(domainProfileUrl, {host: config.PROFILE.HOST_URL});
+export const checkIfFollowingDomainProfile = async (
+  followerDomain: string,
+  followeeDomain: string,
+): Promise<boolean> => {
+  const respJson = await fetchApi(
+    `/followers/${followeeDomain}/follow-status/${followerDomain}`,
+    {
+      method: 'GET',
+      mode: 'cors',
+      host: config.PROFILE.HOST_URL,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+  return respJson.isFollowing;
 };
 
 export const followDomainProfile = async (
@@ -47,6 +56,58 @@ export const followDomainProfile = async (
   });
 };
 
+export const getFollowers = async (
+  domain: string,
+  relationship: 'followers' | 'following' = 'followers',
+  cursor?: number,
+): Promise<SerializedFollowerListData | undefined> => {
+  const domainProfileUrl = `/followers/${domain}?${QueryString.stringify(
+    {
+      relationship_type: relationship,
+      take: 100,
+      cursor,
+    },
+    {skipNulls: true},
+  )}`;
+  return await fetchApi(domainProfileUrl, {host: config.PROFILE.HOST_URL});
+};
+
+export const getProfileData = async (
+  domain: string,
+  expiry?: number,
+): Promise<SerializedPublicDomainProfileData | undefined> => {
+  const domainProfileUrl = `/public/${domain}${
+    expiry ? `?expiry=${expiry}` : ''
+  }`;
+  return await fetchApi(domainProfileUrl, {host: config.PROFILE.HOST_URL});
+};
+
+export const getProfileResolution = async (
+  address: string,
+): Promise<AddressResolution | undefined> => {
+  return await fetchApi(`/resolve/${address}`, {
+    host: config.PROFILE.HOST_URL,
+  });
+};
+
+export const getPublicDomainProfile = (
+  domain: string,
+): Promise<SerializedPublicDomainProfileData> => {
+  return fetchApi<SerializedPublicDomainProfileData>(
+    `/domains/${domain}/profile`,
+  );
+};
+
+export const searchProfiles = async (query: string): Promise<string[]> => {
+  const data: Array<{name: string}> | undefined = await fetchApi(
+    `/search?name=${query}`,
+    {
+      host: config.PROFILE.HOST_URL,
+    },
+  );
+  return data ? data.map(profile => profile.name) : [];
+};
+
 export const unfollowDomainProfile = async (
   followerDomain: string,
   followeeDomain: string,
@@ -70,25 +131,6 @@ export const unfollowDomainProfile = async (
   });
 };
 
-export const checkIfFollowingDomainProfile = async (
-  followerDomain: string,
-  followeeDomain: string,
-): Promise<boolean> => {
-  const respJson = await fetchApi(
-    `/followers/${followeeDomain}/follow-status/${followerDomain}`,
-    {
-      method: 'GET',
-      mode: 'cors',
-      host: config.PROFILE.HOST_URL,
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    },
-  );
-  return respJson.isFollowing;
-};
-
 export const useDomainProfileFollowStatus = (
   followerDomain: string,
   followeeDomain: string,
@@ -110,46 +152,4 @@ export const useDomainProfileFollowStatus = (
       enabled: !!followerDomain,
     },
   );
-};
-
-export const searchProfiles = async (query: string): Promise<string[]> => {
-  const data: Array<{name: string}> | undefined = await fetchApi(
-    `/search?name=${query}`,
-    {
-      host: config.PROFILE.HOST_URL,
-    },
-  );
-  return data ? data.map(profile => profile.name) : [];
-};
-
-export const getPublicDomainProfile = (
-  domain: string,
-): Promise<SerializedPublicDomainProfileData> => {
-  return fetchApi<SerializedPublicDomainProfileData>(
-    `/domains/${domain}/profile`,
-  );
-};
-
-export const getProfileResolution = async (
-  address: string,
-): Promise<AddressResolution | undefined> => {
-  return await fetchApi(`/resolve/${address}`, {
-    host: config.PROFILE.HOST_URL,
-  });
-};
-
-export const getFollowers = async (
-  domain: string,
-  relationship: 'followers' | 'following' = 'followers',
-  cursor?: number,
-): Promise<SerializedFollowerListData | undefined> => {
-  const domainProfileUrl = `/followers/${domain}?${QueryString.stringify(
-    {
-      relationship_type: relationship,
-      take: 100,
-      cursor,
-    },
-    {skipNulls: true},
-  )}`;
-  return await fetchApi(domainProfileUrl, {host: config.PROFILE.HOST_URL});
 };

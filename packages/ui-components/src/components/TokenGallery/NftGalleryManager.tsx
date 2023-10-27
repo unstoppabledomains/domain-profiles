@@ -84,13 +84,144 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export interface NftResponse {
-  nfts: Nft[];
-  address: string;
-  verified: boolean;
-  enabled: boolean;
-  cursor?: string;
-}
+export const Manager: React.FC<ManagerProps> = ({
+  domain,
+  ownerAddress,
+  records,
+  profileServiceUrl,
+  itemsToUpdate,
+  saveClicked,
+  setModalOpen,
+  setSaveClicked,
+  setRecords,
+  setWeb3Deps,
+  getNextNftPage,
+}) => {
+  const {classes} = useStyles();
+  const [symbolToggles, setSymbolToggles] = useState<ReactElement>();
+  const [loading, setLoading] = useState<boolean>(false);
+
+  // render the symbol table
+  useEffect(() => {
+    renderSymbols();
+  }, [records]);
+
+  const handleSymbolToggle = (symbol: string) => {
+    if (!records) {
+      return;
+    }
+    records[symbol].enabled = !records[symbol].enabled;
+    setRecords(records);
+    renderSymbols();
+  };
+
+  // send final call to save preferences to profile API
+  const handleSaveProfile = async (signature: string, expiry: string) => {
+    setLoading(true);
+
+    // prepare the request body
+    if (!records) {
+      return;
+    }
+
+    // store request body
+    const requestBody: NftRequest[] = [];
+    Object.keys(records).forEach(symbol => {
+      requestBody.push({
+        symbol,
+        address: records[symbol].address,
+        public: records[symbol].enabled,
+        showAllItems: true,
+        items: itemsToUpdate
+          .filter(item => item.symbol === symbol)
+          .map<NftRequestItem>(item => {
+            return {
+              mint: item.mint,
+              public: item.public,
+            };
+          }),
+      });
+    });
+
+    // make the request
+    const domainNftUrl = `${profileServiceUrl}/user/${domain}/nfts`;
+    await fetch(domainNftUrl, {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'x-auth-domain': domain,
+        'x-auth-expires': expiry,
+        'x-auth-signature': signature,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    // close the management dialogue
+    setModalOpen(false);
+
+    // wait a moment before reloading
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    await getNextNftPage(true);
+  };
+
+  const renderSymbols = () => {
+    if (!records) {
+      return;
+    }
+    setSymbolToggles(
+      <div className={classes.symbolContainer}>
+        <FormGroup>
+          {Object.keys(records!)
+            .sort()
+            .map(symbol => (
+              <div>
+                <FormControlLabel
+                  value={symbol}
+                  label={symbol}
+                  control={
+                    <Checkbox
+                      defaultChecked={records[symbol].enabled}
+                      onChange={() => handleSymbolToggle(symbol)}
+                    />
+                  }
+                />
+              </div>
+            ))}
+        </FormGroup>
+      </div>,
+    );
+  };
+
+  return (
+    <Box>
+      {records && (
+        <div
+          className={
+            loading ? classes.centeredContainer : classes.flexContainer
+          }
+        >
+          {loading ? (
+            <div className={classes.spinner}>
+              <CircularProgress />
+            </div>
+          ) : (
+            <div>{symbolToggles}</div>
+          )}
+          <ProfileManager
+            domain={domain}
+            ownerAddress={ownerAddress!}
+            setWeb3Deps={setWeb3Deps}
+            saveClicked={saveClicked}
+            setSaveClicked={setSaveClicked}
+            onSignature={handleSaveProfile}
+          />
+        </div>
+      )}
+    </Box>
+  );
+};
 
 interface MessageResponse {
   message: string;
@@ -107,27 +238,6 @@ interface NftRequest {
   order?: number;
   items?: NftRequestItem[];
 }
-
-export interface NftRequestItem {
-  mint: string;
-  public: boolean;
-}
-
-export type NftMintItem = NftRequestItem & {
-  symbol: string;
-};
-
-export type NftGalleryManagerProps = {
-  domain: string;
-  ownerAddress: string;
-  records?: Record<string, NftResponse>;
-  profileServiceUrl: string;
-  itemsToUpdate: NftMintItem[];
-  setRecords: (value: Record<string, NftResponse>) => void;
-  getNextNftPage: (reset?: boolean) => Promise<void>;
-  setWeb3Deps: (value: Web3Dependencies | undefined) => void;
-  hasNfts?: boolean;
-};
 
 export type ManagerProps = NftGalleryManagerProps & {
   saveClicked: boolean;
@@ -283,141 +393,31 @@ export const NftGalleryManager: React.FC<NftGalleryManagerProps> = ({
   );
 };
 
-export const Manager: React.FC<ManagerProps> = ({
-  domain,
-  ownerAddress,
-  records,
-  profileServiceUrl,
-  itemsToUpdate,
-  saveClicked,
-  setModalOpen,
-  setSaveClicked,
-  setRecords,
-  setWeb3Deps,
-  getNextNftPage,
-}) => {
-  const {classes} = useStyles();
-  const [symbolToggles, setSymbolToggles] = useState<ReactElement>();
-  const [loading, setLoading] = useState<boolean>(false);
-
-  // render the symbol table
-  useEffect(() => {
-    renderSymbols();
-  }, [records]);
-
-  const handleSymbolToggle = (symbol: string) => {
-    if (!records) {
-      return;
-    }
-    records[symbol].enabled = !records[symbol].enabled;
-    setRecords(records);
-    renderSymbols();
-  };
-
-  // send final call to save preferences to profile API
-  const handleSaveProfile = async (signature: string, expiry: string) => {
-    setLoading(true);
-
-    // prepare the request body
-    if (!records) {
-      return;
-    }
-
-    // store request body
-    const requestBody: NftRequest[] = [];
-    Object.keys(records).forEach(symbol => {
-      requestBody.push({
-        symbol,
-        address: records[symbol].address,
-        public: records[symbol].enabled,
-        showAllItems: true,
-        items: itemsToUpdate
-          .filter(item => item.symbol === symbol)
-          .map<NftRequestItem>(item => {
-            return {
-              mint: item.mint,
-              public: item.public,
-            };
-          }),
-      });
-    });
-
-    // make the request
-    const domainNftUrl = `${profileServiceUrl}/user/${domain}/nfts`;
-    await fetch(domainNftUrl, {
-      method: 'POST',
-      mode: 'cors',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        'x-auth-domain': domain,
-        'x-auth-expires': expiry,
-        'x-auth-signature': signature,
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    // close the management dialogue
-    setModalOpen(false);
-
-    // wait a moment before reloading
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    await getNextNftPage(true);
-  };
-
-  const renderSymbols = () => {
-    if (!records) {
-      return;
-    }
-    setSymbolToggles(
-      <div className={classes.symbolContainer}>
-        <FormGroup>
-          {Object.keys(records!)
-            .sort()
-            .map(symbol => (
-              <div>
-                <FormControlLabel
-                  value={symbol}
-                  label={symbol}
-                  control={
-                    <Checkbox
-                      defaultChecked={records[symbol].enabled}
-                      onChange={() => handleSymbolToggle(symbol)}
-                    />
-                  }
-                />
-              </div>
-            ))}
-        </FormGroup>
-      </div>,
-    );
-  };
-
-  return (
-    <Box>
-      {records && (
-        <div
-          className={
-            loading ? classes.centeredContainer : classes.flexContainer
-          }
-        >
-          {loading ? (
-            <div className={classes.spinner}>
-              <CircularProgress />
-            </div>
-          ) : (
-            <div>{symbolToggles}</div>
-          )}
-          <ProfileManager
-            domain={domain}
-            ownerAddress={ownerAddress!}
-            setWeb3Deps={setWeb3Deps}
-            saveClicked={saveClicked}
-            setSaveClicked={setSaveClicked}
-            onSignature={handleSaveProfile}
-          />
-        </div>
-      )}
-    </Box>
-  );
+export type NftGalleryManagerProps = {
+  domain: string;
+  ownerAddress: string;
+  records?: Record<string, NftResponse>;
+  profileServiceUrl: string;
+  itemsToUpdate: NftMintItem[];
+  setRecords: (value: Record<string, NftResponse>) => void;
+  getNextNftPage: (reset?: boolean) => Promise<void>;
+  setWeb3Deps: (value: Web3Dependencies | undefined) => void;
+  hasNfts?: boolean;
 };
+
+export type NftMintItem = NftRequestItem & {
+  symbol: string;
+};
+
+export interface NftRequestItem {
+  mint: string;
+  public: boolean;
+}
+
+export interface NftResponse {
+  nfts: Nft[];
+  address: string;
+  verified: boolean;
+  enabled: boolean;
+  cursor?: string;
+}

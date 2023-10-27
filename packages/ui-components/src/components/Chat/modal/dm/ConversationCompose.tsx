@@ -20,13 +20,6 @@ import type {Web3Dependencies} from '../../../../lib/types/web3';
 import {formatFileSize, sendRemoteAttachment} from '../../protocol/xmtp';
 import {useConversationComposeStyles} from '../styles';
 
-export type ComposeProps = {
-  conversation?: Conversation;
-  storageApiKey?: string;
-  sendCallback: (message: DecodedMessage) => void;
-  setWeb3Deps: (value: Web3Dependencies | undefined) => void;
-};
-
 export const Compose: React.FC<ComposeProps> = ({
   conversation,
   storageApiKey: initialStorageApiKey,
@@ -306,6 +299,13 @@ export const Compose: React.FC<ComposeProps> = ({
       )}
     </Box>
   );
+};
+
+export type ComposeProps = {
+  conversation?: Conversation;
+  storageApiKey?: string;
+  sendCallback: (message: DecodedMessage) => void;
+  setWeb3Deps: (value: Web3Dependencies | undefined) => void;
 };
 
 export default Compose;

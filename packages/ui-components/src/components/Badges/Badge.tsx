@@ -18,9 +18,9 @@ import type {Web3Dependencies} from '../../lib/types/web3';
 import {filteredBadgeCodes} from '../Chat/modal/group/CommunityList';
 import BadgePopupModal from './BadgePopupModal';
 
-export const SMALL_BADGE_SIZE = 35;
-export const MOBILE_BADGE_SIZE = 56;
 export const DEFAULT_BADGE_SIZE = 80;
+export const MOBILE_BADGE_SIZE = 56;
+export const SMALL_BADGE_SIZE = 35;
 type StyleProps = {
   isMobile?: boolean;
   small?: boolean;

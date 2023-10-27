@@ -61,14 +61,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export type ConversationPreviewProps = {
-  conversation: ConversationMeta;
-  acceptedTopics: string[];
-  selectedCallback: (conversation: Conversation) => void;
-  searchTermCallback: (visible: boolean) => void;
-  searchTerm?: string;
-};
-
 export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
   conversation,
   acceptedTopics,
@@ -163,6 +155,14 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
       </Box>
     </Box>
   ) : null;
+};
+
+export type ConversationPreviewProps = {
+  conversation: ConversationMeta;
+  acceptedTopics: string[];
+  selectedCallback: (conversation: Conversation) => void;
+  searchTermCallback: (visible: boolean) => void;
+  searchTerm?: string;
 };
 
 export default ConversationPreview;

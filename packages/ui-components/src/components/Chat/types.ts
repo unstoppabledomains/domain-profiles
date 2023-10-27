@@ -1,11 +1,10 @@
-export const PUSH_CHAT_APP = 'push chat';
-
-export enum MessagingSignatureType {
-  ExistingUser = 'existingUser',
-  MissingChannels = 'existingUserMissingChannels',
-  NewUser = 'newUser',
-  NoPrimaryDomain = 'noPrimaryDomain',
+export interface AddressResolution {
+  address: string;
+  name?: string;
+  avatarUrl?: string;
 }
+
+export const ChatModalQueryString = 'open-chat-window';
 
 export enum ConfigurationState {
   Initial = 'initial',
@@ -16,36 +15,24 @@ export enum ConfigurationState {
   Error = 'error',
 }
 
-export enum TabType {
-  Chat = 'chat',
-  Communities = 'communities',
-  Notification = 'notification',
+export interface InitChatOptions {
+  skipXmtp?: boolean;
+  skipPush?: boolean;
 }
 
-export const ChatModalQueryString = 'open-chat-window';
-
-export const getCaip10Address = (address: string): string => {
-  if (!address.startsWith('eip155')) {
-    address = `eip155:${address}`;
-  }
-  return address.replace('eip155:', 'eip155:1:');
-};
-
-export const fromCaip10Address = (caip10?: string): string | undefined => {
-  const parts = caip10?.split(':');
-  if (parts && parts.length > 0) {
-    return parts[parts.length - 1];
-  }
-  return undefined;
-};
-
-export interface PushNotification {
-  payload_id: number;
-  sender: string;
-  epoch: string;
-  payload: Payload;
-  source: string;
+export enum MessagingSignatureType {
+  ExistingUser = 'existingUser',
+  MissingChannels = 'existingUserMissingChannels',
+  NewUser = 'newUser',
+  NoPrimaryDomain = 'noPrimaryDomain',
 }
+
+export interface Notification {
+  body: string;
+  title: string;
+}
+
+export const PUSH_CHAT_APP = 'push chat';
 
 export interface Payload {
   data: PayloadData;
@@ -70,15 +57,18 @@ export interface PayloadData {
   additionalMeta: string;
 }
 
-export interface Notification {
-  body: string;
-  title: string;
+export interface PushNotification {
+  payload_id: number;
+  sender: string;
+  epoch: string;
+  payload: Payload;
+  source: string;
 }
 
-export interface AddressResolution {
-  address: string;
-  name?: string;
-  avatarUrl?: string;
+export enum TabType {
+  Chat = 'chat',
+  Communities = 'communities',
+  Notification = 'notification',
 }
 
 export interface TopicRegistration {
@@ -87,7 +77,17 @@ export interface TopicRegistration {
   signature: string;
 }
 
-export interface InitChatOptions {
-  skipXmtp?: boolean;
-  skipPush?: boolean;
-}
+export const fromCaip10Address = (caip10?: string): string | undefined => {
+  const parts = caip10?.split(':');
+  if (parts && parts.length > 0) {
+    return parts[parts.length - 1];
+  }
+  return undefined;
+};
+
+export const getCaip10Address = (address: string): string => {
+  if (!address.startsWith('eip155')) {
+    address = `eip155:${address}`;
+  }
+  return address.replace('eip155:', 'eip155:1:');
+};

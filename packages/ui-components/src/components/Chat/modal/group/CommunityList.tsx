@@ -65,16 +65,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const filteredBadgeCodes = [UD_BLUE_BADGE_CODE];
-
-export type CommunityListProps = {
-  address: string;
-  domain: string;
-  pushKey: string;
-  searchTerm?: string;
-  setActiveCommunity: (v: SerializedCryptoWalletBadge) => void;
-};
-
 export const CommunityList: React.FC<CommunityListProps> = ({
   address,
   domain,
@@ -196,5 +186,15 @@ export const CommunityList: React.FC<CommunityListProps> = ({
     </Box>
   );
 };
+
+export type CommunityListProps = {
+  address: string;
+  domain: string;
+  pushKey: string;
+  searchTerm?: string;
+  setActiveCommunity: (v: SerializedCryptoWalletBadge) => void;
+};
+
+export const filteredBadgeCodes = [UD_BLUE_BADGE_CODE];
 
 export default CommunityList;

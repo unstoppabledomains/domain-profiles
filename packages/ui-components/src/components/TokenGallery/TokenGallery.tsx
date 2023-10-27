@@ -18,6 +18,14 @@ import useTokenGallery from '../../hooks/useTokenGallery';
 import useWeb3Context from '../../hooks/useWeb3Context';
 import useTranslationContext from '../../lib/i18n';
 
+export interface TokenGalleryProps {
+  domain: string;
+  enabled?: boolean;
+  isOwner?: boolean;
+  ownerAddress: string;
+  profileServiceUrl: string;
+}
+
 export const useStyles = makeStyles()((theme: Theme) => ({
   sectionHeader: {
     display: 'flex',
@@ -76,14 +84,6 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     cursor: 'pointer',
   },
 }));
-
-export interface TokenGalleryProps {
-  domain: string;
-  enabled?: boolean;
-  isOwner?: boolean;
-  ownerAddress: string;
-  profileServiceUrl: string;
-}
 
 const TokenGallery: React.FC<TokenGalleryProps> = ({
   domain,

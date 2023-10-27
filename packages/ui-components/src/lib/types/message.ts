@@ -1,21 +1,3 @@
-export type MessageParams = {
-  badgeCode: string;
-  subject: string;
-  message: string;
-  ctaUrl?: string;
-  imageUrl?: string;
-  sender: {
-    domain: string;
-  };
-};
-
-export type SendMessageParams = {
-  body: MessageParams;
-  signature: string;
-  expiry: string;
-  domain: string;
-};
-
 export type DomainNotificationConfiguration = {
   settingsKey: string;
 };
@@ -33,3 +15,21 @@ export enum DomainNotificationSettingsKey {
   WEB_NOTIFICATION = 'WEB_NOTIFICATION',
   PARTNER = 'PARTNER',
 }
+
+export type MessageParams = {
+  badgeCode: string;
+  subject: string;
+  message: string;
+  ctaUrl?: string;
+  imageUrl?: string;
+  sender: {
+    domain: string;
+  };
+};
+
+export type SendMessageParams = {
+  body: MessageParams;
+  signature: string;
+  expiry: string;
+  domain: string;
+};

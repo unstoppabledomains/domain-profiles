@@ -116,14 +116,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export type ConversationStartProps = {
-  address: string;
-  onBack: () => void;
-  onClose: () => void;
-  selectedCallback: (peerAddress: AddressResolution) => void;
-  initialSearch?: string;
-};
-
 export const ConversationStart: React.FC<ConversationStartProps> = ({
   address,
   onBack,
@@ -237,6 +229,14 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
       </CardContent>
     </Card>
   );
+};
+
+export type ConversationStartProps = {
+  address: string;
+  onBack: () => void;
+  onClose: () => void;
+  selectedCallback: (peerAddress: AddressResolution) => void;
+  initialSearch?: string;
 };
 
 export default ConversationStart;

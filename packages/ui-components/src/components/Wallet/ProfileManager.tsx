@@ -13,16 +13,6 @@ import {signMessage as signPushMessage} from '../Chat/protocol/push';
 import {signMessage as signXmtpMessage} from '../Chat/protocol/xmtp';
 import {getPushLocalKey, getXmtpLocalKey} from '../Chat/storage';
 
-export const ONE_WEEK = 60 * 60 * 24 * 7 * 1000; // milliseconds in a week
-
-export const getDomainSignatureValueKey = (domain: string): string => {
-  return `${DomainProfileKeys.Signature}-value-${domain}`;
-};
-
-export const getDomainSignatureExpiryKey = (domain: string): string => {
-  return `${DomainProfileKeys.Signature}-expiry-${domain}`;
-};
-
 export type ManagerProps = {
   domain: string;
   ownerAddress: string;
@@ -33,12 +23,7 @@ export type ManagerProps = {
   onFailed?: () => void;
 };
 
-interface MessageResponse {
-  message: string;
-  headers: {
-    ['x-auth-expires']: number;
-  };
-}
+export const ONE_WEEK = 60 * 60 * 24 * 7 * 1000;
 
 export const ProfileManager: React.FC<ManagerProps> = ({
   domain,
@@ -190,4 +175,20 @@ export const ProfileManager: React.FC<ManagerProps> = ({
       />
     </div>
   );
+};
+
+export const getDomainSignatureExpiryKey = (domain: string): string => {
+  return `${DomainProfileKeys.Signature}-expiry-${domain}`;
+};
+
+interface MessageResponse {
+  message: string;
+  headers: {
+    ['x-auth-expires']: number;
+  };
+}
+
+// milliseconds in a week
+export const getDomainSignatureValueKey = (domain: string): string => {
+  return `${DomainProfileKeys.Signature}-value-${domain}`;
 };

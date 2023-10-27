@@ -10,7 +10,7 @@
     "jsx": "react",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "ignoreDeprecations": "5.0", 
+    "ignoreDeprecations": "5.0",
     "rootDirs": ["./", "./src", "../../packages"]
   },
   "include": ["./src/**/*", "./src/**/*.json"],

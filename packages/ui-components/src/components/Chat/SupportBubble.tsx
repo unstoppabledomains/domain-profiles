@@ -67,11 +67,6 @@ const useOutsideClick = (callback: () => void) => {
   return ref;
 };
 
-export type SupportBubbleProps = {
-  open: boolean;
-  setActiveChat: (v?: string) => void;
-};
-
 export const SupportBubble: React.FC<SupportBubbleProps> = ({
   open,
   setActiveChat,
@@ -152,6 +147,11 @@ export const SupportBubble: React.FC<SupportBubbleProps> = ({
       </Badge>
     </Box>
   ) : null;
+};
+
+export type SupportBubbleProps = {
+  open: boolean;
+  setActiveChat: (v?: string) => void;
 };
 
 export default SupportBubble;

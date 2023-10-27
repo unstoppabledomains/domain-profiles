@@ -2,63 +2,6 @@ import type {Theme} from '@mui/material/styles';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-export const useConversationComposeStyles = makeStyles<{
-  textboxFocus: boolean;
-  textboxDrag: boolean;
-}>()((theme: Theme, {textboxFocus, textboxDrag}) => ({
-  textboxContainer: {
-    display: 'flex',
-    margin: theme.spacing(0),
-  },
-  actionContainer: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  textboxBase: {
-    border: `1px solid ${
-      textboxDrag
-        ? theme.palette.primary.main
-        : textboxFocus
-        ? theme.palette.neutralShades[500]
-        : theme.palette.neutralShades[100]
-    }`,
-    borderRadius: theme.shape.borderRadius,
-    paddingLeft: 12,
-    backgroundColor: theme.palette.white,
-  },
-  textboxInput: {
-    fontSize: 16,
-    color: theme.palette.neutralShades[500],
-    '&::-webkit-search-cancel-button': {
-      WebkitAppearance: 'none',
-    },
-    '&::placeholder': {color: theme.palette.neutralShades[500], opacity: 1},
-    '&::-webkit-input-placeholder': {
-      color: theme.palette.neutralShades[400],
-      opacity: 1,
-    },
-  },
-  icon: {
-    margin: theme.spacing(1, 1, 1, 0),
-    cursor: 'pointer',
-    width: 24,
-    height: 24,
-  },
-  sendIcon: {
-    color: theme.palette.primary.main,
-  },
-  sendIconError: {
-    color: 'red',
-  },
-  attachIcon: {
-    color: theme.palette.neutralShades[500],
-  },
-  sendingProgress: {
-    color: theme.palette.neutralShades[500],
-    margin: theme.spacing(1),
-  },
-}));
-
 export const useConversationBubbleStyles = makeStyles<{
   isAttachment: boolean;
 }>()((theme: Theme, {isAttachment}) => ({
@@ -184,6 +127,63 @@ export const useConversationBubbleStyles = makeStyles<{
   },
   unsupportedMediaText: {
     fontStyle: 'italic',
+  },
+}));
+
+export const useConversationComposeStyles = makeStyles<{
+  textboxFocus: boolean;
+  textboxDrag: boolean;
+}>()((theme: Theme, {textboxFocus, textboxDrag}) => ({
+  textboxContainer: {
+    display: 'flex',
+    margin: theme.spacing(0),
+  },
+  actionContainer: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  textboxBase: {
+    border: `1px solid ${
+      textboxDrag
+        ? theme.palette.primary.main
+        : textboxFocus
+        ? theme.palette.neutralShades[500]
+        : theme.palette.neutralShades[100]
+    }`,
+    borderRadius: theme.shape.borderRadius,
+    paddingLeft: 12,
+    backgroundColor: theme.palette.white,
+  },
+  textboxInput: {
+    fontSize: 16,
+    color: theme.palette.neutralShades[500],
+    '&::-webkit-search-cancel-button': {
+      WebkitAppearance: 'none',
+    },
+    '&::placeholder': {color: theme.palette.neutralShades[500], opacity: 1},
+    '&::-webkit-input-placeholder': {
+      color: theme.palette.neutralShades[400],
+      opacity: 1,
+    },
+  },
+  icon: {
+    margin: theme.spacing(1, 1, 1, 0),
+    cursor: 'pointer',
+    width: 24,
+    height: 24,
+  },
+  sendIcon: {
+    color: theme.palette.primary.main,
+  },
+  sendIconError: {
+    color: 'red',
+  },
+  attachIcon: {
+    color: theme.palette.neutralShades[500],
+  },
+  sendingProgress: {
+    color: theme.palette.neutralShades[500],
+    margin: theme.spacing(1),
   },
 }));
 

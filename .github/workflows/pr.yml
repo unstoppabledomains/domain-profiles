@@ -62,11 +62,11 @@ jobs:
           message: |
             :tada: All your tests were successful!
 
-            We detected changes in the following services:
+            We detected changes in the following:
             ${{ steps.changes.outputs.server == 'true' && '- UD.me Frontend' || '' }}
             ${{ steps.changes.outputs.packages == 'true' && '- Shared packages' || '' }}
-            ${{ steps.changes.outputs.npmUiComponents == 'true' && '- NPM build: @unstoppabledomains/ui-components' || '' }}
-            ${{ steps.changes.outputs.npmConfig == 'true' && '- NPM build: @unstoppabledomains/config' || '' }}
+            ${{ steps.changes.outputs.npmUiComponents == 'true' && '- NPM build: `@unstoppabledomains/ui-components`' || '' }}
+            ${{ steps.changes.outputs.npmConfig == 'true' && '- NPM build: `@unstoppabledomains/config`' || '' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload test results to GitHub

@@ -66,10 +66,10 @@ import {
    Web3ContextProvider,
    useUnstoppableMessaging,
 } from '@unstoppabledomains/ui-components';
+import React from 'react';
 
 // Hardcoded user information as an example. This information should come
 // from a connected wallet in a real world scenario.
-const myAddress = "0x123";
 const myDomain = "mydomain.x";
 
 const MyPage = () => {
@@ -81,12 +81,7 @@ const MyPage = () => {
    return (
       <Web3ContextProvider>
          <UnstoppableMessagingProvider>
-            <div>
-               <UnstoppableMessaging
-                  address={myAddress}
-                  domain={myDomain}
-               />
-            </div>
+            <UnstoppableMessaging domain={myDomain} />
             <Button
                onClick={() => setOpenChat("friend.x")}
             >
@@ -97,7 +92,7 @@ const MyPage = () => {
    )
 }
 
-export default as MyPage;
+export default MyPage;
 ```
 
 ## Contributing

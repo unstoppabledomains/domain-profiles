@@ -1,5 +1,5 @@
 import * as PushAPI from '@pushprotocol/restapi';
-import {ENV} from '@pushprotocol/uiweb';
+import {ENV} from '@pushprotocol/restapi/src/lib/constants';
 import {useCallback, useState} from 'react';
 
 import config from '@unstoppabledomains/config';

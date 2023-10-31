@@ -1,10 +1,6 @@
-import assert from 'assert';
-
 import type {Config} from './types';
 
 export default function getDefaultConfig(): Config {
-  assert(process.env.NEXT_PUBLIC_CLIENT_URL, 'NEXT_PUBLIC_CLIENT_URL required');
-
   return {
     APP_ENV: 'development',
     APP_VERSION: process.env.NEXT_PUBLIC_APP_VERSION || 'unknown',
@@ -63,7 +59,8 @@ export default function getDefaultConfig(): Config {
     ],
     LOGIN_WITH_UNSTOPPABLE: {
       CLIENT_ID: '115148ec-364d-4e19-b7d8-2807e8f1b525',
-      REDIRECT_URI: process.env.NEXT_PUBLIC_CLIENT_URL,
+      REDIRECT_URI:
+        process.env.NEXT_PUBLIC_CLIENT_URL || 'http://localhost:3000',
     },
     COOKIE: {
       SECURE: true,

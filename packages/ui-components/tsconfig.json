@@ -2,14 +2,10 @@
   "extends": "../../packages.base.tsconfig.json",
   "compilerOptions": {
     "outDir": "build",
-    "target": "es2019",
-    "lib": ["es6", "dom", "es2019"],
+    "target": "esnext",
+    "lib": ["esnext"],
     "module": "esnext",
-    "isolatedModules": true,
-    "skipLibCheck": true,
     "jsx": "react",
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
     "ignoreDeprecations": "5.0",
     "rootDirs": ["./", "./src", "../../packages"]
   },

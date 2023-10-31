@@ -2,43 +2,40 @@
   "compilerOptions": {
     "allowJs": false,
     "allowSyntheticDefaultImports": true,
-    "declaration": true,
+    "allowUnreachableCode": true,
+    "baseUrl": ".",
+    "downlevelIteration": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "ignoreDeprecations": "5.0",
     "importHelpers": true,
-    "inlineSourceMap": false,
+    "incremental": true,
     "isolatedModules": true,
-    "jsx": "react",
+    "jsx": "preserve",
     "lib": [
       "esnext"
     ],
-    "listEmittedFiles": false,
-    "listFiles": false,
     "module": "esnext",
     "moduleResolution": "node",
     "noEmit": true,
-    "noFallthroughCasesInSwitch": true,
+    "noFallthroughCasesInSwitch": false,
     "noImplicitAny": true,
     "noImplicitReturns": true,
-    "pretty": true,
+    "noImplicitThis": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true,
     "suppressImplicitAnyIndexErrors": true,
-    "target": "esnext",
-    "traceResolution": false
+    "target": "esnext"
   },
-  "include": [
-    "packages/*/src/**/*"
+  "exclude": [
+    "node_modules",
+    "**/node_modules"
   ],
-  "references": [
-    {
-      "path": "packages/config"
-    },
-    {
-      "path": "packages/ui-components"
-    }
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx"
   ]
 }

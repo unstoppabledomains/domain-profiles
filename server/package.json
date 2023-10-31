@@ -29,7 +29,6 @@
     "@emotion/styled": "^11.11.0",
     "@pushprotocol/restapi": "^1.4.15",
     "@pushprotocol/socket": "^0.5.1",
-    "@pushprotocol/uiweb": "^1.1.13",
     "@reduxjs/toolkit": "^1.6.2",
     "@swc/cli": "^0.1.57",
     "@swc/core": "^1.2.219",

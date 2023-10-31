@@ -31,7 +31,12 @@ export const fetchApi = async <T = any>(
   // make the request
   return fetch(url, options).then(async (res: Response) => {
     if (!res.ok) {
-      notifyError(new Error(`error fetching API`), {res, url, options});
+      const severity = res.status < 500 ? 'warning' : 'error';
+      notifyError(
+        new Error(`error fetching API`),
+        {status: res.status, url},
+        severity,
+      );
       return undefined;
     }
     try {

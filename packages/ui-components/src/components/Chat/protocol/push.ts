@@ -1,7 +1,7 @@
 import type {IMessageIPFS} from '@pushprotocol/restapi';
 import * as PushAPI from '@pushprotocol/restapi';
 import {sign} from '@pushprotocol/restapi/src/lib/chat/helpers/pgp';
-import {ENV} from '@pushprotocol/uiweb';
+import {ENV} from '@pushprotocol/restapi/src/lib/constants';
 import {ethers} from 'ethers';
 import {Web3Storage} from 'web3.storage';
 

@@ -888,6 +888,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       {address && xmtpKey && (
         <>
           <ChatModal
+            authDomain={domain}
             pushAccount={`eip155:${
               pushUser ? fromCaip10Address(pushUser.wallets) : address
             }`}

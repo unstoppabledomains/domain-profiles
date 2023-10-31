@@ -41,7 +41,6 @@ import {notifyError} from '../../../lib/error';
 import useTranslationContext from '../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../lib/types/badge';
 import type {SerializedUserDomainProfileData} from '../../../lib/types/domain';
-import {DomainProfileKeys} from '../../../lib/types/domain';
 import type {Web3Dependencies} from '../../../lib/types/web3';
 import useFetchNotifications from '../hooks/useFetchNotification';
 import {registerClientTopics} from '../protocol/registration';
@@ -171,6 +170,7 @@ const StyledTabBadge = styled(Badge)<BadgeProps>(({theme}) => ({
 }));
 
 export const ChatModal: React.FC<ChatModalProps> = ({
+  authDomain,
   pushAccount,
   pushKey,
   xmtpAddress,
@@ -361,7 +361,6 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   const loadBlockedTopics = async () => {
     try {
       // request the domain's blocked topics from profile API
-      const authDomain = localStorage.getItem(DomainProfileKeys.AuthDomain);
       const response = await fetch(
         `${config.PROFILE.HOST_URL}/user/${authDomain}/notifications/preferences`,
       );
@@ -384,7 +383,6 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   const loadUserProfile = async () => {
     try {
       // retrieve domain being used for messaging
-      const authDomain = localStorage.getItem(DomainProfileKeys.AuthDomain);
       if (authDomain) {
         setDomain(authDomain);
       }
@@ -1012,6 +1010,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 };
 
 export type ChatModalProps = {
+  authDomain?: string;
   pushAccount: string;
   pushKey?: string;
   xmtpAddress: string;

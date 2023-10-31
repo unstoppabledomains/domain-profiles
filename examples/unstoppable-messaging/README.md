@@ -9,7 +9,7 @@ for Web3 users. The ability to chat within your app is demonstrated in this simp
 app. The demo app is intentionally simplistic, and is meant to be starting point to show
 how the features could be integrated into your own app.
 
-![Unstoppable Messaging](https://github.com/unstoppabledomains/domain-profiles/assets/21039114/6058a46d-e086-468c-a61d-14f947de8610)
+![Unstoppable Messaging](https://github.com/unstoppabledomains/domain-profiles/assets/21039114/1ac6fe3e-6b5e-4d69-80b7-2180122636a5)
 
 ### Running locally
 

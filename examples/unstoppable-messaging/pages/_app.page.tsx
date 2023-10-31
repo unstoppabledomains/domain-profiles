@@ -11,7 +11,6 @@ import 'swiper/css/bundle';
 import {createEmotionSsrAdvancedApproach} from 'tss-react/nextJs';
 
 import {
-  TokenGalleryProvider,
   TranslationProvider,
   UnstoppableMessagingProvider,
   Web3ContextProvider,
@@ -75,11 +74,9 @@ const WrappedApp = (props: WrappedAppProps) => {
                 }}
               >
                 <Web3ContextProvider>
-                  <TokenGalleryProvider>
-                    <UnstoppableMessagingProvider>
-                      <Component {...pageProps} />
-                    </UnstoppableMessagingProvider>
-                  </TokenGalleryProvider>
+                  <UnstoppableMessagingProvider>
+                    <Component {...pageProps} />
+                  </UnstoppableMessagingProvider>
                 </Web3ContextProvider>
               </SnackbarProvider>
             </TranslationProvider>

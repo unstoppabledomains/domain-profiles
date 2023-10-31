@@ -16,7 +16,7 @@ how the features could be integrated into your own app.
 You can run this demo locally using the following commands.
 
 ```shell
-git@github.com:unstoppabledomains/domain-profiles.git
+git clone git@github.com:unstoppabledomains/domain-profiles.git
 cd domain-profiles/examples/unstoppable-messaging
 yarn install
 yarn run dev

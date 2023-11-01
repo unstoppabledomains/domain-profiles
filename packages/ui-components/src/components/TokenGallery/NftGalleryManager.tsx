@@ -21,9 +21,9 @@ import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {ProfileManager} from '../../components/Wallet/ProfileManager';
+import type {NftMintItem, NftRequestItem, NftResponse} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 import type {Web3Dependencies} from '../../lib/types/web3';
-import type {Nft} from './NftCard';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   flexContainer: {
@@ -404,20 +404,3 @@ export type NftGalleryManagerProps = {
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;
   hasNfts?: boolean;
 };
-
-export type NftMintItem = NftRequestItem & {
-  symbol: string;
-};
-
-export interface NftRequestItem {
-  mint: string;
-  public: boolean;
-}
-
-export interface NftResponse {
-  nfts: Nft[];
-  address: string;
-  verified: boolean;
-  enabled: boolean;
-  cursor?: string;
-}

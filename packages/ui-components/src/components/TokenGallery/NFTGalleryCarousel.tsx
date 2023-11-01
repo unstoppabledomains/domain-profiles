@@ -8,10 +8,10 @@ import {Swiper, SwiperSlide} from 'swiper/react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import type {Nft} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../lib/types/badge';
 import type {SerializedNftMetadata} from '../../lib/types/nfts';
-import type {Nft} from './NftCard';
 import NftCard from './NftCard';
 
 const useStyles = makeStyles()((theme: Theme) => ({

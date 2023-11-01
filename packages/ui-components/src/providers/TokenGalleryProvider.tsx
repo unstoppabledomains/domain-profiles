@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 
-import type {Nft} from '../components/TokenGallery/NftCard';
+import type {Nft} from '../lib';
 
 type Props = {
   children: React.ReactNode;

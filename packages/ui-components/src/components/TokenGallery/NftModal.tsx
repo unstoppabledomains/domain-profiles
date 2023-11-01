@@ -15,9 +15,9 @@ import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {CryptoIcon} from '../../components/Image/CryptoIcon';
+import type {Nft} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 import type {AllCurrenciesType} from '../../lib/types/blockchain';
-import type {Nft} from './NftCard';
 import NftImage from './NftImage';
 
 const useStyles = makeStyles()((theme: Theme) => ({

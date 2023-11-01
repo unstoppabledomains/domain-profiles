@@ -4,12 +4,17 @@ import React from 'react';
 import {customRender} from 'tests/test-utils';
 
 import type {DomainBadgesResponse} from '@unstoppabledomains/ui-components';
-import {PersonaInquiryStatus} from '@unstoppabledomains/ui-components';
+import {
+  DomainProfileKeys,
+  PersonaInquiryStatus,
+} from '@unstoppabledomains/ui-components';
 import * as badgeActions from '@unstoppabledomains/ui-components/src/actions/badgeActions';
 import * as domainActions from '@unstoppabledomains/ui-components/src/actions/domainActions';
 import * as domainProfileActions from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
 import * as featureFlagActions from '@unstoppabledomains/ui-components/src/actions/featureFlagActions';
 import * as identityActions from '@unstoppabledomains/ui-components/src/actions/identityActions';
+import * as push from '@unstoppabledomains/ui-components/src/components/Chat/protocol/push';
+import * as chatStorage from '@unstoppabledomains/ui-components/src/components/Chat/storage';
 import * as nftImage from '@unstoppabledomains/ui-components/src/components/TokenGallery/NftImage';
 
 import type {DomainProfilePageProps} from './index.page';
@@ -364,16 +369,6 @@ describe('Token gallery for multiple blockchains', () => {
       },
     });
 
-    // mock swiper
-    jest.mock('swiper/react', () => ({
-      Swiper: ({children}: {children: React.ReactNode}) => (
-        <div data-testid="swiper-testid">{children}</div>
-      ),
-      SwiperSlide: ({children}: {children: React.ReactNode}) => (
-        <div>{children}</div>
-      ),
-    }));
-
     // mock the lazy load image component due to incompatibilities with jest
     jest
       .spyOn(nftImage, 'default')
@@ -665,16 +660,6 @@ describe('Token gallery for single blockchain', () => {
       },
     });
 
-    // mock swiper
-    jest.mock('swiper/react', () => ({
-      Swiper: ({children}: {children: React.ReactNode}) => (
-        <div data-testid="swiper-testid">{children}</div>
-      ),
-      SwiperSlide: ({children}: {children: React.ReactNode}) => (
-        <div>{children}</div>
-      ),
-    }));
-
     // mock the lazy load image component due to incompatibilities with jest
     jest
       .spyOn(nftImage, 'default')
@@ -708,5 +693,718 @@ describe('Token gallery for single blockchain', () => {
 
     // ensure the symbol drop down filter is hidden
     expect(() => screen.getByTestId('nftGallery-filter-symbol')).toThrow();
+  });
+});
+
+describe('Token gallery carousel', () => {
+  const tokenGalleryProps = defaultProps();
+  tokenGalleryProps.records = {
+    'crypto.ETH.address': 'test-eth-address',
+    'crypto.SOL.address': 'test-sol-address',
+  };
+  tokenGalleryProps.profileData!.profile.tokenGalleryEnabled = true;
+
+  beforeEach(async () => {
+    jest
+      .spyOn(domainActions, 'getDomainBadges')
+      .mockResolvedValue(defaultBadges);
+    jest.spyOn(badgeActions, 'getBadge').mockResolvedValue({
+      badge: defaultBadges.list[0],
+      sponsorship: {
+        max: 1,
+        count: 1,
+      },
+      usage: {
+        holders: 100,
+      },
+    });
+    jest
+      .spyOn(domainActions, 'getReverseResolution')
+      .mockResolvedValue('foo.crypto');
+    jest.spyOn(domainProfileActions, 'getFollowers').mockResolvedValue({
+      data: [{domain: 'follower1.crypto'}],
+      meta: {
+        total_count: 1,
+        pagination: {
+          cursor: 0,
+          take: 1,
+        },
+      },
+      relationship_type: 'followers',
+      domain: 'foo.crypto',
+    });
+    jest
+      .spyOn(featureFlagActions, 'fetchFeatureFlags')
+      .mockResolvedValue(featureFlagActions.DEFAULT_FEATURE_FLAGS);
+    jest.spyOn(identityActions, 'getIdentity').mockResolvedValue({
+      id: 'personaId',
+      createdAt: Date.now(),
+      name: 'foo.crypto',
+      status: PersonaInquiryStatus.COMPLETED,
+    });
+
+    // mock profile with token gallery enabled
+    jest
+      .spyOn(domainProfileActions, 'getProfileData')
+      .mockResolvedValue(tokenGalleryProps.profileData!);
+
+    // mock NFT data
+    jest.spyOn(domainProfileActions, 'getDomainNfts').mockResolvedValue({
+      ['SOL']: {
+        address: 'test-sol-address',
+        verified: true,
+        enabled: true,
+        cursor: '1',
+        nfts: [
+          {
+            name: 'test-sol-nft-name',
+            mint: 'test-sol-nft-name',
+            link: 'test-nft-link',
+            image_url: 'https://test-nft-jpg',
+            video_url: '',
+            collection: 'test-sol-collection',
+            description: 'test-nft-description',
+            public: true,
+          },
+          {
+            name: 'test-sol-nft-ticket',
+            mint: 'test-sol-nft-ticket',
+            link: 'test-nft-ticket-link',
+            image_url: 'https://test-nft-ticket-jpg',
+            video_url: '',
+            collection: 'test-sol-collection',
+            description: 'test-nft-ticket-description',
+            tags: ['ticket'],
+            public: true,
+          },
+          {
+            name: 'test-sol-nft-hidden',
+            mint: 'test-sol-nft-hidden',
+            link: 'test-nft-ticket-link',
+            image_url: 'https://test-nft-ticket-jpg',
+            video_url: '',
+            collection: 'test-sol-collection',
+            description: 'test-nft-ticket-description',
+            tags: ['ticket', 'hidden'],
+            public: false,
+          },
+        ],
+      },
+      ['ETH']: {
+        address: 'test-eth-address',
+        verified: true,
+        enabled: true,
+        cursor: '1',
+        nfts: [
+          {
+            name: 'test-eth-nft-name',
+            mint: 'test-eth-nft-name',
+            link: 'test-nft-link',
+            image_url: 'https://test-nft-jpg',
+            video_url: '',
+            collection: 'test-eth-collection',
+            description: 'test-nft-description',
+            public: true,
+          },
+        ],
+      },
+    });
+
+    // mock the lazy load image component due to incompatibilities with jest
+    jest
+      .spyOn(nftImage, 'default')
+      .mockReturnValue(
+        <img src="https://test-nft-jpg" alt="test-sol-nft-name"></img>,
+      );
+  });
+
+  it('renders the NFT carousel loader if no data is available', async () => {
+    jest.spyOn(domainProfileActions, 'getDomainNfts').mockResolvedValue({});
+    customRender(<DomainProfile {...tokenGalleryProps} />);
+    await waitFor(() => {
+      expect(screen.getByTestId('nft-carousel-loader')).toBeInTheDocument();
+    });
+  });
+
+  it('renders the NFT carousel with additional NFT page if required', async () => {
+    // mock two pages of NFT data response
+    jest.spyOn(domainProfileActions, 'getDomainNfts').mockResolvedValueOnce({
+      ['SOL']: {
+        address: 'test-sol-address',
+        verified: true,
+        enabled: true,
+        cursor: '1',
+        nfts: [
+          {
+            name: 'test-sol-nft-name1',
+            mint: 'test-sol-nft-name1',
+            link: 'test-nft-link',
+            video_url: '',
+            collection: 'test-sol-collection',
+            image_url: 'https://test-nft-jpg',
+            description: 'test-nft-description',
+            public: false,
+            verified: true,
+          },
+          {
+            name: 'test-sol-nft-name2',
+            mint: 'test-sol-nft-name2',
+            link: 'test-nft-link',
+            video_url: '',
+            collection: 'test-sol-collection',
+            image_url: 'https://test-nft-jpg',
+            description: 'test-nft-description',
+            public: false,
+            verified: true,
+          },
+          {
+            name: 'test-sol-nft-name3',
+            mint: 'test-sol-nft-name3',
+            link: 'test-nft-link',
+            video_url: '',
+            collection: 'test-sol-collection',
+            image_url: 'https://test-nft-jpg',
+            description: 'test-nft-description',
+            public: true,
+            verified: true,
+          },
+        ],
+      },
+    });
+    jest.spyOn(domainProfileActions, 'getDomainNfts').mockResolvedValueOnce({
+      ['SOL']: {
+        address: 'test-sol-address',
+        verified: true,
+        enabled: true,
+        cursor: '1',
+        nfts: [
+          {
+            name: 'test-sol-nft-name4',
+            mint: 'test-sol-nft-name4',
+            link: 'test-nft-link',
+            video_url: '',
+            collection: 'test-sol-collection',
+            image_url: 'https://test-nft-jpg',
+            description: 'test-nft-description',
+            public: true,
+            verified: true,
+          },
+          {
+            name: 'test-sol-nft-name5',
+            mint: 'test-sol-nft-name5',
+            link: 'test-nft-link',
+            video_url: '',
+            collection: 'test-sol-collection',
+            image_url: 'https://test-nft-jpg',
+            description: 'test-nft-description',
+            public: true,
+            verified: true,
+          },
+          {
+            name: 'test-sol-nft-name6',
+            mint: 'test-sol-nft-name6',
+            link: 'test-nft-link',
+            video_url: '',
+            collection: 'test-sol-collection',
+            image_url: 'https://test-nft-jpg',
+            description: 'test-nft-description',
+            public: true,
+            verified: true,
+          },
+        ],
+      },
+    });
+
+    // render the page
+    customRender(<DomainProfile {...tokenGalleryProps} />);
+
+    // verify the public NFTs across the two pages are visible on page
+    await waitFor(() => {
+      expect(screen.getByTestId('swiper-testid')).toBeInTheDocument();
+      expect(screen.getAllByText('test-sol-nft-name3').length).toBeGreaterThan(
+        0,
+      );
+      expect(screen.getAllByText('test-sol-nft-name4').length).toBeGreaterThan(
+        0,
+      );
+      expect(screen.getAllByText('test-sol-nft-name5').length).toBeGreaterThan(
+        0,
+      );
+      expect(screen.getAllByText('test-sol-nft-name6').length).toBeGreaterThan(
+        0,
+      );
+    });
+
+    // validate the loader is hidden
+    expect(() => screen.getByTestId('nft-carousel-loader')).toThrow();
+  });
+
+  it('only renders a single instance of an NFT if duplicates are found', async () => {
+    jest.spyOn(domainProfileActions, 'getDomainNfts').mockResolvedValueOnce({
+      ['SOL']: {
+        address: 'test-sol-address',
+        verified: true,
+        enabled: true,
+        cursor: '1',
+        nfts: [
+          {
+            name: 'test-sol-nft-name1',
+            mint: 'test-sol-nft-name1',
+            link: 'test-nft-link',
+            video_url: '',
+            collection: 'test-sol-collection',
+            image_url: 'https://test-nft-jpg',
+            description: 'test-nft-description',
+            public: true,
+            verified: true,
+          },
+          {
+            name: 'test-sol-nft-name1',
+            mint: 'test-sol-nft-name1',
+            link: 'test-nft-link',
+            video_url: '',
+            collection: 'test-sol-collection',
+            image_url: 'https://test-nft-jpg',
+            description: 'test-nft-description',
+            public: true,
+            verified: true,
+          },
+        ],
+      },
+    });
+
+    // render the page
+    customRender(<DomainProfile {...tokenGalleryProps} />);
+
+    // wait for the carousel to load
+    await waitFor(() => {
+      expect(screen.getByTestId('swiper-testid')).toBeInTheDocument();
+    });
+
+    // validate only a single element is shown
+    expect(screen.getAllByText('test-sol-nft-name1')).toHaveLength(1);
+  });
+
+  it('skips invalid image files', async () => {
+    jest.spyOn(domainProfileActions, 'getDomainNfts').mockResolvedValueOnce({
+      ['MATIC']: {
+        verified: true,
+        enabled: true,
+        cursor: '1',
+        address: 'matic-address',
+        nfts: [
+          {
+            name: 'test-matic-nft-name',
+            mint: 'test-matic-nft-name',
+            link: 'test-nft-link',
+            image_url: 'invalid-jpg',
+            video_url: '',
+            collection: 'test-collection',
+            description: 'test-nft-description',
+            verified: true,
+            public: false,
+          },
+        ],
+      },
+    });
+
+    // render the page
+    customRender(<DomainProfile {...tokenGalleryProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('mainContentContainer')).toBeInTheDocument();
+    });
+    expect(() => screen.getByText('test-matic-nft-name')).toThrow();
+  });
+});
+
+describe('Owner operations', () => {
+  const tokenGalleryProps = defaultProps();
+  tokenGalleryProps.records = {
+    'crypto.ETH.address': 'test-eth-address',
+    'crypto.SOL.address': 'test-sol-address',
+  };
+  tokenGalleryProps.profileData!.profile.tokenGalleryEnabled = true;
+
+  beforeEach(async () => {
+    jest
+      .spyOn(domainActions, 'getDomainBadges')
+      .mockResolvedValue(defaultBadges);
+    jest.spyOn(badgeActions, 'getBadge').mockResolvedValue({
+      badge: defaultBadges.list[0],
+      sponsorship: {
+        max: 1,
+        count: 1,
+      },
+      usage: {
+        holders: 100,
+      },
+    });
+    jest
+      .spyOn(domainActions, 'getReverseResolution')
+      .mockResolvedValue('foo.crypto');
+    jest.spyOn(domainProfileActions, 'getFollowers').mockResolvedValue({
+      data: [{domain: 'follower1.crypto'}],
+      meta: {
+        total_count: 1,
+        pagination: {
+          cursor: 0,
+          take: 1,
+        },
+      },
+      relationship_type: 'followers',
+      domain: 'foo.crypto',
+    });
+    jest
+      .spyOn(featureFlagActions, 'fetchFeatureFlags')
+      .mockResolvedValue(featureFlagActions.DEFAULT_FEATURE_FLAGS);
+    jest.spyOn(identityActions, 'getIdentity').mockResolvedValue({
+      id: 'personaId',
+      createdAt: Date.now(),
+      name: 'foo.crypto',
+      status: PersonaInquiryStatus.COMPLETED,
+    });
+
+    // mock profile with token gallery enabled
+    jest
+      .spyOn(domainProfileActions, 'getProfileData')
+      .mockResolvedValue(tokenGalleryProps.profileData!);
+
+    // mock NFT data
+    jest.spyOn(domainProfileActions, 'getDomainNfts').mockResolvedValue({
+      ['SOL']: {
+        address: 'test-sol-address',
+        verified: true,
+        enabled: true,
+        cursor: '1',
+        nfts: [
+          {
+            name: 'test-sol-nft-name',
+            mint: 'test-sol-nft-name',
+            link: 'test-nft-link',
+            image_url: 'https://test-nft-jpg',
+            video_url: '',
+            collection: 'test-sol-collection',
+            description: 'test-nft-description',
+            public: true,
+          },
+          {
+            name: 'test-sol-nft-ticket',
+            mint: 'test-sol-nft-ticket',
+            link: 'test-nft-ticket-link',
+            image_url: 'https://test-nft-ticket-jpg',
+            video_url: '',
+            collection: 'test-sol-collection',
+            description: 'test-nft-ticket-description',
+            tags: ['ticket'],
+            public: true,
+          },
+          {
+            name: 'test-sol-nft-hidden',
+            mint: 'test-sol-nft-hidden',
+            link: 'test-nft-ticket-link',
+            image_url: 'https://test-nft-ticket-jpg',
+            video_url: '',
+            collection: 'test-sol-collection',
+            description: 'test-nft-ticket-description',
+            tags: ['ticket', 'hidden'],
+            public: false,
+          },
+        ],
+      },
+      ['ETH']: {
+        address: 'test-eth-address',
+        verified: true,
+        enabled: true,
+        cursor: '1',
+        nfts: [
+          {
+            name: 'test-eth-nft-name',
+            mint: 'test-eth-nft-name',
+            link: 'test-nft-link',
+            image_url: 'https://test-nft-jpg',
+            video_url: '',
+            collection: 'test-eth-collection',
+            description: 'test-nft-description',
+            public: true,
+          },
+        ],
+      },
+    });
+
+    // mock the lazy load image component due to incompatibilities with jest
+    jest
+      .spyOn(nftImage, 'default')
+      .mockReturnValue(
+        <img src="https://test-nft-jpg" alt="test-sol-nft-name"></img>,
+      );
+
+    // mock local storage
+    jest
+      .spyOn(Storage.prototype, 'getItem')
+      .mockImplementation((k: string): string | null => {
+        switch (k) {
+          case DomainProfileKeys.AuthAddress:
+            return defaultProps().metadata.owner;
+          case DomainProfileKeys.AuthDomain:
+            return 'foo.crypto';
+        }
+        return null;
+      });
+  });
+
+  it('should render the hidden tag in category menu', async () => {
+    customRender(<DomainProfile {...tokenGalleryProps} />);
+    await waitFor(() => {
+      expect(screen.getByTestId('swiper-testid')).toBeInTheDocument();
+    });
+
+    // click show all
+    const showAll = screen.getByTestId('nftGallery-show-all-link');
+    expect(showAll).toBeInTheDocument();
+    userEvent.click(showAll);
+
+    // verify owner button
+    expect(screen.getByTestId('nftGallery-config-button')).toBeInTheDocument();
+
+    // click category menu
+    const categoryFilter = screen.getByTestId('nftGallery-filter-tag');
+    userEvent.click(categoryFilter);
+
+    // make sure the hidden option is present
+    expect(
+      screen.getByTestId('nftGallery-filter-tag-hidden'),
+    ).toBeInTheDocument();
+  });
+
+  it('hides unverified NFTs', async () => {
+    jest.spyOn(domainProfileActions, 'getDomainNfts').mockResolvedValue({
+      ['SOL']: {
+        address: 'test-sol-address',
+        verified: true,
+        enabled: true,
+        cursor: '1',
+        nfts: [
+          {
+            name: 'test-sol-nft-name',
+            mint: 'test-sol-nft-name',
+            link: 'test-nft-link',
+            image_url: 'https://test-nft-jpg',
+            video_url: '',
+            collection: 'test-sol-collection',
+            description: 'test-nft-description',
+            public: true,
+          },
+          {
+            name: 'test-sol-nft-ticket',
+            mint: 'test-sol-nft-ticket',
+            link: 'test-nft-ticket-link',
+            image_url: 'https://test-nft-ticket-jpg',
+            video_url: '',
+            collection: 'test-sol-collection',
+            description: 'test-nft-ticket-description',
+            tags: ['ticket'],
+            public: true,
+          },
+          {
+            name: 'test-sol-nft-hidden',
+            mint: 'test-sol-nft-hidden',
+            link: 'test-nft-ticket-link',
+            image_url: 'https://test-nft-ticket-jpg',
+            video_url: '',
+            collection: 'test-sol-collection',
+            description: 'test-nft-ticket-description',
+            tags: ['ticket', 'hidden'],
+            public: false,
+          },
+        ],
+      },
+      ['ETH']: {
+        address: 'test-eth-address',
+        verified: false,
+        enabled: true,
+        cursor: '1',
+        nfts: [
+          {
+            name: 'test-eth-nft-name',
+            mint: 'test-eth-nft-name',
+            link: 'test-nft-link',
+            image_url: 'https://test-nft-jpg',
+            video_url: '',
+            collection: 'test-eth-collection',
+            description: 'test-nft-description',
+            public: true,
+          },
+        ],
+      },
+    });
+
+    customRender(<DomainProfile {...tokenGalleryProps} />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText('test-sol-nft-name').length).toBeGreaterThan(
+        0,
+      ),
+    );
+    expect(() => screen.getByText('test-eth-nft-name')).toThrow();
+  });
+
+  it('shows configuration link when gallery is already enabled', async () => {
+    customRender(<DomainProfile {...tokenGalleryProps} />);
+    await waitFor(() =>
+      expect(screen.getAllByText('test-sol-nft-name').length).toBeGreaterThan(
+        0,
+      ),
+    );
+    expect(screen.getByTestId('nftGallery-config-button')).toBeInTheDocument();
+  });
+
+  it('opens first time configuration modal when button clicked', async () => {
+    jest.spyOn(domainProfileActions, 'getDomainNfts').mockResolvedValue({
+      ['SOL']: {
+        address: 'sol-address',
+        enabled: false,
+        verified: true,
+        cursor: '1',
+        nfts: [],
+      },
+    });
+    customRender(<DomainProfile {...tokenGalleryProps} />);
+    await waitFor(() =>
+      expect(
+        screen.getByTestId('nftGallery-firstTimeConfigTitle'),
+      ).toBeInTheDocument(),
+    );
+    const configButton = screen.getByTestId('nftGallery-config-button');
+    userEvent.click(configButton);
+    await waitFor(() =>
+      expect(screen.getByTestId('nftGallery-modal-save')).toBeInTheDocument(),
+    );
+  });
+
+  it('displays clickable visibility toggle', async () => {
+    jest.spyOn(domainProfileActions, 'getDomainNfts').mockResolvedValue({
+      ['SOL']: {
+        address: 'sol-address',
+        enabled: true,
+        verified: true,
+        cursor: '1',
+        nfts: [
+          {
+            name: 'test-sol-nft-name',
+            mint: 'test-sol-nft-mint',
+            link: 'test-nft-link',
+            collection: 'test-collection',
+            video_url: '',
+            image_url: 'https://test-nft-jpg',
+            description: 'test-nft-description',
+            public: true,
+          },
+        ],
+      },
+      ['ETH']: {
+        address: 'eth-address',
+        enabled: true,
+        verified: false,
+        cursor: '1',
+        nfts: [
+          {
+            name: 'test-eth-nft-name',
+            mint: 'test-eth-nft-mint',
+            link: 'test-nft-link',
+            collection: 'test-collection',
+            video_url: '',
+            image_url: 'https://test-nft-jpg',
+            description: 'test-nft-description',
+            public: true,
+          },
+        ],
+      },
+    });
+
+    customRender(<DomainProfile {...tokenGalleryProps} />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText('test-sol-nft-name').length).toBeGreaterThan(
+        0,
+      ),
+    );
+
+    // find the visibility icon
+    const vizIcons = screen.getAllByTestId(
+      `nftGallery-viz-icon-on-test-sol-nft-mint`,
+    );
+    expect(vizIcons.length).toBeGreaterThan(0);
+
+    // expect the pending button not yet to be present
+    expect(() => screen.getByTestId('nftGallery-confirm-button')).toThrow();
+
+    // click the icon and make sure it is now hidden
+    userEvent.click(vizIcons[0]);
+    expect(() =>
+      screen.getByTestId('nftGallery-viz-icon-on-test-sol-nft-mint'),
+    ).toThrow();
+
+    // expect the pending button to now be rendered
+    expect(screen.getByTestId(`nftGallery-confirm-button`));
+  });
+
+  it('does not render the chat or follow buttons on own domain', async () => {
+    customRender(<DomainProfile {...tokenGalleryProps} />);
+
+    // validate only the share button is present
+    await waitFor(() => {
+      expect(screen.queryByTestId('share-button')).toBeInTheDocument();
+      expect(screen.queryByTestId('chat-button')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('follow-button')).not.toBeInTheDocument();
+    });
+  });
+
+  it('initiates Unstoppable Messaging onboarding when chat button clicked', async () => {
+    // mock the EPNS endpoints
+    const mockGetPushUser = jest
+      .spyOn(push, 'getPushUser')
+      .mockResolvedValue(undefined);
+
+    // mock XMTP endpoints
+    const mockXmtpUser = jest
+      .spyOn(chatStorage, 'getXmtpLocalKey')
+      .mockReturnValue(undefined);
+
+    // render a domain other than the logged in user domain
+    customRender(
+      <DomainProfile {...tokenGalleryProps} domain="another.crypto" />,
+    );
+
+    // validate all the chat button exists
+    await waitFor(() => {
+      expect(screen.queryByTestId('chat-button')).toBeInTheDocument();
+    });
+
+    // validate the push user onboarding mock not yet called
+    expect(mockGetPushUser).not.toHaveBeenCalled();
+    expect(mockXmtpUser).toHaveBeenCalledTimes(1);
+
+    // click the chat button to kickoff onboarding
+    const chatButton = screen.getByTestId('chat-button');
+    userEvent.click(chatButton);
+
+    // verify the user initialization process started
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId('chat-onboard-modal-save'),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('renders the featured partner show/hide button', async () => {
+    customRender(<DomainProfile {...tokenGalleryProps} />);
+    await waitFor(() => {
+      expect(screen.getByText('Badges')).toBeInTheDocument();
+      expect(screen.getByText('Featured Partners')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('showhide-featuredPartners'),
+      ).toBeInTheDocument();
+    });
   });
 });

@@ -323,7 +323,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         });
         return localConversations;
       } catch (e) {
-        notifyError(e, {msg: 'error loading conversations'}, 'info');
+        notifyError(e, {msg: 'error loading conversations'}, 'warning');
       } finally {
         if (!isAlreadyLoading) {
           setLoadingText(undefined);

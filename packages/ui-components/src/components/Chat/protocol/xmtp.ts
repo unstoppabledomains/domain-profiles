@@ -192,7 +192,7 @@ export const initXmtpAccount = async (address: string, signer: Signer) => {
     );
     await conversation.send(`GM from Unstoppable Domains 👋`);
   } catch (e) {
-    notifyError(e);
+    notifyError(e, {}, 'warning');
     throw e;
   }
 };

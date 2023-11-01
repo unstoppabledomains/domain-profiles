@@ -11,8 +11,8 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import type {Nft} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
-import type {Nft} from './NftCard';
 import NftCard from './NftCard';
 import NftFilterSelect from './NftFilterSelect';
 import {NftTag} from './NftGalleryData';

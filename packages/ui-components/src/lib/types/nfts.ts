@@ -8,6 +8,26 @@ export enum Network {
   Fantom = '250',
 }
 
+export type Nft = SerializedNftMetadata & {
+  toggleVisibility?: (symbol: string, mint: string, visible: boolean) => void;
+};
+
+export type NftMintItem = NftRequestItem & {
+  symbol: string;
+};
+export interface NftRequestItem {
+  mint: string;
+  public: boolean;
+}
+
+export interface NftResponse {
+  nfts: Nft[];
+  address: string;
+  verified: boolean;
+  enabled: boolean;
+  cursor?: string;
+}
+
 export interface SerializedMarketplaceData {
   listings?: SerializedNftMetadata[];
   floorPrice?: SerializedPrice;

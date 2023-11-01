@@ -4,6 +4,7 @@ import {useQuery} from 'react-query';
 import config from '@unstoppabledomains/config';
 
 import type {AddressResolution} from '../components/Chat/types';
+import type {NftResponse} from '../lib';
 import {fetchApi} from '../lib/fetchApi';
 import type {
   SerializedFollowerListData,
@@ -54,6 +55,19 @@ export const followDomainProfile = async (
     },
     body: JSON.stringify({domain: followerDomain}),
   });
+};
+
+export const getDomainNfts = async (
+  domain: string,
+  symbols?: string,
+  cursor?: string,
+): Promise<Record<string, NftResponse> | undefined> => {
+  const queryStringParams = QueryString.stringify({
+    symbols,
+    cursor,
+  });
+  const domainNftUrl = `/public/${domain}/nfts?${queryStringParams}`;
+  return await fetchApi(domainNftUrl, {host: config.PROFILE.HOST_URL});
 };
 
 export const getFollowers = async (

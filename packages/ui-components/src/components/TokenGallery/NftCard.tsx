@@ -11,9 +11,9 @@ import VisibilitySensor from 'react-visibility-sensor';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {CryptoIcon} from '../../components/Image/CryptoIcon';
+import type {Nft} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 import type {AllCurrenciesType} from '../../lib/types/blockchain';
-import type {SerializedNftMetadata} from '../../lib/types/nfts';
 import NftImage from './NftImage';
 import NftModal from './NftModal';
 
@@ -60,10 +60,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     },
   },
 }));
-
-export type Nft = SerializedNftMetadata & {
-  toggleVisibility?: (symbol: string, mint: string, visible: boolean) => void;
-};
 
 interface Props {
   domain: string;

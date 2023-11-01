@@ -8,14 +8,11 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import NFTGalleryCarousel from '../../components/TokenGallery/NFTGalleryCarousel';
 import NftFirstTimeGalleryContainer from '../../components/TokenGallery/NftFirstTimeGalleryContainer';
 import {getNextNftPageFn} from '../../components/TokenGallery/NftGalleryData';
-import type {
-  NftMintItem,
-  NftResponse,
-} from '../../components/TokenGallery/NftGalleryManager';
 import {NftGalleryManager} from '../../components/TokenGallery/NftGalleryManager';
 import NftGalleryView from '../../components/TokenGallery/NftGalleryView';
 import useTokenGallery from '../../hooks/useTokenGallery';
 import useWeb3Context from '../../hooks/useWeb3Context';
+import type {NftMintItem, NftResponse} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 
 export interface TokenGalleryProps {

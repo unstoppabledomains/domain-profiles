@@ -1,9 +1,8 @@
-import qs from 'qs';
 import {useState} from 'react';
 
+import {getDomainNfts} from '../../actions';
+import type {Nft, NftMintItem, NftResponse} from '../../lib';
 import {notifyError} from '../../lib/error';
-import type {Nft} from './NftCard';
-import type {NftMintItem, NftResponse} from './NftGalleryManager';
 
 export enum NftTag {
   All = 'all',
@@ -176,13 +175,7 @@ export const getNextNftPageFn = (
   ): Promise<Record<string, NftResponse> | undefined> => {
     try {
       props.setNftDataLoading(true);
-      const queryStringParams = qs.stringify({
-        symbols,
-        cursor,
-      });
-      const domainNftUrl = `${props.profileServiceUrl}/public/${props.domain}/nfts?${queryStringParams}`;
-      const response = await fetch(domainNftUrl);
-      return await response.json();
+      return await getDomainNfts(props.domain, symbols, cursor);
     } catch (e) {
       notifyError(e, {msg: 'error retrieving NFT data'});
     } finally {

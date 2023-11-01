@@ -18,6 +18,7 @@ const config: InitialOptionsTsJest = {
   ],
   testMatch: ['<rootDir>/**/?(*.)+(spec|test).[jt]sx'],
   transform: {
+    '^.+\\.css$': 'jest-transform-css',
     '^.+\\.(ts|tsx)$': [
       'ts-jest',
       {
@@ -33,7 +34,8 @@ const config: InitialOptionsTsJest = {
     'web3.storage': '<rootDir>/tests/mocks/empty.js',
     ['wagmi']: '<rootDir>/tests/mocks/empty.js',
     'react-medium-image-zoom': '<rootDir>/tests/mocks/empty.js',
-    ['swiper(.*)']: '<rootDir>/tests/mocks/empty.js',
+    'swiper/react': '<rootDir>/tests/mocks/swiper-react/index.tsx',
+    ['swiper']: '<rootDir>/node_modules/swiper/swiper-bundle.js',
     ...sharedModules.reduce(
       (acc, name) => ({
         ...acc,

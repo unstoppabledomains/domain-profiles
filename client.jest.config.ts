@@ -37,21 +37,12 @@ const config: InitialOptionsTsJest = {
     ...sharedModules.reduce(
       (acc, name) => ({
         ...acc,
+        [`@unstoppabledomains/${name}/src/(.*)$`]: `<rootDir>/packages/${name}/src/$1`,
         [`@unstoppabledomains/${name}(.*)$`]: `<rootDir>/packages/${name}/src/$1`,
       }),
       {},
     ),
-    [`^locales.json$`]: `<rootDir>/server/locales.json`,
-    ...[
-      'actions',
-      'components',
-      'hooks',
-      'lib',
-      'providers',
-      'locales',
-      'styles',
-      'tests',
-    ].reduce(
+    ...['styles', 'tests'].reduce(
       (acc, name) => ({
         ...acc,
         [`^${name}/(.*)$`]: `<rootDir>/server/${name}/$1`,

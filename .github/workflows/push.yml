@@ -22,7 +22,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
-      - name: Build Shared
+      - name: Build shared libraries
         run: yarn build
 
       - name: Typecheck
@@ -50,3 +50,6 @@ jobs:
         run: yarn test:ci ./packages/**
         env:
           NODE_OPTIONS: --max_old_space_size=3072
+      
+      - name: Verify NPM build
+        run: yarn dist

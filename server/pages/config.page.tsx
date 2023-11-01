@@ -1,10 +1,10 @@
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import useTranslationContext from 'lib/i18n';
 import type {GetServerSideProps, NextPage} from 'next';
 import React from 'react';
 
 import config from '@unstoppabledomains/config';
+import {useTranslationContext} from '@unstoppabledomains/ui-components';
 
 export interface ConfigPageProps {
   renderTime: string;

@@ -19,55 +19,9 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import {getDomainBadges, getReverseResolution} from 'actions/domainActions';
-import {getFollowers, getProfileData} from 'actions/domainProfileActions';
-import {useFeatureFlags} from 'actions/featureFlagActions';
-import {getIdentity} from 'actions/identityActions';
-import Badges from 'components/Badges';
-import Badge from 'components/Badges/Badge';
-import {UnstoppableMessaging} from 'components/Chat/UnstoppableMessaging';
-import useUnstoppableMessaging from 'components/Chat/hooks/useUnstoppableMessaging';
-import CopyToClipboard from 'components/CopyToClipboard';
-import CryptoAddresses from 'components/CryptoAddresses';
-import CustomBadges from 'components/CustomBadges';
-import {DomainListModal} from 'components/Domain/DomainListModal';
-import {DomainPreview} from 'components/Domain/DomainPreview';
-import FollowButton from 'components/Domain/FollowButton';
-import ProfilePicture from 'components/Domain/ProfilePicture';
-import ShareMenu from 'components/Domain/ShareMenu';
-import ShowHideButton from 'components/Domain/ShowHideButton';
-import SocialAccountCard from 'components/Domain/SocialAccountCard';
-import ForSaleOnOpenSea from 'components/ForSaleOnOpenSea';
-import {AccountButton} from 'components/Header/AccountButton';
-import {LoginButton, LoginMethod} from 'components/Header/LoginButton';
-import ProfileSearchBar from 'components/Header/ProfileSearchBar';
-import Logo from 'components/Image/Logo';
-import Link from 'components/Link';
-import NFTGalleryCarousel from 'components/TokenGallery/NFTGalleryCarousel';
-import TokenGallery from 'components/TokenGallery/TokenGallery';
+import {useTheme} from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import {format, isPast} from 'date-fns';
-import {useEnsDomainStatus} from 'hooks/useEnsDomainStatus';
-import useTokenGallery from 'hooks/useTokenGallery';
-import useWeb3Context from 'hooks/useWeb3Context';
-import {
-  isExternalDomainValidForManagement,
-  splitDomain,
-} from 'lib/domain/format';
-import getImageUrl from 'lib/domain/getImageUrl';
-import {parseRecords} from 'lib/domain/records';
-import {formOpenSeaLink} from 'lib/formOpenseaLink';
-import useTranslationContext from 'lib/i18n';
-import {getSeoTags} from 'lib/seo';
-import type {DomainBadgesResponse} from 'lib/types/badge';
-import type {Blockchain} from 'lib/types/blockchain';
-import {Registry} from 'lib/types/blockchain';
-import type {
-  SerializedDomainProfileSocialAccountsUserInfo,
-  SerializedPublicDomainProfileData,
-} from 'lib/types/domain';
-import {DomainProfileKeys, UD_BLUE_BADGE_CODE} from 'lib/types/domain';
-import type {PersonaIdentity} from 'lib/types/persona';
-import {getUAuth} from 'lib/uauth';
 import type {GetServerSideProps} from 'next';
 import {NextSeo} from 'next-seo';
 import {useSnackbar} from 'notistack';
@@ -78,6 +32,56 @@ import {useStyles} from 'styles/pages/domain.styles';
 import {titleCase} from 'title-case';
 
 import config from '@unstoppabledomains/config';
+import type {
+  Blockchain,
+  DomainBadgesResponse,
+  PersonaIdentity,
+  SerializedDomainProfileSocialAccountsUserInfo,
+  SerializedPublicDomainProfileData,
+} from '@unstoppabledomains/ui-components';
+import {
+  AccountButton,
+  Badge,
+  Badges,
+  CopyToClipboard,
+  CryptoAddresses,
+  CustomBadges,
+  DomainListModal,
+  DomainPreview,
+  DomainProfileKeys,
+  FollowButton,
+  ForSaleOnOpenSea,
+  Link,
+  LoginButton,
+  LoginMethod,
+  Logo,
+  NFTGalleryCarousel,
+  ProfilePicture,
+  ProfileSearchBar,
+  Registry,
+  ShareMenu,
+  ShowHideButton,
+  SocialAccountCard,
+  TokenGallery,
+  UD_BLUE_BADGE_CODE,
+  UnstoppableMessaging,
+  formOpenSeaLink,
+  getDomainBadges,
+  getFollowers,
+  getIdentity,
+  getImageUrl,
+  getProfileData,
+  getSeoTags,
+  isExternalDomainValidForManagement,
+  parseRecords,
+  splitDomain,
+  useEnsDomainStatus,
+  useFeatureFlags,
+  useTokenGallery,
+  useTranslationContext,
+  useUnstoppableMessaging,
+  useWeb3Context,
+} from '@unstoppabledomains/ui-components';
 import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
 type DomainProfileServerSideProps = GetServerSideProps & {
@@ -103,15 +107,18 @@ const DomainProfile = ({
 }: DomainProfilePageProps) => {
   // hooks
   const [t] = useTranslationContext();
+  const theme = useTheme();
   const {classes, cx} = useStyles();
   const isMounted = useIsMounted();
   const [imagePath, setImagePath] = useState<string>();
   const {enqueueSnackbar} = useSnackbar();
   const {chatUser, setOpenChat} = useUnstoppableMessaging();
   const {nfts, nftSymbolVisible, expanded: nftShowAll} = useTokenGallery();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const {setWeb3Deps} = useWeb3Context();
 
   // state management
+  const [loginClicked, setLoginClicked] = useState<boolean>();
   const [authAddress, setAuthAddress] = useState('');
   const [authDomain, setAuthDomain] = useState('');
   const [displayQrCode, setDisplayQrCode] = useState(false);
@@ -258,44 +265,16 @@ const DomainProfile = ({
     );
   };
 
-  const handleLoginClicked = async (): Promise<void> => {
-    try {
-      if (authDomain) {
-        return;
-      }
-
-      // complete the login with UD flow
-      const uauth = await getUAuth({
-        clientId: config.LOGIN_WITH_UNSTOPPABLE.CLIENT_ID,
-        redirectUri: config.LOGIN_WITH_UNSTOPPABLE.REDIRECT_URI,
-      });
-      const authorization = await uauth.loginWithPopup();
-      if (!authorization.idToken.wallet_address) {
-        throw new Error('wallet address not provided in claims');
-      }
-
-      // determine the user's primary domain (if available)
-      const authOwnerAddress = authorization.idToken.wallet_address;
-      const authPrimaryDomain = await getReverseResolution(authOwnerAddress);
-
-      // store the domain to be displayed in the UX, defaulting to the
-      // user's primary domain if available and falling back to the one
-      // provided at login time if not available
-      localStorage.setItem(
-        DomainProfileKeys.AuthDomain,
-        authPrimaryDomain || authorization.idToken.sub,
-      );
-      setAuthDomain(authPrimaryDomain || authorization.idToken.sub);
-
-      // store the wallet address that was authenticated
-      localStorage.setItem(DomainProfileKeys.AuthAddress, authOwnerAddress);
-      setAuthAddress(authOwnerAddress);
-
-      // set ownership flag
-      setIsOwner(ownerAddress.toLowerCase() === authOwnerAddress.toLowerCase());
-    } catch (loginError) {
-      console.error('login error', loginError);
+  const handleLoginComplete = (newAddress: string, newDomain: string) => {
+    // ensure values are set
+    if (!newAddress || !newDomain) {
+      return;
     }
+
+    // update state based on login result
+    setAuthAddress(newAddress);
+    setAuthDomain(newDomain);
+    setIsOwner(ownerAddress.toLowerCase() === newAddress.toLowerCase());
   };
 
   const hasBadges =
@@ -356,7 +335,7 @@ const DomainProfile = ({
     }
     // retrieve badges
     const loadBadges = async () => {
-      const badgeData = await getDomainBadges(domain);
+      const badgeData: DomainBadgesResponse = await getDomainBadges(domain);
       setBadges(badgeData);
       setBadgeTypes([
         ...new Set(
@@ -490,7 +469,7 @@ const DomainProfile = ({
             )}
             {domain !== authDomain && (
               <FollowButton
-                handleLogin={handleLoginClicked}
+                handleLogin={() => setLoginClicked(true)}
                 setWeb3Deps={setWeb3Deps}
                 authDomain={authDomain}
                 domain={domain}
@@ -527,11 +506,12 @@ const DomainProfile = ({
                 </>
               ) : (
                 <LoginButton
-                  method={LoginMethod.Uauth}
+                  method={isMobile ? LoginMethod.Wallet : LoginMethod.Uauth}
                   loading={false}
                   isWhiteBg
                   hidden={false}
-                  onClick={handleLoginClicked}
+                  clicked={loginClicked}
+                  onLoginComplete={handleLoginComplete}
                 />
               )}
             </div>

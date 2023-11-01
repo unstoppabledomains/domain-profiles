@@ -22,7 +22,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
-      - name: Build Shared
+      - name: Build shared libraries
         run: yarn build
 
       - name: Typecheck
@@ -38,6 +38,10 @@ jobs:
           filters: |-
             server: [server/**, packages/**]
             packages: [packages/**]
+            npmUiComponentsChangeLog: [packages/ui-components/CHANGELOG.md]
+            npmUiComponentsVersion: [packages/ui-components/package.json]
+            npmConfigChangeLog: [packages/config/CHANGELOG.md]
+            npmConfigVersion: [packages/config/package.json]
 
       - name: Run Tests - UD.me Frontend
         if: ${{ steps.changes.outputs.server == 'true' }}
@@ -50,6 +54,9 @@ jobs:
         run: yarn test:ci ./packages/**
         env:
           NODE_OPTIONS: --max_old_space_size=3072
+      
+      - name: Verify NPM build
+        run: yarn dist
 
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@v1
@@ -57,9 +64,11 @@ jobs:
           message: |
             :tada: All your tests were successful!
 
-            We detected changes in the following services:
-            ${{ steps.changes.outputs.server == 'true' && '- UD.me Frontend' || '' }}
-            ${{ steps.changes.outputs.packages == 'true' && '- Shared Packages' || '' }}
+            We detected changes in the following:
+            ${{ steps.changes.outputs.server == 'true' && '- UD.me frontend' || '' }}
+            ${{ steps.changes.outputs.packages == 'true' && '- Shared packages' || '' }}
+            ${{ steps.changes.outputs.npmUiComponentsChangeLog == 'true' && steps.changes.outputs.npmUiComponentsVersion == 'true' && '- NPM build: `@unstoppabledomains/ui-components`' || '' }}
+            ${{ steps.changes.outputs.npmConfigChangeLog == 'true' && steps.changes.outputs.npmConfigVersion == 'true' && '- NPM build: `@unstoppabledomains/config`' || '' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload test results to GitHub

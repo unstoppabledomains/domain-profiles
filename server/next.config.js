@@ -6,7 +6,7 @@ const contentSecurityPolicy = require('./contentSecurityPolicy');
 const locales = require('./locales.json');
 
 // transpile any required modules
-const withNtm = require('next-transpile-modules')(['@pushprotocol/uiweb']);
+const withNtm = require('next-transpile-modules')([]);
 
 /**
  * By default, NextJS returns Cache-Control headers for immutable assets, telling Fastly to cache the response

@@ -3,6 +3,7 @@ import type {ConfigOverride} from './types';
 export default function getProductionConfig(): ConfigOverride {
   return {
     APP_ENV: 'production',
+    UD_ME_BASE_URL: 'https://ud.me',
     UNSTOPPABLE_API_URL: 'https://api.unstoppabledomains.com',
     UNSTOPPABLE_WEBSITE_URL: 'https://unstoppabledomains.com',
     UNSTOPPABLE_METADATA_ENDPOINT:
@@ -36,7 +37,7 @@ export default function getProductionConfig(): ConfigOverride {
     },
     LOGIN_WITH_UNSTOPPABLE: {
       CLIENT_ID: 'c3af833f-3fd5-46fd-ac3e-bfc136624d1b',
-      REDIRECT_URI: 'https://domain-profiles-wnjctwcyaa-uc.a.run.app',
+      REDIRECT_URI: 'https://ud.me',
     },
     MESSAGING: {
       EMAIL_DOMAIN: 'ud.me',

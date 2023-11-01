@@ -1,0 +1,15 @@
+{
+  "applinks": {
+      "details": [
+           {
+             "appIDs": [ "22QSRWWPVJ.com.unstoppabledomains.manager"],
+             "components": [
+               {
+                   "/": "/*",
+                   "comment": "Matches any URL whose path starts with / to handle domain profiles"
+               }
+             ]
+           }
+       ]
+   }
+}

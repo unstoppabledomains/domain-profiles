@@ -15,6 +15,11 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import React from 'react';
 
+import {
+  UnstoppableMessaging,
+  useUnstoppableMessaging,
+} from '@unstoppabledomains/ui-components';
+
 const UnstoppableMessagingDemo = () => {
   // Hook provides utility methods, such as opening the Unstoppable
   // Messaging window by clicking a button

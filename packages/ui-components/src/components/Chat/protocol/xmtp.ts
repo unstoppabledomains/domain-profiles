@@ -197,6 +197,13 @@ export const initXmtpAccount = async (address: string, signer: Signer) => {
   }
 };
 
+export const isAcceptedTopic = (
+  topic: string,
+  acceptedTopics: string[],
+): boolean => {
+  return acceptedTopics.includes('*') || acceptedTopics.includes(topic);
+};
+
 export const isXmtpUser = async (address: string): Promise<boolean> => {
   return await Client.canMessage(address, xmtpOpts);
 };

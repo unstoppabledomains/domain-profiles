@@ -6,11 +6,16 @@ import {fetchApi} from '../lib/fetchApi';
 import type {SerializedCryptoWalletBadge} from '../lib/types/badge';
 import type {SendMessageParams} from '../lib/types/message';
 
+export const getDomainPreferences = async (domain: string) => {
+  return await fetchApi(`/user/${domain}/notifications/preferences`, {
+    host: config.PROFILE.HOST_URL,
+  });
+};
+
 export const isAddressSpam = async (address: string): Promise<boolean> => {
-  const spamData = await fetchApi(
-    `${config.MESSAGING.HOST_URL}/xmtp/spam/${address}`,
-    {host: config.MESSAGING.HOST_URL},
-  );
+  const spamData = await fetchApi(`/xmtp/spam/${address}`, {
+    host: config.MESSAGING.HOST_URL,
+  });
   return spamData.isSpam === true;
 };
 

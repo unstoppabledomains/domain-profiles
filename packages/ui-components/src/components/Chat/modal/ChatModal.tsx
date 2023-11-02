@@ -32,11 +32,13 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {getDomainPreferences} from '../../../actions';
 import {useFeatureFlags} from '../../../actions/featureFlagActions';
 import {
   getDomainSignatureExpiryKey,
   getDomainSignatureValueKey,
 } from '../../../components/Wallet/ProfileManager';
+import {isDomainValidForManagement} from '../../../lib';
 import {notifyError} from '../../../lib/error';
 import useTranslationContext from '../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../lib/types/badge';
@@ -46,7 +48,11 @@ import useFetchNotifications from '../hooks/useFetchNotification';
 import {registerClientTopics} from '../protocol/registration';
 import {getAddressMetadata} from '../protocol/resolution';
 import type {ConversationMeta} from '../protocol/xmtp';
-import {getConversation, getConversations} from '../protocol/xmtp';
+import {
+  getConversation,
+  getConversations,
+  isAcceptedTopic,
+} from '../protocol/xmtp';
 import type {AddressResolution, PayloadData} from '../types';
 import {TabType, getCaip10Address} from '../types';
 import Search from './Search';
@@ -219,7 +225,6 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   const [notifications, setNotifications] = useState<PayloadData[]>([]);
   const [notificationsAvailable, setNotificationsAvailable] = useState(true);
   const [notificationsPage, setNotificationsPage] = useState(1);
-  const [domain, setDomain] = useState<string>();
   const [userProfile, setUserProfile] =
     useState<SerializedUserDomainProfileData>();
   const {fetchNotifications, loading: notificationsLoading} =
@@ -359,12 +364,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   };
 
   const loadBlockedTopics = async () => {
-    try {
-      // request the domain's blocked topics from profile API
-      const response = await fetch(
-        `${config.PROFILE.HOST_URL}/user/${authDomain}/notifications/preferences`,
-      );
-      const responseJSON = await response.json();
+    // request the domain's blocked topics from profile API
+    if (authDomain && isDomainValidForManagement(authDomain)) {
+      const responseJSON = await getDomainPreferences(authDomain);
 
       // set blocked topics from result
       if (responseJSON?.blocked_topics) {
@@ -373,8 +375,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       if (responseJSON?.accepted_topics) {
         setAcceptedTopics(responseJSON.accepted_topics);
       }
-    } catch (e) {
-      notifyError(e, {msg: 'unable to load blocked topics'}, 'warning');
+    } else {
+      // for unknown domains accept all topics
+      setAcceptedTopics(['*']);
     }
   };
 
@@ -382,11 +385,6 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   // user such as user-specific storage API key
   const loadUserProfile = async () => {
     try {
-      // retrieve domain being used for messaging
-      if (authDomain) {
-        setDomain(authDomain);
-      }
-
       // retrieve optional signature data
       const authExpiry = localStorage.getItem(
         getDomainSignatureExpiryKey(authDomain!),
@@ -569,7 +567,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   };
 
   const handleSettingsClick = async () => {
-    window.location.href = `${config.UNSTOPPABLE_WEBSITE_URL}/manage?domain=${domain}&page=web3Messaging`;
+    window.location.href = `${config.UNSTOPPABLE_WEBSITE_URL}/manage?domain=${authDomain}&page=web3Messaging`;
   };
 
   const handleOpenChatFromName = async (name: string) => {
@@ -709,7 +707,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     // if no conversations visible, switch to search tab
     if (
       conversations?.filter(
-        c => acceptedTopics.includes(c.conversation.topic) && c.visible,
+        c => isAcceptedTopic(c.conversation.topic, acceptedTopics) && c.visible,
       ).length === 0
     ) {
       setConversationSearch(true);
@@ -720,7 +718,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     return (
       conversations?.filter(
         c =>
-          !acceptedTopics.includes(c.conversation.topic) &&
+          !isAcceptedTopic(c.conversation.topic, acceptedTopics) &&
           !blockedTopics.includes(c.conversation.topic),
       ).length || 0
     );
@@ -812,13 +810,15 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                     onClick={handleNewChat}
                   />
                 </Tooltip>
-                <Tooltip title={t('push.settings')}>
-                  <SettingsOutlinedIcon
-                    className={classes.headerActionIcon}
-                    onClick={handleSettingsClick}
-                    id="settings-button"
-                  />
-                </Tooltip>
+                {authDomain && isDomainValidForManagement(authDomain) && (
+                  <Tooltip title={t('push.settings')}>
+                    <SettingsOutlinedIcon
+                      className={classes.headerActionIcon}
+                      onClick={handleSettingsClick}
+                      id="settings-button"
+                    />
+                  </Tooltip>
+                )}
                 <Tooltip title={t('common.close')}>
                   <KeyboardDoubleArrowDownIcon
                     className={classes.headerActionIcon}
@@ -849,23 +849,25 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                     value={TabType.Chat}
                   />
                   {featureFlags.variations
-                    ?.ecommerceServiceUsersEnableChatCommunity && (
-                    <Tab
-                      label={
-                        <StyledTabBadge
-                          color="primary"
-                          variant="dot"
-                          invisible={
-                            !tabUnreadDot[TabType.Communities] &&
-                            pushKey !== undefined
-                          }
-                        >
-                          {t('push.communities')}
-                        </StyledTabBadge>
-                      }
-                      value={TabType.Communities}
-                    />
-                  )}
+                    ?.ecommerceServiceUsersEnableChatCommunity &&
+                    authDomain &&
+                    isDomainValidForManagement(authDomain) && (
+                      <Tab
+                        label={
+                          <StyledTabBadge
+                            color="primary"
+                            variant="dot"
+                            invisible={
+                              !tabUnreadDot[TabType.Communities] &&
+                              pushKey !== undefined
+                            }
+                          >
+                            {t('push.communities')}
+                          </StyledTabBadge>
+                        }
+                        value={TabType.Communities}
+                      />
+                    )}
                   <Tab
                     label={
                       <StyledTabBadge
@@ -930,9 +932,14 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                       {conversations
                         ?.filter(c =>
                           conversationRequestView
-                            ? !acceptedTopics.includes(c.conversation.topic) &&
-                              !blockedTopics.includes(c.conversation.topic)
-                            : acceptedTopics.includes(c.conversation.topic),
+                            ? !isAcceptedTopic(
+                                c.conversation.topic,
+                                acceptedTopics,
+                              ) && !blockedTopics.includes(c.conversation.topic)
+                            : isAcceptedTopic(
+                                c.conversation.topic,
+                                acceptedTopics,
+                              ),
                         )
                         .map(c => (
                           <ConversationPreview
@@ -953,10 +960,10 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                   value={TabType.Communities}
                   className={classes.tabContentItem}
                 >
-                  {pushAccount && pushKey && domain ? (
+                  {pushAccount && pushKey && authDomain ? (
                     <CommunityList
                       address={xmtpAddress}
-                      domain={domain}
+                      domain={authDomain}
                       pushKey={pushKey}
                       searchTerm={searchValue}
                       setActiveCommunity={setActiveCommunity}

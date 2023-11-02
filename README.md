@@ -49,11 +49,14 @@ yarn add react react-dom
 
 The React components contained in the `domain-profiles` project can be used in
 your own project, and imported directly from NPM. Some of the components
-available are:
+available include:
 
 - Unstoppable Messaging
 - Token Gallery
 - Wallet connect modal
+- Domain preview popup
+- Badges
+- More...
 
 As an example, the following demonstrates how to add Unstoppable Messaging to your
 existing Web3 React dApp. For a full working example, see the [Unstoppable Messaging

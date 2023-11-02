@@ -13,9 +13,8 @@ const MyPage = () => {
   // Messaging window by clicking a button
   const {setOpenChat} = useUnstoppableMessaging();
 
-  // Hard coded domain and address. In a real world scenarios these would
+  // Hard coded wallet address. In a real world scenarios this would
   // be retrieved from a wallet connection
-  const myDomain = 'quirk.x';
   const myAddress = '0xCD0DAdAb45bAF9a06ce1279D1342EcC3F44845af';
 
   // Open a chat window to a specific user
@@ -26,7 +25,7 @@ const MyPage = () => {
   return (
     <Paper sx={{margin: 5, padding: 5}}>
       <Box display="flex" marginTop={1}>
-        <UnstoppableMessaging domain={myDomain} address={myAddress} />
+        <UnstoppableMessaging address={myAddress} />
         <Button variant="contained" onClick={handleOpenChat}>
           Open chat
         </Button>

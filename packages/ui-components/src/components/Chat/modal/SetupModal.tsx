@@ -22,6 +22,7 @@ import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import Link from '../../../components/Link';
+import {isDomainValidForManagement} from '../../../lib';
 import useTranslationContext from '../../../lib/i18n';
 import {ConfigurationState} from '../types';
 
@@ -146,9 +147,11 @@ export const SetupModal: React.FC<SetupModalProps> = ({
             className={classes.headerImage}
             src="https://storage.googleapis.com/unstoppable-client-assets/images/manage/ud-messaging-banner.png"
           />
-          <Typography variant="h5" className={classes.infoBody}>
-            {domain}
-          </Typography>
+          {domain && isDomainValidForManagement(domain) && (
+            <Typography variant="h5" className={classes.infoBody}>
+              {domain}
+            </Typography>
+          )}
           <Typography variant="h5">{t('push.setup.title')}</Typography>
         </Box>
         <Divider className={classes.divider} />

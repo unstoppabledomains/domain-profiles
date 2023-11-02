@@ -38,7 +38,7 @@ import useTranslationContext from '../../../../lib/i18n';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
 import {registerClientTopics} from '../../protocol/registration';
 import {getAddressMetadata} from '../../protocol/resolution';
-import {waitForXmtpMessages} from '../../protocol/xmtp';
+import {isAcceptedTopic, waitForXmtpMessages} from '../../protocol/xmtp';
 import type {AddressResolution} from '../../types';
 import {useConversationStyles} from '../styles';
 import ConversationBubble from './ConversationBubble';
@@ -145,7 +145,7 @@ export const Conversation: React.FC<ConversationProps> = ({
         // determine if this is a new chat
         setIsChatRequest(
           initialMessages.length > 0 &&
-            !acceptedTopics.includes(conversation.topic),
+            !isAcceptedTopic(conversation.topic, acceptedTopics),
         );
 
         // listen for new messages
@@ -181,7 +181,7 @@ export const Conversation: React.FC<ConversationProps> = ({
 
     // add to local accepted topics list if necessary, since the user
     // has engaged with the conversation
-    if (!acceptedTopics.includes(msg.conversation.topic)) {
+    if (!isAcceptedTopic(msg.conversation.topic, acceptedTopics)) {
       const updatedAcceptedTopics = [
         ...acceptedTopics.filter(v => v !== msg.conversation.topic),
       ];

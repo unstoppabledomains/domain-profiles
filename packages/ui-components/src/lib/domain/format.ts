@@ -4,33 +4,6 @@ import {
   MANAGEABLE_DOMAIN_LABEL,
 } from '../../lib/types/domain';
 
-export const isExternalDomainSuffixValid = (extension: string): boolean => {
-  return EXTERNAL_DOMAIN_SUFFIXES.includes(extension);
-};
-
-export const isExternalDomainValidForManagement = (domain: string): boolean => {
-  return isExternalDomainValid(domain, MANAGEABLE_DOMAIN_LABEL, true);
-};
-
-const isExternalDomainValid = (
-  domain: string,
-  labelValidationRegex: RegExp,
-  allowIdn: boolean,
-): boolean => {
-  if (!isDomainFormatValid(domain, labelValidationRegex, allowIdn)) {
-    return false;
-  }
-
-  const {label, extension} = splitDomain(domain);
-  return Boolean(label) && isExternalDomainSuffixValid(extension);
-};
-
-/**
- * IDN (Internationalized domain name) labels are not supported yet
- */
-export const isInternationalDomainLabel = (label: string): boolean =>
-  label.startsWith('xn--');
-
 const isDomainFormatValid = (
   domain: string,
   labelValidationRegex: RegExp,
@@ -53,6 +26,37 @@ const isDomainFormatValid = (
     }
   });
 };
+
+export const isDomainValidForManagement = (domain: string): boolean => {
+  return isDomainFormatValid(domain, MANAGEABLE_DOMAIN_LABEL, false);
+};
+
+const isExternalDomainValid = (
+  domain: string,
+  labelValidationRegex: RegExp,
+  allowIdn: boolean,
+): boolean => {
+  if (!isDomainFormatValid(domain, labelValidationRegex, allowIdn)) {
+    return false;
+  }
+
+  const {label, extension} = splitDomain(domain);
+  return Boolean(label) && isExternalDomainSuffixValid(extension);
+};
+
+export const isExternalDomainSuffixValid = (extension: string): boolean => {
+  return EXTERNAL_DOMAIN_SUFFIXES.includes(extension);
+};
+
+export const isExternalDomainValidForManagement = (domain: string): boolean => {
+  return isExternalDomainValid(domain, MANAGEABLE_DOMAIN_LABEL, true);
+};
+
+/**
+ * IDN (Internationalized domain name) labels are not supported yet
+ */
+export const isInternationalDomainLabel = (label: string): boolean =>
+  label.startsWith('xn--');
 
 const isDomainLabelValid = (
   label: string,

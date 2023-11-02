@@ -10,10 +10,18 @@ const useUnstoppableMessaging = () => {
     setOpenCommunity,
     isChatReady,
     setIsChatReady,
+    chatAddress,
+    setChatAddress,
     chatUser,
     setChatUser,
   } = useContext(UnstoppableMessagingContext);
-  if (!setOpenChat || !setOpenCommunity || !setIsChatReady || !setChatUser) {
+  if (
+    !setOpenChat ||
+    !setOpenCommunity ||
+    !setIsChatReady ||
+    !setChatUser ||
+    !setChatAddress
+  ) {
     throw new Error(
       'Expected useUnstoppableMessaging to be called within <ChatProvider />',
     );
@@ -25,6 +33,8 @@ const useUnstoppableMessaging = () => {
     setOpenCommunity,
     isChatReady,
     setIsChatReady,
+    chatAddress,
+    setChatAddress,
     chatUser,
     setChatUser,
   };

@@ -14,12 +14,15 @@ export const UnstoppableMessagingContext = React.createContext<{
   openChat?: string;
   setOpenCommunity?: SetString;
   openCommunity?: string;
+  setChatAddress?: SetString;
+  chatAddress?: string;
   setChatUser?: SetString;
   chatUser?: string;
 }>({});
 
 const UnstoppableMessagingProvider: React.FC<Props> = ({children}) => {
   const [isChatReady, setIsChatReady] = useState(false);
+  const [chatAddress, setChatAddress] = useState<string>();
   const [chatUser, setChatUser] = useState<string>();
   const [activeChatId, setActiveChatId] = useState<string>();
   const [activeCommunityId, setActiveCommunityId] = useState<string>();
@@ -31,6 +34,8 @@ const UnstoppableMessagingProvider: React.FC<Props> = ({children}) => {
     openChat: activeChatId,
     setOpenCommunity: setActiveCommunityId,
     openCommunity: activeCommunityId,
+    chatAddress,
+    setChatAddress,
     setChatUser,
     chatUser,
   };

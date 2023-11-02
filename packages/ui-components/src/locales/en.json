@@ -417,6 +417,7 @@
     "errorLoadingMessage": "Unable to load message",
     "errorSendingAttachment": "Unable to upload attachment",
     "errorSendingMessage": "Unable to send message",
+    "getAnIdentity": "You can add a Web3 name to your wallet so users can easily identity your messages",
     "hide": "Hide messages for {{domain}}",
     "incoming": "Received a new message",
     "incomingDomain": "Received a new message from {{domain}}",
@@ -470,6 +471,7 @@
       "newUserDescription": "We need to request a few wallet signatures to enable Unstoppable Messaging for {{domain}}. You'll be able to send end-to-end encrypted messages to other domains and receive decentralized notifications.",
       "notifications": "Configuration Web3 notifications...",
       "notificationsDescription": "Sign the messages with your wallet to enable this device for Web3 notifications.",
+      "oneOfYourDomains": "one of your domains",
       "openMessaging": "View Messages",
       "poweredBy": "Powered by",
       "signAndEnable": "Enable on this Device",
@@ -479,7 +481,8 @@
       "successDescription": "Your device is ready for Unstoppable Messaging!",
       "support": "We'd love to hear from you.",
       "supportDescription": "Send a message to **{{supportHandle}}** for help, feedback or just to say hello.",
-      "title": "Unstoppable Messaging"
+      "title": "Unstoppable Messaging",
+      "yourWallet": "your wallet"
     },
     "showRequests": "View chat requests ({{count}})",
     "spamWarning": "Others have reported this sender as spam",

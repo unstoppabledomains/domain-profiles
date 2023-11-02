@@ -22,6 +22,7 @@ import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import Link from '../../../components/Link';
+import {isDomainValidForManagement} from '../../../lib';
 import useTranslationContext from '../../../lib/i18n';
 import {ConfigurationState} from '../types';
 
@@ -122,6 +123,7 @@ export const SetupModal: React.FC<SetupModalProps> = ({
   disabled,
   open,
   domain,
+  domainRequired,
   configState,
   isNewUser,
   isNewNotification,
@@ -146,9 +148,11 @@ export const SetupModal: React.FC<SetupModalProps> = ({
             className={classes.headerImage}
             src="https://storage.googleapis.com/unstoppable-client-assets/images/manage/ud-messaging-banner.png"
           />
-          <Typography variant="h5" className={classes.infoBody}>
-            {domain}
-          </Typography>
+          {domain && isDomainValidForManagement(domain) && (
+            <Typography variant="h5" className={classes.infoBody}>
+              {domain}
+            </Typography>
+          )}
           <Typography variant="h5">{t('push.setup.title')}</Typography>
         </Box>
         <Divider className={classes.divider} />
@@ -277,17 +281,23 @@ export const SetupModal: React.FC<SetupModalProps> = ({
             >
               {t('push.setup.openMessaging')}
             </Button>
-          ) : domain ? (
+          ) : domain || !domainRequired ? (
             <Tooltip
               arrow
               placement="top"
               hidden={disabled}
               title={
                 isNewUser
-                  ? t('push.setup.newUserDescription', {domain})
+                  ? t('push.setup.newUserDescription', {
+                      domain: domain || t('push.setup.yourWallet'),
+                    })
                   : isNewNotification
-                  ? t('push.setup.existingUserNeedsNotifications', {domain})
-                  : t('push.setup.existingUserDescription', {domain})
+                  ? t('push.setup.existingUserNeedsNotifications', {
+                      domain: domain || t('push.setup.yourWallet'),
+                    })
+                  : t('push.setup.existingUserDescription', {
+                      domain: domain || t('push.setup.yourWallet'),
+                    })
               }
             >
               <Button
@@ -351,6 +361,7 @@ export const SetupModal: React.FC<SetupModalProps> = ({
 export type SetupModalProps = {
   open: boolean;
   domain?: string;
+  domainRequired?: boolean;
   isNewUser: boolean;
   isNewNotification: boolean;
   disabled: boolean;

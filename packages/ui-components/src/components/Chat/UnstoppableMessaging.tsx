@@ -19,11 +19,15 @@ import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getNotificationConfigurations} from '../../actions/backendActions';
-import {getDomainBadges} from '../../actions/domainActions';
+import {
+  getDomainBadges,
+  getReverseResolution,
+} from '../../actions/domainActions';
 import {isAddressSpam, joinBadgeGroupChat} from '../../actions/messageActions';
 import useUnstoppableMessaging from '../../components/Chat/hooks/useUnstoppableMessaging';
 import {AccessWalletModal} from '../../components/Wallet/AccessWallet';
 import useWeb3Context from '../../hooks/useWeb3Context';
+import {isDomainValidForManagement} from '../../lib';
 import {notifyError} from '../../lib/error';
 import useTranslationContext from '../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../lib/types/badge';
@@ -105,10 +109,10 @@ type snackbarProps = {
 
 export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
   address,
-  domain,
   inheritStyle,
   large,
   label,
+  domainRequired = false,
   disableSupportBubble = true,
   initCallback,
 }) => {
@@ -120,6 +124,9 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     openCommunity: externalCommunityId,
     setOpenCommunity: setExternalCommunityId,
     setIsChatReady,
+    chatAddress,
+    setChatAddress,
+    chatUser,
     setChatUser,
   } = useUnstoppableMessaging();
   const [t] = useTranslationContext();
@@ -170,14 +177,6 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
   const [isNotificationEnabledB2c, setIsNotificationEnabledB2c] =
     useState(true);
 
-  // retrieve initial configuration settings
-  useEffect(() => {
-    if (domain) {
-      void fetchConfig();
-    }
-    setChatUser(domain);
-  }, [domain]);
-
   // open chat window from URL params
   useEffect(() => {
     // wait for initialization
@@ -223,65 +222,87 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     void openExternalCommunity();
   }, [externalCommunityId]);
 
-  // message icons
-  const messageReadyIcon = (
-    <ChatOutlinedIcon id="chat-icon" className={classes.messageIcon} />
-  );
-  const messageUnreadIcon = (
-    <MarkUnreadChatAltOutlinedIcon
-      id="chat-icon"
-      className={classes.messageIcon}
-    />
-  );
-  const messageConfigureIcon = (
-    <ChatOutlinedIcon
-      id="chat-icon-configure"
-      className={classes.messageIconForOnboarding}
-    />
-  );
+  // retrieve initial address settings
+  useEffect(() => {
+    if (address) {
+      setChatAddress(address);
+    }
+  }, [address]);
+
+  // retrieve initial domain settings
+  useEffect(() => {
+    if (chatUser) {
+      void fetchDomainConfig();
+    }
+  }, [chatUser]);
 
   // get optionally stored messaging state at page load time. If the user has previously
   // logged into push with this domain on the current browser, the private key can
   // be loaded from the browser state and avoid a signature prompt.
   useEffect(() => {
-    if (!address) {
+    // nothing to do if address not yet provided
+    if (!chatAddress) {
       setMessagingInitialized(true);
       return;
     }
+
+    // if the domain is empty and not required, use the known address as the chat
+    // user identifier for this session
+    if (!chatUser && !domainRequired) {
+      setChatUser(chatAddress);
+    }
+
+    // load information about the connected wallet
     const fetchUser = async () => {
-      const cachedPushKey = getPushLocalKey(address);
-      const cachedXmtpKey = getXmtpLocalKey(address);
+      // retrieve local state about this address
+      const cachedPushKey = getPushLocalKey(chatAddress);
+      const cachedXmtpKey = getXmtpLocalKey(chatAddress);
       if (cachedXmtpKey) {
         setXmtpKey(cachedXmtpKey);
         setIsChatReady(true);
       }
       if (cachedPushKey) {
         setPushKey(cachedPushKey);
-        setPushUser(await getPushUser(address));
+        setPushUser(await getPushUser(chatAddress));
       }
+
+      // check address reverse resolution if domain is not provided
+      if (!chatUser) {
+        const addressName = await getReverseResolution(chatAddress);
+        if (addressName) {
+          setChatUser(addressName);
+        }
+      }
+
+      // continue setup if the signature process is in progress
+      if (signatureInProgress) {
+        await initChatAccounts({skipPush: true});
+      }
+
+      // mark setup as complete
       setMessagingInitialized(true);
     };
     void fetchUser();
-  }, [address]);
+  }, [chatAddress]);
 
   // handles the notification click event, either onboarding the new user to Push or
   // opening the Push app for an existing user.
   useEffect(() => {
-    if (!chatOpen || !address) {
+    if (!chatOpen || !chatAddress) {
       return;
     }
     void handleChatClicked();
-  }, [web3Context, address]);
+  }, [web3Context, chatAddress]);
 
   // query messages once at load time and initialize a socket for new messages
   useEffect(() => {
-    if (!address && !xmtpKey) {
+    if (!chatAddress || !xmtpKey) {
       return;
     }
 
     // start socket for new messages
     void listenForMessages();
-  }, [address, xmtpKey]);
+  }, [chatAddress, xmtpKey]);
 
   // incoming message notification snackbar
   useEffect(() => {
@@ -291,7 +312,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       }
 
       // retrieve notification config if the user is signed in
-      void fetchConfig();
+      void fetchDomainConfig();
 
       // process notifications
       if (
@@ -321,13 +342,38 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     }
   }, [chatWindowOpen, chatSnackbar]);
 
-  const fetchConfig = async () => {
-    if (!domain) {
+  // message icons
+  const messageReadyIcon = (
+    <ChatOutlinedIcon id="chat-icon" className={classes.messageIcon} />
+  );
+  const messageUnreadIcon = (
+    <MarkUnreadChatAltOutlinedIcon
+      id="chat-icon"
+      className={classes.messageIcon}
+    />
+  );
+  const messageConfigureIcon = (
+    <ChatOutlinedIcon
+      id="chat-icon-configure"
+      className={classes.messageIconForOnboarding}
+    />
+  );
+
+  const fetchDomainConfig = async () => {
+    if (!chatUser || !isDomainValidForManagement(chatUser)) {
       return;
     }
 
+    // if chat address is not set, retrieve it from the domain resolution
+    if (!chatAddress) {
+      const resolutionAddress = await getReverseResolution(chatUser);
+      if (resolutionAddress) {
+        setChatAddress(resolutionAddress);
+      }
+    }
+
     // retrieve profile data and notification preferences
-    const notificationConfig = await getNotificationConfigurations(domain);
+    const notificationConfig = await getNotificationConfigurations(chatUser);
 
     // set notification options for web UI
     if (notificationConfig && notificationConfig.length > 0) {
@@ -352,121 +398,122 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
   };
 
   const initChatAccounts = async (opts: InitChatOptions) => {
-    if (!address) {
+    if (!chatAddress) {
       return;
     }
 
     // determine if XMTP registration will be performed
-    const xmtpLocalKey = getXmtpLocalKey(address);
+    const xmtpLocalKey = getXmtpLocalKey(chatAddress);
     const xmtpSetupRequired = !xmtpLocalKey && !opts.skipXmtp;
 
     // determine if Push Protocol registration will be performed
-    const pushLocalKey = getPushLocalKey(address);
+    const pushLocalKey = getPushLocalKey(chatAddress);
     const pushSetupRequired = !pushLocalKey && !opts.skipPush;
 
-    // ensure at least one setup option is required before continuing
-    if (!xmtpSetupRequired && !pushSetupRequired) {
-      return;
-    }
-
     try {
-      // open the configuration modal
-      setSignatureInProgress(MessagingSignatureType.NewUser);
-      setInitChatOptions(opts);
-      if (!chatOpen) {
-        setChatOpen(true);
-      }
-
-      // retrieve the wallet signer, which requires one or more signatures from
-      // the user's wallet. Show a modal in the user experience to describe the
-      // signatures and what they do.
-      if (!web3Context?.web3Deps?.signer) {
-        return;
-      }
-      setChatWalletConnected(true);
-
-      // perform XMTP setup if required
-      if (xmtpSetupRequired) {
-        // create the XMTP account if necessary
-        if (!xmtpLocalKey) {
-          setConfigState(ConfigurationState.RegisterXmtp);
-          await initXmtpAccount(address, web3Context.web3Deps.signer);
+      // ensure at least one setup option is required before prompting for a
+      // signature from the user's wallet
+      if (xmtpSetupRequired || pushSetupRequired) {
+        // open the configuration modal
+        setSignatureInProgress(MessagingSignatureType.NewUser);
+        setInitChatOptions(opts);
+        if (!chatOpen) {
+          setChatOpen(true);
         }
-        setXmtpKey(getXmtpLocalKey(address));
-      }
 
-      // perform Push Protocol setup if required
-      if (pushSetupRequired) {
-        // create the Push Protocol account if necessary
-        let pushUserAccount = await getPushUser(address);
-        if (!pushUserAccount) {
-          setConfigState(ConfigurationState.RegisterPush);
-          pushUserAccount = await PushAPI.user.create({
-            // need to use the signer address, with actual address casing, since the UD
-            // address variable is stored as lowercase. The case sensitivity needs to be
-            // maintained for Push Protocol.
-            account: await web3Context.web3Deps.signer.getAddress(),
-            env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-            signer: web3Context.web3Deps
-              .signer as unknown as PushAPI.SignerType,
-          });
+        // retrieve the wallet signer, which requires one or more signatures from
+        // the user's wallet. Show a modal in the user experience to describe the
+        // signatures and what they do.
+        if (!web3Context?.web3Deps?.signer) {
+          return;
         }
-        setPushUser(pushUserAccount);
+        setChatWalletConnected(true);
 
-        // retrieve the user's encryption key and store it locally on the device
-        if (!getPushLocalKey(address)) {
-          setConfigState(ConfigurationState.RegisterPush);
-          const decryptedPvtKey = await PushAPI.chat.decryptPGPKey({
-            encryptedPGPPrivateKey: pushUserAccount.encryptedPrivateKey,
-            env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-            signer: web3Context.web3Deps
-              .signer as unknown as PushAPI.SignerType,
-          });
-
-          try {
-            // update the user name and PFP to be synced with current domain
-            await PushAPI.user.profile.update({
-              pgpPrivateKey: decryptedPvtKey,
-              account: `eip155:${await web3Context.web3Deps.signer.getAddress()}`,
-              env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-              profile: {
-                name: domain,
-                picture: `${config.UNSTOPPABLE_METADATA_ENDPOINT}/image-src/${domain}?withOverlay=false`,
-              },
-            });
-          } catch (e) {
-            // fail gracefully, as this API fails from time to time
-            notifyError(e as Error);
+        // perform XMTP setup if required
+        if (xmtpSetupRequired) {
+          // create the XMTP account if necessary
+          if (!xmtpLocalKey) {
+            setConfigState(ConfigurationState.RegisterXmtp);
+            await initXmtpAccount(chatAddress, web3Context.web3Deps.signer);
           }
-
-          // set configuration state
-          setPushKey(decryptedPvtKey);
-          setPushLocalKey(address, decryptedPvtKey);
+          setXmtpKey(getXmtpLocalKey(chatAddress));
         }
 
-        // retrieve all of the user's current subscriptions
-        setConfigState(ConfigurationState.QuerySubscriptions);
-        const userSubscriptions = await PushAPI.user.getSubscriptions({
-          user: getCaip10Address(pushUserAccount.wallets),
-          env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-        });
-
-        // check the status of the desired subscription
-        for (const desiredSub of config.PUSH.CHANNELS) {
-          const isSubscribed =
-            userSubscriptions?.filter((sub: {channel: string}) =>
-              desiredSub.toLowerCase().includes(sub.channel.toLowerCase()),
-            ).length > 0;
-          if (!isSubscribed) {
+        // perform Push Protocol setup if required
+        if (pushSetupRequired) {
+          // create the Push Protocol account if necessary
+          let pushUserAccount = await getPushUser(chatAddress);
+          if (!pushUserAccount) {
             setConfigState(ConfigurationState.RegisterPush);
-            await PushAPI.channels.subscribe({
+            pushUserAccount = await PushAPI.user.create({
+              // need to use the signer address, with actual address casing, since the UD
+              // address variable is stored as lowercase. The case sensitivity needs to be
+              // maintained for Push Protocol.
+              account: await web3Context.web3Deps.signer.getAddress(),
+              env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
               signer: web3Context.web3Deps
                 .signer as unknown as PushAPI.SignerType,
-              channelAddress: desiredSub,
-              userAddress: getCaip10Address(pushUserAccount.wallets),
-              env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-              onError: (e: unknown) => notifyError(e),
             });
+          }
+          setPushUser(pushUserAccount);
+
+          // retrieve the user's encryption key and store it locally on the device
+          if (!getPushLocalKey(chatAddress)) {
+            setConfigState(ConfigurationState.RegisterPush);
+            const decryptedPvtKey = await PushAPI.chat.decryptPGPKey({
+              encryptedPGPPrivateKey: pushUserAccount.encryptedPrivateKey,
+              env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+              signer: web3Context.web3Deps
+                .signer as unknown as PushAPI.SignerType,
+            });
+
+            try {
+              if (chatUser && isDomainValidForManagement(chatUser)) {
+                // update the user name and PFP to be synced with current domain
+                await PushAPI.user.profile.update({
+                  pgpPrivateKey: decryptedPvtKey,
+                  account: `eip155:${await web3Context.web3Deps.signer.getAddress()}`,
+                  env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+                  profile: {
+                    name: chatUser,
+                    picture: `${config.UNSTOPPABLE_METADATA_ENDPOINT}/image-src/${chatUser}?withOverlay=false`,
+                  },
+                });
+              }
+            } catch (e) {
+              // fail gracefully, as this API fails from time to time
+              notifyError(e as Error);
+            }
+
+            // set configuration state
+            setPushKey(decryptedPvtKey);
+            setPushLocalKey(chatAddress, decryptedPvtKey);
+          }
+
+          // retrieve all of the user's current subscriptions
+          setConfigState(ConfigurationState.QuerySubscriptions);
+          const userSubscriptions = await PushAPI.user.getSubscriptions({
+            user: getCaip10Address(pushUserAccount.wallets),
+            env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+          });
+
+          // check the status of the desired subscription
+          for (const desiredSub of config.PUSH.CHANNELS) {
+            const isSubscribed =
+              userSubscriptions?.filter((sub: {channel: string}) =>
+                desiredSub.toLowerCase().includes(sub.channel.toLowerCase()),
+              ).length > 0;
+            if (!isSubscribed) {
+              setConfigState(ConfigurationState.RegisterPush);
+              await PushAPI.channels.subscribe({
+                signer: web3Context.web3Deps
+                  .signer as unknown as PushAPI.SignerType,
+                channelAddress: desiredSub,
+                userAddress: getCaip10Address(pushUserAccount.wallets),
+                env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+                onError: (e: unknown) => notifyError(e),
+              });
+            }
           }
         }
       }
@@ -493,14 +540,14 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
   };
 
   const listenForMessages = async () => {
-    if (!address || !xmtpKey) {
+    if (!chatAddress || !xmtpKey) {
       notifyError(new Error('Required messaging accounts not defined'));
       return;
     }
 
     // create push protocol notification socket
     const pushSocketNotifications = createSocketConnection({
-      user: getCaip10Address(address),
+      user: getCaip10Address(chatAddress),
       socketType: 'notification',
       env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
       socketOptions: {autoConnect: true, reconnectionAttempts: 3},
@@ -508,7 +555,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
 
     // create push protocol chat socket
     const pushSocketChat = createSocketConnection({
-      user: ethers.utils.getAddress(address),
+      user: ethers.utils.getAddress(chatAddress),
       socketType: 'chat',
       env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
       socketOptions: {autoConnect: true, reconnectionAttempts: 3},
@@ -575,7 +622,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     }
 
     // wait for XMTP messages if initialized
-    void waitForXmtpMessages(address, async (data: DecodedMessage) => {
+    void waitForXmtpMessages(chatAddress, async (data: DecodedMessage) => {
       // check for spam and discard the message if necessary
       if (await isAddressSpam(data.senderAddress)) {
         return;
@@ -597,8 +644,8 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
 
   const onNewMessage = (senderAddress: string) => {
     if (
-      !address ||
-      senderAddress.toLowerCase().includes(address.toLowerCase())
+      !chatAddress ||
+      senderAddress.toLowerCase().includes(chatAddress.toLowerCase())
     ) {
       // do not notify when the sender is the current user
       return;
@@ -629,9 +676,9 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     chatId: string,
   ) => {
     if (
-      !domain ||
-      !address ||
-      senderAddress.toLowerCase().includes(address.toLowerCase())
+      !chatUser ||
+      !chatAddress ||
+      senderAddress.toLowerCase().includes(chatAddress.toLowerCase())
     ) {
       // do not notify when the sender is the current user
       return;
@@ -643,7 +690,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     }
 
     // check existing group chat communities
-    const badges = await getDomainBadges(domain, {withoutPartners: true});
+    const badges = await getDomainBadges(chatUser, {withoutPartners: true});
     const badge = badges?.list?.find(b => b.groupChatId === chatId);
     if (!badge) {
       // no community matching group chat ID
@@ -699,6 +746,19 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     });
   };
 
+  const handleAccessWalletComplete = async (
+    web3Dependencies?: Web3Dependencies,
+  ) => {
+    if (web3Dependencies?.address) {
+      setWeb3Deps(web3Dependencies);
+      setChatAddress(web3Dependencies.address);
+      setWalletModalIsOpen(false);
+      if (signatureInProgress) {
+        setConfigState(ConfigurationState.RegisterXmtp);
+      }
+    }
+  };
+
   const handleOpenChat = () => {
     setIsNewMessage(false);
     setChatOpen(false);
@@ -727,9 +787,11 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     }
 
     // initialize the chat accounts and keys if they have not already
-    // been configured for this domain address
-    if (!domain || !address) {
+    // been configured for this domain or address
+    if (!chatUser) {
       setSignatureInProgress(MessagingSignatureType.NoPrimaryDomain);
+    } else if (!chatAddress) {
+      setSignatureInProgress(MessagingSignatureType.NewUser);
     } else if (!xmtpKey || initChatOptions) {
       // start account setup for XMTP
       void initChatAccounts(initChatOptions || {skipPush: true});
@@ -758,7 +820,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
 
     // initialize the chat accounts and keys if they have not already
     // been configured for this domain address
-    if (!domain || !address) {
+    if (!chatUser || !chatAddress) {
       setSignatureInProgress(MessagingSignatureType.NoPrimaryDomain);
     } else if (!pushKey || initChatOptions) {
       // continue an existing setup, or start a new one for XMTP only
@@ -770,13 +832,17 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       // set the active chat if provided
       const groupChatInfo = await joinBadgeGroupChat(
         badgeCode,
-        address,
+        chatAddress,
         pushKey,
       );
       if (groupChatInfo?.groupChatId) {
         // accept the chat request for the user and change to the
         // group conversation panel
-        await acceptGroupInvite(groupChatInfo.groupChatId, address, pushKey);
+        await acceptGroupInvite(
+          groupChatInfo.groupChatId,
+          chatAddress,
+          pushKey,
+        );
       }
       if (groupChatInfo) {
         setActiveCommunity(groupChatInfo);
@@ -787,13 +853,6 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       setChatOpen(true);
       handleOpenChat();
     }
-  };
-
-  const handleAccessWalletComplete = async (
-    web3Dependencies?: Web3Dependencies,
-  ) => {
-    setWeb3Deps(web3Dependencies);
-    setWalletModalIsOpen(false);
   };
 
   return (
@@ -824,11 +883,15 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
                 },
           }}
         >
-          {!domain ? (
+          {!chatUser ? (
             <Tooltip
               PopperProps={tooltipProps}
               placement="bottom"
-              title={t('push.configure', {domain: 'one of your domains'})}
+              title={t('push.configure', {
+                domain: domainRequired
+                  ? t('push.setup.oneOfYourDomains')
+                  : t('push.setup.yourWallet'),
+              })}
             >
               {messageConfigureIcon}
             </Tooltip>
@@ -836,7 +899,9 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
             <Tooltip
               PopperProps={tooltipProps}
               placement="bottom"
-              title={t(chatWindowOpen ? 'push.hide' : 'push.open', {domain})}
+              title={t(chatWindowOpen ? 'push.hide' : 'push.open', {
+                domain: chatUser,
+              })}
             >
               {isNewMessage ? messageUnreadIcon : messageReadyIcon}
             </Tooltip>
@@ -844,7 +909,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
             <Tooltip
               PopperProps={tooltipProps}
               placement="bottom"
-              title={t('push.configure', {domain})}
+              title={t('push.configure', {domain: chatUser})}
             >
               {messageConfigureIcon}
             </Tooltip>
@@ -852,7 +917,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
             <Tooltip
               PopperProps={tooltipProps}
               placement="bottom"
-              title={t('push.loading', {domain})}
+              title={t('push.loading', {domain: chatUser})}
             >
               {inheritStyle ? (
                 messageReadyIcon
@@ -865,7 +930,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       )}
       <AccessWalletModal
         prompt={true}
-        address={address}
+        address={chatAddress}
         onComplete={deps => handleAccessWalletComplete(deps)}
         open={walletModalIsOpen}
         onClose={() => setWalletModalIsOpen(false)}
@@ -874,7 +939,8 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         disabled={
           chatWalletConnected && configState !== ConfigurationState.Error
         }
-        domain={domain}
+        domain={chatUser}
+        domainRequired={domainRequired}
         isNewUser={signatureInProgress === MessagingSignatureType.NewUser}
         isNewNotification={
           signatureInProgress === MessagingSignatureType.MissingChannels
@@ -885,15 +951,15 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         onClose={handleCloseSetup}
         onConfirm={() => setWalletModalIsOpen(true)}
       />
-      {address && xmtpKey && (
+      {chatAddress && xmtpKey && (
         <>
           <ChatModal
-            authDomain={domain}
+            authDomain={chatUser}
             pushAccount={`eip155:${
-              pushUser ? fromCaip10Address(pushUser.wallets) : address
+              pushUser ? fromCaip10Address(pushUser.wallets) : chatAddress
             }`}
             pushKey={pushKey}
-            xmtpAddress={address}
+            xmtpAddress={chatAddress}
             xmtpKey={xmtpKey}
             activeChat={activeChat}
             activeCommunity={activeCommunity}
@@ -930,10 +996,10 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
 
 export type UnstoppableMessagingProps = {
   address?: string;
-  domain?: string;
   inheritStyle?: boolean;
   large?: boolean;
   label?: string;
   disableSupportBubble?: boolean;
+  domainRequired?: boolean;
   initCallback?: () => void;
 };

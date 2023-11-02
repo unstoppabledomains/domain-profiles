@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import React from 'react';
 
 import {
@@ -8,31 +9,38 @@ import {
   useUnstoppableMessaging,
 } from '@unstoppabledomains/ui-components';
 
-const MyPage = () => {
+const UnstoppableMessagingDemo = () => {
   // Hook provides utility methods, such as opening the Unstoppable
   // Messaging window by clicking a button
-  const {setOpenChat} = useUnstoppableMessaging();
+  const {isChatReady, setOpenChat} = useUnstoppableMessaging();
 
-  // Hard coded domain and address. In a real world scenarios these would
-  // be retrieved from a wallet connection
-  const myDomain = 'quirk.x';
-  const myAddress = '0xCD0DAdAb45bAF9a06ce1279D1342EcC3F44845af';
+  // Use a domain to demonstrate opening the chat window to a specific
+  // conversation using a hook
+  const myFriendDomain = 'quirk.x';
 
   // Open a chat window to a specific user
   const handleOpenChat = () => {
-    setOpenChat('lisa.x');
+    setOpenChat(myFriendDomain);
   };
 
   return (
     <Paper sx={{margin: 5, padding: 5}}>
-      <Box display="flex" marginTop={1}>
-        <UnstoppableMessaging domain={myDomain} address={myAddress} />
+      <Typography variant="h5">Unstoppable Messaging Demo</Typography>
+      <Typography variant="body1">
+        The source code for this demo can be found{' '}
+        <a href="https://github.com/unstoppabledomains/domain-profiles/tree/main/examples/unstoppable-messaging">
+          here
+        </a>{' '}
+        on GitHub.
+      </Typography>
+      <Box display="flex" marginTop={2}>
+        <UnstoppableMessaging />
         <Button variant="contained" onClick={handleOpenChat}>
-          Open chat
+          {isChatReady ? `Open chat with ${myFriendDomain}` : 'Setup chat'}
         </Button>
       </Box>
     </Paper>
   );
 };
 
-export default MyPage;
+export default UnstoppableMessagingDemo;

@@ -72,6 +72,7 @@
     "qs": "^6.11.2",
     "ramda": "^0.27.1",
     "react": "^18.0.0",
+    "react-code-blocks": "^0.1.4",
     "react-dom": "^18.0.0",
     "react-emoji-render": "^2.0.1",
     "react-hook-form": "^7.42.1",

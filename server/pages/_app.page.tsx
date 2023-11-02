@@ -1,6 +1,7 @@
 import CssBaseline from '@mui/material/CssBaseline';
 import {ThemeProvider} from '@mui/material/styles';
 import type {NextPage} from 'next';
+import {NextSeo} from 'next-seo';
 import type {AppProps} from 'next/app';
 import Head from 'next/head';
 import {SnackbarProvider} from 'notistack';
@@ -61,7 +62,7 @@ const WrappedApp = (props: WrappedAppProps) => {
           content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, shrink-to-fit=no, user-scalable=0"
         />
       </Head>
-
+      <NextSeo title="Unstoppable Domains" />
       <EmotionCacheProvider>
         <QueryClientProvider client={queryClient}>
           <ThemeProvider theme={pageTheme}>

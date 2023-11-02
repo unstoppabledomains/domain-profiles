@@ -3,10 +3,12 @@ import BlockIcon from '@mui/icons-material/Block';
 import BlockOutlinedIcon from '@mui/icons-material/BlockOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
+import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import MoreVertOutlinedIcon from '@mui/icons-material/MoreVertOutlined';
 import Avatar from '@mui/material/Avatar';
+import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -32,7 +34,7 @@ import truncateEthAddress from 'truncate-eth-address';
 
 import config from '@unstoppabledomains/config';
 
-import {DomainProfileKeys} from '../../../../lib';
+import {isDomainValidForManagement} from '../../../../lib';
 import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
@@ -52,6 +54,7 @@ const CardContentNoPadding = styled(CardContent)(`
 `);
 
 export const Conversation: React.FC<ConversationProps> = ({
+  authDomain,
   conversation,
   metadata,
   acceptedTopics,
@@ -73,7 +76,6 @@ export const Conversation: React.FC<ConversationProps> = ({
   const [avatarLink, setAvatarLink] = useState<string>();
   const [displayName, setDisplayName] = useState<string>();
   const [peerAddress, setPeerAddress] = useState<string>();
-  const [authDomain, setAuthDomain] = useState<string | null>();
   const [isChatRequest, setIsChatRequest] = useState<boolean>();
   const {classes} = useConversationStyles({
     isChatRequest,
@@ -83,7 +85,6 @@ export const Conversation: React.FC<ConversationProps> = ({
     if (!conversation && !metadata) {
       return;
     }
-    setAuthDomain(localStorage.getItem(DomainProfileKeys.AuthDomain));
     void loadAddressData();
     void loadConversation();
   }, [conversation, metadata]);
@@ -201,6 +202,10 @@ export const Conversation: React.FC<ConversationProps> = ({
     ]);
   };
 
+  const handleIdentityClick = async () => {
+    window.open(`${config.UNSTOPPABLE_WEBSITE_URL}/search`, '_blank');
+  };
+
   const handleOpenMenu = (e: MouseEvent<HTMLElement>) => {
     setAnchorEl(e.currentTarget);
   };
@@ -292,6 +297,19 @@ export const Conversation: React.FC<ConversationProps> = ({
                 />
               </Tooltip>
             )}
+            {!authDomain ||
+              (!isDomainValidForManagement(authDomain) && (
+                <Badge color="warning" variant="dot">
+                  <Tooltip title={t('push.getAnIdentity')}>
+                    <FingerprintIcon
+                      className={classes.headerCloseIcon}
+                      onClick={handleIdentityClick}
+                      color="warning"
+                      id="identity-button"
+                    />
+                  </Tooltip>
+                </Badge>
+              ))}
             <Tooltip title={t('common.more')}>
               <IconButton
                 onClick={handleOpenMenu}
@@ -307,19 +325,23 @@ export const Conversation: React.FC<ConversationProps> = ({
               transformOrigin={{horizontal: 'right', vertical: 'top'}}
               anchorOrigin={{horizontal: 'right', vertical: 'bottom'}}
             >
-              <MenuItem
-                onClick={() => {
-                  handleCloseMenu();
-                  void handleBlockClicked(!isBlocked());
-                }}
-              >
-                <ListItemIcon>
-                  <BlockOutlinedIcon fontSize="small" />
-                </ListItemIcon>
-                <Typography variant="body2">
-                  {isBlocked() ? t('manage.unblock') : t('push.blockAndReport')}
-                </Typography>
-              </MenuItem>
+              {authDomain && isDomainValidForManagement(authDomain) && (
+                <MenuItem
+                  onClick={() => {
+                    handleCloseMenu();
+                    void handleBlockClicked(!isBlocked());
+                  }}
+                >
+                  <ListItemIcon>
+                    <BlockOutlinedIcon fontSize="small" />
+                  </ListItemIcon>
+                  <Typography variant="body2">
+                    {isBlocked()
+                      ? t('manage.unblock')
+                      : t('push.blockAndReport')}
+                  </Typography>
+                </MenuItem>
+              )}
               <MenuItem
                 onClick={() => {
                   handleCloseMenu();
@@ -459,6 +481,7 @@ export const Conversation: React.FC<ConversationProps> = ({
 const PAGE_SIZE = 10;
 
 export type ConversationProps = {
+  authDomain?: string;
   conversation?: XmtpConversation;
   metadata?: AddressResolution;
   acceptedTopics: string[];

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import AddCommentOutlinedIcon from '@mui/icons-material/AddCommentOutlined';
+import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import GroupsIcon from '@mui/icons-material/Groups';
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
@@ -566,6 +567,10 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     setConversationSearch(true);
   };
 
+  const handleIdentityClick = async () => {
+    window.open(`${config.UNSTOPPABLE_WEBSITE_URL}/search`, '_blank');
+  };
+
   const handleSettingsClick = async () => {
     window.location.href = `${config.UNSTOPPABLE_WEBSITE_URL}/manage?domain=${authDomain}&page=web3Messaging`;
   };
@@ -770,6 +775,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         />
       ) : conversationPeer || conversationMetadata ? (
         <Conversation
+          authDomain={authDomain}
           conversation={conversationPeer}
           metadata={conversationMetadata}
           acceptedTopics={acceptedTopics}
@@ -810,7 +816,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                     onClick={handleNewChat}
                   />
                 </Tooltip>
-                {authDomain && isDomainValidForManagement(authDomain) && (
+                {authDomain && isDomainValidForManagement(authDomain) ? (
                   <Tooltip title={t('push.settings')}>
                     <SettingsOutlinedIcon
                       className={classes.headerActionIcon}
@@ -818,6 +824,17 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                       id="settings-button"
                     />
                   </Tooltip>
+                ) : (
+                  <Badge color="warning" variant="dot">
+                    <Tooltip title={t('push.getAnIdentity')}>
+                      <FingerprintIcon
+                        className={classes.headerActionIcon}
+                        onClick={handleIdentityClick}
+                        color="warning"
+                        id="identity-button"
+                      />
+                    </Tooltip>
+                  </Badge>
                 )}
                 <Tooltip title={t('common.close')}>
                   <KeyboardDoubleArrowDownIcon

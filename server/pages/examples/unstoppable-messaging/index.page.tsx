@@ -27,7 +27,7 @@ const UnstoppableMessagingDemo = () => {
 
   // Open a chat window to a specific user
   const handleOpenChat = () => {
-    setOpenChat(myFriendDomain);
+    setOpenChat("quirk.x");
   };
 
   return (

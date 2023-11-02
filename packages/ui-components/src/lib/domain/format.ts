@@ -16,7 +16,9 @@ const isDomainFormatValid = (
   if (domain.includes('.')) {
     parts = domain.split('.');
   }
-
+  if (parts.length < 2) {
+    return false;
+  }
   return parts.every((part, idx) => {
     if (idx === 0) {
       // left-most: label

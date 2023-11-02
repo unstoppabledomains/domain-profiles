@@ -492,7 +492,6 @@ const DomainProfile = ({
                     <div className={classes.chatContainer}>
                       <UnstoppableMessaging
                         address={authAddress}
-                        domain={authDomain}
                         disableSupportBubble
                       />
                     </div>

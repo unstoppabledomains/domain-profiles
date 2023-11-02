@@ -171,6 +171,20 @@ const nextConfig = {
           },
         ],
       },
+      // Headers for example pages
+      {
+        source: '/examples/:example',
+        headers: [
+          ...fastlyCacheHeaders({
+            ttl: 3600, // 1 hour
+          }),
+          {
+            key: 'Content-Security-Policy',
+            value:
+              'connect-src * data: blob:; img-src * data: blob:; object-src *',
+          },
+        ],
+      },
     ];
   },
 };

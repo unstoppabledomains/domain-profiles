@@ -123,6 +123,7 @@ export const SetupModal: React.FC<SetupModalProps> = ({
   disabled,
   open,
   domain,
+  domainRequired,
   configState,
   isNewUser,
   isNewNotification,
@@ -280,17 +281,23 @@ export const SetupModal: React.FC<SetupModalProps> = ({
             >
               {t('push.setup.openMessaging')}
             </Button>
-          ) : domain ? (
+          ) : domain || !domainRequired ? (
             <Tooltip
               arrow
               placement="top"
               hidden={disabled}
               title={
                 isNewUser
-                  ? t('push.setup.newUserDescription', {domain})
+                  ? t('push.setup.newUserDescription', {
+                      domain: domain || t('push.setup.yourWallet'),
+                    })
                   : isNewNotification
-                  ? t('push.setup.existingUserNeedsNotifications', {domain})
-                  : t('push.setup.existingUserDescription', {domain})
+                  ? t('push.setup.existingUserNeedsNotifications', {
+                      domain: domain || t('push.setup.yourWallet'),
+                    })
+                  : t('push.setup.existingUserDescription', {
+                      domain: domain || t('push.setup.yourWallet'),
+                    })
               }
             >
               <Button
@@ -354,6 +361,7 @@ export const SetupModal: React.FC<SetupModalProps> = ({
 export type SetupModalProps = {
   open: boolean;
   domain?: string;
+  domainRequired?: boolean;
   isNewUser: boolean;
   isNewNotification: boolean;
   disabled: boolean;

@@ -59,8 +59,8 @@ available include:
 - More...
 
 As an example, the following demonstrates how to add Unstoppable Messaging to your
-existing Web3 React dApp. For a full working example, see the [Unstoppable Messaging
-Next.js demo](examples/unstoppable-messaging/README.md).
+existing Web3 React dApp. The full source code for this example is available on the [Unstoppable Domains GitHub](examples/unstoppable-messaging/README.md), and a 
+[live demo](https://ud.me/examples/unstoppable-messaging) has been provided as well.
 
 ```typescript
 import Button from '@mui/material/Button';
@@ -71,11 +71,6 @@ import {
    useUnstoppableMessaging,
 } from '@unstoppabledomains/ui-components';
 import React from 'react';
-
-// Hardcoded user information as an example. This information should come
-// from a connected wallet in a real world scenario.
-const myDomain = "mydomain.x";
-const myAddress = "0x123";
 
 const MyPage = () => {
 
@@ -91,7 +86,7 @@ const MyPage = () => {
    return (
       <Web3ContextProvider>
          <UnstoppableMessagingProvider>
-            <UnstoppableMessaging domain={myDomain} address={myAddress} />
+            <UnstoppableMessaging />
             <Button
                onClick={handleOpenChat}
             >

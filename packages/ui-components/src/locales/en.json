@@ -417,7 +417,7 @@
     "errorLoadingMessage": "Unable to load message",
     "errorSendingAttachment": "Unable to upload attachment",
     "errorSendingMessage": "Unable to send message",
-    "getAnIdentity": "You can add a Web3 name to your wallet so users can easily identity your messages",
+    "getAnIdentity": "You can add a Web3 name to your wallet so users can easily identify your messages",
     "hide": "Hide messages for {{domain}}",
     "incoming": "Received a new message",
     "incomingDomain": "Received a new message from {{domain}}",

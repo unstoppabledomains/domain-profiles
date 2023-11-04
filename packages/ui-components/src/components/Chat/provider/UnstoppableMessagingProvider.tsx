@@ -1,4 +1,8 @@
+import {SnackbarProvider} from 'notistack';
 import React, {useState} from 'react';
+
+import {TranslationProvider} from '../../../lib';
+import {Web3ContextProvider} from '../../../providers';
 
 type Props = {
   children: React.ReactNode;
@@ -41,9 +45,20 @@ const UnstoppableMessagingProvider: React.FC<Props> = ({children}) => {
   };
 
   return (
-    <UnstoppableMessagingContext.Provider value={value}>
-      {children}
-    </UnstoppableMessagingContext.Provider>
+    <TranslationProvider>
+      <SnackbarProvider
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+      >
+        <Web3ContextProvider>
+          <UnstoppableMessagingContext.Provider value={value}>
+            {children}
+          </UnstoppableMessagingContext.Provider>
+        </Web3ContextProvider>
+      </SnackbarProvider>
+    </TranslationProvider>
   );
 };
 

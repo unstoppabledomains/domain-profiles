@@ -4,7 +4,6 @@ import type {NextPage} from 'next';
 import {NextSeo} from 'next-seo';
 import type {AppProps} from 'next/app';
 import Head from 'next/head';
-import {SnackbarProvider} from 'notistack';
 import React from 'react';
 import 'react-medium-image-zoom/dist/styles.css';
 import {QueryClient, QueryClientProvider} from 'react-query';
@@ -13,9 +12,7 @@ import {createEmotionSsrAdvancedApproach} from 'tss-react/nextJs';
 
 import {
   TokenGalleryProvider,
-  TranslationProvider,
   UnstoppableMessagingProvider,
-  Web3ContextProvider,
 } from '@unstoppabledomains/ui-components';
 import {darkTheme, lightTheme} from '@unstoppabledomains/ui-kit/styles';
 
@@ -68,22 +65,11 @@ const WrappedApp = (props: WrappedAppProps) => {
           <ThemeProvider theme={pageTheme}>
             {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
             <CssBaseline enableColorScheme />
-            <TranslationProvider>
-              <SnackbarProvider
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'left',
-                }}
-              >
-                <Web3ContextProvider>
-                  <TokenGalleryProvider>
-                    <UnstoppableMessagingProvider>
-                      <Component {...pageProps} />
-                    </UnstoppableMessagingProvider>
-                  </TokenGalleryProvider>
-                </Web3ContextProvider>
-              </SnackbarProvider>
-            </TranslationProvider>
+            <UnstoppableMessagingProvider>
+              <TokenGalleryProvider>
+                <Component {...pageProps} />
+              </TokenGalleryProvider>
+            </UnstoppableMessagingProvider>
           </ThemeProvider>
         </QueryClientProvider>
       </EmotionCacheProvider>

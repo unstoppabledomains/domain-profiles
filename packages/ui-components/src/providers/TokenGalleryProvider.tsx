@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 
 import type {Nft} from '../lib';
+import {TranslationProvider} from '../lib';
 
 type Props = {
   children: React.ReactNode;
@@ -32,9 +33,11 @@ const TokenGalleryProvider: React.FC<Props> = ({children}) => {
   };
 
   return (
-    <TokenGalleryContext.Provider value={value}>
-      {children}
-    </TokenGalleryContext.Provider>
+    <TranslationProvider>
+      <TokenGalleryContext.Provider value={value}>
+        {children}
+      </TokenGalleryContext.Provider>
+    </TranslationProvider>
   );
 };
 

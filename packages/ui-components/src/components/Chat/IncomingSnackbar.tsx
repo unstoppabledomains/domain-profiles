@@ -8,9 +8,9 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {useIsTabActive} from '../../hooks/useIsTabActive';
 import {notifyError} from '../../lib/error';
 import useTranslationContext from '../../lib/i18n';
-import {useIsTabActive} from './hooks/useIsTabActive';
 import {getAddressMetadata} from './protocol/resolution';
 
 const useStyles = makeStyles<{variant: SnackbarVariant}>()(

@@ -25,10 +25,10 @@ import React, {useState} from 'react';
 import config from '@unstoppabledomains/config';
 
 import ComposeMessage from '../../components/Badges/ComposeMessage';
-import useUnstoppableMessaging from '../../components/Chat/hooks/useUnstoppableMessaging';
 import CopyToClipboard from '../../components/CopyToClipboard';
 import {DomainPreview} from '../../components/Domain/DomainPreview';
 import Link from '../../components/Link';
+import useUnstoppableMessaging from '../../hooks/useUnstoppableMessaging';
 import useTranslationContext from '../../lib/i18n';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import useStyles from '../../styles/components/badgePopupModalStyles';

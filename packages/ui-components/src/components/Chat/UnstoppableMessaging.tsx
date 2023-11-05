@@ -24,8 +24,9 @@ import {
   getReverseResolution,
 } from '../../actions/domainActions';
 import {isAddressSpam, joinBadgeGroupChat} from '../../actions/messageActions';
-import useUnstoppableMessaging from '../../components/Chat/hooks/useUnstoppableMessaging';
 import {AccessWalletModal} from '../../components/Wallet/AccessWallet';
+import {parsePartnerMetadata} from '../../hooks/useFetchNotification';
+import useUnstoppableMessaging from '../../hooks/useUnstoppableMessaging';
 import useWeb3Context from '../../hooks/useWeb3Context';
 import {isDomainValidForManagement} from '../../lib';
 import {notifyError} from '../../lib/error';
@@ -36,7 +37,6 @@ import type {Web3Dependencies} from '../../lib/types/web3';
 import {Web3Context} from '../../providers/Web3ContextProvider';
 import {IncomingChatSnackbar, IncomingSnackbar} from './IncomingSnackbar';
 import SupportBubble from './SupportBubble';
-import {parsePartnerMetadata} from './hooks/useFetchNotification';
 import ChatModal from './modal/ChatModal';
 import SetupModal from './modal/SetupModal';
 import {acceptGroupInvite, getPushUser} from './protocol/push';

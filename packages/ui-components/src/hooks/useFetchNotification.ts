@@ -4,7 +4,7 @@ import {useCallback, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 
-import type {PushNotification} from '../types';
+import type {PushNotification} from '../components/Chat/types';
 
 interface fetchNotification {
   page: number;

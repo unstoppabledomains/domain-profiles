@@ -15,7 +15,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getProfileData} from '../../actions';
 import {useFeatureFlags} from '../../actions/featureFlagActions';
-import useUnstoppableMessaging from '../../components/Chat/hooks/useUnstoppableMessaging';
+import useUnstoppableMessaging from '../../hooks/useUnstoppableMessaging';
 import {splitDomain} from '../../lib/domain/format';
 import getImageUrl from '../../lib/domain/getImageUrl';
 import {notifyError} from '../../lib/error';

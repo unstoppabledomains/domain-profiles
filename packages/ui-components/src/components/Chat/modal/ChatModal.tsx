@@ -39,13 +39,13 @@ import {
   getDomainSignatureExpiryKey,
   getDomainSignatureValueKey,
 } from '../../../components/Wallet/ProfileManager';
+import useFetchNotifications from '../../../hooks/useFetchNotification';
 import {isDomainValidForManagement} from '../../../lib';
 import {notifyError} from '../../../lib/error';
 import useTranslationContext from '../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../lib/types/badge';
 import type {SerializedUserDomainProfileData} from '../../../lib/types/domain';
 import type {Web3Dependencies} from '../../../lib/types/web3';
-import useFetchNotifications from '../hooks/useFetchNotification';
 import {registerClientTopics} from '../protocol/registration';
 import {getAddressMetadata} from '../protocol/resolution';
 import type {ConversationMeta} from '../protocol/xmtp';

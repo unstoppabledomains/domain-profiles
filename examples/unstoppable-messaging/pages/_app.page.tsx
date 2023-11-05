@@ -1,34 +1,11 @@
-import CssBaseline from '@mui/material/CssBaseline';
-import {ThemeProvider} from '@mui/material/styles';
 import type {NextPage} from 'next';
 import type {AppProps} from 'next/app';
 import Head from 'next/head';
 import React from 'react';
 import 'react-medium-image-zoom/dist/styles.css';
-import {QueryClient, QueryClientProvider} from 'react-query';
 import 'swiper/css/bundle';
-import {createEmotionSsrAdvancedApproach} from 'tss-react/nextJs';
 
 import {UnstoppableMessagingProvider} from '@unstoppabledomains/ui-components';
-import {darkTheme, lightTheme} from '@unstoppabledomains/ui-kit/styles';
-
-// setup query client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      // We want cacheTime to be a balance - long enough to improve load speed for frequently used
-      // queries, while short enough to avoid using too much memory for long browsing sessions. While
-      // it makes sense for react-query to have an aggressive 5 minute default, 24 hours seems more
-      // appropriate for our app. For comparison, the `swr` module never clears cache keys.
-      cacheTime: 1000 * 60 * 60 * 24, // 24 hours
-    },
-  },
-});
-
-// setup emotion cache for MUI
-const {EmotionCacheProvider, withEmotionCache} =
-  createEmotionSsrAdvancedApproach({key: 'css'});
-export {withEmotionCache};
 
 // setup wrapped app props
 export type NextPageWithLayout = NextPage & {
@@ -40,7 +17,6 @@ export type WrappedAppProps = AppProps & {
 
 const WrappedApp = (props: WrappedAppProps) => {
   const {Component, pageProps} = props;
-  const pageTheme = Component.themeMode === 'dark' ? darkTheme : lightTheme;
 
   return (
     <>
@@ -55,18 +31,9 @@ const WrappedApp = (props: WrappedAppProps) => {
           content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, shrink-to-fit=no, user-scalable=0"
         />
       </Head>
-
-      <EmotionCacheProvider>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider theme={pageTheme}>
-            {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-            <CssBaseline enableColorScheme />
-            <UnstoppableMessagingProvider>
-              <Component {...pageProps} />
-            </UnstoppableMessagingProvider>
-          </ThemeProvider>
-        </QueryClientProvider>
-      </EmotionCacheProvider>
+      <UnstoppableMessagingProvider>
+        <Component {...pageProps} />
+      </UnstoppableMessagingProvider>
     </>
   );
 };

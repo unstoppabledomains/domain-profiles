@@ -4,38 +4,15 @@ import type {NextPage} from 'next';
 import {NextSeo} from 'next-seo';
 import type {AppProps} from 'next/app';
 import Head from 'next/head';
-import {SnackbarProvider} from 'notistack';
 import React from 'react';
 import 'react-medium-image-zoom/dist/styles.css';
-import {QueryClient, QueryClientProvider} from 'react-query';
 import 'swiper/css/bundle';
-import {createEmotionSsrAdvancedApproach} from 'tss-react/nextJs';
 
 import {
   TokenGalleryProvider,
-  TranslationProvider,
   UnstoppableMessagingProvider,
-  Web3ContextProvider,
 } from '@unstoppabledomains/ui-components';
 import {darkTheme, lightTheme} from '@unstoppabledomains/ui-kit/styles';
-
-// setup query client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      // We want cacheTime to be a balance - long enough to improve load speed for frequently used
-      // queries, while short enough to avoid using too much memory for long browsing sessions. While
-      // it makes sense for react-query to have an aggressive 5 minute default, 24 hours seems more
-      // appropriate for our app. For comparison, the `swr` module never clears cache keys.
-      cacheTime: 1000 * 60 * 60 * 24, // 24 hours
-    },
-  },
-});
-
-// setup emotion cache for MUI
-const {EmotionCacheProvider, withEmotionCache} =
-  createEmotionSsrAdvancedApproach({key: 'css'});
-export {withEmotionCache};
 
 // setup wrapped app props
 export type NextPageWithLayout = NextPage & {
@@ -63,30 +40,15 @@ const WrappedApp = (props: WrappedAppProps) => {
         />
       </Head>
       <NextSeo title="Unstoppable Domains" />
-      <EmotionCacheProvider>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider theme={pageTheme}>
-            {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-            <CssBaseline enableColorScheme />
-            <TranslationProvider>
-              <SnackbarProvider
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'left',
-                }}
-              >
-                <Web3ContextProvider>
-                  <TokenGalleryProvider>
-                    <UnstoppableMessagingProvider>
-                      <Component {...pageProps} />
-                    </UnstoppableMessagingProvider>
-                  </TokenGalleryProvider>
-                </Web3ContextProvider>
-              </SnackbarProvider>
-            </TranslationProvider>
-          </ThemeProvider>
-        </QueryClientProvider>
-      </EmotionCacheProvider>
+      <ThemeProvider theme={pageTheme}>
+        {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+        <CssBaseline enableColorScheme />
+        <UnstoppableMessagingProvider>
+          <TokenGalleryProvider>
+            <Component {...pageProps} />
+          </TokenGalleryProvider>
+        </UnstoppableMessagingProvider>
+      </ThemeProvider>
     </>
   );
 };

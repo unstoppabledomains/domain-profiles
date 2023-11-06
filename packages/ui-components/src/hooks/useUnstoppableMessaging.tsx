@@ -1,6 +1,6 @@
 import {useContext} from 'react';
 
-import {UnstoppableMessagingContext} from '../../../components/Chat/provider/UnstoppableMessagingProvider';
+import {UnstoppableMessagingContext} from '../providers/UnstoppableMessagingProvider';
 
 const useUnstoppableMessaging = () => {
   const {

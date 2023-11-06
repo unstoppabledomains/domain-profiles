@@ -1,8 +1,7 @@
 import Document, {Head, Html, Main, NextScript} from 'next/document';
-import {withEmotionCache} from 'pages/_app.page';
 import React from 'react';
 
-import {getImageUrl} from '@unstoppabledomains/ui-components';
+import {getImageUrl, withEmotionCache} from '@unstoppabledomains/ui-components';
 import theme from '@unstoppabledomains/ui-kit/styles';
 
 class MyDocument extends Document {

@@ -2807,9 +2807,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unstoppabledomains/ui-components@npm:^0.0.18":
-  version: 0.0.18
-  resolution: "@unstoppabledomains/ui-components@npm:0.0.18"
+"@unstoppabledomains/ui-components@npm:^0.0.20":
+  version: 0.0.20
+  resolution: "@unstoppabledomains/ui-components@npm:0.0.20"
   dependencies:
     "@braintree/sanitize-url": ^6.0.4
     "@emotion/react": ^11.11.1
@@ -2879,7 +2879,7 @@ __metadata:
     typescript: 5.0.4
     wagmi: ^1.4.4
     web3.storage: ^4.5.5
-  checksum: 261cd41178c9aed03840d40aa57db6a8d83eb4a8e00dd6bb50f7004438b4a37c61c34fa41032ec414b2ca00eeedc0d7ebccaa5ef2c9e03df053fa23d8ddf2c2e
+  checksum: f8826e5543957c98833023ba7140e32b03a931a6caa375e96d8fb9d7d2538a78bd0c6fd7051d1ceb5fe8cec264b4b422364ce4d7f29825534d352373596ba1fd
   languageName: node
   linkType: hard
 
@@ -10848,7 +10848,7 @@ __metadata:
   resolution: "unstoppable-messaging-example@workspace:."
   dependencies:
     "@unstoppabledomains/config": ^0.0.5
-    "@unstoppabledomains/ui-components": ^0.0.18
+    "@unstoppabledomains/ui-components": ^0.0.20
     "@unstoppabledomains/ui-kit": ^0.3.15
     eslint: ^8.22.0
     eslint-plugin-i18n-json: ^3.1.0

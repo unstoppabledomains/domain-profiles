@@ -1,6 +1,6 @@
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import type {ReactChild} from 'react';
+import type {ReactNode} from 'react';
 import React from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -9,7 +9,7 @@ import useTranslationContext from '../../lib/i18n';
 
 interface Props {
   profileServiceUrl: string;
-  children: ReactChild;
+  children: ReactNode;
   className?: string;
 }
 

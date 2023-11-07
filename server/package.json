@@ -19,8 +19,8 @@
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "resolutions": {
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0"
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0"
   },
   "dependencies": {
     "@braintree/sanitize-url": "^6.0.4",
@@ -39,8 +39,8 @@
     "@types/numeral": "^2.0.2",
     "@types/qs": "^6.9.8",
     "@types/ramda": "^0.29.6",
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
     "@types/react-lazy-load-image-component": "^1.6.0",
     "@uauth/js": "^2.8.0",
     "@unstoppabledomains/config": "workspace:^",
@@ -71,9 +71,9 @@
     "prettier-plugin-organize-imports": "^3.2.3",
     "qs": "^6.11.2",
     "ramda": "^0.27.1",
-    "react": "^18.0.0",
+    "react": "^17.0.0",
     "react-code-blocks": "^0.1.4",
-    "react-dom": "^18.0.0",
+    "react-dom": "^17.0.0",
     "react-emoji-render": "^2.0.1",
     "react-hook-form": "^7.42.1",
     "react-infinite-scroll-component": "^6.1.0",

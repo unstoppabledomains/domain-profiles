@@ -24,9 +24,7 @@
   },
   "dependencies": {
     "@braintree/sanitize-url": "^6.0.4",
-    "@emotion/react": "^11.11.1",
     "@emotion/server": "^11.4.0",
-    "@emotion/styled": "^11.11.0",
     "@pushprotocol/restapi": "^1.4.15",
     "@pushprotocol/socket": "^0.5.1",
     "@swc/cli": "^0.1.57",

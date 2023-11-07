@@ -1,6 +1,6 @@
 {
   "name": "@unstoppabledomains/ui-components",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "private": true,
   "description": "An open and reusable suite of Unstoppable Domains management components",
   "keywords": [
@@ -41,7 +41,7 @@
     "@types/node": "17.0.24",
     "@types/numeral": "^2.0.2",
     "@types/qs": "^6.9.8",
-    "@types/ramda": "^0.29.6",
+    "@types/ramda": "^0.27.1",
     "@types/react": "^17.0.0",
     "@types/react-cookies": "^0.1.1",
     "@types/react-dom": "^17.0.0",

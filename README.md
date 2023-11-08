@@ -103,7 +103,8 @@ export default MyPage;
 ## Contributing
 
 To contribute changes to the `domain-profiles` project, you'll need to clone the
-project and build it in your local environment.
+project and build it in your local environment. The following commands show how to
+clone the repo and run the UD.me website locally on your system.
 
 ```shell
 # Clone the project
@@ -129,7 +130,31 @@ yarn test:ci # run all tests and generate coverage report
 
 ### Linting and code formatting
 
+Linting is enforced by the CI. This is how to check for and resolve errors locally
+for easier resolution of problems.
+
 ```shell
 yarn lint   # automatically fixes linting errors
 yarn format # checks for formatting errors
 ```
+
+### Publishing to NPM
+
+If you are a developer with access to the 
+[Unstoppable Domains NPM registry](https://www.npmjs.com/search?q=%40unstoppabledomains), follow these instructions
+to publish a new package version. Assume `<package>` is the NPM package that
+needs to be published.
+
+- Ensure the version is bumped in `packages/<package>/package.json`
+- Update `packages/<package>/CHANGELOG.md` with relevant information
+- Authenticate your CLI as appropriate with NPM credentials
+- Run the following commands
+
+```shell
+yarn dist
+cd packages/<package>/build/src
+npm publish
+```
+
+Follow the NPM prompts on screen to complete the publish process. Note, it's important to
+execute the publish from the package's `build/src` directory for proper resolution.

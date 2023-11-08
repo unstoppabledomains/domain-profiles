@@ -863,6 +863,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
           onClick={() => handleChatClicked()}
           startIcon={<ChatOutlinedIcon />}
           disabled={!messagingInitialized}
+          size={large ? 'large' : 'medium'}
         >
           {label}
         </Button>

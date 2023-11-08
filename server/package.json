@@ -58,7 +58,7 @@
     "js-base64": "^3.7.5",
     "lodash": "^4.17.21",
     "lodash.merge": "^4.6.2",
-    "next": "^12.3.4",
+    "next": "^14.0.0",
     "next-secure-headers": "^2.2.0",
     "next-seo": "^6.1.0",
     "next-transpile-modules": "^10.0.0",

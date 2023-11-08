@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-import type {ReactChild} from 'react';
+import type {ReactNode} from 'react';
 import React from 'react';
 
 type CopyModule = {default: (text: string) => Promise<void>};
@@ -13,7 +13,7 @@ const CopyToClipboard = ({
 }: {
   onCopy?: () => void;
   stringToCopy: string;
-  children: ReactChild;
+  children: ReactNode;
 }) => {
   return (
     <Box

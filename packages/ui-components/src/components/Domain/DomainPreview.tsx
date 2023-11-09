@@ -171,6 +171,7 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
         src={avatarPath}
         onClick={handleViewProfile}
         className={classes.avatarMain}
+        data-testid="domain-preview-main-img"
       />
       <Popover
         id={popoverId}

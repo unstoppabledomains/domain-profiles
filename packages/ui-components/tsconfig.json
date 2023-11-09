@@ -10,5 +10,11 @@
     "rootDirs": ["./", "./src", "../../packages"]
   },
   "include": ["./src/**/*", "./src/**/*.json"],
-  "exclude": ["node_modules", "**/node_modules"]
+  "exclude": [
+    "node_modules",
+    "**/node_modules",
+    "**/tests/*",
+    "**/*.test.tsx",
+    "**/*.test.ts"
+  ]
 }

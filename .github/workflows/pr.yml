@@ -54,7 +54,7 @@ jobs:
         run: yarn test:ci ./packages/**
         env:
           NODE_OPTIONS: --max_old_space_size=3072
-      
+
       - name: Verify NPM build
         run: yarn dist
 

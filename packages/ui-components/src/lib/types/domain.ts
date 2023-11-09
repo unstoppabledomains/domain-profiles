@@ -239,7 +239,17 @@ export type TwitterUserInfo = {
   listedCount: number;
   tweetsCount: number;
 } | null;
+
 export const UD_BLUE_BADGE_CODE = 'UdBlue';
+
+export enum Web2Suffixes {
+  Com = 'com',
+}
+
+export const Web2SuffixesList = Object.entries(Web2Suffixes).map(([_, v]) => {
+  return v.toString();
+});
+
 export type YoutubeUserInfo = {
   kind: DomainProfileSocialMedia.YouTube;
   title: string;

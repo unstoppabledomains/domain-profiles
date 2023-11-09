@@ -21,7 +21,11 @@ import getImageUrl from '../../lib/domain/getImageUrl';
 import {notifyError} from '../../lib/error';
 import useTranslationContext from '../../lib/i18n';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
-import {DomainProfileKeys, DomainSuffixes} from '../../lib/types/domain';
+import {
+  DomainProfileKeys,
+  DomainSuffixes,
+  Web2SuffixesList,
+} from '../../lib/types/domain';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import FollowButton from './FollowButton';
 
@@ -31,21 +35,6 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
   },
   popoverContent: {
     pointerEvents: 'auto',
-  },
-  round: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: `${size}px !important`,
-    height: `${size}px !important`,
-    borderRadius: '50%',
-    border: `1px solid ${theme.palette.neutralShades[200]}`,
-    backgroundColor: 'white',
-    [theme.breakpoints.up('sm')]: {
-      width: 12,
-      height: 12,
-    },
-    marginRight: '2px',
   },
   actionContainer: {
     display: 'flex',
@@ -82,7 +71,15 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
     color: theme.palette.neutralShades[600],
     marginRight: theme.spacing(1),
   },
-  avatar: {
+  avatarMain: {
+    marginRight: theme.spacing(1),
+    color: theme.palette.primary.main,
+    backgroundColor: 'white',
+    border: `2px solid ${theme.palette.neutralShades[200]}`,
+    width: `${size}px !important`,
+    height: `${size}px !important`,
+  },
+  avatarCard: {
     marginRight: theme.spacing(1),
     color: theme.palette.primary.main,
     backgroundColor: 'white',
@@ -118,6 +115,8 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
   const avatarPath =
     extension === DomainSuffixes.Ens
       ? getImageUrl('/domains/ens-logo.svg')
+      : Web2SuffixesList.includes(extension)
+      ? getImageUrl('/domains/dns-logo.svg')
       : `${config.UNSTOPPABLE_METADATA_ENDPOINT}/image-src/${domain}?withOverlay=false`;
   const isMouseOver = Boolean(anchorEl);
 
@@ -168,9 +167,12 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
       onMouseEnter={handlePopoverOpen}
       onMouseLeave={handlePopoverClose}
     >
-      <a href={`${config.UD_ME_BASE_URL}/${domain}`}>
-        <img className={classes.round} src={avatarPath} />
-      </a>
+      <Avatar
+        src={avatarPath}
+        onClick={handleViewProfile}
+        className={classes.avatarMain}
+        data-testid="domain-preview-main-img"
+      />
       <Popover
         id={popoverId}
         open={isMouseOver}
@@ -196,7 +198,7 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
               <Avatar
                 onClick={handleViewProfile}
                 src={avatarPath}
-                className={classes.avatar}
+                className={classes.avatarCard}
               />
             }
             title={

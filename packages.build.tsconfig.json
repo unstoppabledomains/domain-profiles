@@ -10,9 +10,7 @@
     "inlineSourceMap": false,
     "isolatedModules": true,
     "jsx": "react",
-    "lib": [
-      "esnext"
-    ],
+    "lib": ["esnext"],
     "listEmittedFiles": false,
     "listFiles": false,
     "module": "esnext",
@@ -30,9 +28,7 @@
     "target": "esnext",
     "traceResolution": false
   },
-  "include": [
-    "packages/*/src/**/*"
-  ],
+  "include": ["packages/*/src/**/*"],
   "references": [
     {
       "path": "packages/config"

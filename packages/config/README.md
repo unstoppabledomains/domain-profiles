@@ -6,8 +6,8 @@ A common configuration reference for Unstoppable Domains environments 🛠️
 
 ### Installation
 
-To use the Unstoppable Domains config in your own project, install the
-module in your project directory:
+To use the Unstoppable Domains config in your own project, install the module in
+your project directory:
 
 ```shell
 // with npm
@@ -22,7 +22,10 @@ yarn add @unstoppabledomains/config
 ```typescript
 import config from '@unstoppabledomains/config';
 
-console.log("Unstoppable Domains smart contract", config.UNSTOPPABLE_CONTRACT_ADDRESS);
+console.log(
+  'Unstoppable Domains smart contract',
+  config.UNSTOPPABLE_CONTRACT_ADDRESS,
+);
 ```
 
 ## Contributing

@@ -1,15 +1,16 @@
 # Unstoppable Messaging demo
 
-A simple demo of Unstoppable Messaging in a Next.js app. Works with any Ethereum wallet
-address, **domains are optional**. An Unstoppable Domain or ENS domain can optionally 
-be used to identify your wallet to other users.
+A simple demo of Unstoppable Messaging in a Next.js app. Works with any Ethereum
+wallet address, **domains are optional**. An Unstoppable Domain or ENS domain
+can optionally be used to identify your wallet to other users.
 
 ## Overview
 
-The `@unstoppabledomains/ui-components` package enables your app to provide many features
-for Web3 users. The ability to chat within your app is demonstrated in this simple Next.js
-app. The demo app is intentionally simplistic, and is meant to be starting point to show
-how the features could be integrated into your own app.
+The `@unstoppabledomains/ui-components` package enables your app to provide many
+features for Web3 users. The ability to chat within your app is demonstrated in
+this simple Next.js app. The demo app is intentionally simplistic, and is meant
+to be starting point to show how the features could be integrated into your own
+app.
 
 ![Unstoppable Messaging](https://github.com/unstoppabledomains/domain-profiles/assets/21039114/1ac6fe3e-6b5e-4d69-80b7-2180122636a5)
 
@@ -24,14 +25,16 @@ yarn install
 yarn run dev
 ```
 
-The application will be available locally to your browser at [http://localhost:3000](http://localhost:3000).
+The application will be available locally to your browser at
+[http://localhost:3000](http://localhost:3000).
 
 ### Structure
 
 #### Providers
-The demo application takes advantage of two important React providers, which are provided
-as part of the `@unstoppabledomains/ui-components` package. The providers are defined in
-the `pages/_app.page.tsx` file.
+
+The demo application takes advantage of two important React providers, which are
+provided as part of the `@unstoppabledomains/ui-components` package. The
+providers are defined in the `pages/_app.page.tsx` file.
 
 - `Web3ContextProvider`
   - Manages wallet connection state for the Unstoppable Messaging app
@@ -42,9 +45,9 @@ the `pages/_app.page.tsx` file.
 
 #### Main page
 
-The main application page renders the `UnstoppableMessaging` React component and uses a
-provided hook to control the chat window opening and closing. The main application page
-is defined in the `pages/index.page.tsx` file.
+The main application page renders the `UnstoppableMessaging` React component and
+uses a provided hook to control the chat window opening and closing. The main
+application page is defined in the `pages/index.page.tsx` file.
 
 ```typescript
 import Box from '@mui/material/Box';

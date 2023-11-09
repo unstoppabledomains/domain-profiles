@@ -1,0 +1,14 @@
+{
+  "extends": "../../packages.base.tsconfig.json",
+  "compilerOptions": {
+    "outDir": "build",
+    "target": "esnext",
+    "lib": ["esnext"],
+    "module": "esnext",
+    "jsx": "react",
+    "ignoreDeprecations": "5.0",
+    "rootDirs": ["./", "./src", "../../packages"]
+  },
+  "include": ["./src/**/*", "./src/**/*.json"],
+  "exclude": ["node_modules", "**/node_modules"]
+}

@@ -26,24 +26,25 @@ const createTestQueryClient = () =>
 // test class to wrap test components with required providers
 const createWrapper =
   ({theme}: {theme?: Theme} = {}): React.FC =>
-  ({children}) => (
-    <QueryClientProvider client={createTestQueryClient()}>
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      <ThemeProvider theme={(theme || defaultTheme) as any}>
-        <SnackbarProvider>
-          <uiComponents.Web3ContextProvider>
-            <uiComponents.TokenGalleryProvider>
-              <uiComponents.UnstoppableMessagingProvider>
-                <uiComponents.TranslationProvider>
-                  {children}
-                </uiComponents.TranslationProvider>
-              </uiComponents.UnstoppableMessagingProvider>
-            </uiComponents.TokenGalleryProvider>
-          </uiComponents.Web3ContextProvider>
-        </SnackbarProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
+  ({children}) =>
+    (
+      <QueryClientProvider client={createTestQueryClient()}>
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        <ThemeProvider theme={(theme || defaultTheme) as any}>
+          <SnackbarProvider>
+            <uiComponents.Web3ContextProvider>
+              <uiComponents.TokenGalleryProvider>
+                <uiComponents.UnstoppableMessagingProvider>
+                  <uiComponents.TranslationProvider>
+                    {children}
+                  </uiComponents.TranslationProvider>
+                </uiComponents.UnstoppableMessagingProvider>
+              </uiComponents.TokenGalleryProvider>
+            </uiComponents.Web3ContextProvider>
+          </SnackbarProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    );
 
 // renders a child component with required wrappers
 export const customRender = (

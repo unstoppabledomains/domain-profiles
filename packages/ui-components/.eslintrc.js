@@ -16,7 +16,7 @@ module.exports = {
       jsx: true,
     },
     tsconfigRootDir: __dirname,
-    project: ['./tsconfig.json'],
+    project: ['./tsconfig.eslint.json'],
     sourceType: 'module',
   },
   plugins: ['react', 'tss-unused-classes', 'sort-exports'],

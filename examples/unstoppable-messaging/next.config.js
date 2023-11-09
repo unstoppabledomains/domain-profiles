@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
- 
+
 // transpile UI-components ESM module, because Next.js does not do this
 // by default for imported packages in node_modules
-const withNtm = require('next-transpile-modules')(['@unstoppabledomains/ui-components']);
-   
+const withNtm = require('next-transpile-modules')([
+  '@unstoppabledomains/ui-components',
+]);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   compress: false,

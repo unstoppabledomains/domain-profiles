@@ -2,13 +2,15 @@
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
+import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import type {Conversation} from '@xmtp/xmtp-js';
 import moment from 'moment';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import Emoji from 'react-emoji-render';
 import truncateEthAddress from 'truncate-eth-address';
+import {useIntersectionObserver} from 'usehooks-ts';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -30,6 +32,19 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginRight: theme.spacing(2),
     backgroundColor: theme.palette.primary.main,
     color: 'white',
+  },
+  avatarLoading: {
+    marginRight: theme.spacing(2),
+    width: '44px',
+    height: '44px',
+  },
+  fromLoading: {
+    width: '50%',
+    height: 20,
+  },
+  textLoading: {
+    width: '100%',
+    height: 15,
   },
   chatPreview: {
     whiteSpace: 'nowrap',
@@ -78,8 +93,13 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
     truncateEthAddress(conversation.conversation.peerAddress),
   );
 
+  // determine if conversation is visible on screen
+  const nodeRef = useRef<HTMLDivElement | null>(null);
+  const nodeObserver = useIntersectionObserver(nodeRef, {});
+  const nodeOnScreen = !!nodeObserver?.isIntersecting;
+
   useEffect(() => {
-    if (!conversation) {
+    if (!conversation || !nodeOnScreen || isLoaded) {
       return;
     }
     const loadAddressData = async () => {
@@ -100,7 +120,7 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
       setAvatarLink(addressData?.avatarUrl);
     };
     void loadAddressData();
-  }, [conversation]);
+  }, [conversation, nodeOnScreen]);
 
   useEffect(() => {
     const v = isSearchTermMatch();
@@ -125,34 +145,48 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
     return false;
   };
 
-  return isLoaded && isVisible ? (
-    <Box
-      onClick={() => selectedCallback(conversation.conversation)}
-      className={classes.conversationContainer}
-    >
-      <Box>
-        <Avatar src={avatarLink} className={classes.avatar} />
-      </Box>
-      <Box className={classes.chatPreview}>
-        <Box className={classes.chatHeader}>
-          <Typography variant="subtitle2">{displayName}</Typography>
-          <Box className={classes.chatTimestamp}>
-            <Typography variant="caption">
-              {moment(conversation.timestamp).fromNow()}
+  return isVisible ? (
+    <Box ref={nodeRef}>
+      {isLoaded ? (
+        <Box
+          className={classes.conversationContainer}
+          onClick={() => selectedCallback(conversation.conversation)}
+        >
+          <Box>
+            <Avatar src={avatarLink} className={classes.avatar} />
+          </Box>
+          <Box className={classes.chatPreview}>
+            <Box className={classes.chatHeader}>
+              <Typography variant="subtitle2">{displayName}</Typography>
+              <Box className={classes.chatTimestamp}>
+                <Typography variant="caption">
+                  {moment(conversation.timestamp).fromNow()}
+                </Typography>
+              </Box>
+            </Box>
+            <Typography variant="body2">
+              {isSpam ? (
+                <Box className={classes.warningContainer}>
+                  <WarningAmberOutlinedIcon className={classes.warningIcon} />
+                  {t('push.spamWarning')}
+                </Box>
+              ) : (
+                <Emoji>{conversation.preview}</Emoji>
+              )}
             </Typography>
           </Box>
         </Box>
-        <Typography variant="body2">
-          {isSpam ? (
-            <Box className={classes.warningContainer}>
-              <WarningAmberOutlinedIcon className={classes.warningIcon} />
-              {t('push.spamWarning')}
-            </Box>
-          ) : (
-            <Emoji>{conversation.preview}</Emoji>
-          )}
-        </Typography>
-      </Box>
+      ) : (
+        <Box className={classes.conversationContainer}>
+          <Box>
+            <Skeleton variant="circular" className={classes.avatarLoading} />
+          </Box>
+          <Box className={classes.chatPreview}>
+            <Skeleton variant="text" className={classes.fromLoading} />
+            <Skeleton variant="text" className={classes.textLoading} />
+          </Box>
+        </Box>
+      )}
     </Box>
   ) : null;
 };

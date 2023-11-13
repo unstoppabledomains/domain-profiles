@@ -18,6 +18,7 @@ import {isAddressSpam} from '../../../../actions/messageActions';
 import useTranslationContext from '../../../../lib/i18n';
 import {getAddressMetadata} from '../../protocol/resolution';
 import type {ConversationMeta} from '../../protocol/xmtp';
+import {getConversationPreview} from '../../protocol/xmtp';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   conversationContainer: {
@@ -105,6 +106,9 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
     const loadAddressData = async () => {
       // if conversation is not accepted, check spam score
       if (!acceptedTopics.find(v => v === conversation.conversation.topic)) {
+        // get message preview
+        await getConversationPreview(conversation);
+
         // check peer address spam score
         if (await isAddressSpam(conversation.conversation.peerAddress)) {
           setIsSpam(true);
@@ -148,34 +152,36 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
   return isVisible ? (
     <Box ref={nodeRef}>
       {isLoaded ? (
-        <Box
-          className={classes.conversationContainer}
-          onClick={() => selectedCallback(conversation.conversation)}
-        >
-          <Box>
-            <Avatar src={avatarLink} className={classes.avatar} />
-          </Box>
-          <Box className={classes.chatPreview}>
-            <Box className={classes.chatHeader}>
-              <Typography variant="subtitle2">{displayName}</Typography>
-              <Box className={classes.chatTimestamp}>
-                <Typography variant="caption">
-                  {moment(conversation.timestamp).fromNow()}
-                </Typography>
-              </Box>
+        conversation.timestamp > 0 && (
+          <Box
+            className={classes.conversationContainer}
+            onClick={() => selectedCallback(conversation.conversation)}
+          >
+            <Box>
+              <Avatar src={avatarLink} className={classes.avatar} />
             </Box>
-            <Typography variant="body2">
-              {isSpam ? (
-                <Box className={classes.warningContainer}>
-                  <WarningAmberOutlinedIcon className={classes.warningIcon} />
-                  {t('push.spamWarning')}
+            <Box className={classes.chatPreview}>
+              <Box className={classes.chatHeader}>
+                <Typography variant="subtitle2">{displayName}</Typography>
+                <Box className={classes.chatTimestamp}>
+                  <Typography variant="caption">
+                    {moment(conversation.timestamp).fromNow()}
+                  </Typography>
                 </Box>
-              ) : (
-                <Emoji>{conversation.preview}</Emoji>
-              )}
-            </Typography>
+              </Box>
+              <Typography variant="body2">
+                {isSpam ? (
+                  <Box className={classes.warningContainer}>
+                    <WarningAmberOutlinedIcon className={classes.warningIcon} />
+                    {t('push.spamWarning')}
+                  </Box>
+                ) : (
+                  <Emoji>{conversation.preview}</Emoji>
+                )}
+              </Typography>
+            </Box>
           </Box>
-        </Box>
+        )
       ) : (
         <Box className={classes.conversationContainer}>
           <Box>

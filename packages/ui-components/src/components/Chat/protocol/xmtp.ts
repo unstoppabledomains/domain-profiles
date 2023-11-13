@@ -61,6 +61,36 @@ export const getConversation = async (
   return await xmtp.conversations.newConversation(peerAddress);
 };
 
+// getConversationPreview retrieve latest message associated with conversation
+export const getConversationPreview = async (
+  conversation: ConversationMeta,
+): Promise<ConversationMeta> => {
+  // retrieve conversation metadata
+  const latestMessage = await conversation.conversation.messages({
+    limit: 1,
+    direction: SortDirection.SORT_DIRECTION_DESCENDING,
+  });
+  if (latestMessage && latestMessage.length > 0) {
+    const message = latestMessage[0];
+
+    // set the preview text
+    conversation.preview = `${
+      message.senderAddress.toLowerCase() ===
+      message.conversation.clientAddress.toLowerCase()
+        ? 'You: '
+        : ''
+    }${
+      message.contentType.sameAs(ContentTypeText)
+        ? message.content
+        : 'Attachment'
+    }`;
+
+    // set the timestamp
+    conversation.timestamp = message.sent.getTime();
+  }
+  return conversation;
+};
+
 export const getConversations = async (
   address: string,
 ): Promise<ConversationMeta[]> => {
@@ -73,27 +103,11 @@ export const getConversations = async (
       continue;
     }
 
-    // retrieve latest message associated with conversation
-    const latestMessage = await conversation.messages({
-      limit: 1,
-      direction: SortDirection.SORT_DIRECTION_DESCENDING,
-    });
-    latestMessage.map(message => {
-      chats.push({
-        conversation,
-        preview: `${
-          message.senderAddress.toLowerCase() ===
-          message.conversation.clientAddress.toLowerCase()
-            ? 'You: '
-            : ''
-        }${
-          message.contentType.sameAs(ContentTypeText)
-            ? message.content
-            : 'Attachment'
-        }`,
-        timestamp: message.sent.getTime(),
-        visible: true,
-      });
+    chats.push({
+      conversation,
+      preview: 'loading...',
+      timestamp: 0,
+      visible: true,
     });
   }
 

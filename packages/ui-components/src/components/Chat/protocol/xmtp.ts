@@ -20,6 +20,7 @@ import {
   SortDirection,
   StaticKeystoreProvider,
 } from '@xmtp/xmtp-js';
+import Bluebird from 'bluebird';
 import type {Signer} from 'ethers';
 import {sha256} from 'ethers/lib/utils';
 import {filesize} from 'filesize';
@@ -61,41 +62,69 @@ export const getConversation = async (
   return await xmtp.conversations.newConversation(peerAddress);
 };
 
+// getConversationPreview retrieve latest message associated with conversation
+export const getConversationPreview = async (
+  conversation: ConversationMeta,
+): Promise<ConversationMeta> => {
+  // retrieve conversation metadata
+  const latestMessage = await conversation.conversation.messages({
+    limit: 1,
+    direction: SortDirection.SORT_DIRECTION_DESCENDING,
+  });
+  if (latestMessage && latestMessage.length > 0) {
+    const message = latestMessage[0];
+
+    // set the preview text
+    conversation.preview = `${
+      message.senderAddress.toLowerCase() ===
+      message.conversation.clientAddress.toLowerCase()
+        ? 'You: '
+        : ''
+    }${
+      message.contentType.sameAs(ContentTypeText)
+        ? message.content
+        : 'Attachment'
+    }`;
+
+    // set the timestamp
+    conversation.timestamp = message.sent.getTime();
+  }
+  return conversation;
+};
+
 export const getConversations = async (
   address: string,
 ): Promise<ConversationMeta[]> => {
   const xmtp = await getXmtpClient(address);
   const chats: ConversationMeta[] = [];
-  const latestConversations = await xmtp.conversations.list();
-  for (const conversation of latestConversations) {
+  const conversations = await xmtp.conversations.list();
+  for (const conversation of conversations) {
     // filter self conversations
     if (conversation.peerAddress.toLowerCase() === address.toLowerCase()) {
       continue;
     }
 
-    // retrieve latest message associated with conversation
-    const latestMessage = await conversation.messages({
-      limit: 1,
-      direction: SortDirection.SORT_DIRECTION_DESCENDING,
-    });
-    latestMessage.map(message => {
-      chats.push({
-        conversation,
-        preview: `${
-          message.senderAddress.toLowerCase() ===
-          message.conversation.clientAddress.toLowerCase()
-            ? 'You: '
-            : ''
-        }${
-          message.contentType.sameAs(ContentTypeText)
-            ? message.content
-            : 'Attachment'
-        }`,
-        timestamp: message.sent.getTime(),
-        visible: true,
-      });
+    chats.push({
+      conversation,
+      preview: 'loading...',
+      timestamp: 0,
+      visible: true,
     });
   }
+
+  // Fetch latest message from conversations, which is required for proper
+  // ordering of the conversation list. Since the timestamp of the most recent
+  // message is not provided in the most recent list, it's necessary to get
+  // the metadata for each conversation and then sort.
+  await Bluebird.map(
+    chats,
+    async chat => {
+      await getConversationPreview(chat);
+    },
+    {
+      concurrency: 10,
+    },
+  );
 
   // associate owner's conversation topics with their wallet address
   await registerClientTopics(

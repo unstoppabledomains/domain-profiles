@@ -20,6 +20,7 @@ import {
   SortDirection,
   StaticKeystoreProvider,
 } from '@xmtp/xmtp-js';
+import Bluebird from 'bluebird';
 import type {Signer} from 'ethers';
 import {sha256} from 'ethers/lib/utils';
 import {filesize} from 'filesize';
@@ -96,8 +97,8 @@ export const getConversations = async (
 ): Promise<ConversationMeta[]> => {
   const xmtp = await getXmtpClient(address);
   const chats: ConversationMeta[] = [];
-  const latestConversations = await xmtp.conversations.list();
-  for (const conversation of latestConversations) {
+  const conversations = await xmtp.conversations.list();
+  for (const conversation of conversations) {
     // filter self conversations
     if (conversation.peerAddress.toLowerCase() === address.toLowerCase()) {
       continue;
@@ -110,6 +111,20 @@ export const getConversations = async (
       visible: true,
     });
   }
+
+  // Fetch latest message from conversations, which is required for proper
+  // ordering of the conversation list. Since the timestamp of the most recent
+  // message is not provided in the most recent list, it's necessary to get
+  // the metadata for each conversation and then sort.
+  await Bluebird.map(
+    chats,
+    async chat => {
+      await getConversationPreview(chat);
+    },
+    {
+      concurrency: 10,
+    },
+  );
 
   // associate owner's conversation topics with their wallet address
   await registerClientTopics(

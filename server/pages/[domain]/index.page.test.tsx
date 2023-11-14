@@ -127,6 +127,15 @@ const defaultTokenGalleryData = (): SerializedPublicDomainProfileData => {
       'crypto.ETH.address': 'test-eth-address',
       'crypto.SOL.address': 'test-sol-address',
     },
+    cryptoVerifications: [
+      {
+        id: 0,
+        symbol: 'ETH',
+        address: 'test-eth-address',
+        plaintextMessage: 'message',
+        signedMessage: 'signature',
+      },
+    ],
   };
 };
 

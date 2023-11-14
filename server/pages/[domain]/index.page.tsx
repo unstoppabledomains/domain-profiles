@@ -890,15 +890,16 @@ const DomainProfile = ({
         </Grid>
 
         <Grid item xs={12} sm={12} md={8} className={classes.item}>
-          {profileData?.profile.tokenGalleryEnabled && (
-            <TokenGallery
-              domain={domain}
-              enabled={!isExternalDomain && isFeatureFlagFetched}
-              isOwner={isOwner}
-              ownerAddress={ownerAddress}
-              profileServiceUrl={config.PROFILE.HOST_URL}
-            />
-          )}
+          {profileData?.cryptoVerifications &&
+            profileData.cryptoVerifications.length > 0 && (
+              <TokenGallery
+                domain={domain}
+                enabled={!isExternalDomain && isFeatureFlagFetched}
+                isOwner={isOwner}
+                ownerAddress={ownerAddress}
+                profileServiceUrl={config.PROFILE.HOST_URL}
+              />
+            )}
           {isForSale && !nftShowAll && openSeaLink && (
             <ForSaleOnOpenSea email={ownerEmail} link={openSeaLink} />
           )}

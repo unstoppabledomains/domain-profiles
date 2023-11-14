@@ -1,3 +1,7 @@
+## 0.0.26
+
+- Improve XMTP conversation list loading time
+
 ## 0.0.25
 
 - Add Web2 specific domain avatar support

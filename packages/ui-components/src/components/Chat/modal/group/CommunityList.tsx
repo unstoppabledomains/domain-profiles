@@ -14,7 +14,10 @@ import {getDomainBadges} from '../../../../actions/domainActions';
 import {getProfileData} from '../../../../actions/domainProfileActions';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../../lib/types/badge';
-import {UD_BLUE_BADGE_CODE} from '../../../../lib/types/domain';
+import {
+  DomainFieldTypes,
+  UD_BLUE_BADGE_CODE,
+} from '../../../../lib/types/domain';
 import {getGroupInfo} from '../../protocol/push';
 import CommunityPreview from './CommunityPreview';
 
@@ -92,7 +95,7 @@ export const CommunityList: React.FC<CommunityListProps> = ({
     setLoadingText(t('push.loadingCommunities'));
     const [badgeData, domainProfile] = await Promise.all([
       getDomainBadges(domain, {withoutPartners: true}),
-      getProfileData(domain, Date.now()),
+      getProfileData(domain, [DomainFieldTypes.Profile], Date.now()),
     ]);
 
     // determine group membership

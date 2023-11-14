@@ -46,6 +46,7 @@ import {
   CopyToClipboard,
   CryptoAddresses,
   CustomBadges,
+  DomainFieldTypes,
   DomainListModal,
   DomainPreview,
   DomainProfileKeys,
@@ -82,6 +83,7 @@ import {
   useUnstoppableMessaging,
   useWeb3Context,
 } from '@unstoppabledomains/ui-components';
+import {notifyError} from '@unstoppabledomains/ui-components/src/lib/error';
 import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
 type DomainProfileServerSideProps = GetServerSideProps & {
@@ -318,9 +320,6 @@ const DomainProfile = ({
         ownerAddress.toLowerCase() === localAuthAddress.toLowerCase();
     }
     setIsOwner(isAuthorized);
-
-    // load initial set of followers
-    void loadFollowers();
   }, [isMounted, isFeatureFlagSuccess, featureFlags, ownerAddress]);
 
   // Check for Social Account Visibility Status
@@ -333,20 +332,45 @@ const DomainProfile = ({
         ),
       );
     }
-    // retrieve badges
-    const loadBadges = async () => {
-      const badgeData: DomainBadgesResponse = await getDomainBadges(domain);
-      setBadges(badgeData);
-      setBadgeTypes([
-        ...new Set(
-          badgeData?.list
-            ?.filter(b => b.active)
-            .map(b => b.type)
-            .sort(),
-        ),
-      ]);
+
+    // retrieve webacy score at page load time
+    const loadWebacyScore = async () => {
+      if (profileData) {
+        try {
+          const webacyData = await getProfileData(domain, [
+            DomainFieldTypes.WebacyScore,
+          ]);
+          if (webacyData?.webacy) {
+            profileData.webacy = webacyData.webacy;
+          }
+        } catch (e) {
+          notifyError(e, {msg: 'error loading webacy score'});
+        }
+      }
     };
+
+    // retrieve badges at page load time
+    const loadBadges = async () => {
+      try {
+        const badgeData: DomainBadgesResponse = await getDomainBadges(domain);
+        setBadges(badgeData);
+        setBadgeTypes([
+          ...new Set(
+            badgeData?.list
+              ?.filter(b => b.active)
+              .map(b => b.type)
+              .sort(),
+          ),
+        ]);
+      } catch (e) {
+        notifyError(e, {msg: 'error loading badges'});
+      }
+    };
+
+    // retrieve additional profile data at page load time
     void loadBadges();
+    void loadFollowers();
+    void loadWebacyScore();
   }, []);
 
   useEffect(() => {
@@ -483,37 +507,38 @@ const DomainProfile = ({
             <div className={classes.searchContainer}>
               <ProfileSearchBar setWeb3Deps={setWeb3Deps} />
             </div>
-
-            <div className={classes.loginContainer}>
-              {authDomain ? (
-                <>
-                  {featureFlags?.variations
-                    ?.ecommerceServiceUsersEnableChat && (
-                    <div className={classes.chatContainer}>
-                      <UnstoppableMessaging
-                        address={authAddress}
-                        disableSupportBubble
-                      />
-                    </div>
-                  )}
-                  <AccountButton
-                    domain={domain}
-                    domainOwner={ownerAddress}
-                    authAddress={authAddress}
-                    authDomain={authDomain}
+            {isOwner !== undefined && (
+              <div className={classes.loginContainer}>
+                {authDomain ? (
+                  <>
+                    {featureFlags?.variations
+                      ?.ecommerceServiceUsersEnableChat && (
+                      <div className={classes.chatContainer}>
+                        <UnstoppableMessaging
+                          address={authAddress}
+                          disableSupportBubble
+                        />
+                      </div>
+                    )}
+                    <AccountButton
+                      domain={domain}
+                      domainOwner={ownerAddress}
+                      authAddress={authAddress}
+                      authDomain={authDomain}
+                    />
+                  </>
+                ) : (
+                  <LoginButton
+                    method={isMobile ? LoginMethod.Wallet : LoginMethod.Uauth}
+                    loading={false}
+                    isWhiteBg
+                    hidden={false}
+                    clicked={loginClicked}
+                    onLoginComplete={handleLoginComplete}
                   />
-                </>
-              ) : (
-                <LoginButton
-                  method={isMobile ? LoginMethod.Wallet : LoginMethod.Uauth}
-                  loading={false}
-                  isWhiteBg
-                  hidden={false}
-                  clicked={loginClicked}
-                  onLoginComplete={handleLoginComplete}
-                />
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -1171,7 +1196,13 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
   let identity = null;
   try {
     const [profileDataObj, identityObj] = await Promise.allSettled([
-      getProfileData(domain),
+      getProfileData(domain, [
+        DomainFieldTypes.CryptoVerifications,
+        DomainFieldTypes.Messaging,
+        DomainFieldTypes.Profile,
+        DomainFieldTypes.SocialAccounts,
+        DomainFieldTypes.Records,
+      ]),
       getIdentity({name: domain}),
     ]);
     profileData =

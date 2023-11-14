@@ -22,6 +22,7 @@ import {notifyError} from '../../lib/error';
 import useTranslationContext from '../../lib/i18n';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import {
+  DomainFieldTypes,
   DomainProfileKeys,
   DomainSuffixes,
   Web2SuffixesList,
@@ -137,7 +138,9 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
     }
     const fetchData = async () => {
       try {
-        const profileJSON = await getProfileData(domain);
+        const profileJSON = await getProfileData(domain, [
+          DomainFieldTypes.Profile,
+        ]);
         if (profileJSON) {
           setProfileData(profileJSON);
         }

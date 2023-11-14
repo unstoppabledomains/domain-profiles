@@ -34,6 +34,18 @@ export type DomainDescription = {
   sld: string | null;
 };
 
+export enum DomainFieldTypes {
+  CryptoVerifications = 'cryptoVerifications',
+  HumanityCheck = 'humanityCheck',
+  Messaging = 'messaging',
+  Profile = 'profile',
+  SocialAccounts = 'socialAccounts',
+  Records = 'records',
+  ReferralCode = 'referralCode',
+  ReferralTier = 'referralTier',
+  WebacyScore = 'webacyScore',
+}
+
 export enum DomainProfileKeys {
   AuthAddress = 'authAddress',
   AuthDomain = 'authDomain',

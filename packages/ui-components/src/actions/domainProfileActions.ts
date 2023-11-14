@@ -7,6 +7,7 @@ import type {AddressResolution} from '../components/Chat/types';
 import type {NftResponse} from '../lib';
 import {fetchApi} from '../lib/fetchApi';
 import type {
+  DomainFieldTypes,
   SerializedFollowerListData,
   SerializedPublicDomainProfileData,
 } from '../lib/types/domain';
@@ -88,11 +89,13 @@ export const getFollowers = async (
 
 export const getProfileData = async (
   domain: string,
+  fields: DomainFieldTypes[],
   expiry?: number,
 ): Promise<SerializedPublicDomainProfileData | undefined> => {
-  const domainProfileUrl = `/public/${domain}${
-    expiry ? `?expiry=${expiry}` : ''
-  }`;
+  const domainProfileUrl = `/public/${domain}?${QueryString.stringify({
+    expiry,
+    fields: fields ? fields.join(',') : undefined,
+  })}`;
   return await fetchApi(domainProfileUrl, {host: config.PROFILE.HOST_URL});
 };
 

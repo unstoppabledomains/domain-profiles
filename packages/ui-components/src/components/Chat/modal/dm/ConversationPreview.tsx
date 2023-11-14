@@ -28,6 +28,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     paddingBottom: theme.spacing(2),
     marginRight: theme.spacing(1),
     borderBottom: '1px dashed #eeeeee',
+    height: '70px',
+    alignItems: 'center',
   },
   avatar: {
     marginRight: theme.spacing(2),

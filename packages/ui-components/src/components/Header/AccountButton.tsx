@@ -10,7 +10,7 @@ import {getProfileData} from '../../actions/domainProfileActions';
 import DropDownMenu from '../../components/DropDownMenu';
 import getImageUrl from '../../lib/domain/getImageUrl';
 import {notifyError} from '../../lib/error';
-import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
+import {DomainFieldTypes, type SerializedPublicDomainProfileData} from '../../lib/types/domain';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   profileButtonContainer: {
@@ -95,7 +95,7 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
     const fetchData = async (domainName: string) => {
       let profileData;
       try {
-        profileData = await getProfileData(domainName);
+        profileData = await getProfileData(domainName, [DomainFieldTypes.Profile]);
       } catch {}
       setAuthDomainAvatar(
         getDomainAvatarFromProfileAndMetadata(domainName, profileData),

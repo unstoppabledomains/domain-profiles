@@ -3,7 +3,10 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {customRender} from 'tests/test-utils';
 
-import type {DomainBadgesResponse} from '@unstoppabledomains/ui-components';
+import type {
+  DomainBadgesResponse,
+  SerializedPublicDomainProfileData,
+} from '@unstoppabledomains/ui-components';
 import {
   DomainProfileKeys,
   PersonaInquiryStatus,
@@ -88,6 +91,11 @@ const defaultProps = (): DomainProfilePageProps => {
         },
       },
     },
+  };
+};
+
+const defaultRecords = () => {
+  return {
     records: {
       'whois.email.value': 'user@test.com',
       'whois.for_sale.value': 'true',
@@ -102,6 +110,32 @@ const defaultProps = (): DomainProfilePageProps => {
       registry: '0x1234',
       resolver: '0x1234',
     },
+  };
+};
+
+const defaultProfileData = (): SerializedPublicDomainProfileData => {
+  return {
+    ...defaultProps().profileData!,
+    ...defaultRecords(),
+  };
+};
+
+const defaultTokenGalleryData = (): SerializedPublicDomainProfileData => {
+  return {
+    ...defaultProfileData(),
+    records: {
+      'crypto.ETH.address': 'test-eth-address',
+      'crypto.SOL.address': 'test-sol-address',
+    },
+    cryptoVerifications: [
+      {
+        id: 0,
+        symbol: 'ETH',
+        address: 'test-eth-address',
+        plaintextMessage: 'message',
+        signedMessage: 'signature',
+      },
+    ],
   };
 };
 
@@ -161,7 +195,7 @@ describe('<DomainProfile />', () => {
     });
     jest
       .spyOn(domainProfileActions, 'getProfileData')
-      .mockResolvedValue(defaultProps().profileData!);
+      .mockResolvedValue(defaultProfileData());
     jest
       .spyOn(featureFlagActions, 'fetchFeatureFlags')
       .mockResolvedValue(featureFlagActions.DEFAULT_FEATURE_FLAGS);
@@ -232,35 +266,45 @@ describe('<DomainProfile />', () => {
     });
   });
 
-  it('shows empty case if the domain not minted', () => {
+  it('shows empty case if the domain not minted', async () => {
     const props = defaultProps();
-    props.metadata = {};
     props.profileData = null;
-    props.records = {};
+
+    jest.spyOn(domainProfileActions, 'getProfileData').mockResolvedValue({
+      ...defaultProfileData(),
+      records: {},
+      metadata: {},
+    });
 
     customRender(<DomainProfile {...props} />);
 
-    expect(
-      screen.getByText("The domain is purchased but isn't minted yet."),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText("The domain is purchased but isn't minted yet."),
+      ).toBeInTheDocument();
+    });
   });
 
-  it('renders a crypto address', () => {
+  it('renders a crypto address', async () => {
     const props = defaultProps();
-    props.records['crypto.ETH.address'] =
-      '0x82fb235d3338c5583512f2065555dc18fe13a12b';
+
+    jest.spyOn(domainProfileActions, 'getProfileData').mockResolvedValue({
+      ...defaultProfileData(),
+      records: {
+        'crypto.ETH.address': '0x82fb235d3338c5583512f2065555dc18fe13a12b',
+      },
+    });
+
     customRender(<DomainProfile {...props} />);
 
-    expect(screen.getByText('0x82...a12b')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('0x82...a12b')).toBeInTheDocument();
+    });
   });
 });
 
 describe('Token gallery for multiple blockchains', () => {
   const tokenGalleryProps = defaultProps();
-  tokenGalleryProps.records = {
-    'crypto.ETH.address': 'test-eth-address',
-    'crypto.SOL.address': 'test-sol-address',
-  };
   tokenGalleryProps.profileData!.profile.tokenGalleryEnabled = true;
 
   beforeEach(async () => {
@@ -305,7 +349,7 @@ describe('Token gallery for multiple blockchains', () => {
     // mock profile with token gallery enabled
     jest
       .spyOn(domainProfileActions, 'getProfileData')
-      .mockResolvedValue(tokenGalleryProps.profileData!);
+      .mockResolvedValue(defaultTokenGalleryData());
 
     // mock NFT data
     jest.spyOn(domainProfileActions, 'getDomainNfts').mockResolvedValue({
@@ -566,10 +610,6 @@ describe('Token gallery for multiple blockchains', () => {
 
 describe('Token gallery for single blockchain', () => {
   const tokenGalleryProps = defaultProps();
-  tokenGalleryProps.records = {
-    'crypto.ETH.address': 'test-eth-address',
-    'crypto.SOL.address': 'test-sol-address',
-  };
   tokenGalleryProps.profileData!.profile.tokenGalleryEnabled = true;
 
   beforeEach(async () => {
@@ -614,7 +654,7 @@ describe('Token gallery for single blockchain', () => {
     // mock profile with token gallery enabled
     jest
       .spyOn(domainProfileActions, 'getProfileData')
-      .mockResolvedValue(tokenGalleryProps.profileData!);
+      .mockResolvedValue(defaultTokenGalleryData());
 
     // mock NFT data
     jest.spyOn(domainProfileActions, 'getDomainNfts').mockResolvedValue({
@@ -698,10 +738,6 @@ describe('Token gallery for single blockchain', () => {
 
 describe('Token gallery carousel', () => {
   const tokenGalleryProps = defaultProps();
-  tokenGalleryProps.records = {
-    'crypto.ETH.address': 'test-eth-address',
-    'crypto.SOL.address': 'test-sol-address',
-  };
   tokenGalleryProps.profileData!.profile.tokenGalleryEnabled = true;
 
   beforeEach(async () => {
@@ -746,7 +782,7 @@ describe('Token gallery carousel', () => {
     // mock profile with token gallery enabled
     jest
       .spyOn(domainProfileActions, 'getProfileData')
-      .mockResolvedValue(tokenGalleryProps.profileData!);
+      .mockResolvedValue(defaultTokenGalleryData());
 
     // mock NFT data
     jest.spyOn(domainProfileActions, 'getDomainNfts').mockResolvedValue({
@@ -1020,10 +1056,6 @@ describe('Token gallery carousel', () => {
 
 describe('Owner operations', () => {
   const tokenGalleryProps = defaultProps();
-  tokenGalleryProps.records = {
-    'crypto.ETH.address': 'test-eth-address',
-    'crypto.SOL.address': 'test-sol-address',
-  };
   tokenGalleryProps.profileData!.profile.tokenGalleryEnabled = true;
 
   beforeEach(async () => {
@@ -1068,7 +1100,7 @@ describe('Owner operations', () => {
     // mock profile with token gallery enabled
     jest
       .spyOn(domainProfileActions, 'getProfileData')
-      .mockResolvedValue(tokenGalleryProps.profileData!);
+      .mockResolvedValue(defaultTokenGalleryData());
 
     // mock NFT data
     jest.spyOn(domainProfileActions, 'getDomainNfts').mockResolvedValue({
@@ -1145,7 +1177,7 @@ describe('Owner operations', () => {
       .mockImplementation((k: string): string | null => {
         switch (k) {
           case DomainProfileKeys.AuthAddress:
-            return defaultProps().metadata.owner;
+            return defaultProfileData()!.metadata!.owner;
           case DomainProfileKeys.AuthDomain:
             return 'foo.crypto';
         }

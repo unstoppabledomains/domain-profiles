@@ -37,6 +37,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
     justifyContent: 'space-between',
     cursor: 'pointer',
+    minWidth: '150px',
     transition: theme.transitions.create([
       'background-color',
       'box-shadow',

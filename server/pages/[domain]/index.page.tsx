@@ -95,16 +95,12 @@ type DomainProfileServerSideProps = GetServerSideProps & {
 export type DomainProfilePageProps = {
   domain: string;
   profileData?: SerializedPublicDomainProfileData | null;
-  records: Record<string, string>;
-  metadata: Record<string, string>;
   identity?: PersonaIdentity;
 };
 
 const DomainProfile = ({
   domain,
   profileData,
-  records,
-  metadata,
   identity,
 }: DomainProfilePageProps) => {
   // hooks
@@ -129,6 +125,8 @@ const DomainProfile = ({
   const [badgeTypes, setBadgeTypes] = useState<string[]>([]);
   const [badges, setBadges] = useState<DomainBadgesResponse>();
   const [badgesDisabled, setBadgesDisabled] = useState(true);
+  const [records, setRecords] = useState<Record<string, string>>({});
+  const [metadata, setMetadata] = useState<Record<string, string>>({});
   const [showFeaturedCommunity, setShowFeaturedCommunity] = useState(
     profileData?.profile.showFeaturedCommunity ?? false,
   );
@@ -333,41 +331,8 @@ const DomainProfile = ({
       );
     }
 
-    // retrieve webacy score at page load time
-    const loadWebacyScore = async () => {
-      if (profileData) {
-        try {
-          const webacyData = await getProfileData(domain, [
-            DomainFieldTypes.WebacyScore,
-          ]);
-          if (webacyData?.webacy) {
-            profileData.webacy = webacyData.webacy;
-          }
-        } catch (e) {
-          notifyError(e, {msg: 'error loading webacy score'});
-        }
-      }
-    };
-
-    // retrieve badges at page load time
-    const loadBadges = async () => {
-      try {
-        const badgeData: DomainBadgesResponse = await getDomainBadges(domain);
-        setBadges(badgeData);
-        setBadgeTypes([
-          ...new Set(
-            badgeData?.list
-              ?.filter(b => b.active)
-              .map(b => b.type)
-              .sort(),
-          ),
-        ]);
-      } catch (e) {
-        notifyError(e, {msg: 'error loading badges'});
-      }
-    };
-
     // retrieve additional profile data at page load time
+    void loadCryptoRecords();
     void loadBadges();
     void loadFollowers();
     void loadWebacyScore();
@@ -386,6 +351,76 @@ const DomainProfile = ({
       </div>
     );
   }
+
+  const loadCryptoRecords = async () => {
+    if (profileData) {
+      try {
+        const recordsData = await getProfileData(domain, [
+          DomainFieldTypes.Records,
+          DomainFieldTypes.CryptoVerifications,
+        ]);
+        if (recordsData?.cryptoVerifications) {
+          profileData.cryptoVerifications = recordsData.cryptoVerifications;
+        }
+        if (recordsData?.metadata) {
+          profileData.metadata = recordsData.metadata;
+          setMetadata(recordsData.metadata);
+        }
+        if (recordsData?.records) {
+          profileData.records = recordsData.records;
+          setRecords(recordsData.records);
+        }
+      } catch (e) {
+        notifyError(e, {msg: 'error loading webacy score'});
+      }
+    }
+  };
+
+  // retrieve webacy score at page load time
+  const loadWebacyScore = async () => {
+    if (profileData) {
+      try {
+        const webacyData = await getProfileData(domain, [
+          DomainFieldTypes.WebacyScore,
+        ]);
+        if (webacyData?.webacy) {
+          profileData.webacy = webacyData.webacy;
+        }
+      } catch (e) {
+        notifyError(e, {msg: 'error loading webacy score'});
+      }
+    }
+  };
+
+  // retrieve badges at page load time
+  const loadBadges = async () => {
+    try {
+      const badgeData: DomainBadgesResponse = await getDomainBadges(domain);
+      setBadges(badgeData);
+      setBadgeTypes([
+        ...new Set(
+          badgeData?.list
+            ?.filter(b => b.active)
+            .map(b => b.type)
+            .sort(),
+        ),
+      ]);
+    } catch (e) {
+      notifyError(e, {msg: 'error loading badges'});
+    }
+  };
+
+  const loadFollowers = async () => {
+    if (
+      profileData?.social?.followerCount &&
+      profileData.social.followerCount > 0
+    ) {
+      const loadedFollowers = await retrieveFollowers();
+      if (loadedFollowers?.domains && loadedFollowers.domains.length > 0) {
+        setFollowers([...loadedFollowers.domains]);
+      }
+    }
+  };
 
   // getNftsForContract retrieves NFTs matching one of the specified smart
   // contract addresses
@@ -414,18 +449,6 @@ const DomainProfile = ({
   const featuredPartners = badges?.list?.filter(
     badge => badge.gallery && badge.gallery.tier > 2,
   );
-
-  const loadFollowers = async () => {
-    if (
-      profileData?.social?.followerCount &&
-      profileData.social.followerCount > 0
-    ) {
-      const loadedFollowers = await retrieveFollowers();
-      if (loadedFollowers?.domains && loadedFollowers.domains.length > 0) {
-        setFollowers([...loadedFollowers.domains]);
-      }
-    }
-  };
 
   const retrieveFollowers = async (cursor?: number) => {
     const retData: {domains: string[]; cursor?: number} = {
@@ -1191,24 +1214,18 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
   };
 
   let profileData: SerializedPublicDomainProfileData | undefined;
-  let records: Record<string, string> = {};
-  let metadata: Record<string, string> = {};
   let identity = null;
   try {
     const [profileDataObj, identityObj] = await Promise.allSettled([
       getProfileData(domain, [
-        DomainFieldTypes.CryptoVerifications,
         DomainFieldTypes.Messaging,
         DomainFieldTypes.Profile,
         DomainFieldTypes.SocialAccounts,
-        DomainFieldTypes.Records,
       ]),
       getIdentity({name: domain}),
     ]);
     profileData =
       profileDataObj.status === 'fulfilled' ? profileDataObj.value : undefined;
-    records = profileData?.records ? profileData.records : {};
-    metadata = profileData?.metadata ? profileData.metadata : {};
     identity =
       identityObj.status === 'fulfilled' && identityObj.value
         ? identityObj.value
@@ -1232,8 +1249,6 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
       profileServiceUrl,
       domain,
       profileData,
-      records,
-      metadata,
       identity,
     },
   };

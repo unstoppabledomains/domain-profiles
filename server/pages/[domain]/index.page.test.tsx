@@ -275,6 +275,12 @@ describe('<DomainProfile />', () => {
       records: {},
       metadata: {},
     });
+    jest.spyOn(domainActions, 'getDomainBadges').mockResolvedValue({
+      countActive: 0,
+      countTotal: 0,
+      list: [],
+      badgesLastSyncedAt: new Date(),
+    });
 
     customRender(<DomainProfile {...props} />);
 

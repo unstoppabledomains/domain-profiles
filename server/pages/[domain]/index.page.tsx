@@ -321,7 +321,6 @@ const DomainProfile = ({
     setIsOwner(isAuthorized);
   }, [isMounted, isFeatureFlagSuccess, featureFlags, ownerAddress]);
 
-  // Check for Social Account Visibility Status
   useEffect(() => {
     // determine social account status
     if (profileData?.socialAccounts) {
@@ -340,6 +339,8 @@ const DomainProfile = ({
         loadFollowers(),
         loadWebacyScore(),
       ]);
+
+      // page can be displayed now without flicker
       setIsLoaded(true);
     };
     void loadAll();
@@ -422,9 +423,13 @@ const DomainProfile = ({
       profileData?.social?.followerCount &&
       profileData.social.followerCount > 0
     ) {
-      const loadedFollowers = await retrieveFollowers();
-      if (loadedFollowers?.domains && loadedFollowers.domains.length > 0) {
-        setFollowers([...loadedFollowers.domains]);
+      try {
+        const loadedFollowers = await retrieveFollowers();
+        if (loadedFollowers?.domains && loadedFollowers.domains.length > 0) {
+          setFollowers([...loadedFollowers.domains]);
+        }
+      } catch (e) {
+        notifyError(e, {msg: 'error loading followers'});
       }
     }
   };
@@ -1169,7 +1174,7 @@ const DomainProfile = ({
                   )}
               </>
             )}
-            {isLoaded && !hasContent && !nftShowAll && (
+            {!hasContent && !nftShowAll && (
               <div className={classes.empty}>
                 <AutoAwesomeOutlinedIcon className={classes.emptyIcon} />
                 {blockchain

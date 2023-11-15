@@ -149,6 +149,7 @@ export type SerializedDomainProfileAttributes = {
   imageType?: 'default' | 'onChain' | 'offChain';
   coverPath?: string;
   web2Url?: string;
+  publicDomainSellerEmail?: string;
   phoneNumber?: string;
   domainPurchased?: boolean;
   collectibleImage?: string;

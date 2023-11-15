@@ -71,6 +71,7 @@ export const getConversationPreview = async (
     limit: 1,
     direction: SortDirection.SORT_DIRECTION_DESCENDING,
   });
+  conversation.timestamp = conversation.conversation.createdAt.getTime();
   if (latestMessage && latestMessage.length > 0) {
     const message = latestMessage[0];
 

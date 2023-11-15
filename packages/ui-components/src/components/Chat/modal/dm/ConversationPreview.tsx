@@ -177,8 +177,10 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
                     <WarningAmberOutlinedIcon className={classes.warningIcon} />
                     {t('push.spamWarning')}
                   </Box>
-                ) : (
+                ) : conversation.preview ? (
                   <Emoji>{conversation.preview}</Emoji>
+                ) : (
+                  <Skeleton variant="text" className={classes.textLoading} />
                 )}
               </Typography>
             </Box>

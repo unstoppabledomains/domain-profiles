@@ -180,11 +180,10 @@ const DomainProfile = ({
 
   // retrieve on-chain record data
   const addressRecords = parseRecords(records || {});
-  const isForSale =
-    (records['whois.for_sale.value'] ?? '').toLowerCase() === 'true';
+  const domainSellerEmail = profileData?.profile.publicDomainSellerEmail;
+  const isForSale = Boolean(domainSellerEmail);
   const ipfsHash = records['ipfs.html.value'];
   const ownerAddress = metadata.owner || '';
-  const ownerEmail = records['whois.email.value'];
   const {blockchain} = metadata;
   const {tokenId} = metadata;
   const openSeaLink = formOpenSeaLink({
@@ -912,8 +911,8 @@ const DomainProfile = ({
                   profileServiceUrl={config.PROFILE.HOST_URL}
                 />
               )}
-            {isForSale && !nftShowAll && openSeaLink && (
-              <ForSaleOnOpenSea email={ownerEmail} link={openSeaLink} />
+            {isForSale && !nftShowAll && openSeaLink && domainSellerEmail && (
+              <ForSaleOnOpenSea email={domainSellerEmail} link={openSeaLink} />
             )}
             {hasBadges && !nftShowAll && (
               <>

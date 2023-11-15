@@ -32,6 +32,7 @@ const defaultProps = (): DomainProfilePageProps => {
         description: 'A savage going to the moon',
         location: 'moon',
         web2Url: 'http://moonsavage.com',
+        publicDomainSellerEmail: 'seller@gmail.com',
         imagePath: 'http://url.com',
         domainPurchased: true,
         showDomainSuggestion: true,
@@ -97,8 +98,6 @@ const defaultProps = (): DomainProfilePageProps => {
 const defaultRecords = () => {
   return {
     records: {
-      'whois.email.value': 'user@test.com',
-      'whois.for_sale.value': 'true',
       'ipfs.html.value': '0x12345678901234567890',
     },
     metadata: {
@@ -223,9 +222,9 @@ describe('<DomainProfile />', () => {
     customRender(<DomainProfile {...defaultProps()} />);
 
     await waitFor(() => {
-      expect(screen.getAllByRole('link', {name: 'user@test.com'})).toHaveLength(
-        1,
-      );
+      expect(
+        screen.getAllByRole('link', {name: 'seller@gmail.com'}),
+      ).toHaveLength(1);
       expect(
         screen.getByText('A savage going to the moon'),
       ).toBeInTheDocument();

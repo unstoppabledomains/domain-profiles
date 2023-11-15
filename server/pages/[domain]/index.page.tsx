@@ -11,7 +11,6 @@ import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
@@ -351,14 +350,6 @@ const DomainProfile = ({
       setImagePath(profileData?.profile.imagePath);
     }
   }, [profileData]);
-
-  if (isExternalDomain && !isFeatureFlagFetched) {
-    return (
-      <div className={classes.disabledPageWrapper}>
-        <CircularProgress />
-      </div>
-    );
-  }
 
   const loadCryptoRecords = async () => {
     if (profileData) {

@@ -11,7 +11,6 @@ import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
@@ -113,6 +112,7 @@ const DomainProfile = ({
   const {chatUser, setOpenChat} = useUnstoppableMessaging();
   const {nfts, nftSymbolVisible, expanded: nftShowAll} = useTokenGallery();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [isLoaded, setIsLoaded] = useState(false);
   const {setWeb3Deps} = useWeb3Context();
 
   // state management
@@ -320,7 +320,6 @@ const DomainProfile = ({
     setIsOwner(isAuthorized);
   }, [isMounted, isFeatureFlagSuccess, featureFlags, ownerAddress]);
 
-  // Check for Social Account Visibility Status
   useEffect(() => {
     // determine social account status
     if (profileData?.socialAccounts) {
@@ -332,10 +331,18 @@ const DomainProfile = ({
     }
 
     // retrieve additional profile data at page load time
-    void loadCryptoRecords();
-    void loadBadges();
-    void loadFollowers();
-    void loadWebacyScore();
+    const loadAll = async () => {
+      await Promise.all([
+        loadCryptoRecords(),
+        loadBadges(),
+        loadFollowers(),
+        loadWebacyScore(),
+      ]);
+
+      // page can be displayed now without flicker
+      setIsLoaded(true);
+    };
+    void loadAll();
   }, []);
 
   useEffect(() => {
@@ -343,14 +350,6 @@ const DomainProfile = ({
       setImagePath(profileData?.profile.imagePath);
     }
   }, [profileData]);
-
-  if (isExternalDomain && !isFeatureFlagFetched) {
-    return (
-      <div className={classes.disabledPageWrapper}>
-        <CircularProgress />
-      </div>
-    );
-  }
 
   const loadCryptoRecords = async () => {
     if (profileData) {
@@ -415,9 +414,13 @@ const DomainProfile = ({
       profileData?.social?.followerCount &&
       profileData.social.followerCount > 0
     ) {
-      const loadedFollowers = await retrieveFollowers();
-      if (loadedFollowers?.domains && loadedFollowers.domains.length > 0) {
-        setFollowers([...loadedFollowers.domains]);
+      try {
+        const loadedFollowers = await retrieveFollowers();
+        if (loadedFollowers?.domains && loadedFollowers.domains.length > 0) {
+          setFollowers([...loadedFollowers.domains]);
+        }
+      } catch (e) {
+        notifyError(e, {msg: 'error loading followers'});
       }
     }
   };
@@ -617,565 +620,574 @@ const DomainProfile = ({
                 </Box>
               </div>
             )}
-            {profileData?.profile && (
-              <div>
-                <Box mt={1} className={classes.followingContainer}>
-                  <Button
-                    variant="text"
-                    className={classes.followCount}
-                    onClick={handleViewFollowingClick}
-                  >
-                    {`${profileData.social.followingCount} following`}
-                  </Button>
-                  <Button
-                    variant="text"
-                    className={classes.followCount}
-                    onClick={handleViewFollowersClick}
-                  >
-                    {`${
-                      (profileData.social.followerCount || 0) +
-                      optimisticFollowCount
-                    } followers`}
-                  </Button>
-                </Box>
-                {followers && followers.length > 2 && (
-                  <div className={classes.followersPreviewContainer}>
-                    <Typography className={classes.followersPreviewTyp}>
-                      {t('profile.followedBy', {
-                        followers: followers.slice(0, 2).join(', '),
-                        othersCount:
-                          (profileData.social.followerCount || 0) - 3,
-                      })}
-                    </Typography>
-                    <div className={classes.followersPreview}>
-                      {followers.slice(0, 3).map(follower => (
-                        <DomainPreview
-                          domain={follower}
-                          size={30}
-                          setWeb3Deps={setWeb3Deps}
-                        />
-                      ))}
-                    </div>
+            {isLoaded && (
+              <>
+                {profileData?.profile && (
+                  <div>
+                    <Box mt={1} className={classes.followingContainer}>
+                      <Button
+                        variant="text"
+                        className={classes.followCount}
+                        onClick={handleViewFollowingClick}
+                      >
+                        {`${profileData.social.followingCount} following`}
+                      </Button>
+                      <Button
+                        variant="text"
+                        className={classes.followCount}
+                        onClick={handleViewFollowersClick}
+                      >
+                        {`${
+                          (profileData.social.followerCount || 0) +
+                          optimisticFollowCount
+                        } followers`}
+                      </Button>
+                    </Box>
+                    {followers && followers.length > 2 && (
+                      <div className={classes.followersPreviewContainer}>
+                        <Typography className={classes.followersPreviewTyp}>
+                          {t('profile.followedBy', {
+                            followers: followers.slice(0, 2).join(', '),
+                            othersCount:
+                              (profileData.social.followerCount || 0) - 3,
+                          })}
+                        </Typography>
+                        <div className={classes.followersPreview}>
+                          {followers.slice(0, 3).map(follower => (
+                            <DomainPreview
+                              domain={follower}
+                              size={30}
+                              setWeb3Deps={setWeb3Deps}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            )}
-            {profileData?.profile.description ? (
-              <Box mt={2}>
-                <Typography className={classes.description}>
-                  {profileData?.profile.description
-                    ? profileData?.profile.description
-                    : ''}
-                </Typography>
-              </Box>
-            ) : null}
-            {profileData?.webacy && (
-              <Box className={classes.riskScoreContainer}>
-                <Avatar
-                  src={
-                    'https://storage.googleapis.com/unstoppable-client-assets/images/webacy/logo.png'
-                  }
-                  className={classes.riskScoreLogo}
-                  onClick={() =>
-                    window.open(
-                      `https://dapp.webacy.com/unstoppable/${ownerAddress}`,
-                      '_blank',
-                    )
-                  }
-                />
-                <Typography className={classes.emailAndLocation}>
-                  {t('webacy.riskScore')}:
-                </Typography>
-                <Tooltip
-                  title={
-                    profileData.webacy.issues.length > 0 ? (
-                      profileData.webacy.issues.map(issue => (
-                        <>
-                          <Typography variant="caption">
-                            {
-                              issue.categories.wallet_characteristics
-                                .description
-                            }
-                          </Typography>
-                          <List dense sx={{listStyleType: 'disc', pl: 4}}>
-                            {issue.tags.map(tag => (
-                              <ListItem sx={{display: 'list-item'}}>
-                                <Typography variant="caption">
-                                  {tag.name}
-                                </Typography>
-                              </ListItem>
-                            ))}
-                          </List>
-                        </>
-                      ))
-                    ) : (
-                      <Typography variant="caption">
-                        {t('webacy.riskScoreDescription')}
-                      </Typography>
-                    )
-                  }
-                >
-                  <Chip
-                    color={
-                      profileData.webacy.high
-                        ? 'error'
-                        : profileData.webacy.medium
-                        ? 'default'
-                        : 'success'
-                    }
-                    size="small"
-                    icon={
-                      profileData.webacy.high ? (
-                        <OutlinedFlagIcon className={classes.riskScoreIcon} />
-                      ) : profileData.webacy.medium ? (
-                        <CheckCircleOutlinedIcon
-                          className={classes.riskScoreIcon}
-                        />
-                      ) : (
-                        <CheckCircleOutlinedIcon
-                          className={classes.riskScoreIcon}
-                        />
-                      )
-                    }
-                    label={
-                      profileData.webacy.high
-                        ? t('webacy.high')
-                        : profileData.webacy.medium
-                        ? t('webacy.medium')
-                        : t('webacy.low')
-                    }
-                  />
-                </Tooltip>
-                {isOwner &&
-                  !profileData.webacy.high &&
-                  !profileData.webacy.medium && (
+                {profileData?.profile.description ? (
+                  <Box mt={2}>
+                    <Typography className={classes.description}>
+                      {profileData?.profile.description
+                        ? profileData?.profile.description
+                        : ''}
+                    </Typography>
+                  </Box>
+                ) : null}
+                {profileData?.webacy && (
+                  <Box className={classes.riskScoreContainer}>
+                    <Avatar
+                      src={
+                        'https://storage.googleapis.com/unstoppable-client-assets/images/webacy/logo.png'
+                      }
+                      className={classes.riskScoreLogo}
+                      onClick={() =>
+                        window.open(
+                          `https://dapp.webacy.com/unstoppable/${ownerAddress}`,
+                          '_blank',
+                        )
+                      }
+                    />
+                    <Typography className={classes.emailAndLocation}>
+                      {t('webacy.riskScore')}:
+                    </Typography>
                     <Tooltip
                       title={
-                        <Typography variant="caption">
-                          {t('webacy.share')}
-                        </Typography>
+                        profileData.webacy.issues.length > 0 ? (
+                          profileData.webacy.issues.map(issue => (
+                            <>
+                              <Typography variant="caption">
+                                {
+                                  issue.categories.wallet_characteristics
+                                    .description
+                                }
+                              </Typography>
+                              <List dense sx={{listStyleType: 'disc', pl: 4}}>
+                                {issue.tags.map(tag => (
+                                  <ListItem sx={{display: 'list-item'}}>
+                                    <Typography variant="caption">
+                                      {tag.name}
+                                    </Typography>
+                                  </ListItem>
+                                ))}
+                              </List>
+                            </>
+                          ))
+                        ) : (
+                          <Typography variant="caption">
+                            {t('webacy.riskScoreDescription')}
+                          </Typography>
+                        )
                       }
                     >
-                      <IconButton
+                      <Chip
+                        color={
+                          profileData.webacy.high
+                            ? 'error'
+                            : profileData.webacy.medium
+                            ? 'default'
+                            : 'success'
+                        }
                         size="small"
-                        className={classes.riskScoreShareButton}
-                        onClick={handleShareRiskScore}
-                      >
-                        <IosShareIcon className={classes.riskScoreShareIcon} />
-                      </IconButton>
+                        icon={
+                          profileData.webacy.high ? (
+                            <OutlinedFlagIcon
+                              className={classes.riskScoreIcon}
+                            />
+                          ) : profileData.webacy.medium ? (
+                            <CheckCircleOutlinedIcon
+                              className={classes.riskScoreIcon}
+                            />
+                          ) : (
+                            <CheckCircleOutlinedIcon
+                              className={classes.riskScoreIcon}
+                            />
+                          )
+                        }
+                        label={
+                          profileData.webacy.high
+                            ? t('webacy.high')
+                            : profileData.webacy.medium
+                            ? t('webacy.medium')
+                            : t('webacy.low')
+                        }
+                      />
                     </Tooltip>
-                  )}
-              </Box>
-            )}
-            {hasAddresses && (
-              <CryptoAddresses
-                onCryptoAddressCopied={handleClickToCopy}
-                profileData={profileData}
-                domain={domain}
-                isOwner={isOwner}
-                showWarning={
-                  featureFlags.variations
-                    ?.ecommerceServiceUsersPublicProfileAddressVerifiedCheck ||
-                  false
-                }
-                records={addressRecords}
-                ownerAddress={ownerAddress}
-              />
-            )}
-            {needLeftSideDivider && (
-              <Box mt={3} mb={2}>
-                <Divider />
-              </Box>
-            )}
-            {Boolean(verifiedSocials.length) && someSocialsPublic && (
-              <div>
-                <Grid container spacing={1}>
-                  {verifiedSocials.map(account => {
-                    return (
-                      <Grid key={account} item xs={2} md={3} lg={2}>
-                        <SocialAccountCard
-                          socialInfo={socialsInfo[account]}
-                          handleClickToCopy={handleClickToCopy}
-                          small
-                        />
-                      </Grid>
-                    );
-                  })}
-                </Grid>
+                    {isOwner &&
+                      !profileData.webacy.high &&
+                      !profileData.webacy.medium && (
+                        <Tooltip
+                          title={
+                            <Typography variant="caption">
+                              {t('webacy.share')}
+                            </Typography>
+                          }
+                        >
+                          <IconButton
+                            size="small"
+                            className={classes.riskScoreShareButton}
+                            onClick={handleShareRiskScore}
+                          >
+                            <IosShareIcon
+                              className={classes.riskScoreShareIcon}
+                            />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                  </Box>
+                )}
+                {hasAddresses && (
+                  <CryptoAddresses
+                    onCryptoAddressCopied={handleClickToCopy}
+                    profileData={profileData}
+                    domain={domain}
+                    isOwner={isOwner}
+                    showWarning={
+                      featureFlags.variations
+                        ?.ecommerceServiceUsersPublicProfileAddressVerifiedCheck ||
+                      false
+                    }
+                    records={addressRecords}
+                    ownerAddress={ownerAddress}
+                  />
+                )}
                 {needLeftSideDivider && (
                   <Box mt={3} mb={2}>
                     <Divider />
                   </Box>
                 )}
-              </div>
-            )}
-            {humanityVerified && (
-              <Tooltip
-                placement="top"
-                title={
-                  <div className={classes.humanityVerifiedTooltipContent}>
-                    {t('profile.useYourDomainToLoginToApplications')}
+                {Boolean(verifiedSocials.length) && someSocialsPublic && (
+                  <div>
+                    <Grid container spacing={1}>
+                      {verifiedSocials.map(account => {
+                        return (
+                          <Grid key={account} item xs={2} md={3} lg={2}>
+                            <SocialAccountCard
+                              socialInfo={socialsInfo[account]}
+                              handleClickToCopy={handleClickToCopy}
+                              small
+                            />
+                          </Grid>
+                        );
+                      })}
+                    </Grid>
+                    {needLeftSideDivider && (
+                      <Box mt={3} mb={2}>
+                        <Divider />
+                      </Box>
+                    )}
+                  </div>
+                )}
+                {humanityVerified && (
+                  <Tooltip
+                    placement="top"
+                    title={
+                      <div className={classes.humanityVerifiedTooltipContent}>
+                        {t('profile.useYourDomainToLoginToApplications')}
+                        <Link
+                          external
+                          href="https://unstoppablemarketplace.com/"
+                          className={classes.humanityVerifiedTooltipLink}
+                        >
+                          {t('profile.clickToSeeAllApplications')}
+                        </Link>
+                      </div>
+                    }
+                    arrow
+                  >
+                    <div>
+                      <Link
+                        external
+                        href="https://unstoppablemarketplace.com/"
+                        className={classes.humanityVerifiedLink}
+                      >
+                        <HowToRegOutlinedIcon
+                          className={classes.humanityVerifiedIcon}
+                        />
+                        {t('profile.humanityVerified')}
+                      </Link>
+                    </div>
+                  </Tooltip>
+                )}
+                {ipfsHash ? (
+                  <Box mb={2} display="flex">
+                    <LanguageIcon className={classes.sidebarIcon} />
                     <Link
                       external
-                      href="https://unstoppablemarketplace.com/"
-                      className={classes.humanityVerifiedTooltipLink}
+                      href={`${config.IPFS_BASE_URL}/${ipfsHash}`}
+                      className={classes.websiteLink}
                     >
-                      {t('profile.clickToSeeAllApplications')}
+                      {`${domain} (${ipfsHash.slice(0, 10)}...${ipfsHash.slice(
+                        -4,
+                      )})`}
                     </Link>
-                  </div>
-                }
-                arrow
-              >
-                <div>
-                  <Link
-                    external
-                    href="https://unstoppablemarketplace.com/"
-                    className={classes.humanityVerifiedLink}
+                  </Box>
+                ) : null}
+                {profileData?.profile.web2Url ? (
+                  <Box mb={2} display="flex">
+                    <LanguageIcon className={classes.sidebarIcon} />
+                    <Link
+                      external
+                      href={profileData?.profile.web2Url}
+                      className={classes.websiteLink}
+                    >
+                      {profileData?.profile.web2Url.replace(
+                        /^https?:\/\/|\/$/g,
+                        '',
+                      )}
+                    </Link>
+                  </Box>
+                ) : null}
+                {profileData?.profile.location ? (
+                  <Box mb={2} display="flex">
+                    <FmdGoodOutlinedIcon className={classes.sidebarIcon} />
+                    <Typography className={classes.emailAndLocation}>
+                      {profileData?.profile.location}
+                    </Typography>
+                  </Box>
+                ) : null}
+                {needLeftSideDivider && (
+                  <Box
+                    mt={2}
+                    mb={2}
+                    className={classes.emailAndLocationSecondDivider}
                   >
-                    <HowToRegOutlinedIcon
-                      className={classes.humanityVerifiedIcon}
-                    />
-                    {t('profile.humanityVerified')}
-                  </Link>
-                </div>
-              </Tooltip>
-            )}
-            {ipfsHash ? (
-              <Box mb={2} display="flex">
-                <LanguageIcon className={classes.sidebarIcon} />
-                <Link
-                  external
-                  href={`${config.IPFS_BASE_URL}/${ipfsHash}`}
-                  className={classes.websiteLink}
-                >
-                  {`${domain} (${ipfsHash.slice(0, 10)}...${ipfsHash.slice(
-                    -4,
-                  )})`}
-                </Link>
-              </Box>
-            ) : null}
-            {profileData?.profile.web2Url ? (
-              <Box mb={2} display="flex">
-                <LanguageIcon className={classes.sidebarIcon} />
-                <Link
-                  external
-                  href={profileData?.profile.web2Url}
-                  className={classes.websiteLink}
-                >
-                  {profileData?.profile.web2Url.replace(
-                    /^https?:\/\/|\/$/g,
-                    '',
-                  )}
-                </Link>
-              </Box>
-            ) : null}
-            {profileData?.profile.location ? (
-              <Box mb={2} display="flex">
-                <FmdGoodOutlinedIcon className={classes.sidebarIcon} />
-                <Typography className={classes.emailAndLocation}>
-                  {profileData?.profile.location}
-                </Typography>
-              </Box>
-            ) : null}
-            {needLeftSideDivider && (
-              <Box
-                mt={2}
-                mb={2}
-                className={classes.emailAndLocationSecondDivider}
-              >
-                <Divider />
-              </Box>
+                    <Divider />
+                  </Box>
+                )}
+              </>
             )}
           </div>
         </Grid>
 
-        <Grid item xs={12} sm={12} md={8} className={classes.item}>
-          {profileData?.cryptoVerifications &&
-            profileData.cryptoVerifications.length > 0 && (
-              <TokenGallery
-                domain={domain}
-                enabled={!isExternalDomain && isFeatureFlagFetched}
-                isOwner={isOwner}
-                ownerAddress={ownerAddress}
-                profileServiceUrl={config.PROFILE.HOST_URL}
-              />
+        {isLoaded && (
+          <Grid item xs={12} sm={12} md={8} className={classes.item}>
+            {profileData?.cryptoVerifications &&
+              profileData.cryptoVerifications.length > 0 && (
+                <TokenGallery
+                  domain={domain}
+                  enabled={!isExternalDomain && isFeatureFlagFetched}
+                  isOwner={isOwner}
+                  ownerAddress={ownerAddress}
+                  profileServiceUrl={config.PROFILE.HOST_URL}
+                />
+              )}
+            {isForSale && !nftShowAll && openSeaLink && (
+              <ForSaleOnOpenSea email={ownerEmail} link={openSeaLink} />
             )}
-          {isForSale && !nftShowAll && openSeaLink && (
-            <ForSaleOnOpenSea email={ownerEmail} link={openSeaLink} />
-          )}
-          {hasBadges && !nftShowAll && (
-            <>
-              {badgeTypes.map((badgeType, index) => {
-                const badgeList = badges.list?.filter(
-                  b => b.type === badgeType,
-                );
-                return (
-                  <div key={badgeType}>
-                    <div className={classes.sectionHeaderContainer}>
-                      <Typography
-                        className={cx(
-                          classes.sectionHeader,
-                          classes.badgeHeader,
-                        )}
-                        variant="h6"
-                      >
-                        {titleCase(badgeType)}
-                      </Typography>
-                      {index === 0 && (
-                        <div
+            {hasBadges && !nftShowAll && (
+              <>
+                {badgeTypes.map((badgeType, index) => {
+                  const badgeList = badges.list?.filter(
+                    b => b.type === badgeType,
+                  );
+                  return (
+                    <div key={badgeType}>
+                      <div className={classes.sectionHeaderContainer}>
+                        <Typography
                           className={cx(
                             classes.sectionHeader,
-                            classes.sectionHeaderLinks,
+                            classes.badgeHeader,
                           )}
+                          variant="h6"
                         >
+                          {titleCase(badgeType)}
+                        </Typography>
+                        {index === 0 && (
                           <div
                             className={cx(
-                              classes.sectionHeaderLink,
+                              classes.sectionHeader,
                               classes.sectionHeaderLinks,
                             )}
                           >
-                            <CustomBadges />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <Badges
-                      profile
-                      domain={domain}
-                      list={badgeList}
-                      countActive={
-                        badges.list?.filter(
-                          b => b.type === badgeType && b.active,
-                        ).length
-                      }
-                      countTotal={badgeList.length}
-                      badgesLastSyncedAt={badges.badgesLastSyncedAt}
-                      usageEnabled
-                      setWeb3Deps={setWeb3Deps}
-                      authWallet={authAddress}
-                      authDomain={authDomain}
-                    />
-                  </div>
-                );
-              })}
-              <Box sx={{marginTop: '25px'}} />
-              {(isOwner || showFeaturedPartner) &&
-                featuredPartners &&
-                featuredPartners.length > 0 && (
-                  <>
-                    <div className={classes.sectionHeaderContainer}>
-                      <Typography
-                        className={cx(
-                          classes.sectionHeader,
-                          classes.badgeHeader,
-                        )}
-                        variant="h6"
-                      >
-                        {t('badges.featuredPartners')}
-                        <Tooltip
-                          title={
-                            <div>
-                              {t('badges.featuredPartnerInquiry')}{' '}
-                              <Link
-                                href="mailto:bd@unstoppabledomains.com"
-                                className={classes.featuredTooltipLink}
-                              >
-                                bd@unstoppabledomains.com
-                              </Link>
+                            <div
+                              className={cx(
+                                classes.sectionHeaderLink,
+                                classes.sectionHeaderLinks,
+                              )}
+                            >
+                              <CustomBadges />
                             </div>
-                          }
-                          placement="top"
-                          arrow
-                        >
-                          <InfoOutlinedIcon className={classes.infoIcon} />
-                        </Tooltip>
-                      </Typography>
-                      {isOwner && (
-                        <div
-                          data-testid="showhide-featuredPartners"
-                          className={cx(
-                            classes.sectionHeader,
-                            classes.sectionHeaderLinks,
-                          )}
-                        >
-                          <Box
-                            className={cx(
-                              classes.sectionHeaderLink,
-                              classes.sectionHeaderLinks,
-                            )}
-                          >
-                            <ShowHideButton
-                              domain={domain}
-                              ownerAddress={ownerAddress}
-                              showDomain={showFeaturedPartner}
-                              setShowDomain={setShowFeaturedPartner}
-                              recordName="showFeaturedPartner"
-                              setWeb3Deps={setWeb3Deps}
-                              tooltip={
-                                showFeaturedPartner
-                                  ? t('badges.hide')
-                                  : t('badges.show')
-                              }
-                            />
-                          </Box>
-                        </div>
-                      )}
-                    </div>
-                    {showFeaturedPartner ? (
-                      <Grid container spacing={2}>
-                        {featuredPartners.map(badge => (
-                          <Grid item xs={12}>
-                            <Badge
-                              domain={domain}
-                              {...badge}
-                              small
-                              usageEnabled
-                              tooltipPlacement="top"
-                              profile
-                              iconOnly={false}
-                              setWeb3Deps={setWeb3Deps}
-                            />
-                            <NFTGalleryCarousel
-                              domain={domain}
-                              nfts={getNftsForContract(badge.contracts || [])}
-                              nftSymbolVisible={nftSymbolVisible || {}}
-                              autoPlay={false}
-                              minNftCount={2}
-                              maxNftCount={4}
-                              showPlaceholder={true}
-                              badgeData={badge}
-                            />
-                          </Grid>
-                        ))}
-                      </Grid>
-                    ) : (
-                      <Typography
-                        className={classes.featuredContentHidden}
-                        variant="body2"
-                      >
-                        {t('badges.featuredContentHidden', {
-                          type: t('badges.partner'),
-                        })}
-                      </Typography>
-                    )}
-                  </>
-                )}
-              {(isOwner || showFeaturedCommunity) &&
-                featuredCommunities &&
-                featuredCommunities.length > 0 &&
-                nfts &&
-                nfts.length > 0 && (
-                  <>
-                    <div className={classes.sectionHeaderContainer}>
-                      <Typography
-                        className={cx(
-                          classes.sectionHeader,
-                          classes.badgeHeader,
+                          </div>
                         )}
-                        variant="h6"
-                      >
-                        {t('badges.featuredCommunities')}
-                        <Tooltip
-                          title={t('badges.featuredCommunityInquiry')}
-                          placement="top"
-                          arrow
-                        >
-                          <InfoOutlinedIcon className={classes.infoIcon} />
-                        </Tooltip>
-                      </Typography>
-                      {isOwner && (
-                        <div
+                      </div>
+                      <Badges
+                        profile
+                        domain={domain}
+                        list={badgeList}
+                        countActive={
+                          badges.list?.filter(
+                            b => b.type === badgeType && b.active,
+                          ).length
+                        }
+                        countTotal={badgeList.length}
+                        badgesLastSyncedAt={badges.badgesLastSyncedAt}
+                        usageEnabled
+                        setWeb3Deps={setWeb3Deps}
+                        authWallet={authAddress}
+                        authDomain={authDomain}
+                      />
+                    </div>
+                  );
+                })}
+                <Box sx={{marginTop: '25px'}} />
+                {(isOwner || showFeaturedPartner) &&
+                  featuredPartners &&
+                  featuredPartners.length > 0 && (
+                    <>
+                      <div className={classes.sectionHeaderContainer}>
+                        <Typography
                           className={cx(
                             classes.sectionHeader,
-                            classes.sectionHeaderLinks,
+                            classes.badgeHeader,
                           )}
+                          variant="h6"
                         >
-                          <Box
+                          {t('badges.featuredPartners')}
+                          <Tooltip
+                            title={
+                              <div>
+                                {t('badges.featuredPartnerInquiry')}{' '}
+                                <Link
+                                  href="mailto:bd@unstoppabledomains.com"
+                                  className={classes.featuredTooltipLink}
+                                >
+                                  bd@unstoppabledomains.com
+                                </Link>
+                              </div>
+                            }
+                            placement="top"
+                            arrow
+                          >
+                            <InfoOutlinedIcon className={classes.infoIcon} />
+                          </Tooltip>
+                        </Typography>
+                        {isOwner && (
+                          <div
+                            data-testid="showhide-featuredPartners"
                             className={cx(
-                              classes.sectionHeaderLink,
+                              classes.sectionHeader,
                               classes.sectionHeaderLinks,
                             )}
                           >
-                            <ShowHideButton
-                              domain={domain}
-                              ownerAddress={ownerAddress}
-                              showDomain={showFeaturedCommunity}
-                              setShowDomain={setShowFeaturedCommunity}
-                              recordName="showFeaturedCommunity"
-                              setWeb3Deps={setWeb3Deps}
-                              tooltip={
-                                showFeaturedCommunity
-                                  ? t('badges.hide')
-                                  : t('badges.show')
-                              }
-                            />
-                          </Box>
-                        </div>
+                            <Box
+                              className={cx(
+                                classes.sectionHeaderLink,
+                                classes.sectionHeaderLinks,
+                              )}
+                            >
+                              <ShowHideButton
+                                domain={domain}
+                                ownerAddress={ownerAddress}
+                                showDomain={showFeaturedPartner}
+                                setShowDomain={setShowFeaturedPartner}
+                                recordName="showFeaturedPartner"
+                                setWeb3Deps={setWeb3Deps}
+                                tooltip={
+                                  showFeaturedPartner
+                                    ? t('badges.hide')
+                                    : t('badges.show')
+                                }
+                              />
+                            </Box>
+                          </div>
+                        )}
+                      </div>
+                      {showFeaturedPartner ? (
+                        <Grid container spacing={2}>
+                          {featuredPartners.map(badge => (
+                            <Grid item xs={12}>
+                              <Badge
+                                domain={domain}
+                                {...badge}
+                                small
+                                usageEnabled
+                                tooltipPlacement="top"
+                                profile
+                                iconOnly={false}
+                                setWeb3Deps={setWeb3Deps}
+                              />
+                              <NFTGalleryCarousel
+                                domain={domain}
+                                nfts={getNftsForContract(badge.contracts || [])}
+                                nftSymbolVisible={nftSymbolVisible || {}}
+                                autoPlay={false}
+                                minNftCount={2}
+                                maxNftCount={4}
+                                showPlaceholder={true}
+                                badgeData={badge}
+                              />
+                            </Grid>
+                          ))}
+                        </Grid>
+                      ) : (
+                        <Typography
+                          className={classes.featuredContentHidden}
+                          variant="body2"
+                        >
+                          {t('badges.featuredContentHidden', {
+                            type: t('badges.partner'),
+                          })}
+                        </Typography>
                       )}
-                    </div>
-                    {showFeaturedCommunity ? (
-                      <Grid container spacing={2}>
-                        {featuredCommunities.map(badge => (
-                          <Grid item xs={6} md={3}>
-                            <Badge
-                              domain={domain}
-                              {...badge}
-                              small
-                              usageEnabled
-                              tooltipPlacement="top"
-                              profile
-                              iconOnly={false}
-                              setWeb3Deps={setWeb3Deps}
-                            />
-                            <NFTGalleryCarousel
-                              domain={domain}
-                              nfts={getNftsForContract(badge.contracts || [])}
-                              nftSymbolVisible={nftSymbolVisible || {}}
-                              autoPlay={false}
-                              minNftCount={1}
-                              maxNftCount={1}
-                              showPlaceholder
-                            />
-                          </Grid>
-                        ))}
-                      </Grid>
-                    ) : (
-                      <Typography
-                        className={classes.featuredContentHidden}
-                        variant="body2"
-                      >
-                        {t('badges.featuredContentHidden', {
-                          type: t('badges.community'),
-                        })}
-                      </Typography>
-                    )}
-                  </>
-                )}
-            </>
-          )}
-          {!hasContent && !nftShowAll && (
-            <div className={classes.empty}>
-              <AutoAwesomeOutlinedIcon className={classes.emptyIcon} />
-
-              {blockchain
-                ? t('profile.emptyMinted')
-                : t('profile.emptyNotMinted')}
-            </div>
-          )}
-          {isExternalDomain && ethDomainStatus?.expiresAt && (
-            <div className={classes.empty}>
-              {t('profile.thisDomainExpires', {
-                action: isPast(new Date(ethDomainStatus.expiresAt))
-                  ? 'expired'
-                  : 'is set to expire',
-                date: format(
-                  new Date(ethDomainStatus.expiresAt),
-                  'MMM d, yyyy',
-                ),
-              })}
-            </div>
-          )}
-        </Grid>
+                    </>
+                  )}
+                {(isOwner || showFeaturedCommunity) &&
+                  featuredCommunities &&
+                  featuredCommunities.length > 0 &&
+                  nfts &&
+                  nfts.length > 0 && (
+                    <>
+                      <div className={classes.sectionHeaderContainer}>
+                        <Typography
+                          className={cx(
+                            classes.sectionHeader,
+                            classes.badgeHeader,
+                          )}
+                          variant="h6"
+                        >
+                          {t('badges.featuredCommunities')}
+                          <Tooltip
+                            title={t('badges.featuredCommunityInquiry')}
+                            placement="top"
+                            arrow
+                          >
+                            <InfoOutlinedIcon className={classes.infoIcon} />
+                          </Tooltip>
+                        </Typography>
+                        {isOwner && (
+                          <div
+                            className={cx(
+                              classes.sectionHeader,
+                              classes.sectionHeaderLinks,
+                            )}
+                          >
+                            <Box
+                              className={cx(
+                                classes.sectionHeaderLink,
+                                classes.sectionHeaderLinks,
+                              )}
+                            >
+                              <ShowHideButton
+                                domain={domain}
+                                ownerAddress={ownerAddress}
+                                showDomain={showFeaturedCommunity}
+                                setShowDomain={setShowFeaturedCommunity}
+                                recordName="showFeaturedCommunity"
+                                setWeb3Deps={setWeb3Deps}
+                                tooltip={
+                                  showFeaturedCommunity
+                                    ? t('badges.hide')
+                                    : t('badges.show')
+                                }
+                              />
+                            </Box>
+                          </div>
+                        )}
+                      </div>
+                      {showFeaturedCommunity ? (
+                        <Grid container spacing={2}>
+                          {featuredCommunities.map(badge => (
+                            <Grid item xs={6} md={3}>
+                              <Badge
+                                domain={domain}
+                                {...badge}
+                                small
+                                usageEnabled
+                                tooltipPlacement="top"
+                                profile
+                                iconOnly={false}
+                                setWeb3Deps={setWeb3Deps}
+                              />
+                              <NFTGalleryCarousel
+                                domain={domain}
+                                nfts={getNftsForContract(badge.contracts || [])}
+                                nftSymbolVisible={nftSymbolVisible || {}}
+                                autoPlay={false}
+                                minNftCount={1}
+                                maxNftCount={1}
+                                showPlaceholder
+                              />
+                            </Grid>
+                          ))}
+                        </Grid>
+                      ) : (
+                        <Typography
+                          className={classes.featuredContentHidden}
+                          variant="body2"
+                        >
+                          {t('badges.featuredContentHidden', {
+                            type: t('badges.community'),
+                          })}
+                        </Typography>
+                      )}
+                    </>
+                  )}
+              </>
+            )}
+            {!hasContent && !nftShowAll && (
+              <div className={classes.empty}>
+                <AutoAwesomeOutlinedIcon className={classes.emptyIcon} />
+                {blockchain
+                  ? t('profile.emptyMinted')
+                  : t('profile.emptyNotMinted')}
+              </div>
+            )}
+            {isExternalDomain && ethDomainStatus?.expiresAt && (
+              <div className={classes.empty}>
+                {t('profile.thisDomainExpires', {
+                  action: isPast(new Date(ethDomainStatus.expiresAt))
+                    ? 'expired'
+                    : 'is set to expire',
+                  date: format(
+                    new Date(ethDomainStatus.expiresAt),
+                    'MMM d, yyyy',
+                  ),
+                })}
+              </div>
+            )}
+          </Grid>
+        )}
       </Grid>
       {profileData && (
         <DomainListModal

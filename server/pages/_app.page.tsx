@@ -1,5 +1,6 @@
 import CssBaseline from '@mui/material/CssBaseline';
 import {ThemeProvider} from '@mui/material/styles';
+import Layout from 'components/app/Layout';
 import type {NextPage} from 'next';
 import {NextSeo} from 'next-seo';
 import type {AppProps} from 'next/app';
@@ -45,7 +46,9 @@ const WrappedApp = (props: WrappedAppProps) => {
         <CssBaseline enableColorScheme />
         <UnstoppableMessagingProvider>
           <TokenGalleryProvider>
-            <Component {...pageProps} />
+            <Layout>
+              <Component {...pageProps} />
+            </Layout>
           </TokenGalleryProvider>
         </UnstoppableMessagingProvider>
       </ThemeProvider>

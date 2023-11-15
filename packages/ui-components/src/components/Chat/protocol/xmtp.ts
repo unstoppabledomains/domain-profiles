@@ -107,7 +107,7 @@ export const getConversations = async (
 
     chats.push({
       conversation,
-      preview: 'loading...',
+      preview: 'New conversation',
       timestamp: 0,
       visible: true,
     });

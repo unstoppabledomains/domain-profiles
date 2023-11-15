@@ -2,6 +2,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {alpha} from '@mui/material/';
 import CircularProgress from '@mui/material/CircularProgress';
+import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -245,7 +246,11 @@ const NftCard = ({nft, domain, placeholder}: Props) => {
                 />
               </div>
             )}
-            <div>{nft.name}</div>
+            {nft.name ? (
+              <div>{nft.name}</div>
+            ) : (
+              placeholder && <Skeleton width="50%" height={25} variant="text" />
+            )}
           </div>
           <Typography
             className={cx('NFT-collection', {
@@ -253,7 +258,11 @@ const NftCard = ({nft, domain, placeholder}: Props) => {
             })}
             variant="caption"
           >
-            {nft?.collection}
+            {nft?.collection
+              ? nft.collection
+              : placeholder && (
+                  <Skeleton width="75%" height={22} variant="text" />
+                )}
             {nft.owner &&
               nft.toggleVisibility &&
               (nft.public ? (

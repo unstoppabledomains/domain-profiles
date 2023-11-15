@@ -279,10 +279,12 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
       case DomainProfileSocialMediaAutoPopulated.Lens: {
         return {
           Icon: LensIcon,
-          displayName: socialInfo.url.replace('https://lenster.xyz/u/', ''),
+          displayName: socialInfo.url
+            .replace('https://lenster.xyz/u/', '@')
+            .replaceAll('.lens', ''),
           metricValue: '',
           metricName: '',
-          link: socialInfo.url,
+          link: socialInfo.url.replaceAll('.lens', ''),
         };
       }
       case DomainProfileSocialMedia.Google: {

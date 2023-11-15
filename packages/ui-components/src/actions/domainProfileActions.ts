@@ -92,10 +92,13 @@ export const getProfileData = async (
   fields: DomainFieldTypes[],
   expiry?: number,
 ): Promise<SerializedPublicDomainProfileData | undefined> => {
-  const domainProfileUrl = `/public/${domain}?${QueryString.stringify({
-    expiry,
-    fields: fields ? fields.join(',') : undefined,
-  })}`;
+  const domainProfileUrl = `/public/${domain}?${QueryString.stringify(
+    {
+      expiry,
+      fields: fields ? fields.join(',') : undefined,
+    },
+    {encode: false},
+  )}`;
   return await fetchApi(domainProfileUrl, {host: config.PROFILE.HOST_URL});
 };
 

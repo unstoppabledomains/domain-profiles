@@ -120,7 +120,7 @@ yarn workspace server run dev
 
 ### Testing
 
-To run the tests (`src/**/*.test.tsx` files):
+To run the tests locally (`src/**/*.test.tsx` files):
 
 ```shell
 yarn test    # run all tests
@@ -136,6 +136,44 @@ locally for easier resolution of problems.
 yarn lint   # automatically fixes linting errors
 yarn format # checks for formatting errors
 ```
+
+### Pull requests
+
+We welcome and encourage pull requests from the community. Some brief notes
+about expectations for pull requests:
+
+- Include a good description of the changes you are proposing
+- Include unit tests
+- Unit tests are run automatically by the CI and must pass before merge
+- Staging deployment must be successful before merge (see below)
+
+## Maintainers
+
+Users with write access to this GitHub repository can follow these steps to
+manage staging deployments and NPM package management.
+
+### Deployments
+
+#### Pull request
+
+Pull requests can be deployed by the CI to the https://staging.ud.me endpoint.
+However, **an authorization by a maintainer is required before the CI will
+deploy**. Authorization is made by commenting in the pull request with the
+following text:
+
+```
+/gcbrun
+```
+
+After the comment is made, the CI will initiate a deployment to the staging
+endpoint. See
+[here](https://github.com/unstoppabledomains/domain-profiles/pull/42#issuecomment-1814532213)
+for an example of an authorization comment.
+
+#### Merge
+
+Every merge to `main` results in a deployment to both https://ud.me (production)
+and https://staging.ud.me (staging) endpoints. No action is required.
 
 ### Publishing to NPM
 

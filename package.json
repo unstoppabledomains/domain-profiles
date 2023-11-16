@@ -11,8 +11,9 @@
   "scripts": {
     "build": "yarn build:types",
     "build:types": "tsc --build packages.build.tsconfig.json",
+    "clean": "rm -rf packages/**/build",
     "copy-package-files": "./scripts/copyPackageFiles.sh",
-    "dist": "rm -rf packages/**/build && yarn build && yarn copy-package-files",
+    "dist": "yarn clean && yarn build && yarn copy-package-files",
     "format": "prettier -w .",
     "lint": "eslint --fix .",
     "test": "DOTENV_CONFIG_PATH=./.env.test jest --runInBand",

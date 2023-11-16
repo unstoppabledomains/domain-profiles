@@ -1,3 +1,7 @@
+## 0.0.27
+
+- Improve loading of XMTP user settings
+
 ## 0.0.26
 
 - Improve XMTP conversation list loading time

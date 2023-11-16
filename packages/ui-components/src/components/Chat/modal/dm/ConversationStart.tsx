@@ -1,7 +1,6 @@
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import CheckIcon from '@mui/icons-material/Check';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
-import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -21,6 +20,7 @@ import {isXmtpUser} from '../../protocol/xmtp';
 import type {AddressResolution} from '../../types';
 import {TabType} from '../../types';
 import Search from '../Search';
+import Welcome from './Welcome';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   cardContainer: {
@@ -218,13 +218,7 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
           </Box>
         )}
         {!selectedPeer && !loading && (
-          <Box className={classes.emptyContainer}>
-            <ForumOutlinedIcon className={classes.emptyIcon} />
-            <Typography variant="h6">{t('push.chatNew')}</Typography>
-            <Typography variant="body2">
-              {t('push.chatNewDescription')}
-            </Typography>
-          </Box>
+          <Welcome address={address} requestCount={0} />
         )}
       </CardContent>
     </Card>

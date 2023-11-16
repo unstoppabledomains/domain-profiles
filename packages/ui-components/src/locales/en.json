@@ -402,6 +402,8 @@
     "chat": "Chat",
     "chatNew": "Start a new chat",
     "chatNewDescription": "Start by searching for a domain or wallet address",
+    "chatNewRequest": "You have a chat request",
+    "chatNewRequestDescription": "Click the chat requests button to view your requests",
     "chatNotReady": "Messaging not yet enabled",
     "chatReady": "Messaging enabled",
     "chatSecure": "Your messages are end-to-end encrypted",

@@ -60,6 +60,7 @@ import Search from './Search';
 import Conversation from './dm/Conversation';
 import ConversationPreview from './dm/ConversationPreview';
 import ConversationStart from './dm/ConversationStart';
+import Welcome from './dm/Welcome';
 import Community from './group/Community';
 import CommunityList from './group/CommunityList';
 import NotificationPreview from './notification/NotificationPreview';
@@ -377,6 +378,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     }
 
     // request the domain's blocked topics from profile API
+    setAcceptedTopics(['*']);
     if (authDomain && isDomainValidForManagement(authDomain)) {
       const responseJSON = await getDomainPreferences(authDomain);
 
@@ -387,9 +389,6 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       if (responseJSON?.accepted_topics) {
         setAcceptedTopics(responseJSON.accepted_topics);
       }
-    } else {
-      // for unknown domains accept all topics
-      setAcceptedTopics(['*']);
     }
   };
 
@@ -727,6 +726,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
     // if no conversations visible, switch to search tab
     if (
+      !conversationRequestView &&
       conversations?.filter(
         c => isAcceptedTopic(c.conversation.topic, acceptedTopics) && c.visible,
       ).length === 0
@@ -774,6 +774,27 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       </Box>
     );
   };
+
+  // conversations to display in the current inbox view
+  const visibleConversations = conversations
+    ?.filter(c =>
+      conversationRequestView
+        ? !isAcceptedTopic(c.conversation.topic, acceptedTopics) &&
+          !blockedTopics.includes(c.conversation.topic)
+        : isAcceptedTopic(c.conversation.topic, acceptedTopics),
+    )
+    .map(c => (
+      <ConversationPreview
+        key={c.conversation.topic}
+        selectedCallback={handleOpenChat}
+        searchTermCallback={(visible: boolean) =>
+          handleSearchCallback(c, visible)
+        }
+        searchTerm={searchValue}
+        acceptedTopics={acceptedTopics}
+        conversation={c}
+      />
+    ));
 
   return (
     <Card
@@ -962,30 +983,15 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                           {t('push.backToInbox')}
                         </Button>
                       )}
-                      {conversations
-                        ?.filter(c =>
-                          conversationRequestView
-                            ? !isAcceptedTopic(
-                                c.conversation.topic,
-                                acceptedTopics,
-                              ) && !blockedTopics.includes(c.conversation.topic)
-                            : isAcceptedTopic(
-                                c.conversation.topic,
-                                acceptedTopics,
-                              ),
-                        )
-                        .map(c => (
-                          <ConversationPreview
-                            key={c.conversation.topic}
-                            selectedCallback={handleOpenChat}
-                            searchTermCallback={(visible: boolean) =>
-                              handleSearchCallback(c, visible)
-                            }
-                            searchTerm={searchValue}
-                            acceptedTopics={acceptedTopics}
-                            conversation={c}
-                          />
-                        ))}
+                      {visibleConversations &&
+                      visibleConversations.length > 0 ? (
+                        visibleConversations
+                      ) : (
+                        <Welcome
+                          address={xmtpAddress}
+                          requestCount={getRequestCount()}
+                        />
+                      )}
                     </Box>
                   )}
                 </TabPanel>

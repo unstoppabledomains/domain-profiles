@@ -1,3 +1,7 @@
+## 0.0.27
+
+- Move `@unstoppabledomains/ui-kit` to peerDependencies
+
 ## 0.0.26
 
 - Improve XMTP conversation list loading time

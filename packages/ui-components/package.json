@@ -29,7 +29,7 @@
     "@mui/icons-material": "5.10.3",
     "@mui/lab": "5.0.0-alpha.98",
     "@mui/material": "5.10.4",
-    "@pushprotocol/restapi": "^1.4.15",
+    "@pushprotocol/restapi": "0.0.1-alpha.53",
     "@pushprotocol/socket": "^0.5.1",
     "@swc/cli": "^0.1.57",
     "@swc/core": "^1.2.219",

@@ -27,7 +27,6 @@ import {joinBadgeGroupChat} from '../../../../actions/messageActions';
 import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../../lib/types/badge';
-import {DomainProfileKeys} from '../../../../lib/types/domain';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
 import {PUSH_PAGE_SIZE, decryptMessage, getMessages} from '../../protocol/push';
 import CallToAction from '../CallToAction';
@@ -44,6 +43,7 @@ const CardContentNoPadding = styled(CardContent)(`
 
 export const Community: React.FC<CommunityProps> = ({
   address,
+  authDomain,
   badge,
   pushKey,
   incomingMessage,
@@ -59,13 +59,11 @@ export const Community: React.FC<CommunityProps> = ({
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [pushMessages, setPushMessages] = useState<IMessageIPFS[]>([]);
   const [sentMessage, setSentMessage] = useState<IMessageIPFS>();
-  const [authDomain, setAuthDomain] = useState<string | null>();
 
   useEffect(() => {
     if (!badge.groupChatId) {
       return;
     }
-    setAuthDomain(localStorage.getItem(DomainProfileKeys.AuthDomain));
     void loadConversation();
   }, [address, badge]);
 
@@ -178,10 +176,12 @@ export const Community: React.FC<CommunityProps> = ({
   };
 
   const handleMoreInfo = () => {
-    window.open(
-      `${config.UD_ME_BASE_URL}/${authDomain}?openBadgeCode=${badge.code}`,
-      '_blank',
-    );
+    if (authDomain) {
+      window.open(
+        `${config.UD_ME_BASE_URL}/${authDomain}?openBadgeCode=${badge.code}`,
+        '_blank',
+      );
+    }
   };
 
   const handleBlockSender = (id: string) => {
@@ -212,12 +212,14 @@ export const Community: React.FC<CommunityProps> = ({
         }
         action={
           <Box className={classes.headerActionContainer}>
-            <Tooltip title={t('profile.moreInformation')}>
-              <InfoOutlinedIcon
-                className={classes.headerCloseIcon}
-                onClick={handleMoreInfo}
-              />
-            </Tooltip>
+            {authDomain && (
+              <Tooltip title={t('profile.moreInformation')}>
+                <InfoOutlinedIcon
+                  className={classes.headerCloseIcon}
+                  onClick={handleMoreInfo}
+                />
+              </Tooltip>
+            )}
             <Tooltip title={t('common.more')}>
               <IconButton
                 onClick={handleOpenMenu}
@@ -338,6 +340,7 @@ export const Community: React.FC<CommunityProps> = ({
 
 export type CommunityProps = {
   address: string;
+  authDomain?: string;
   badge: SerializedCryptoWalletBadge;
   pushKey: string;
   incomingMessage?: IMessageIPFS;

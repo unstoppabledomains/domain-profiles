@@ -788,6 +788,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       ) : pushAccount && pushKey && activeCommunity?.groupChatId ? (
         <Community
           address={xmtpAddress}
+          authDomain={authDomain}
           badge={activeCommunity}
           pushKey={pushKey}
           incomingMessage={incomingGroup}

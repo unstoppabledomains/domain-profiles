@@ -100,6 +100,12 @@ export const useStyles = makeStyles()((theme: Theme) => ({
       textAlign: 'initial',
     },
   },
+  loadingContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+  },
   sectionHeaderContainer: {
     display: 'flex',
     flexWrap: 'wrap',

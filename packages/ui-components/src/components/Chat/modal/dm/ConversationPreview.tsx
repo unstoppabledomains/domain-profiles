@@ -18,7 +18,7 @@ import {isAddressSpam} from '../../../../actions/messageActions';
 import useTranslationContext from '../../../../lib/i18n';
 import {getAddressMetadata} from '../../protocol/resolution';
 import type {ConversationMeta} from '../../protocol/xmtp';
-import {getConversationPreview} from '../../protocol/xmtp';
+import {getConversationPreview, isAcceptedTopic} from '../../protocol/xmtp';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   conversationContainer: {
@@ -107,23 +107,24 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
     }
     const loadAddressData = async () => {
       // if conversation is not accepted, check spam score
-      if (!acceptedTopics.find(v => v === conversation.conversation.topic)) {
-        // get message preview
-        await getConversationPreview(conversation);
-
-        // check peer address spam score
+      if (!isAcceptedTopic(conversation.conversation.topic, acceptedTopics)) {
         if (await isAddressSpam(conversation.conversation.peerAddress)) {
           setIsSpam(true);
         }
       }
 
       // request peer address metadata
-      setIsLoaded(true);
       const addressData = await getAddressMetadata(
         conversation.conversation.peerAddress,
       );
       if (addressData?.name) setDisplayName(addressData.name);
       setAvatarLink(addressData?.avatarUrl);
+
+      // get message preview
+      await getConversationPreview(conversation);
+
+      // conversation preview is finished loading
+      setIsLoaded(true);
     };
     void loadAddressData();
   }, [conversation, nodeOnScreen]);

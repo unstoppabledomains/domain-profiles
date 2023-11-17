@@ -236,6 +236,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       // browser settings check
       void checkBrowserSettings();
 
+      // load user settings
+      void loadUserSettings();
+
       // tab handling
       if (tabValue === TabType.Chat) {
         if (conversationSearch) {
@@ -300,12 +303,13 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   const checkBrowserSettings = async () => {
     if ('Notification' in window) {
       if (Notification.permission !== 'granted') {
-        const result = await Notification.requestPermission();
+        await Notification.requestPermission();
       }
     }
   };
 
   const loadConversations = async (forceRefresh?: boolean) => {
+    // retrieve conversations if required
     if (
       xmtpAddress &&
       xmtpKey &&
@@ -316,9 +320,6 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         setLoadingText(t('push.loadingConversations'));
       }
       try {
-        // load blocked topics and user data from profile service
-        await Promise.all([loadBlockedTopics(), loadUserProfile()]);
-
         // load conversations from XMTP
         const localConversations = await getConversations(xmtpAddress);
         setConversations(localConversations);
@@ -364,7 +365,17 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     });
   };
 
+  const loadUserSettings = async () => {
+    // load blocked topics and user data from profile service
+    await Promise.all([loadBlockedTopics(), loadUserProfile()]);
+  };
+
   const loadBlockedTopics = async () => {
+    // skip if already loaded
+    if (acceptedTopics.length > 0) {
+      return;
+    }
+
     // request the domain's blocked topics from profile API
     if (authDomain && isDomainValidForManagement(authDomain)) {
       const responseJSON = await getDomainPreferences(authDomain);
@@ -385,6 +396,11 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   // loadUserProfile authenticates with user token to retrieve private data about the
   // user such as user-specific storage API key
   const loadUserProfile = async () => {
+    // skip if already loaded
+    if (userProfile) {
+      return;
+    }
+
     try {
       // retrieve optional signature data
       const authExpiry = localStorage.getItem(

@@ -275,8 +275,8 @@ export const Community: React.FC<CommunityProps> = ({
             pushMessages.length === 0 ? (
               <CallToAction
                 icon="ForumOutlinedIcon"
-                title={t('push.newConversation')}
-                subTitle={t('push.chatSecure')}
+                title={t('push.joinedGroupChat')}
+                subTitle={t('push.joinedGroupChatDescription')}
               />
             ) : (
               <InfiniteScroll

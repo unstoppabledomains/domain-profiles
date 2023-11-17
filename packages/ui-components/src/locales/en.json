@@ -429,6 +429,8 @@
     "joinCommunity": "Join a Community",
     "joinCommunityError": "Unable to join community",
     "joined": "Joined group",
+    "joinedGroupChat": "Joined group chat",
+    "joinedGroupChatDescription": "Since messages are end-to-end encrypted, you can only see chat history from the point you joined the group.",
     "leave": "Leave group",
     "leaveCommunityError": "Error leaving community",
     "linkCancel": "Cancel",

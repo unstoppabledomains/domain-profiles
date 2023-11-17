@@ -1,7 +1,5 @@
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
-import CloudOffIcon from '@mui/icons-material/CloudOff';
-import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MoreVertOutlinedIcon from '@mui/icons-material/MoreVertOutlined';
@@ -32,6 +30,7 @@ import type {SerializedCryptoWalletBadge} from '../../../../lib/types/badge';
 import {DomainProfileKeys} from '../../../../lib/types/domain';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
 import {PUSH_PAGE_SIZE, decryptMessage, getMessages} from '../../protocol/push';
+import CallToAction from '../CallToAction';
 import {useConversationStyles} from '../styles';
 import CommunityCompose from './CommunityCompose';
 import CommunityConversationBubble from './CommunityConversationBubble';
@@ -272,15 +271,11 @@ export const Community: React.FC<CommunityProps> = ({
             </Box>
           ) : badge.groupChatId ? (
             pushMessages.length === 0 ? (
-              <Box className={classes.unavailableContainer}>
-                <ForumOutlinedIcon className={classes.unavailableIcon} />
-                <Typography variant="h6" className={classes.unavailableText}>
-                  {t('push.newConversation')}
-                </Typography>
-                <Typography variant="body2" className={classes.unavailableText}>
-                  {t('push.chatSecure')}
-                </Typography>
-              </Box>
+              <CallToAction
+                icon="ForumOutlinedIcon"
+                title={t('push.newConversation')}
+                subTitle={t('push.chatSecure')}
+              />
             ) : (
               <InfiniteScroll
                 inverse={true}
@@ -321,12 +316,7 @@ export const Community: React.FC<CommunityProps> = ({
               </InfiniteScroll>
             )
           ) : (
-            <Box className={classes.unavailableContainer}>
-              <CloudOffIcon className={classes.unavailableIcon} />
-              <Typography variant="body2" className={classes.unavailableText}>
-                {t('push.chatNotReady')}
-              </Typography>
-            </Box>
+            <CallToAction icon="CloudOffIcon" title={t('push.chatNotReady')} />
           )}
         </Box>
       </CardContent>

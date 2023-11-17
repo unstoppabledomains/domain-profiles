@@ -19,8 +19,8 @@ import {getAddressMetadata, isEthAddress} from '../../protocol/resolution';
 import {isXmtpUser} from '../../protocol/xmtp';
 import type {AddressResolution} from '../../types';
 import {TabType} from '../../types';
+import CallToAction from '../CallToAction';
 import Search from '../Search';
-import Welcome from './Welcome';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   cardContainer: {
@@ -40,21 +40,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   loadingSpinner: {
     color: 'inherit',
-  },
-  emptyContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    width: '100%',
-    alignItems: 'center',
-    textAlign: 'center',
-    justifyContent: 'center',
-    marginTop: theme.spacing(10),
-    color: theme.palette.neutralShades[400],
-  },
-  emptyIcon: {
-    width: 100,
-    height: 100,
   },
   searchContainer: {
     display: 'flex',
@@ -218,7 +203,11 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
           </Box>
         )}
         {!selectedPeer && !loading && (
-          <Welcome address={address} requestCount={0} />
+          <CallToAction
+            icon={'ForumOutlinedIcon'}
+            title={t('push.chatNew')}
+            subTitle={t('push.chatNewDescription')}
+          />
         )}
       </CardContent>
     </Card>

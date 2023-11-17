@@ -1,10 +1,7 @@
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
-import BlockIcon from '@mui/icons-material/Block';
 import BlockOutlinedIcon from '@mui/icons-material/BlockOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
-import CloudOffIcon from '@mui/icons-material/CloudOff';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
-import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import MoreVertOutlinedIcon from '@mui/icons-material/MoreVertOutlined';
 import Avatar from '@mui/material/Avatar';
@@ -42,6 +39,7 @@ import {registerClientTopics} from '../../protocol/registration';
 import {getAddressMetadata} from '../../protocol/resolution';
 import {isAcceptedTopic, waitForXmtpMessages} from '../../protocol/xmtp';
 import type {AddressResolution} from '../../types';
+import CallToAction from '../CallToAction';
 import {useConversationStyles} from '../styles';
 import ConversationBubble from './ConversationBubble';
 import Compose from './ConversationCompose';
@@ -370,24 +368,17 @@ export const Conversation: React.FC<ConversationProps> = ({
           ) : conversation ? (
             conversation.clientAddress.toLowerCase() ===
             conversation.peerAddress.toLowerCase() ? (
-              <Box className={classes.unavailableContainer}>
-                <BlockIcon className={classes.unavailableIcon} />
-                <Typography variant="body2" className={classes.unavailableText}>
-                  {t('push.chatWithSelf', {
-                    address: truncateEthAddress(conversation.clientAddress),
-                  })}
-                </Typography>
-              </Box>
+              <CallToAction
+                icon="BlockIcon"
+                title={t('push.chatWithSelf')}
+                subTitle={truncateEthAddress(conversation.clientAddress)}
+              />
             ) : xmtpMessages.length === 0 ? (
-              <Box className={classes.unavailableContainer}>
-                <ForumOutlinedIcon className={classes.unavailableIcon} />
-                <Typography variant="h6" className={classes.unavailableText}>
-                  {t('push.newConversation')}
-                </Typography>
-                <Typography variant="body2" className={classes.unavailableText}>
-                  {t('push.chatSecure')}
-                </Typography>
-              </Box>
+              <CallToAction
+                icon="ForumOutlinedIcon"
+                title={t('push.newConversation')}
+                subTitle={t('push.chatSecure')}
+              />
             ) : (
               <Box>
                 <InfiniteScroll
@@ -455,12 +446,7 @@ export const Conversation: React.FC<ConversationProps> = ({
               </Box>
             )
           ) : (
-            <Box className={classes.unavailableContainer}>
-              <CloudOffIcon className={classes.unavailableIcon} />
-              <Typography variant="body2" className={classes.unavailableText}>
-                {t('push.chatNotReady')}
-              </Typography>
-            </Box>
+            <CallToAction icon="CloudOffIcon" title={t('push.chatNotReady')} />
           )}
         </Box>
       </CardContent>

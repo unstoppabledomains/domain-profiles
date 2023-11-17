@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import AddCommentOutlinedIcon from '@mui/icons-material/AddCommentOutlined';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
-import GroupsIcon from '@mui/icons-material/Groups';
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
-import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
@@ -56,11 +54,11 @@ import {
 } from '../protocol/xmtp';
 import type {AddressResolution, PayloadData} from '../types';
 import {TabType, getCaip10Address} from '../types';
+import CallToAction from './CallToAction';
 import Search from './Search';
 import Conversation from './dm/Conversation';
 import ConversationPreview from './dm/ConversationPreview';
 import ConversationStart from './dm/ConversationStart';
-import Welcome from './dm/Welcome';
 import Community from './group/Community';
 import CommunityList from './group/CommunityList';
 import NotificationPreview from './notification/NotificationPreview';
@@ -147,24 +145,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     margin: 0,
     padding: 0,
   },
-  emptyContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    width: '100%',
-    alignItems: 'center',
-    textAlign: 'center',
-    justifyContent: 'center',
-    marginTop: theme.spacing(5),
-    color: theme.palette.neutralShades[400],
-  },
-  emptyIcon: {
-    width: 100,
-    height: 100,
-  },
-  configureButton: {
-    marginTop: theme.spacing(2),
-  },
   viewRequestsButton: {
     marginTop: theme.spacing(-1),
     marginBottom: theme.spacing(3),
@@ -231,6 +211,14 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     useState<SerializedUserDomainProfileData>();
   const {fetchNotifications, loading: notificationsLoading} =
     useFetchNotifications(getCaip10Address(pushAccount));
+
+  // conversations to display in the current inbox view
+  const visibleConversations = conversations?.filter(c =>
+    conversationRequestView
+      ? !isAcceptedTopic(c.conversation.topic, acceptedTopics) &&
+        !blockedTopics.includes(c.conversation.topic)
+      : isAcceptedTopic(c.conversation.topic, acceptedTopics),
+  );
 
   useEffect(() => {
     if (open) {
@@ -300,6 +288,30 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       setConversationRequestView(false);
     }
   }, [acceptedTopics, blockedTopics]);
+
+  useEffect(() => {
+    if (!visibleConversations) {
+      return;
+    }
+
+    // disable search panel if not on the chat tab
+    if (tabValue !== TabType.Chat) {
+      setConversationSearch(false);
+      return;
+    }
+
+    // disable search panel if no text is shown
+    if (!searchValue) {
+      setConversationSearch(false);
+      return;
+    }
+
+    // enable search panel if no conversations are visible
+    const visibleNonFilteredConversations = visibleConversations.filter(
+      c => c.visible,
+    );
+    setConversationSearch(visibleNonFilteredConversations.length === 0);
+  }, [visibleConversations, searchValue, tabValue]);
 
   const checkBrowserSettings = async () => {
     if ('Notification' in window) {
@@ -723,16 +735,10 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   ) => {
     // set conversation visibility
     conversation.visible = visible;
+  };
 
-    // if no conversations visible, switch to search tab
-    if (
-      !conversationRequestView &&
-      conversations?.filter(
-        c => isAcceptedTopic(c.conversation.topic, acceptedTopics) && c.visible,
-      ).length === 0
-    ) {
-      setConversationSearch(true);
-    }
+  const handleAppSubscribe = () => {
+    window.open(`${config.PUSH.APP_URL}/channels`, '_blank');
   };
 
   const getRequestCount = () => {
@@ -745,56 +751,8 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     );
   };
 
-  const PushProtocolOnboarding: React.FC = () => {
-    return (
-      <Box className={classes.emptyContainer}>
-        {tabValue === TabType.Notification ? (
-          <NotificationsActiveOutlinedIcon className={classes.emptyIcon} />
-        ) : (
-          <GroupsIcon className={classes.emptyIcon} />
-        )}
-        <Typography variant="h6">
-          {pushKey
-            ? tabValue === TabType.Notification
-              ? t('push.emptyNotifications')
-              : t('push.communitiesCollect')
-            : tabValue === TabType.Notification
-            ? t('push.notificationsNotReady')
-            : t('push.communitiesNotReady')}
-        </Typography>
-        {!pushKey && (
-          <Button
-            variant="contained"
-            onClick={onInitPushAccount}
-            className={classes.configureButton}
-          >
-            {t('manage.enable')}
-          </Button>
-        )}
-      </Box>
-    );
-  };
-
-  // conversations to display in the current inbox view
-  const visibleConversations = conversations
-    ?.filter(c =>
-      conversationRequestView
-        ? !isAcceptedTopic(c.conversation.topic, acceptedTopics) &&
-          !blockedTopics.includes(c.conversation.topic)
-        : isAcceptedTopic(c.conversation.topic, acceptedTopics),
-    )
-    .map(c => (
-      <ConversationPreview
-        key={c.conversation.topic}
-        selectedCallback={handleOpenChat}
-        searchTermCallback={(visible: boolean) =>
-          handleSearchCallback(c, visible)
-        }
-        searchTerm={searchValue}
-        acceptedTopics={acceptedTopics}
-        conversation={c}
-      />
-    ));
+  // number of chat requests
+  const requestCount = getRequestCount();
 
   return (
     <Card
@@ -985,11 +943,31 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                       )}
                       {visibleConversations &&
                       visibleConversations.length > 0 ? (
-                        visibleConversations
+                        visibleConversations.map(c => (
+                          <ConversationPreview
+                            key={c.conversation.topic}
+                            selectedCallback={handleOpenChat}
+                            searchTermCallback={(visible: boolean) =>
+                              handleSearchCallback(c, visible)
+                            }
+                            searchTerm={searchValue}
+                            acceptedTopics={acceptedTopics}
+                            conversation={c}
+                          />
+                        ))
                       ) : (
-                        <Welcome
-                          address={xmtpAddress}
-                          requestCount={getRequestCount()}
+                        <CallToAction
+                          icon="ForumOutlinedIcon"
+                          title={
+                            requestCount === 0
+                              ? t('push.chatNew')
+                              : t('push.chatNewRequest')
+                          }
+                          subTitle={
+                            requestCount === 0
+                              ? t('push.chatNewDescription')
+                              : t('push.chatNewRequestDescription')
+                          }
                         />
                       )}
                     </Box>
@@ -1008,7 +986,12 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                       setActiveCommunity={setActiveCommunity}
                     />
                   ) : (
-                    <PushProtocolOnboarding />
+                    <CallToAction
+                      icon={'GroupsIcon'}
+                      title={t('push.communitiesNotReady')}
+                      buttonText={t('manage.enable')}
+                      handleButtonClick={onInitPushAccount}
+                    />
                   )}
                 </TabPanel>
                 <TabPanel
@@ -1042,8 +1025,21 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                         />
                       ))}
                     </InfiniteScroll>
+                  ) : pushKey ? (
+                    <CallToAction
+                      icon="NotificationsActiveOutlinedIcon"
+                      title={t('push.emptyNotifications')}
+                      subTitle={t('push.emptyNotificationsDescription')}
+                      buttonText={t('push.findChannel')}
+                      handleButtonClick={handleAppSubscribe}
+                    />
                   ) : (
-                    <PushProtocolOnboarding />
+                    <CallToAction
+                      icon={'NotificationsActiveOutlinedIcon'}
+                      title={t('push.notificationsNotReady')}
+                      buttonText={t('manage.enable')}
+                      handleButtonClick={onInitPushAccount}
+                    />
                   )}
                 </TabPanel>
               </Box>

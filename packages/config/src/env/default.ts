@@ -78,6 +78,7 @@ export default function getDefaultConfig(): Config {
     },
     PUSH: {
       CHANNELS: ['eip155:5:0x0389246fB9191Dc41722e1f0D558dC8f82Be3C7A'],
+      APP_URL: 'https://staging.push.org',
     },
     WALLETCONNECT_PROJECT_ID: 'b99b92d76dda44021bfbed5b1a0d010a',
     XMTP: {

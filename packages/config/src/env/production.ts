@@ -51,6 +51,7 @@ export default function getProductionConfig(): ConfigOverride {
     },
     PUSH: {
       CHANNELS: ['eip155:1:0xdbBc2Ac8cb8D02B26F165b4BC120fd4b14DA6cDA'],
+      APP_URL: 'https://app.push.org',
     },
     XMTP: {
       ENVIRONMENT: 'production',

@@ -101,13 +101,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginRight: 4,
   },
 
-  emptyContainer: {
-    width: '75%',
-    height: '50%',
-    backgroundColor: 'lightgrey',
-    marginLeft: 8,
-    borderRadius: 25,
-  },
   progressBarContainer: {
     display: 'flex',
     flex: '1',

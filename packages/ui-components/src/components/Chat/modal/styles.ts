@@ -212,23 +212,6 @@ export const useConversationStyles = makeStyles<{
   loadingSpinner: {
     color: 'inherit',
   },
-  unavailableContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    width: '100%',
-    alignItems: 'center',
-    textAlign: 'center',
-    justifyContent: 'center',
-    color: theme.palette.neutralShades[400],
-  },
-  unavailableIcon: {
-    width: 100,
-    height: 100,
-  },
-  unavailableText: {
-    fontSize: 16,
-  },
   conversationContainer: {
     display: 'flex',
     flexDirection: 'column-reverse',

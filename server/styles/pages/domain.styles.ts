@@ -101,10 +101,17 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     },
   },
   loadingContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100%',
+    marginLeft: theme.spacing(25),
+    marginTop: theme.spacing(6),
+    [theme.breakpoints.down('md')]: {
+      marginLeft: theme.spacing(0),
+      marginTop: theme.spacing(2),
+      display: 'flex',
+      justifyContent: 'center',
+    },
+  },
+  loadingSpinner: {
+    color: theme.palette.secondary.main,
   },
   sectionHeaderContainer: {
     display: 'flex',

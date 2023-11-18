@@ -1190,7 +1190,7 @@ const DomainProfile = ({
         ) : (
           <Grid item xs={12} sm={12} md={8} className={classes.item}>
             <Box className={classes.loadingContainer}>
-              <CircularProgress color="secondary" />
+              <CircularProgress className={classes.loadingSpinner} />
             </Box>
           </Grid>
         )}

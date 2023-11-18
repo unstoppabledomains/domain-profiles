@@ -100,6 +100,19 @@ export const useStyles = makeStyles()((theme: Theme) => ({
       textAlign: 'initial',
     },
   },
+  loadingContainer: {
+    marginLeft: theme.spacing(28),
+    marginTop: theme.spacing(10),
+    [theme.breakpoints.down('md')]: {
+      marginLeft: theme.spacing(0),
+      marginTop: theme.spacing(2),
+      display: 'flex',
+      justifyContent: 'center',
+    },
+  },
+  loadingSpinner: {
+    color: theme.palette.secondary.main,
+  },
   sectionHeaderContainer: {
     display: 'flex',
     flexWrap: 'wrap',

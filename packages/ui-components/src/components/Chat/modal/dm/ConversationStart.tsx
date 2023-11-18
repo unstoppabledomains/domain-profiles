@@ -1,7 +1,6 @@
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import CheckIcon from '@mui/icons-material/Check';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
-import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -20,6 +19,7 @@ import {getAddressMetadata, isEthAddress} from '../../protocol/resolution';
 import {isXmtpUser} from '../../protocol/xmtp';
 import type {AddressResolution} from '../../types';
 import {TabType} from '../../types';
+import CallToAction from '../CallToAction';
 import Search from '../Search';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -40,21 +40,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   loadingSpinner: {
     color: 'inherit',
-  },
-  emptyContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    width: '100%',
-    alignItems: 'center',
-    textAlign: 'center',
-    justifyContent: 'center',
-    marginTop: theme.spacing(10),
-    color: theme.palette.neutralShades[400],
-  },
-  emptyIcon: {
-    width: 100,
-    height: 100,
   },
   searchContainer: {
     display: 'flex',
@@ -218,13 +203,11 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
           </Box>
         )}
         {!selectedPeer && !loading && (
-          <Box className={classes.emptyContainer}>
-            <ForumOutlinedIcon className={classes.emptyIcon} />
-            <Typography variant="h6">{t('push.chatNew')}</Typography>
-            <Typography variant="body2">
-              {t('push.chatNewDescription')}
-            </Typography>
-          </Box>
+          <CallToAction
+            icon={'ForumOutlinedIcon'}
+            title={t('push.chatNew')}
+            subTitle={t('push.chatNewDescription')}
+          />
         )}
       </CardContent>
     </Card>

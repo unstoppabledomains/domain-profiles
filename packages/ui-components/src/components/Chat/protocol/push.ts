@@ -16,6 +16,7 @@ export enum MessageType {
   Media = 'MediaEmbed',
 }
 
+export const PUSH_DECRYPT_ERROR_MESSAGE = 'Unable to Decrypt Message';
 export const PUSH_PAGE_SIZE = 20;
 
 export const acceptGroupInvite = async (

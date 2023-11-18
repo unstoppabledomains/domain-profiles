@@ -14,7 +14,7 @@ import Zoom from 'react-medium-image-zoom';
 import {useFeatureFlags} from '../../../../actions/featureFlagActions';
 import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
-import {MessageType} from '../../protocol/push';
+import {MessageType, PUSH_DECRYPT_ERROR_MESSAGE} from '../../protocol/push';
 import {getAddressMetadata} from '../../protocol/resolution';
 import {formatFileSize} from '../../protocol/xmtp';
 import LinkWarningModal from '../LinkWarningModal';
@@ -57,7 +57,7 @@ export const CommunityConversationBubble: React.FC<
   };
 
   const renderContent = async () => {
-    // message object required
+    // build message object if required from deprecated client
     if (!message.messageObj) {
       message.messageObj = {
         content:
@@ -65,6 +65,19 @@ export const CommunityConversationBubble: React.FC<
             ? message.messageContent
             : t('push.unsupportedContent'),
       };
+    }
+
+    // build message text to render
+    const messageToRender =
+      typeof message.messageObj === 'string'
+        ? (message.messageObj as string)
+        : (message.messageObj.content as string);
+
+    // return early if the message is not decrypted
+    if (
+      messageToRender.toLowerCase() === PUSH_DECRYPT_ERROR_MESSAGE.toLowerCase()
+    ) {
+      return;
     }
 
     // load the peer avatar
@@ -88,11 +101,7 @@ export const CommunityConversationBubble: React.FC<
       setRenderedContent(
         <Box>
           <Linkify componentDecorator={componentDecorator}>
-            <Emoji>
-              {typeof message.messageObj === 'string'
-                ? (message.messageObj as string)
-                : (message.messageObj.content as string)}
-            </Emoji>
+            <Emoji>{messageToRender}</Emoji>
           </Linkify>
         </Box>,
       );
@@ -168,7 +177,7 @@ export const CommunityConversationBubble: React.FC<
     }
   };
 
-  return (
+  return renderedContent ? (
     <Box
       ref={messageRef}
       className={cx(
@@ -252,7 +261,7 @@ export const CommunityConversationBubble: React.FC<
         />
       )}
     </Box>
-  );
+  ) : null;
 };
 
 export type CommunityConversationBubbleProps = {

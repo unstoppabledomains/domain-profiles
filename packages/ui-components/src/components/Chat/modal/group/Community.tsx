@@ -1,7 +1,5 @@
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
-import CloudOffIcon from '@mui/icons-material/CloudOff';
-import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MoreVertOutlinedIcon from '@mui/icons-material/MoreVertOutlined';
@@ -29,9 +27,9 @@ import {joinBadgeGroupChat} from '../../../../actions/messageActions';
 import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../../lib/types/badge';
-import {DomainProfileKeys} from '../../../../lib/types/domain';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
 import {PUSH_PAGE_SIZE, decryptMessage, getMessages} from '../../protocol/push';
+import CallToAction from '../CallToAction';
 import {useConversationStyles} from '../styles';
 import CommunityCompose from './CommunityCompose';
 import CommunityConversationBubble from './CommunityConversationBubble';
@@ -45,6 +43,7 @@ const CardContentNoPadding = styled(CardContent)(`
 
 export const Community: React.FC<CommunityProps> = ({
   address,
+  authDomain,
   badge,
   pushKey,
   incomingMessage,
@@ -60,13 +59,11 @@ export const Community: React.FC<CommunityProps> = ({
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [pushMessages, setPushMessages] = useState<IMessageIPFS[]>([]);
   const [sentMessage, setSentMessage] = useState<IMessageIPFS>();
-  const [authDomain, setAuthDomain] = useState<string | null>();
 
   useEffect(() => {
     if (!badge.groupChatId) {
       return;
     }
-    setAuthDomain(localStorage.getItem(DomainProfileKeys.AuthDomain));
     void loadConversation();
   }, [address, badge]);
 
@@ -179,10 +176,12 @@ export const Community: React.FC<CommunityProps> = ({
   };
 
   const handleMoreInfo = () => {
-    window.open(
-      `${config.UD_ME_BASE_URL}/${authDomain}?openBadgeCode=${badge.code}`,
-      '_blank',
-    );
+    if (authDomain) {
+      window.open(
+        `${config.UD_ME_BASE_URL}/${authDomain}?openBadgeCode=${badge.code}`,
+        '_blank',
+      );
+    }
   };
 
   const handleBlockSender = (id: string) => {
@@ -213,12 +212,14 @@ export const Community: React.FC<CommunityProps> = ({
         }
         action={
           <Box className={classes.headerActionContainer}>
-            <Tooltip title={t('profile.moreInformation')}>
-              <InfoOutlinedIcon
-                className={classes.headerCloseIcon}
-                onClick={handleMoreInfo}
-              />
-            </Tooltip>
+            {authDomain && (
+              <Tooltip title={t('profile.moreInformation')}>
+                <InfoOutlinedIcon
+                  className={classes.headerCloseIcon}
+                  onClick={handleMoreInfo}
+                />
+              </Tooltip>
+            )}
             <Tooltip title={t('common.more')}>
               <IconButton
                 onClick={handleOpenMenu}
@@ -272,15 +273,11 @@ export const Community: React.FC<CommunityProps> = ({
             </Box>
           ) : badge.groupChatId ? (
             pushMessages.length === 0 ? (
-              <Box className={classes.unavailableContainer}>
-                <ForumOutlinedIcon className={classes.unavailableIcon} />
-                <Typography variant="h6" className={classes.unavailableText}>
-                  {t('push.newConversation')}
-                </Typography>
-                <Typography variant="body2" className={classes.unavailableText}>
-                  {t('push.chatSecure')}
-                </Typography>
-              </Box>
+              <CallToAction
+                icon="ForumOutlinedIcon"
+                title={t('push.joinedGroupChat')}
+                subTitle={t('push.joinedGroupChatDescription')}
+              />
             ) : (
               <InfiniteScroll
                 inverse={true}
@@ -321,12 +318,7 @@ export const Community: React.FC<CommunityProps> = ({
               </InfiniteScroll>
             )
           ) : (
-            <Box className={classes.unavailableContainer}>
-              <CloudOffIcon className={classes.unavailableIcon} />
-              <Typography variant="body2" className={classes.unavailableText}>
-                {t('push.chatNotReady')}
-              </Typography>
-            </Box>
+            <CallToAction icon="CloudOffIcon" title={t('push.chatNotReady')} />
           )}
         </Box>
       </CardContent>
@@ -348,6 +340,7 @@ export const Community: React.FC<CommunityProps> = ({
 
 export type CommunityProps = {
   address: string;
+  authDomain?: string;
   badge: SerializedCryptoWalletBadge;
   pushKey: string;
   incomingMessage?: IMessageIPFS;

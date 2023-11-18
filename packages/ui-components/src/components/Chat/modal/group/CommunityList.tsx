@@ -1,6 +1,4 @@
-import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -19,6 +17,7 @@ import {
   UD_BLUE_BADGE_CODE,
 } from '../../../../lib/types/domain';
 import {getGroupInfo} from '../../protocol/push';
+import CallToAction from '../CallToAction';
 import CommunityPreview from './CommunityPreview';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -29,24 +28,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   headerText: {
     marginTop: theme.spacing(3),
     marginBottom: theme.spacing(2),
-  },
-  emptyContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    width: '100%',
-    alignItems: 'center',
-    textAlign: 'center',
-    justifyContent: 'center',
-    marginTop: theme.spacing(5),
-    color: theme.palette.neutralShades[400],
-  },
-  emptyIcon: {
-    width: 100,
-    height: 100,
-  },
-  emptyButton: {
-    marginTop: theme.spacing(2),
   },
   loadingContainer: {
     display: 'flex',
@@ -176,17 +157,12 @@ export const CommunityList: React.FC<CommunityListProps> = ({
         ))}
     </Box>
   ) : (
-    <Box className={classes.emptyContainer}>
-      <EmojiEventsOutlinedIcon className={classes.emptyIcon} />
-      <Typography variant="h6">{t('push.communitiesCollect')}</Typography>
-      <Button
-        variant="contained"
-        onClick={handleGetBadge}
-        className={classes.emptyButton}
-      >
-        {t('push.joinCommunity')}
-      </Button>
-    </Box>
+    <CallToAction
+      icon="EmojiEventsOutlinedIcon"
+      title={t('push.communitiesCollect')}
+      buttonText={t('push.joinCommunity')}
+      handleButtonClick={handleGetBadge}
+    />
   );
 };
 

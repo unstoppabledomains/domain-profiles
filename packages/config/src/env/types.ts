@@ -71,6 +71,7 @@ export type Config = {
   VERIFICATION_SUPPORTED: string[];
   PUSH: {
     CHANNELS: string[];
+    APP_URL: string;
   };
   WALLETCONNECT_PROJECT_ID: string;
   XMTP: {

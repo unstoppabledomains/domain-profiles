@@ -11,6 +11,7 @@ import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
@@ -899,7 +900,7 @@ const DomainProfile = ({
           </div>
         </Grid>
 
-        {isLoaded && (
+        {isLoaded ? (
           <Grid item xs={12} sm={12} md={8} className={classes.item}>
             {profileData?.cryptoVerifications &&
               profileData.cryptoVerifications.length > 0 && (
@@ -1185,6 +1186,12 @@ const DomainProfile = ({
                 })}
               </div>
             )}
+          </Grid>
+        ) : (
+          <Grid item xs={12} sm={12} md={8} className={classes.item}>
+            <Box className={classes.loadingContainer}>
+              <CircularProgress className={classes.loadingSpinner} />
+            </Box>
           </Grid>
         )}
       </Grid>

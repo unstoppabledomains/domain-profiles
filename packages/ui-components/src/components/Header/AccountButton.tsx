@@ -89,7 +89,7 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
   const [authDomainAvatar, setAuthDomainAvatar] = useState<string>('');
 
   useEffect(() => {
-    if (!authAddress || !authDomain) {
+    if (!authAddress || !authDomain || !domainOwner) {
       return;
     }
 
@@ -108,7 +108,7 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
     // set state
     setIsOwner(domainOwner.toLowerCase() === authAddress.toLowerCase());
     fetchData(authDomain).catch(notifyError);
-  }, [authAddress, authDomain]);
+  }, [authAddress, authDomain, domainOwner]);
 
   const showDropDown = () => {
     setDropDownShown(prev => !prev);

@@ -1,6 +1,6 @@
 {
   "name": "@unstoppabledomains/ui-components",
-  "version": "0.0.28",
+  "version": "0.0.29",
   "private": true,
   "description": "An open and reusable suite of Unstoppable Domains management components",
   "keywords": [
@@ -48,7 +48,6 @@
     "@uauth/js": "^2.8.0",
     "@unstoppabledomains/config": "workspace:^",
     "@unstoppabledomains/resolution": "^8.5.0",
-    "@unstoppabledomains/ui-kit": "^0.3.15",
     "@web3-react/core": "^8.2.2",
     "@xmtp/content-type-remote-attachment": "^1.0.7",
     "@xmtp/proto": "^3.27.0",
@@ -112,5 +111,8 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
+  },
+  "peerDependencies": {
+    "@unstoppabledomains/ui-kit": "^0.3.15"
   }
 }

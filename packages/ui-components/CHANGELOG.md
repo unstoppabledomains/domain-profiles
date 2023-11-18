@@ -3,10 +3,14 @@
 All notable changes to this project will be documented in this file. This
 project adheres to [Semantic Versioning](http://semver.org/).
 
-## 0.0.28
+## 0.0.29
 
 - Bump Push Protocol library to latest version
 - Refactor empty state styling
+
+## 0.0.28
+
+- Move `@unstoppabledomains/ui-kit` to peerDependencies
 
 ## 0.0.27
 

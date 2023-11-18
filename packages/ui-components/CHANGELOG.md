@@ -1,3 +1,7 @@
+## 0.0.28
+
+- Move `@unstoppabledomains/ui-kit` to peerDependencies
+
 ## 0.0.27
 
 - Improve loading of XMTP user settings

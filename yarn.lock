@@ -4465,7 +4465,6 @@ __metadata:
     "@uauth/js": ^2.8.0
     "@unstoppabledomains/config": "workspace:^"
     "@unstoppabledomains/resolution": ^8.5.0
-    "@unstoppabledomains/ui-kit": ^0.3.15
     "@web3-react/core": ^8.2.2
     "@xmtp/content-type-remote-attachment": ^1.0.7
     "@xmtp/proto": ^3.27.0
@@ -4516,6 +4515,8 @@ __metadata:
     usehooks-ts: ^2.9.1
     wagmi: ^1.4.4
     web3.storage: ^4.5.5
+  peerDependencies:
+    "@unstoppabledomains/ui-kit": ^0.3.15
   languageName: unknown
   linkType: soft
 

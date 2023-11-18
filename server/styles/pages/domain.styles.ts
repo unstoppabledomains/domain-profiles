@@ -101,8 +101,8 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     },
   },
   loadingContainer: {
-    marginLeft: theme.spacing(25),
-    marginTop: theme.spacing(6),
+    marginLeft: theme.spacing(28),
+    marginTop: theme.spacing(10),
     [theme.breakpoints.down('md')]: {
       marginLeft: theme.spacing(0),
       marginTop: theme.spacing(2),

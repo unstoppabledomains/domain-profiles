@@ -657,6 +657,8 @@ const DomainProfile = ({
                             <DomainPreview
                               domain={follower}
                               size={30}
+                              chatUser={chatUser}
+                              setOpenChat={setOpenChat}
                               setWeb3Deps={setWeb3Deps}
                             />
                           ))}

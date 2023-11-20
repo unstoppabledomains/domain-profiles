@@ -15,7 +15,6 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getProfileData} from '../../actions';
 import {useFeatureFlags} from '../../actions/featureFlagActions';
-import useUnstoppableMessaging from '../../hooks/useUnstoppableMessaging';
 import {splitDomain} from '../../lib/domain/format';
 import getImageUrl from '../../lib/domain/getImageUrl';
 import {notifyError} from '../../lib/error';
@@ -100,13 +99,14 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
 export const DomainPreview: React.FC<DomainPreviewProps> = ({
   domain,
   size,
+  chatUser,
+  setOpenChat,
   setWeb3Deps,
 }) => {
   const [t] = useTranslationContext();
   const {classes} = useStyles({size});
   const [profileData, setProfileData] =
     useState<SerializedPublicDomainProfileData>();
-  const {chatUser, setOpenChat} = useUnstoppableMessaging();
   const {data: featureFlags} = useFeatureFlags();
   const [authAddress, setAuthAddress] = useState<string>();
   const [authDomain, setAuthDomain] = useState<string>();
@@ -270,6 +270,7 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
                     ?.ecommerceServiceUsersEnableChat && (
                     <Grid item sm={chatUser ? 6 : 12}>
                       {chatUser &&
+                        setOpenChat &&
                         authDomain &&
                         authAddress &&
                         authDomain.toLowerCase() !== domain.toLowerCase() && (
@@ -298,5 +299,7 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
 export type DomainPreviewProps = {
   domain: string;
   size: number;
+  chatUser?: string;
+  setOpenChat?: (s?: string) => void;
   setWeb3Deps?: (value: Web3Dependencies | undefined) => void;
 };

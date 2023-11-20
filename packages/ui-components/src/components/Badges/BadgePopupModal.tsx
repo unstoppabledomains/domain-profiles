@@ -93,7 +93,7 @@ const BadgePopupModal = ({
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
   const {setOpenCommunity} = useUnstoppableMessaging();
-  const {chatUser} = useUnstoppableMessaging();
+  const {chatUser, setOpenChat} = useUnstoppableMessaging();
   const [openPopover, setOpenPopover] = useState(false);
   const [openComposeMessageModal, setOpenComposeMessageModal] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
@@ -309,6 +309,8 @@ const BadgePopupModal = ({
                         key={`holder-${badgeCode}-${holdersDomain}`}
                         domain={holdersDomain}
                         size={20}
+                        chatUser={chatUser}
+                        setOpenChat={setOpenChat}
                         setWeb3Deps={setWeb3Deps}
                       />
                     ))}

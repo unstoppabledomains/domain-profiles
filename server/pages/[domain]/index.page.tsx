@@ -147,8 +147,8 @@ const DomainProfile = ({
   );
   const [optimisticFollowCount, setOptimisticFollowCount] = useState(0);
 
-  const isExternalDomain = isExternalDomainValidForManagement(domain);
-  const {data: ethDomainStatus} = useEnsDomainStatus(domain, isExternalDomain);
+  const isEnsDomain = isExternalDomainValidForManagement(domain);
+  const {data: ethDomainStatus} = useEnsDomainStatus(domain, isEnsDomain);
 
   // format social platform data
   const socialsInfo: SerializedDomainProfileSocialAccountsUserInfo = {};
@@ -906,7 +906,7 @@ const DomainProfile = ({
               profileData.cryptoVerifications.length > 0 && (
                 <TokenGallery
                   domain={domain}
-                  enabled={!isExternalDomain && isFeatureFlagFetched}
+                  enabled={isFeatureFlagFetched}
                   isOwner={isOwner}
                   ownerAddress={ownerAddress}
                   profileServiceUrl={config.PROFILE.HOST_URL}
@@ -1173,7 +1173,7 @@ const DomainProfile = ({
                   : t('profile.emptyNotMinted')}
               </div>
             )}
-            {isExternalDomain && ethDomainStatus?.expiresAt && (
+            {isEnsDomain && ethDomainStatus?.expiresAt && (
               <div className={classes.empty}>
                 {t('profile.thisDomainExpires', {
                   action: isPast(new Date(ethDomainStatus.expiresAt))

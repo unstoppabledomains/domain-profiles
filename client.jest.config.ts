@@ -27,6 +27,7 @@ const config: InitialOptionsTsJest = {
       },
     ],
   },
+  moduleDirectories: ['node_modules', '<rootDir>/server'],
   testPathIgnorePatterns: ['/node_modules/', '/build/'],
   moduleNameMapper: {
     ['@xmtp/(.*)']: '<rootDir>/tests/mocks/empty.js',

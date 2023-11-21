@@ -46,7 +46,7 @@ export default function getDefaultConfig(): Config {
       'https://storage.googleapis.com/unstoppable-client-assets',
     UNSTOPPABLE_CONTRACT_ADDRESS: '0xa9a6a3626993d487d2dbda3173cf58ca1a9d9e9f',
     UNSTOPPABLE_METADATA_ENDPOINT: 'https://api.ud-staging.com/metadata',
-    IPFS_BASE_URL: 'https://ipfs.io/ipfs',
+    IPFS_BASE_URL: 'https://ipfs.io',
     VERIFICATION_SUPPORTED: [
       'SOL',
       'ETH',

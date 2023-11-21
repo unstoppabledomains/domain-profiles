@@ -22,6 +22,7 @@ import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import {format, isPast} from 'date-fns';
+import {normalizeIpfsHash} from 'lib/ipfs';
 import type {GetServerSideProps} from 'next';
 import {NextSeo} from 'next-seo';
 import {useSnackbar} from 'notistack';
@@ -856,7 +857,9 @@ const DomainProfile = ({
                     <LanguageIcon className={classes.sidebarIcon} />
                     <Link
                       external
-                      href={`${config.IPFS_BASE_URL}/${ipfsHash}`}
+                      href={`${config.IPFS_BASE_URL}/${normalizeIpfsHash(
+                        ipfsHash,
+                      )}`}
                       className={classes.websiteLink}
                     >
                       {`${domain} (${ipfsHash.slice(0, 10)}...${ipfsHash.slice(

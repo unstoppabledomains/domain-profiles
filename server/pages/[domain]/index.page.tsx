@@ -1245,6 +1245,7 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         DomainFieldTypes.Messaging,
         DomainFieldTypes.Profile,
         DomainFieldTypes.SocialAccounts,
+        DomainFieldTypes.Records,
       ]),
       getIdentity({name: domain}),
     ]);

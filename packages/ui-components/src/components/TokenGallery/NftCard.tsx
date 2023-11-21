@@ -178,7 +178,7 @@ const NftCard = ({nft, domain, placeholder}: Props) => {
   }, [isVisible]);
 
   const shouldRenderVideo = () => {
-    if (nft.video_url) {
+    if (nft.video_url && !nft.image_url) {
       if (
         !nft.video_url.endsWith('.gif') &&
         !nft.video_url.endsWith('.gltf') &&

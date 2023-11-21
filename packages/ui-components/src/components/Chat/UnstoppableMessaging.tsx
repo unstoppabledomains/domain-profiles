@@ -476,7 +476,6 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
                   env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
                   profile: {
                     name: chatUser,
-                    picture: `${config.UNSTOPPABLE_METADATA_ENDPOINT}/image-src/${chatUser}?withOverlay=false`,
                   },
                 });
               }

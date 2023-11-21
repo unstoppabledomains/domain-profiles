@@ -857,7 +857,7 @@ const DomainProfile = ({
                     <LanguageIcon className={classes.sidebarIcon} />
                     <Link
                       external
-                      href={`${config.IPFS_BASE_URL}/${normalizeIpfsHash(
+                      href={`${config.IPFS_BASE_URL}${normalizeIpfsHash(
                         ipfsHash,
                       )}`}
                       className={classes.websiteLink}

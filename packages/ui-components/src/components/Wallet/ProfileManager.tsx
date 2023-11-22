@@ -21,6 +21,8 @@ export type ManagerProps = {
   setSaveClicked: (value: boolean) => void;
   onSignature: (signature: string, expiry: string) => void;
   onFailed?: () => void;
+  useLocalPushKey?: boolean;
+  useLocalXmtpKey?: boolean;
 };
 
 export const ONE_WEEK = 60 * 60 * 24 * 7 * 1000;
@@ -33,6 +35,8 @@ export const ProfileManager: React.FC<ManagerProps> = ({
   setSaveClicked,
   onSignature,
   onFailed,
+  useLocalXmtpKey = true,
+  useLocalPushKey = false,
 }) => {
   const web3Context = useContext(Web3Context);
   const [messageResponse, setMessageResponse] = useState<MessageResponse>();
@@ -107,7 +111,7 @@ export const ProfileManager: React.FC<ManagerProps> = ({
 
     // sign with locally stored XMTP key if available
     const localXmtpKey = getXmtpLocalKey(ownerAddress);
-    if (localXmtpKey) {
+    if (localXmtpKey && useLocalXmtpKey) {
       const xmtpSignatureBytes = new Signature(
         await signXmtpMessage(ownerAddress, responseBody.message),
       ).toBytes();
@@ -123,7 +127,7 @@ export const ProfileManager: React.FC<ManagerProps> = ({
 
     // sign with a locally stored Push Protocol key if available
     const localPushKey = getPushLocalKey(ownerAddress);
-    if (localPushKey) {
+    if (localPushKey && useLocalPushKey) {
       const pushSignature = await signPushMessage(
         responseBody.message,
         localPushKey,

@@ -534,15 +534,17 @@ const DomainProfile = ({
                 onUnfollowClick={handleUnfollowClick}
               />
             ) : (
-              <Button
-                onClick={() => setShowManageDomainModal(true)}
-                className={cx(classes.shareMenu, {
-                  [classes.smallHidden]: domain !== authDomain,
-                })}
-                startIcon={<ManageAccountsOutlinedIcon />}
-              >
-                {t('profile.editProfile')}
-              </Button>
+              featureFlags.variations?.udMeServiceDomainsEnableManagement && (
+                <Button
+                  onClick={() => setShowManageDomainModal(true)}
+                  className={cx(classes.shareMenu, {
+                    [classes.smallHidden]: domain !== authDomain,
+                  })}
+                  startIcon={<ManageAccountsOutlinedIcon />}
+                >
+                  {t('profile.editProfile')}
+                </Button>
+              )
             )}
           </div>
           <div className={classes.topHeaderContainer}>

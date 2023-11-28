@@ -3,7 +3,8 @@ export type LaunchDarklyBooleanKey =
   | 'ecommerce-service-users-enable-chat-community'
   | 'ecommerce-service-users-enable-chat-community-media'
   | 'ecommerce-service-users-enable-chat-support-bubble'
-  | 'ecommerce-service-users-public-profile-address-verified-check';
+  | 'ecommerce-service-users-public-profile-address-verified-check'
+  | 'ud-me-service-domains-enable-management';
 
 export type LaunchDarklyNumberKey = 'example-number';
 

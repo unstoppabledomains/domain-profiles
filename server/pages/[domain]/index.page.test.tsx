@@ -310,7 +310,7 @@ describe('<DomainProfile />', () => {
 
 describe('Token gallery for multiple blockchains', () => {
   const tokenGalleryProps = defaultProps();
-  tokenGalleryProps.profileData!.profile.tokenGalleryEnabled = true;
+  tokenGalleryProps.profileData!.profile!.tokenGalleryEnabled = true;
 
   beforeEach(async () => {
     jest
@@ -615,7 +615,7 @@ describe('Token gallery for multiple blockchains', () => {
 
 describe('Token gallery for single blockchain', () => {
   const tokenGalleryProps = defaultProps();
-  tokenGalleryProps.profileData!.profile.tokenGalleryEnabled = true;
+  tokenGalleryProps.profileData!.profile!.tokenGalleryEnabled = true;
 
   beforeEach(async () => {
     jest
@@ -743,7 +743,7 @@ describe('Token gallery for single blockchain', () => {
 
 describe('Token gallery carousel', () => {
   const tokenGalleryProps = defaultProps();
-  tokenGalleryProps.profileData!.profile.tokenGalleryEnabled = true;
+  tokenGalleryProps.profileData!.profile!.tokenGalleryEnabled = true;
 
   beforeEach(async () => {
     jest
@@ -1061,7 +1061,7 @@ describe('Token gallery carousel', () => {
 
 describe('Owner operations', () => {
   const tokenGalleryProps = defaultProps();
-  tokenGalleryProps.profileData!.profile.tokenGalleryEnabled = true;
+  tokenGalleryProps.profileData!.profile!.tokenGalleryEnabled = true;
 
   beforeEach(async () => {
     jest

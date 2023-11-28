@@ -203,12 +203,40 @@
     "signOut": "Sign Out"
   },
   "manage": {
+    "addAvatar": "Add avatar",
+    "addCover": "Add cover",
+    "uploadPhoto": "Upload photo",
+    "enterAvatarUrl": "Enter Avatar URL",
+    "uploadAvatar": "Upload Avatar",
+    "avatarUrlRequirements": "Required URL must end with .jpg, .png, .gif or .glb",
+    "coverJpgOrPngAndMaxSize": "Recommended: 1440x200px, 5MB max size, JPG or PNG.",
+    "avatarJpgOrPngAndMaxSize": "Recommended: 1000x1000px, 5MB max size, JPG, PNG or GIF.",
     "addressNotVerified": "Please verify the ownership of this address. NFTs associated with this address will not be displayed on your public profile.",
     "addressNotVerifiedNonOwner": "Ownership of this address has not been verified.",
     "configure": "Configure",
     "domainProfileImage": "Domain profile image",
     "enable": "Enable",
-    "unblock": "Unblock"
+    "unblock": "Unblock",
+    "profile": "Profile",
+    "crypto": "Crypto Addresses",
+    "email": "Email Forwarding",
+    "reverse": "Reverse Resolution",
+    "ownerAddress": "Domain owner address: {{address}}",
+    "comingSoon": "Coming soon",
+    "displayName": "Name",
+    "description": "Short bio",
+    "visibleToEveryone": "Visible to everyone",
+    "location": "Location",
+    "website": "Website",
+    "onlyYouAndDapps": "Only you and allowed dApps",
+    "whoCanViewYourData": "Who can view your data?",
+    "mainInfo": "Main Info",
+    "youCanControlAccessToYourData": "You can control the access people have in viewing your data.",
+    "public": {
+      "allprivate": "All Private",
+      "allpublic": "All Public",
+      "mixedvisibility": "Mixed Visibility"
+    }
   },
   "nftCollection": {
     "addOnchainAddress": "Your domain doesn't have any on-chain crypto addresses. Add some addresses to your domain to continue setting up the Token Gallery.",
@@ -342,7 +370,6 @@
     "listed": "Listed",
     "listedForSale": "This domain is listed for sale",
     "looksLikeWeDidntFindBadgesForYou": "Looks like we didn't find badges for you",
-    "manageDetails": "Profile details",
     "manageMyProfile": "Manage my profile",
     "messaging": {
       "compose": "Compose Message",
@@ -388,7 +415,7 @@
     "verifiedWithUd": "Verified with UD",
     "verifyAddress": "Verify {{symbol}} address",
     "verifyWalletAddress": "Verify your wallet address",
-    "viewMyProfile": "View my profile",
+    "viewMyProfile": "My profile", 
     "viewProfile": "View Profile",
     "website": "Website"
   },

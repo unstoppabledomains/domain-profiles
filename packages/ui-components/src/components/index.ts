@@ -5,6 +5,7 @@ export * from './CustomBadges';
 export * from './Domain';
 export * from './Header';
 export * from './Image';
+export * from './Manage';
 export * from './TokenGallery';
 export {default as Badges} from './Badges';
 export {default as CopyToClipboard} from './CopyToClipboard';

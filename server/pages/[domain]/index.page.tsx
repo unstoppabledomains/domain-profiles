@@ -6,6 +6,7 @@ import HowToRegOutlinedIcon from '@mui/icons-material/HowToRegOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import LanguageIcon from '@mui/icons-material/Language';
+import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -51,6 +52,7 @@ import {
   DomainListModal,
   DomainPreview,
   DomainProfileKeys,
+  DomainProfileModal,
   FollowButton,
   ForSaleOnOpenSea,
   Link,
@@ -119,6 +121,7 @@ const DomainProfile = ({
 
   // state management
   const [loginClicked, setLoginClicked] = useState<boolean>();
+  const [showManageDomainModal, setShowManageDomainModal] = useState(false);
   const [authAddress, setAuthAddress] = useState('');
   const [authDomain, setAuthDomain] = useState('');
   const [displayQrCode, setDisplayQrCode] = useState(false);
@@ -130,10 +133,10 @@ const DomainProfile = ({
   const [records, setRecords] = useState<Record<string, string>>({});
   const [metadata, setMetadata] = useState<Record<string, string>>({});
   const [showFeaturedCommunity, setShowFeaturedCommunity] = useState(
-    profileData?.profile.showFeaturedCommunity ?? false,
+    profileData?.profile?.showFeaturedCommunity ?? false,
   );
   const [showFeaturedPartner, setShowFeaturedPartner] = useState(
-    profileData?.profile.showFeaturedPartner ?? false,
+    profileData?.profile?.showFeaturedPartner ?? false,
   );
   const {
     data: featureFlags,
@@ -164,7 +167,9 @@ const DomainProfile = ({
     ),
   );
   verifiedSocials.forEach(socialType => {
-    const socialUser = profileData?.socialAccounts[socialType]?.location;
+    const socialUser =
+      profileData?.socialAccounts &&
+      profileData?.socialAccounts[socialType]?.location;
     socialsInfo[socialType] = {
       kind: socialType,
       userName: socialUser,
@@ -182,7 +187,7 @@ const DomainProfile = ({
 
   // retrieve on-chain record data
   const addressRecords = parseRecords(records || {});
-  const domainSellerEmail = profileData?.profile.publicDomainSellerEmail;
+  const domainSellerEmail = profileData?.profile?.publicDomainSellerEmail;
   const isForSale = Boolean(domainSellerEmail);
   const ipfsHash = records['ipfs.html.value'];
   const ownerAddress = metadata.owner || '';
@@ -201,22 +206,22 @@ const DomainProfile = ({
     reverse: Boolean(metadata.reverse),
   });
   const needLeftSideDivider =
-    Boolean(profileData?.profile.location) ||
+    Boolean(profileData?.profile?.location) ||
     verifiedSocials.length > 0 ||
     humanityVerified ||
     ipfsHash ||
-    profileData?.profile.web2Url;
+    profileData?.profile?.web2Url;
 
   const hasAddresses = Boolean(
     Object.keys(addressRecords.addresses ?? {}).length ||
       Object.keys(addressRecords.multicoinAddresses ?? {}).length,
   );
-  const uploadedImagePath = profileData?.profile.imagePath
-    ? getImageUrl(profileData.profile.imagePath)
+  const uploadedImagePath = profileData?.profile?.imagePath
+    ? getImageUrl(profileData.profile?.imagePath)
     : null;
 
-  const domainCover = profileData?.profile.coverPath
-    ? getImageUrl(profileData?.profile.coverPath)
+  const domainCover = profileData?.profile?.coverPath
+    ? getImageUrl(profileData?.profile?.coverPath)
     : null;
   const {label, sld, extension} = splitDomain(domain);
   const seoTags = getSeoTags({
@@ -347,8 +352,8 @@ const DomainProfile = ({
   }, []);
 
   useEffect(() => {
-    if (profileData?.profile.imagePath) {
-      setImagePath(profileData?.profile.imagePath);
+    if (profileData?.profile?.imagePath) {
+      setImagePath(profileData.profile.imagePath);
     }
   }, [profileData]);
 
@@ -518,7 +523,7 @@ const DomainProfile = ({
                 {t('push.chat')}
               </Button>
             )}
-            {domain !== authDomain && (
+            {domain !== authDomain ? (
               <FollowButton
                 handleLogin={() => setLoginClicked(true)}
                 setWeb3Deps={setWeb3Deps}
@@ -528,6 +533,16 @@ const DomainProfile = ({
                 onFollowClick={handleFollowClick}
                 onUnfollowClick={handleUnfollowClick}
               />
+            ) : (
+              <Button
+                onClick={() => setShowManageDomainModal(true)}
+                className={cx(classes.shareMenu, {
+                  [classes.smallHidden]: domain !== authDomain,
+                })}
+                startIcon={<ManageAccountsOutlinedIcon />}
+              >
+                {t('profile.editProfile')}
+              </Button>
             )}
           </div>
           <div className={classes.topHeaderContainer}>
@@ -585,13 +600,11 @@ const DomainProfile = ({
                 hasUdBlueBadge={hasUdBlueBadge}
               />
             </div>
-            {profileData?.profile.displayName && (
+            {profileData?.profile?.displayName && (
               <div>
                 <Box mt={4}>
                   <Typography variant="h4" className={classes.displayName}>
-                    {profileData?.profile.displayName
-                      ? profileData?.profile.displayName
-                      : ''}
+                    {profileData.profile.displayName}
                   </Typography>
                 </Box>
                 <Box mt={1} display="flex" className={classes.domainNameBox}>
@@ -631,7 +644,7 @@ const DomainProfile = ({
                         className={classes.followCount}
                         onClick={handleViewFollowingClick}
                       >
-                        {`${profileData.social.followingCount} following`}
+                        {`${profileData.social?.followingCount || 0} following`}
                       </Button>
                       <Button
                         variant="text"
@@ -639,7 +652,7 @@ const DomainProfile = ({
                         onClick={handleViewFollowersClick}
                       >
                         {`${
-                          (profileData.social.followerCount || 0) +
+                          (profileData.social?.followerCount || 0) +
                           optimisticFollowCount
                         } followers`}
                       </Button>
@@ -650,7 +663,7 @@ const DomainProfile = ({
                           {t('profile.followedBy', {
                             followers: followers.slice(0, 2).join(', '),
                             othersCount:
-                              (profileData.social.followerCount || 0) - 3,
+                              (profileData.social?.followerCount || 0) - 3,
                           })}
                         </Typography>
                         <div className={classes.followersPreview}>
@@ -668,11 +681,11 @@ const DomainProfile = ({
                     )}
                   </div>
                 )}
-                {profileData?.profile.description ? (
+                {profileData?.profile?.description ? (
                   <Box mt={2}>
                     <Typography className={classes.description}>
-                      {profileData?.profile.description
-                        ? profileData?.profile.description
+                      {profileData?.profile?.description
+                        ? profileData?.profile?.description
                         : ''}
                     </Typography>
                   </Box>
@@ -868,26 +881,26 @@ const DomainProfile = ({
                     </Link>
                   </Box>
                 ) : null}
-                {profileData?.profile.web2Url ? (
+                {profileData?.profile?.web2Url ? (
                   <Box mb={2} display="flex">
                     <LanguageIcon className={classes.sidebarIcon} />
                     <Link
                       external
-                      href={profileData?.profile.web2Url}
+                      href={profileData?.profile?.web2Url}
                       className={classes.websiteLink}
                     >
-                      {profileData?.profile.web2Url.replace(
+                      {profileData?.profile?.web2Url.replace(
                         /^https?:\/\/|\/$/g,
                         '',
                       )}
                     </Link>
                   </Box>
                 ) : null}
-                {profileData?.profile.location ? (
+                {profileData?.profile?.location ? (
                   <Box mb={2} display="flex">
                     <FmdGoodOutlinedIcon className={classes.sidebarIcon} />
                     <Typography className={classes.emailAndLocation}>
-                      {profileData?.profile.location}
+                      {profileData?.profile?.location}
                     </Typography>
                   </Box>
                 ) : null}
@@ -1205,16 +1218,24 @@ const DomainProfile = ({
           title={
             viewFollowerRelationship === 'followers'
               ? `${t('profile.followers')} ${
-                  profileData.social.followerCount || 0
+                  profileData.social?.followerCount || 0
                 }`
               : `${t('profile.following')} ${
-                  profileData.social.followingCount || 0
+                  profileData.social?.followingCount || 0
                 }`
           }
           retrieveDomains={retrieveFollowers}
           open={isViewFollowModalOpen}
           setWeb3Deps={setWeb3Deps}
           onClose={handleViewFollowModalClose}
+        />
+      )}
+      {showManageDomainModal && (
+        <DomainProfileModal
+          domain={domain}
+          address={ownerAddress}
+          open={showManageDomainModal}
+          onClose={() => setShowManageDomainModal(false)}
         />
       )}
     </Box>
@@ -1265,7 +1286,7 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
   }
 
   // set display name to domain if not already set
-  if (profileData?.profile && !profileData.profile.displayName) {
+  if (profileData?.profile && !profileData.profile?.displayName) {
     profileData.profile.displayName = domain;
   }
 

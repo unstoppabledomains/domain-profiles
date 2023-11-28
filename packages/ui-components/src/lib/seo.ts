@@ -20,7 +20,7 @@ export const getSeoTags = (props: GetSeoTagsProps): NextSeoProps => {
   const seoTags: NextSeoProps = {
     title,
     description:
-      props.profileData.profile.description ?? DEFAULT_SEO_DESCRIPTION,
+      props.profileData.profile?.description ?? DEFAULT_SEO_DESCRIPTION,
   };
 
   seoTags.openGraph = {
@@ -29,7 +29,7 @@ export const getSeoTags = (props: GetSeoTagsProps): NextSeoProps => {
 
   const imageUrl =
     // onChain image types do not render properly in Twitter Preview Cards
-    props.domainAvatar && props.profileData.profile.imageType === 'offChain'
+    props.domainAvatar && props.profileData.profile?.imageType === 'offChain'
       ? props.domainAvatar
       : getImageUrl('/unstoppable-logos/unstoppable-logo-1200x1200.png');
 

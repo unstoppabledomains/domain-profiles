@@ -1,12 +1,12 @@
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import ChatIcon from '@mui/icons-material/Chat';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
 import HowToRegOutlinedIcon from '@mui/icons-material/HowToRegOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import LanguageIcon from '@mui/icons-material/Language';
-import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -262,6 +262,11 @@ const DomainProfile = ({
     setIsViewFollowModalOpen(false);
   };
 
+  const handleManageDomainModalClose = () => {
+    setShowManageDomainModal(false);
+    window.location.reload();
+  };
+
   const handleShareRiskScore = () => {
     window.open(
       `https://twitter.com/intent/tweet?text=${encodeURI(
@@ -299,7 +304,7 @@ const DomainProfile = ({
 
   useEffect(() => {
     // wait until mounted
-    if (!isMounted() || !isFeatureFlagSuccess) {
+    if (!isMounted() || !isFeatureFlagSuccess || !ownerAddress) {
       return;
     }
 
@@ -501,52 +506,57 @@ const DomainProfile = ({
       >
         <Logo className={classes.logo} inverse absoluteUrl />
         <div className={classes.head}>
-          <div className={classes.menuButtonContainer}>
-            <ShareMenu
-              toggleQrCode={toggleQrCode}
-              displayQrCode={displayQrCode}
-              domain={domain}
-              className={cx(classes.shareMenu, {
-                [classes.smallHidden]: domain !== authDomain,
-              })}
-              onProfileLinkCopied={handleClickToCopy}
-            />
-            {chatUser && chatUser.toLowerCase() !== domain.toLowerCase() && (
-              <Button
-                data-testid="chat-button"
-                onClick={() => setOpenChat(domain)}
+          {isOwner !== undefined && (
+            <div className={classes.menuButtonContainer}>
+              <ShareMenu
+                toggleQrCode={toggleQrCode}
+                displayQrCode={displayQrCode}
+                domain={domain}
                 className={cx(classes.shareMenu, {
                   [classes.smallHidden]: domain !== authDomain,
                 })}
-                startIcon={<ChatIcon />}
-              >
-                {t('push.chat')}
-              </Button>
-            )}
-            {domain !== authDomain ? (
-              <FollowButton
-                handleLogin={() => setLoginClicked(true)}
-                setWeb3Deps={setWeb3Deps}
-                authDomain={authDomain}
-                domain={domain}
-                authAddress={authAddress}
-                onFollowClick={handleFollowClick}
-                onUnfollowClick={handleUnfollowClick}
+                onProfileLinkCopied={handleClickToCopy}
               />
-            ) : (
-              featureFlags.variations?.udMeServiceDomainsEnableManagement && (
-                <Button
-                  onClick={() => setShowManageDomainModal(true)}
-                  className={cx(classes.shareMenu, {
-                    [classes.smallHidden]: domain !== authDomain,
-                  })}
-                  startIcon={<ManageAccountsOutlinedIcon />}
-                >
-                  {t('profile.editProfile')}
-                </Button>
-              )
-            )}
-          </div>
+              {!isOwner ? (
+                <>
+                  {chatUser && (
+                    <Button
+                      data-testid="chat-button"
+                      onClick={() => setOpenChat(domain)}
+                      className={cx(classes.shareMenu, {
+                        [classes.smallHidden]: domain !== authDomain,
+                      })}
+                      startIcon={<ChatIcon />}
+                    >
+                      {t('push.chat')}
+                    </Button>
+                  )}
+                  <FollowButton
+                    handleLogin={() => setLoginClicked(true)}
+                    setWeb3Deps={setWeb3Deps}
+                    authDomain={authDomain}
+                    domain={domain}
+                    authAddress={authAddress}
+                    onFollowClick={handleFollowClick}
+                    onUnfollowClick={handleUnfollowClick}
+                  />
+                </>
+              ) : (
+                featureFlags.variations?.udMeServiceDomainsEnableManagement && (
+                  <Button
+                    data-testid="edit-profile-button"
+                    onClick={() => setShowManageDomainModal(true)}
+                    className={cx(classes.shareMenu, {
+                      [classes.smallHidden]: domain !== authDomain,
+                    })}
+                    startIcon={<EditOutlinedIcon />}
+                  >
+                    {t('profile.editProfile')}
+                  </Button>
+                )
+              )}
+            </div>
+          )}
           <div className={classes.topHeaderContainer}>
             <div className={classes.searchContainer}>
               <ProfileSearchBar setWeb3Deps={setWeb3Deps} />
@@ -1237,7 +1247,7 @@ const DomainProfile = ({
           domain={domain}
           address={ownerAddress}
           open={showManageDomainModal}
-          onClose={() => setShowManageDomainModal(false)}
+          onClose={handleManageDomainModalClose}
         />
       )}
     </Box>

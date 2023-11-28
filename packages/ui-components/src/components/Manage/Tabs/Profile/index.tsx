@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {fetcher} from '@xmtp/proto';
 import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 
@@ -159,13 +160,21 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
             expiry,
             profileImage?.file
               ? {
-                  base64: await file2Base64(profileImage.file),
+                  base64: fetcher.b64Encode(
+                    new Uint8Array(await profileImage.file.arrayBuffer()),
+                    0,
+                    profileImage.file.size,
+                  ),
                   type: profileImage.file.type,
                 }
               : undefined,
             profileCover?.file
               ? {
-                  base64: await file2Base64(profileCover.file),
+                  base64: fetcher.b64Encode(
+                    new Uint8Array(await profileCover.file.arrayBuffer()),
+                    0,
+                    profileCover.file.size,
+                  ),
                   type: profileCover.file.type,
                 }
               : undefined,
@@ -327,15 +336,6 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
 
   const handleNftAvatarChange = (nftValue: string) => {
     // not yet implemented
-  };
-
-  const file2Base64 = (file: File): Promise<string> => {
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result?.toString() || '');
-      reader.onerror = error => reject(error);
-    });
   };
 
   return (

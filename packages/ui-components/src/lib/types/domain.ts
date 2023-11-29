@@ -169,6 +169,7 @@ export const MAX_UPLOAD_FILE_SIZE = 5 * 1000 * 1024;
 export type MessagingAttributes = {
   disabled: boolean;
   thirdPartyMessagingEnabled: boolean;
+  thirdPartyMessagingConfigType: string;
 };
 
 export type RedditUserInfo = {

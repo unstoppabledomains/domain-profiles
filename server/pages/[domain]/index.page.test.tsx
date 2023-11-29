@@ -213,9 +213,11 @@ describe('<DomainProfile />', () => {
     });
   });
 
-  it('renders a share menu button', () => {
+  it('renders a share menu button', async () => {
     customRender(<DomainProfile {...defaultProps()} />);
-    expect(screen.getByRole('button', {name: 'Share'})).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('button', {name: 'Share'})).toBeInTheDocument();
+    });
   });
 
   it('renders display name, domain name, description, location, email, profile image, web3 site, for sale block', async () => {

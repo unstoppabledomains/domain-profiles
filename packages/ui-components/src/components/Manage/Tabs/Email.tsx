@@ -28,7 +28,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     margin: theme.spacing(1),
   },
   checkboxContainer: {
-    marginTop: theme.spacing(1),
+    marginTop: theme.spacing(2),
+    maxWidth: '515px',
+  },
+  checkbox: {
+    marginRight: theme.spacing(1),
   },
   button: {
     marginTop: theme.spacing(3),
@@ -42,6 +46,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   mailDescription: {
     color: theme.palette.neutralShades[600],
     maxWidth: '450px',
+  },
+  enableDescription: {
+    color: theme.palette.neutralShades[600],
   },
 }));
 
@@ -107,6 +114,11 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
     updatedUserProfile.profile[id] = value;
     setUserProfile({
       ...updatedUserProfile,
+      messaging: {
+        disabled: isEmailDisabled,
+        thirdPartyMessagingConfigType: 'profileEmail',
+        thirdPartyMessagingEnabled: false,
+      },
     });
   };
 
@@ -117,6 +129,7 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
       ...userProfile,
       messaging: {
         disabled: !event.target.checked,
+        thirdPartyMessagingConfigType: 'profileEmail',
         thirdPartyMessagingEnabled: false,
       },
     });
@@ -157,6 +170,7 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
                 control={
                   <Checkbox
                     onChange={handleEnabledChange}
+                    className={classes.checkbox}
                     checked={
                       !isEmailDisabled && !!userProfile?.profile?.privateEmail
                     }
@@ -164,14 +178,27 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
                   />
                 }
                 label={
-                  <Typography variant="body1">
-                    {t('manage.enableEmailForAddress', {
-                      privateAddress: userProfile?.profile?.privateEmail
-                        ? userProfile.profile.privateEmail
-                        : t('manage.privateEmail').toLowerCase(),
-                      udMeAddress: `${domain}@${config.MESSAGING.EMAIL_DOMAIN}`,
-                    })}
-                  </Typography>
+                  <Box display="flex" flexDirection="column">
+                    <Typography variant="body1">
+                      {t('manage.enableEmailForAddress', {
+                        privateAddress: userProfile?.profile?.privateEmail
+                          ? userProfile.profile.privateEmail
+                          : t('manage.yourPrivateEmail'),
+                        udMeAddress: `${domain}@${config.MESSAGING.EMAIL_DOMAIN}`,
+                      })}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      className={classes.enableDescription}
+                    >
+                      {t('manage.enableEmailForAddressDescription', {
+                        privateAddress: userProfile?.profile?.privateEmail
+                          ? userProfile.profile.privateEmail
+                          : t('manage.yourPrivateEmail'),
+                        udMeAddress: `${domain}@${config.MESSAGING.EMAIL_DOMAIN}`,
+                      })}
+                    </Typography>
+                  </Box>
                 }
               />
             </FormGroup>

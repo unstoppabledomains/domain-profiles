@@ -197,6 +197,10 @@ export const setProfileUserData = async (
 
       // email configuration flags
       messagingDisabled: profileData.messaging?.disabled,
+      thirdPartyMessagingEnabled:
+        profileData.messaging?.thirdPartyMessagingEnabled,
+      thirdPartyMessagingConfigType:
+        profileData.messaging?.thirdPartyMessagingConfigType,
     }),
     headers: {
       Accept: 'application/json',

@@ -1,14 +1,22 @@
+import GitHubIcon from '@mui/icons-material/GitHub';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
+import RedditIcon from '@mui/icons-material/Reddit';
+import TelegramIcon from '@mui/icons-material/Telegram';
+import YouTubeIcon from '@mui/icons-material/YouTube';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {fetcher} from '@xmtp/proto';
 import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 
+import Discord from '@unstoppabledomains/ui-kit/icons/Discord';
+import TwitterXIcon from '@unstoppabledomains/ui-kit/icons/TwitterX';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getProfileUserData, setProfileUserData} from '../../../../actions';
@@ -36,7 +44,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    margin: theme.spacing(1),
+  },
+  divider: {
+    marginTop: theme.spacing(2),
   },
   button: {
     marginTop: theme.spacing(3),
@@ -56,6 +66,30 @@ const useStyles = makeStyles()((theme: Theme) => ({
   mainLockIcon: {
     fill: theme.palette.neutralShades[600],
     marginLeft: '8px',
+  },
+  twitterIcon: {
+    fill: '#000',
+  },
+  youtubeIcon: {
+    fill: '#EB3323',
+  },
+  redditIcon: {
+    fill: '#EC5428',
+  },
+  discordIcon: {
+    color: '#5865F2',
+  },
+  telegramIcon: {
+    fill: '#229ED9',
+  },
+  googleIcon: {
+    color: '#4285F4',
+  },
+  githubIcon: {
+    fill: '#24292f',
+  },
+  linkedinIcon: {
+    fill: '#3375B0',
   },
 }));
 
@@ -118,7 +152,7 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
           // retrieve user profile data from profile API
           const data = await getProfileUserData(
             domain,
-            [DomainFieldTypes.Profile],
+            [DomainFieldTypes.Profile, DomainFieldTypes.SocialAccounts],
             signature,
             expiry,
           );
@@ -298,6 +332,35 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
     }
   };
 
+  const handleSocialInputChange = (id: string, value: string | boolean) => {
+    if (!dirtyFlag) {
+      setDirtyFlag(true);
+    }
+
+    const updatedUserProfile = userProfile || {};
+    if (!updatedUserProfile?.socialAccounts) {
+      updatedUserProfile.socialAccounts = {
+        twitter: {},
+        discord: {},
+        youtube: {},
+        reddit: {},
+        telegram: {},
+        github: {},
+        linkedin: {},
+        google: {},
+        lens: {},
+      };
+    }
+    updatedUserProfile.socialAccounts[id] = {
+      location: value,
+      public: true,
+      verified: false,
+    };
+    setUserProfile({
+      ...updatedUserProfile,
+    });
+  };
+
   const handleUrlEntry = (url: string) => {
     if (!dirtyFlag) {
       setDirtyFlag(true);
@@ -460,6 +523,82 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
             isCardOpen={isCardOpen}
             setPublicVisibilityValues={setPublicVisibilityValues}
             setIsCardOpen={setIsCardOpen}
+          />
+          <Divider className={classes.divider} />
+          <Box className={classes.sectionHeader}>
+            <Box display="flex">
+              <Typography variant="h6">{t('profile.socials')}</Typography>
+            </Box>
+          </Box>
+          <ManageInput
+            id="twitter"
+            value={userProfile?.socialAccounts?.twitter.location}
+            label={'Twitter (X)'}
+            labelIcon={<TwitterXIcon className={classes.twitterIcon} />}
+            placeholder={t('manage.enterUsernameOrProfileURL')}
+            onChange={handleSocialInputChange}
+            disableTextTrimming
+            stacked={false}
+          />
+          <ManageInput
+            id="discord"
+            value={userProfile?.socialAccounts?.discord.location}
+            label={'Discord'}
+            labelIcon={<Discord className={classes.discordIcon} />}
+            placeholder={t('manage.enterUsername')}
+            onChange={handleSocialInputChange}
+            disableTextTrimming
+            stacked={false}
+          />
+          <ManageInput
+            id="youtube"
+            value={userProfile?.socialAccounts?.youtube.location}
+            label={'YouTube'}
+            labelIcon={<YouTubeIcon className={classes.youtubeIcon} />}
+            placeholder={t('manage.enterYoutubeChannel')}
+            onChange={handleSocialInputChange}
+            disableTextTrimming
+            stacked={false}
+          />
+          <ManageInput
+            id="reddit"
+            value={userProfile?.socialAccounts?.reddit.location}
+            label={'Reddit'}
+            labelIcon={<RedditIcon className={classes.redditIcon} />}
+            placeholder={t('manage.enterRedditUsernameOrProfileURL')}
+            onChange={handleSocialInputChange}
+            disableTextTrimming
+            stacked={false}
+          />
+          <ManageInput
+            id="telegram"
+            value={userProfile?.socialAccounts?.telegram.location}
+            label={'Telegram'}
+            labelIcon={<TelegramIcon className={classes.telegramIcon} />}
+            placeholder={t('manage.enterUsername')}
+            onChange={handleSocialInputChange}
+            disableTextTrimming
+            stacked={false}
+          />
+          <ManageInput
+            id="github"
+            value={userProfile?.socialAccounts?.github.location}
+            label={'Github'}
+            labelIcon={<GitHubIcon className={classes.githubIcon} />}
+            placeholder={t('manage.enterUsername')}
+            onChange={handleSocialInputChange}
+            disableTextTrimming
+            stacked={false}
+          />
+          <ManageInput
+            id="linkedin"
+            value={userProfile?.socialAccounts?.linkedin.location}
+            label={'Linkedin'}
+            labelIcon={<LinkedInIcon className={classes.linkedinIcon} />}
+            placeholder={t('manage.enterLinkedinUrl')}
+            onChange={handleSocialInputChange}
+            disableTextTrimming
+            stacked={false}
           />
           <LoadingButton
             variant="contained"

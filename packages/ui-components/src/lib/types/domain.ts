@@ -240,9 +240,9 @@ export interface SerializedDomainRank {
 }
 
 export type SerializedDomainSocialAccount = {
-  location: string;
-  verified: boolean;
-  public: boolean;
+  location?: string;
+  verified?: boolean;
+  public?: boolean;
 };
 
 export type SerializedFollowerListData = {

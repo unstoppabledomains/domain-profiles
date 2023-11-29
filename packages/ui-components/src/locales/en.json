@@ -257,6 +257,7 @@
     "enterValidEmail": "Please enter a valid email address. You may not use an {{domain}} address",
     "enterValidIPFS": "Enter a valid IPFS hash",
     "enterValidRecipientAddress": "Enter a valid recipient address to transfer your domain.",
+    "enterYoutubeChannel": "YouTube channel URL",
     "enterYourAddress": "Enter your {{currency}} address",
     "youCanControlAccessToYourData": "You can control the access people have in viewing your data.",
     "public": {

@@ -103,7 +103,7 @@ export type DomainProfilePageProps = {
 
 const DomainProfile = ({
   domain,
-  profileData,
+  profileData: initialProfileData,
   identity,
 }: DomainProfilePageProps) => {
   // hooks
@@ -120,6 +120,7 @@ const DomainProfile = ({
   const {setWeb3Deps} = useWeb3Context();
 
   // state management
+  const [profileData, setProfileData] = useState(initialProfileData);
   const [loginClicked, setLoginClicked] = useState<boolean>();
   const [showManageDomainModal, setShowManageDomainModal] = useState(false);
   const [authAddress, setAuthAddress] = useState('');
@@ -262,9 +263,18 @@ const DomainProfile = ({
     setIsViewFollowModalOpen(false);
   };
 
-  const handleManageDomainModalClose = () => {
+  const handleManageDomainModalClose = async () => {
     setShowManageDomainModal(false);
-    window.location.reload();
+    setIsLoaded(false);
+    setProfileData(
+      await getProfileData(domain, [
+        DomainFieldTypes.Profile,
+        DomainFieldTypes.Messaging,
+        DomainFieldTypes.SocialAccounts,
+        DomainFieldTypes.CryptoVerifications,
+      ]),
+    );
+    setIsLoaded(true);
   };
 
   const handleShareRiskScore = () => {

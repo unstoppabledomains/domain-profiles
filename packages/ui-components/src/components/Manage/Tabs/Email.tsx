@@ -25,7 +25,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    margin: theme.spacing(1),
   },
   checkboxContainer: {
     marginTop: theme.spacing(2),

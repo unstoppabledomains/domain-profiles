@@ -25,13 +25,21 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
   },
   tabHeaderContainer: {
+    backgroundColor: theme.palette.white,
+    position: 'sticky',
+    top: 0,
+    zIndex: 1000000,
+    paddingTop: theme.spacing(3),
+  },
+  tabList: {
     marginTop: theme.spacing(1),
   },
   tabLabel: {
     maxWidth: '100px',
   },
   tabContentItem: {
-    marginLeft: theme.spacing(-4),
+    overflowY: 'scroll',
+    marginLeft: theme.spacing(-3),
     marginRight: theme.spacing(-3),
     [theme.breakpoints.down('sm')]: {
       marginRight: theme.spacing(1),
@@ -80,13 +88,17 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
 
   return (
     <Box className={classes.container}>
-      <Typography variant="h4">{domain}</Typography>
-      <Typography variant="body2" className={classes.ownerAddress}>
-        {t('manage.ownerAddress', {address: truncateEthAddress(address)})}
-      </Typography>
       <TabContext value={tabValue}>
         <Box className={classes.tabHeaderContainer}>
-          <TabList onChange={handleTabChange} variant="scrollable">
+          <Typography variant="h4">{domain}</Typography>
+          <Typography variant="body2" className={classes.ownerAddress}>
+            {t('manage.ownerAddress', {address: truncateEthAddress(address)})}
+          </Typography>
+          <TabList
+            className={classes.tabList}
+            onChange={handleTabChange}
+            variant="scrollable"
+          >
             <Tab
               label={
                 <StyledTabBadge

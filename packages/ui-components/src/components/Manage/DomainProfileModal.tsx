@@ -1,6 +1,5 @@
 import Box from '@mui/material/Box';
 import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
 import type {Theme} from '@mui/material/styles';
 import React from 'react';
 
@@ -11,8 +10,11 @@ import {DomainProfile} from './DomainProfile';
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
-    minHeight: '90vh',
+    minHeight: '100vh',
     maxWidth: '475px',
+    marginLeft: theme.spacing(3),
+    marginRight: theme.spacing(3),
+    backgroundColor: theme.palette.white,
   },
 }));
 
@@ -26,11 +28,9 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
 
   return (
     <Dialog maxWidth="sm" open={open} onClose={() => onClose()}>
-      <DialogContent>
-        <Box className={classes.container}>
-          <DomainProfile address={address} domain={domain} />
-        </Box>
-      </DialogContent>
+      <Box className={classes.container}>
+        <DomainProfile address={address} domain={domain} />
+      </Box>
     </Dialog>
   );
 };

@@ -12,7 +12,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    margin: theme.spacing(1),
     alignContent: 'center',
     justifyContent: 'center',
     alignItems: 'center',

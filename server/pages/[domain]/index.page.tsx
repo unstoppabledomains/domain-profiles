@@ -513,7 +513,7 @@ const DomainProfile = ({
                 displayQrCode={displayQrCode}
                 domain={domain}
                 className={cx(classes.shareMenu, {
-                  [classes.smallHidden]: domain !== authDomain,
+                  [classes.smallHidden]: !isOwner,
                 })}
                 onProfileLinkCopied={handleClickToCopy}
               />
@@ -523,7 +523,7 @@ const DomainProfile = ({
                     data-testid="chat-button"
                     onClick={() => setOpenChat(domain)}
                     className={cx(classes.shareMenu, {
-                      [classes.smallHidden]: domain !== authDomain,
+                      [classes.smallHidden]: !isOwner,
                     })}
                     startIcon={<ChatIcon />}
                   >
@@ -540,18 +540,28 @@ const DomainProfile = ({
                   />
                 </>
               ) : (
-                featureFlags.variations?.udMeServiceDomainsEnableManagement && (
+                featureFlags.variations?.udMeServiceDomainsEnableManagement &&
+                (isMobile ? (
+                  <IconButton
+                    onClick={() => setShowManageDomainModal(true)}
+                    className={cx(classes.editButton, {
+                      [classes.smallHidden]: !isOwner,
+                    })}
+                  >
+                    <EditOutlinedIcon />
+                  </IconButton>
+                ) : (
                   <Button
                     data-testid="edit-profile-button"
                     onClick={() => setShowManageDomainModal(true)}
-                    className={cx(classes.shareMenu, {
-                      [classes.smallHidden]: domain !== authDomain,
+                    className={cx(classes.editButton, {
+                      [classes.smallHidden]: !isOwner,
                     })}
                     startIcon={<EditOutlinedIcon />}
                   >
                     {t('profile.editProfile')}
                   </Button>
-                )
+                ))
               )}
             </div>
           )}

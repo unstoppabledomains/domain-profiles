@@ -4,10 +4,13 @@ import QrCodeIcon from '@mui/icons-material/QrCode2';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
+import {useTheme} from '@mui/material/styles';
 import type {Theme} from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import React, {useState} from 'react';
 
 import config from '@unstoppabledomains/config';
@@ -76,6 +79,8 @@ const ShareMenu: React.FC<ShareMenuProps> = ({
 }) => {
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
   const linkUrl = `${config.UD_ME_BASE_URL}/${
@@ -137,16 +142,27 @@ const ShareMenu: React.FC<ShareMenuProps> = ({
 
   return (
     <>
-      <Button
-        data-testid="share-button"
-        className={className}
-        aria-controls="simple-menu"
-        aria-haspopup="true"
-        onClick={handleClick}
-        startIcon={<IosShareIcon />}
-      >
-        {t('profile.share')}
-      </Button>
+      {isMobile ? (
+        <IconButton
+          className={className}
+          aria-controls="simple-menu"
+          aria-haspopup="true"
+          onClick={handleClick}
+        >
+          <IosShareIcon />
+        </IconButton>
+      ) : (
+        <Button
+          data-testid="share-button"
+          className={className}
+          aria-controls="simple-menu"
+          aria-haspopup="true"
+          onClick={handleClick}
+          startIcon={<IosShareIcon />}
+        >
+          {t('profile.share')}
+        </Button>
+      )}
       <Menu
         id="simple-menu"
         anchorEl={anchorEl}

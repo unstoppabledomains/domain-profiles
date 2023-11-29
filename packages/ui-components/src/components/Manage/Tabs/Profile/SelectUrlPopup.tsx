@@ -21,8 +21,9 @@ export type SelectUrlPopupProps = {
 };
 
 const isValidWeb2Url = (v: string) => {
-  // TODO
-  return true;
+  return v.match(
+    /(?:https?):\/\/(\w+:?\w*)?(\S+)(:\d+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/,
+  );
 };
 
 const isValidImageUrl = (url: string) => {
@@ -87,7 +88,7 @@ const SelectUrlPopup: React.FC<SelectUrlPopupProps> = ({
         />
         {haveError && (
           <Box mt={1}>
-            <FormError message={t('manage.invalidAvatarUrl')} />
+            <FormError message={t('manage.enterValidUrl')} />
           </Box>
         )}
       </DialogContent>

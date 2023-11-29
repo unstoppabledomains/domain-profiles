@@ -290,6 +290,12 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   shareMenu: {
     marginRight: theme.spacing(2),
     color: theme.palette.common.white,
+    [theme.breakpoints.down('sm')]: {
+      marginRight: theme.spacing(0),
+    },
+  },
+  editButton: {
+    color: theme.palette.common.white,
   },
   smallHidden: {
     [theme.breakpoints.down('sm')]: {display: 'none'},

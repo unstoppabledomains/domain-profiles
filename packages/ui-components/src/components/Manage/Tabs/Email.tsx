@@ -33,6 +33,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   checkbox: {
     marginRight: theme.spacing(1),
   },
+  infoContainer: {
+    marginBottom: theme.spacing(2),
+  },
   button: {
     marginTop: theme.spacing(3),
   },
@@ -58,6 +61,7 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isEmailDisabled, setIsEmailDisabled] = useState(true);
+  const [isInvalidEmail, setIsInvalidEmail] = useState(false);
   const [dirtyFlag, setDirtyFlag] = useState(false);
   const [userProfile, setUserProfile] =
     useState<SerializedUserDomainProfileData>();
@@ -119,6 +123,14 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
         thirdPartyMessagingEnabled: false,
       },
     });
+
+    if (id === 'privateEmail') {
+      setIsInvalidEmail(
+        !value.match(
+          /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+        ),
+      );
+    }
   };
 
   const handleEnabledChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,7 +155,12 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
     <Box className={classes.container}>
       {isLoaded ? (
         <>
-          <Box display="flex" alignItems="center" alignContent="center">
+          <Box
+            display="flex"
+            alignItems="center"
+            alignContent="center"
+            className={classes.infoContainer}
+          >
             <MailLockOutlinedIcon className={classes.mailIcon} />
             <Typography variant="body2" className={classes.mailDescription}>
               {t('manage.emailDescription')}{' '}
@@ -162,6 +179,10 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
             placeholder={t('manage.enterPrivateEmail')}
             onChange={handleInputChange}
             disableTextTrimming
+            error={isInvalidEmail}
+            errorText={t('manage.enterValidEmail', {
+              domain: `${domain}@${config.MESSAGING.EMAIL_DOMAIN}`,
+            })}
             stacked={false}
           />
           <Box className={classes.checkboxContainer}>

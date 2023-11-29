@@ -66,6 +66,7 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
   const [t] = useTranslationContext();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isInvalidUrl, setIsInvalidUrl] = useState(false);
   const [dirtyFlag, setDirtyFlag] = useState(false);
   const [fireRequest, setFireRequest] = useState(false);
   const [showMainInfoVizCard, setShowMainInfoVizCard] =
@@ -286,6 +287,15 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
     setUserProfile({
       ...updatedUserProfile,
     });
+
+    if (id === 'web2Url') {
+      setIsInvalidUrl(
+        value !== '' &&
+          !String(value).match(
+            /(?:https?):\/\/(\w+:?\w*)?(\S+)(:\d+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/,
+          ),
+      );
+    }
   };
 
   const handleUrlEntry = (url: string) => {
@@ -444,6 +454,8 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
             onChange={handleInputChange}
             disableTextTrimming
             stacked={false}
+            error={isInvalidUrl}
+            errorText={t('manage.enterValidUrl')}
             publicVisibilityValues={publicVisibilityValues}
             isCardOpen={isCardOpen}
             setPublicVisibilityValues={setPublicVisibilityValues}

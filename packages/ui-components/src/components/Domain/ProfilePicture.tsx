@@ -1,3 +1,4 @@
+import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
@@ -232,15 +233,12 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
                     isNft ? classes.nftPFPstyleBorder : '',
                   )}
                 >
-                  <img
+                  <Avatar
                     className={cx(
-                      'pfp',
                       classes.round,
                       isNft ? classes.nftPFPstyle : '',
                     )}
                     src={src}
-                    width={80}
-                    height={80}
                     alt={t('manage.domainProfileImage')}
                   />
                 </div>
@@ -257,7 +255,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
                   )}
                 >
                   <ProfilePlaceholder
-                    className={cx('pfp', classes.profilePlaceholder)}
+                    className={cx(classes.profilePlaceholder)}
                     data-testid={'profile-placeholder'}
                   />
                 </div>

@@ -168,6 +168,7 @@ export const MAX_UPLOAD_FILE_SIZE = 5 * 1000 * 1024;
 
 export type MessagingAttributes = {
   disabled: boolean;
+  resetRules?: boolean;
   thirdPartyMessagingEnabled: boolean;
   thirdPartyMessagingConfigType: string;
 };

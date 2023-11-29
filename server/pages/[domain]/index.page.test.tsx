@@ -204,6 +204,7 @@ describe('<DomainProfile />', () => {
       name: 'foo.crypto',
       status: PersonaInquiryStatus.COMPLETED,
     });
+    jest.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
   });
 
   it('should display a basic domain profile page', async () => {
@@ -1417,7 +1418,7 @@ describe('Owner operations', () => {
 
     // validate all the chat button exists
     await waitFor(() => {
-      expect(screen.queryByTestId('chat-button')).toBeInTheDocument();
+      expect(screen.queryByTestId('header-chat-button')).toBeInTheDocument();
     });
 
     // validate the push user onboarding mock not yet called
@@ -1425,7 +1426,7 @@ describe('Owner operations', () => {
     expect(mockXmtpUser).toHaveBeenCalledTimes(1);
 
     // click the chat button to kickoff onboarding
-    const chatButton = screen.getByTestId('chat-button');
+    const chatButton = screen.getByTestId('header-chat-button');
     userEvent.click(chatButton);
 
     // verify the user initialization process started

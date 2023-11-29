@@ -116,6 +116,7 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
       ...updatedUserProfile,
       messaging: {
         disabled: isEmailDisabled,
+        resetRules: !isEmailDisabled,
         thirdPartyMessagingConfigType: 'profileEmail',
         thirdPartyMessagingEnabled: false,
       },
@@ -129,6 +130,7 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
       ...userProfile,
       messaging: {
         disabled: !event.target.checked,
+        resetRules: event.target.checked,
         thirdPartyMessagingConfigType: 'profileEmail',
         thirdPartyMessagingEnabled: false,
       },

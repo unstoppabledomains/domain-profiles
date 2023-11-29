@@ -197,6 +197,7 @@ export const setProfileUserData = async (
 
       // email configuration flags
       messagingDisabled: profileData.messaging?.disabled,
+      messagingRulesReset: profileData.messaging?.resetRules,
       thirdPartyMessagingEnabled:
         profileData.messaging?.thirdPartyMessagingEnabled,
       thirdPartyMessagingConfigType:

@@ -29,7 +29,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   checkboxContainer: {
     marginTop: theme.spacing(2),
-    maxWidth: '515px',
   },
   checkbox: {
     marginRight: theme.spacing(1),
@@ -45,7 +44,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   mailDescription: {
     color: theme.palette.neutralShades[600],
-    maxWidth: '450px',
   },
   enableDescription: {
     color: theme.palette.neutralShades[600],

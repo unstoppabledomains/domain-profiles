@@ -26,22 +26,16 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   tabHeaderContainer: {
     marginTop: theme.spacing(1),
-    width: '100%',
   },
-  tabContentContainer: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    overscrollBehavior: 'contain',
-  },
-  tabList: {
-    marginRight: theme.spacing(-4),
+  tabLabel: {
+    maxWidth: '100px',
   },
   tabContentItem: {
-    marginLeft: theme.spacing(-3),
+    marginLeft: theme.spacing(-4),
     marginRight: theme.spacing(-3),
+    [theme.breakpoints.down('sm')]: {
+      marginRight: theme.spacing(1),
+    },
   },
   ownerAddress: {
     color: theme.palette.neutralShades[600],
@@ -92,11 +86,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
       </Typography>
       <TabContext value={tabValue}>
         <Box className={classes.tabHeaderContainer}>
-          <TabList
-            onChange={handleTabChange}
-            variant="fullWidth"
-            className={classes.tabList}
-          >
+          <TabList onChange={handleTabChange} variant="scrollable">
             <Tab
               label={
                 <StyledTabBadge
@@ -104,7 +94,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   variant="dot"
                   invisible={!tabUnreadDot[TabType.Profile]}
                 >
-                  {t('manage.profile')}
+                  <Box className={classes.tabLabel}>{t('manage.profile')}</Box>
                 </StyledTabBadge>
               }
               value={TabType.Profile}
@@ -116,7 +106,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   variant="dot"
                   invisible={!tabUnreadDot[TabType.Email]}
                 >
-                  {t('manage.email')}
+                  <Box className={classes.tabLabel}>{t('manage.email')}</Box>
                 </StyledTabBadge>
               }
               value={TabType.Email}
@@ -128,7 +118,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   variant="dot"
                   invisible={!tabUnreadDot[TabType.Crypto]}
                 >
-                  {t('manage.crypto')}
+                  <Box className={classes.tabLabel}> {t('manage.crypto')}</Box>
                 </StyledTabBadge>
               }
               value={TabType.Crypto}
@@ -140,27 +130,25 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   variant="dot"
                   invisible={!tabUnreadDot[TabType.Reverse]}
                 >
-                  {t('manage.reverse')}
+                  <Box className={classes.tabLabel}>{t('manage.reverse')}</Box>
                 </StyledTabBadge>
               }
               value={TabType.Reverse}
             />
           </TabList>
         </Box>
-        <Box className={classes.tabContentContainer}>
-          <TabPanel value={TabType.Profile} className={classes.tabContentItem}>
-            <ProfileTab address={address} domain={domain} />
-          </TabPanel>
-          <TabPanel value={TabType.Email} className={classes.tabContentItem}>
-            <EmailTab address={address} domain={domain} />
-          </TabPanel>
-          <TabPanel value={TabType.Crypto} className={classes.tabContentItem}>
-            <CryptoTab domain={domain} />
-          </TabPanel>
-          <TabPanel value={TabType.Reverse} className={classes.tabContentItem}>
-            <ReverseTab domain={domain} />
-          </TabPanel>
-        </Box>
+        <TabPanel value={TabType.Profile} className={classes.tabContentItem}>
+          <ProfileTab address={address} domain={domain} />
+        </TabPanel>
+        <TabPanel value={TabType.Email} className={classes.tabContentItem}>
+          <EmailTab address={address} domain={domain} />
+        </TabPanel>
+        <TabPanel value={TabType.Crypto} className={classes.tabContentItem}>
+          <CryptoTab domain={domain} />
+        </TabPanel>
+        <TabPanel value={TabType.Reverse} className={classes.tabContentItem}>
+          <ReverseTab domain={domain} />
+        </TabPanel>
       </TabContext>
     </Box>
   );

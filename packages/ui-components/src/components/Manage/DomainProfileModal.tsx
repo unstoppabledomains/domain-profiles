@@ -12,6 +12,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     minHeight: '90vh',
+    maxWidth: '475px',
   },
 }));
 
@@ -24,7 +25,7 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
   const {classes} = useStyles();
 
   return (
-    <Dialog maxWidth="lg" open={open} onClose={() => onClose()}>
+    <Dialog maxWidth="sm" open={open} onClose={() => onClose()}>
       <DialogContent>
         <Box className={classes.container}>
           <DomainProfile address={address} domain={domain} />

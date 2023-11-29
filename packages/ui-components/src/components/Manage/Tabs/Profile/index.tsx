@@ -1,7 +1,7 @@
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -65,6 +65,7 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
   const {setWeb3Deps} = useWeb3Context();
   const [t] = useTranslationContext();
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [dirtyFlag, setDirtyFlag] = useState(false);
   const [fireRequest, setFireRequest] = useState(false);
   const [showMainInfoVizCard, setShowMainInfoVizCard] =
@@ -153,6 +154,7 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
           }
         } else if (userProfile) {
           // update the domain's user data from profile API
+          setIsSaving(true);
           await setProfileUserData(
             domain,
             userProfile,
@@ -179,6 +181,7 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
                 }
               : undefined,
           );
+          setIsSaving(false);
           setDirtyFlag(false);
         }
       }
@@ -446,14 +449,15 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
             setPublicVisibilityValues={setPublicVisibilityValues}
             setIsCardOpen={setIsCardOpen}
           />
-          <Button
+          <LoadingButton
             variant="contained"
+            loading={isSaving}
             onClick={handleSave}
             className={classes.button}
             disabled={!dirtyFlag}
           >
             {t('common.save')}
-          </Button>
+          </LoadingButton>
         </>
       ) : (
         <Box display="flex" justifyContent="center">

@@ -23,7 +23,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    margin: theme.spacing(1),
   },
   tabHeaderContainer: {
     marginTop: theme.spacing(1),
@@ -153,7 +152,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
             <ProfileTab address={address} domain={domain} />
           </TabPanel>
           <TabPanel value={TabType.Email} className={classes.tabContentItem}>
-            <EmailTab domain={domain} />
+            <EmailTab address={address} domain={domain} />
           </TabPanel>
           <TabPanel value={TabType.Crypto} className={classes.tabContentItem}>
             <CryptoTab domain={domain} />

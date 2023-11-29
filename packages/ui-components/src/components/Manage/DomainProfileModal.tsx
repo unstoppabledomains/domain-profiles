@@ -1,8 +1,19 @@
+import Box from '@mui/material/Box';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
+import type {Theme} from '@mui/material/styles';
 import React from 'react';
 
+import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
+
 import {DomainProfile} from './DomainProfile';
+
+const useStyles = makeStyles()((theme: Theme) => ({
+  container: {
+    display: 'flex',
+    minHeight: '90vh',
+  },
+}));
 
 export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
   onClose,
@@ -10,10 +21,14 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
   domain,
   open,
 }) => {
+  const {classes} = useStyles();
+
   return (
     <Dialog maxWidth="lg" open={open} onClose={() => onClose()}>
       <DialogContent>
-        <DomainProfile address={address} domain={domain} />
+        <Box className={classes.container}>
+          <DomainProfile address={address} domain={domain} />
+        </Box>
       </DialogContent>
     </Dialog>
   );

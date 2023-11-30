@@ -276,6 +276,8 @@ const DomainProfile = ({
         DomainFieldTypes.SocialAccounts,
         DomainFieldTypes.Records,
         DomainFieldTypes.CryptoVerifications,
+        DomainFieldTypes.WebacyScore,
+        DomainFieldTypes.HumanityCheck,
       ]),
     );
     setIsLoaded(true);

@@ -963,7 +963,10 @@ const DomainProfile = ({
                   isOwner={isOwner}
                   ownerAddress={ownerAddress}
                   profileServiceUrl={config.PROFILE.HOST_URL}
-                  hideConfigureButton={true}
+                  hideConfigureButton={
+                    !!featureFlags.variations
+                      ?.udMeServiceDomainsEnableManagement
+                  }
                 />
               )}
             {isForSale && !nftShowAll && openSeaLink && domainSellerEmail && (

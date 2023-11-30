@@ -123,6 +123,12 @@ const useStyles = makeStyles<void, 'error'>()(
       fontWeight: 600,
       marginBottom: theme.spacing(3),
     },
+    publicIcon: {
+      fill: theme.palette.primary.main,
+    },
+    privateIcon: {
+      fill: theme.palette.neutralShades[400],
+    },
     card: {
       zIndex: 2,
       position: 'absolute',

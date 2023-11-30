@@ -6,7 +6,7 @@ import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
 import HowToRegOutlinedIcon from '@mui/icons-material/HowToRegOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import IosShareIcon from '@mui/icons-material/IosShare';
-import LanguageIcon from '@mui/icons-material/Language';
+import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
 import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -550,13 +550,13 @@ const DomainProfile = ({
                   />
                 </>
               ) : (
-                featureFlags.variations?.udMeServiceDomainsEnableManagement &&
+                (featureFlags.variations?.udMeServiceDomainsEnableManagement ||
+                  true) &&
                 (isMobile ? (
                   <IconButton
+                    data-testid="edit-profile-button"
                     onClick={() => setShowManageDomainModal(true)}
-                    className={cx(classes.editButton, {
-                      [classes.smallHidden]: !isOwner,
-                    })}
+                    className={cx(classes.editButton)}
                   >
                     <EditOutlinedIcon />
                   </IconButton>
@@ -564,9 +564,7 @@ const DomainProfile = ({
                   <Button
                     data-testid="edit-profile-button"
                     onClick={() => setShowManageDomainModal(true)}
-                    className={cx(classes.editButton, {
-                      [classes.smallHidden]: !isOwner,
-                    })}
+                    className={cx(classes.editButton)}
                     startIcon={<EditOutlinedIcon />}
                   >
                     {t('profile.editProfile')}
@@ -904,7 +902,7 @@ const DomainProfile = ({
                 )}
                 {ipfsHash ? (
                   <Box mb={2} display="flex">
-                    <LanguageIcon className={classes.sidebarIcon} />
+                    <LaunchOutlinedIcon className={classes.sidebarIcon} />
                     <Link
                       external
                       href={`${config.IPFS_BASE_URL}${normalizeIpfsHash(
@@ -920,7 +918,7 @@ const DomainProfile = ({
                 ) : null}
                 {profileData?.profile?.web2Url ? (
                   <Box mb={2} display="flex">
-                    <LanguageIcon className={classes.sidebarIcon} />
+                    <LaunchOutlinedIcon className={classes.sidebarIcon} />
                     <Link
                       external
                       href={profileData?.profile?.web2Url}
@@ -965,6 +963,7 @@ const DomainProfile = ({
                   isOwner={isOwner}
                   ownerAddress={ownerAddress}
                   profileServiceUrl={config.PROFILE.HOST_URL}
+                  hideConfigureButton={true}
                 />
               )}
             {isForSale && !nftShowAll && openSeaLink && domainSellerEmail && (

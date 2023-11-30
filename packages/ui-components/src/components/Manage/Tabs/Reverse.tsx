@@ -16,6 +16,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
     justifyItems: 'center',
+    [theme.breakpoints.down('sm')]: {
+      marginRight: theme.spacing(-3),
+    },
   },
   title: {
     marginTop: theme.spacing(2),

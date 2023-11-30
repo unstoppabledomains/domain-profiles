@@ -1,7 +1,7 @@
 import CheckIcon from '@mui/icons-material/Check';
 import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import FormControl from '@mui/material/FormControl';
@@ -11,6 +11,7 @@ import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 
@@ -150,12 +151,11 @@ const ManageInput: React.FC<ManageInputProps> = ({
               aria-label="toggle public visibility"
               className={classes.iconButtonBig}
             >
-              {/* Need to read for DB */}
               {publicVisibilityValues &&
               publicVisibilityValues[id + 'Public'] === false ? (
                 <CheckIcon className={classes.checkIcon} />
               ) : (
-                <LockOutlinedIcon />
+                <VisibilityOffOutlinedIcon />
               )}
               <Typography className={classes.cardCaption}>
                 {t('manage.onlyYouAndDapps')}
@@ -238,15 +238,15 @@ const ManageInput: React.FC<ManageInputProps> = ({
                 >
                   {publicVisibilityValues &&
                   publicVisibilityValues[id + 'Public'] ? (
-                    <PublicOutlinedIcon
-                      data-testid="inlinePublicIcon"
-                      style={{fill: '#0D67FE'}}
-                    />
+                    <Tooltip title={t('manage.publicData')}>
+                      <PublicOutlinedIcon className={classes.publicIcon} />
+                    </Tooltip>
                   ) : (
-                    <LockOutlinedIcon
-                      data-testid="inlinePrivateIcon"
-                      style={{fill: '#0D67FE'}}
-                    />
+                    <Tooltip title={t('manage.privateData')}>
+                      <VisibilityOffOutlinedIcon
+                        className={classes.privateIcon}
+                      />
+                    </Tooltip>
                   )}
                   <IconButton
                     data-testid="inlineToggle"

@@ -203,6 +203,8 @@
     "signOut": "Sign Out"
   },
   "manage": {
+    "publicData": "This data is public",
+    "privateData": "This data is private",
     "addAvatar": "Add avatar",
     "addCover": "Add cover",
     "addWebsite": "Add link to website",
@@ -218,10 +220,12 @@
     "domainProfileImage": "Domain profile image",
     "enable": "Enable",
     "unblock": "Unblock",
-    "profile": "Profile",
+    "profile": "Profile & Avatar",
     "crypto": "Crypto Addresses",
     "email": "Email Forwarding",
     "emailDescription": "Your domain can help keep your email and identity secure. With email forwarding, your private email address stays private.",
+    "tokenGallery": "Token Gallery",
+    "tokenGalleryDescription": "Curate a showcase for the digital collectibles associated with your domain's verified crypto addresses.",
     "reverse": "Reverse Resolution",
     "ownerAddress": "Domain owner address: {{address}}",
     "comingSoon": "Coming soon",

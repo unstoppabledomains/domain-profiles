@@ -80,11 +80,6 @@ const defaultProps = (): DomainProfilePageProps => {
           verified: true,
           public: false,
         },
-        google: {
-          location: 'foo@gmail.com',
-          verified: true,
-          public: false,
-        },
         lens: {
           location: 'foo',
           verified: true,
@@ -1095,9 +1090,12 @@ describe('Owner operations', () => {
       relationship_type: 'followers',
       domain: 'foo.crypto',
     });
-    jest
-      .spyOn(featureFlagActions, 'fetchFeatureFlags')
-      .mockResolvedValue(featureFlagActions.DEFAULT_FEATURE_FLAGS);
+    jest.spyOn(featureFlagActions, 'fetchFeatureFlags').mockResolvedValue({
+      variations: {
+        ...featureFlagActions.DEFAULT_FEATURE_FLAGS.variations!,
+        udMeServiceDomainsEnableManagement: true,
+      },
+    });
     jest.spyOn(identityActions, 'getIdentity').mockResolvedValue({
       id: 'personaId',
       createdAt: Date.now(),
@@ -1204,10 +1202,8 @@ describe('Owner operations', () => {
     expect(showAll).toBeInTheDocument();
     userEvent.click(showAll);
 
-    // verify owner button
-    expect(screen.getByTestId('nftGallery-config-button')).toBeInTheDocument();
-
     // click category menu
+    expect(screen.getByTestId('nftGallery-filter-tag')).toBeInTheDocument();
     const categoryFilter = screen.getByTestId('nftGallery-filter-tag');
     userEvent.click(categoryFilter);
 
@@ -1287,16 +1283,6 @@ describe('Owner operations', () => {
       ),
     );
     expect(() => screen.getByText('test-eth-nft-name')).toThrow();
-  });
-
-  it('shows configuration link when gallery is already enabled', async () => {
-    customRender(<DomainProfile {...tokenGalleryProps} />);
-    await waitFor(() =>
-      expect(screen.getAllByText('test-sol-nft-name').length).toBeGreaterThan(
-        0,
-      ),
-    );
-    expect(screen.getByTestId('nftGallery-config-button')).toBeInTheDocument();
   });
 
   it('opens first time configuration modal when button clicked', async () => {
@@ -1395,6 +1381,7 @@ describe('Owner operations', () => {
     // validate only the share button is present
     await waitFor(() => {
       expect(screen.queryByTestId('share-button')).toBeInTheDocument();
+      expect(screen.queryByTestId('edit-profile-button')).toBeInTheDocument();
       expect(screen.queryByTestId('chat-button')).not.toBeInTheDocument();
       expect(screen.queryByTestId('follow-button')).not.toBeInTheDocument();
     });

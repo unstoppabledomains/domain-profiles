@@ -18,6 +18,7 @@ import {Crypto as CryptoTab} from './Tabs/Crypto';
 import {Email as EmailTab} from './Tabs/Email';
 import {Profile as ProfileTab} from './Tabs/Profile';
 import {Reverse as ReverseTab} from './Tabs/Reverse';
+import {TokenGallery as TokenGalleryTab} from './Tabs/TokenGallery';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -32,7 +33,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
     paddingTop: theme.spacing(3),
   },
   tabList: {
+    overflow: 'hidden',
     marginTop: theme.spacing(1),
+    marginLeft: theme.spacing(-5),
+    width: '515px',
+    [theme.breakpoints.down('sm')]: {
+      marginLeft: theme.spacing(0),
+      width: 'calc(100vw - 70px)',
+    },
   },
   tabLabel: {
     maxWidth: '100px',
@@ -60,6 +68,7 @@ const enum TabType {
   Email = 'email',
   Profile = 'profile',
   Reverse = 'reverse',
+  TokenGallery = 'tokenGallery',
 }
 
 export const DomainProfile: React.FC<DomainProfileProps> = ({
@@ -74,6 +83,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
     crypto: false,
     reverse: false,
     email: false,
+    tokenGallery: false,
   });
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
@@ -93,66 +103,91 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
           <Typography variant="body2" className={classes.ownerAddress}>
             {t('manage.ownerAddress', {address: truncateEthAddress(address)})}
           </Typography>
-          <TabList
-            className={classes.tabList}
-            onChange={handleTabChange}
-            variant="scrollable"
-          >
-            <Tab
-              label={
-                <StyledTabBadge
-                  color="primary"
-                  variant="dot"
-                  invisible={!tabUnreadDot[TabType.Profile]}
-                >
-                  <Box className={classes.tabLabel}>{t('manage.profile')}</Box>
-                </StyledTabBadge>
-              }
-              value={TabType.Profile}
-            />
-            <Tab
-              label={
-                <StyledTabBadge
-                  color="primary"
-                  variant="dot"
-                  invisible={!tabUnreadDot[TabType.Email]}
-                >
-                  <Box className={classes.tabLabel}>{t('manage.email')}</Box>
-                </StyledTabBadge>
-              }
-              value={TabType.Email}
-            />
-            <Tab
-              label={
-                <StyledTabBadge
-                  color="primary"
-                  variant="dot"
-                  invisible={!tabUnreadDot[TabType.Crypto]}
-                >
-                  <Box className={classes.tabLabel}> {t('manage.crypto')}</Box>
-                </StyledTabBadge>
-              }
-              value={TabType.Crypto}
-            />
-            <Tab
-              label={
-                <StyledTabBadge
-                  color="primary"
-                  variant="dot"
-                  invisible={!tabUnreadDot[TabType.Reverse]}
-                >
-                  <Box className={classes.tabLabel}>{t('manage.reverse')}</Box>
-                </StyledTabBadge>
-              }
-              value={TabType.Reverse}
-            />
-          </TabList>
+          <Box className={classes.tabList}>
+            <TabList onChange={handleTabChange} variant="scrollable">
+              <Tab
+                label={
+                  <StyledTabBadge
+                    color="primary"
+                    variant="dot"
+                    invisible={!tabUnreadDot[TabType.Profile]}
+                  >
+                    <Box className={classes.tabLabel}>
+                      {t('manage.profile')}
+                    </Box>
+                  </StyledTabBadge>
+                }
+                value={TabType.Profile}
+              />
+              <Tab
+                label={
+                  <StyledTabBadge
+                    color="primary"
+                    variant="dot"
+                    invisible={!tabUnreadDot[TabType.Email]}
+                  >
+                    <Box className={classes.tabLabel}>{t('manage.email')}</Box>
+                  </StyledTabBadge>
+                }
+                value={TabType.Email}
+              />
+              <Tab
+                label={
+                  <StyledTabBadge
+                    color="primary"
+                    variant="dot"
+                    invisible={!tabUnreadDot[TabType.TokenGallery]}
+                  >
+                    <Box className={classes.tabLabel}>
+                      {t('profile.gallery')}
+                    </Box>
+                  </StyledTabBadge>
+                }
+                value={TabType.TokenGallery}
+              />
+              <Tab
+                label={
+                  <StyledTabBadge
+                    color="primary"
+                    variant="dot"
+                    invisible={!tabUnreadDot[TabType.Crypto]}
+                  >
+                    <Box className={classes.tabLabel}>
+                      {' '}
+                      {t('manage.crypto')}
+                    </Box>
+                  </StyledTabBadge>
+                }
+                value={TabType.Crypto}
+              />
+              <Tab
+                label={
+                  <StyledTabBadge
+                    color="primary"
+                    variant="dot"
+                    invisible={!tabUnreadDot[TabType.Reverse]}
+                  >
+                    <Box className={classes.tabLabel}>
+                      {t('manage.reverse')}
+                    </Box>
+                  </StyledTabBadge>
+                }
+                value={TabType.Reverse}
+              />
+            </TabList>
+          </Box>
         </Box>
         <TabPanel value={TabType.Profile} className={classes.tabContentItem}>
           <ProfileTab address={address} domain={domain} />
         </TabPanel>
         <TabPanel value={TabType.Email} className={classes.tabContentItem}>
           <EmailTab address={address} domain={domain} />
+        </TabPanel>
+        <TabPanel
+          value={TabType.TokenGallery}
+          className={classes.tabContentItem}
+        >
+          <TokenGalleryTab address={address} domain={domain} />
         </TabPanel>
         <TabPanel value={TabType.Crypto} className={classes.tabContentItem}>
           <CryptoTab domain={domain} />

@@ -1,7 +1,5 @@
 import GitHubIcon from '@mui/icons-material/GitHub';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import LockIcon from '@mui/icons-material/Lock';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
 import RedditIcon from '@mui/icons-material/Reddit';
 import TelegramIcon from '@mui/icons-material/Telegram';
 import YouTubeIcon from '@mui/icons-material/YouTube';
@@ -44,6 +42,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
+    [theme.breakpoints.down('sm')]: {
+      marginRight: theme.spacing(-3),
+    },
   },
   divider: {
     marginTop: theme.spacing(2),
@@ -81,9 +82,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   telegramIcon: {
     fill: '#229ED9',
-  },
-  googleIcon: {
-    color: '#4285F4',
   },
   githubIcon: {
     fill: '#24292f',
@@ -181,7 +179,6 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
               telegramPublic: data?.socialAccounts?.telegram.public || false,
               twitterPublic: data?.socialAccounts?.twitter.public || false,
               youtubePublic: data?.socialAccounts?.youtube.public || false,
-              googlePublic: data?.socialAccounts?.google.public || false,
               githubPublic: data?.socialAccounts?.github.public || false,
               linkedinPublic: data?.socialAccounts?.linkedin.public || false,
             });
@@ -245,7 +242,6 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
             discordPublic: false,
             redditPublic: false,
             telegramPublic: false,
-            googlePublic: false,
             githubPublic: false,
             linkedinPublic: false,
           };
@@ -258,7 +254,6 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
             discordPublic: true,
             redditPublic: true,
             telegramPublic: true,
-            googlePublic: true,
             githubPublic: true,
             linkedinPublic: true,
           };
@@ -336,7 +331,6 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
         telegram: {},
         github: {},
         linkedin: {},
-        google: {},
         lens: {},
       };
     }
@@ -427,17 +421,6 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
           <Box className={classes.sectionHeader}>
             <Box display="flex">
               <Typography variant="h6">{t('manage.mainInfo')}</Typography>
-              {isAllPrivate ? (
-                <LockIcon
-                  data-testid="lockIcon"
-                  className={classes.mainLockIcon}
-                />
-              ) : (
-                <LockOpenIcon
-                  data-testid="openLockIcon"
-                  className={classes.mainLockIcon}
-                />
-              )}
             </Box>
             <ManagePublicVisibility
               id="globalVisibility"

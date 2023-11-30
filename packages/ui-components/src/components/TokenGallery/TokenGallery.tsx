@@ -21,6 +21,7 @@ export interface TokenGalleryProps {
   isOwner?: boolean;
   ownerAddress: string;
   profileServiceUrl: string;
+  hideConfigureButton?: boolean;
 }
 
 export const useStyles = makeStyles()((theme: Theme) => ({
@@ -88,6 +89,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
   isOwner,
   ownerAddress,
   profileServiceUrl,
+  hideConfigureButton,
 }: TokenGalleryProps) => {
   const {classes, cx} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
@@ -198,7 +200,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
           )}
         </Typography>
         <div className={cx(classes.sectionHeader, classes.nftGalleryLinks)}>
-          {isOwner && (
+          {isOwner && (!hideConfigureButton || itemsToUpdate.length > 0) && (
             <NftGalleryManager
               ownerAddress={ownerAddress}
               domain={domain}

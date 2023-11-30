@@ -1,7 +1,6 @@
 import CallMadeIcon from '@mui/icons-material/CallMade';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import GoogleIcon from '@mui/icons-material/Google';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import RedditIcon from '@mui/icons-material/Reddit';
 import TelegramIcon from '@mui/icons-material/Telegram';
@@ -285,14 +284,6 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
           metricValue: '',
           metricName: '',
           link: socialInfo.url.replaceAll('.lens', ''),
-        };
-      }
-      case DomainProfileSocialMedia.Google: {
-        return {
-          Icon: GoogleIcon,
-          displayName: socialInfo.userName,
-          metricValue: '',
-          metricName: '',
         };
       }
       default: {

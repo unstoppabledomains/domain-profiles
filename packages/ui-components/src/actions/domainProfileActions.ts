@@ -186,8 +186,6 @@ export const setProfileUserData = async (
         telegram:
           profileData.socialAccounts[DomainProfileSocialMedia.Telegram]
             ?.location,
-        google:
-          profileData.socialAccounts[DomainProfileSocialMedia.Google]?.location,
         linkedin:
           profileData.socialAccounts[DomainProfileSocialMedia.Linkedin]
             ?.location,

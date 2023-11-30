@@ -1,7 +1,7 @@
 import CheckIcon from '@mui/icons-material/Check';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
@@ -171,7 +171,7 @@ const ManagePublicVisibility: React.FC<ManageInputProps> = ({
               {isAllPrivate ? (
                 <CheckIcon className={classes.checkIcon} />
               ) : (
-                <LockOutlinedIcon />
+                <VisibilityOffOutlinedIcon />
               )}
             </IconButton>
             <Typography className={classes.cardCaption}>
@@ -215,7 +215,7 @@ const ManagePublicVisibility: React.FC<ManageInputProps> = ({
               {isSocialAllPrivate ? (
                 <CheckIcon className={classes.checkIcon} />
               ) : (
-                <LockOutlinedIcon />
+                <VisibilityOffOutlinedIcon />
               )}
             </IconButton>
             <Typography className={classes.cardCaption}>

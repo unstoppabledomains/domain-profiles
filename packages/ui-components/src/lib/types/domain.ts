@@ -37,7 +37,6 @@ export const DOMAIN_SOCIAL_VISIBILITY_VALUES: SocialProfileVisibilityValues = {
   discordPublic: false,
   redditPublic: false,
   telegramPublic: false,
-  googlePublic: false,
   githubPublic: false,
   linkedinPublic: false,
 };
@@ -82,7 +81,6 @@ export enum DomainProfileSocialMedia {
   Telegram = 'telegram',
   Github = 'github',
   Linkedin = 'linkedin',
-  Google = 'google',
 }
 
 // social media not configured by user but is displayed if exists
@@ -136,11 +134,6 @@ export type EnsDomainStatusResponse = EnsDomainExpiryResponse & {
 
 export type GithubUserInfo = {
   kind: DomainProfileSocialMedia.Github;
-  userName: string;
-} | null;
-
-export type GoogleUserInfo = {
-  kind: DomainProfileSocialMedia.Google;
   userName: string;
 } | null;
 
@@ -227,7 +220,6 @@ export type SerializedDomainProfileSocialAccountsUserInfo = {
   [DomainProfileSocialMedia.YouTube]?: YoutubeUserInfo;
   [DomainProfileSocialMedia.Discord]?: DiscordUserInfo;
   [DomainProfileSocialMedia.Telegram]?: TelegramUserInfo;
-  [DomainProfileSocialMedia.Google]?: GoogleUserInfo;
   [DomainProfileSocialMedia.Github]?: GithubUserInfo;
   [DomainProfileSocialMedia.Linkedin]?: LinkedinUserInfo;
   [DomainProfileSocialMediaAutoPopulated.Lens]?: LensUserInfo;
@@ -297,8 +289,7 @@ export type SocialAccountUserInfo =
   | TelegramUserInfo
   | GithubUserInfo
   | LinkedinUserInfo
-  | LensUserInfo
-  | GoogleUserInfo;
+  | LensUserInfo;
 
 export type SocialProfileVisibilityValues = {
   youtubePublic: boolean;
@@ -306,7 +297,6 @@ export type SocialProfileVisibilityValues = {
   twitterPublic: boolean;
   discordPublic: boolean;
   redditPublic: boolean;
-  googlePublic: boolean;
   githubPublic: boolean;
   linkedinPublic: boolean;
 };

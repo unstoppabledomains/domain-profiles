@@ -8,6 +8,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
 import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
+import RestoreOutlinedIcon from '@mui/icons-material/RestoreOutlined';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -153,7 +154,7 @@ const DomainProfile = ({
   const [optimisticFollowCount, setOptimisticFollowCount] = useState(0);
 
   const isEnsDomain = isExternalDomainValidForManagement(domain);
-  const {data: ethDomainStatus} = useEnsDomainStatus(domain, isEnsDomain);
+  const {data: ensDomainStatus} = useEnsDomainStatus(domain, isEnsDomain);
 
   // format social platform data
   const socialsInfo: SerializedDomainProfileSocialAccountsUserInfo = {};
@@ -310,7 +311,8 @@ const DomainProfile = ({
     ipfsHash ||
     hasAddresses ||
     isForSale ||
-    hasBadges;
+    hasBadges ||
+    ensDomainStatus;
 
   useEffect(() => {
     // wait until mounted
@@ -902,7 +904,7 @@ const DomainProfile = ({
                     </div>
                   </Tooltip>
                 )}
-                {ipfsHash ? (
+                {ipfsHash && (
                   <Box mb={2} display="flex">
                     <LaunchOutlinedIcon className={classes.sidebarIcon} />
                     <Link
@@ -917,8 +919,8 @@ const DomainProfile = ({
                       )})`}
                     </Link>
                   </Box>
-                ) : null}
-                {profileData?.profile?.web2Url ? (
+                )}
+                {profileData?.profile?.web2Url && (
                   <Box mb={2} display="flex">
                     <LaunchOutlinedIcon className={classes.sidebarIcon} />
                     <Link
@@ -932,15 +934,31 @@ const DomainProfile = ({
                       )}
                     </Link>
                   </Box>
-                ) : null}
-                {profileData?.profile?.location ? (
+                )}
+                {profileData?.profile?.location && (
                   <Box mb={2} display="flex">
                     <FmdGoodOutlinedIcon className={classes.sidebarIcon} />
                     <Typography className={classes.emailAndLocation}>
                       {profileData?.profile?.location}
                     </Typography>
                   </Box>
-                ) : null}
+                )}
+                {isEnsDomain && ensDomainStatus?.expiresAt && (
+                  <Box mb={2} display="flex">
+                    <RestoreOutlinedIcon className={classes.sidebarIcon} />
+                    <Typography className={classes.emailAndLocation}>
+                      {t('profile.thisDomainExpires', {
+                        action: isPast(new Date(ensDomainStatus.expiresAt))
+                          ? t('profile.expired')
+                          : t('profile.expires'),
+                        date: format(
+                          new Date(ensDomainStatus.expiresAt),
+                          'MMM d, yyyy',
+                        ),
+                      })}
+                    </Typography>
+                  </Box>
+                )}
                 {needLeftSideDivider && (
                   <Box
                     mt={2}
@@ -1230,19 +1248,6 @@ const DomainProfile = ({
                 {blockchain
                   ? t('profile.emptyMinted')
                   : t('profile.emptyNotMinted')}
-              </div>
-            )}
-            {isEnsDomain && ethDomainStatus?.expiresAt && (
-              <div className={classes.empty}>
-                {t('profile.thisDomainExpires', {
-                  action: isPast(new Date(ethDomainStatus.expiresAt))
-                    ? 'expired'
-                    : 'is set to expire',
-                  date: format(
-                    new Date(ethDomainStatus.expiresAt),
-                    'MMM d, yyyy',
-                  ),
-                })}
               </div>
             )}
           </Grid>

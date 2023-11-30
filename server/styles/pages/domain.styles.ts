@@ -192,6 +192,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   riskScoreContainer: {
     display: 'flex',
     marginTop: theme.spacing(3),
+    marginBottom: theme.spacing(2),
     alignItems: 'center',
     [theme.breakpoints.down('md')]: {
       justifyContent: 'center',

@@ -722,6 +722,88 @@ const DomainProfile = ({
                     </Typography>
                   </Box>
                 ) : null}
+
+                {hasAddresses && (
+                  <CryptoAddresses
+                    onCryptoAddressCopied={handleClickToCopy}
+                    profileData={profileData}
+                    domain={domain}
+                    isOwner={isOwner}
+                    showWarning={
+                      featureFlags.variations
+                        ?.ecommerceServiceUsersPublicProfileAddressVerifiedCheck ||
+                      false
+                    }
+                    records={addressRecords}
+                    ownerAddress={ownerAddress}
+                  />
+                )}
+
+                {needLeftSideDivider && (
+                  <Box mt={3} mb={2}>
+                    <Divider />
+                  </Box>
+                )}
+                {Boolean(verifiedSocials.length) && someSocialsPublic && (
+                  <div>
+                    <Grid container spacing={1}>
+                      {verifiedSocials
+                        .filter(account => {
+                          return (
+                            profileData?.socialAccounts &&
+                            profileData.socialAccounts[account].location
+                          );
+                        })
+                        .map(account => {
+                          return (
+                            <Grid key={account} item xs={2} md={3} lg={2}>
+                              <SocialAccountCard
+                                socialInfo={socialsInfo[account]}
+                                handleClickToCopy={handleClickToCopy}
+                                small
+                              />
+                            </Grid>
+                          );
+                        })}
+                    </Grid>
+                    {needLeftSideDivider && (
+                      <Box mt={3} mb={2}>
+                        <Divider />
+                      </Box>
+                    )}
+                  </div>
+                )}
+                {humanityVerified && (
+                  <Tooltip
+                    placement="top"
+                    title={
+                      <div className={classes.humanityVerifiedTooltipContent}>
+                        {t('profile.useYourDomainToLoginToApplications')}
+                        <Link
+                          external
+                          href="https://unstoppablemarketplace.com/"
+                          className={classes.humanityVerifiedTooltipLink}
+                        >
+                          {t('profile.clickToSeeAllApplications')}
+                        </Link>
+                      </div>
+                    }
+                    arrow
+                  >
+                    <div>
+                      <Link
+                        external
+                        href="https://unstoppablemarketplace.com/"
+                        className={classes.humanityVerifiedLink}
+                      >
+                        <HowToRegOutlinedIcon
+                          className={classes.humanityVerifiedIcon}
+                        />
+                        {t('profile.humanityVerified')}
+                      </Link>
+                    </div>
+                  </Tooltip>
+                )}
                 {profileData?.webacy && (
                   <Box className={classes.riskScoreContainer}>
                     <Avatar
@@ -823,86 +905,6 @@ const DomainProfile = ({
                         </Tooltip>
                       )}
                   </Box>
-                )}
-                {hasAddresses && (
-                  <CryptoAddresses
-                    onCryptoAddressCopied={handleClickToCopy}
-                    profileData={profileData}
-                    domain={domain}
-                    isOwner={isOwner}
-                    showWarning={
-                      featureFlags.variations
-                        ?.ecommerceServiceUsersPublicProfileAddressVerifiedCheck ||
-                      false
-                    }
-                    records={addressRecords}
-                    ownerAddress={ownerAddress}
-                  />
-                )}
-                {needLeftSideDivider && (
-                  <Box mt={3} mb={2}>
-                    <Divider />
-                  </Box>
-                )}
-                {Boolean(verifiedSocials.length) && someSocialsPublic && (
-                  <div>
-                    <Grid container spacing={1}>
-                      {verifiedSocials
-                        .filter(account => {
-                          return (
-                            profileData?.socialAccounts &&
-                            profileData.socialAccounts[account].location
-                          );
-                        })
-                        .map(account => {
-                          return (
-                            <Grid key={account} item xs={2} md={3} lg={2}>
-                              <SocialAccountCard
-                                socialInfo={socialsInfo[account]}
-                                handleClickToCopy={handleClickToCopy}
-                                small
-                              />
-                            </Grid>
-                          );
-                        })}
-                    </Grid>
-                    {needLeftSideDivider && (
-                      <Box mt={3} mb={2}>
-                        <Divider />
-                      </Box>
-                    )}
-                  </div>
-                )}
-                {humanityVerified && (
-                  <Tooltip
-                    placement="top"
-                    title={
-                      <div className={classes.humanityVerifiedTooltipContent}>
-                        {t('profile.useYourDomainToLoginToApplications')}
-                        <Link
-                          external
-                          href="https://unstoppablemarketplace.com/"
-                          className={classes.humanityVerifiedTooltipLink}
-                        >
-                          {t('profile.clickToSeeAllApplications')}
-                        </Link>
-                      </div>
-                    }
-                    arrow
-                  >
-                    <div>
-                      <Link
-                        external
-                        href="https://unstoppablemarketplace.com/"
-                        className={classes.humanityVerifiedLink}
-                      >
-                        <HowToRegOutlinedIcon
-                          className={classes.humanityVerifiedIcon}
-                        />
-                        {t('profile.humanityVerified')}
-                      </Link>
-                    </div>
-                  </Tooltip>
                 )}
                 {ipfsHash && (
                   <Box mb={2} display="flex">

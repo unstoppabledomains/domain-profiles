@@ -104,7 +104,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
   const [t] = useTranslationContext();
   const [nftAddressRecords, setNftAddressRecords] =
     useState<Record<string, NftResponse>>();
-  const [hasNfts, setHasNfts] = useState(enabled);
+  const [hasNfts, setHasNfts] = useState<boolean | undefined>(false);
   const [nftDataLoading, setNftDataLoading] = useState<boolean>(true);
   const [itemsToUpdate, setItemsToUpdate] = useState<NftMintItem[]>([]);
   const [isAllNftsLoaded, setIsAllNftsLoaded] = useState(false);
@@ -163,8 +163,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
     return null;
   }
 
-  return nftSymbolVisible &&
-    Object.keys(nftSymbolVisible).length === 0 &&
+  return Object.keys(nftSymbolVisible || {}).length === 0 &&
     !hasNfts &&
     !nftDataLoading ? (
     isOwner ? (
@@ -232,19 +231,15 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
           </span>
         </div>
       </div>
-      {nfts?.filter(nft => nft.public).length === 0 &&
-        isOwner &&
-        !nftDataLoading && (
-          <div
-            className={classes.nftEmptyGallery}
-            data-testid="empty-nft-gallery-owner"
-          >
+      {nfts?.filter(nft => nft.public).length === 0 && !nftDataLoading ? (
+        isOwner && (
+          <div className={classes.nftEmptyGallery}>
             <Typography variant="body2">
               {t('nftCollection.noNftsConfigured')}
             </Typography>
           </div>
-        )}
-      {expanded ? (
+        )
+      ) : expanded ? (
         <NftGalleryView
           domain={domain}
           nfts={nfts || []}

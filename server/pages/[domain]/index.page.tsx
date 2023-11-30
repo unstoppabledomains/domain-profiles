@@ -529,16 +529,18 @@ const DomainProfile = ({
               />
               {!isOwner ? (
                 <>
-                  <Button
-                    data-testid="chat-button"
-                    onClick={() => setOpenChat(domain)}
-                    className={cx(classes.shareMenu, {
-                      [classes.smallHidden]: !isOwner,
-                    })}
-                    startIcon={<ChatIcon />}
-                  >
-                    {t('push.chat')}
-                  </Button>
+                  {authDomain && (
+                    <Button
+                      data-testid="chat-button"
+                      onClick={() => setOpenChat(domain)}
+                      className={cx(classes.shareMenu, {
+                        [classes.smallHidden]: !isOwner,
+                      })}
+                      startIcon={<ChatIcon />}
+                    >
+                      {t('push.chat')}
+                    </Button>
+                  )}
                   <FollowButton
                     handleLogin={() => setLoginClicked(true)}
                     setWeb3Deps={setWeb3Deps}

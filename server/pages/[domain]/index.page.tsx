@@ -212,7 +212,9 @@ const DomainProfile = ({
     verifiedSocials.length > 0 ||
     humanityVerified ||
     ipfsHash ||
-    profileData?.profile?.web2Url;
+    profileData?.profile?.web2Url ||
+    profileData?.webacy ||
+    ensDomainStatus?.expiresAt;
 
   const hasAddresses = Boolean(
     Object.keys(addressRecords.addresses ?? {}).length ||
@@ -272,6 +274,7 @@ const DomainProfile = ({
         DomainFieldTypes.Profile,
         DomainFieldTypes.Messaging,
         DomainFieldTypes.SocialAccounts,
+        DomainFieldTypes.Records,
         DomainFieldTypes.CryptoVerifications,
       ]),
     );

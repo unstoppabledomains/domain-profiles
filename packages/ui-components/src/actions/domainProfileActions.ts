@@ -172,14 +172,27 @@ export const setProfileUserData = async (
 
       // social fields
       socialAccounts: profileData.socialAccounts && {
-        twitter: profileData.socialAccounts[DomainProfileSocialMedia.Twitter],
-        discord: profileData.socialAccounts[DomainProfileSocialMedia.Discord],
-        youtube: profileData.socialAccounts[DomainProfileSocialMedia.YouTube],
-        reddit: profileData.socialAccounts[DomainProfileSocialMedia.Reddit],
-        telegram: profileData.socialAccounts[DomainProfileSocialMedia.Telegram],
-        google: profileData.socialAccounts[DomainProfileSocialMedia.Google],
-        linkedin: profileData.socialAccounts[DomainProfileSocialMedia.Linkedin],
-        github: profileData.socialAccounts[DomainProfileSocialMedia.Github],
+        twitter:
+          profileData.socialAccounts[DomainProfileSocialMedia.Twitter]
+            ?.location,
+        discord:
+          profileData.socialAccounts[DomainProfileSocialMedia.Discord]
+            ?.location,
+        youtube:
+          profileData.socialAccounts[DomainProfileSocialMedia.YouTube]
+            ?.location,
+        reddit:
+          profileData.socialAccounts[DomainProfileSocialMedia.Reddit]?.location,
+        telegram:
+          profileData.socialAccounts[DomainProfileSocialMedia.Telegram]
+            ?.location,
+        google:
+          profileData.socialAccounts[DomainProfileSocialMedia.Google]?.location,
+        linkedin:
+          profileData.socialAccounts[DomainProfileSocialMedia.Linkedin]
+            ?.location,
+        github:
+          profileData.socialAccounts[DomainProfileSocialMedia.Github]?.location,
       },
 
       // public toggles

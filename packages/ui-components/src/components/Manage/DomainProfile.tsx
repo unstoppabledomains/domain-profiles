@@ -38,7 +38,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     maxWidth: '100px',
   },
   tabContentItem: {
-    overflowY: 'scroll',
     marginLeft: theme.spacing(-3),
     marginRight: theme.spacing(-3),
     [theme.breakpoints.down('sm')]: {

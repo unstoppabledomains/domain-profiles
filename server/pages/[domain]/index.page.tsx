@@ -845,17 +845,24 @@ const DomainProfile = ({
                 {Boolean(verifiedSocials.length) && someSocialsPublic && (
                   <div>
                     <Grid container spacing={1}>
-                      {verifiedSocials.map(account => {
-                        return (
-                          <Grid key={account} item xs={2} md={3} lg={2}>
-                            <SocialAccountCard
-                              socialInfo={socialsInfo[account]}
-                              handleClickToCopy={handleClickToCopy}
-                              small
-                            />
-                          </Grid>
-                        );
-                      })}
+                      {verifiedSocials
+                        .filter(account => {
+                          return (
+                            profileData?.socialAccounts &&
+                            profileData.socialAccounts[account].location
+                          );
+                        })
+                        .map(account => {
+                          return (
+                            <Grid key={account} item xs={2} md={3} lg={2}>
+                              <SocialAccountCard
+                                socialInfo={socialsInfo[account]}
+                                handleClickToCopy={handleClickToCopy}
+                                small
+                              />
+                            </Grid>
+                          );
+                        })}
                     </Grid>
                     {needLeftSideDivider && (
                       <Box mt={3} mb={2}>

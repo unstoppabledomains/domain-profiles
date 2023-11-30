@@ -230,17 +230,6 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
     setShowMainInfoVizCard(false);
   };
 
-  const handlePublicVisibilityChange = (id: string, flag?: string) => {
-    if (!dirtyFlag) {
-      setDirtyFlag(true);
-    }
-    const fieldId = `${id}Public`;
-    handleInputChange(
-      fieldId,
-      !userProfile?.profile || !userProfile?.profile[fieldId],
-    );
-  };
-
   const handleGlobalPublicPrivateVisibility = (
     e: {
       currentTarget: {id: string};

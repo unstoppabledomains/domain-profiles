@@ -5,7 +5,7 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getReverseResolution} from '../../actions';
+import {getProfileResolution} from '../../actions';
 import type {SerializedUserDomainProfileData} from '../../lib';
 import type {DomainProfileTabType} from './DomainProfile';
 import {DomainProfile} from './DomainProfile';
@@ -39,9 +39,9 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
   }, [address]);
 
   const loadResolvedAddress = async () => {
-    const resolution = await getReverseResolution(domain);
+    const resolution = await getProfileResolution(domain);
     if (resolution) {
-      setResolvedAddress(resolution);
+      setResolvedAddress(resolution.address);
     }
   };
 

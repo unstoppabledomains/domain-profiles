@@ -1,6 +1,7 @@
 import CallMadeIcon from '@mui/icons-material/CallMade';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import ErrorOutlinedIcon from '@mui/icons-material/ErrorOutlined';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import RedditIcon from '@mui/icons-material/Reddit';
@@ -198,6 +199,12 @@ const useStyles = makeStyles<void, 'actionIcon'>()(
       fill: theme.palette.success.main,
       borderRadius: '50%',
     },
+    nonVerifiedBadge: {
+      backgroundColor: theme.palette.white,
+      color: theme.palette.white,
+      fill: theme.palette.warning.main,
+      borderRadius: '50%',
+    },
   }),
 );
 
@@ -206,6 +213,7 @@ export type SocialAccountCardProps = {
   handleClickToCopy: () => void;
   small?: boolean;
   verified?: boolean;
+  verificationSupported?: boolean;
 };
 
 const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
@@ -213,6 +221,7 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
   handleClickToCopy,
   small,
   verified,
+  verificationSupported,
 }) => {
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
@@ -336,11 +345,18 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
             <Badge
               anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
               badgeContent={
-                verified && (
+                verified ? (
                   <CheckCircleIcon
                     fontSize="small"
                     className={classes.verifiedBadge}
                   />
+                ) : (
+                  verificationSupported && (
+                    <ErrorOutlinedIcon
+                      fontSize="small"
+                      className={classes.nonVerifiedBadge}
+                    />
+                  )
                 )
               }
             >

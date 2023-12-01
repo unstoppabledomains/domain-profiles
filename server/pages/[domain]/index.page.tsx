@@ -781,6 +781,10 @@ const DomainProfile = ({
                                 verified={
                                   profileData!.socialAccounts![account].verified
                                 }
+                                verificationSupported={
+                                  featureFlags.variations
+                                    ?.udMeServiceDomainsEnableSocialVerification
+                                }
                                 small
                               />
                             </Grid>

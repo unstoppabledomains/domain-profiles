@@ -1,4 +1,5 @@
 import CallMadeIcon from '@mui/icons-material/CallMade';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
@@ -6,6 +7,7 @@ import RedditIcon from '@mui/icons-material/Reddit';
 import TelegramIcon from '@mui/icons-material/Telegram';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import YouTubeIcon from '@mui/icons-material/YouTube';
+import Badge from '@mui/material/Badge';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Tooltip from '@mui/material/Tooltip';
@@ -190,6 +192,12 @@ const useStyles = makeStyles<void, 'actionIcon'>()(
       fontWeight: theme.typography.fontWeightBold,
     },
     tooltipData: {},
+    verifiedBadge: {
+      backgroundColor: theme.palette.white,
+      color: theme.palette.white,
+      fill: theme.palette.success.main,
+      borderRadius: '50%',
+    },
   }),
 );
 
@@ -197,12 +205,14 @@ export type SocialAccountCardProps = {
   socialInfo: SocialAccountUserInfo | null;
   handleClickToCopy: () => void;
   small?: boolean;
+  verified?: boolean;
 };
 
 const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
   socialInfo,
   handleClickToCopy,
   small,
+  verified,
 }) => {
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
@@ -323,15 +333,27 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
       {small ? (
         <Tooltip title={getCondensedTooltip()}>
           <div className={classes.smallIconContainer}>
-            <userInfo.Icon
-              titleAccess={`${socialInfo?.kind} logo`}
-              classes={{
-                root: cx(
-                  classes.socialIcon,
-                  classes[`${socialInfo?.kind}Icon`],
-                ),
-              }}
-            />
+            <Badge
+              anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+              badgeContent={
+                verified && (
+                  <CheckCircleIcon
+                    fontSize="small"
+                    className={classes.verifiedBadge}
+                  />
+                )
+              }
+            >
+              <userInfo.Icon
+                titleAccess={`${socialInfo?.kind} logo`}
+                classes={{
+                  root: cx(
+                    classes.socialIcon,
+                    classes[`${socialInfo?.kind}Icon`],
+                  ),
+                }}
+              />
+            </Badge>
           </div>
         </Tooltip>
       ) : (

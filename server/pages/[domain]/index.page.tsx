@@ -778,6 +778,9 @@ const DomainProfile = ({
                               <SocialAccountCard
                                 socialInfo={socialsInfo[account]}
                                 handleClickToCopy={handleClickToCopy}
+                                verified={
+                                  profileData!.socialAccounts![account].verified
+                                }
                                 small
                               />
                             </Grid>

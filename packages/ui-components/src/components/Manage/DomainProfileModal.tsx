@@ -1,10 +1,11 @@
 import Box from '@mui/material/Box';
 import Dialog from '@mui/material/Dialog';
 import type {Theme} from '@mui/material/styles';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {getReverseResolution} from '../../actions';
 import type {SerializedUserDomainProfileData} from '../../lib';
 import type {DomainProfileTabType} from './DomainProfile';
 import {DomainProfile} from './DomainProfile';
@@ -28,18 +29,37 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
   open,
 }) => {
   const {classes} = useStyles();
+  const [resolvedAddress, setResolvedAddress] = useState(address);
 
-  return (
+  useEffect(() => {
+    if (address) {
+      return;
+    }
+    void loadResolvedAddress();
+  }, [address]);
+
+  const loadResolvedAddress = async () => {
+    const resolution = await getReverseResolution(domain);
+    if (resolution) {
+      setResolvedAddress(resolution);
+    }
+  };
+
+  return resolvedAddress ? (
     <Dialog maxWidth="sm" open={open} onClose={() => onClose()}>
       <Box className={classes.container}>
-        <DomainProfile address={address} domain={domain} onUpdate={onUpdate} />
+        <DomainProfile
+          address={resolvedAddress}
+          domain={domain}
+          onUpdate={onUpdate}
+        />
       </Box>
     </Dialog>
-  );
+  ) : null;
 };
 
 export type DomainProfileModalProps = {
-  address: string;
+  address?: string;
   domain: string;
   open: boolean;
   onClose(): void;

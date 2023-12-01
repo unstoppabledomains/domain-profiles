@@ -272,7 +272,12 @@ const DomainProfile = ({
     tab: DomainProfileTabType,
     updatedData?: SerializedPublicDomainProfileData,
   ): Promise<void> => {
-    if (tab === DomainProfileTabType.Profile && updatedData) {
+    if (
+      updatedData &&
+      [DomainProfileTabType.Profile, DomainProfileTabType.ListForSale].includes(
+        tab,
+      )
+    ) {
       setProfileData({
         ...profileData,
         ...updatedData,
@@ -584,7 +589,7 @@ const DomainProfile = ({
                     className={cx(classes.editButton)}
                     startIcon={<EditOutlinedIcon />}
                   >
-                    {t('profile.editProfile')}
+                    {t('manage.manageProfile')}
                   </Button>
                 ))
               )}

@@ -17,6 +17,7 @@ import type {SerializedUserDomainProfileData} from '../../lib';
 import {useTranslationContext} from '../../lib';
 import {Crypto as CryptoTab} from './Tabs/Crypto';
 import {Email as EmailTab} from './Tabs/Email';
+import {ListForSale as ListForSaleTab} from './Tabs/ListForSale';
 import {Profile as ProfileTab} from './Tabs/Profile';
 import {Reverse as ReverseTab} from './Tabs/Reverse';
 import {TokenGallery as TokenGalleryTab} from './Tabs/TokenGallery';
@@ -44,7 +45,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     },
   },
   tabLabel: {
-    maxWidth: '100px',
+    maxWidth: '90px',
   },
   tabContentItem: {
     marginLeft: theme.spacing(-3),
@@ -80,6 +81,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
     reverse: false,
     email: false,
     tokenGallery: false,
+    listForSale: false,
   });
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
@@ -126,6 +128,20 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   </StyledTabBadge>
                 }
                 value={DomainProfileTabType.Email}
+              />
+              <Tab
+                label={
+                  <StyledTabBadge
+                    color="primary"
+                    variant="dot"
+                    invisible={!tabUnreadDot[DomainProfileTabType.ListForSale]}
+                  >
+                    <Box className={classes.tabLabel}>
+                      {t('manage.listForSale')}
+                    </Box>
+                  </StyledTabBadge>
+                }
+                value={DomainProfileTabType.ListForSale}
               />
               <Tab
                 label={
@@ -186,6 +202,16 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
           <EmailTab address={address} domain={domain} />
         </TabPanel>
         <TabPanel
+          value={DomainProfileTabType.ListForSale}
+          className={classes.tabContentItem}
+        >
+          <ListForSaleTab
+            address={address}
+            domain={domain}
+            onUpdate={onUpdate}
+          />
+        </TabPanel>
+        <TabPanel
           value={DomainProfileTabType.TokenGallery}
           className={classes.tabContentItem}
         >
@@ -224,6 +250,7 @@ export type DomainProfileProps = {
 export enum DomainProfileTabType {
   Crypto = 'crypto',
   Email = 'email',
+  ListForSale = 'listForSale',
   Profile = 'profile',
   Reverse = 'reverse',
   TokenGallery = 'tokenGallery',

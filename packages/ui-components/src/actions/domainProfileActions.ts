@@ -163,6 +163,7 @@ export const setProfileUserData = async (
         profileData.profile?.imagePath,
       coverPath: profileData.profile?.coverPath,
       privateEmail: profileData.profile?.privateEmail,
+      publicDomainSellerEmail: profileData.profile?.publicDomainSellerEmail,
 
       // image fields
       data: {

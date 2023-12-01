@@ -16,10 +16,10 @@ import {useWeb3Context} from '../../../hooks';
 import type {SerializedUserDomainProfileData} from '../../../lib';
 import {DomainFieldTypes, useTranslationContext} from '../../../lib';
 import {notifyError} from '../../../lib/error';
-import Link from '../../Link';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import {DomainProfileTabType} from '../DomainProfile';
 import ManageInput from './Profile/ManageInput';
+import {TabHeader} from './TabHeader';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -157,23 +157,11 @@ export const ListForSale: React.FC<ListForSale> = ({
     <Box className={classes.container}>
       {isLoaded ? (
         <>
-          <Box
-            display="flex"
-            alignItems="center"
-            alignContent="center"
-            className={classes.infoContainer}
-          >
-            <SellOutlinedIcon className={classes.icon} />
-            <Typography variant="body2" className={classes.descriptionText}>
-              {t('manage.listForSaleDescription')}{' '}
-              <Link
-                external={true}
-                to="https://support.unstoppabledomains.com/support/solutions/articles/48001205861-list-domain-for-sale-on-our-website"
-              >
-                {t('profile.learnMore')}
-              </Link>
-            </Typography>
-          </Box>
+          <TabHeader
+            icon={<SellOutlinedIcon />}
+            description={t('manage.listForSaleDescription')}
+            learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001205861-list-domain-for-sale-on-our-website"
+          />
           <ManageInput
             id="publicDomainSellerEmail"
             value={userProfile?.profile?.publicDomainSellerEmail}

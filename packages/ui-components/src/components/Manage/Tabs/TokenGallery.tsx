@@ -1,7 +1,6 @@
 import CollectionsOutlinedIcon from '@mui/icons-material/CollectionsOutlined';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
 
@@ -14,6 +13,7 @@ import type {NftResponse, SerializedUserDomainProfileData} from '../../../lib';
 import {useTranslationContext} from '../../../lib';
 import {NftGalleryManager} from '../../TokenGallery/NftGalleryManager';
 import {DomainProfileTabType} from '../DomainProfile';
+import {TabHeader} from './TabHeader';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -69,17 +69,11 @@ export const TokenGallery: React.FC<TokenGalleryProps> = ({
     <Box className={classes.container}>
       {isLoaded ? (
         <>
-          <Box
-            display="flex"
-            alignItems="center"
-            alignContent="center"
-            className={classes.infoContainer}
-          >
-            <CollectionsOutlinedIcon className={classes.icon} />
-            <Typography variant="body2" className={classes.description}>
-              {t('manage.tokenGalleryDescription')}{' '}
-            </Typography>
-          </Box>
+          <TabHeader
+            icon={<CollectionsOutlinedIcon />}
+            description={t('manage.tokenGalleryDescription')}
+            learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001227010-how-to-setup-and-manage-the-token-gallery"
+          />
           <Box className={classes.button} />
           <NftGalleryManager
             ownerAddress={address}

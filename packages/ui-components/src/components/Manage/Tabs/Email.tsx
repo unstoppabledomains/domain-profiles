@@ -17,9 +17,9 @@ import {useWeb3Context} from '../../../hooks';
 import type {SerializedUserDomainProfileData} from '../../../lib';
 import {DomainFieldTypes, useTranslationContext} from '../../../lib';
 import {notifyError} from '../../../lib/error';
-import Link from '../../Link';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import ManageInput from './Profile/ManageInput';
+import {TabHeader} from './TabHeader';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -157,23 +157,11 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
     <Box className={classes.container}>
       {isLoaded ? (
         <>
-          <Box
-            display="flex"
-            alignItems="center"
-            alignContent="center"
-            className={classes.infoContainer}
-          >
-            <MailLockOutlinedIcon className={classes.mailIcon} />
-            <Typography variant="body2" className={classes.mailDescription}>
-              {t('manage.emailDescription')}{' '}
-              <Link
-                external={true}
-                to="https://support.unstoppabledomains.com/support/solutions/articles/48001218107-unstoppable-email"
-              >
-                {t('profile.learnMore')}
-              </Link>
-            </Typography>
-          </Box>
+          <TabHeader
+            icon={<MailLockOutlinedIcon />}
+            description={t('manage.emailDescription')}
+            learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001218107-unstoppable-email"
+          />
           <ManageInput
             id="privateEmail"
             value={userProfile?.profile?.privateEmail}

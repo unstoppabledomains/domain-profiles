@@ -7,6 +7,7 @@ import React from 'react';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useTranslationContext} from '../../../lib';
+import {TabHeader} from './TabHeader';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -37,7 +38,11 @@ export const Crypto: React.FC<CryptoProps> = ({domain}) => {
 
   return (
     <Box className={classes.container}>
-      <MonetizationOnOutlinedIcon className={classes.icon} />
+      <TabHeader
+        icon={<MonetizationOnOutlinedIcon />}
+        description={t('manage.cryptoAddressesDescription')}
+        learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001181827-add-crypto-addresses"
+      />
       <Typography variant="h5" className={classes.title}>
         {t('manage.comingSoon')}
       </Typography>

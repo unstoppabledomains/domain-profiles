@@ -7,6 +7,7 @@ import React from 'react';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useTranslationContext} from '../../../lib';
+import {TabHeader} from './TabHeader';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -37,7 +38,11 @@ export const Reverse: React.FC<ReverseProps> = ({domain}) => {
 
   return (
     <Box className={classes.container}>
-      <SwapHorizOutlinedIcon className={classes.icon} />
+      <TabHeader
+        icon={<SwapHorizOutlinedIcon />}
+        description={t('manage.reverseResolutionDescription', {domain})}
+        learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001217257-what-is-and-how-to-setup-reverse-resolution"
+      />
       <Typography variant="h5" className={classes.title}>
         {t('manage.comingSoon')}
       </Typography>

@@ -1,7 +1,6 @@
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import NorthEastIcon from '@mui/icons-material/NorthEast';
 import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React from 'react';
@@ -19,12 +18,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     padding: theme.spacing(2),
     display: 'flex',
     alignItems: 'center',
-    marginTop: theme.spacing(6),
+    marginTop: theme.spacing(5),
     [theme.breakpoints.down('sm')]: {
       flexFlow: 'column',
       alignItems: 'flex-start',
-      padding: theme.spacing(2),
-      marginTop: theme.spacing(0),
     },
   },
   image: {
@@ -43,9 +40,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   action: {
     fontWeight: theme.typography.fontWeightBold,
-  },
-  divider: {
-    margin: theme.spacing(6, 0),
   },
   titleBig: {
     marginBottom: theme.spacing(0.5),
@@ -103,8 +97,6 @@ const ForSaleOnOpenSea: React.FC<Props> = ({email, link}) => {
           </Button>
         </div>
       </div>
-
-      <Divider className={classes.divider} />
     </>
   );
 };

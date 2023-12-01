@@ -80,11 +80,6 @@ const defaultProps = (): DomainProfilePageProps => {
           verified: true,
           public: false,
         },
-        google: {
-          location: 'foo@gmail.com',
-          verified: true,
-          public: false,
-        },
         lens: {
           location: 'foo',
           verified: true,
@@ -204,6 +199,7 @@ describe('<DomainProfile />', () => {
       name: 'foo.crypto',
       status: PersonaInquiryStatus.COMPLETED,
     });
+    jest.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
   });
 
   it('should display a basic domain profile page', async () => {
@@ -213,9 +209,11 @@ describe('<DomainProfile />', () => {
     });
   });
 
-  it('renders a share menu button', () => {
+  it('renders a share menu button', async () => {
     customRender(<DomainProfile {...defaultProps()} />);
-    expect(screen.getByRole('button', {name: 'Share'})).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('button', {name: 'Share'})).toBeInTheDocument();
+    });
   });
 
   it('renders display name, domain name, description, location, email, profile image, web3 site, for sale block', async () => {
@@ -310,7 +308,7 @@ describe('<DomainProfile />', () => {
 
 describe('Token gallery for multiple blockchains', () => {
   const tokenGalleryProps = defaultProps();
-  tokenGalleryProps.profileData!.profile.tokenGalleryEnabled = true;
+  tokenGalleryProps.profileData!.profile!.tokenGalleryEnabled = true;
 
   beforeEach(async () => {
     jest
@@ -615,7 +613,7 @@ describe('Token gallery for multiple blockchains', () => {
 
 describe('Token gallery for single blockchain', () => {
   const tokenGalleryProps = defaultProps();
-  tokenGalleryProps.profileData!.profile.tokenGalleryEnabled = true;
+  tokenGalleryProps.profileData!.profile!.tokenGalleryEnabled = true;
 
   beforeEach(async () => {
     jest
@@ -743,7 +741,7 @@ describe('Token gallery for single blockchain', () => {
 
 describe('Token gallery carousel', () => {
   const tokenGalleryProps = defaultProps();
-  tokenGalleryProps.profileData!.profile.tokenGalleryEnabled = true;
+  tokenGalleryProps.profileData!.profile!.tokenGalleryEnabled = true;
 
   beforeEach(async () => {
     jest
@@ -1061,7 +1059,7 @@ describe('Token gallery carousel', () => {
 
 describe('Owner operations', () => {
   const tokenGalleryProps = defaultProps();
-  tokenGalleryProps.profileData!.profile.tokenGalleryEnabled = true;
+  tokenGalleryProps.profileData!.profile!.tokenGalleryEnabled = true;
 
   beforeEach(async () => {
     jest
@@ -1092,9 +1090,12 @@ describe('Owner operations', () => {
       relationship_type: 'followers',
       domain: 'foo.crypto',
     });
-    jest
-      .spyOn(featureFlagActions, 'fetchFeatureFlags')
-      .mockResolvedValue(featureFlagActions.DEFAULT_FEATURE_FLAGS);
+    jest.spyOn(featureFlagActions, 'fetchFeatureFlags').mockResolvedValue({
+      variations: {
+        ...featureFlagActions.DEFAULT_FEATURE_FLAGS.variations!,
+        udMeServiceDomainsEnableManagement: true,
+      },
+    });
     jest.spyOn(identityActions, 'getIdentity').mockResolvedValue({
       id: 'personaId',
       createdAt: Date.now(),
@@ -1201,10 +1202,8 @@ describe('Owner operations', () => {
     expect(showAll).toBeInTheDocument();
     userEvent.click(showAll);
 
-    // verify owner button
-    expect(screen.getByTestId('nftGallery-config-button')).toBeInTheDocument();
-
     // click category menu
+    expect(screen.getByTestId('nftGallery-filter-tag')).toBeInTheDocument();
     const categoryFilter = screen.getByTestId('nftGallery-filter-tag');
     userEvent.click(categoryFilter);
 
@@ -1284,16 +1283,6 @@ describe('Owner operations', () => {
       ),
     );
     expect(() => screen.getByText('test-eth-nft-name')).toThrow();
-  });
-
-  it('shows configuration link when gallery is already enabled', async () => {
-    customRender(<DomainProfile {...tokenGalleryProps} />);
-    await waitFor(() =>
-      expect(screen.getAllByText('test-sol-nft-name').length).toBeGreaterThan(
-        0,
-      ),
-    );
-    expect(screen.getByTestId('nftGallery-config-button')).toBeInTheDocument();
   });
 
   it('opens first time configuration modal when button clicked', async () => {
@@ -1392,6 +1381,7 @@ describe('Owner operations', () => {
     // validate only the share button is present
     await waitFor(() => {
       expect(screen.queryByTestId('share-button')).toBeInTheDocument();
+      expect(screen.queryByTestId('edit-profile-button')).toBeInTheDocument();
       expect(screen.queryByTestId('chat-button')).not.toBeInTheDocument();
       expect(screen.queryByTestId('follow-button')).not.toBeInTheDocument();
     });
@@ -1415,7 +1405,7 @@ describe('Owner operations', () => {
 
     // validate all the chat button exists
     await waitFor(() => {
-      expect(screen.queryByTestId('chat-button')).toBeInTheDocument();
+      expect(screen.queryByTestId('header-chat-button')).toBeInTheDocument();
     });
 
     // validate the push user onboarding mock not yet called
@@ -1423,7 +1413,7 @@ describe('Owner operations', () => {
     expect(mockXmtpUser).toHaveBeenCalledTimes(1);
 
     // click the chat button to kickoff onboarding
-    const chatButton = screen.getByTestId('chat-button');
+    const chatButton = screen.getByTestId('header-chat-button');
     userEvent.click(chatButton);
 
     // verify the user initialization process started

@@ -30,6 +30,7 @@ const useStyles = makeStyles<{focus: boolean}>()((theme: Theme, {focus}) => ({
     }`,
     borderRadius: theme.shape.borderRadius,
     paddingLeft: 12,
+    backdropFilter: 'blur(5px)',
     backgroundColor: 'rgba(255, 255, 255, 0.20)',
   },
   input: {

@@ -21,6 +21,25 @@ export enum AffiliateTier {
   ThirtyFiveApril2022 = 'thirty-five-april-2022',
   ThirtyFebruary2022 = 'thirty-february-2022',
 }
+export const DOMAIN_PROFILE_VISIBILITY_VALUES: DomainProfileVisibilityValues = {
+  displayNamePublic: false,
+  descriptionPublic: false,
+  locationPublic: false,
+  web2UrlPublic: false,
+  phoneNumberPublic: false,
+  imagePathPublic: true,
+  coverPathPublic: true,
+};
+
+export const DOMAIN_SOCIAL_VISIBILITY_VALUES: SocialProfileVisibilityValues = {
+  youtubePublic: false,
+  twitterPublic: false,
+  discordPublic: false,
+  redditPublic: false,
+  telegramPublic: false,
+  githubPublic: false,
+  linkedinPublic: false,
+};
 
 export type DiscordUserInfo = {
   kind: DomainProfileSocialMedia.Discord;
@@ -62,13 +81,22 @@ export enum DomainProfileSocialMedia {
   Telegram = 'telegram',
   Github = 'github',
   Linkedin = 'linkedin',
-  Google = 'google',
 }
 
 // social media not configured by user but is displayed if exists
 export enum DomainProfileSocialMediaAutoPopulated {
   Lens = 'lens',
 }
+
+export type DomainProfileVisibilityValues = {
+  displayNamePublic: boolean;
+  descriptionPublic: boolean;
+  locationPublic: boolean;
+  web2UrlPublic: boolean;
+  phoneNumberPublic: boolean;
+  imagePathPublic: boolean;
+  coverPathPublic: boolean;
+};
 
 export enum DomainSuffixes {
   Crypto = 'crypto',
@@ -109,10 +137,10 @@ export type GithubUserInfo = {
   userName: string;
 } | null;
 
-export type GoogleUserInfo = {
-  kind: DomainProfileSocialMedia.Google;
-  userName: string;
-} | null;
+export type ImageData = {
+  base64: string;
+  type: string;
+};
 
 export type LensUserInfo = {
   kind: DomainProfileSocialMediaAutoPopulated.Lens;
@@ -126,6 +154,17 @@ export type LinkedinUserInfo = {
 } | null;
 
 export const MANAGEABLE_DOMAIN_LABEL = /^[a-z\d-]{1,253}$/;
+
+export const MAX_BIO_LENGTH = 200;
+
+export const MAX_UPLOAD_FILE_SIZE = 5 * 1000 * 1024;
+
+export type MessagingAttributes = {
+  disabled: boolean;
+  resetRules?: boolean;
+  thirdPartyMessagingEnabled: boolean;
+  thirdPartyMessagingConfigType: string;
+};
 
 export type RedditUserInfo = {
   kind: DomainProfileSocialMedia.Reddit;
@@ -142,6 +181,7 @@ export type SerializedDomainCryptoVerification = {
 };
 
 export type SerializedDomainProfileAttributes = {
+  // profile fields
   displayName?: string;
   description?: string;
   location?: string;
@@ -153,11 +193,24 @@ export type SerializedDomainProfileAttributes = {
   phoneNumber?: string;
   domainPurchased?: boolean;
   collectibleImage?: string;
+  privateEmail?: string;
+
+  // public toggles
+  displayNamePublic?: boolean;
+  descriptionPublic?: boolean;
+  locationPublic?: boolean;
+  imagePathPublic?: boolean;
+  coverPathPublic?: boolean;
+  web2UrlPublic?: boolean;
+
+  // visibility toggles
   emailOnPublicDomainProfile?: boolean;
   tokenGalleryEnabled?: boolean;
   showDomainSuggestion?: boolean;
   showFeaturedCommunity?: boolean;
   showFeaturedPartner?: boolean;
+
+  // UD blue status
   udBlue?: boolean;
 };
 
@@ -167,7 +220,6 @@ export type SerializedDomainProfileSocialAccountsUserInfo = {
   [DomainProfileSocialMedia.YouTube]?: YoutubeUserInfo;
   [DomainProfileSocialMedia.Discord]?: DiscordUserInfo;
   [DomainProfileSocialMedia.Telegram]?: TelegramUserInfo;
-  [DomainProfileSocialMedia.Google]?: GoogleUserInfo;
   [DomainProfileSocialMedia.Github]?: GithubUserInfo;
   [DomainProfileSocialMedia.Linkedin]?: LinkedinUserInfo;
   [DomainProfileSocialMediaAutoPopulated.Lens]?: LensUserInfo;
@@ -180,9 +232,9 @@ export interface SerializedDomainRank {
 }
 
 export type SerializedDomainSocialAccount = {
-  location: string;
-  verified: boolean;
-  public: boolean;
+  location?: string;
+  verified?: boolean;
+  public?: boolean;
 };
 
 export type SerializedFollowerListData = {
@@ -201,9 +253,9 @@ export type SerializedFollowerListData = {
 };
 
 export type SerializedPublicDomainProfileData = {
-  profile: SerializedDomainProfileAttributes;
-  social: SerializedSocialAttributes;
-  socialAccounts: Record<
+  profile?: SerializedDomainProfileAttributes;
+  social?: SerializedSocialAttributes;
+  socialAccounts?: Record<
     DomainProfileSocialMedia | DomainProfileSocialMediaAutoPopulated,
     SerializedDomainSocialAccount
   >;
@@ -213,6 +265,7 @@ export type SerializedPublicDomainProfileData = {
   referralCode?: string;
   referralTier?: AffiliateTier;
   webacy?: WebacyRiskScore;
+  messaging?: MessagingAttributes;
 };
 
 export type SerializedSocialAttributes = {
@@ -236,8 +289,17 @@ export type SocialAccountUserInfo =
   | TelegramUserInfo
   | GithubUserInfo
   | LinkedinUserInfo
-  | LensUserInfo
-  | GoogleUserInfo;
+  | LensUserInfo;
+
+export type SocialProfileVisibilityValues = {
+  youtubePublic: boolean;
+  telegramPublic: boolean;
+  twitterPublic: boolean;
+  discordPublic: boolean;
+  redditPublic: boolean;
+  githubPublic: boolean;
+  linkedinPublic: boolean;
+};
 
 export type TelegramUserInfo = {
   kind: DomainProfileSocialMedia.Telegram;
@@ -270,3 +332,7 @@ export type YoutubeUserInfo = {
   channelUrl: string;
   subscriberCount: number;
 } | null;
+
+export const kbToMb = (kb: number): number => {
+  return kb / 1000 / 1024;
+};

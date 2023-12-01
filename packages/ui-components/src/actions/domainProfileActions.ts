@@ -8,9 +8,12 @@ import type {NftResponse} from '../lib';
 import {fetchApi} from '../lib/fetchApi';
 import type {
   DomainFieldTypes,
+  ImageData,
   SerializedFollowerListData,
   SerializedPublicDomainProfileData,
+  SerializedUserDomainProfileData,
 } from '../lib/types/domain';
+import {DomainProfileSocialMedia} from '../lib/types/domain';
 
 const queryKey = {
   followStatus: () => ['domainProfile', 'followingStatus'],
@@ -110,6 +113,24 @@ export const getProfileResolution = async (
   });
 };
 
+export const getProfileUserData = async (
+  domain: string,
+  fields: DomainFieldTypes[],
+  signature: string,
+  expiry: string,
+): Promise<SerializedUserDomainProfileData> => {
+  return await fetchApi(`/user/${domain}?fields=${fields.join(',')}`, {
+    host: config.PROFILE.HOST_URL,
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'x-auth-domain': domain,
+      'x-auth-expires': expiry,
+      'x-auth-signature': signature,
+    },
+  });
+};
+
 export const searchProfiles = async (query: string): Promise<string[]> => {
   const data: Array<{name: string}> | undefined = await fetchApi(
     `/search?name=${query}`,
@@ -118,6 +139,90 @@ export const searchProfiles = async (query: string): Promise<string[]> => {
     },
   );
   return data ? data.map(profile => profile.name) : [];
+};
+
+export const setProfileUserData = async (
+  domain: string,
+  profileData: SerializedUserDomainProfileData,
+  signature: string,
+  expiry: string,
+  profileImage?: ImageData,
+  coverImage?: ImageData,
+): Promise<void> => {
+  await fetchApi(`/user/${domain}`, {
+    host: config.PROFILE.HOST_URL,
+    method: 'POST',
+    body: JSON.stringify({
+      // profile fields
+      displayName: profileData.profile?.displayName,
+      description: profileData.profile?.description,
+      location: profileData.profile?.location,
+      web2Url: profileData.profile?.web2Url,
+      imagePath:
+        profileData.profile?.imageType !== 'default' &&
+        profileData.profile?.imagePath,
+      coverPath: profileData.profile?.coverPath,
+      privateEmail: profileData.profile?.privateEmail,
+      publicDomainSellerEmail: profileData.profile?.publicDomainSellerEmail,
+
+      // image fields
+      data: {
+        image: profileImage,
+        cover: coverImage,
+      },
+
+      // social fields
+      socialAccounts: profileData.socialAccounts && {
+        twitter:
+          profileData.socialAccounts[DomainProfileSocialMedia.Twitter]
+            ?.location,
+        discord:
+          profileData.socialAccounts[DomainProfileSocialMedia.Discord]
+            ?.location,
+        youtube:
+          profileData.socialAccounts[DomainProfileSocialMedia.YouTube]
+            ?.location,
+        reddit:
+          profileData.socialAccounts[DomainProfileSocialMedia.Reddit]?.location,
+        telegram:
+          profileData.socialAccounts[DomainProfileSocialMedia.Telegram]
+            ?.location,
+        linkedin:
+          profileData.socialAccounts[DomainProfileSocialMedia.Linkedin]
+            ?.location,
+        github:
+          profileData.socialAccounts[DomainProfileSocialMedia.Github]?.location,
+      },
+
+      // public toggles
+      displayNamePublic: profileData.profile?.displayNamePublic,
+      descriptionPublic: profileData.profile?.descriptionPublic,
+      locationPublic: profileData.profile?.locationPublic,
+      web2UrlPublic: profileData.profile?.web2UrlPublic,
+      imagePathPublic: true,
+      coverPathPublic: true,
+
+      // visibility toggles
+      showDomainSuggestion: profileData.profile?.showDomainSuggestion,
+      showFeaturedCommunity: profileData.profile?.showFeaturedCommunity,
+      showFeaturedPartner: profileData.profile?.showFeaturedPartner,
+
+      // email configuration flags
+      messagingDisabled: profileData.messaging?.disabled,
+      messagingRulesReset: profileData.messaging?.resetRules,
+      thirdPartyMessagingEnabled:
+        profileData.messaging?.thirdPartyMessagingEnabled,
+      thirdPartyMessagingConfigType:
+        profileData.messaging?.thirdPartyMessagingConfigType,
+    }),
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'x-auth-domain': domain,
+      'x-auth-expires': expiry,
+      'x-auth-signature': signature,
+    },
+  });
 };
 
 export const unfollowDomainProfile = async (

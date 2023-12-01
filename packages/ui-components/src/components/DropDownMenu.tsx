@@ -1,7 +1,6 @@
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Logout from '@mui/icons-material/Logout';
 import SecurityIcon from '@mui/icons-material/Security';
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import {Card, Typography} from '@mui/material/';
 import type {Theme} from '@mui/material/styles';
 import React, {useState} from 'react';
@@ -47,7 +46,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-const DropDownMenu: React.FC<Props> = ({isOwner, domain, authDomain}) => {
+const DropDownMenu: React.FC<Props> = ({authDomain}) => {
   const [isLoggingOut, setLoggingOut] = useState<boolean>(false);
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
@@ -68,44 +67,27 @@ const DropDownMenu: React.FC<Props> = ({isOwner, domain, authDomain}) => {
         data-testid={`manage-profile-button`}
         className={classes.container}
         onClick={() =>
+          handleManageProfileClick(`${config.UD_ME_BASE_URL}/${authDomain}`)
+        }
+      >
+        <AccountCircleIcon className={classes.settingsIcon} />
+        <Typography className={cx(classes.font)} color="text.secondary">
+          {t('profile.viewMyProfile')}
+        </Typography>
+      </div>
+      <div
+        className={classes.container}
+        onClick={() =>
           handleManageProfileClick(
-            isOwner
-              ? `${config.UNSTOPPABLE_WEBSITE_URL}/manage?domain=${domain}`
-              : `${config.UD_ME_BASE_URL}/${authDomain}`,
+            `${config.UNSTOPPABLE_WEBSITE_URL}/manage?page=appAccess&domain=${authDomain}`,
           )
         }
       >
-        {isOwner ? (
-          <>
-            <SettingsOutlinedIcon className={classes.settingsIcon} />
-            <Typography className={cx(classes.font)} color="text.secondary">
-              {t('profile.manageDetails')}
-            </Typography>
-          </>
-        ) : (
-          <>
-            <AccountCircleIcon className={classes.settingsIcon} />
-            <Typography className={cx(classes.font)} color="text.secondary">
-              {t('profile.viewMyProfile')}
-            </Typography>
-          </>
-        )}
+        <SecurityIcon className={classes.settingsIcon} />
+        <Typography className={cx(classes.font)} color="text.secondary">
+          {t('profile.privacySettings')}
+        </Typography>
       </div>
-      {isOwner && (
-        <div
-          className={classes.container}
-          onClick={() =>
-            handleManageProfileClick(
-              `${config.UNSTOPPABLE_WEBSITE_URL}/manage?page=appAccess&domain=${domain}`,
-            )
-          }
-        >
-          <SecurityIcon className={classes.settingsIcon} />
-          <Typography className={cx(classes.font)} color="text.secondary">
-            {t('profile.privacySettings')}
-          </Typography>
-        </div>
-      )}
       <div
         data-testid={`signout-button`}
         className={classes.container}

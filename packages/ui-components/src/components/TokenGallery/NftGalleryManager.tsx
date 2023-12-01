@@ -8,7 +8,6 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import Divider from '@mui/material/Divider';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import Link from '@mui/material/Link';
@@ -280,7 +279,7 @@ export const NftGalleryManager: React.FC<NftGalleryManagerProps> = ({
 
   return (
     <>
-      {itemsToUpdate.length > 0 && (
+      {itemsToUpdate.length > 0 ? (
         <div className={classes.flexContainer}>
           <Link
             href="#"
@@ -295,14 +294,8 @@ export const NftGalleryManager: React.FC<NftGalleryManagerProps> = ({
               {itemsToUpdate.length > 0 && ` (${itemsToUpdate.length})`}
             </div>
           </Link>
-          <Divider
-            sx={{marginLeft: '5px;', marginRight: '5px;'}}
-            orientation="vertical"
-            flexItem
-          />
         </div>
-      )}
-      {hasNfts ? (
+      ) : hasNfts ? (
         <Link
           href="#"
           underline="none"

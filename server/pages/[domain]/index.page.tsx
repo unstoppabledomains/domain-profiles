@@ -1,12 +1,14 @@
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import ChatIcon from '@mui/icons-material/Chat';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
 import HowToRegOutlinedIcon from '@mui/icons-material/HowToRegOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import IosShareIcon from '@mui/icons-material/IosShare';
-import LanguageIcon from '@mui/icons-material/Language';
+import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
 import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
+import RestoreOutlinedIcon from '@mui/icons-material/RestoreOutlined';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -51,6 +53,8 @@ import {
   DomainListModal,
   DomainPreview,
   DomainProfileKeys,
+  DomainProfileModal,
+  DomainProfileTabType,
   FollowButton,
   ForSaleOnOpenSea,
   Link,
@@ -101,7 +105,7 @@ export type DomainProfilePageProps = {
 
 const DomainProfile = ({
   domain,
-  profileData,
+  profileData: initialProfileData,
   identity,
 }: DomainProfilePageProps) => {
   // hooks
@@ -115,10 +119,13 @@ const DomainProfile = ({
   const {nfts, nftSymbolVisible, expanded: nftShowAll} = useTokenGallery();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isReloadRequested, setIsReloadRequested] = useState(false);
   const {setWeb3Deps} = useWeb3Context();
 
   // state management
+  const [profileData, setProfileData] = useState(initialProfileData);
   const [loginClicked, setLoginClicked] = useState<boolean>();
+  const [showManageDomainModal, setShowManageDomainModal] = useState(false);
   const [authAddress, setAuthAddress] = useState('');
   const [authDomain, setAuthDomain] = useState('');
   const [displayQrCode, setDisplayQrCode] = useState(false);
@@ -130,10 +137,10 @@ const DomainProfile = ({
   const [records, setRecords] = useState<Record<string, string>>({});
   const [metadata, setMetadata] = useState<Record<string, string>>({});
   const [showFeaturedCommunity, setShowFeaturedCommunity] = useState(
-    profileData?.profile.showFeaturedCommunity ?? false,
+    profileData?.profile?.showFeaturedCommunity ?? false,
   );
   const [showFeaturedPartner, setShowFeaturedPartner] = useState(
-    profileData?.profile.showFeaturedPartner ?? false,
+    profileData?.profile?.showFeaturedPartner ?? false,
   );
   const {
     data: featureFlags,
@@ -149,7 +156,7 @@ const DomainProfile = ({
   const [optimisticFollowCount, setOptimisticFollowCount] = useState(0);
 
   const isEnsDomain = isExternalDomainValidForManagement(domain);
-  const {data: ethDomainStatus} = useEnsDomainStatus(domain, isEnsDomain);
+  const {data: ensDomainStatus} = useEnsDomainStatus(domain, isEnsDomain);
 
   // format social platform data
   const socialsInfo: SerializedDomainProfileSocialAccountsUserInfo = {};
@@ -164,7 +171,9 @@ const DomainProfile = ({
     ),
   );
   verifiedSocials.forEach(socialType => {
-    const socialUser = profileData?.socialAccounts[socialType]?.location;
+    const socialUser =
+      profileData?.socialAccounts &&
+      profileData?.socialAccounts[socialType]?.location;
     socialsInfo[socialType] = {
       kind: socialType,
       userName: socialUser,
@@ -182,7 +191,7 @@ const DomainProfile = ({
 
   // retrieve on-chain record data
   const addressRecords = parseRecords(records || {});
-  const domainSellerEmail = profileData?.profile.publicDomainSellerEmail;
+  const domainSellerEmail = profileData?.profile?.publicDomainSellerEmail;
   const isForSale = Boolean(domainSellerEmail);
   const ipfsHash = records['ipfs.html.value'];
   const ownerAddress = metadata.owner || '';
@@ -201,22 +210,24 @@ const DomainProfile = ({
     reverse: Boolean(metadata.reverse),
   });
   const needLeftSideDivider =
-    Boolean(profileData?.profile.location) ||
+    Boolean(profileData?.profile?.location) ||
     verifiedSocials.length > 0 ||
     humanityVerified ||
     ipfsHash ||
-    profileData?.profile.web2Url;
+    profileData?.profile?.web2Url ||
+    profileData?.webacy ||
+    ensDomainStatus?.expiresAt;
 
   const hasAddresses = Boolean(
     Object.keys(addressRecords.addresses ?? {}).length ||
       Object.keys(addressRecords.multicoinAddresses ?? {}).length,
   );
-  const uploadedImagePath = profileData?.profile.imagePath
-    ? getImageUrl(profileData.profile.imagePath)
+  const uploadedImagePath = profileData?.profile?.imagePath
+    ? getImageUrl(profileData.profile?.imagePath)
     : null;
 
-  const domainCover = profileData?.profile.coverPath
-    ? getImageUrl(profileData?.profile.coverPath)
+  const domainCover = profileData?.profile?.coverPath
+    ? getImageUrl(profileData?.profile?.coverPath)
     : null;
   const {label, sld, extension} = splitDomain(domain);
   const seoTags = getSeoTags({
@@ -253,8 +264,36 @@ const DomainProfile = ({
     setIsViewFollowModalOpen(true);
   };
 
-  const handleViewFollowModalClose = () => {
+  const handleViewFollowModalClose = async () => {
     setIsViewFollowModalOpen(false);
+  };
+
+  const handleManageDomainModalUpdate = async (
+    tab: DomainProfileTabType,
+    updatedData?: SerializedPublicDomainProfileData,
+  ): Promise<void> => {
+    if (
+      updatedData &&
+      [DomainProfileTabType.Profile, DomainProfileTabType.ListForSale].includes(
+        tab,
+      )
+    ) {
+      setProfileData({
+        ...profileData,
+        ...updatedData,
+      });
+    } else if (tab === DomainProfileTabType.TokenGallery) {
+      setIsReloadRequested(true);
+    }
+  };
+
+  const handleManageDomainModalClose = async () => {
+    setShowManageDomainModal(false);
+    if (isReloadRequested) {
+      setIsLoaded(false);
+      await getProfileData(domain, [DomainFieldTypes.Profile]);
+      setIsLoaded(true);
+    }
   };
 
   const handleShareRiskScore = () => {
@@ -290,11 +329,12 @@ const DomainProfile = ({
     ipfsHash ||
     hasAddresses ||
     isForSale ||
-    hasBadges;
+    hasBadges ||
+    ensDomainStatus;
 
   useEffect(() => {
     // wait until mounted
-    if (!isMounted() || !isFeatureFlagSuccess) {
+    if (!isMounted() || !isFeatureFlagSuccess || !ownerAddress) {
       return;
     }
 
@@ -347,8 +387,8 @@ const DomainProfile = ({
   }, []);
 
   useEffect(() => {
-    if (profileData?.profile.imagePath) {
-      setImagePath(profileData?.profile.imagePath);
+    if (profileData?.profile?.imagePath) {
+      setImagePath(profileData.profile.imagePath);
     }
   }, [profileData]);
 
@@ -496,40 +536,65 @@ const DomainProfile = ({
       >
         <Logo className={classes.logo} inverse absoluteUrl />
         <div className={classes.head}>
-          <div className={classes.menuButtonContainer}>
-            <ShareMenu
-              toggleQrCode={toggleQrCode}
-              displayQrCode={displayQrCode}
-              domain={domain}
-              className={cx(classes.shareMenu, {
-                [classes.smallHidden]: domain !== authDomain,
-              })}
-              onProfileLinkCopied={handleClickToCopy}
-            />
-            {chatUser && chatUser.toLowerCase() !== domain.toLowerCase() && (
-              <Button
-                data-testid="chat-button"
-                onClick={() => setOpenChat(domain)}
-                className={cx(classes.shareMenu, {
-                  [classes.smallHidden]: domain !== authDomain,
-                })}
-                startIcon={<ChatIcon />}
-              >
-                {t('push.chat')}
-              </Button>
-            )}
-            {domain !== authDomain && (
-              <FollowButton
-                handleLogin={() => setLoginClicked(true)}
-                setWeb3Deps={setWeb3Deps}
-                authDomain={authDomain}
+          {isOwner !== undefined && (
+            <div className={classes.menuButtonContainer}>
+              <ShareMenu
+                toggleQrCode={toggleQrCode}
+                displayQrCode={displayQrCode}
                 domain={domain}
-                authAddress={authAddress}
-                onFollowClick={handleFollowClick}
-                onUnfollowClick={handleUnfollowClick}
+                className={cx(classes.shareMenu, {
+                  [classes.smallHidden]: !isOwner,
+                })}
+                onProfileLinkCopied={handleClickToCopy}
               />
-            )}
-          </div>
+              {!isOwner ? (
+                <>
+                  {authDomain && (
+                    <Button
+                      data-testid="chat-button"
+                      onClick={() => setOpenChat(domain)}
+                      className={cx(classes.shareMenu, {
+                        [classes.smallHidden]: !isOwner,
+                      })}
+                      startIcon={<ChatIcon />}
+                    >
+                      {t('push.chat')}
+                    </Button>
+                  )}
+                  <FollowButton
+                    handleLogin={() => setLoginClicked(true)}
+                    setWeb3Deps={setWeb3Deps}
+                    authDomain={authDomain}
+                    domain={domain}
+                    authAddress={authAddress}
+                    onFollowClick={handleFollowClick}
+                    onUnfollowClick={handleUnfollowClick}
+                  />
+                </>
+              ) : (
+                (featureFlags.variations?.udMeServiceDomainsEnableManagement ||
+                  true) &&
+                (isMobile ? (
+                  <IconButton
+                    data-testid="edit-profile-button"
+                    onClick={() => setShowManageDomainModal(true)}
+                    className={cx(classes.editButton)}
+                  >
+                    <EditOutlinedIcon />
+                  </IconButton>
+                ) : (
+                  <Button
+                    data-testid="edit-profile-button"
+                    onClick={() => setShowManageDomainModal(true)}
+                    className={cx(classes.editButton)}
+                    startIcon={<EditOutlinedIcon />}
+                  >
+                    {t('manage.manageProfile')}
+                  </Button>
+                ))
+              )}
+            </div>
+          )}
           <div className={classes.topHeaderContainer}>
             <div className={classes.searchContainer}>
               <ProfileSearchBar setWeb3Deps={setWeb3Deps} />
@@ -585,13 +650,11 @@ const DomainProfile = ({
                 hasUdBlueBadge={hasUdBlueBadge}
               />
             </div>
-            {profileData?.profile.displayName && (
+            {profileData?.profile?.displayName && (
               <div>
                 <Box mt={4}>
                   <Typography variant="h4" className={classes.displayName}>
-                    {profileData?.profile.displayName
-                      ? profileData?.profile.displayName
-                      : ''}
+                    {profileData.profile.displayName}
                   </Typography>
                 </Box>
                 <Box mt={1} display="flex" className={classes.domainNameBox}>
@@ -631,7 +694,7 @@ const DomainProfile = ({
                         className={classes.followCount}
                         onClick={handleViewFollowingClick}
                       >
-                        {`${profileData.social.followingCount} following`}
+                        {`${profileData.social?.followingCount || 0} following`}
                       </Button>
                       <Button
                         variant="text"
@@ -639,7 +702,7 @@ const DomainProfile = ({
                         onClick={handleViewFollowersClick}
                       >
                         {`${
-                          (profileData.social.followerCount || 0) +
+                          (profileData.social?.followerCount || 0) +
                           optimisticFollowCount
                         } followers`}
                       </Button>
@@ -650,7 +713,7 @@ const DomainProfile = ({
                           {t('profile.followedBy', {
                             followers: followers.slice(0, 2).join(', '),
                             othersCount:
-                              (profileData.social.followerCount || 0) - 3,
+                              (profileData.social?.followerCount || 0) - 3,
                           })}
                         </Typography>
                         <div className={classes.followersPreview}>
@@ -668,15 +731,104 @@ const DomainProfile = ({
                     )}
                   </div>
                 )}
-                {profileData?.profile.description ? (
+                {profileData?.profile?.description ? (
                   <Box mt={2}>
                     <Typography className={classes.description}>
-                      {profileData?.profile.description
-                        ? profileData?.profile.description
+                      {profileData?.profile?.description
+                        ? profileData?.profile?.description
                         : ''}
                     </Typography>
                   </Box>
                 ) : null}
+
+                {hasAddresses && (
+                  <CryptoAddresses
+                    onCryptoAddressCopied={handleClickToCopy}
+                    profileData={profileData}
+                    domain={domain}
+                    isOwner={isOwner}
+                    showWarning={
+                      featureFlags.variations
+                        ?.ecommerceServiceUsersPublicProfileAddressVerifiedCheck ||
+                      false
+                    }
+                    records={addressRecords}
+                    ownerAddress={ownerAddress}
+                  />
+                )}
+
+                {needLeftSideDivider && (
+                  <Box mt={3} mb={2}>
+                    <Divider />
+                  </Box>
+                )}
+                {Boolean(verifiedSocials.length) && someSocialsPublic && (
+                  <div>
+                    <Grid container spacing={1}>
+                      {verifiedSocials
+                        .filter(account => {
+                          return (
+                            profileData?.socialAccounts &&
+                            profileData.socialAccounts[account].location
+                          );
+                        })
+                        .map(account => {
+                          return (
+                            <Grid key={account} item xs={2} md={3} lg={2}>
+                              <SocialAccountCard
+                                socialInfo={socialsInfo[account]}
+                                handleClickToCopy={handleClickToCopy}
+                                verified={
+                                  profileData!.socialAccounts![account].verified
+                                }
+                                verificationSupported={
+                                  featureFlags.variations
+                                    ?.udMeServiceDomainsEnableSocialVerification
+                                }
+                                small
+                              />
+                            </Grid>
+                          );
+                        })}
+                    </Grid>
+                    {needLeftSideDivider && (
+                      <Box mt={3} mb={2}>
+                        <Divider />
+                      </Box>
+                    )}
+                  </div>
+                )}
+                {humanityVerified && (
+                  <Tooltip
+                    placement="top"
+                    title={
+                      <div className={classes.humanityVerifiedTooltipContent}>
+                        {t('profile.useYourDomainToLoginToApplications')}
+                        <Link
+                          external
+                          href="https://unstoppablemarketplace.com/"
+                          className={classes.humanityVerifiedTooltipLink}
+                        >
+                          {t('profile.clickToSeeAllApplications')}
+                        </Link>
+                      </div>
+                    }
+                    arrow
+                  >
+                    <div>
+                      <Link
+                        external
+                        href="https://unstoppablemarketplace.com/"
+                        className={classes.humanityVerifiedLink}
+                      >
+                        <HowToRegOutlinedIcon
+                          className={classes.humanityVerifiedIcon}
+                        />
+                        {t('profile.humanityVerified')}
+                      </Link>
+                    </div>
+                  </Tooltip>
+                )}
                 {profileData?.webacy && (
                   <Box className={classes.riskScoreContainer}>
                     <Avatar
@@ -779,82 +931,9 @@ const DomainProfile = ({
                       )}
                   </Box>
                 )}
-                {hasAddresses && (
-                  <CryptoAddresses
-                    onCryptoAddressCopied={handleClickToCopy}
-                    profileData={profileData}
-                    domain={domain}
-                    isOwner={isOwner}
-                    showWarning={
-                      featureFlags.variations
-                        ?.ecommerceServiceUsersPublicProfileAddressVerifiedCheck ||
-                      false
-                    }
-                    records={addressRecords}
-                    ownerAddress={ownerAddress}
-                  />
-                )}
-                {needLeftSideDivider && (
-                  <Box mt={3} mb={2}>
-                    <Divider />
-                  </Box>
-                )}
-                {Boolean(verifiedSocials.length) && someSocialsPublic && (
-                  <div>
-                    <Grid container spacing={1}>
-                      {verifiedSocials.map(account => {
-                        return (
-                          <Grid key={account} item xs={2} md={3} lg={2}>
-                            <SocialAccountCard
-                              socialInfo={socialsInfo[account]}
-                              handleClickToCopy={handleClickToCopy}
-                              small
-                            />
-                          </Grid>
-                        );
-                      })}
-                    </Grid>
-                    {needLeftSideDivider && (
-                      <Box mt={3} mb={2}>
-                        <Divider />
-                      </Box>
-                    )}
-                  </div>
-                )}
-                {humanityVerified && (
-                  <Tooltip
-                    placement="top"
-                    title={
-                      <div className={classes.humanityVerifiedTooltipContent}>
-                        {t('profile.useYourDomainToLoginToApplications')}
-                        <Link
-                          external
-                          href="https://unstoppablemarketplace.com/"
-                          className={classes.humanityVerifiedTooltipLink}
-                        >
-                          {t('profile.clickToSeeAllApplications')}
-                        </Link>
-                      </div>
-                    }
-                    arrow
-                  >
-                    <div>
-                      <Link
-                        external
-                        href="https://unstoppablemarketplace.com/"
-                        className={classes.humanityVerifiedLink}
-                      >
-                        <HowToRegOutlinedIcon
-                          className={classes.humanityVerifiedIcon}
-                        />
-                        {t('profile.humanityVerified')}
-                      </Link>
-                    </div>
-                  </Tooltip>
-                )}
-                {ipfsHash ? (
+                {ipfsHash && (
                   <Box mb={2} display="flex">
-                    <LanguageIcon className={classes.sidebarIcon} />
+                    <LaunchOutlinedIcon className={classes.sidebarIcon} />
                     <Link
                       external
                       href={`${config.IPFS_BASE_URL}${normalizeIpfsHash(
@@ -867,30 +946,46 @@ const DomainProfile = ({
                       )})`}
                     </Link>
                   </Box>
-                ) : null}
-                {profileData?.profile.web2Url ? (
+                )}
+                {profileData?.profile?.web2Url && (
                   <Box mb={2} display="flex">
-                    <LanguageIcon className={classes.sidebarIcon} />
+                    <LaunchOutlinedIcon className={classes.sidebarIcon} />
                     <Link
                       external
-                      href={profileData?.profile.web2Url}
+                      href={profileData?.profile?.web2Url}
                       className={classes.websiteLink}
                     >
-                      {profileData?.profile.web2Url.replace(
+                      {profileData?.profile?.web2Url.replace(
                         /^https?:\/\/|\/$/g,
                         '',
                       )}
                     </Link>
                   </Box>
-                ) : null}
-                {profileData?.profile.location ? (
+                )}
+                {profileData?.profile?.location && (
                   <Box mb={2} display="flex">
                     <FmdGoodOutlinedIcon className={classes.sidebarIcon} />
                     <Typography className={classes.emailAndLocation}>
-                      {profileData?.profile.location}
+                      {profileData?.profile?.location}
                     </Typography>
                   </Box>
-                ) : null}
+                )}
+                {isEnsDomain && ensDomainStatus?.expiresAt && (
+                  <Box mb={2} display="flex">
+                    <RestoreOutlinedIcon className={classes.sidebarIcon} />
+                    <Typography className={classes.emailAndLocation}>
+                      {t('profile.thisDomainExpires', {
+                        action: isPast(new Date(ensDomainStatus.expiresAt))
+                          ? t('profile.expired')
+                          : t('profile.expires'),
+                        date: format(
+                          new Date(ensDomainStatus.expiresAt),
+                          'MMM d, yyyy',
+                        ),
+                      })}
+                    </Typography>
+                  </Box>
+                )}
                 {needLeftSideDivider && (
                   <Box
                     mt={2}
@@ -915,6 +1010,10 @@ const DomainProfile = ({
                   isOwner={isOwner}
                   ownerAddress={ownerAddress}
                   profileServiceUrl={config.PROFILE.HOST_URL}
+                  hideConfigureButton={
+                    !!featureFlags.variations
+                      ?.udMeServiceDomainsEnableManagement
+                  }
                 />
               )}
             {isForSale && !nftShowAll && openSeaLink && domainSellerEmail && (
@@ -1178,19 +1277,6 @@ const DomainProfile = ({
                   : t('profile.emptyNotMinted')}
               </div>
             )}
-            {isEnsDomain && ethDomainStatus?.expiresAt && (
-              <div className={classes.empty}>
-                {t('profile.thisDomainExpires', {
-                  action: isPast(new Date(ethDomainStatus.expiresAt))
-                    ? 'expired'
-                    : 'is set to expire',
-                  date: format(
-                    new Date(ethDomainStatus.expiresAt),
-                    'MMM d, yyyy',
-                  ),
-                })}
-              </div>
-            )}
           </Grid>
         ) : (
           <Grid item xs={12} sm={12} md={8} className={classes.item}>
@@ -1205,16 +1291,25 @@ const DomainProfile = ({
           title={
             viewFollowerRelationship === 'followers'
               ? `${t('profile.followers')} ${
-                  profileData.social.followerCount || 0
+                  profileData.social?.followerCount || 0
                 }`
               : `${t('profile.following')} ${
-                  profileData.social.followingCount || 0
+                  profileData.social?.followingCount || 0
                 }`
           }
           retrieveDomains={retrieveFollowers}
           open={isViewFollowModalOpen}
           setWeb3Deps={setWeb3Deps}
           onClose={handleViewFollowModalClose}
+        />
+      )}
+      {showManageDomainModal && (
+        <DomainProfileModal
+          domain={domain}
+          address={ownerAddress}
+          open={showManageDomainModal}
+          onClose={handleManageDomainModalClose}
+          onUpdate={handleManageDomainModalUpdate}
         />
       )}
     </Box>
@@ -1265,7 +1360,7 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
   }
 
   // set display name to domain if not already set
-  if (profileData?.profile && !profileData.profile.displayName) {
+  if (profileData?.profile && !profileData.profile?.displayName) {
     profileData.profile.displayName = domain;
   }
 

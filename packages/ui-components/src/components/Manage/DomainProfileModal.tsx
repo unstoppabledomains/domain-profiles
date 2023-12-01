@@ -5,6 +5,8 @@ import React from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import type {SerializedUserDomainProfileData} from '../../lib';
+import type {DomainProfileTabType} from './DomainProfile';
 import {DomainProfile} from './DomainProfile';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -20,6 +22,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
   onClose,
+  onUpdate,
   address,
   domain,
   open,
@@ -29,7 +32,7 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
   return (
     <Dialog maxWidth="sm" open={open} onClose={() => onClose()}>
       <Box className={classes.container}>
-        <DomainProfile address={address} domain={domain} />
+        <DomainProfile address={address} domain={domain} onUpdate={onUpdate} />
       </Box>
     </Dialog>
   );
@@ -40,6 +43,10 @@ export type DomainProfileModalProps = {
   domain: string;
   open: boolean;
   onClose(): void;
+  onUpdate(
+    tab: DomainProfileTabType,
+    data?: SerializedUserDomainProfileData,
+  ): void;
 };
 
 export default DomainProfileModal;

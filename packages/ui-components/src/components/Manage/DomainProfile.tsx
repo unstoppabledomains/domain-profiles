@@ -13,6 +13,7 @@ import truncateEthAddress from 'truncate-eth-address';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import type {SerializedUserDomainProfileData} from '../../lib';
 import {useTranslationContext} from '../../lib';
 import {Crypto as CryptoTab} from './Tabs/Crypto';
 import {Email as EmailTab} from './Tabs/Email';
@@ -63,22 +64,17 @@ const StyledTabBadge = styled(Badge)<BadgeProps>(() => ({
   },
 }));
 
-const enum TabType {
-  Crypto = 'crypto',
-  Email = 'email',
-  Profile = 'profile',
-  Reverse = 'reverse',
-  TokenGallery = 'tokenGallery',
-}
-
 export const DomainProfile: React.FC<DomainProfileProps> = ({
   address,
   domain,
+  onUpdate,
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
-  const [tabValue, setTabValue] = useState(TabType.Profile);
-  const [tabUnreadDot, setTabUnreadDot] = useState<Record<TabType, boolean>>({
+  const [tabValue, setTabValue] = useState(DomainProfileTabType.Profile);
+  const [tabUnreadDot, setTabUnreadDot] = useState<
+    Record<DomainProfileTabType, boolean>
+  >({
     profile: false,
     crypto: false,
     reverse: false,
@@ -87,7 +83,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
   });
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
-    const tv = newValue as TabType;
+    const tv = newValue as DomainProfileTabType;
     setTabValue(tv);
     setTabUnreadDot({
       ...tabUnreadDot,
@@ -110,47 +106,47 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   <StyledTabBadge
                     color="primary"
                     variant="dot"
-                    invisible={!tabUnreadDot[TabType.Profile]}
+                    invisible={!tabUnreadDot[DomainProfileTabType.Profile]}
                   >
                     <Box className={classes.tabLabel}>
                       {t('manage.profile')}
                     </Box>
                   </StyledTabBadge>
                 }
-                value={TabType.Profile}
+                value={DomainProfileTabType.Profile}
               />
               <Tab
                 label={
                   <StyledTabBadge
                     color="primary"
                     variant="dot"
-                    invisible={!tabUnreadDot[TabType.Email]}
+                    invisible={!tabUnreadDot[DomainProfileTabType.Email]}
                   >
                     <Box className={classes.tabLabel}>{t('manage.email')}</Box>
                   </StyledTabBadge>
                 }
-                value={TabType.Email}
+                value={DomainProfileTabType.Email}
               />
               <Tab
                 label={
                   <StyledTabBadge
                     color="primary"
                     variant="dot"
-                    invisible={!tabUnreadDot[TabType.TokenGallery]}
+                    invisible={!tabUnreadDot[DomainProfileTabType.TokenGallery]}
                   >
                     <Box className={classes.tabLabel}>
                       {t('profile.gallery')}
                     </Box>
                   </StyledTabBadge>
                 }
-                value={TabType.TokenGallery}
+                value={DomainProfileTabType.TokenGallery}
               />
               <Tab
                 label={
                   <StyledTabBadge
                     color="primary"
                     variant="dot"
-                    invisible={!tabUnreadDot[TabType.Crypto]}
+                    invisible={!tabUnreadDot[DomainProfileTabType.Crypto]}
                   >
                     <Box className={classes.tabLabel}>
                       {' '}
@@ -158,41 +154,57 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                     </Box>
                   </StyledTabBadge>
                 }
-                value={TabType.Crypto}
+                value={DomainProfileTabType.Crypto}
               />
               <Tab
                 label={
                   <StyledTabBadge
                     color="primary"
                     variant="dot"
-                    invisible={!tabUnreadDot[TabType.Reverse]}
+                    invisible={!tabUnreadDot[DomainProfileTabType.Reverse]}
                   >
                     <Box className={classes.tabLabel}>
                       {t('manage.reverse')}
                     </Box>
                   </StyledTabBadge>
                 }
-                value={TabType.Reverse}
+                value={DomainProfileTabType.Reverse}
               />
             </TabList>
           </Box>
         </Box>
-        <TabPanel value={TabType.Profile} className={classes.tabContentItem}>
-          <ProfileTab address={address} domain={domain} />
+        <TabPanel
+          value={DomainProfileTabType.Profile}
+          className={classes.tabContentItem}
+        >
+          <ProfileTab address={address} domain={domain} onUpdate={onUpdate} />
         </TabPanel>
-        <TabPanel value={TabType.Email} className={classes.tabContentItem}>
+        <TabPanel
+          value={DomainProfileTabType.Email}
+          className={classes.tabContentItem}
+        >
           <EmailTab address={address} domain={domain} />
         </TabPanel>
         <TabPanel
-          value={TabType.TokenGallery}
+          value={DomainProfileTabType.TokenGallery}
           className={classes.tabContentItem}
         >
-          <TokenGalleryTab address={address} domain={domain} />
+          <TokenGalleryTab
+            address={address}
+            domain={domain}
+            onUpdate={onUpdate}
+          />
         </TabPanel>
-        <TabPanel value={TabType.Crypto} className={classes.tabContentItem}>
+        <TabPanel
+          value={DomainProfileTabType.Crypto}
+          className={classes.tabContentItem}
+        >
           <CryptoTab domain={domain} />
         </TabPanel>
-        <TabPanel value={TabType.Reverse} className={classes.tabContentItem}>
+        <TabPanel
+          value={DomainProfileTabType.Reverse}
+          className={classes.tabContentItem}
+        >
           <ReverseTab domain={domain} />
         </TabPanel>
       </TabContext>
@@ -203,4 +215,16 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
 export type DomainProfileProps = {
   address: string;
   domain: string;
+  onUpdate(
+    tab: DomainProfileTabType,
+    data?: SerializedUserDomainProfileData,
+  ): void;
 };
+
+export enum DomainProfileTabType {
+  Crypto = 'crypto',
+  Email = 'email',
+  Profile = 'profile',
+  Reverse = 'reverse',
+  TokenGallery = 'tokenGallery',
+}

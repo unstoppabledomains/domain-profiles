@@ -34,6 +34,7 @@ import {
 } from '../../../../lib';
 import {notifyError} from '../../../../lib/error';
 import {ProfileManager} from '../../../Wallet/ProfileManager';
+import {DomainProfileTabType} from '../../DomainProfile';
 import {Header} from './Header';
 import ManageInput from './ManageInput';
 import ManagePublicVisibility from './ManagePublicVisibility';
@@ -91,7 +92,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
+export const Profile: React.FC<ProfileProps> = ({
+  address,
+  domain,
+  onUpdate,
+}) => {
   const {classes} = useStyles();
   const {enqueueSnackbar} = useSnackbar();
   const {setWeb3Deps} = useWeb3Context();
@@ -213,6 +218,10 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
                 }
               : undefined,
           );
+          onUpdate(DomainProfileTabType.Profile, {
+            ...userProfile,
+            ...publicVisibilityValues,
+          });
           setIsSaving(false);
           setDirtyFlag(false);
         }
@@ -602,4 +611,8 @@ export const Profile: React.FC<ProfileProps> = ({address, domain}) => {
 export type ProfileProps = {
   address: string;
   domain: string;
+  onUpdate(
+    tab: DomainProfileTabType,
+    data?: SerializedUserDomainProfileData,
+  ): void;
 };

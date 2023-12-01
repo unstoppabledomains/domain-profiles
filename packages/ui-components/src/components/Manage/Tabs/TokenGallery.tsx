@@ -10,9 +10,10 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getDomainNfts} from '../../../actions';
 import {useWeb3Context} from '../../../hooks';
-import type {NftResponse} from '../../../lib';
+import type {NftResponse, SerializedUserDomainProfileData} from '../../../lib';
 import {useTranslationContext} from '../../../lib';
 import {NftGalleryManager} from '../../TokenGallery/NftGalleryManager';
+import {DomainProfileTabType} from '../DomainProfile';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -42,6 +43,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 export const TokenGallery: React.FC<TokenGalleryProps> = ({
   address,
   domain,
+  onUpdate,
 }) => {
   const {classes} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
@@ -57,6 +59,10 @@ export const TokenGallery: React.FC<TokenGalleryProps> = ({
   const loadSettings = async () => {
     setNftAddressRecords(await getDomainNfts(domain));
     setIsLoaded(true);
+  };
+
+  const handleRecordsUpdate = () => {
+    onUpdate(DomainProfileTabType.TokenGallery);
   };
 
   return (
@@ -81,7 +87,7 @@ export const TokenGallery: React.FC<TokenGalleryProps> = ({
             records={nftAddressRecords}
             profileServiceUrl={config.PROFILE.HOST_URL}
             itemsToUpdate={[]}
-            setRecords={() => {}}
+            setRecords={handleRecordsUpdate}
             getNextNftPage={async () => {}}
             setWeb3Deps={setWeb3Deps}
             hasNfts={false}
@@ -99,4 +105,8 @@ export const TokenGallery: React.FC<TokenGalleryProps> = ({
 export type TokenGalleryProps = {
   address: string;
   domain: string;
+  onUpdate(
+    tab: DomainProfileTabType,
+    data?: SerializedUserDomainProfileData,
+  ): void;
 };

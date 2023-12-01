@@ -36,10 +36,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginRight: theme.spacing(1),
   },
   infoContainer: {
-    marginBottom: theme.spacing(2),
+    marginBottom: theme.spacing(3),
   },
   button: {
-    marginTop: theme.spacing(3),
+    marginTop: theme.spacing(4),
   },
   mailIcon: {
     color: theme.palette.neutralShades[600],

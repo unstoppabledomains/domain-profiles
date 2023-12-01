@@ -54,6 +54,7 @@ import {
   DomainPreview,
   DomainProfileKeys,
   DomainProfileModal,
+  DomainProfileTabType,
   FollowButton,
   ForSaleOnOpenSea,
   Link,
@@ -118,6 +119,7 @@ const DomainProfile = ({
   const {nfts, nftSymbolVisible, expanded: nftShowAll} = useTokenGallery();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isReloadRequested, setIsReloadRequested] = useState(false);
   const {setWeb3Deps} = useWeb3Context();
 
   // state management
@@ -262,25 +264,31 @@ const DomainProfile = ({
     setIsViewFollowModalOpen(true);
   };
 
-  const handleViewFollowModalClose = () => {
+  const handleViewFollowModalClose = async () => {
     setIsViewFollowModalOpen(false);
+  };
+
+  const handleManageDomainModalUpdate = async (
+    tab: DomainProfileTabType,
+    updatedData?: SerializedPublicDomainProfileData,
+  ): Promise<void> => {
+    if (tab === DomainProfileTabType.Profile && updatedData) {
+      setProfileData({
+        ...profileData,
+        ...updatedData,
+      });
+    } else if (tab === DomainProfileTabType.TokenGallery) {
+      setIsReloadRequested(true);
+    }
   };
 
   const handleManageDomainModalClose = async () => {
     setShowManageDomainModal(false);
-    setIsLoaded(false);
-    setProfileData(
-      await getProfileData(domain, [
-        DomainFieldTypes.Profile,
-        DomainFieldTypes.Messaging,
-        DomainFieldTypes.SocialAccounts,
-        DomainFieldTypes.Records,
-        DomainFieldTypes.CryptoVerifications,
-        DomainFieldTypes.WebacyScore,
-        DomainFieldTypes.HumanityCheck,
-      ]),
-    );
-    setIsLoaded(true);
+    if (isReloadRequested) {
+      setIsLoaded(false);
+      await getProfileData(domain, [DomainFieldTypes.Profile]);
+      setIsLoaded(true);
+    }
   };
 
   const handleShareRiskScore = () => {
@@ -1289,6 +1297,7 @@ const DomainProfile = ({
           address={ownerAddress}
           open={showManageDomainModal}
           onClose={handleManageDomainModalClose}
+          onUpdate={handleManageDomainModalUpdate}
         />
       )}
     </Box>

@@ -853,8 +853,8 @@ const DomainProfile = ({
                             <>
                               <Typography variant="caption">
                                 {
-                                  issue.categories.wallet_characteristics
-                                    .description
+                                  issue.categories?.wallet_characteristics
+                                    ?.description
                                 }
                               </Typography>
                               <List dense sx={{listStyleType: 'disc', pl: 4}}>

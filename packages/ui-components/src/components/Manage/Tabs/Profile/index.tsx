@@ -178,6 +178,7 @@ export const Profile: React.FC<ProfileProps> = ({
               imagePathPublic: true,
               coverPathPublic: true,
             });
+            setDirtyFlag(false);
             setIsLoaded(true);
           }
         } else if (userProfile) {

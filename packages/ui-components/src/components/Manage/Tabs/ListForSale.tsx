@@ -1,5 +1,4 @@
 import SellOutlinedIcon from '@mui/icons-material/SellOutlined';
-import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -18,6 +17,7 @@ import {DomainFieldTypes, useTranslationContext} from '../../../lib';
 import {notifyError} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import {DomainProfileTabType} from '../DomainProfile';
+import BulkUpdateLoadingButton from './BulkUpdateLoadingButton';
 import ManageInput from './Profile/ManageInput';
 import {TabHeader} from './TabHeader';
 
@@ -33,7 +33,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginTop: theme.spacing(2),
   },
   checkbox: {
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing(0),
   },
   infoContainer: {
     marginBottom: theme.spacing(3),
@@ -68,6 +68,9 @@ export const ListForSale: React.FC<ListForSale> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [isListingEnabled, setIsListingEnabled] = useState(false);
   const [isInvalidEmail, setIsInvalidEmail] = useState(false);
+  const [isBulkUpdate, setIsBulkUpdate] = useState(false);
+  const [updatedCount, setUpdatedCount] = useState(0);
+  const [updateErrorMessage, setUpdateErrorMessage] = useState<string>();
   const [dirtyFlag, setDirtyFlag] = useState(false);
   const [userProfile, setUserProfile] =
     useState<SerializedUserDomainProfileData>();
@@ -82,17 +85,19 @@ export const ListForSale: React.FC<ListForSale> = ({
     try {
       // only proceed if signature available
       if (domain && signature && expiry) {
+        // retrieve user profile data from profile API
+        const existingData = await getProfileUserData(
+          domain,
+          [DomainFieldTypes.Profile, DomainFieldTypes.Messaging],
+          signature,
+          expiry,
+        );
         if (!isLoaded) {
-          // retrieve user profile data from profile API
-          const data = await getProfileUserData(
-            domain,
-            [DomainFieldTypes.Profile, DomainFieldTypes.Messaging],
-            signature,
-            expiry,
-          );
-          if (data) {
-            setUserProfile(data);
-            setIsListingEnabled(!!data.profile?.publicDomainSellerEmail);
+          if (existingData) {
+            setUserProfile(existingData);
+            setIsListingEnabled(
+              !!existingData.profile?.publicDomainSellerEmail,
+            );
             setIsLoaded(true);
           }
         } else if (userProfile) {
@@ -106,17 +111,33 @@ export const ListForSale: React.FC<ListForSale> = ({
 
           // update the domain's user data from profile API
           setIsSaving(true);
-          await setProfileUserData(domain, userProfile, signature, expiry);
+          setUpdateErrorMessage('');
+          const updateResult = await setProfileUserData(
+            domain,
+            existingData,
+            userProfile,
+            signature,
+            expiry,
+            undefined,
+            undefined,
+            isBulkUpdate,
+          );
 
           // saving profile complete
-          onUpdate(DomainProfileTabType.ListForSale, {
-            ...userProfile,
-          });
-          setIsSaving(false);
-          setDirtyFlag(false);
+          if (updateResult?.success) {
+            setUpdatedCount(updateResult.domains.length);
+            onUpdate(DomainProfileTabType.ListForSale, {
+              ...userProfile,
+            });
+            setIsSaving(false);
+            setDirtyFlag(false);
+          } else {
+            setUpdateErrorMessage(t('manage.updateError'));
+          }
         }
       }
     } catch (e) {
+      setUpdateErrorMessage(t('manage.updateError'));
       notifyError(e, {msg: 'unable to manage user profile'});
     }
   };
@@ -200,15 +221,18 @@ export const ListForSale: React.FC<ListForSale> = ({
               />
             </FormGroup>
           </Box>
-          <LoadingButton
+          <BulkUpdateLoadingButton
+            address={address}
+            count={updatedCount}
+            isBulkUpdate={isBulkUpdate}
+            setIsBulkUpdate={setIsBulkUpdate}
             variant="contained"
             onClick={handleSave}
             loading={isSaving}
             className={classes.button}
             disabled={!dirtyFlag}
-          >
-            {t('common.save')}
-          </LoadingButton>
+            errorMessage={updateErrorMessage}
+          />
         </>
       ) : (
         <Box display="flex" justifyContent="center">

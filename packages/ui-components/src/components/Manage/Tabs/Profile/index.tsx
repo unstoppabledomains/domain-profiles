@@ -3,7 +3,6 @@ import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import RedditIcon from '@mui/icons-material/Reddit';
 import TelegramIcon from '@mui/icons-material/Telegram';
 import YouTubeIcon from '@mui/icons-material/YouTube';
-import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
@@ -22,11 +21,9 @@ import {useWeb3Context} from '../../../../hooks';
 import type {
   DomainProfileVisibilityValues,
   SerializedUserDomainProfileData,
-  SocialProfileVisibilityValues,
 } from '../../../../lib';
 import {
   DOMAIN_PROFILE_VISIBILITY_VALUES,
-  DOMAIN_SOCIAL_VISIBILITY_VALUES,
   DomainFieldTypes,
   MAX_BIO_LENGTH,
   isExternalDomainValidForManagement,
@@ -35,6 +32,7 @@ import {
 import {notifyError} from '../../../../lib/error';
 import {ProfileManager} from '../../../Wallet/ProfileManager';
 import {DomainProfileTabType} from '../../DomainProfile';
+import BulkUpdateLoadingButton from '../BulkUpdateLoadingButton';
 import {Header} from './Header';
 import ManageInput from './ManageInput';
 import ManagePublicVisibility from './ManagePublicVisibility';
@@ -103,18 +101,18 @@ export const Profile: React.FC<ProfileProps> = ({
   const [t] = useTranslationContext();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isBulkUpdate, setIsBulkUpdate] = useState(false);
+  const [updatedCount, setUpdatedCount] = useState(0);
+  const [updateErrorMessage, setUpdateErrorMessage] = useState<string>();
   const [isInvalidUrl, setIsInvalidUrl] = useState(false);
   const [dirtyFlag, setDirtyFlag] = useState(false);
   const [fireRequest, setFireRequest] = useState(false);
   const [showMainInfoVizCard, setShowMainInfoVizCard] =
     useState<boolean>(false);
-  const [isAllPrivate, setPrivateVisibilityFlag] = useState<boolean>(false);
   const [userProfile, setUserProfile] =
     useState<SerializedUserDomainProfileData>();
   const [publicVisibilityValues, setPublicVisibilityValues] =
     useState<DomainProfileVisibilityValues>(DOMAIN_PROFILE_VISIBILITY_VALUES);
-  const [socialVisibilityValues, setSocialVisibilityValues] =
-    useState<SocialProfileVisibilityValues>(DOMAIN_SOCIAL_VISIBILITY_VALUES);
   const [isCardOpen, setIsCardOpen] = useState<{
     cardOpen: boolean;
     id: string | null;
@@ -151,49 +149,45 @@ export const Profile: React.FC<ProfileProps> = ({
     try {
       // only proceed if signature available
       if (domain && signature && expiry) {
+        // retrieve user profile data from profile API
+        const existingData = await getProfileUserData(
+          domain,
+          [DomainFieldTypes.Profile, DomainFieldTypes.SocialAccounts],
+          signature,
+          expiry,
+        );
         if (!isLoaded) {
-          // retrieve user profile data from profile API
-          const data = await getProfileUserData(
-            domain,
-            [DomainFieldTypes.Profile, DomainFieldTypes.SocialAccounts],
-            signature,
-            expiry,
-          );
-          if (data) {
-            setUserProfile(data);
+          if (existingData) {
+            setUserProfile(existingData);
             setProfileImage({
-              data: data.profile?.imagePath || null,
+              data: existingData.profile?.imagePath || null,
               file: null,
             });
             setProfileCover({
-              data: data.profile?.coverPath || null,
+              data: existingData.profile?.coverPath || null,
               file: null,
             });
             setPublicVisibilityValues({
-              displayNamePublic: data?.profile?.displayNamePublic || false,
-              descriptionPublic: data?.profile?.descriptionPublic || false,
-              locationPublic: data?.profile?.locationPublic || false,
-              web2UrlPublic: data?.profile?.web2UrlPublic || false,
+              displayNamePublic:
+                existingData?.profile?.displayNamePublic || false,
+              descriptionPublic:
+                existingData?.profile?.descriptionPublic || false,
+              locationPublic: existingData?.profile?.locationPublic || false,
+              web2UrlPublic: existingData?.profile?.web2UrlPublic || false,
               phoneNumberPublic: false,
               imagePathPublic: true,
               coverPathPublic: true,
             });
-            setSocialVisibilityValues({
-              discordPublic: data?.socialAccounts?.discord.public || false,
-              redditPublic: data?.socialAccounts?.reddit.public || false,
-              telegramPublic: data?.socialAccounts?.telegram.public || false,
-              twitterPublic: data?.socialAccounts?.twitter.public || false,
-              youtubePublic: data?.socialAccounts?.youtube.public || false,
-              githubPublic: data?.socialAccounts?.github.public || false,
-              linkedinPublic: data?.socialAccounts?.linkedin.public || false,
-            });
+            setDirtyFlag(false);
             setIsLoaded(true);
           }
         } else if (userProfile) {
           // update the domain's user data from profile API
           setIsSaving(true);
-          await setProfileUserData(
+          setUpdateErrorMessage('');
+          const updateResult = await setProfileUserData(
             domain,
+            existingData,
             userProfile,
             signature,
             expiry,
@@ -217,16 +211,25 @@ export const Profile: React.FC<ProfileProps> = ({
                   type: profileCover.file.type,
                 }
               : undefined,
+            isBulkUpdate,
           );
-          onUpdate(DomainProfileTabType.Profile, {
-            ...userProfile,
-            ...publicVisibilityValues,
-          });
-          setIsSaving(false);
-          setDirtyFlag(false);
+
+          // saving profile complete
+          if (updateResult?.success) {
+            setUpdatedCount(updateResult.domains.length);
+            onUpdate(DomainProfileTabType.Profile, {
+              ...userProfile,
+              ...publicVisibilityValues,
+            });
+            setIsSaving(false);
+            setDirtyFlag(false);
+          } else {
+            setUpdateErrorMessage(t('manage.updateError'));
+          }
         }
       }
     } catch (e) {
+      setUpdateErrorMessage(t('manage.updateError'));
       notifyError(e, {msg: 'unable to manage user profile'});
     }
   };
@@ -236,64 +239,33 @@ export const Profile: React.FC<ProfileProps> = ({
     setShowMainInfoVizCard(false);
   };
 
-  const handleGlobalPublicPrivateVisibility = (
-    e: {
-      currentTarget: {id: string};
-    },
-    flag?: string,
-  ): void => {
-    if (flag) {
-      if (e.currentTarget.id === 'privateSocial') {
-        setSocialVisibilityValues(() => {
-          return {
-            youtubePublic: false,
-            twitterPublic: false,
-            discordPublic: false,
-            redditPublic: false,
-            telegramPublic: false,
-            githubPublic: false,
-            linkedinPublic: false,
-          };
-        });
-      } else if (e.currentTarget.id === 'publicSocial') {
-        setSocialVisibilityValues(() => {
-          return {
-            youtubePublic: true,
-            twitterPublic: true,
-            discordPublic: true,
-            redditPublic: true,
-            telegramPublic: true,
-            githubPublic: true,
-            linkedinPublic: true,
-          };
-        });
-      }
-    } else {
-      if (e.currentTarget.id === 'private') {
-        setPublicVisibilityValues(() => {
-          return {
-            displayNamePublic: false,
-            descriptionPublic: false,
-            locationPublic: false,
-            web2UrlPublic: false,
-            phoneNumberPublic: false,
-            imagePathPublic: true,
-            coverPathPublic: true,
-          };
-        });
-      } else if (e.currentTarget.id === 'public') {
-        setPublicVisibilityValues(() => {
-          return {
-            displayNamePublic: true,
-            descriptionPublic: true,
-            locationPublic: true,
-            web2UrlPublic: true,
-            phoneNumberPublic: false,
-            imagePathPublic: true,
-            coverPathPublic: true,
-          };
-        });
-      }
+  const handleGlobalPublicPrivateVisibility = (e: {
+    currentTarget: {id: string};
+  }): void => {
+    if (e.currentTarget.id === 'private') {
+      setPublicVisibilityValues(() => {
+        return {
+          displayNamePublic: false,
+          descriptionPublic: false,
+          locationPublic: false,
+          web2UrlPublic: false,
+          phoneNumberPublic: false,
+          imagePathPublic: true,
+          coverPathPublic: true,
+        };
+      });
+    } else if (e.currentTarget.id === 'public') {
+      setPublicVisibilityValues(() => {
+        return {
+          displayNamePublic: true,
+          descriptionPublic: true,
+          locationPublic: true,
+          web2UrlPublic: true,
+          phoneNumberPublic: false,
+          imagePathPublic: true,
+          coverPathPublic: true,
+        };
+      });
     }
 
     if (!dirtyFlag && (e.currentTarget.id === 'public' || 'private')) {
@@ -439,7 +411,7 @@ export const Profile: React.FC<ProfileProps> = ({
                 handleGlobalPublicPrivateVisibility
               }
               setCardVisibility={setShowMainInfoVizCard}
-              setPrivateVisibilityFlagGlobal={setPrivateVisibilityFlag}
+              setPrivateVisibilityFlagGlobal={() => {}}
             />
           </Box>
           <ManageInput
@@ -581,15 +553,18 @@ export const Profile: React.FC<ProfileProps> = ({
             disableTextTrimming
             stacked={false}
           />
-          <LoadingButton
+          <BulkUpdateLoadingButton
+            address={address}
+            count={updatedCount}
+            isBulkUpdate={isBulkUpdate}
+            setIsBulkUpdate={setIsBulkUpdate}
             variant="contained"
             loading={isSaving}
             onClick={handleSave}
             className={classes.button}
             disabled={!dirtyFlag}
-          >
-            {t('common.save')}
-          </LoadingButton>
+            errorMessage={updateErrorMessage}
+          />
         </>
       ) : (
         <Box display="flex" justifyContent="center">

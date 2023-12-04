@@ -1,5 +1,4 @@
 import MailLockOutlinedIcon from '@mui/icons-material/MailLockOutlined';
-import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -18,6 +17,7 @@ import type {SerializedUserDomainProfileData} from '../../../lib';
 import {DomainFieldTypes, useTranslationContext} from '../../../lib';
 import {notifyError} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
+import BulkUpdateLoadingButton from './BulkUpdateLoadingButton';
 import ManageInput from './Profile/ManageInput';
 import {TabHeader} from './TabHeader';
 
@@ -33,7 +33,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginTop: theme.spacing(2),
   },
   checkbox: {
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing(0),
   },
   infoContainer: {
     marginBottom: theme.spacing(3),
@@ -64,6 +64,9 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
   const [isSaving, setIsSaving] = useState(false);
   const [isEmailDisabled, setIsEmailDisabled] = useState(true);
   const [isInvalidEmail, setIsInvalidEmail] = useState(false);
+  const [isBulkUpdate, setIsBulkUpdate] = useState(false);
+  const [updatedCount, setUpdatedCount] = useState(0);
+  const [updateErrorMessage, setUpdateErrorMessage] = useState<string>();
   const [dirtyFlag, setDirtyFlag] = useState(false);
   const [userProfile, setUserProfile] =
     useState<SerializedUserDomainProfileData>();
@@ -78,30 +81,49 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
     try {
       // only proceed if signature available
       if (domain && signature && expiry) {
+        // retrieve user profile data from profile API
+        const existingData = await getProfileUserData(
+          domain,
+          [DomainFieldTypes.Profile, DomainFieldTypes.Messaging],
+          signature,
+          expiry,
+        );
         if (!isLoaded) {
-          // retrieve user profile data from profile API
-          const data = await getProfileUserData(
-            domain,
-            [DomainFieldTypes.Profile, DomainFieldTypes.Messaging],
-            signature,
-            expiry,
-          );
-          if (data) {
-            setUserProfile(data);
+          if (existingData) {
+            setUserProfile(existingData);
             setIsEmailDisabled(
-              data.messaging?.disabled === undefined || data.messaging.disabled,
+              existingData.messaging?.disabled === undefined ||
+                existingData.messaging.disabled,
             );
             setIsLoaded(true);
           }
         } else if (userProfile) {
           // update the domain's user data from profile API
           setIsSaving(true);
-          await setProfileUserData(domain, userProfile, signature, expiry);
-          setIsSaving(false);
-          setDirtyFlag(false);
+          setUpdateErrorMessage('');
+          const updateResult = await setProfileUserData(
+            domain,
+            existingData,
+            userProfile,
+            signature,
+            expiry,
+            undefined,
+            undefined,
+            isBulkUpdate,
+          );
+
+          // saving profile complete
+          if (updateResult?.success) {
+            setUpdatedCount(updateResult.domains.length);
+            setIsSaving(false);
+            setDirtyFlag(false);
+          } else {
+            setUpdateErrorMessage(t('manage.updateError'));
+          }
         }
       }
     } catch (e) {
+      setUpdateErrorMessage(t('manage.updateError'));
       notifyError(e, {msg: 'unable to manage user profile'});
     }
   };
@@ -214,15 +236,18 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
               />
             </FormGroup>
           </Box>
-          <LoadingButton
+          <BulkUpdateLoadingButton
+            address={address}
+            count={updatedCount}
+            isBulkUpdate={isBulkUpdate}
+            setIsBulkUpdate={setIsBulkUpdate}
             variant="contained"
             onClick={handleSave}
             loading={isSaving}
             className={classes.button}
             disabled={!dirtyFlag}
-          >
-            {t('common.save')}
-          </LoadingButton>
+            errorMessage={updateErrorMessage}
+          />
         </>
       ) : (
         <Box display="flex" justifyContent="center">

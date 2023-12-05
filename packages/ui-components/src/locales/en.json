@@ -310,6 +310,7 @@
     "eth": "ETH",
     "filterByCategory": "Filter by: Category",
     "filterByChain": "Filter by: Chain",
+    "filterByCollection": "Filter by: Collection",
     "find": "Find",
     "firstTimeConfigDescription": "Create a Token gallery for your domain's connected wallets",
     "firstTimeConfigTitle": "Showcase your Domain",

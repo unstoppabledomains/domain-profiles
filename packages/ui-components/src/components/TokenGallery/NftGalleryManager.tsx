@@ -11,6 +11,9 @@ import DialogTitle from '@mui/material/DialogTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import Link from '@mui/material/Link';
+import MenuItem from '@mui/material/MenuItem';
+import type {SelectChangeEvent} from '@mui/material/Select';
+import Select from '@mui/material/Select';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import type {ReactElement} from 'react';
@@ -58,6 +61,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
       color: theme.palette.primary.main,
     },
   },
+  selectVisibility: {
+    marginBottom: theme.spacing(2),
+    marginTop: theme.spacing(1),
+  },
   symbolHeaderLabelOn: {
     padding: theme.spacing(0, 0.75),
     fontSize: theme.typography.body2.fontSize,
@@ -81,6 +88,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     margin: theme.spacing(7),
     textAlign: 'center',
   },
+  subTitle: {
+    marginTop: theme.spacing(1),
+  },
 }));
 
 export const Manager: React.FC<ManagerProps> = ({
@@ -97,8 +107,10 @@ export const Manager: React.FC<ManagerProps> = ({
   getNextNftPage,
 }) => {
   const {classes} = useStyles();
+  const [t] = useTranslationContext();
   const [symbolToggles, setSymbolToggles] = useState<ReactElement>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [showAllItems, setShowAllItems] = useState<boolean>(true);
 
   // render the symbol table
   useEffect(() => {
@@ -112,6 +124,13 @@ export const Manager: React.FC<ManagerProps> = ({
     records[symbol].enabled = !records[symbol].enabled;
     setRecords(records);
     renderSymbols();
+  };
+
+  const handleVisibilityModeChange = (e: SelectChangeEvent<string>) => {
+    setShowAllItems(e.target.value === 'true');
+    if (records) {
+      setRecords(records);
+    }
   };
 
   // send final call to save preferences to profile API
@@ -130,7 +149,7 @@ export const Manager: React.FC<ManagerProps> = ({
         symbol,
         address: records[symbol].address,
         public: records[symbol].enabled,
-        showAllItems: true,
+        showAllItems,
         items: itemsToUpdate
           .filter(item => item.symbol === symbol)
           .map<NftRequestItem>(item => {
@@ -169,6 +188,10 @@ export const Manager: React.FC<ManagerProps> = ({
     if (!records) {
       return;
     }
+    setShowAllItems(
+      Object.keys(records!).filter(symbol => records[symbol].showAllItems)
+        .length > 0,
+    );
     setSymbolToggles(
       <div className={classes.symbolContainer}>
         <FormGroup>
@@ -206,7 +229,42 @@ export const Manager: React.FC<ManagerProps> = ({
               <CircularProgress />
             </div>
           ) : (
-            <div>{symbolToggles}</div>
+            <div>
+              {symbolToggles}
+              {records && (
+                <Box
+                  mt={2}
+                  display="flex"
+                  flexDirection="column"
+                  textAlign="left"
+                  alignItems="left"
+                >
+                  <Typography className={classes.subTitle} variant="h6">
+                    {t('nftCollection.manageVisibilityDefaultTitle')}
+                  </Typography>
+                  <Typography variant="body1">
+                    {t('nftCollection.visibilityDescription')}
+                  </Typography>
+                  <Select
+                    id="visibilityMode"
+                    value={String(showAllItems)}
+                    onChange={handleVisibilityModeChange}
+                    className={classes.selectVisibility}
+                  >
+                    <MenuItem value={'true'}>
+                      <Typography variant="body2">
+                        {t('nftCollection.manageVisibilityShowByDefault')}
+                      </Typography>
+                    </MenuItem>
+                    <MenuItem value={'false'}>
+                      <Typography variant="body2">
+                        {t('nftCollection.manageVisibilityHideByDefault')}
+                      </Typography>
+                    </MenuItem>
+                  </Select>
+                </Box>
+              )}
+            </div>
           )}
           <ProfileManager
             domain={domain}
@@ -340,10 +398,10 @@ export const NftGalleryManager: React.FC<NftGalleryManagerProps> = ({
           />
           {itemsToUpdate.length > 0 && (
             <div>
-              <Typography sx={{marginTop: '10px'}} variant={'h6'}>
+              <Typography className={classes.subTitle} variant={'h6'}>
                 {t('nftCollection.manageVisibilityTitle')}
               </Typography>
-              <Typography>
+              <Typography variant="body2">
                 {t('nftCollection.manageVisibility', {
                   count: itemsToUpdate.length,
                 })}

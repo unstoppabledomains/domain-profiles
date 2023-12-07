@@ -76,6 +76,7 @@ export const getNextNftPageFn = (
             nft.verified = allSymbols[symbol].verified;
             nft.owner = props.isOwner;
             nft.toggleVisibility = handleNftVisibilityToggle;
+            nft.peerNfts = allSymbols[symbol].nfts;
           });
           newNfts.push(...allSymbols[symbol].nfts);
           nftCursors[symbol] = allSymbols[symbol].cursor;
@@ -99,6 +100,7 @@ export const getNextNftPageFn = (
             nft.verified = symbolNfts[symbol].verified;
             nft.owner = props.isOwner;
             nft.toggleVisibility = handleNftVisibilityToggle;
+            nft.peerNfts = symbolNfts[symbol].nfts;
           });
           newNfts.push(...symbolNfts[symbol].nfts);
         }

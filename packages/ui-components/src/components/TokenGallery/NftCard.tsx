@@ -1,12 +1,17 @@
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import {alpha} from '@mui/material/';
+import CollectionsOutlinedIcon from '@mui/icons-material/CollectionsOutlined';
+import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import IconButton from '@mui/material/IconButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import Skeleton from '@mui/material/Skeleton';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useRef, useState} from 'react';
+import type {MouseEvent} from 'react';
 import VisibilitySensor from 'react-visibility-sensor';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -23,15 +28,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: 15,
     height: 15,
     marginRight: theme.spacing(1),
-  },
-  visibilityIcon: {
-    width: 22,
-    height: 22,
-    borderRadius: '50%',
-    padding: theme.spacing(0.25),
-    color: theme.palette.neutralShades[700],
-    backgroundColor: alpha(theme.palette.neutralShades[100], 0.35),
-    backdropFilter: 'blur(5px)',
   },
   nftImage: {
     justifyContent: 'center',
@@ -60,6 +56,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
       marginTop: theme.spacing(10),
     },
   },
+  optionsButton: {
+    marginRight: theme.spacing(-1),
+  },
 }));
 
 interface Props {
@@ -74,6 +73,7 @@ const NftCard = ({nft, domain, placeholder}: Props) => {
   const [isVisible, setIsVisible] = useState(false);
   const {classes, cx} = useStyles();
   const [open, setOpen] = useState<boolean>(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const css = `
   .NFT-container {
@@ -125,6 +125,9 @@ const NftCard = ({nft, domain, placeholder}: Props) => {
     display: flex;
     flex-direction: row;
     white-space: nowrap;
+    align-items: "center";
+    align-content: "center";
+    text-align: "center";
   }
   .NFT-description {
     font-family: "Inter", sans-serif;
@@ -195,11 +198,47 @@ const NftCard = ({nft, domain, placeholder}: Props) => {
     return false;
   };
 
+  const handleOpenMenu = (e: MouseEvent<HTMLElement>) => {
+    setAnchorEl(e.currentTarget);
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+  };
+
+  const handleToggleNftVisibility = (v: boolean) => {
+    if (nft.symbol && nft.mint) {
+      nft.public = v;
+      nft.toggleVisibility!(nft.symbol, nft.mint, v);
+    }
+  };
+
+  const handleToggleCollectionVisibility = (v: boolean) => {
+    if (nft.symbol && nft.mint) {
+      const collectionId = nft.mint!.split('/')[0];
+      nft.public = v;
+      nft.toggleVisibility!(nft.symbol!, collectionId, v);
+      nft.peerNfts
+        ?.filter(
+          peerNft =>
+            !!peerNft.public !== v &&
+            peerNft.mint &&
+            peerNft.symbol &&
+            peerNft.toggleVisibility &&
+            peerNft.mint?.includes(collectionId),
+        )
+        .map(peerNft => {
+          peerNft.public = v;
+          peerNft.toggleVisibility!(peerNft.symbol!, peerNft.mint!, v);
+        });
+    }
+  };
+
   return (
     <>
       <style>{css}</style>
-      <div className={'NFT-container'} data-testid={'nft-card'}>
-        <div className={'NFT-image-container'}>
+      <Box className={'NFT-container'} data-testid={'nft-card'}>
+        <Box className={'NFT-image-container'}>
           {shouldRenderVideo() ? (
             <VisibilitySensor
               onChange={(isVis: boolean) => setIsVisible(isVis)}
@@ -221,37 +260,58 @@ const NftCard = ({nft, domain, placeholder}: Props) => {
             <NftImage
               src={nft.image_url}
               className={cx(classes.nftImage, {
-                [classes.placeholderImg]: placeholder,
+                [classes.placeholderImg]: placeholder || !nft.public,
               })}
               onClick={handleClick}
               alt={nft.name}
             />
           ) : (
-            <div className={cx(classes.nftImage, classes.loadingImg)}>
+            <Box className={cx(classes.nftImage, classes.loadingImg)}>
               <CircularProgress color="secondary" />
-            </div>
+            </Box>
           )}
-        </div>
-        <div className={'NFT-infoContainer'}>
-          <div
-            data-testid={'nft-info-name'}
-            className={cx('NFT-name', {[classes.placeholderTxt]: placeholder})}
-            onClick={handleClick}
+        </Box>
+        <Box className={'NFT-infoContainer'}>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            alignContent="center"
           >
-            {nft.symbol && (
-              <div>
+            <Box
+              data-testid={'nft-info-name'}
+              className={cx('NFT-name', {
+                [classes.placeholderTxt]: placeholder || !nft.public,
+              })}
+              onClick={handleClick}
+              alignItems="center"
+              alignContent="center"
+              textAlign="center"
+              display="flex"
+            >
+              {nft.symbol && (
                 <CryptoIcon
                   currency={nft.symbol as AllCurrenciesType}
                   classes={{root: classes.currencyIcon}}
                 />
-              </div>
+              )}
+              {nft.name ? (
+                <Typography>{nft.name}</Typography>
+              ) : (
+                placeholder && (
+                  <Skeleton width="300px" height={25} variant="text" />
+                )
+              )}
+            </Box>
+            {nft.owner && nft.toggleVisibility && (
+              <IconButton
+                className={classes.optionsButton}
+                onClick={handleOpenMenu}
+              >
+                <MoreVertIcon />
+              </IconButton>
             )}
-            {nft.name ? (
-              <div>{nft.name}</div>
-            ) : (
-              placeholder && <Skeleton width="50%" height={25} variant="text" />
-            )}
-          </div>
+          </Box>
           <Typography
             className={cx('NFT-collection', {
               [classes.placeholderTxt]: placeholder,
@@ -263,43 +323,52 @@ const NftCard = ({nft, domain, placeholder}: Props) => {
               : placeholder && (
                   <Skeleton width="75%" height={22} variant="text" />
                 )}
-            {nft.owner &&
-              nft.toggleVisibility &&
-              (nft.public ? (
-                <div
-                  onClick={async () => {
-                    nft.public = false;
-                    nft.toggleVisibility!(nft.symbol!, nft.mint!, false);
-                  }}
-                  className={'NFT-visibility'}
-                >
-                  <Tooltip title={t('nftCollection.visible')}>
-                    <Visibility
-                      data-testid={`nftGallery-viz-icon-on-${nft.mint}`}
-                      classes={{root: classes.visibilityIcon}}
-                    />
-                  </Tooltip>
-                </div>
-              ) : (
-                <div
-                  onClick={() => {
-                    nft.public = true;
-                    nft.toggleVisibility!(nft.symbol!, nft.mint!, true);
-                  }}
-                  className={'NFT-visibility'}
-                >
-                  <Tooltip title={t('nftCollection.hidden')}>
-                    <VisibilityOff
-                      data-testid={`nftGallery-viz-icon-off-${nft.mint}`}
-                      classes={{root: classes.visibilityIcon}}
-                    />
-                  </Tooltip>
-                </div>
-              ))}
           </Typography>
-        </div>
+        </Box>
+        <Menu
+          anchorEl={anchorEl}
+          onClose={handleCloseMenu}
+          open={Boolean(anchorEl)}
+          transformOrigin={{horizontal: 'right', vertical: 'top'}}
+          anchorOrigin={{horizontal: 'right', vertical: 'bottom'}}
+        >
+          <MenuItem
+            onClick={async () => {
+              handleCloseMenu();
+              handleToggleNftVisibility(nft.public ? false : true);
+            }}
+          >
+            <ListItemIcon>
+              <ImageOutlinedIcon fontSize="small" />
+            </ListItemIcon>
+            <Typography variant="body2">
+              {t('nftCollection.showHideNft', {
+                action: nft.public
+                  ? t('nftCollection.hide')
+                  : t('nftCollection.show'),
+              })}
+            </Typography>
+          </MenuItem>
+          <MenuItem
+            onClick={async () => {
+              handleCloseMenu();
+              handleToggleCollectionVisibility(nft.public ? false : true);
+            }}
+          >
+            <ListItemIcon>
+              <CollectionsOutlinedIcon fontSize="small" />
+            </ListItemIcon>
+            <Typography variant="body2">
+              {t('nftCollection.showHideCollection', {
+                action: nft.public
+                  ? t('nftCollection.hide')
+                  : t('nftCollection.show'),
+              })}
+            </Typography>
+          </MenuItem>
+        </Menu>
         <NftModal handleClose={handleClose} open={open} nft={nft} />
-      </div>
+      </Box>
     </>
   );
 };

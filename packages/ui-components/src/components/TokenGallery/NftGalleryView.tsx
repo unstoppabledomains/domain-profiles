@@ -138,12 +138,14 @@ const NftGalleryView = ({
         nft => isSymbolVerified(nft.symbol || '') && (isOwner || nft.public),
       )
 
-      // remove data with hidden tag
+      // remove data with hidden tag for non owner
       .filter(nft => {
         const isNftHidden = nft.tags?.includes(NftTag.Hidden);
         return (
-          !isNftHidden ||
-          (isNftHidden && visibleTags[FilterType.Category][NftTag.Hidden])
+          // render hidden NFTs for owner
+          isOwner ||
+          // do not render hidden NFTs for non-owner
+          !isNftHidden
         );
       })
 

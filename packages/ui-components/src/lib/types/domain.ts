@@ -172,6 +172,11 @@ export type RedditUserInfo = {
   totalKarma: number;
 } | null;
 
+export type SerializedBulkDomainResponse = {
+  success: boolean;
+  domains: string[];
+};
+
 export type SerializedDomainCryptoVerification = {
   id: number;
   symbol: string;

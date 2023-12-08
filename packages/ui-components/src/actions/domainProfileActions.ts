@@ -9,6 +9,7 @@ import {fetchApi} from '../lib/fetchApi';
 import type {
   DomainFieldTypes,
   ImageData,
+  SerializedBulkDomainResponse,
   SerializedFollowerListData,
   SerializedPublicDomainProfileData,
   SerializedUserDomainProfileData,
@@ -143,77 +144,184 @@ export const searchProfiles = async (query: string): Promise<string[]> => {
 
 export const setProfileUserData = async (
   domain: string,
-  profileData: SerializedUserDomainProfileData,
+  originalProfile: SerializedUserDomainProfileData,
+  updatedProfile: SerializedUserDomainProfileData,
   signature: string,
   expiry: string,
   profileImage?: ImageData,
   coverImage?: ImageData,
-): Promise<void> => {
-  await fetchApi(`/user/${domain}`, {
+  bulkUpdate?: boolean,
+): Promise<SerializedBulkDomainResponse> => {
+  const compareField = <T>(original?: T, updated?: T): T | undefined => {
+    if (original !== updated) {
+      return updated;
+    }
+    return undefined;
+  };
+
+  return await fetchApi<SerializedBulkDomainResponse>(`/user/domains`, {
     host: config.PROFILE.HOST_URL,
     method: 'POST',
     body: JSON.stringify({
-      // profile fields
-      displayName: profileData.profile?.displayName,
-      description: profileData.profile?.description,
-      location: profileData.profile?.location,
-      web2Url: profileData.profile?.web2Url,
-      imagePath:
-        profileData.profile?.imageType !== 'default' &&
-        profileData.profile?.imagePath,
-      coverPath: profileData.profile?.coverPath,
-      privateEmail: profileData.profile?.privateEmail,
-      publicDomainSellerEmail: profileData.profile?.publicDomainSellerEmail,
+      domains: bulkUpdate ? [] : [domain],
+      profile: {
+        // profile fields
+        displayName: compareField(
+          originalProfile.profile?.displayName,
+          updatedProfile.profile?.displayName,
+        ),
+        description: compareField(
+          originalProfile.profile?.description,
+          updatedProfile.profile?.description,
+        ),
+        location: compareField(
+          originalProfile.profile?.location,
+          updatedProfile.profile?.location,
+        ),
+        web2Url: compareField(
+          originalProfile.profile?.web2Url,
+          updatedProfile.profile?.web2Url,
+        ),
+        imagePath:
+          updatedProfile.profile?.imageType !== 'default'
+            ? compareField(
+                originalProfile.profile?.imagePath,
+                updatedProfile.profile?.imagePath,
+              )
+            : undefined,
+        coverPath: compareField(
+          originalProfile.profile?.coverPath,
+          updatedProfile.profile?.coverPath,
+        ),
+        privateEmail: compareField(
+          originalProfile.profile?.privateEmail,
+          updatedProfile.profile?.privateEmail,
+        ),
+        publicDomainSellerEmail: compareField(
+          originalProfile.profile?.publicDomainSellerEmail,
+          updatedProfile.profile?.publicDomainSellerEmail,
+        ),
 
-      // image fields
-      data: {
-        image: profileImage,
-        cover: coverImage,
+        // image fields
+        data: {
+          image: profileImage,
+          cover: coverImage,
+        },
+
+        // social fields
+        socialAccounts: updatedProfile.socialAccounts && {
+          twitter: compareField(
+            originalProfile.socialAccounts
+              ? originalProfile.socialAccounts[DomainProfileSocialMedia.Twitter]
+                  ?.location
+              : '',
+            updatedProfile.socialAccounts[DomainProfileSocialMedia.Twitter]
+              ?.location,
+          ),
+          discord: compareField(
+            originalProfile.socialAccounts
+              ? originalProfile.socialAccounts[DomainProfileSocialMedia.Discord]
+                  ?.location
+              : '',
+            updatedProfile.socialAccounts[DomainProfileSocialMedia.Discord]
+              ?.location,
+          ),
+          youtube: compareField(
+            originalProfile.socialAccounts
+              ? originalProfile.socialAccounts[DomainProfileSocialMedia.YouTube]
+                  ?.location
+              : '',
+            updatedProfile.socialAccounts[DomainProfileSocialMedia.YouTube]
+              ?.location,
+          ),
+          reddit: compareField(
+            originalProfile.socialAccounts
+              ? originalProfile.socialAccounts[DomainProfileSocialMedia.Reddit]
+                  ?.location
+              : '',
+            updatedProfile.socialAccounts[DomainProfileSocialMedia.Reddit]
+              ?.location,
+          ),
+          telegram: compareField(
+            originalProfile.socialAccounts
+              ? originalProfile.socialAccounts[
+                  DomainProfileSocialMedia.Telegram
+                ]?.location
+              : '',
+            updatedProfile.socialAccounts[DomainProfileSocialMedia.Telegram]
+              ?.location,
+          ),
+          linkedin: compareField(
+            originalProfile.socialAccounts
+              ? originalProfile.socialAccounts[
+                  DomainProfileSocialMedia.Linkedin
+                ]?.location
+              : '',
+            updatedProfile.socialAccounts[DomainProfileSocialMedia.Linkedin]
+              ?.location,
+          ),
+          github: compareField(
+            originalProfile.socialAccounts
+              ? originalProfile.socialAccounts[DomainProfileSocialMedia.Github]
+                  ?.location
+              : '',
+            updatedProfile.socialAccounts[DomainProfileSocialMedia.Github]
+              ?.location,
+          ),
+        },
+
+        // public toggles
+        displayNamePublic: compareField(
+          originalProfile.profile?.displayNamePublic,
+          updatedProfile.profile?.displayNamePublic,
+        ),
+        descriptionPublic: compareField(
+          originalProfile.profile?.descriptionPublic,
+          updatedProfile.profile?.descriptionPublic,
+        ),
+        locationPublic: compareField(
+          originalProfile.profile?.locationPublic,
+          updatedProfile.profile?.locationPublic,
+        ),
+        web2UrlPublic: compareField(
+          originalProfile.profile?.web2UrlPublic,
+          updatedProfile.profile?.web2UrlPublic,
+        ),
+        imagePathPublic: true,
+        coverPathPublic: true,
+
+        // visibility toggles
+        showDomainSuggestion: compareField(
+          originalProfile.profile?.showDomainSuggestion,
+          updatedProfile.profile?.showDomainSuggestion,
+        ),
+        showFeaturedCommunity: compareField(
+          originalProfile.profile?.showFeaturedCommunity,
+          updatedProfile.profile?.showFeaturedCommunity,
+        ),
+        showFeaturedPartner: compareField(
+          originalProfile.profile?.showFeaturedPartner,
+          updatedProfile.profile?.showFeaturedPartner,
+        ),
+
+        // email configuration flags
+        messagingDisabled: compareField(
+          originalProfile.messaging?.disabled,
+          updatedProfile.messaging?.disabled,
+        ),
+        messagingRulesReset: compareField(
+          originalProfile.messaging?.resetRules,
+          updatedProfile.messaging?.resetRules,
+        ),
+        thirdPartyMessagingEnabled: compareField(
+          originalProfile.messaging?.thirdPartyMessagingEnabled,
+          updatedProfile.messaging?.thirdPartyMessagingEnabled,
+        ),
+        thirdPartyMessagingConfigType: compareField(
+          originalProfile.messaging?.thirdPartyMessagingConfigType,
+          updatedProfile.messaging?.thirdPartyMessagingConfigType,
+        ),
       },
-
-      // social fields
-      socialAccounts: profileData.socialAccounts && {
-        twitter:
-          profileData.socialAccounts[DomainProfileSocialMedia.Twitter]
-            ?.location,
-        discord:
-          profileData.socialAccounts[DomainProfileSocialMedia.Discord]
-            ?.location,
-        youtube:
-          profileData.socialAccounts[DomainProfileSocialMedia.YouTube]
-            ?.location,
-        reddit:
-          profileData.socialAccounts[DomainProfileSocialMedia.Reddit]?.location,
-        telegram:
-          profileData.socialAccounts[DomainProfileSocialMedia.Telegram]
-            ?.location,
-        linkedin:
-          profileData.socialAccounts[DomainProfileSocialMedia.Linkedin]
-            ?.location,
-        github:
-          profileData.socialAccounts[DomainProfileSocialMedia.Github]?.location,
-      },
-
-      // public toggles
-      displayNamePublic: profileData.profile?.displayNamePublic,
-      descriptionPublic: profileData.profile?.descriptionPublic,
-      locationPublic: profileData.profile?.locationPublic,
-      web2UrlPublic: profileData.profile?.web2UrlPublic,
-      imagePathPublic: true,
-      coverPathPublic: true,
-
-      // visibility toggles
-      showDomainSuggestion: profileData.profile?.showDomainSuggestion,
-      showFeaturedCommunity: profileData.profile?.showFeaturedCommunity,
-      showFeaturedPartner: profileData.profile?.showFeaturedPartner,
-
-      // email configuration flags
-      messagingDisabled: profileData.messaging?.disabled,
-      messagingRulesReset: profileData.messaging?.resetRules,
-      thirdPartyMessagingEnabled:
-        profileData.messaging?.thirdPartyMessagingEnabled,
-      thirdPartyMessagingConfigType:
-        profileData.messaging?.thirdPartyMessagingConfigType,
     }),
     headers: {
       Accept: 'application/json',

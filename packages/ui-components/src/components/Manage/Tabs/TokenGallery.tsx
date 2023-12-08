@@ -1,6 +1,6 @@
 import CollectionsOutlinedIcon from '@mui/icons-material/CollectionsOutlined';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -103,14 +103,15 @@ export const TokenGallery: React.FC<TokenGalleryProps> = ({
             setModalOpen={setSaveInProgress}
             getNextNftPage={async () => {}}
           />
-          <Button
+          <LoadingButton
             variant="contained"
             disabled={saveInProgress}
             className={classes.button}
+            loading={saveInProgress}
             onClick={handleSaveClicked}
           >
             {t('common.save')}
-          </Button>
+          </LoadingButton>
         </>
       ) : (
         <Box display="flex" justifyContent="center">

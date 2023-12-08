@@ -1,9 +1,9 @@
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
-import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -109,7 +109,6 @@ export const Manager: React.FC<ManagerProps> = ({
   const {classes} = useStyles();
   const [t] = useTranslationContext();
   const [symbolToggles, setSymbolToggles] = useState<ReactElement>();
-  const [loading, setLoading] = useState<boolean>(false);
   const [showAllItems, setShowAllItems] = useState<boolean>(true);
 
   // render the symbol table
@@ -135,8 +134,6 @@ export const Manager: React.FC<ManagerProps> = ({
 
   // send final call to save preferences to profile API
   const handleSaveProfile = async (signature: string, expiry: string) => {
-    setLoading(true);
-
     // prepare the request body
     if (!records) {
       return;
@@ -177,7 +174,6 @@ export const Manager: React.FC<ManagerProps> = ({
     });
 
     // close the management dialogue
-    setLoading(false);
     setModalOpen(false);
 
     // wait a moment before reloading
@@ -220,53 +216,43 @@ export const Manager: React.FC<ManagerProps> = ({
   return (
     <Box>
       {records && (
-        <div
-          className={
-            loading ? classes.centeredContainer : classes.flexContainer
-          }
-        >
-          {loading ? (
-            <div className={classes.spinner}>
-              <CircularProgress />
-            </div>
-          ) : (
-            <div>
-              {symbolToggles}
-              {records && (
-                <Box
-                  mt={2}
-                  display="flex"
-                  flexDirection="column"
-                  textAlign="left"
-                  alignItems="left"
+        <div className={classes.flexContainer}>
+          <div>
+            {symbolToggles}
+            {records && (
+              <Box
+                mt={2}
+                display="flex"
+                flexDirection="column"
+                textAlign="left"
+                alignItems="left"
+              >
+                <Typography className={classes.subTitle} variant="h6">
+                  {t('nftCollection.manageVisibilityDefaultTitle')}
+                </Typography>
+                <Typography variant="body1">
+                  {t('nftCollection.visibilityDescription')}
+                </Typography>
+                <Select
+                  id="visibilityMode"
+                  value={String(showAllItems)}
+                  onChange={handleVisibilityModeChange}
+                  className={classes.selectVisibility}
                 >
-                  <Typography className={classes.subTitle} variant="h6">
-                    {t('nftCollection.manageVisibilityDefaultTitle')}
-                  </Typography>
-                  <Typography variant="body1">
-                    {t('nftCollection.visibilityDescription')}
-                  </Typography>
-                  <Select
-                    id="visibilityMode"
-                    value={String(showAllItems)}
-                    onChange={handleVisibilityModeChange}
-                    className={classes.selectVisibility}
-                  >
-                    <MenuItem value={'true'}>
-                      <Typography variant="body2">
-                        {t('nftCollection.manageVisibilityShowByDefault')}
-                      </Typography>
-                    </MenuItem>
-                    <MenuItem value={'false'}>
-                      <Typography variant="body2">
-                        {t('nftCollection.manageVisibilityHideByDefault')}
-                      </Typography>
-                    </MenuItem>
-                  </Select>
-                </Box>
-              )}
-            </div>
-          )}
+                  <MenuItem value={'true'}>
+                    <Typography variant="body2">
+                      {t('nftCollection.manageVisibilityShowByDefault')}
+                    </Typography>
+                  </MenuItem>
+                  <MenuItem value={'false'}>
+                    <Typography variant="body2">
+                      {t('nftCollection.manageVisibilityHideByDefault')}
+                    </Typography>
+                  </MenuItem>
+                </Select>
+              </Box>
+            )}
+          </div>
           <ProfileManager
             domain={domain}
             ownerAddress={ownerAddress!}
@@ -317,6 +303,7 @@ export const NftGalleryManager: React.FC<NftGalleryManagerProps> = ({
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
   const [saveClicked, setSaveClicked] = useState<boolean>(false);
+  const [saveInProgress, setSaveInProgress] = useState(false);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   const handleDialogOpen = () => {
@@ -329,10 +316,12 @@ export const NftGalleryManager: React.FC<NftGalleryManagerProps> = ({
   };
 
   const handleSaveClicked = () => {
+    setSaveInProgress(true);
     setSaveClicked(true);
   };
 
   const handleAddAddress = () => {
+    setSaveInProgress(true);
     window.location.href = `${config.UNSTOPPABLE_WEBSITE_URL}/manage?domain=${domain}&page=crypto`;
   };
 
@@ -419,25 +408,27 @@ export const NftGalleryManager: React.FC<NftGalleryManagerProps> = ({
             {t('common.cancel')}
           </Button>
           {records ? (
-            <Button
+            <LoadingButton
               color={'primary'}
               variant={'contained'}
               onClick={handleSaveClicked}
               data-testid={`nftGallery-modal-save`}
+              loading={saveInProgress}
               sx={{marginRight: '10px', marginBottom: '10px'}}
             >
               {t('common.save')}
-            </Button>
+            </LoadingButton>
           ) : (
-            <Button
+            <LoadingButton
               color={'primary'}
               variant={'contained'}
               onClick={handleAddAddress}
+              loading={saveInProgress}
               data-testid={`nftGallery-modal-add-address`}
               sx={{marginRight: '10px', marginBottom: '10px'}}
             >
               {t('nftCollection.addAddress')}
-            </Button>
+            </LoadingButton>
           )}
         </DialogActions>
       </Dialog>

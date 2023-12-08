@@ -73,6 +73,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 enum FilterType {
   Chain = 'chain',
   Category = 'category',
+  Collection = 'collection',
 }
 
 interface Props {
@@ -107,11 +108,15 @@ const NftGalleryView = ({
     [FilterType.Chain]: {
       [NftTag.All]: true,
     },
+    [FilterType.Collection]: {
+      [NftTag.All]: true,
+    },
   };
   const [visibleTags, setVisibleTags] =
     useState<Record<FilterType, Record<string, boolean>>>(defaultVisibility);
   const [selectedSymbol, setSelectedSymbol] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string[]>([]);
+  const [selectedCollection, setSelectedCollection] = useState<string[]>([]);
 
   useEffect(() => {
     setVisibility(FilterType.Chain, selectedSymbol);
@@ -122,6 +127,10 @@ const NftGalleryView = ({
   }, [selectedCategory]);
 
   useEffect(() => {
+    setVisibility(FilterType.Collection, selectedCollection);
+  }, [selectedCollection]);
+
+  useEffect(() => {
     // update set of visible NFTs based on currently active filter
     const visibleNfts = allNfts
       // remove unverified data
@@ -129,24 +138,36 @@ const NftGalleryView = ({
         nft => isSymbolVerified(nft.symbol || '') && (isOwner || nft.public),
       )
 
-      // remove data with hidden tag
+      // remove data with hidden tag for non owner
       .filter(nft => {
         const isNftHidden = nft.tags?.includes(NftTag.Hidden);
         return (
-          !isNftHidden ||
-          (isNftHidden && visibleTags[FilterType.Category][NftTag.Hidden])
+          // render hidden NFTs for owner
+          isOwner ||
+          // do not render hidden NFTs for non-owner
+          !isNftHidden
         );
       })
 
       // remove data based on selected filters
       .filter(nft => {
         let nftVisible = true;
-        for (const filterType of [FilterType.Chain, FilterType.Category]) {
+        for (const filterType of [
+          FilterType.Chain,
+          FilterType.Category,
+          FilterType.Collection,
+        ]) {
           let filterTypeMatch =
             Object.keys(visibleTags[filterType]).length === 0 ||
             visibleTags[filterType][NftTag.All];
           for (const tag of Object.keys(visibleTags[filterType])) {
             if (nft.tags?.includes(tag)) {
+              filterTypeMatch = visibleTags[filterType][tag] === true;
+            }
+            if (
+              filterType === FilterType.Collection &&
+              nft.collection === tag
+            ) {
               filterTypeMatch = visibleTags[filterType][tag] === true;
             }
           }
@@ -201,11 +222,30 @@ const NftGalleryView = ({
     }
   };
 
+  const handleCollectionChange = async (collection: string) => {
+    if (collection === NftTag.All) {
+      setSelectedCollection([]);
+      return;
+    }
+    if (selectedCollection.includes(collection)) {
+      setSelectedCollection([
+        ...selectedCollection.filter(existing => existing !== collection),
+      ]);
+    } else {
+      setSelectedCollection([...selectedCollection, collection]);
+    }
+  };
+
   const handleChipClick = (filterType: FilterType, tag: string) => {
     switch (filterType) {
       case FilterType.Category:
         setSelectedCategory([
           ...selectedCategory.filter(existing => existing !== tag),
+        ]);
+        break;
+      case FilterType.Collection:
+        setSelectedCollection([
+          ...selectedCollection.filter(existing => existing !== tag),
         ]);
         break;
       case FilterType.Chain:
@@ -219,6 +259,7 @@ const NftGalleryView = ({
   const handleClearClick = () => {
     setSelectedSymbol([]);
     setSelectedCategory([]);
+    setSelectedCollection([]);
     setVisibleTags(defaultVisibility);
   };
 
@@ -303,6 +344,33 @@ const NftGalleryView = ({
                   getFilterOption('Hidden', NftTag.Hidden),
                 ]}
               />
+              <NftFilterSelect
+                id={'nftGallery-filter-collection'}
+                onChange={handleCollectionChange}
+                title={t('nftCollection.filterByCollection')}
+                disabled={false}
+                selected={selectedCollection}
+                options={[
+                  getFilterOption('All Collections', NftTag.All),
+                  ...[
+                    ...new Set([
+                      ...nfts
+                        .filter(nft => nft.collection && nft.mint)
+                        .map(nft => nft.collection),
+                    ]),
+                  ]
+                    .sort((a, b) => a.localeCompare(b))
+                    .map(collection => {
+                      return {
+                        label: `${collection} (${
+                          nfts.filter(nft => nft.collection === collection)
+                            .length
+                        })`,
+                        value: collection,
+                      };
+                    }),
+                ]}
+              />
             </div>
             <div className={classes.filterListContainer}>
               {!isAllNftsLoaded && (
@@ -346,7 +414,9 @@ const NftGalleryView = ({
                     );
                   });
               })}
-              {(selectedSymbol.length > 0 || selectedCategory.length > 0) && (
+              {(selectedSymbol.length > 0 ||
+                selectedCategory.length > 0 ||
+                selectedCollection.length > 0) && (
                 <Button
                   sx={{color: 'gray'}}
                   size="small"

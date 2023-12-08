@@ -1,9 +1,9 @@
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
-import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -11,6 +11,9 @@ import DialogTitle from '@mui/material/DialogTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import Link from '@mui/material/Link';
+import MenuItem from '@mui/material/MenuItem';
+import type {SelectChangeEvent} from '@mui/material/Select';
+import Select from '@mui/material/Select';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import type {ReactElement} from 'react';
@@ -58,6 +61,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
       color: theme.palette.primary.main,
     },
   },
+  selectVisibility: {
+    marginBottom: theme.spacing(2),
+    marginTop: theme.spacing(1),
+  },
   symbolHeaderLabelOn: {
     padding: theme.spacing(0, 0.75),
     fontSize: theme.typography.body2.fontSize,
@@ -81,6 +88,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     margin: theme.spacing(7),
     textAlign: 'center',
   },
+  subTitle: {
+    marginTop: theme.spacing(1),
+  },
 }));
 
 export const Manager: React.FC<ManagerProps> = ({
@@ -97,8 +107,9 @@ export const Manager: React.FC<ManagerProps> = ({
   getNextNftPage,
 }) => {
   const {classes} = useStyles();
+  const [t] = useTranslationContext();
   const [symbolToggles, setSymbolToggles] = useState<ReactElement>();
-  const [loading, setLoading] = useState<boolean>(false);
+  const [showAllItems, setShowAllItems] = useState<boolean>(true);
 
   // render the symbol table
   useEffect(() => {
@@ -114,10 +125,15 @@ export const Manager: React.FC<ManagerProps> = ({
     renderSymbols();
   };
 
+  const handleVisibilityModeChange = (e: SelectChangeEvent<string>) => {
+    setShowAllItems(e.target.value === 'true');
+    if (records) {
+      setRecords(records);
+    }
+  };
+
   // send final call to save preferences to profile API
   const handleSaveProfile = async (signature: string, expiry: string) => {
-    setLoading(true);
-
     // prepare the request body
     if (!records) {
       return;
@@ -130,7 +146,7 @@ export const Manager: React.FC<ManagerProps> = ({
         symbol,
         address: records[symbol].address,
         public: records[symbol].enabled,
-        showAllItems: true,
+        showAllItems,
         items: itemsToUpdate
           .filter(item => item.symbol === symbol)
           .map<NftRequestItem>(item => {
@@ -169,6 +185,10 @@ export const Manager: React.FC<ManagerProps> = ({
     if (!records) {
       return;
     }
+    setShowAllItems(
+      Object.keys(records!).filter(symbol => records[symbol].showAllItems)
+        .length > 0,
+    );
     setSymbolToggles(
       <div className={classes.symbolContainer}>
         <FormGroup>
@@ -196,18 +216,43 @@ export const Manager: React.FC<ManagerProps> = ({
   return (
     <Box>
       {records && (
-        <div
-          className={
-            loading ? classes.centeredContainer : classes.flexContainer
-          }
-        >
-          {loading ? (
-            <div className={classes.spinner}>
-              <CircularProgress />
-            </div>
-          ) : (
-            <div>{symbolToggles}</div>
-          )}
+        <div className={classes.flexContainer}>
+          <div>
+            {symbolToggles}
+            {records && (
+              <Box
+                mt={2}
+                display="flex"
+                flexDirection="column"
+                textAlign="left"
+                alignItems="left"
+              >
+                <Typography className={classes.subTitle} variant="h6">
+                  {t('nftCollection.manageVisibilityDefaultTitle')}
+                </Typography>
+                <Typography variant="body1">
+                  {t('nftCollection.visibilityDescription')}
+                </Typography>
+                <Select
+                  id="visibilityMode"
+                  value={String(showAllItems)}
+                  onChange={handleVisibilityModeChange}
+                  className={classes.selectVisibility}
+                >
+                  <MenuItem value={'true'}>
+                    <Typography variant="body2">
+                      {t('nftCollection.manageVisibilityShowByDefault')}
+                    </Typography>
+                  </MenuItem>
+                  <MenuItem value={'false'}>
+                    <Typography variant="body2">
+                      {t('nftCollection.manageVisibilityHideByDefault')}
+                    </Typography>
+                  </MenuItem>
+                </Select>
+              </Box>
+            )}
+          </div>
           <ProfileManager
             domain={domain}
             ownerAddress={ownerAddress!}
@@ -258,6 +303,7 @@ export const NftGalleryManager: React.FC<NftGalleryManagerProps> = ({
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
   const [saveClicked, setSaveClicked] = useState<boolean>(false);
+  const [saveInProgress, setSaveInProgress] = useState(false);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   const handleDialogOpen = () => {
@@ -270,10 +316,12 @@ export const NftGalleryManager: React.FC<NftGalleryManagerProps> = ({
   };
 
   const handleSaveClicked = () => {
+    setSaveInProgress(true);
     setSaveClicked(true);
   };
 
   const handleAddAddress = () => {
+    setSaveInProgress(true);
     window.location.href = `${config.UNSTOPPABLE_WEBSITE_URL}/manage?domain=${domain}&page=crypto`;
   };
 
@@ -340,10 +388,10 @@ export const NftGalleryManager: React.FC<NftGalleryManagerProps> = ({
           />
           {itemsToUpdate.length > 0 && (
             <div>
-              <Typography sx={{marginTop: '10px'}} variant={'h6'}>
+              <Typography className={classes.subTitle} variant={'h6'}>
                 {t('nftCollection.manageVisibilityTitle')}
               </Typography>
-              <Typography>
+              <Typography variant="body2">
                 {t('nftCollection.manageVisibility', {
                   count: itemsToUpdate.length,
                 })}
@@ -360,25 +408,27 @@ export const NftGalleryManager: React.FC<NftGalleryManagerProps> = ({
             {t('common.cancel')}
           </Button>
           {records ? (
-            <Button
+            <LoadingButton
               color={'primary'}
               variant={'contained'}
               onClick={handleSaveClicked}
               data-testid={`nftGallery-modal-save`}
+              loading={saveInProgress}
               sx={{marginRight: '10px', marginBottom: '10px'}}
             >
               {t('common.save')}
-            </Button>
+            </LoadingButton>
           ) : (
-            <Button
+            <LoadingButton
               color={'primary'}
               variant={'contained'}
               onClick={handleAddAddress}
+              loading={saveInProgress}
               data-testid={`nftGallery-modal-add-address`}
               sx={{marginRight: '10px', marginBottom: '10px'}}
             >
               {t('nftCollection.addAddress')}
-            </Button>
+            </LoadingButton>
           )}
         </DialogActions>
       </Dialog>

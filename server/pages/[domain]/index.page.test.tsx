@@ -1308,7 +1308,7 @@ describe('Owner operations', () => {
     );
   });
 
-  it('displays clickable visibility toggle', async () => {
+  it('displays clickable options menu', async () => {
     jest.spyOn(domainProfileActions, 'getDomainNfts').mockResolvedValue({
       ['SOL']: {
         address: 'sol-address',
@@ -1356,20 +1356,18 @@ describe('Owner operations', () => {
       ),
     );
 
-    // find the visibility icon
-    const vizIcons = screen.getAllByTestId(
-      `nftGallery-viz-icon-on-test-sol-nft-mint`,
-    );
+    // find and click the options menu
+    const vizIcons = screen.getAllByTestId(`nft-card-more-info`);
     expect(vizIcons.length).toBeGreaterThan(0);
 
     // expect the pending button not yet to be present
     expect(() => screen.getByTestId('nftGallery-confirm-button')).toThrow();
 
-    // click the icon and make sure it is now hidden
+    // click the hide menu option
     userEvent.click(vizIcons[0]);
-    expect(() =>
-      screen.getByTestId('nftGallery-viz-icon-on-test-sol-nft-mint'),
-    ).toThrow();
+    const hideMenuOption = screen.getAllByTestId('nft-card-hide-nft');
+    expect(hideMenuOption.length).toBeGreaterThan(0);
+    userEvent.click(hideMenuOption[0]);
 
     // expect the pending button to now be rendered
     expect(screen.getByTestId(`nftGallery-confirm-button`));

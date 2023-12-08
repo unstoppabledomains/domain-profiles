@@ -177,6 +177,7 @@ export const Manager: React.FC<ManagerProps> = ({
     });
 
     // close the management dialogue
+    setLoading(false);
     setModalOpen(false);
 
     // wait a moment before reloading

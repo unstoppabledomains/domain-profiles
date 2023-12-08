@@ -1,5 +1,7 @@
 import CollectionsOutlinedIcon from '@mui/icons-material/CollectionsOutlined';
+import {Typography} from '@mui/material';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
@@ -11,7 +13,7 @@ import {getDomainNfts} from '../../../actions';
 import {useWeb3Context} from '../../../hooks';
 import type {NftResponse, SerializedUserDomainProfileData} from '../../../lib';
 import {useTranslationContext} from '../../../lib';
-import {NftGalleryManager} from '../../TokenGallery/NftGalleryManager';
+import {Manager} from '../../TokenGallery/NftGalleryManager';
 import {DomainProfileTabType} from '../DomainProfile';
 import {TabHeader} from './TabHeader';
 
@@ -47,6 +49,8 @@ export const TokenGallery: React.FC<TokenGalleryProps> = ({
 }) => {
   const {classes} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
+  const [saveClicked, setSaveClicked] = useState(false);
+  const [saveInProgress, setSaveInProgress] = useState(false);
   const [t] = useTranslationContext();
   const [isLoaded, setIsLoaded] = useState(false);
   const [nftAddressRecords, setNftAddressRecords] =
@@ -65,6 +69,11 @@ export const TokenGallery: React.FC<TokenGalleryProps> = ({
     onUpdate(DomainProfileTabType.TokenGallery);
   };
 
+  const handleSaveClicked = () => {
+    setSaveInProgress(true);
+    setSaveClicked(true);
+  };
+
   return (
     <Box className={classes.container}>
       {isLoaded ? (
@@ -74,18 +83,34 @@ export const TokenGallery: React.FC<TokenGalleryProps> = ({
             description={t('manage.tokenGalleryDescription')}
             learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001227010-how-to-setup-and-manage-the-token-gallery"
           />
-          <Box className={classes.button} />
-          <NftGalleryManager
-            ownerAddress={address}
+          <Box mb={1}>
+            <Typography variant="body1">
+              {nftAddressRecords
+                ? t('nftCollection.manageDescription')
+                : t('nftCollection.addOnchainAddress')}
+            </Typography>
+          </Box>
+          <Manager
             domain={domain}
+            ownerAddress={address}
             records={nftAddressRecords}
             profileServiceUrl={config.PROFILE.HOST_URL}
             itemsToUpdate={[]}
             setRecords={handleRecordsUpdate}
-            getNextNftPage={async () => {}}
+            saveClicked={saveClicked}
+            setSaveClicked={setSaveClicked}
             setWeb3Deps={setWeb3Deps}
-            hasNfts={false}
+            setModalOpen={setSaveInProgress}
+            getNextNftPage={async () => {}}
           />
+          <Button
+            variant="contained"
+            disabled={saveInProgress}
+            className={classes.button}
+            onClick={handleSaveClicked}
+          >
+            {t('common.save')}
+          </Button>
         </>
       ) : (
         <Box display="flex" justifyContent="center">

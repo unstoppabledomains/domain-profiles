@@ -305,6 +305,7 @@ const NftCard = ({nft, domain, placeholder}: Props) => {
             </Box>
             {nft.owner && nft.toggleVisibility && (
               <IconButton
+                data-testid="nft-card-more-info"
                 className={classes.optionsButton}
                 onClick={handleOpenMenu}
               >
@@ -333,6 +334,7 @@ const NftCard = ({nft, domain, placeholder}: Props) => {
           anchorOrigin={{horizontal: 'right', vertical: 'bottom'}}
         >
           <MenuItem
+            data-testid="nft-card-hide-nft"
             onClick={async () => {
               handleCloseMenu();
               handleToggleNftVisibility(nft.public ? false : true);

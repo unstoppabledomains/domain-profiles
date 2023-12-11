@@ -20,9 +20,11 @@ export type EthereumBlockchainConfig = BaseBlockchainConfig & {
   CHAIN_ID: 5 | 1 | 1337;
   NETWORK_NAME: 'goerli' | 'mainnet' | 'local';
   PROXY_READER_ADDRESS: string;
+  ENS_CONTRACT_ADDRESS: string;
   OPEN_SEA_BASE_URL:
     | 'https://opensea.io/assets/'
-    | 'https://testnets.opensea.io/assets/';
+    | 'https://testnets.opensea.io/assets/'
+    | 'https://testnets.opensea.io/assets/goerli/';
 };
 
 export type MaticBlockchainConfig = BaseBlockchainConfig & {

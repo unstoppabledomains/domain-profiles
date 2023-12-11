@@ -23,7 +23,8 @@ export default function getDefaultConfig(): Config {
         BLOCK_EXPLORER_BASE_URL: 'https://goerli.etherscan.io',
         DISABLE_CONTRACTS_CACHE: true,
         PROXY_READER_ADDRESS: '0xFc5f608149f4D9e2Ed0733efFe9DD57ee24BCF68',
-        OPEN_SEA_BASE_URL: 'https://testnets.opensea.io/assets/',
+        OPEN_SEA_BASE_URL: 'https://testnets.opensea.io/assets/goerli/',
+        ENS_CONTRACT_ADDRESS: '0x114d4603199df73e7d157787f8778e21fcd13066',
       },
       MATIC: {
         CHAIN_ID: 80001,

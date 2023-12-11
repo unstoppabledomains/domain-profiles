@@ -24,6 +24,7 @@ export default function getProductionConfig(): ConfigOverride {
         BLOCK_EXPLORER_BASE_URL: 'https://etherscan.io',
         PROXY_READER_ADDRESS: '0xc3C2BAB5e3e52DBF311b2aAcEf2e40344f19494E',
         OPEN_SEA_BASE_URL: 'https://opensea.io/assets/',
+        ENS_CONTRACT_ADDRESS: '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85',
       },
       MATIC: {
         CHAIN_ID: 137,

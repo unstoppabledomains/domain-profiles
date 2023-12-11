@@ -200,7 +200,7 @@ const DomainProfile = ({
   const openSeaLink = formOpenSeaLink({
     logicalOwnerAddress: ownerAddress,
     blockchain: blockchain as Blockchain,
-    type: Registry.UNS,
+    type: isEnsDomain ? Registry.ENS : Registry.UNS,
     ttl: 0,
     tokenId,
     domain,

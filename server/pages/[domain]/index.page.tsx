@@ -573,27 +573,23 @@ const DomainProfile = ({
                     onUnfollowClick={handleUnfollowClick}
                   />
                 </>
+              ) : isMobile ? (
+                <IconButton
+                  data-testid="edit-profile-button"
+                  onClick={() => setShowManageDomainModal(true)}
+                  className={cx(classes.editButton)}
+                >
+                  <EditOutlinedIcon />
+                </IconButton>
               ) : (
-                (featureFlags.variations?.udMeServiceDomainsEnableManagement ||
-                  true) &&
-                (isMobile ? (
-                  <IconButton
-                    data-testid="edit-profile-button"
-                    onClick={() => setShowManageDomainModal(true)}
-                    className={cx(classes.editButton)}
-                  >
-                    <EditOutlinedIcon />
-                  </IconButton>
-                ) : (
-                  <Button
-                    data-testid="edit-profile-button"
-                    onClick={() => setShowManageDomainModal(true)}
-                    className={cx(classes.editButton)}
-                    startIcon={<EditOutlinedIcon />}
-                  >
-                    {t('manage.manageProfile')}
-                  </Button>
-                ))
+                <Button
+                  data-testid="edit-profile-button"
+                  onClick={() => setShowManageDomainModal(true)}
+                  className={cx(classes.editButton)}
+                  startIcon={<EditOutlinedIcon />}
+                >
+                  {t('manage.manageProfile')}
+                </Button>
               )}
             </div>
           )}
@@ -1012,10 +1008,7 @@ const DomainProfile = ({
                   isOwner={isOwner}
                   ownerAddress={ownerAddress}
                   profileServiceUrl={config.PROFILE.HOST_URL}
-                  hideConfigureButton={
-                    !!featureFlags.variations
-                      ?.udMeServiceDomainsEnableManagement
-                  }
+                  hideConfigureButton={true}
                 />
               )}
             {isForSale && !nftShowAll && openSeaLink && domainSellerEmail && (

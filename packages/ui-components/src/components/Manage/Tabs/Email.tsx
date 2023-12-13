@@ -17,9 +17,9 @@ import type {SerializedUserDomainProfileData} from '../../../lib';
 import {DomainFieldTypes, useTranslationContext} from '../../../lib';
 import {notifyError} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
-import BulkUpdateLoadingButton from './BulkUpdateLoadingButton';
-import ManageInput from './Profile/ManageInput';
-import {TabHeader} from './TabHeader';
+import BulkUpdateLoadingButton from '../common/BulkUpdateLoadingButton';
+import ManageInput from '../common/ManageInput';
+import {TabHeader} from '../common/TabHeader';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {

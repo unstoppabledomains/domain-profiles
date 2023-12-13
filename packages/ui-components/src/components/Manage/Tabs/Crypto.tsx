@@ -20,8 +20,8 @@ import {useWeb3Context} from '../../../hooks';
 import {DomainFieldTypes, useTranslationContext} from '../../../lib';
 import {notifyError} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
-import ManageInput from './Profile/ManageInput';
-import {TabHeader} from './TabHeader';
+import ManageInput from '../common/ManageInput';
+import {TabHeader} from '../common/TabHeader';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -61,7 +61,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const Crypto: React.FC<CryptoProps> = ({address, domain}) => {
+export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
   const {classes} = useStyles();
   const {web3Deps, setWeb3Deps} = useWeb3Context();
   const [saveClicked, setSaveClicked] = useState(false);
@@ -82,7 +82,7 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain}) => {
       DomainFieldTypes.CryptoVerifications,
     ]);
     if (profileData?.records) {
-      setRecords(profileData.records);
+      setFilteredRecords(profileData.records);
       setIsPendingTx(!!profileData?.metadata?.pending);
     }
     setIsLoading(false);
@@ -140,9 +140,28 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain}) => {
 
   const handleInputChange = (id: string, value: string) => {
     records[id] = value;
-    setRecords({
+    setFilteredRecords({
       ...records,
     });
+  };
+
+  const setFilteredRecords = (allRecords: Record<string, string>) => {
+    if (filterFn) {
+      const filteredRecords: Record<string, string> = {};
+      Object.keys(allRecords)
+        .filter(k => filterFn(k))
+        .sort((a, b) => a.localeCompare(b))
+        .map(k => {
+          filteredRecords[k] = allRecords[k];
+        });
+      setRecords({
+        ...filteredRecords,
+      });
+    } else {
+      setRecords({
+        ...allRecords,
+      });
+    }
   };
 
   // getSignature prompts the user to sign a message to authorize management of
@@ -267,4 +286,5 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain}) => {
 export type CryptoProps = {
   address: string;
   domain: string;
+  filterFn?: (k: string) => boolean;
 };

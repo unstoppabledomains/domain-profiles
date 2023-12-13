@@ -15,9 +15,9 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 
-import type {DomainProfileVisibilityValues} from '../../../../lib';
-import {useTranslationContext} from '../../../../lib';
-import useStyles from '../../../../styles/components/manage.styles';
+import type {DomainProfileVisibilityValues} from '../../../lib';
+import {useTranslationContext} from '../../../lib';
+import useStyles from '../../../styles/components/manage.styles';
 import FormError from './FormError';
 
 interface ManageInputProps {

@@ -15,7 +15,7 @@ import type {NftResponse, SerializedUserDomainProfileData} from '../../../lib';
 import {useTranslationContext} from '../../../lib';
 import {Manager} from '../../TokenGallery/NftGalleryManager';
 import {DomainProfileTabType} from '../DomainProfile';
-import {TabHeader} from './TabHeader';
+import {TabHeader} from '../common/TabHeader';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {

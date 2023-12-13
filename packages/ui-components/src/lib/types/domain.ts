@@ -266,7 +266,7 @@ export type SerializedPublicDomainProfileData = {
   >;
   cryptoVerifications?: SerializedDomainCryptoVerification[];
   records?: Record<string, string>;
-  metadata?: Record<string, string>;
+  metadata?: Record<string, string | boolean>;
   referralCode?: string;
   referralTier?: AffiliateTier;
   webacy?: WebacyRiskScore;

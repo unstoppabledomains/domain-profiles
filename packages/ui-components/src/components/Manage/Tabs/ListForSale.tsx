@@ -176,13 +176,13 @@ export const ListForSale: React.FC<ListForSale> = ({
 
   return (
     <Box className={classes.container}>
+      <TabHeader
+        icon={<SellOutlinedIcon />}
+        description={t('manage.listForSaleDescription')}
+        learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001205861-list-domain-for-sale-on-our-website"
+      />
       {isLoaded ? (
         <>
-          <TabHeader
-            icon={<SellOutlinedIcon />}
-            description={t('manage.listForSaleDescription')}
-            learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001205861-list-domain-for-sale-on-our-website"
-          />
           <ManageInput
             id="publicDomainSellerEmail"
             value={userProfile?.profile?.publicDomainSellerEmail}

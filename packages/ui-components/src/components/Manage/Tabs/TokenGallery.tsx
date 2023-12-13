@@ -76,13 +76,13 @@ export const TokenGallery: React.FC<TokenGalleryProps> = ({
 
   return (
     <Box className={classes.container}>
+      <TabHeader
+        icon={<CollectionsOutlinedIcon />}
+        description={t('manage.tokenGalleryDescription')}
+        learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001227010-how-to-setup-and-manage-the-token-gallery"
+      />
       {isLoaded ? (
         <>
-          <TabHeader
-            icon={<CollectionsOutlinedIcon />}
-            description={t('manage.tokenGalleryDescription')}
-            learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001227010-how-to-setup-and-manage-the-token-gallery"
-          />
           <Box mb={1}>
             <Typography variant="body1">
               {nftAddressRecords

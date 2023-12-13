@@ -177,13 +177,13 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
 
   return (
     <Box className={classes.container}>
+      <TabHeader
+        icon={<MailLockOutlinedIcon />}
+        description={t('manage.emailDescription')}
+        learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001218107-unstoppable-email"
+      />
       {isLoaded ? (
         <>
-          <TabHeader
-            icon={<MailLockOutlinedIcon />}
-            description={t('manage.emailDescription')}
-            learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001218107-unstoppable-email"
-          />
           <ManageInput
             id="privateEmail"
             value={userProfile?.profile?.privateEmail}

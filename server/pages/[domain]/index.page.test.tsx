@@ -1183,7 +1183,7 @@ describe('Owner operations', () => {
       .mockImplementation((k: string): string | null => {
         switch (k) {
           case DomainProfileKeys.AuthAddress:
-            return defaultProfileData()!.metadata!.owner;
+            return defaultProfileData()!.metadata!.owner as string;
           case DomainProfileKeys.AuthDomain:
             return 'foo.crypto';
         }

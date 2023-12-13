@@ -208,6 +208,8 @@ const DomainProfile = ({
     registryAddress: metadata.registry as string,
     resolver: metadata.resolver as string,
     reverse: Boolean(metadata.reverse),
+    networkId: null,
+    owner: ownerAddress,
   });
   const needLeftSideDivider =
     Boolean(profileData?.profile?.location) ||

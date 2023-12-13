@@ -204,6 +204,9 @@
     "signOut": "Sign Out"
   },
   "manage": {
+    "verified": "Verified",
+    "verify": "Verify",
+    "verifyAfterConfirm": "You can verify this {{currency}} address after changes are confirmed on-chain.",
     "addAvatar": "Add avatar",
     "addCover": "Add cover",
     "addressNotVerified": "Please verify the ownership of this address. NFTs associated with this address will not be displayed on your public profile.",
@@ -217,7 +220,7 @@
     "configure": "Configure",
     "coverJpgOrPngAndMaxSize": "Recommended: 1440x200px, 5MB max size, JPG or PNG.",
     "crypto": "Crypto Addresses",
-    "cryptoAddressesDescription": "Add crypto addresses to receive payments using this domain. Optionally verify an address on Bitcoin, Ethereum, Polygon, Avalanche, Fantom, Cardano, Solana or Hedera to prove ownership.",
+    "cryptoAddressesDescription": "Add crypto addresses to receive payments. Optionally verify an address on Ethereum, Polygon, Avalanche, Fantom or Solana to prove ownership.",
     "description": "Short bio",
     "displayName": "Name",
     "domainProfileImage": "Domain profile image",

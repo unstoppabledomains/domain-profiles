@@ -17,11 +17,21 @@ import {
   registerWallet,
 } from '../../../actions/pav3Actions';
 import {useWeb3Context} from '../../../hooks';
+import useResolverKeys from '../../../hooks/useResolverKeys';
+import type {
+  CurrenciesType,
+  SerializedPublicDomainProfileData,
+} from '../../../lib';
 import {DomainFieldTypes, useTranslationContext} from '../../../lib';
 import {notifyError} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
-import ManageInput from '../common/ManageInput';
+import CurrencyInput from '../common/CurrencyInput';
+import MultiChainInput from '../common/MultiChainInput';
 import {TabHeader} from '../common/TabHeader';
+import {
+  getMultichainAddressRecords,
+  getSingleChainAddressRecords,
+} from '../common/currencyRecords';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -64,27 +74,36 @@ const useStyles = makeStyles()((theme: Theme) => ({
 export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
   const {classes} = useStyles();
   const {web3Deps, setWeb3Deps} = useWeb3Context();
+  const {unsResolverKeys: resolverKeys, loading: resolverKeysLoading} =
+    useResolverKeys();
   const [saveClicked, setSaveClicked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isPendingTx, setIsPendingTx] = useState<boolean>();
   const [records, setRecords] = useState<Record<string, string>>({});
+  const [profileData, setProfileData] =
+    useState<SerializedPublicDomainProfileData>();
   const [t] = useTranslationContext();
 
   useEffect(() => {
+    if (resolverKeysLoading) {
+      return;
+    }
+
     // retrieve records and determine if there are pending transactions
     void loadRecords();
-  }, []);
+  }, [resolverKeysLoading]);
 
   const loadRecords = async () => {
-    const profileData = await getProfileData(domain, [
+    const data = await getProfileData(domain, [
       DomainFieldTypes.Records,
       DomainFieldTypes.CryptoVerifications,
     ]);
-    if (profileData?.records) {
-      setFilteredRecords(profileData.records);
-      setIsPendingTx(!!profileData?.metadata?.pending);
+    if (data?.records) {
+      setFilteredRecords(data.records);
+      setIsPendingTx(!!data?.metadata?.pending);
     }
+    setProfileData(data);
     setIsLoading(false);
   };
 
@@ -142,6 +161,12 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
     records[id] = value;
     setFilteredRecords({
       ...records,
+    });
+  };
+
+  const handleInputDelete = (ids: string[]) => {
+    ids.map(id => {
+      handleInputChange(id, '');
     });
   };
 
@@ -214,8 +239,45 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
     return false;
   };
 
-  const getLabel = (k: string) => {
-    return k;
+  const renderMultiChainAddresses = () => {
+    const recordsToRender = getMultichainAddressRecords(records, resolverKeys);
+
+    return recordsToRender.map(multiChainRecord => (
+      <MultiChainInput
+        key={multiChainRecord.currency}
+        versions={multiChainRecord.versions}
+        currency={multiChainRecord.currency as CurrenciesType}
+        domain={domain}
+        ownerAddress={address}
+        onDelete={handleInputDelete}
+        onChange={handleInputChange}
+        profileData={profileData}
+        uiDisabled={!!isPendingTx}
+        setWeb3Deps={setWeb3Deps}
+      />
+    ));
+  };
+
+  const renderSingleChainAddresses = () => {
+    const recordsToRender = getSingleChainAddressRecords(records, resolverKeys);
+    return recordsToRender.map(singleChainAddressRecord => {
+      const {currency, key, value} = singleChainAddressRecord;
+      return (
+        <CurrencyInput
+          key={key}
+          currency={currency}
+          domain={domain}
+          ownerAddress={address}
+          value={value}
+          recordKey={key}
+          onDelete={handleInputDelete}
+          onChange={handleInputChange}
+          uiDisabled={!!isPendingTx}
+          profileData={profileData}
+          setWeb3Deps={setWeb3Deps}
+        />
+      );
+    });
   };
 
   return (
@@ -245,18 +307,8 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
             </Box>
           )}
           <Box mt={2}>
-            {Object.keys(records).map(recordKey => (
-              <ManageInput
-                id={recordKey}
-                value={records[recordKey]}
-                label={getLabel(recordKey)}
-                placeholder={getLabel(recordKey)}
-                onChange={handleInputChange}
-                disabled={isPendingTx}
-                disableTextTrimming
-                stacked={false}
-              />
-            ))}
+            {renderSingleChainAddresses()}
+            {renderMultiChainAddresses()}
           </Box>
           <LoadingButton
             variant="contained"

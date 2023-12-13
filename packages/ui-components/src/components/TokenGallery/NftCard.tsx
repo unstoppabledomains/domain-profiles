@@ -19,7 +19,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {CryptoIcon} from '../../components/Image/CryptoIcon';
 import type {Nft} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
-import type {AllCurrenciesType} from '../../lib/types/blockchain';
+import type {CurrenciesType} from '../../lib/types/blockchain';
 import NftImage from './NftImage';
 import NftModal from './NftModal';
 
@@ -291,7 +291,7 @@ const NftCard = ({nft, domain, placeholder}: Props) => {
             >
               {nft.symbol && (
                 <CryptoIcon
-                  currency={nft.symbol as AllCurrenciesType}
+                  currency={nft.symbol as CurrenciesType}
                   classes={{root: classes.currencyIcon}}
                 />
               )}

@@ -65,6 +65,13 @@ export enum DomainFieldTypes {
   WebacyScore = 'webacyScore',
 }
 
+export type DomainCryptoVerificationBodyPOST = {
+  symbol: string;
+  address: string;
+  plaintextMessage: string;
+  signedMessage: string;
+};
+
 export enum DomainProfileKeys {
   AuthAddress = 'authAddress',
   AuthDomain = 'authDomain',

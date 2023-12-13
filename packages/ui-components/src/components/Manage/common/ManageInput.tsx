@@ -231,34 +231,36 @@ const ManageInput: React.FC<ManageInputProps> = ({
             }}
             startAdornment={startAdornment}
             endAdornment={
-              setPublicVisibilityValues && (
-                <InputAdornment
-                  position="end"
-                  style={{paddingRight: '15px', position: 'relative'}}
-                >
-                  {publicVisibilityValues &&
-                  publicVisibilityValues[id + 'Public'] ? (
-                    <Tooltip title={t('manage.publicData')}>
-                      <PublicOutlinedIcon className={classes.publicIcon} />
-                    </Tooltip>
-                  ) : (
-                    <Tooltip title={t('manage.privateData')}>
-                      <VisibilityOffOutlinedIcon
-                        className={classes.privateIcon}
-                      />
-                    </Tooltip>
-                  )}
-                  <IconButton
-                    data-testid="inlineToggle"
-                    aria-label="toggle public visibility"
-                    onClick={handleAdornmentClick}
-                    edge="end"
-                  >
-                    <ExpandMoreOutlinedIcon />
-                  </IconButton>
-                  <BasicCard></BasicCard>
-                </InputAdornment>
-              )
+              endAdornment
+                ? endAdornment
+                : setPublicVisibilityValues && (
+                    <InputAdornment
+                      position="end"
+                      style={{paddingRight: '15px', position: 'relative'}}
+                    >
+                      {publicVisibilityValues &&
+                      publicVisibilityValues[id + 'Public'] ? (
+                        <Tooltip title={t('manage.publicData')}>
+                          <PublicOutlinedIcon className={classes.publicIcon} />
+                        </Tooltip>
+                      ) : (
+                        <Tooltip title={t('manage.privateData')}>
+                          <VisibilityOffOutlinedIcon
+                            className={classes.privateIcon}
+                          />
+                        </Tooltip>
+                      )}
+                      <IconButton
+                        data-testid="inlineToggle"
+                        aria-label="toggle public visibility"
+                        onClick={handleAdornmentClick}
+                        edge="end"
+                      >
+                        <ExpandMoreOutlinedIcon />
+                      </IconButton>
+                      <BasicCard></BasicCard>
+                    </InputAdornment>
+                  )
             }
           />
           {helperText && <FormHelperText>{helperText}</FormHelperText>}

@@ -82,8 +82,10 @@ export const InitialCurrencyToResolverKeys: Record<
 > = {
   [AllInitialCurrenciesEnum.BTC]: ['crypto.BTC.address', 'addr.0'],
   [AllInitialCurrenciesEnum.ETH]: ['crypto.ETH.address', 'addr.60'],
-  [AllInitialCurrenciesEnum.ADA]: ['crypto.ADA.address', 'addr.1815'],
-  [AllInitialCurrenciesEnum.HBAR]: ['crypto.HBAR.address', 'addr.3030'],
+  [AllInitialCurrenciesEnum.MATIC]: [
+    'crypto.MATIC.version.ERC20.address',
+    'addr.2147483785',
+  ],
   [AllInitialCurrenciesEnum.SOL]: ['crypto.SOL.address', 'addr.501'],
 };
 

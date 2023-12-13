@@ -1,3 +1,4 @@
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import type {Theme} from '@mui/material/styles';
@@ -26,9 +27,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
     paddingLeft: theme.spacing(1),
   },
   verifiedBlock: {
-    paddingRight: theme.spacing(1),
+    display: 'flex',
+    alignContent: 'center',
+    paddingRight: theme.spacing(1.75),
     paddingLeft: theme.spacing(1),
     fontWeight: theme.typography.fontWeightMedium,
+    color: theme.palette.successShades[700],
+  },
+  verifiedIcon: {
     color: theme.palette.successShades[700],
   },
 }));
@@ -98,7 +104,13 @@ const VerifyAdornment: React.FC<Props> = ({
     ownerAddress.toLowerCase() === addressCurrent.toLowerCase()
   ) {
     // return verified indicator
-    return <div className={classes.verifiedBlock}>{t('manage.verified')}</div>;
+    return (
+      <div className={classes.verifiedBlock}>
+        <Tooltip title={t('manage.verifiedOwnership')}>
+          <CheckCircleIcon className={classes.verifiedIcon} />
+        </Tooltip>
+      </div>
+    );
   } else {
     // return the verification button
     return (

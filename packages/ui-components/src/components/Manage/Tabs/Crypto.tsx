@@ -1,7 +1,9 @@
+import AddIcon from '@mui/icons-material/Add';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import UpdateOutlinedIcon from '@mui/icons-material/UpdateOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -20,11 +22,13 @@ import {useWeb3Context} from '../../../hooks';
 import useResolverKeys from '../../../hooks/useResolverKeys';
 import type {
   CurrenciesType,
+  NewAddressRecord,
   SerializedPublicDomainProfileData,
 } from '../../../lib';
 import {DomainFieldTypes, useTranslationContext} from '../../../lib';
 import {notifyError} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
+import AddCurrencyModal from '../common/AddCurrencyModal';
 import CurrencyInput from '../common/CurrencyInput';
 import MultiChainInput from '../common/MultiChainInput';
 import {TabHeader} from '../common/TabHeader';
@@ -80,10 +84,12 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isPendingTx, setIsPendingTx] = useState<boolean>();
+  const [isModalOpened, setIsModalOpened] = useState(false);
   const [records, setRecords] = useState<Record<string, string>>({});
   const [profileData, setProfileData] =
     useState<SerializedPublicDomainProfileData>();
   const [t] = useTranslationContext();
+  const deletedRecords: string[] = [];
 
   useEffect(() => {
     if (resolverKeysLoading) {
@@ -166,27 +172,43 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
 
   const handleInputDelete = (ids: string[]) => {
     ids.map(id => {
+      deletedRecords.push(id);
       handleInputChange(id, '');
     });
   };
 
+  const handleAddNewAddress = ({versions}: NewAddressRecord) => {
+    const newValidAddresses = versions.filter(v => !v.deprecated);
+    const newValidKeys = newValidAddresses.map(v => v.key);
+    const newAddressRecords = newValidKeys.reduce(
+      (acc, key) => ({...acc, [key]: ''}), // Adding new address records with empty values
+      {},
+    );
+    setFilteredRecords({
+      ...records,
+      ...newAddressRecords,
+    });
+  };
+
+  const handleOpenModal = () => {
+    setIsModalOpened(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpened(false);
+  };
+
   const setFilteredRecords = (allRecords: Record<string, string>) => {
-    if (filterFn) {
-      const filteredRecords: Record<string, string> = {};
-      Object.keys(allRecords)
-        .filter(k => filterFn(k))
-        .sort((a, b) => a.localeCompare(b))
-        .map(k => {
-          filteredRecords[k] = allRecords[k];
-        });
-      setRecords({
-        ...filteredRecords,
+    const filteredRecords: Record<string, string> = {};
+    Object.keys(allRecords)
+      .filter(k => !deletedRecords.includes(k) && (!filterFn || filterFn(k)))
+      .sort((a, b) => a.localeCompare(b))
+      .map(k => {
+        filteredRecords[k] = allRecords[k];
       });
-    } else {
-      setRecords({
-        ...allRecords,
-      });
-    }
+    setRecords({
+      ...filteredRecords,
+    });
   };
 
   // getSignature prompts the user to sign a message to authorize management of
@@ -310,6 +332,16 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
             {renderSingleChainAddresses()}
             {renderMultiChainAddresses()}
           </Box>
+          <Button
+            variant="outlined"
+            onClick={handleOpenModal}
+            disabled={isPendingTx}
+            className={classes.button}
+            startIcon={<AddIcon />}
+            fullWidth
+          >
+            {t('manage.addCurrency')}
+          </Button>
           <LoadingButton
             variant="contained"
             onClick={handleSave}
@@ -329,6 +361,14 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
             onSignature={handleRecordUpdate}
             forceWalletConnected={true}
           />
+          {isModalOpened && (
+            <AddCurrencyModal
+              open={isModalOpened}
+              onClose={handleCloseModal}
+              onAddNewAddress={handleAddNewAddress}
+              isEns={false}
+            />
+          )}
         </Box>
       )}
     </Box>

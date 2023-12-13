@@ -84,7 +84,6 @@ export enum AdditionalCurrenciesEnum {
   XDC = 'XDC',
   AR = 'AR',
   NIM = 'NIM',
-  MATIC = 'MATIC',
   CUSDT = 'CUSDT',
   AVAX = 'AVAX',
   DOT = 'DOT',
@@ -145,14 +144,15 @@ export enum AdditionalCurrenciesEnum {
   HI = 'HI',
   MCONTENT = 'MCONTENT',
   VERSE = 'VERSE',
+  ADA = 'ADA',
+  HBAR = 'HBAR',
 }
 
 export enum AllInitialCurrenciesEnum {
   BTC = 'BTC',
   ETH = 'ETH',
-  ADA = 'ADA',
+  MATIC = 'MATIC',
   SOL = 'SOL',
-  HBAR = 'HBAR',
 }
 
 export enum Blockchain {

@@ -235,7 +235,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
           value={DomainProfileTabType.Reverse}
           className={classes.tabContentItem}
         >
-          <ReverseTab domain={domain} />
+          <ReverseTab address={address} domain={domain} />
         </TabPanel>
       </TabContext>
     </Box>

@@ -34,6 +34,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   checkbox: {
     marginRight: theme.spacing(0),
+    marginTop: theme.spacing(-1),
+    alignSelf: 'flex-start',
   },
   infoContainer: {
     marginBottom: theme.spacing(3),

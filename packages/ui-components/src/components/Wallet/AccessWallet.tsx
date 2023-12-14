@@ -47,7 +47,7 @@ const AccessWallet = (props: Props) => {
           projectId: config.WALLETCONNECT_PROJECT_ID,
           qrModalOptions: {
             themeVariables: {
-              '--wcm-z-index': '100000',
+              '--w3m-z-index': '100000',
             },
           },
           metadata: {

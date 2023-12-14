@@ -57,7 +57,7 @@ export const getRegistrationMessage = async (
     },
   });
   if (walletStatus?.message) {
-    return walletStatus.message as string;
+    return `I approve this wallet to manage domain ${domain}.\n\nRequest nonce:\n${walletStatus.message}`;
   }
   return undefined;
 };

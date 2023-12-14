@@ -82,7 +82,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
   const {classes} = useStyles();
   const {web3Deps, setWeb3Deps} = useWeb3Context();
-  const {data: featureFlags} = useFeatureFlags();
+  const {data: featureFlags} = useFeatureFlags(false, domain);
   const {unsResolverKeys: resolverKeys, loading: resolverKeysLoading} =
     useResolverKeys();
   const [saveClicked, setSaveClicked] = useState(false);

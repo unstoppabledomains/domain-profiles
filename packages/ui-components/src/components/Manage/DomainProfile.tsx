@@ -122,46 +122,6 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   <StyledTabBadge
                     color="primary"
                     variant="dot"
-                    invisible={!tabUnreadDot[DomainProfileTabType.Email]}
-                  >
-                    <Box className={classes.tabLabel}>{t('manage.email')}</Box>
-                  </StyledTabBadge>
-                }
-                value={DomainProfileTabType.Email}
-              />
-              <Tab
-                label={
-                  <StyledTabBadge
-                    color="primary"
-                    variant="dot"
-                    invisible={!tabUnreadDot[DomainProfileTabType.ListForSale]}
-                  >
-                    <Box className={classes.tabLabel}>
-                      {t('manage.listForSale')}
-                    </Box>
-                  </StyledTabBadge>
-                }
-                value={DomainProfileTabType.ListForSale}
-              />
-              <Tab
-                label={
-                  <StyledTabBadge
-                    color="primary"
-                    variant="dot"
-                    invisible={!tabUnreadDot[DomainProfileTabType.TokenGallery]}
-                  >
-                    <Box className={classes.tabLabel}>
-                      {t('profile.gallery')}
-                    </Box>
-                  </StyledTabBadge>
-                }
-                value={DomainProfileTabType.TokenGallery}
-              />
-              <Tab
-                label={
-                  <StyledTabBadge
-                    color="primary"
-                    variant="dot"
                     invisible={!tabUnreadDot[DomainProfileTabType.Crypto]}
                   >
                     <Box className={classes.tabLabel}>
@@ -185,6 +145,46 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   </StyledTabBadge>
                 }
                 value={DomainProfileTabType.Reverse}
+              />
+              <Tab
+                label={
+                  <StyledTabBadge
+                    color="primary"
+                    variant="dot"
+                    invisible={!tabUnreadDot[DomainProfileTabType.Email]}
+                  >
+                    <Box className={classes.tabLabel}>{t('manage.email')}</Box>
+                  </StyledTabBadge>
+                }
+                value={DomainProfileTabType.Email}
+              />
+              <Tab
+                label={
+                  <StyledTabBadge
+                    color="primary"
+                    variant="dot"
+                    invisible={!tabUnreadDot[DomainProfileTabType.TokenGallery]}
+                  >
+                    <Box className={classes.tabLabel}>
+                      {t('profile.gallery')}
+                    </Box>
+                  </StyledTabBadge>
+                }
+                value={DomainProfileTabType.TokenGallery}
+              />
+              <Tab
+                label={
+                  <StyledTabBadge
+                    color="primary"
+                    variant="dot"
+                    invisible={!tabUnreadDot[DomainProfileTabType.ListForSale]}
+                  >
+                    <Box className={classes.tabLabel}>
+                      {t('manage.listForSale')}
+                    </Box>
+                  </StyledTabBadge>
+                }
+                value={DomainProfileTabType.ListForSale}
               />
             </TabList>
           </Box>

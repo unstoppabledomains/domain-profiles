@@ -10,7 +10,7 @@ import React, {useState} from 'react';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import useTranslationContext from '../../lib/i18n';
-import type {AllCurrenciesType} from '../../lib/types/blockchain';
+import type {CurrenciesType} from '../../lib/types/blockchain';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import type {ParsedRecords} from '../../lib/types/records';
 import CryptoAddress from './CryptoAddress';
@@ -93,7 +93,7 @@ const CryptoAddresses: React.FC<Props> = ({
       <div className={classes.container}>
         <div className={classes.parentRow}>
           {addressList.map(curr => {
-            const currency = curr as AllCurrenciesType;
+            const currency = curr as CurrenciesType;
 
             return (
               <CryptoAddress
@@ -110,7 +110,7 @@ const CryptoAddresses: React.FC<Props> = ({
             );
           })}
           {multicoinAddressList.map(curr => {
-            const currency = curr as AllCurrenciesType;
+            const currency = curr as CurrenciesType;
             const versions = multicoinAddresses[currency];
 
             return (

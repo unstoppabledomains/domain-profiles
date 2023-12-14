@@ -181,7 +181,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 }) => {
   const {cx, classes} = useStyles();
   const [t] = useTranslationContext();
-  const {data: featureFlags} = useFeatureFlags();
+  const {data: featureFlags} = useFeatureFlags(false, authDomain);
   const [loadingText, setLoadingText] = useState<string>();
   const [lastRefresh, setLastRefresh] = useState<Record<TabType, number>>({
     chat: 0,

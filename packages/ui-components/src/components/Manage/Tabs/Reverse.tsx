@@ -7,7 +7,7 @@ import React from 'react';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useTranslationContext} from '../../../lib';
-import {TabHeader} from './TabHeader';
+import {TabHeader} from '../common/TabHeader';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {

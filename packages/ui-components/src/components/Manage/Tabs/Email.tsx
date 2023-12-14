@@ -17,9 +17,9 @@ import type {SerializedUserDomainProfileData} from '../../../lib';
 import {DomainFieldTypes, useTranslationContext} from '../../../lib';
 import {notifyError} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
-import BulkUpdateLoadingButton from './BulkUpdateLoadingButton';
-import ManageInput from './Profile/ManageInput';
-import {TabHeader} from './TabHeader';
+import BulkUpdateLoadingButton from '../common/BulkUpdateLoadingButton';
+import ManageInput from '../common/ManageInput';
+import {TabHeader} from '../common/TabHeader';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -177,13 +177,13 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
 
   return (
     <Box className={classes.container}>
+      <TabHeader
+        icon={<MailLockOutlinedIcon />}
+        description={t('manage.emailDescription')}
+        learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001218107-unstoppable-email"
+      />
       {isLoaded ? (
         <>
-          <TabHeader
-            icon={<MailLockOutlinedIcon />}
-            description={t('manage.emailDescription')}
-            learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001218107-unstoppable-email"
-          />
           <ManageInput
             id="privateEmail"
             value={userProfile?.profile?.privateEmail}

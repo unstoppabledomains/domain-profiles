@@ -135,7 +135,9 @@ const DomainProfile = ({
   const [badges, setBadges] = useState<DomainBadgesResponse>();
   const [badgesDisabled, setBadgesDisabled] = useState(true);
   const [records, setRecords] = useState<Record<string, string>>({});
-  const [metadata, setMetadata] = useState<Record<string, string>>({});
+  const [metadata, setMetadata] = useState<Record<string, string | boolean>>(
+    {},
+  );
   const [showFeaturedCommunity, setShowFeaturedCommunity] = useState(
     profileData?.profile?.showFeaturedCommunity ?? false,
   );
@@ -194,20 +196,20 @@ const DomainProfile = ({
   const domainSellerEmail = profileData?.profile?.publicDomainSellerEmail;
   const isForSale = Boolean(domainSellerEmail);
   const ipfsHash = records['ipfs.html.value'];
-  const ownerAddress = metadata.owner || '';
-  const {blockchain} = metadata;
-  const {tokenId} = metadata;
+  const ownerAddress = (metadata.owner as string) || '';
   const openSeaLink = formOpenSeaLink({
     logicalOwnerAddress: ownerAddress,
-    blockchain: blockchain as Blockchain,
+    blockchain: metadata.blockchain as Blockchain,
     type: isEnsDomain ? Registry.ENS : Registry.UNS,
     ttl: 0,
-    tokenId,
+    tokenId: metadata.tokenId as string,
     domain,
-    namehash: metadata.namehash,
-    registryAddress: metadata.registry,
-    resolver: metadata.resolver,
+    namehash: metadata.namehash as string,
+    registryAddress: metadata.registry as string,
+    resolver: metadata.resolver as string,
     reverse: Boolean(metadata.reverse),
+    networkId: null,
+    owner: ownerAddress,
   });
   const needLeftSideDivider =
     Boolean(profileData?.profile?.location) ||
@@ -571,27 +573,23 @@ const DomainProfile = ({
                     onUnfollowClick={handleUnfollowClick}
                   />
                 </>
+              ) : isMobile ? (
+                <IconButton
+                  data-testid="edit-profile-button"
+                  onClick={() => setShowManageDomainModal(true)}
+                  className={cx(classes.editButton)}
+                >
+                  <EditOutlinedIcon />
+                </IconButton>
               ) : (
-                (featureFlags.variations?.udMeServiceDomainsEnableManagement ||
-                  true) &&
-                (isMobile ? (
-                  <IconButton
-                    data-testid="edit-profile-button"
-                    onClick={() => setShowManageDomainModal(true)}
-                    className={cx(classes.editButton)}
-                  >
-                    <EditOutlinedIcon />
-                  </IconButton>
-                ) : (
-                  <Button
-                    data-testid="edit-profile-button"
-                    onClick={() => setShowManageDomainModal(true)}
-                    className={cx(classes.editButton)}
-                    startIcon={<EditOutlinedIcon />}
-                  >
-                    {t('manage.manageProfile')}
-                  </Button>
-                ))
+                <Button
+                  data-testid="edit-profile-button"
+                  onClick={() => setShowManageDomainModal(true)}
+                  className={cx(classes.editButton)}
+                  startIcon={<EditOutlinedIcon />}
+                >
+                  {t('manage.manageProfile')}
+                </Button>
               )}
             </div>
           )}
@@ -1010,10 +1008,7 @@ const DomainProfile = ({
                   isOwner={isOwner}
                   ownerAddress={ownerAddress}
                   profileServiceUrl={config.PROFILE.HOST_URL}
-                  hideConfigureButton={
-                    !!featureFlags.variations
-                      ?.udMeServiceDomainsEnableManagement
-                  }
+                  hideConfigureButton={true}
                 />
               )}
             {isForSale && !nftShowAll && openSeaLink && domainSellerEmail && (
@@ -1272,7 +1267,7 @@ const DomainProfile = ({
             {!hasContent && !nftShowAll && (
               <div className={classes.empty}>
                 <AutoAwesomeOutlinedIcon className={classes.emptyIcon} />
-                {blockchain
+                {metadata.blockchain
                   ? t('profile.emptyMinted')
                   : t('profile.emptyNotMinted')}
               </div>

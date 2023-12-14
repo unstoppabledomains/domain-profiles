@@ -32,9 +32,9 @@ import {
 import {notifyError} from '../../../../lib/error';
 import {ProfileManager} from '../../../Wallet/ProfileManager';
 import {DomainProfileTabType} from '../../DomainProfile';
-import BulkUpdateLoadingButton from '../BulkUpdateLoadingButton';
+import BulkUpdateLoadingButton from '../../common/BulkUpdateLoadingButton';
+import ManageInput from '../../common/ManageInput';
 import {Header} from './Header';
-import ManageInput from './ManageInput';
 import ManagePublicVisibility from './ManagePublicVisibility';
 
 const useStyles = makeStyles()((theme: Theme) => ({

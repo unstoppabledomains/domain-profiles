@@ -15,7 +15,7 @@ import type {NftResponse, SerializedUserDomainProfileData} from '../../../lib';
 import {useTranslationContext} from '../../../lib';
 import {Manager} from '../../TokenGallery/NftGalleryManager';
 import {DomainProfileTabType} from '../DomainProfile';
-import {TabHeader} from './TabHeader';
+import {TabHeader} from '../common/TabHeader';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -76,13 +76,13 @@ export const TokenGallery: React.FC<TokenGalleryProps> = ({
 
   return (
     <Box className={classes.container}>
+      <TabHeader
+        icon={<CollectionsOutlinedIcon />}
+        description={t('manage.tokenGalleryDescription')}
+        learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001227010-how-to-setup-and-manage-the-token-gallery"
+      />
       {isLoaded ? (
         <>
-          <TabHeader
-            icon={<CollectionsOutlinedIcon />}
-            description={t('manage.tokenGalleryDescription')}
-            learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001227010-how-to-setup-and-manage-the-token-gallery"
-          />
           <Box mb={1}>
             <Typography variant="body1">
               {nftAddressRecords

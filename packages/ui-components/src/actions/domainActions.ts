@@ -7,6 +7,7 @@ import type {
   SerializedCryptoWalletBadge,
 } from '../lib/types/badge';
 import type {
+  DomainCryptoVerificationBodyPOST,
   EnsDomainStatusResponse,
   SerializedDomainRank,
 } from '../lib/types/domain';
@@ -98,4 +99,39 @@ export const getReverseResolution = async (
     },
   );
   return resolutionResponse?.name;
+};
+
+export const getVerificationMessage = async (
+  domain: string,
+  symbol: string,
+): Promise<string> => {
+  const msgJSON = await fetchApi(
+    `/user/${domain}/address/${symbol}/signature`,
+    {
+      host: config.PROFILE.HOST_URL,
+    },
+  );
+  return msgJSON.message;
+};
+
+export const postCryptoVerification = async (
+  domain: string,
+  domainCryptoVerificationBodyPost: DomainCryptoVerificationBodyPOST,
+): Promise<void> => {
+  const verifyResponse = await fetch(
+    `${config.PROFILE.HOST_URL}/user/${domain}/address/${domainCryptoVerificationBodyPost.symbol}`,
+    {
+      method: 'POST',
+      headers: new Headers({
+        'Content-Type': 'application/json',
+      }),
+      body: JSON.stringify({
+        message: domainCryptoVerificationBodyPost.plaintextMessage,
+        signature: domainCryptoVerificationBodyPost.signedMessage,
+      }),
+    },
+  );
+  if (!verifyResponse.ok) {
+    throw new Error('failed to verify domain crypto address');
+  }
 };

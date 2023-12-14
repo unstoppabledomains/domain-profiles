@@ -17,7 +17,7 @@ import {CryptoIcon} from '../../components/Image/CryptoIcon';
 import Link from '../../components/Link';
 import {displayShortCryptoAddress} from '../../lib/displayCryptoAddress';
 import useTranslationContext from '../../lib/i18n';
-import type {AllCurrenciesType} from '../../lib/types/blockchain';
+import type {CurrenciesType} from '../../lib/types/blockchain';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import type {MulticoinVersions} from '../../lib/types/records';
 
@@ -122,7 +122,7 @@ export type Props = {
   ownerAddress?: string;
   domain?: string;
   isOwner?: boolean;
-  currency: AllCurrenciesType;
+  currency: CurrenciesType;
   onCryptoAddressCopied: () => void;
 };
 

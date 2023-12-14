@@ -12,7 +12,7 @@ import React, {useState} from 'react';
 
 import {useTranslationContext} from '../../../../lib';
 import useStyles from '../../../../styles/components/SelectUrlPopup.styles';
-import FormError from './FormError';
+import FormError from '../../common/FormError';
 
 export type SelectUrlPopupProps = {
   popupOpen: boolean;

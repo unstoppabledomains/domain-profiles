@@ -225,7 +225,11 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
           value={DomainProfileTabType.Crypto}
           className={classes.tabContentItem}
         >
-          <CryptoTab domain={domain} />
+          <CryptoTab
+            domain={domain}
+            address={address}
+            filterFn={(k: string) => k.startsWith('crypto.')}
+          />
         </TabPanel>
         <TabPanel
           value={DomainProfileTabType.Reverse}

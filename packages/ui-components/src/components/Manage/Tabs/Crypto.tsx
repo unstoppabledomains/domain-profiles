@@ -371,7 +371,7 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
             className={classes.button}
             fullWidth
           >
-            {t('common.save')}
+            {t('manage.startRecordUpdate')}
           </LoadingButton>
           <ProfileManager
             domain={domain}

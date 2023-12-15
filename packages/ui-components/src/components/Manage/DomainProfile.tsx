@@ -14,7 +14,7 @@ import truncateEthAddress from 'truncate-eth-address';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedUserDomainProfileData} from '../../lib';
-import {useTranslationContext} from '../../lib';
+import {isExternalDomain, useTranslationContext} from '../../lib';
 import {Crypto as CryptoTab} from './Tabs/Crypto';
 import {Email as EmailTab} from './Tabs/Email';
 import {ListForSale as ListForSaleTab} from './Tabs/ListForSale';
@@ -22,15 +22,15 @@ import {Profile as ProfileTab} from './Tabs/Profile';
 import {Reverse as ReverseTab} from './Tabs/Reverse';
 import {TokenGallery as TokenGalleryTab} from './Tabs/TokenGallery';
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
   },
   tabContainer: {
-    width: '515px',
+    width,
     [theme.breakpoints.down('sm')]: {
-      width: 'calc(100vw - 70px)',
+      width: `calc(100vw - ${theme.spacing(6)})`,
     },
   },
   tabHeaderContainer: {
@@ -74,9 +74,10 @@ const StyledTabBadge = styled(Badge)<BadgeProps>(() => ({
 export const DomainProfile: React.FC<DomainProfileProps> = ({
   address,
   domain,
+  width,
   onUpdate,
 }) => {
-  const {classes, cx} = useStyles();
+  const {classes, cx} = useStyles({width});
   const [t] = useTranslationContext();
   const [tabValue, setTabValue] = useState(DomainProfileTabType.Profile);
   const [tabUnreadDot, setTabUnreadDot] = useState<
@@ -136,6 +137,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                     </Box>
                   </StyledTabBadge>
                 }
+                disabled={isExternalDomain(domain)}
                 value={DomainProfileTabType.Crypto}
               />
               <Tab
@@ -150,6 +152,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                     </Box>
                   </StyledTabBadge>
                 }
+                disabled={isExternalDomain(domain)}
                 value={DomainProfileTabType.Reverse}
               />
               <Tab
@@ -251,6 +254,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
 export type DomainProfileProps = {
   address: string;
   domain: string;
+  width: string;
   onUpdate(
     tab: DomainProfileTabType,
     data?: SerializedUserDomainProfileData,

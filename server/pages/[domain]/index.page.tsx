@@ -78,7 +78,7 @@ import {
   getImageUrl,
   getProfileData,
   getSeoTags,
-  isExternalDomainValidForManagement,
+  isExternalDomain,
   parseRecords,
   splitDomain,
   useEnsDomainStatus,
@@ -157,7 +157,7 @@ const DomainProfile = ({
   );
   const [optimisticFollowCount, setOptimisticFollowCount] = useState(0);
 
-  const isEnsDomain = isExternalDomainValidForManagement(domain);
+  const isEnsDomain = isExternalDomain(domain);
   const {data: ensDomainStatus} = useEnsDomainStatus(domain, isEnsDomain);
 
   // format social platform data

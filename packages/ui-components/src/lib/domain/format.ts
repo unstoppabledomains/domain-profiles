@@ -46,12 +46,12 @@ const isExternalDomainValid = (
   return Boolean(label) && isExternalDomainSuffixValid(extension);
 };
 
-export const isExternalDomainSuffixValid = (extension: string): boolean => {
-  return EXTERNAL_DOMAIN_SUFFIXES.includes(extension);
+export const isExternalDomain = (domain: string): boolean => {
+  return isExternalDomainValid(domain, MANAGEABLE_DOMAIN_LABEL, true);
 };
 
-export const isExternalDomainValidForManagement = (domain: string): boolean => {
-  return isExternalDomainValid(domain, MANAGEABLE_DOMAIN_LABEL, true);
+export const isExternalDomainSuffixValid = (extension: string): boolean => {
+  return EXTERNAL_DOMAIN_SUFFIXES.includes(extension);
 };
 
 /**

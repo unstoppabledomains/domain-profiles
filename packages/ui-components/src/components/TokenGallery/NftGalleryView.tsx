@@ -299,7 +299,7 @@ const NftGalleryView = ({
       className={classes.container}
       data-testid={`nftGallery-infinite-scroll`}
     >
-      {allNfts.length === 0 && !isAllNftsLoaded ? (
+      {allNfts.length === 0 ? (
         <Box display="flex" justifyContent="center" padding={3}>
           <CircularProgress color="secondary" />
         </Box>

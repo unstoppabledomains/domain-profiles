@@ -1,4 +1,6 @@
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
@@ -48,6 +50,15 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   },
   nftEmptyGallery: {
     marginBottom: '1.5rem',
+  },
+  emptyGalleryIcon: {
+    color: theme.palette.neutralShades[600],
+    marginRight: theme.spacing(1),
+    height: '50px',
+    width: '50px',
+  },
+  emptyGalleryText: {
+    color: theme.palette.neutralShades[600],
   },
   tokenCount: {
     minWidth: '30px',
@@ -163,6 +174,15 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
     return null;
   }
 
+  // hide empty gallery from visitors
+  if (
+    !isOwner &&
+    !nftDataLoading &&
+    nfts?.filter(nft => nft.public).length === 0
+  ) {
+    return null;
+  }
+
   return Object.keys(nftSymbolVisible || {}).length === 0 &&
     !hasNfts &&
     !nftDataLoading ? (
@@ -231,14 +251,17 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
           </span>
         </div>
       </div>
-      {nfts?.filter(nft => nft.public).length === 0 && !nftDataLoading ? (
-        isOwner && (
-          <div className={classes.nftEmptyGallery}>
-            <Typography variant="body2">
+      {nfts?.filter(nft => nft.public).length === 0 &&
+      !nftDataLoading &&
+      !expanded ? (
+        <div className={classes.nftEmptyGallery}>
+          <Box display="flex" alignItems="center">
+            <InfoOutlinedIcon className={classes.emptyGalleryIcon} />
+            <Typography variant="body1" className={classes.emptyGalleryText}>
               {t('nftCollection.noNftsConfigured')}
             </Typography>
-          </div>
-        )
+          </Box>
+        </div>
       ) : expanded ? (
         <NftGalleryView
           domain={domain}

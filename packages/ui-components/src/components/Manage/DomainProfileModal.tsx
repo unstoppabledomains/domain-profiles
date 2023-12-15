@@ -1,7 +1,5 @@
-import CloseIcon from '@mui/icons-material/Close';
 import Box from '@mui/material/Box';
 import Dialog from '@mui/material/Dialog';
-import IconButton from '@mui/material/IconButton';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
 
@@ -15,7 +13,7 @@ import {DomainProfile} from './DomainProfile';
 const MODAL_WIDTH = '515px';
 
 const useStyles = makeStyles()((theme: Theme) => ({
-  contentContainer: {
+  container: {
     display: 'flex',
     minHeight: '100vh',
     maxWidth: `calc(${MODAL_WIDTH} - ${theme.spacing(5)})`,
@@ -23,12 +21,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginRight: theme.spacing(3),
     backgroundColor: theme.palette.white,
     zIndex: 100,
-  },
-  actionContainer: {
-    position: 'absolute',
-    top: theme.spacing(1),
-    right: theme.spacing(1),
-    zIndex: 200,
   },
 }));
 
@@ -58,16 +50,12 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
 
   return resolvedAddress ? (
     <Dialog maxWidth="sm" open={open} onClose={() => onClose()}>
-      <Box className={classes.actionContainer}>
-        <IconButton onClick={onClose}>
-          <CloseIcon fontSize="small" />
-        </IconButton>
-      </Box>
-      <Box className={classes.contentContainer}>
+      <Box className={classes.container}>
         <DomainProfile
           address={resolvedAddress}
           domain={domain}
           width={MODAL_WIDTH}
+          onClose={onClose}
           onUpdate={onUpdate}
         />
       </Box>

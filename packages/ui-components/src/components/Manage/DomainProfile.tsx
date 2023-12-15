@@ -1,9 +1,11 @@
+import CloseIcon from '@mui/icons-material/Close';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
 import type {BadgeProps} from '@mui/material/Badge';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -26,6 +28,12 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
+  },
+  actionContainer: {
+    position: 'absolute',
+    top: theme.spacing(1),
+    right: theme.spacing(-1),
+    zIndex: 2000000,
   },
   tabContainer: {
     width,
@@ -75,6 +83,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
   address,
   domain,
   width,
+  onClose,
   onUpdate,
 }) => {
   const {classes, cx} = useStyles({width});
@@ -104,6 +113,13 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
     <Box className={classes.container}>
       <TabContext value={tabValue}>
         <Box className={classes.tabHeaderContainer}>
+          {onClose && (
+            <Box className={classes.actionContainer}>
+              <IconButton onClick={onClose}>
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          )}
           <Typography variant="h4">{domain}</Typography>
           <Typography variant="body2" className={classes.ownerAddress}>
             {t('manage.ownerAddress', {address: truncateEthAddress(address)})}
@@ -255,6 +271,7 @@ export type DomainProfileProps = {
   address: string;
   domain: string;
   width: string;
+  onClose?: () => void;
   onUpdate(
     tab: DomainProfileTabType,
     data?: SerializedUserDomainProfileData,

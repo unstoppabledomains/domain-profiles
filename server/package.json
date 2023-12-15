@@ -85,7 +85,7 @@
     "truncate-eth-address": "^1.0.2",
     "tss-react": "^4.0.0",
     "typescript": "5.0.4",
-    "wagmi": "^1.4.4",
+    "wagmi": "^1.4.12",
     "web3.storage": "^4.5.5"
   },
   "devDependencies": {

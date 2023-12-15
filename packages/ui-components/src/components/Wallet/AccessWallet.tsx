@@ -32,6 +32,11 @@ const AccessWallet = (props: Props) => {
   const [error, setError] = useState('');
   const [t] = useTranslationContext();
 
+  // theming variables for the QR modal
+  const themeVariables = {
+    '--wcm-z-index': '100000',
+  };
+
   // Set up wagmi config
   const {chains, publicClient, webSocketPublicClient} = configureChains(
     [mainnet],
@@ -46,9 +51,8 @@ const AccessWallet = (props: Props) => {
         options: {
           projectId: config.WALLETCONNECT_PROJECT_ID,
           qrModalOptions: {
-            themeVariables: {
-              '--w3m-z-index': '100000',
-            },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            themeVariables: themeVariables as any,
           },
           metadata: {
             name: t('nftCollection.unstoppableDomains'),

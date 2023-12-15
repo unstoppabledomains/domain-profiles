@@ -27,21 +27,27 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
   },
+  tabContainer: {
+    width: '515px',
+    [theme.breakpoints.down('sm')]: {
+      width: 'calc(100vw - 70px)',
+    },
+  },
   tabHeaderContainer: {
     backgroundColor: theme.palette.white,
     position: 'sticky',
     top: 0,
     zIndex: 1000000,
     paddingTop: theme.spacing(3),
+    marginLeft: theme.spacing(-0.5),
+    marginRight: theme.spacing(-0.5),
   },
   tabList: {
     overflow: 'hidden',
     marginTop: theme.spacing(1),
     marginLeft: theme.spacing(-5),
-    width: '515px',
     [theme.breakpoints.down('sm')]: {
       marginLeft: theme.spacing(0),
-      width: 'calc(100vw - 70px)',
     },
   },
   tabLabel: {
@@ -70,7 +76,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
   domain,
   onUpdate,
 }) => {
-  const {classes} = useStyles();
+  const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
   const [tabValue, setTabValue] = useState(DomainProfileTabType.Profile);
   const [tabUnreadDot, setTabUnreadDot] = useState<
@@ -101,7 +107,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
           <Typography variant="body2" className={classes.ownerAddress}>
             {t('manage.ownerAddress', {address: truncateEthAddress(address)})}
           </Typography>
-          <Box className={classes.tabList}>
+          <Box className={cx(classes.tabList, classes.tabContainer)}>
             <TabList onChange={handleTabChange} variant="scrollable">
               <Tab
                 label={
@@ -191,19 +197,19 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
         </Box>
         <TabPanel
           value={DomainProfileTabType.Profile}
-          className={classes.tabContentItem}
+          className={cx(classes.tabContentItem, classes.tabContainer)}
         >
           <ProfileTab address={address} domain={domain} onUpdate={onUpdate} />
         </TabPanel>
         <TabPanel
           value={DomainProfileTabType.Email}
-          className={classes.tabContentItem}
+          className={cx(classes.tabContentItem, classes.tabContainer)}
         >
           <EmailTab address={address} domain={domain} />
         </TabPanel>
         <TabPanel
           value={DomainProfileTabType.ListForSale}
-          className={classes.tabContentItem}
+          className={cx(classes.tabContentItem, classes.tabContainer)}
         >
           <ListForSaleTab
             address={address}
@@ -213,7 +219,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
         </TabPanel>
         <TabPanel
           value={DomainProfileTabType.TokenGallery}
-          className={classes.tabContentItem}
+          className={cx(classes.tabContentItem, classes.tabContainer)}
         >
           <TokenGalleryTab
             address={address}
@@ -223,7 +229,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
         </TabPanel>
         <TabPanel
           value={DomainProfileTabType.Crypto}
-          className={classes.tabContentItem}
+          className={cx(classes.tabContentItem, classes.tabContainer)}
         >
           <CryptoTab
             domain={domain}
@@ -233,7 +239,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
         </TabPanel>
         <TabPanel
           value={DomainProfileTabType.Reverse}
-          className={classes.tabContentItem}
+          className={cx(classes.tabContentItem, classes.tabContainer)}
         >
           <ReverseTab address={address} domain={domain} />
         </TabPanel>

@@ -299,160 +299,166 @@ const NftGalleryView = ({
       className={classes.container}
       data-testid={`nftGallery-infinite-scroll`}
     >
-      {allNfts.length > 0 && (
-        <div>
-          <div className={classes.filterContainer}>
-            <div className={classes.filterListContainer}>
-              {Object.keys(nftSymbolVisible).filter(symbol =>
-                isSymbolVerified(symbol),
-              ).length > 1 && (
+      {allNfts.length === 0 && !isAllNftsLoaded ? (
+        <Box display="flex" justifyContent="center" padding={3}>
+          <CircularProgress color="secondary" />
+        </Box>
+      ) : (
+        allNfts.length > 0 && (
+          <div>
+            <div className={classes.filterContainer}>
+              <div className={classes.filterListContainer}>
+                {Object.keys(nftSymbolVisible).filter(symbol =>
+                  isSymbolVerified(symbol),
+                ).length > 1 && (
+                  <NftFilterSelect
+                    id={'nftGallery-filter-symbol'}
+                    onChange={handleSymbolChange}
+                    title={t('nftCollection.filterByChain')}
+                    disabled={false}
+                    selected={selectedSymbol}
+                    options={[
+                      getFilterOption('All Chains', NftTag.All),
+                      ...Object.keys(nftSymbolVisible)
+                        .sort()
+                        .filter(symbol => isSymbolVerified(symbol))
+                        .map(symbol => {
+                          return getFilterOption(symbol, symbol as NftTag);
+                        }),
+                    ]}
+                  />
+                )}
                 <NftFilterSelect
-                  id={'nftGallery-filter-symbol'}
-                  onChange={handleSymbolChange}
-                  title={t('nftCollection.filterByChain')}
+                  id={'nftGallery-filter-tag'}
+                  onChange={handleCategoryChange}
+                  title={t('nftCollection.filterByCategory')}
                   disabled={false}
-                  selected={selectedSymbol}
+                  selected={selectedCategory}
                   options={[
-                    getFilterOption('All Chains', NftTag.All),
-                    ...Object.keys(nftSymbolVisible)
-                      .sort()
-                      .filter(symbol => isSymbolVerified(symbol))
-                      .map(symbol => {
-                        return getFilterOption(symbol, symbol as NftTag);
+                    getFilterOption('All Visible', NftTag.All),
+                    getFilterOption('Awards', NftTag.Award),
+                    getFilterOption('DAO Voting', NftTag.DAO),
+                    getFilterOption('Deeds', NftTag.Deed),
+                    getFilterOption('Developer', NftTag.Developer),
+                    getFilterOption('Web3 Domains', NftTag.Domain),
+                    getFilterOption('Education', NftTag.Education),
+                    getFilterOption('Gaming', NftTag.Gaming),
+                    getFilterOption('Tickets', NftTag.Ticket),
+                    getFilterOption('Sustainability', NftTag.Sustainability),
+                    getFilterOption('Wearables', NftTag.Wearable),
+                    getFilterOption('Hidden', NftTag.Hidden),
+                  ]}
+                />
+                <NftFilterSelect
+                  id={'nftGallery-filter-collection'}
+                  onChange={handleCollectionChange}
+                  title={t('nftCollection.filterByCollection')}
+                  disabled={false}
+                  selected={selectedCollection}
+                  options={[
+                    getFilterOption('All Collections', NftTag.All),
+                    ...[
+                      ...new Set([
+                        ...allNfts
+                          .filter(nft => nft.collection && nft.mint)
+                          .map(nft => nft.collection),
+                      ]),
+                    ]
+                      .sort((a, b) => a.localeCompare(b))
+                      .map(collection => {
+                        return {
+                          label: `${collection} (${
+                            allNfts.filter(nft => nft.collection === collection)
+                              .length
+                          })`,
+                          value: collection,
+                        };
                       }),
                   ]}
                 />
-              )}
-              <NftFilterSelect
-                id={'nftGallery-filter-tag'}
-                onChange={handleCategoryChange}
-                title={t('nftCollection.filterByCategory')}
-                disabled={false}
-                selected={selectedCategory}
-                options={[
-                  getFilterOption('All Visible', NftTag.All),
-                  getFilterOption('Awards', NftTag.Award),
-                  getFilterOption('DAO Voting', NftTag.DAO),
-                  getFilterOption('Deeds', NftTag.Deed),
-                  getFilterOption('Developer', NftTag.Developer),
-                  getFilterOption('Web3 Domains', NftTag.Domain),
-                  getFilterOption('Education', NftTag.Education),
-                  getFilterOption('Gaming', NftTag.Gaming),
-                  getFilterOption('Tickets', NftTag.Ticket),
-                  getFilterOption('Sustainability', NftTag.Sustainability),
-                  getFilterOption('Wearables', NftTag.Wearable),
-                  getFilterOption('Hidden', NftTag.Hidden),
-                ]}
-              />
-              <NftFilterSelect
-                id={'nftGallery-filter-collection'}
-                onChange={handleCollectionChange}
-                title={t('nftCollection.filterByCollection')}
-                disabled={false}
-                selected={selectedCollection}
-                options={[
-                  getFilterOption('All Collections', NftTag.All),
-                  ...[
-                    ...new Set([
-                      ...nfts
-                        .filter(nft => nft.collection && nft.mint)
-                        .map(nft => nft.collection),
-                    ]),
-                  ]
-                    .sort((a, b) => a.localeCompare(b))
-                    .map(collection => {
-                      return {
-                        label: `${collection} (${
-                          nfts.filter(nft => nft.collection === collection)
-                            .length
-                        })`,
-                        value: collection,
-                      };
-                    }),
-                ]}
-              />
+              </div>
+              <div className={classes.filterListContainer}>
+                {!isAllNftsLoaded && (
+                  <Tooltip title={t('nftCollection.loading')}>
+                    <CircularProgress
+                      sx={{marginLeft: '5px', marginRight: '10px'}}
+                      size="1.5rem"
+                    />
+                  </Tooltip>
+                )}
+              </div>
             </div>
-            <div className={classes.filterListContainer}>
-              {!isAllNftsLoaded && (
-                <Tooltip title={t('nftCollection.loading')}>
-                  <CircularProgress
-                    sx={{marginLeft: '5px', marginRight: '10px'}}
-                    size="1.5rem"
-                  ></CircularProgress>
-                </Tooltip>
-              )}
+            <div className={classes.filterChipContainer}>
+              <div>
+                {Object.keys(visibleTags).map(filterType => {
+                  return Object.keys(visibleTags[filterType])
+                    .filter(
+                      tag => tag !== NftTag.All && visibleTags[filterType][tag],
+                    )
+                    .map(tag => {
+                      return (
+                        <Chip
+                          key={tag}
+                          label={
+                            <div className={classes.filterListContainer}>
+                              {tag}
+                              <Clear
+                                sx={{
+                                  marginLeft: '5px',
+                                  width: '15px',
+                                  height: '15px',
+                                }}
+                              />
+                            </div>
+                          }
+                          onClick={() =>
+                            handleChipClick(filterType as FilterType, tag)
+                          }
+                          className={classes.filterChip}
+                        />
+                      );
+                    });
+                })}
+                {(selectedSymbol.length > 0 ||
+                  selectedCategory.length > 0 ||
+                  selectedCollection.length > 0) && (
+                  <Button
+                    sx={{color: 'gray'}}
+                    size="small"
+                    onClick={handleClearClick}
+                    data-testid={`nftGallery-filter-clear`}
+                    className={classes.filterClearButton}
+                  >
+                    {t('apps.clearAll')}
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-          <div className={classes.filterChipContainer}>
-            <div>
-              {Object.keys(visibleTags).map(filterType => {
-                return Object.keys(visibleTags[filterType])
-                  .filter(
-                    tag => tag !== NftTag.All && visibleTags[filterType][tag],
+            <InfiniteScroll
+              className={classes.infinitescroll}
+              hasMore={lastNftIndex < nfts.length}
+              next={() => setLastNftIndex(lastNftIndex + imagesPerPage)}
+              dataLength={lastNftIndex}
+              loader={<div></div>}
+              scrollThreshold={0.7}
+            >
+              <Grid container spacing={2}>
+                {nfts
+                  .slice(
+                    0,
+                    lastNftIndex < nfts.length ? lastNftIndex : nfts.length,
                   )
-                  .map(tag => {
-                    return (
-                      <Chip
-                        key={tag}
-                        label={
-                          <div className={classes.filterListContainer}>
-                            {tag}
-                            <Clear
-                              sx={{
-                                marginLeft: '5px',
-                                width: '15px',
-                                height: '15px',
-                              }}
-                            />
-                          </div>
-                        }
-                        onClick={() =>
-                          handleChipClick(filterType as FilterType, tag)
-                        }
-                        className={classes.filterChip}
-                      />
-                    );
-                  });
-              })}
-              {(selectedSymbol.length > 0 ||
-                selectedCategory.length > 0 ||
-                selectedCollection.length > 0) && (
-                <Button
-                  sx={{color: 'gray'}}
-                  size="small"
-                  onClick={handleClearClick}
-                  data-testid={`nftGallery-filter-clear`}
-                  className={classes.filterClearButton}
-                >
-                  {t('apps.clearAll')}
-                </Button>
-              )}
-            </div>
+                  .map((nft, index) => (
+                    <Grid key={index} item xs={6} sm={4} md={4}>
+                      <Box className={classes.cardContainer}>
+                        <NftCard nft={nft} domain={domain} key={index} />
+                      </Box>
+                    </Grid>
+                  ))}
+              </Grid>
+            </InfiniteScroll>
           </div>
-          <InfiniteScroll
-            className={classes.infinitescroll}
-            hasMore={lastNftIndex < nfts.length}
-            next={() => setLastNftIndex(lastNftIndex + imagesPerPage)}
-            dataLength={lastNftIndex}
-            loader={<div></div>}
-            scrollThreshold={0.7}
-          >
-            <Grid container spacing={2}>
-              {nfts
-                .slice(
-                  0,
-                  lastNftIndex < nfts.length ? lastNftIndex : nfts.length,
-                )
-                .map((nft, index) => (
-                  <Grid key={index} item xs={6} sm={4} md={4}>
-                    <Box className={classes.cardContainer}>
-                      <NftCard nft={nft} domain={domain} key={index} />
-                    </Box>
-                  </Grid>
-                ))}
-            </Grid>
-          </InfiniteScroll>
-        </div>
+        )
       )}
     </div>
   );

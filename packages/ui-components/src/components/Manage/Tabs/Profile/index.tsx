@@ -26,7 +26,7 @@ import {
   DOMAIN_PROFILE_VISIBILITY_VALUES,
   DomainFieldTypes,
   MAX_BIO_LENGTH,
-  isExternalDomainValidForManagement,
+  isExternalDomain,
   useTranslationContext,
 } from '../../../../lib';
 import {notifyError} from '../../../../lib/error';
@@ -392,7 +392,7 @@ export const Profile: React.FC<ProfileProps> = ({
             coverSrc={profileCover.data}
             ownerAddress={address}
             uiDisabled={false}
-            isExternalDomain={isExternalDomainValidForManagement(domain)}
+            isExternalDomain={isExternalDomain(domain)}
             handleAvatarUpload={handleAvatarUpload}
             handleUrlEntry={handleUrlEntry}
             handleCoverUpload={handleCoverUpload}

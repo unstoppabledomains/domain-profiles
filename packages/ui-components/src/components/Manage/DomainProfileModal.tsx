@@ -10,14 +10,17 @@ import type {SerializedUserDomainProfileData} from '../../lib';
 import type {DomainProfileTabType} from './DomainProfile';
 import {DomainProfile} from './DomainProfile';
 
+const MODAL_WIDTH = '515px';
+
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     minHeight: '100vh',
-    maxWidth: '475px',
+    maxWidth: `calc(${MODAL_WIDTH} - ${theme.spacing(5)})`,
     marginLeft: theme.spacing(3),
     marginRight: theme.spacing(3),
     backgroundColor: theme.palette.white,
+    zIndex: 100,
   },
 }));
 
@@ -51,6 +54,8 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
         <DomainProfile
           address={resolvedAddress}
           domain={domain}
+          width={MODAL_WIDTH}
+          onClose={onClose}
           onUpdate={onUpdate}
         />
       </Box>

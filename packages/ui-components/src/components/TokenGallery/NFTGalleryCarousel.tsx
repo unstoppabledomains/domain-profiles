@@ -109,10 +109,10 @@ const NFTGalleryCarousel = ({
           <Swiper
             data-testid={'nft-gallery-carousel'}
             slidesPerGroup={1}
-            loop={nfts.length > maxNftCount}
+            loop={visibleNfts.length > maxNftCount}
             loopFillGroupWithBlank={false}
             pagination={false}
-            navigation={nfts.length > maxNftCount}
+            navigation={visibleNfts.length > maxNftCount}
             className={classes.swiper}
             autoplay={
               autoPlay

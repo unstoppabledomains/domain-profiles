@@ -1,9 +1,11 @@
+import CloseIcon from '@mui/icons-material/Close';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
 import type {BadgeProps} from '@mui/material/Badge';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -14,7 +16,7 @@ import truncateEthAddress from 'truncate-eth-address';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedUserDomainProfileData} from '../../lib';
-import {useTranslationContext} from '../../lib';
+import {isExternalDomain, useTranslationContext} from '../../lib';
 import {Crypto as CryptoTab} from './Tabs/Crypto';
 import {Email as EmailTab} from './Tabs/Email';
 import {ListForSale as ListForSaleTab} from './Tabs/ListForSale';
@@ -22,10 +24,22 @@ import {Profile as ProfileTab} from './Tabs/Profile';
 import {Reverse as ReverseTab} from './Tabs/Reverse';
 import {TokenGallery as TokenGalleryTab} from './Tabs/TokenGallery';
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
+  },
+  actionContainer: {
+    position: 'absolute',
+    top: theme.spacing(1),
+    right: theme.spacing(-1),
+    zIndex: 2000000,
+  },
+  tabContainer: {
+    width,
+    [theme.breakpoints.down('sm')]: {
+      width: `calc(100vw - ${theme.spacing(6)})`,
+    },
   },
   tabHeaderContainer: {
     backgroundColor: theme.palette.white,
@@ -33,15 +47,15 @@ const useStyles = makeStyles()((theme: Theme) => ({
     top: 0,
     zIndex: 1000000,
     paddingTop: theme.spacing(3),
+    marginLeft: theme.spacing(-0.5),
+    marginRight: theme.spacing(-0.5),
   },
   tabList: {
     overflow: 'hidden',
     marginTop: theme.spacing(1),
     marginLeft: theme.spacing(-5),
-    width: '515px',
     [theme.breakpoints.down('sm')]: {
       marginLeft: theme.spacing(0),
-      width: 'calc(100vw - 70px)',
     },
   },
   tabLabel: {
@@ -68,9 +82,11 @@ const StyledTabBadge = styled(Badge)<BadgeProps>(() => ({
 export const DomainProfile: React.FC<DomainProfileProps> = ({
   address,
   domain,
+  width,
+  onClose,
   onUpdate,
 }) => {
-  const {classes} = useStyles();
+  const {classes, cx} = useStyles({width});
   const [t] = useTranslationContext();
   const [tabValue, setTabValue] = useState(DomainProfileTabType.Profile);
   const [tabUnreadDot, setTabUnreadDot] = useState<
@@ -97,11 +113,18 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
     <Box className={classes.container}>
       <TabContext value={tabValue}>
         <Box className={classes.tabHeaderContainer}>
+          {onClose && (
+            <Box className={classes.actionContainer}>
+              <IconButton onClick={onClose}>
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          )}
           <Typography variant="h4">{domain}</Typography>
           <Typography variant="body2" className={classes.ownerAddress}>
             {t('manage.ownerAddress', {address: truncateEthAddress(address)})}
           </Typography>
-          <Box className={classes.tabList}>
+          <Box className={cx(classes.tabList, classes.tabContainer)}>
             <TabList onChange={handleTabChange} variant="scrollable">
               <Tab
                 label={
@@ -130,6 +153,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                     </Box>
                   </StyledTabBadge>
                 }
+                disabled={isExternalDomain(domain)}
                 value={DomainProfileTabType.Crypto}
               />
               <Tab
@@ -144,6 +168,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                     </Box>
                   </StyledTabBadge>
                 }
+                disabled={isExternalDomain(domain)}
                 value={DomainProfileTabType.Reverse}
               />
               <Tab
@@ -191,19 +216,19 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
         </Box>
         <TabPanel
           value={DomainProfileTabType.Profile}
-          className={classes.tabContentItem}
+          className={cx(classes.tabContentItem, classes.tabContainer)}
         >
           <ProfileTab address={address} domain={domain} onUpdate={onUpdate} />
         </TabPanel>
         <TabPanel
           value={DomainProfileTabType.Email}
-          className={classes.tabContentItem}
+          className={cx(classes.tabContentItem, classes.tabContainer)}
         >
           <EmailTab address={address} domain={domain} />
         </TabPanel>
         <TabPanel
           value={DomainProfileTabType.ListForSale}
-          className={classes.tabContentItem}
+          className={cx(classes.tabContentItem, classes.tabContainer)}
         >
           <ListForSaleTab
             address={address}
@@ -213,7 +238,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
         </TabPanel>
         <TabPanel
           value={DomainProfileTabType.TokenGallery}
-          className={classes.tabContentItem}
+          className={cx(classes.tabContentItem, classes.tabContainer)}
         >
           <TokenGalleryTab
             address={address}
@@ -223,7 +248,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
         </TabPanel>
         <TabPanel
           value={DomainProfileTabType.Crypto}
-          className={classes.tabContentItem}
+          className={cx(classes.tabContentItem, classes.tabContainer)}
         >
           <CryptoTab
             domain={domain}
@@ -233,7 +258,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
         </TabPanel>
         <TabPanel
           value={DomainProfileTabType.Reverse}
-          className={classes.tabContentItem}
+          className={cx(classes.tabContentItem, classes.tabContainer)}
         >
           <ReverseTab address={address} domain={domain} />
         </TabPanel>
@@ -245,6 +270,8 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
 export type DomainProfileProps = {
   address: string;
   domain: string;
+  width: string;
+  onClose?: () => void;
   onUpdate(
     tab: DomainProfileTabType,
     data?: SerializedUserDomainProfileData,

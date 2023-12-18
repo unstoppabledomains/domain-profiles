@@ -48,7 +48,7 @@ import {getAddressMetadata} from '../protocol/resolution';
 import type {ConversationMeta} from '../protocol/xmtp';
 import {getConversation, getConversations} from '../protocol/xmtp';
 import type {AddressResolution, PayloadData} from '../types';
-import {TabType, getCaip10Address} from '../types';
+import {SearchPlaceholder, TabType, getCaip10Address} from '../types';
 import CallToAction from './CallToAction';
 import Search from './Search';
 import Conversation from './dm/Conversation';
@@ -319,7 +319,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     }
 
     // disable search panel if no text is shown
-    if (!searchValue) {
+    if (searchValue === undefined) {
       setConversationSearch(false);
       return;
     }
@@ -593,6 +593,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   };
 
   const handleNewChat = () => {
+    setSearchValue(SearchPlaceholder);
     setConversationSearch(true);
   };
 

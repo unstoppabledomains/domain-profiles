@@ -203,12 +203,8 @@ export const getXmtpClient = async (
 
 export const initXmtpAccount = async (address: string, signer: Signer) => {
   try {
-    // say hello to the GM bot
-    const xmtp = await getXmtpClient(address, signer);
-    const conversation = await xmtp.conversations.newConversation(
-      '0x937C0d4a6294cdfa575de17382c7076b579DC176',
-    );
-    await conversation.send(`GM from Unstoppable Domains 👋`);
+    // create a client for the first time using the wallet signer reference
+    await getXmtpClient(address, signer);
   } catch (e) {
     notifyError(e, {}, 'warning');
     throw e;

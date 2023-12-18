@@ -1,10 +1,10 @@
-export type DomainNotificationConfiguration = {
-  settingsKey: string;
-};
-
-export type DomainNotificationPreferences = {
+export type ConsentPreferences = {
   accepted_topics: string[];
   blocked_topics: string[];
+};
+
+export type DomainNotificationConfiguration = {
+  settingsKey: string;
 };
 
 export enum DomainNotificationSettingsKey {

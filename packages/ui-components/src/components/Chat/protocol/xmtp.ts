@@ -10,7 +10,6 @@ import {
 import type {signature} from '@xmtp/proto';
 import {fetcher} from '@xmtp/proto';
 import type {
-  ConsentListEntry,
   ConsentState,
   Conversation,
   DecodedMessage,
@@ -30,8 +29,8 @@ import {Web3Storage} from 'web3.storage';
 
 import config from '@unstoppabledomains/config';
 
-import {getAddressPreferences} from '../../../actions';
-import type {DomainNotificationPreferences} from '../../../lib';
+import {getUnstoppableConsents} from '../../../actions';
+import type {ConsentPreferences} from '../../../lib';
 import {notifyError} from '../../../lib/error';
 import {getXmtpLocalKey, setXmtpLocalKey} from '../storage';
 import {registerClientTopics} from './registration';
@@ -55,13 +54,6 @@ export const formatFileSize = (bytes: number): string => {
   return filesize(bytes, {base: 2, standard: 'jedec'}) as string;
 };
 
-export const getConsentList = async (
-  address: string,
-): Promise<ConsentListEntry[]> => {
-  const xmtp = await getXmtpClient(address);
-  return xmtp.contacts.loadConsentList();
-};
-
 export const getConversation = async (
   address: string,
   peerAddress: string,
@@ -80,8 +72,11 @@ export const getConversations = async (
   const xmtp = await getXmtpClient(address);
   const chats: ConversationMeta[] = [];
   const [conversations, udConsents] = await Promise.all([
+    // load conversations from XMTP network
     xmtp.conversations.list(),
-    getAddressPreferences(address),
+    // retrieve existing UD consents
+    getUnstoppableConsents(address),
+    // retrieve XMTP protocol consents
     xmtp.contacts.refreshConsentList(),
   ]);
 
@@ -228,7 +223,7 @@ export const isXmtpUser = async (address: string): Promise<boolean> => {
 export const loadConversationConsentState = async (
   xmtp: Client,
   chat: ConversationMeta,
-  udConsents?: DomainNotificationPreferences,
+  udConsents?: ConsentPreferences,
 ): Promise<ConversationMeta> => {
   // retrieve the protocol layer consent state
   let consentState = xmtp.contacts.consentState(chat.conversation.peerAddress);
@@ -353,17 +348,6 @@ export const sendRemoteAttachment = async (
   return await conversation.send(remoteAttachment, {
     contentType: ContentTypeRemoteAttachment,
   });
-};
-
-export const setConsent = async (
-  address: string,
-  peerAddress: string,
-  isAllowed: boolean,
-): Promise<void> => {
-  const xmtp = await getXmtpClient(address);
-  return isAllowed
-    ? await xmtp.contacts.allow([peerAddress])
-    : await xmtp.contacts.deny([peerAddress]);
 };
 
 export const signMessage = async (

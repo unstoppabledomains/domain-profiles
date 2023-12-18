@@ -39,6 +39,7 @@ export const acceptGroupInvite = async (
       pgpPrivateKey: pushKey,
       env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
       senderAddress: chatId,
+      overrideSecretKeyGeneration: false,
     });
   }
 };

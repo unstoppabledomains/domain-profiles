@@ -18,7 +18,7 @@ import {isAddressSpam} from '../../../../actions/messageActions';
 import useTranslationContext from '../../../../lib/i18n';
 import {getAddressMetadata} from '../../protocol/resolution';
 import type {ConversationMeta} from '../../protocol/xmtp';
-import {getConversationPreview, isAcceptedTopic} from '../../protocol/xmtp';
+import {loadConversationPreview} from '../../protocol/xmtp';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   conversationContainer: {
@@ -107,7 +107,7 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
     }
     const loadAddressData = async () => {
       // if conversation is not accepted, check spam score
-      if (!isAcceptedTopic(conversation.conversation.topic, acceptedTopics)) {
+      if (!acceptedTopics.includes(conversation.conversation.topic)) {
         if (await isAddressSpam(conversation.conversation.peerAddress)) {
           setIsSpam(true);
         }
@@ -121,7 +121,7 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
       setAvatarLink(addressData?.avatarUrl);
 
       // get message preview
-      await getConversationPreview(conversation);
+      await loadConversationPreview(conversation);
 
       // conversation preview is finished loading
       setIsLoaded(true);

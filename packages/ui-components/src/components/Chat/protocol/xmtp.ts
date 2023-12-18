@@ -31,6 +31,7 @@ import {Web3Storage} from 'web3.storage';
 import config from '@unstoppabledomains/config';
 
 import {getAddressPreferences} from '../../../actions';
+import type {DomainNotificationPreferences} from '../../../lib';
 import {notifyError} from '../../../lib/error';
 import {getXmtpLocalKey, setXmtpLocalKey} from '../storage';
 import {registerClientTopics} from './registration';
@@ -38,6 +39,7 @@ import {Upload} from './upload';
 
 export interface ConversationMeta {
   conversation: Conversation;
+  consentState: ConsentState;
   preview: string;
   timestamp: number;
   visible: boolean;
@@ -60,14 +62,6 @@ export const getConsentList = async (
   return xmtp.contacts.loadConsentList();
 };
 
-export const getConsentState = async (
-  address: string,
-  peerAddress: string,
-): Promise<ConsentState> => {
-  const xmtp = await getXmtpClient(address);
-  return xmtp.contacts.consentState(peerAddress);
-};
-
 export const getConversation = async (
   address: string,
   peerAddress: string,
@@ -80,46 +74,15 @@ export const getConversation = async (
   return await xmtp.conversations.newConversation(peerAddress);
 };
 
-// getConversationPreview retrieve latest message associated with conversation
-export const getConversationPreview = async (
-  conversation: ConversationMeta,
-): Promise<ConversationMeta> => {
-  // retrieve conversation metadata
-  const latestMessage = await conversation.conversation.messages({
-    limit: 1,
-    direction: SortDirection.SORT_DIRECTION_DESCENDING,
-  });
-  conversation.timestamp = conversation.conversation.createdAt.getTime();
-  if (latestMessage && latestMessage.length > 0) {
-    const message = latestMessage[0];
-
-    // set the preview text
-    conversation.preview = `${
-      message.senderAddress.toLowerCase() ===
-      message.conversation.clientAddress.toLowerCase()
-        ? 'You: '
-        : ''
-    }${
-      message.contentType.sameAs(ContentTypeText)
-        ? message.content
-        : 'Attachment'
-    }`;
-
-    // set the timestamp
-    conversation.timestamp = message.sent.getTime();
-  }
-  return conversation;
-};
-
 export const getConversations = async (
   address: string,
 ): Promise<ConversationMeta[]> => {
   const xmtp = await getXmtpClient(address);
   const chats: ConversationMeta[] = [];
-  const [conversations, xmtpConsents, udConsents] = await Promise.all([
+  const [conversations, udConsents] = await Promise.all([
     xmtp.conversations.list(),
-    getConsentList(address),
     getAddressPreferences(address),
+    xmtp.contacts.refreshConsentList(),
   ]);
 
   // build a list of filtered conversations
@@ -129,11 +92,13 @@ export const getConversations = async (
       continue;
     }
 
+    // create a default conversation metadata object
     chats.push({
       conversation,
       preview: 'New conversation',
       timestamp: 0,
       visible: true,
+      consentState: 'unknown',
     });
   }
 
@@ -144,14 +109,12 @@ export const getConversations = async (
   await Bluebird.map(
     chats,
     async chat => {
-      // build a message preview
-      await getConversationPreview(chat);
-
-      // migrate the UD to XMTP protocol consent
-      const xmtpConsentState = await getConsentState(
-        address,
-        chat.conversation.peerAddress,
-      );
+      await Promise.all([
+        // retrieve the message preview
+        loadConversationPreview(chat),
+        // retrieve the consent state
+        loadConversationConsentState(xmtp, chat, udConsents),
+      ]);
     },
     {
       concurrency: 10,
@@ -257,15 +220,67 @@ export const initXmtpAccount = async (address: string, signer: Signer) => {
   }
 };
 
-export const isAcceptedTopic = (
-  topic: string,
-  acceptedTopics: string[],
-): boolean => {
-  return acceptedTopics.includes('*') || acceptedTopics.includes(topic);
-};
-
 export const isXmtpUser = async (address: string): Promise<boolean> => {
   return await Client.canMessage(address, xmtpOpts);
+};
+
+// loadConversationConsentState retrieves the consent state for this conversation
+export const loadConversationConsentState = async (
+  xmtp: Client,
+  chat: ConversationMeta,
+  udConsents?: DomainNotificationPreferences,
+): Promise<ConversationMeta> => {
+  // retrieve the protocol layer consent state
+  let consentState = xmtp.contacts.consentState(chat.conversation.peerAddress);
+
+  // attempt to migrate UD consent state if protocol state is unknown
+  if (udConsents && consentState === 'unknown') {
+    if (udConsents.accepted_topics?.includes(chat.conversation.topic)) {
+      // migrate existing UD allowlist entry to XMTP allowlist
+      await chat.conversation.allow();
+      consentState = 'allowed';
+    }
+    if (udConsents.blocked_topics?.includes(chat.conversation.topic)) {
+      // migrate existing UD blocklist entry to XMTP blocklist
+      await chat.conversation.deny();
+      consentState = 'denied';
+    }
+  }
+
+  // populate the consent state
+  chat.consentState = consentState;
+  return chat;
+};
+
+// loadConversationPreview retrieve latest message associated with conversation
+export const loadConversationPreview = async (
+  conversation: ConversationMeta,
+): Promise<ConversationMeta> => {
+  // retrieve conversation metadata
+  const latestMessage = await conversation.conversation.messages({
+    limit: 1,
+    direction: SortDirection.SORT_DIRECTION_DESCENDING,
+  });
+  conversation.timestamp = conversation.conversation.createdAt.getTime();
+  if (latestMessage && latestMessage.length > 0) {
+    const message = latestMessage[0];
+
+    // set the preview text
+    conversation.preview = `${
+      message.senderAddress.toLowerCase() ===
+      message.conversation.clientAddress.toLowerCase()
+        ? 'You: '
+        : ''
+    }${
+      message.contentType.sameAs(ContentTypeText)
+        ? message.content
+        : 'Attachment'
+    }`;
+
+    // set the timestamp
+    conversation.timestamp = message.sent.getTime();
+  }
+  return conversation;
 };
 
 export const sendRemoteAttachment = async (

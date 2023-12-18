@@ -4785,7 +4785,7 @@ __metadata:
     "@web3-react/core": ^8.2.2
     "@xmtp/content-type-remote-attachment": ^1.1.4
     "@xmtp/proto": ^3.35.0
-    "@xmtp/xmtp-js": ^11.3.0-beta.14
+    "@xmtp/xmtp-js": 11.3.0-beta.14
     bluebird: ^3.7.2
     bs58: ^5.0.0
     clipboard-copy: ^4.0.1
@@ -5510,19 +5510,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xmtp/content-type-remote-attachment@npm:^1.0.7":
-  version: 1.1.2
-  resolution: "@xmtp/content-type-remote-attachment@npm:1.1.2"
-  dependencies:
-    "@noble/secp256k1": ^1.7.1
-    "@xmtp/proto": ^3.27.0
-    "@xmtp/xmtp-js": ^11.1.1
-  peerDependencies:
-    "@xmtp/xmtp-js": ^11.1.1
-  checksum: 7d20edf0252caaaecac1aa2fdc811e494a86d7788b90f423e2487e0164669f3174dca12869cfde46112662a400e6feed454a63bbdaef427ed50e31fad7b4307e
-  languageName: node
-  linkType: hard
-
 "@xmtp/content-type-remote-attachment@npm:^1.1.4":
   version: 1.1.4
   resolution: "@xmtp/content-type-remote-attachment@npm:1.1.4"
@@ -5533,30 +5520,6 @@ __metadata:
   peerDependencies:
     "@xmtp/xmtp-js": ^11.1.1
   checksum: 68e17ab93875da57b351f57c01280e3e9798b611b5ecebda102322cf3e4951e9f96bdea7092be9ea26304d9066c8f00885e158fe0f26389297725fc8e1b15751
-  languageName: node
-  linkType: hard
-
-"@xmtp/proto@npm:^3.24.0":
-  version: 3.29.0
-  resolution: "@xmtp/proto@npm:3.29.0"
-  dependencies:
-    long: ^5.2.0
-    protobufjs: ^7.0.0
-    rxjs: ^7.8.0
-    undici: ^5.8.1
-  checksum: ceb28c9a2917e791ebe3edbae8b435ce42c6e896c044e9b2d4cdb17af3145f8046fd9d2f107ebab1ae5a7b54e56630bcf1afd517430251e68f2d1ebbde0c90fe
-  languageName: node
-  linkType: hard
-
-"@xmtp/proto@npm:^3.27.0, @xmtp/proto@npm:^3.28.0-beta.1":
-  version: 3.28.0
-  resolution: "@xmtp/proto@npm:3.28.0"
-  dependencies:
-    long: ^5.2.0
-    protobufjs: ^7.0.0
-    rxjs: ^7.8.0
-    undici: ^5.8.1
-  checksum: 517016070568082ac8d6bfb1ebd51980b4119c2d05700b00b71b7af7be642cf798aa74e94a234ae692ff857ccd1505270685a7d826e5ee6b1fbb83e8167864d1
   languageName: node
   linkType: hard
 
@@ -5572,38 +5535,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xmtp/user-preferences-bindings-wasm@npm:^0.3.1":
-  version: 0.3.1
-  resolution: "@xmtp/user-preferences-bindings-wasm@npm:0.3.1"
-  checksum: c6777acb9c418a644fac93995d4279721ebdcf18c0762c29b0282918a97c60137c19a84d44c8c17ca86d15139ae96cfc561c12e06a9ce3a81bf1462f54416f1b
+"@xmtp/user-preferences-bindings-wasm@npm:^0.2.1":
+  version: 0.2.1
+  resolution: "@xmtp/user-preferences-bindings-wasm@npm:0.2.1"
+  checksum: 446f0354477634780bb1827d872f16dd8e669640fdb00c62420dc34e0422a8b4264068caa33befe854394ae0fc52368e4c6bd2398bf04737bad9d59e566903e4
   languageName: node
   linkType: hard
 
-"@xmtp/xmtp-js@npm:^10.0.0":
-  version: 10.2.1
-  resolution: "@xmtp/xmtp-js@npm:10.2.1"
+"@xmtp/xmtp-js@npm:11.3.0-beta.14":
+  version: 11.3.0-beta.14
+  resolution: "@xmtp/xmtp-js@npm:11.3.0-beta.14"
   dependencies:
     "@noble/secp256k1": ^1.5.2
-    "@xmtp/proto": ^3.24.0
+    "@xmtp/proto": ^3.34.0
+    "@xmtp/user-preferences-bindings-wasm": ^0.2.1
     async-mutex: ^0.4.0
     elliptic: ^6.5.4
     ethers: ^5.5.3
     long: ^5.2.0
-  checksum: de318002768ebb9e6c1580b0e78e8f597a1f615a965c1e5baba454187421da87883c421ac4e9f8eb7101a5e457f869d528987bd982037bbfd211bb1ab7af5546
-  languageName: node
-  linkType: hard
-
-"@xmtp/xmtp-js@npm:^11.1.1":
-  version: 11.1.1
-  resolution: "@xmtp/xmtp-js@npm:11.1.1"
-  dependencies:
-    "@noble/secp256k1": ^1.5.2
-    "@xmtp/proto": ^3.28.0-beta.1
-    async-mutex: ^0.4.0
-    elliptic: ^6.5.4
-    ethers: ^5.5.3
-    long: ^5.2.0
-  checksum: 208c5606c1d207d8141867067708b872a495cad27ca3327f0797479ac76f3e6c5d2c163bf6c2416cf7b06a33bcb3e00ee51077d902236339e4387bc2113bfa90
+  checksum: 788a7ccf8e25304d4afa0912896d6464a983fbcaa6b4a55637be33e7b58ce88b297b6ce4ea4e8cc3ec6ba2ab154dc55ceac46ae73be588ea26560eefaf1a2dfc
   languageName: node
   linkType: hard
 
@@ -5618,21 +5568,6 @@ __metadata:
     ethers: ^5.5.3
     long: ^5.2.0
   checksum: 396fcc4871338f9820aeac4ad6886fd8ccae37f841f9d02711b29f8b79dc813edbb743bd294faa6b5c6acc5f605ffba46cd5fa90c59772f79600fc9f21b73a90
-  languageName: node
-  linkType: hard
-
-"@xmtp/xmtp-js@npm:^11.3.0-beta.14":
-  version: 11.3.0-beta.16
-  resolution: "@xmtp/xmtp-js@npm:11.3.0-beta.16"
-  dependencies:
-    "@noble/secp256k1": ^1.5.2
-    "@xmtp/proto": ^3.34.0
-    "@xmtp/user-preferences-bindings-wasm": ^0.3.1
-    async-mutex: ^0.4.0
-    elliptic: ^6.5.4
-    ethers: ^5.5.3
-    long: ^5.2.0
-  checksum: 3af7fd3c7765214bbfa1944d2925cf8e102a633dede76996442fa5b69c52ebdf8452a3387104a5bcd4de0279d92326d80a3d5e9cdfc2fb60c6b2ff69d5f440f8
   languageName: node
   linkType: hard
 
@@ -17767,9 +17702,6 @@ __metadata:
     "@unstoppabledomains/ui-components": "workspace:^"
     "@unstoppabledomains/ui-kit": ^0.3.15
     "@web3-react/core": ^8.2.2
-    "@xmtp/content-type-remote-attachment": ^1.0.7
-    "@xmtp/proto": ^3.27.0
-    "@xmtp/xmtp-js": ^10.0.0
     bluebird: ^3.7.2
     clipboard-copy: ^4.0.1
     date-fns: ^2.16.1

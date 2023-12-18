@@ -2,6 +2,11 @@ export type DomainNotificationConfiguration = {
   settingsKey: string;
 };
 
+export type DomainNotificationPreferences = {
+  accepted_topics: string[];
+  blocked_topics: string[];
+};
+
 export enum DomainNotificationSettingsKey {
   NOTIFICATIONS = 'NOTIFICATIONS',
   NEWSLETTER = 'NEWSLETTER',

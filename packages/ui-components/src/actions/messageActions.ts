@@ -4,21 +4,23 @@ import {signMessage} from '../components/Chat/protocol/push';
 import type {TopicRegistration} from '../components/Chat/types';
 import {fetchApi} from '../lib/fetchApi';
 import type {SerializedCryptoWalletBadge} from '../lib/types/badge';
-import type {SendMessageParams} from '../lib/types/message';
+import type {
+  DomainNotificationPreferences,
+  SendMessageParams,
+} from '../lib/types/message';
 import {getReverseResolution} from './domainActions';
 
 export const getAddressPreferences = async (address: string) => {
   const domain = await getReverseResolution(address);
   if (domain) {
-    return await getDomainPreferences(domain);
+    return await fetchApi<DomainNotificationPreferences>(
+      `/user/${domain}/notifications/preferences`,
+      {
+        host: config.PROFILE.HOST_URL,
+      },
+    );
   }
   return undefined;
-};
-
-export const getDomainPreferences = async (domain: string) => {
-  return await fetchApi(`/user/${domain}/notifications/preferences`, {
-    host: config.PROFILE.HOST_URL,
-  });
 };
 
 export const isAddressSpam = async (address: string): Promise<boolean> => {

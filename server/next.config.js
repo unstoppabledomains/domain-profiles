@@ -82,6 +82,11 @@ const nextConfig = {
       test: /\.test\.tsx?$/,
       loader: 'ignore-loader',
     });
+    config.module.rules.push({
+			test: /\.wasm$/,
+			type: 'webassembly/async',
+		});
+		config.experiments = {asyncWebAssembly: true}
     config.module.noParse = /gun\.js|gun\/sea\.js/;
     config.output.chunkLoadingGlobal = 'wpJsonpUD';
     config.resolve.extensions.push('.d.ts', '.ts', '.tsx');

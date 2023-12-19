@@ -18,30 +18,53 @@ import {DomainPreview} from '../../components/Domain/DomainPreview';
 import useTranslationContext from '../../lib/i18n';
 import type {Web3Dependencies} from '../../lib/types/web3';
 
-const useStyles = makeStyles<{focus: boolean}>()((theme: Theme, {focus}) => ({
+const useStyles = makeStyles<{
+  focus: boolean;
+  variant: ProfileSearchBarVariant;
+}>()((theme: Theme, {focus, variant}) => ({
   container: {
     display: 'flex',
     width: '100%',
-    height: '40px',
+    height: variant === 'homepage' ? '60px' : '40px',
   },
   inputBase: {
     border: `1px solid ${
-      focus ? 'rgba(255, 255, 255, 0.50)' : 'rgba(255, 255, 255, 0.10)'
+      variant === 'homepage'
+        ? theme.palette.neutralShades[400]
+        : focus
+        ? 'rgba(255, 255, 255, 0.50)'
+        : 'rgba(255, 255, 255, 0.10)'
     }`,
     borderRadius: theme.shape.borderRadius,
-    paddingLeft: 12,
+    paddingLeft: variant === 'homepage' ? theme.spacing(2) : theme.spacing(1),
     backdropFilter: 'blur(5px)',
-    backgroundColor: 'rgba(255, 255, 255, 0.20)',
+    backgroundColor:
+      variant === 'homepage' ? 'white' : 'rgba(255, 255, 255, 0.20)',
+    boxShadow: variant === 'homepage' ? theme.shadows[6] : undefined,
   },
   input: {
-    fontSize: 16,
-    color: theme.palette.common.white,
+    fontSize: variant === 'homepage' ? 20 : 16,
+    color:
+      variant === 'homepage'
+        ? focus
+          ? theme.palette.common.black
+          : theme.palette.neutralShades[400]
+        : theme.palette.common.white,
     '&::-webkit-search-cancel-button': {
       WebkitAppearance: 'none',
     },
-    '&::placeholder': {color: theme.palette.common.white, opacity: 1},
+    '&::placeholder': {
+      color:
+        variant === 'homepage'
+          ? theme.palette.neutralShades[400]
+          : theme.palette.common.white,
+      opacity: 1,
+    },
     '&::-webkit-input-placeholder': {
-      color: theme.palette.common.white,
+      color:
+        variant === 'homepage'
+          ? theme.palette.neutralShades[400]
+          : theme.palette.common.white,
       opacity: 1,
     },
   },
@@ -64,18 +87,18 @@ const useStyles = makeStyles<{focus: boolean}>()((theme: Theme, {focus}) => ({
     width: '16px',
   },
   searchResultsContainer: {
-    width: '512px',
+    width: variant === 'homepage' ? '650px' : '512px',
     backgroundColor: theme.palette.white,
     border: `1px solid ${theme.palette.neutralShades[100]}`,
     display: 'flex',
     flexDirection: 'column',
     borderRadius: 10,
     position: 'absolute',
-    marginTop: theme.spacing(6),
+    marginTop: variant === 'homepage' ? theme.spacing(10) : theme.spacing(6),
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
     [theme.breakpoints.down('md')]: {
-      width: '350px',
+      width: '100%',
     },
   },
   searchResultsTitle: {
@@ -111,12 +134,16 @@ const useStyles = makeStyles<{focus: boolean}>()((theme: Theme, {focus}) => ({
     alignItems: 'center',
   },
   closeIcon: {
-    color: '#FFFFFF80',
+    color:
+      variant === 'homepage' ? theme.palette.neutralShades[400] : '#FFFFFF80',
     height: '16px',
     width: '16px',
   },
   searchIcon: {
-    color: theme.palette.common.white,
+    color:
+      variant === 'homepage'
+        ? theme.palette.neutralShades[400]
+        : theme.palette.white,
     width: 24,
     height: 24,
     margin: theme.spacing(1),
@@ -130,23 +157,36 @@ const useStyles = makeStyles<{focus: boolean}>()((theme: Theme, {focus}) => ({
     alignItems: 'center',
   },
   searchIconContainer: {
-    backgroundColor: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    backgroundColor:
+      variant === 'homepage' ? theme.palette.primary.main : theme.palette.white,
     height: '100%',
     borderRadius: '0px 7px 7px 0px',
+    cursor: 'pointer',
   },
   searchIconDark: {
-    color: theme.palette.common.black,
+    color:
+      variant === 'homepage'
+        ? theme.palette.common.white
+        : theme.palette.common.black,
     margin: theme.spacing(1),
     width: 24,
     height: 24,
   },
 }));
 
+type ProfileSearchBarVariant = 'header' | 'homepage';
+
 type ProfileSearchBarProps = {
   setWeb3Deps?: (value: Web3Dependencies | undefined) => void;
+  variant?: ProfileSearchBarVariant;
 };
 
-const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({setWeb3Deps}) => {
+const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
+  setWeb3Deps,
+  variant = 'header',
+}) => {
   const [t] = useTranslationContext();
   const [focus, setFocus] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -154,7 +194,7 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({setWeb3Deps}) => {
   const searchBarRef = useRef<HTMLDivElement | null>(null);
   const searchResultsRef = useRef<HTMLDivElement | null>(null);
   const [searchResults, setSearchResults] = useState<string[]>([]);
-  const {classes} = useStyles({focus});
+  const {classes} = useStyles({focus, variant});
   const router = useRouter();
 
   useEffect(() => {

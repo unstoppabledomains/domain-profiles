@@ -599,7 +599,7 @@
   },
   "search": {
     "clear": "Clear",
-    "searchProfiles": "Search profiles",
+    "searchProfiles": "Find a profile",
     "searchResultsFor": "Search results for \"{{searchTerm}}\""
   },
   "upsell": {

@@ -830,9 +830,7 @@ const DomainProfile = ({
                 {profileData?.webacy && (
                   <Box className={classes.riskScoreContainer}>
                     <Avatar
-                      src={
-                        'https://storage.googleapis.com/unstoppable-client-assets/images/webacy/logo.png'
-                      }
+                      src={`${config.ASSETS_BUCKET_URL}/images/webacy/logo.png`}
                       className={classes.riskScoreLogo}
                       onClick={() =>
                         window.open(

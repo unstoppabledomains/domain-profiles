@@ -23,6 +23,7 @@ const useStyles = makeStyles<{
   variant: ProfileSearchBarVariant;
 }>()((theme: Theme, {focus, variant}) => ({
   container: {
+    position: 'relative',
     display: 'flex',
     width: '100%',
     height: variant === 'homepage' ? '60px' : '40px',
@@ -87,19 +88,16 @@ const useStyles = makeStyles<{
     width: '16px',
   },
   searchResultsContainer: {
-    width: variant === 'homepage' ? '650px' : '512px',
+    width: '100%',
     backgroundColor: theme.palette.white,
     border: `1px solid ${theme.palette.neutralShades[100]}`,
     display: 'flex',
     flexDirection: 'column',
     borderRadius: 10,
     position: 'absolute',
-    marginTop: variant === 'homepage' ? theme.spacing(10) : theme.spacing(6),
+    marginTop: variant === 'homepage' ? theme.spacing(9) : theme.spacing(6),
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
-    [theme.breakpoints.down('md')]: {
-      width: '100%',
-    },
   },
   searchResultsTitle: {
     fontSize: 14,
@@ -113,10 +111,9 @@ const useStyles = makeStyles<{
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '100%',
     cursor: 'pointer',
     '&:hover': {
-      backgroundColor: theme.palette.neutralShades[100],
+      backgroundColor: theme.palette.neutralShades[50],
     },
     '&:not(:last-child)': {
       borderBottom: `1px dashed ${theme.palette.neutralShades[100]}`,
@@ -130,7 +127,6 @@ const useStyles = makeStyles<{
   },
   searchResultLeft: {
     display: 'flex',
-    width: '100%',
     alignItems: 'center',
   },
   closeIcon: {
@@ -142,16 +138,18 @@ const useStyles = makeStyles<{
   searchIcon: {
     color:
       variant === 'homepage'
-        ? theme.palette.neutralShades[400]
-        : theme.palette.white,
+        ? theme.palette.common.white
+        : focus
+        ? theme.palette.common.black
+        : theme.palette.common.white,
+    margin: theme.spacing(1),
     width: 24,
     height: 24,
-    margin: theme.spacing(1),
   },
   rightIcon: {
     color: theme.palette.neutralShades[400],
   },
-  searchRightBox: {
+  adornmentContainer: {
     display: 'flex',
     height: '100%',
     alignItems: 'center',
@@ -160,19 +158,17 @@ const useStyles = makeStyles<{
     display: 'flex',
     alignItems: 'center',
     backgroundColor:
-      variant === 'homepage' ? theme.palette.primary.main : theme.palette.white,
+      variant === 'homepage'
+        ? theme.palette.primary.main
+        : focus
+        ? theme.palette.white
+        : undefined,
     height: '100%',
     borderRadius: '0px 7px 7px 0px',
     cursor: 'pointer',
-  },
-  searchIconDark: {
-    color:
-      variant === 'homepage'
-        ? theme.palette.common.white
-        : theme.palette.common.black,
-    margin: theme.spacing(1),
-    width: 24,
-    height: 24,
+    width: variant === 'homepage' ? '60px' : '40px',
+    marginLeft: theme.spacing(1),
+    justifyContent: 'center',
   },
 }));
 
@@ -267,10 +263,8 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
         onChange={handleSearchChange}
         onFocus={handleComponentOnFocus}
         endAdornment={
-          !searchTerm ? (
-            <SearchIcon className={classes.searchIcon} />
-          ) : (
-            <div className={classes.searchRightBox}>
+          <Box className={classes.adornmentContainer}>
+            {searchTerm && (
               <Tooltip placement="bottom" title={t('search.clear')}>
                 <IconButton
                   data-testid="headerSearchBarClearButton"
@@ -280,16 +274,16 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
                   <CloseIcon className={classes.closeIcon} />
                 </IconButton>
               </Tooltip>
-              <div className={classes.searchIconContainer}>
-                <SearchIcon className={classes.searchIconDark} />
-              </div>
-            </div>
-          )
+            )}
+            <Box className={classes.searchIconContainer}>
+              <SearchIcon className={classes.searchIcon} />
+            </Box>
+          </Box>
         }
       />
 
       {focus && searchTerm && searchResults.length ? (
-        <div className={classes.searchResultsContainer} ref={searchResultsRef}>
+        <Box className={classes.searchResultsContainer} ref={searchResultsRef}>
           <Typography className={classes.searchResultsTitle}>
             {t('search.searchResultsFor', {searchTerm})}
           </Typography>
@@ -299,8 +293,8 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
               setFocus(false);
             };
             return (
-              <div className={classes.searchResult} onClick={handleClick}>
-                <div className={classes.searchResultLeft}>
+              <Box className={classes.searchResult} onClick={handleClick}>
+                <Box className={classes.searchResultLeft}>
                   <DomainPreview
                     domain={domain}
                     size={40}
@@ -309,12 +303,12 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
                   <Typography className={classes.searchResultText}>
                     {domain}
                   </Typography>
-                </div>
+                </Box>
                 <ChevronRightOutlinedIcon className={classes.rightIcon} />
-              </div>
+              </Box>
             );
           })}
-        </div>
+        </Box>
       ) : null}
     </Box>
   );

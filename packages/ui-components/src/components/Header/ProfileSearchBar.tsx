@@ -11,11 +11,13 @@ import type {Theme} from '@mui/material/styles';
 import {useRouter} from 'next/router';
 import React, {useEffect, useRef, useState} from 'react';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {searchProfiles} from '../../actions/domainProfileActions';
 import {DomainPreview} from '../../components/Domain/DomainPreview';
-import {convertCentToUsdString, type SerializedProfileSearch} from '../../lib';
+import type {SerializedProfileSearch} from '../../lib';
+import {convertCentToUsdString} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 import type {Web3Dependencies} from '../../lib/types/web3';
 
@@ -99,16 +101,16 @@ const useStyles = makeStyles<{
     marginTop: variant === 'homepage' ? theme.spacing(9) : theme.spacing(6),
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
+    maxHeight: '270px',
+    overflow: 'auto',
   },
   searchResultsTitle: {
-    fontSize: 14,
-    fontWeight: 600,
     paddingLeft: theme.spacing(2),
     paddingBottom: theme.spacing(1),
     paddingTop: theme.spacing(1),
   },
   searchResult: {
-    padding: theme.spacing(2),
+    padding: theme.spacing(1),
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -156,6 +158,11 @@ const useStyles = makeStyles<{
     height: '100%',
     alignItems: 'center',
   },
+  searchCartIcon: {
+    width: '45px',
+    height: '45px',
+    padding: theme.spacing(0.5),
+  },
   searchIconContainer: {
     display: 'flex',
     alignItems: 'center',
@@ -197,6 +204,15 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
   const {classes} = useStyles({focus, variant});
   const router = useRouter();
 
+  const isMatchingSearchResults =
+    searchResults.filter(v => !v.market).length > 0;
+  const isAvailableSearchResults =
+    searchResults.filter(v => v.market?.price).length > 0;
+  const showMatchingResultCount = 5;
+  const showAvailableResultCount = isMatchingSearchResults
+    ? 1
+    : showMatchingResultCount;
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       // Check if the clicked target is outside of the search bar and results
@@ -223,7 +239,13 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
       return;
     }
     const domains = await searchProfiles(searchValue);
-    setSearchResults(domains.slice(0, 5));
+    setSearchResults(domains);
+  };
+
+  const handleSearchIconClicked = () => {
+    if (searchTerm) {
+      window.location.href = `${config.UNSTOPPABLE_WEBSITE_URL}/search?searchTerm=${searchTerm}&searchRef=udMe&tab=relevant`;
+    }
   };
 
   const handleClearText = () => {
@@ -246,6 +268,50 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
   const handleComponentOnFocus = () => {
     setFocus(true);
   };
+
+  const renderSearchResults = (results: SerializedProfileSearch[]) =>
+    results
+      .sort((a, b) => a.name.length - b.name.length)
+      .map(searchResult => {
+        const handleClick = () => {
+          void router.push(searchResult.linkUrl);
+          setFocus(false);
+        };
+        return (
+          <Box className={classes.searchResult} onClick={handleClick}>
+            {searchResult.market ? (
+              <Box className={classes.searchResultLeft}>
+                <ShoppingCartOutlinedIcon
+                  className={classes.searchCartIcon}
+                  color="primary"
+                />
+                <Typography
+                  variant="body2"
+                  className={classes.searchResultText}
+                >
+                  {searchResult.name} (
+                  {convertCentToUsdString(searchResult.market.price)})
+                </Typography>
+              </Box>
+            ) : (
+              <Box className={classes.searchResultLeft}>
+                <DomainPreview
+                  domain={searchResult.name}
+                  size={40}
+                  setWeb3Deps={setWeb3Deps}
+                />
+                <Typography
+                  variant="body2"
+                  className={classes.searchResultText}
+                >
+                  {searchResult.name}
+                </Typography>
+              </Box>
+            )}
+            <ChevronRightOutlinedIcon className={classes.rightIcon} />
+          </Box>
+        );
+      });
 
   return (
     <Box
@@ -279,48 +345,41 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
                 </IconButton>
               </Tooltip>
             )}
-            <Box className={classes.searchIconContainer}>
+            <Box
+              className={classes.searchIconContainer}
+              onClick={handleSearchIconClicked}
+            >
               <SearchIcon className={classes.searchIcon} />
             </Box>
           </Box>
         }
       />
-
       {focus && searchTerm && searchResults.length ? (
         <Box className={classes.searchResultsContainer} ref={searchResultsRef}>
-          <Typography className={classes.searchResultsTitle}>
-            {t('search.searchResultsFor', {searchTerm})}
-          </Typography>
-          {searchResults.map(searchResult => {
-            const handleClick = () => {
-              void router.push(searchResult.linkUrl);
-              setFocus(false);
-            };
-            return (
-              <Box className={classes.searchResult} onClick={handleClick}>
-                {searchResult.market ? (
-                  <Box className={classes.searchResultLeft}>
-                    <ShoppingCartOutlinedIcon color="primary" />
-                    <Typography className={classes.searchResultText}>
-                      {searchResult.name} ({convertCentToUsdString(searchResult.market.price)})
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Box className={classes.searchResultLeft}>
-                    <DomainPreview
-                      domain={searchResult.name}
-                      size={40}
-                      setWeb3Deps={setWeb3Deps}
-                    />
-                    <Typography className={classes.searchResultText}>
-                      {searchResult.name}
-                    </Typography>
-                  </Box>
-                )}
-                <ChevronRightOutlinedIcon className={classes.rightIcon} />
-              </Box>
-            );
-          })}
+          {isAvailableSearchResults && (
+            <>
+              <Typography variant="h6" className={classes.searchResultsTitle}>
+                {t('search.availableDomainsFor', {searchTerm})}
+              </Typography>
+              {renderSearchResults(
+                searchResults
+                  .filter(v => v.market?.price)
+                  .slice(0, showAvailableResultCount),
+              )}
+            </>
+          )}
+          {isMatchingSearchResults && (
+            <>
+              <Typography variant="h6" className={classes.searchResultsTitle}>
+                {t('search.searchResultsFor', {searchTerm})}
+              </Typography>
+              {renderSearchResults(
+                searchResults
+                  .filter(v => !v.market)
+                  .slice(0, showMatchingResultCount),
+              )}
+            </>
+          )}
         </Box>
       ) : null}
     </Box>

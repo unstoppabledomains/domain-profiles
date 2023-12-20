@@ -11,6 +11,7 @@ export const useStyles = makeStyles<
   'cardImageBottom' | 'cardImageTop'
 >()((theme: Theme, {isSaleActive}, classes) => ({
   container: {
+    position: 'relative',
     background: theme.palette.neutralShades[100],
     display: 'flex',
     flexDirection: 'column',
@@ -67,15 +68,15 @@ export const useStyles = makeStyles<
     width: '100%',
     paddingTop: theme.spacing(2.5),
     zIndex: 1,
-    maxWidth: 245,
-    minHeight: 250,
-    marginBottom: theme.spacing(12),
+    maxWidth: 175,
+    minHeight: 180,
+    marginBottom: theme.spacing(8),
     transition: theme.transitions.create([
       'min-height, max-width, padding-top',
     ]),
     [theme.breakpoints.down('lg')]: {
-      maxWidth: 245,
-      minHeight: 250,
+      maxWidth: 175,
+      minHeight: 180,
     },
     [theme.breakpoints.down('md')]: {
       maxWidth: 166,
@@ -104,7 +105,7 @@ export const useStyles = makeStyles<
   cardImage: {
     display: 'flex',
     width: '100%',
-    maxWidth: 215,
+    maxWidth: 150,
     borderRadius: 16,
     boxShadow:
       '0px 2px 3px rgba(0, 0, 0, 0.07), 0px 6px 6px rgba(0, 0, 0, 0.04), 0px 12px 12px rgba(0, 0, 0, 0.03), 0px 20px 24px rgba(0, 0, 0, 0.03), 0px 32px 40px rgba(0, 0, 0, 0.02), 0px 80px 100px rgba(0, 0, 0, 0.16), 0px 0px 4px rgba(0, 0, 0, 0.08), 0px 8px 48px rgba(0, 0, 0, 0.08)',
@@ -118,7 +119,7 @@ export const useStyles = makeStyles<
       },
     ),
     [theme.breakpoints.down('lg')]: {
-      maxWidth: 215,
+      maxWidth: 150,
     },
     [theme.breakpoints.down('md')]: {
       maxWidth: 132,
@@ -146,9 +147,30 @@ export const useStyles = makeStyles<
       right: 0,
     },
   },
-  footer: {
+  footerContainer: {
     ...theme.containers.main,
     maxWidth: 1256,
-    padding: theme.spacing(0, 2.5),
+    padding: theme.spacing(2),
+    position: 'absolute',
+    bottom: 0,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  footerContent: {
+    display: 'flex',
+    justifyContent: 'center',
+  },
+  footerLink: {
+    marginRight: theme.spacing(1),
+    fontWeight: theme.typography.fontWeightMedium,
+    color: theme.palette.neutralShades[600],
+    cursor: 'pointer',
+    wordBreak: 'normal',
+    '&:hover': {
+      textDecoration: 'underline',
+    },
+  },
+  copyright: {
+    color: theme.palette.neutralShades[600],
   },
 }));

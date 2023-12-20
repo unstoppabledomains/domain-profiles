@@ -89,6 +89,29 @@ const HomePage = () => {
           </Box>
         </Grid>
       </Grid>
+      <Box className={classes.footerContainer}>
+        <Box className={classes.footerContent}>
+          <Typography className={classes.copyright} variant="body2">
+            {t('footer.copyright')}
+          </Typography>
+        </Box>
+        <Box className={classes.footerContent}>
+          <Typography variant="caption">
+            <a
+              className={classes.footerLink}
+              href="https://unstoppabledomains.com/terms"
+            >
+              {t('footer.terms')}
+            </a>
+            <a
+              className={classes.footerLink}
+              href="https://unstoppabledomains.com/privacy-policy"
+            >
+              {t('footer.privacyPolicy')}
+            </a>
+          </Typography>
+        </Box>
+      </Box>
     </Box>
   );
 };

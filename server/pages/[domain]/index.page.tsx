@@ -536,7 +536,7 @@ const DomainProfile = ({
             : undefined
         }
       >
-        <Logo className={classes.logo} inverse absoluteUrl />
+        <Logo className={classes.logo} url={config.UD_ME_BASE_URL} inverse />
         <div className={classes.head}>
           {isOwner !== undefined && (
             <div className={classes.menuButtonContainer}>

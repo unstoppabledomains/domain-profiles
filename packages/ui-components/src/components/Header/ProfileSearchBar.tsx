@@ -1,7 +1,9 @@
 import ChevronRightOutlinedIcon from '@mui/icons-material/ChevronRightOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import InputBase from '@mui/material/InputBase';
 import Tooltip from '@mui/material/Tooltip';
@@ -15,33 +17,59 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {searchProfiles} from '../../actions/domainProfileActions';
 import {DomainPreview} from '../../components/Domain/DomainPreview';
+import type {SerializedProfileSearch} from '../../lib';
+import {convertCentToUsdString} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 import type {Web3Dependencies} from '../../lib/types/web3';
 
-const useStyles = makeStyles<{focus: boolean}>()((theme: Theme, {focus}) => ({
+const useStyles = makeStyles<{
+  focus: boolean;
+  variant: ProfileSearchBarVariant;
+}>()((theme: Theme, {focus, variant}) => ({
   container: {
+    position: 'relative',
     display: 'flex',
     width: '100%',
-    height: '40px',
+    height: variant === 'homepage' ? '60px' : '40px',
   },
   inputBase: {
     border: `1px solid ${
-      focus ? 'rgba(255, 255, 255, 0.50)' : 'rgba(255, 255, 255, 0.10)'
+      variant === 'homepage'
+        ? theme.palette.neutralShades[400]
+        : focus
+        ? 'rgba(255, 255, 255, 0.50)'
+        : 'rgba(255, 255, 255, 0.10)'
     }`,
     borderRadius: theme.shape.borderRadius,
-    paddingLeft: 12,
+    paddingLeft: variant === 'homepage' ? theme.spacing(2) : theme.spacing(1),
     backdropFilter: 'blur(5px)',
-    backgroundColor: 'rgba(255, 255, 255, 0.20)',
+    backgroundColor:
+      variant === 'homepage' ? 'white' : 'rgba(255, 255, 255, 0.20)',
+    boxShadow: variant === 'homepage' ? theme.shadows[6] : undefined,
   },
   input: {
-    fontSize: 16,
-    color: theme.palette.common.white,
+    fontSize: variant === 'homepage' ? 20 : 16,
+    color:
+      variant === 'homepage'
+        ? focus
+          ? theme.palette.common.black
+          : theme.palette.neutralShades[400]
+        : theme.palette.common.white,
     '&::-webkit-search-cancel-button': {
       WebkitAppearance: 'none',
     },
-    '&::placeholder': {color: theme.palette.common.white, opacity: 1},
+    '&::placeholder': {
+      color:
+        variant === 'homepage'
+          ? theme.palette.neutralShades[400]
+          : theme.palette.common.white,
+      opacity: 1,
+    },
     '&::-webkit-input-placeholder': {
-      color: theme.palette.common.white,
+      color:
+        variant === 'homepage'
+          ? theme.palette.neutralShades[400]
+          : theme.palette.common.white,
       opacity: 1,
     },
   },
@@ -64,36 +92,32 @@ const useStyles = makeStyles<{focus: boolean}>()((theme: Theme, {focus}) => ({
     width: '16px',
   },
   searchResultsContainer: {
-    width: '512px',
+    width: '100%',
     backgroundColor: theme.palette.white,
     border: `1px solid ${theme.palette.neutralShades[100]}`,
     display: 'flex',
     flexDirection: 'column',
     borderRadius: 10,
     position: 'absolute',
-    marginTop: theme.spacing(6),
+    marginTop: variant === 'homepage' ? theme.spacing(9) : theme.spacing(6),
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
-    [theme.breakpoints.down('md')]: {
-      width: '350px',
-    },
+    maxHeight: '270px',
+    overflow: 'auto',
   },
   searchResultsTitle: {
-    fontSize: 14,
-    fontWeight: 600,
     paddingLeft: theme.spacing(2),
     paddingBottom: theme.spacing(1),
     paddingTop: theme.spacing(1),
   },
   searchResult: {
-    padding: theme.spacing(2),
+    padding: theme.spacing(1),
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '100%',
     cursor: 'pointer',
     '&:hover': {
-      backgroundColor: theme.palette.neutralShades[100],
+      backgroundColor: theme.palette.neutralShades[50],
     },
     '&:not(:last-child)': {
       borderBottom: `1px dashed ${theme.palette.neutralShades[100]}`,
@@ -104,58 +128,101 @@ const useStyles = makeStyles<{focus: boolean}>()((theme: Theme, {focus}) => ({
     wordBreak: 'break-all',
     maxWidth: 'calc(100% - 60px)',
     marginLeft: theme.spacing(2),
+    whiteSpace: 'nowrap',
   },
   searchResultLeft: {
     display: 'flex',
-    width: '100%',
     alignItems: 'center',
   },
   closeIcon: {
-    color: '#FFFFFF80',
+    color:
+      variant === 'homepage' ? theme.palette.neutralShades[400] : '#FFFFFF80',
     height: '16px',
     width: '16px',
   },
   searchIcon: {
-    color: theme.palette.common.white,
+    color:
+      variant === 'homepage'
+        ? theme.palette.common.white
+        : focus
+        ? theme.palette.common.black
+        : theme.palette.common.white,
+    margin: theme.spacing(1),
     width: 24,
     height: 24,
-    margin: theme.spacing(1),
+  },
+  loadingIcon: {
+    color:
+      variant === 'homepage'
+        ? theme.palette.common.white
+        : focus
+        ? theme.palette.common.black
+        : theme.palette.common.white,
+    padding: theme.spacing(1),
   },
   rightIcon: {
     color: theme.palette.neutralShades[400],
   },
-  searchRightBox: {
+  adornmentContainer: {
     display: 'flex',
     height: '100%',
     alignItems: 'center',
   },
+  searchCartIcon: {
+    width: '45px',
+    height: '45px',
+    padding: theme.spacing(0.5),
+  },
   searchIconContainer: {
-    backgroundColor: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    backgroundColor:
+      variant === 'homepage'
+        ? theme.palette.primary.main
+        : focus
+        ? theme.palette.white
+        : undefined,
     height: '100%',
     borderRadius: '0px 7px 7px 0px',
-  },
-  searchIconDark: {
-    color: theme.palette.common.black,
-    margin: theme.spacing(1),
-    width: 24,
-    height: 24,
+    cursor: 'pointer',
+    width: variant === 'homepage' ? '60px' : '40px',
+    marginLeft: theme.spacing(1),
+    justifyContent: 'center',
   },
 }));
 
+type ProfileSearchBarVariant = 'header' | 'homepage';
+
 type ProfileSearchBarProps = {
   setWeb3Deps?: (value: Web3Dependencies | undefined) => void;
+  variant?: ProfileSearchBarVariant;
 };
 
-const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({setWeb3Deps}) => {
+const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
+  setWeb3Deps,
+  variant = 'header',
+}) => {
   const [t] = useTranslationContext();
   const [focus, setFocus] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchBarRef = useRef<HTMLDivElement | null>(null);
   const searchResultsRef = useRef<HTMLDivElement | null>(null);
-  const [searchResults, setSearchResults] = useState<string[]>([]);
-  const {classes} = useStyles({focus});
+  const [searchResults, setSearchResults] = useState<SerializedProfileSearch[]>(
+    [],
+  );
+  const {classes} = useStyles({focus, variant});
   const router = useRouter();
+
+  const isMatchingSearchResults =
+    searchResults.filter(v => !v.market).length > 0;
+  const isAvailableSearchResults =
+    searchResults.filter(v => v.market?.price).length > 0;
+  const showMatchingResultCount = 5;
+  const showAvailableResultCount = isMatchingSearchResults
+    ? 1
+    : showMatchingResultCount;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -182,8 +249,16 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({setWeb3Deps}) => {
       setSearchResults([]);
       return;
     }
+    setIsSearching(true);
     const domains = await searchProfiles(searchValue);
-    setSearchResults(domains.slice(0, 5));
+    setIsSearching(false);
+    setSearchResults(domains);
+  };
+
+  const handleSearchIconClicked = () => {
+    if (searchTerm) {
+      window.location.href = `${config.UNSTOPPABLE_WEBSITE_URL}/search?searchTerm=${searchTerm}&searchRef=udMe&tab=relevant`;
+    }
   };
 
   const handleClearText = () => {
@@ -207,6 +282,50 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({setWeb3Deps}) => {
     setFocus(true);
   };
 
+  const renderSearchResults = (results: SerializedProfileSearch[]) =>
+    results
+      .sort((a, b) => a.name.length - b.name.length)
+      .map(searchResult => {
+        const handleClick = () => {
+          void router.push(searchResult.linkUrl);
+          setFocus(false);
+        };
+        return (
+          <Box className={classes.searchResult} onClick={handleClick}>
+            {searchResult.market ? (
+              <Box className={classes.searchResultLeft}>
+                <ShoppingCartOutlinedIcon
+                  className={classes.searchCartIcon}
+                  color="primary"
+                />
+                <Typography
+                  variant="body2"
+                  className={classes.searchResultText}
+                >
+                  {searchResult.name} (
+                  {convertCentToUsdString(searchResult.market.price)})
+                </Typography>
+              </Box>
+            ) : (
+              <Box className={classes.searchResultLeft}>
+                <DomainPreview
+                  domain={searchResult.name}
+                  size={40}
+                  setWeb3Deps={setWeb3Deps}
+                />
+                <Typography
+                  variant="body2"
+                  className={classes.searchResultText}
+                >
+                  {searchResult.name}
+                </Typography>
+              </Box>
+            )}
+            <ChevronRightOutlinedIcon className={classes.rightIcon} />
+          </Box>
+        );
+      });
+
   return (
     <Box
       className={classes.container}
@@ -227,10 +346,8 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({setWeb3Deps}) => {
         onChange={handleSearchChange}
         onFocus={handleComponentOnFocus}
         endAdornment={
-          !searchTerm ? (
-            <SearchIcon className={classes.searchIcon} />
-          ) : (
-            <div className={classes.searchRightBox}>
+          <Box className={classes.adornmentContainer}>
+            {searchTerm && (
               <Tooltip placement="bottom" title={t('search.clear')}>
                 <IconButton
                   data-testid="headerSearchBarClearButton"
@@ -240,41 +357,47 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({setWeb3Deps}) => {
                   <CloseIcon className={classes.closeIcon} />
                 </IconButton>
               </Tooltip>
-              <div className={classes.searchIconContainer}>
-                <SearchIcon className={classes.searchIconDark} />
-              </div>
-            </div>
-          )
+            )}
+            <Box
+              className={classes.searchIconContainer}
+              onClick={handleSearchIconClicked}
+            >
+              {isSearching ? (
+                <CircularProgress className={classes.loadingIcon} />
+              ) : (
+                <SearchIcon className={classes.searchIcon} />
+              )}
+            </Box>
+          </Box>
         }
       />
-
       {focus && searchTerm && searchResults.length ? (
-        <div className={classes.searchResultsContainer} ref={searchResultsRef}>
-          <Typography className={classes.searchResultsTitle}>
-            {t('search.searchResultsFor', {searchTerm})}
-          </Typography>
-          {searchResults.map(domain => {
-            const handleClick = () => {
-              void router.push(`${config.UD_ME_BASE_URL}/${domain}`);
-              setFocus(false);
-            };
-            return (
-              <div className={classes.searchResult} onClick={handleClick}>
-                <div className={classes.searchResultLeft}>
-                  <DomainPreview
-                    domain={domain}
-                    size={40}
-                    setWeb3Deps={setWeb3Deps}
-                  />
-                  <Typography className={classes.searchResultText}>
-                    {domain}
-                  </Typography>
-                </div>
-                <ChevronRightOutlinedIcon className={classes.rightIcon} />
-              </div>
-            );
-          })}
-        </div>
+        <Box className={classes.searchResultsContainer} ref={searchResultsRef}>
+          {isAvailableSearchResults && (
+            <>
+              <Typography variant="h6" className={classes.searchResultsTitle}>
+                {t('search.availableDomainsFor', {searchTerm})}
+              </Typography>
+              {renderSearchResults(
+                searchResults
+                  .filter(v => v.market?.price)
+                  .slice(0, showAvailableResultCount),
+              )}
+            </>
+          )}
+          {isMatchingSearchResults && (
+            <>
+              <Typography variant="h6" className={classes.searchResultsTitle}>
+                {t('search.searchResultsFor', {searchTerm})}
+              </Typography>
+              {renderSearchResults(
+                searchResults
+                  .filter(v => !v.market)
+                  .slice(0, showMatchingResultCount),
+              )}
+            </>
+          )}
+        </Box>
       ) : null}
     </Box>
   );

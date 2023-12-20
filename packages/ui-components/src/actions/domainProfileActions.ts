@@ -11,6 +11,7 @@ import type {
   ImageData,
   SerializedBulkDomainResponse,
   SerializedFollowerListData,
+  SerializedProfileSearch,
   SerializedPublicDomainProfileData,
   SerializedUserDomainProfileData,
 } from '../lib/types/domain';
@@ -132,14 +133,16 @@ export const getProfileUserData = async (
   });
 };
 
-export const searchProfiles = async (query: string): Promise<string[]> => {
-  const data: Array<{name: string}> | undefined = await fetchApi(
-    `/search?name=${query}`,
+export const searchProfiles = async (
+  query: string,
+): Promise<SerializedProfileSearch[]> => {
+  const data = await fetchApi(
+    `/search?name=${query}&include-suggestions=true&profile-required=false&reverse-resolution-required=false`,
     {
       host: config.PROFILE.HOST_URL,
     },
   );
-  return data ? data.map(profile => profile.name) : [];
+  return data ? data : [];
 };
 
 export const setProfileUserData = async (

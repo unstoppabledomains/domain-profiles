@@ -35,7 +35,7 @@ export const getSeoTags = (props: GetSeoTagsProps): NextSeoProps => {
 
   seoTags.openGraph.images = [{url: imageUrl}];
   seoTags.twitter = {cardType: 'summary'};
-  if (props.socialsInfo[DomainProfileSocialMedia.Twitter]?.screenName) {
+  if (props.socialsInfo?.[DomainProfileSocialMedia.Twitter]?.screenName) {
     seoTags.twitter.site = `@${UD_TWITTER_HANDLE}`;
     seoTags.twitter.handle = `@${
       props.socialsInfo[DomainProfileSocialMedia.Twitter]?.screenName

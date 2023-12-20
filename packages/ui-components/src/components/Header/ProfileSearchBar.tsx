@@ -3,6 +3,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import InputBase from '@mui/material/InputBase';
 import Tooltip from '@mui/material/Tooltip';
@@ -150,6 +151,15 @@ const useStyles = makeStyles<{
     width: 24,
     height: 24,
   },
+  loadingIcon: {
+    color:
+      variant === 'homepage'
+        ? theme.palette.common.white
+        : focus
+        ? theme.palette.common.black
+        : theme.palette.common.white,
+    padding: theme.spacing(1),
+  },
   rightIcon: {
     color: theme.palette.neutralShades[400],
   },
@@ -195,6 +205,7 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
   const [t] = useTranslationContext();
   const [focus, setFocus] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchBarRef = useRef<HTMLDivElement | null>(null);
   const searchResultsRef = useRef<HTMLDivElement | null>(null);
@@ -238,7 +249,9 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
       setSearchResults([]);
       return;
     }
+    setIsSearching(true);
     const domains = await searchProfiles(searchValue);
+    setIsSearching(false);
     setSearchResults(domains);
   };
 
@@ -349,7 +362,11 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
               className={classes.searchIconContainer}
               onClick={handleSearchIconClicked}
             >
-              <SearchIcon className={classes.searchIcon} />
+              {isSearching ? (
+                <CircularProgress className={classes.loadingIcon} />
+              ) : (
+                <SearchIcon className={classes.searchIcon} />
+              )}
             </Box>
           </Box>
         }

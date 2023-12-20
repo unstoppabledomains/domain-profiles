@@ -148,13 +148,13 @@ export const useStyles = makeStyles<
     },
   },
   footerContainer: {
-    ...theme.containers.main,
-    maxWidth: 1256,
     padding: theme.spacing(2),
     position: 'absolute',
     bottom: 0,
     display: 'flex',
     flexDirection: 'column',
+    width: '100%',
+    justifyContent: 'center',
   },
   footerContent: {
     display: 'flex',

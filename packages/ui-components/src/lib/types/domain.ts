@@ -46,6 +46,13 @@ export type DiscordUserInfo = {
   userName: string;
 } | null;
 
+export type DomainCryptoVerificationBodyPOST = {
+  symbol: string;
+  address: string;
+  plaintextMessage: string;
+  signedMessage: string;
+};
+
 export type DomainDescription = {
   name: string;
   label: string;
@@ -64,13 +71,6 @@ export enum DomainFieldTypes {
   ReferralTier = 'referralTier',
   WebacyScore = 'webacyScore',
 }
-
-export type DomainCryptoVerificationBodyPOST = {
-  symbol: string;
-  address: string;
-  plaintextMessage: string;
-  signedMessage: string;
-};
 
 export enum DomainProfileKeys {
   AuthAddress = 'authAddress',
@@ -262,6 +262,18 @@ export type SerializedFollowerListData = {
   };
   relationship_type: 'following' | 'followers';
   domain: string;
+};
+
+export type SerializedProfileSearch = {
+  name: string;
+  imagePath: string;
+  imageType: string;
+  ownerAddress: string;
+  linkUrl: string;
+  market?: {
+    price: number;
+    location: 'primary' | 'secondary';
+  };
 };
 
 export type SerializedPublicDomainProfileData = {

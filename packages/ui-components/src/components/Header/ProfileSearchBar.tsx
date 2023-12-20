@@ -1,6 +1,7 @@
 import ChevronRightOutlinedIcon from '@mui/icons-material/ChevronRightOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import InputBase from '@mui/material/InputBase';
@@ -10,11 +11,11 @@ import type {Theme} from '@mui/material/styles';
 import {useRouter} from 'next/router';
 import React, {useEffect, useRef, useState} from 'react';
 
-import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {searchProfiles} from '../../actions/domainProfileActions';
 import {DomainPreview} from '../../components/Domain/DomainPreview';
+import {convertCentToUsdString, type SerializedProfileSearch} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 import type {Web3Dependencies} from '../../lib/types/web3';
 
@@ -124,6 +125,7 @@ const useStyles = makeStyles<{
     wordBreak: 'break-all',
     maxWidth: 'calc(100% - 60px)',
     marginLeft: theme.spacing(2),
+    whiteSpace: 'nowrap',
   },
   searchResultLeft: {
     display: 'flex',
@@ -189,7 +191,9 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchBarRef = useRef<HTMLDivElement | null>(null);
   const searchResultsRef = useRef<HTMLDivElement | null>(null);
-  const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [searchResults, setSearchResults] = useState<SerializedProfileSearch[]>(
+    [],
+  );
   const {classes} = useStyles({focus, variant});
   const router = useRouter();
 
@@ -287,23 +291,32 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
           <Typography className={classes.searchResultsTitle}>
             {t('search.searchResultsFor', {searchTerm})}
           </Typography>
-          {searchResults.map(domain => {
+          {searchResults.map(searchResult => {
             const handleClick = () => {
-              void router.push(`${config.UD_ME_BASE_URL}/${domain}`);
+              void router.push(searchResult.linkUrl);
               setFocus(false);
             };
             return (
               <Box className={classes.searchResult} onClick={handleClick}>
-                <Box className={classes.searchResultLeft}>
-                  <DomainPreview
-                    domain={domain}
-                    size={40}
-                    setWeb3Deps={setWeb3Deps}
-                  />
-                  <Typography className={classes.searchResultText}>
-                    {domain}
-                  </Typography>
-                </Box>
+                {searchResult.market ? (
+                  <Box className={classes.searchResultLeft}>
+                    <ShoppingCartOutlinedIcon color="primary" />
+                    <Typography className={classes.searchResultText}>
+                      {searchResult.name} ({convertCentToUsdString(searchResult.market.price)})
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Box className={classes.searchResultLeft}>
+                    <DomainPreview
+                      domain={searchResult.name}
+                      size={40}
+                      setWeb3Deps={setWeb3Deps}
+                    />
+                    <Typography className={classes.searchResultText}>
+                      {searchResult.name}
+                    </Typography>
+                  </Box>
+                )}
                 <ChevronRightOutlinedIcon className={classes.rightIcon} />
               </Box>
             );

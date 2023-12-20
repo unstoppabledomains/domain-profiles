@@ -67,22 +67,21 @@ export const useStyles = makeStyles<
     width: '100%',
     paddingTop: theme.spacing(2.5),
     zIndex: 1,
-    maxWidth: 400,
-    minHeight: 408,
-    marginBottom: theme.spacing(15),
+    maxWidth: 245,
+    minHeight: 250,
+    marginBottom: theme.spacing(12),
     transition: theme.transitions.create([
       'min-height, max-width, padding-top',
     ]),
     [theme.breakpoints.down('lg')]: {
-      maxWidth: 304,
-      minHeight: 326,
-      marginBottom: theme.spacing(12),
+      maxWidth: 245,
+      minHeight: 250,
     },
     [theme.breakpoints.down('md')]: {
       maxWidth: 166,
       minHeight: 168,
       paddingTop: 0,
-      marginBottom: theme.spacing(9),
+      marginBottom: theme.spacing(7),
     },
     [theme.breakpoints.down('sm')]: {
       maxWidth: 150,
@@ -105,7 +104,7 @@ export const useStyles = makeStyles<
   cardImage: {
     display: 'flex',
     width: '100%',
-    maxWidth: 304,
+    maxWidth: 215,
     borderRadius: 16,
     boxShadow:
       '0px 2px 3px rgba(0, 0, 0, 0.07), 0px 6px 6px rgba(0, 0, 0, 0.04), 0px 12px 12px rgba(0, 0, 0, 0.03), 0px 20px 24px rgba(0, 0, 0, 0.03), 0px 32px 40px rgba(0, 0, 0, 0.02), 0px 80px 100px rgba(0, 0, 0, 0.16), 0px 0px 4px rgba(0, 0, 0, 0.08), 0px 8px 48px rgba(0, 0, 0, 0.08)',
@@ -119,7 +118,7 @@ export const useStyles = makeStyles<
       },
     ),
     [theme.breakpoints.down('lg')]: {
-      maxWidth: 240,
+      maxWidth: 215,
     },
     [theme.breakpoints.down('md')]: {
       maxWidth: 132,

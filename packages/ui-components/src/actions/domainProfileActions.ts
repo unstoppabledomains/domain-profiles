@@ -5,6 +5,7 @@ import config from '@unstoppabledomains/config';
 
 import type {AddressResolution} from '../components/Chat/types';
 import type {NftResponse} from '../lib';
+import {NftPageSize} from '../lib';
 import {fetchApi} from '../lib/fetchApi';
 import type {
   DomainFieldTypes,
@@ -71,6 +72,7 @@ export const getDomainNfts = async (
   const queryStringParams = QueryString.stringify({
     symbols,
     cursor,
+    limit: NftPageSize,
   });
   const domainNftUrl = `/public/${domain}/nfts?${queryStringParams}`;
   return await fetchApi(domainNftUrl, {host: config.PROFILE.HOST_URL});

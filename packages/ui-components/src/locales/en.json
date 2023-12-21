@@ -200,6 +200,11 @@
     "saveSuccess": "Your preference updated successfully",
     "show": "Show"
   },
+  "footer": {
+    "copyright": "© Unstoppable Domains Inc. All Rights Reserved.",
+    "privacyPolicy": "Privacy Policy",
+    "terms": "Terms"
+  },
   "header": {
     "signOut": "Sign Out"
   },
@@ -598,10 +603,13 @@
     "uploading": "Uploading file..."
   },
   "search": {
+    "availableDomainsFor": "Available for purchase matching \"{{searchTerm}}\"",
     "clear": "Clear",
+    "noSearchResultsFor": "No profiles matching \"{{searchTerm}}\"",
+    "orTryPurchase": "or choose an available domain below",
     "searchProfiles": "Enter a name or address",
     "searchResultsFor": "Profiles matching \"{{searchTerm}}\"",
-    "availableDomainsFor": "Available for purchase matching \"{{searchTerm}}\""
+    "tryAnotherSearch": "Try another domain or wallet address"
   },
   "upsell": {
     "udBlueSubscription": {
@@ -623,10 +631,5 @@
     "riskScoreDescription": "Webacy analysis indicates a Safety Score to measure risk when interacting with the account owning this domain.",
     "share": "Share your Webacy Safety Score on X",
     "shareMessage": "Check out my Safety Score powered by @unstoppableweb and @mywebacy on my UD profile #safetyscore #walletrisk"
-  },
-  "footer": {
-    "copyright":"© Unstoppable Domains Inc. All Rights Reserved.",
-    "terms": "Terms",
-    "privacyPolicy":"Privacy Policy"
   }
 }

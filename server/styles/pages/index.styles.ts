@@ -16,14 +16,12 @@ export const useStyles = makeStyles<
     display: 'flex',
     flexDirection: 'column',
     flex: '1 1 auto',
-    paddingBottom: theme.spacing(16),
     height: '100%',
-    justifyContent: 'center',
   },
   content: {
-    ...theme.containers.main,
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
+    marginTop: theme.spacing(15),
   },
   item: {
     justifyContent: 'center',

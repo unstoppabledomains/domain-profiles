@@ -130,6 +130,11 @@ const useStyles = makeStyles<{
     marginLeft: theme.spacing(2),
     whiteSpace: 'nowrap',
   },
+  noSearchResultText: {
+    maxWidth: 'calc(100% - 60px)',
+    marginLeft: theme.spacing(2),
+    marginBottom: theme.spacing(1),
+  },
   searchResultLeft: {
     display: 'flex',
     alignItems: 'center',
@@ -261,6 +266,17 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleEnter = (e: any) => {
+    if (e.key === 'Enter' && isMatchingSearchResults) {
+      // navigate to the first matching entry
+      const firstResultLink = searchResults
+        .filter(v => !v.market)
+        .sort((a, b) => a.name.length - b.name.length)[0].linkUrl;
+      window.location.href = firstResultLink;
+    }
+  };
+
   const handleClearText = () => {
     setSearchTerm('');
     setSearchResults([]);
@@ -345,6 +361,7 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
         placeholder={t('search.searchProfiles')}
         onChange={handleSearchChange}
         onFocus={handleComponentOnFocus}
+        onKeyDown={handleEnter}
         endAdornment={
           <Box className={classes.adornmentContainer}>
             {searchTerm && (
@@ -373,6 +390,31 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
       />
       {focus && searchTerm && searchResults.length ? (
         <Box className={classes.searchResultsContainer} ref={searchResultsRef}>
+          {isMatchingSearchResults ? (
+            <>
+              <Typography variant="h6" className={classes.searchResultsTitle}>
+                {t('search.searchResultsFor', {searchTerm})}
+              </Typography>
+              {renderSearchResults(
+                searchResults
+                  .filter(v => !v.market)
+                  .slice(0, showMatchingResultCount),
+              )}
+            </>
+          ) : (
+            <>
+              <Typography variant="h6" className={classes.searchResultsTitle}>
+                {t('search.noSearchResultsFor', {searchTerm})}
+              </Typography>
+              <Typography
+                variant="body2"
+                className={classes.noSearchResultText}
+              >
+                {t('search.tryAnotherSearch')}{' '}
+                {isAvailableSearchResults && t('search.orTryPurchase')}
+              </Typography>
+            </>
+          )}
           {isAvailableSearchResults && (
             <>
               <Typography variant="h6" className={classes.searchResultsTitle}>
@@ -382,18 +424,6 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
                 searchResults
                   .filter(v => v.market?.price)
                   .slice(0, showAvailableResultCount),
-              )}
-            </>
-          )}
-          {isMatchingSearchResults && (
-            <>
-              <Typography variant="h6" className={classes.searchResultsTitle}>
-                {t('search.searchResultsFor', {searchTerm})}
-              </Typography>
-              {renderSearchResults(
-                searchResults
-                  .filter(v => !v.market)
-                  .slice(0, showMatchingResultCount),
               )}
             </>
           )}

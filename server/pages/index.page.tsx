@@ -80,7 +80,7 @@ const HomePage = () => {
         </Grid>
         <Grid item xs={12} className={classes.item}>
           <Typography className={classes.sectionSubTitle}>
-            Own your identity in the digital world.
+            Find your friends and connect with the world in Web3.
           </Typography>
         </Grid>
         <Grid item xs={12} className={classes.item}>

@@ -9,7 +9,6 @@ import InputBase from '@mui/material/InputBase';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {useRouter} from 'next/router';
 import React, {useEffect, useRef, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
@@ -218,7 +217,6 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
     [],
   );
   const {classes} = useStyles({focus, variant});
-  const router = useRouter();
 
   const isMatchingSearchResults =
     searchResults.filter(v => !v.market).length > 0;
@@ -303,7 +301,7 @@ const ProfileSearchBar: React.FC<ProfileSearchBarProps> = ({
       .sort((a, b) => a.name.length - b.name.length)
       .map(searchResult => {
         const handleClick = () => {
-          void router.push(searchResult.linkUrl);
+          window.location.href = searchResult.linkUrl;
           setFocus(false);
         };
         return (

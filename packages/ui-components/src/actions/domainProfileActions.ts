@@ -137,7 +137,7 @@ export const searchProfiles = async (
   query: string,
 ): Promise<SerializedProfileSearch[]> => {
   const data = await fetchApi(
-    `/search?name=${query}&include-suggestions=true&profile-required=false&reverse-resolution-required=false`,
+    `/search?name=${query}&include-suggestions=true&profile-required=true&reverse-resolution-required=false`,
     {
       host: config.PROFILE.HOST_URL,
     },

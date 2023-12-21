@@ -19,6 +19,10 @@ export enum NftTag {
   Wearable = 'wearable',
 }
 
+// track empty NFT page responses
+const maxEmptyPageCount = 3;
+let emptyPageCount = 0;
+
 interface Props {
   domain: string;
   isOwner: boolean;
@@ -46,6 +50,7 @@ export const getNextNftPageFn = (
   const handleNextNftPage = async (reset = false) => {
     // reset the NFT gallery state on request
     if (reset) {
+      emptyPageCount = 0;
       props.nfts.length = 0;
       props.setNfts([]);
       props.setTokenCount(0);
@@ -57,6 +62,7 @@ export const getNextNftPageFn = (
       props.setNftSymbolVisible({});
     }
 
+    // initialize a list of new NFTs
     const newNfts: Nft[] = [];
     if (props.nfts.length === 0) {
       // retrieve NFTs from all chains for the first time
@@ -85,6 +91,7 @@ export const getNextNftPageFn = (
       setNftCursors(nftCursors);
       props.setNftSymbolVisible(props.nftSymbolVisible);
     } else {
+      // retrieved paged data associated with next cursor
       for (const symbol of Object.keys(nftCursors).sort()) {
         const cursor = nftCursors[symbol];
         if (!cursor) {
@@ -127,8 +134,15 @@ export const getNextNftPageFn = (
           newNft => !props.nfts.map(nft => nft.mint).includes(newNft.mint),
         ),
     );
-    props.setIsAllNftsLoaded(newNftsFiltered.length === 0);
     props.setNfts([...props.nfts, ...newNftsFiltered]);
+
+    // determine if all NFTs loaded
+    if (newNftsFiltered.length === 0) {
+      emptyPageCount++;
+    } else {
+      emptyPageCount = 0;
+    }
+    props.setIsAllNftsLoaded(emptyPageCount >= maxEmptyPageCount - 1);
   };
 
   // handleNftVisibilityToggle toggles at items visibility value

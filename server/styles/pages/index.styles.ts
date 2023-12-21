@@ -17,6 +17,7 @@ export const useStyles = makeStyles<
     flexDirection: 'column',
     flex: '1 1 auto',
     height: '100%',
+    minHeight: '970px',
   },
   content: {
     paddingLeft: theme.spacing(2),

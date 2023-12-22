@@ -25,11 +25,19 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
   },
+  actionIcon: {
+    width: '16px',
+    height: '16px',
+  },
 }));
 
 export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+
+  const handleExplorerClick = () => {
+    window.open(wallet.blockchainScanUrl, '_blank');
+  };
 
   // determine the wallet balance
   if (!wallet.balance) {
@@ -63,13 +71,13 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
         <CopyToClipboard stringToCopy={wallet.address}>
           <Tooltip title={t('profile.copyAddress')}>
             <IconButton>
-              <ContentCopyIcon />
+              <ContentCopyIcon className={classes.actionIcon} />
             </IconButton>
           </Tooltip>
         </CopyToClipboard>
         <Tooltip title={t('verifiedWallets.viewExplorer')}>
-          <IconButton>
-            <QueryStatsIcon />
+          <IconButton onClick={handleExplorerClick}>
+            <QueryStatsIcon className={classes.actionIcon} />
           </IconButton>
         </Tooltip>
       </CardActions>

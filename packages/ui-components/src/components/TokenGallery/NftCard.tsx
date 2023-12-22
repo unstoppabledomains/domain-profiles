@@ -68,10 +68,10 @@ interface Props {
   domain: string;
   nft: Nft;
   placeholder?: boolean;
-  mediaOnly?: boolean;
+  compact?: boolean;
 }
 
-const NftCard = ({nft, mediaOnly, placeholder}: Props) => {
+const NftCard = ({nft, compact, placeholder}: Props) => {
   const [t] = useTranslationContext();
   const videoRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -278,7 +278,7 @@ const NftCard = ({nft, mediaOnly, placeholder}: Props) => {
             </Box>
           )}
         </Box>
-        {!mediaOnly && (
+        {!compact && (
           <Box className={'NFT-infoContainer'}>
             <Box
               display="flex"
@@ -380,6 +380,15 @@ const NftCard = ({nft, mediaOnly, placeholder}: Props) => {
         </Menu>
         <NftModal handleClose={handleClose} open={open} nft={nft} />
       </Box>
+      {compact && (
+        <Box mt={1}>
+          {nft.name ? (
+            <Typography variant="caption">{nft.name}</Typography>
+          ) : (
+            placeholder && <Skeleton width="100%" height={24} variant="text" />
+          )}
+        </Box>
+      )}
     </>
   );
 };

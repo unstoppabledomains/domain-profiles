@@ -154,7 +154,7 @@ const NFTGalleryCarousel = ({
                     nft={nft}
                     key={index}
                     domain={domain}
-                    mediaOnly={true}
+                    compact={true}
                   />
                 </SwiperSlide>
               ))}
@@ -163,7 +163,7 @@ const NFTGalleryCarousel = ({
                   badgeData && (
                     <SwiperSlide key={`placeholder-${index}}`}>
                       <NftCard
-                        mediaOnly={true}
+                        compact={true}
                         nft={{
                           link: placeholder.link || badgeData.linkUrl || '',
                           collection: placeholder.price
@@ -202,7 +202,7 @@ const NFTGalleryCarousel = ({
           {[...new Array(loadingCount)].map(v => (
             <Grid item xs={12 / minNftCount} md={12 / maxNftCount}>
               <NftCard
-                mediaOnly={true}
+                compact={true}
                 nft={{
                   link: '',
                   name: '',

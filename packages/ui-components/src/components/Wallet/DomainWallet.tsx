@@ -39,7 +39,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   detailsContainer: {
     display: 'flex',
-    justifyContent: 'space-between',
     marginTop: theme.spacing(2),
   },
   detailsIcon: {
@@ -50,6 +49,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   detailsText: {
     whiteSpace: 'nowrap',
+    marginRight: theme.spacing(2),
   },
 }));
 

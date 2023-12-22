@@ -4,6 +4,8 @@ import Grid from '@mui/material/Grid';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import React from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -36,10 +38,21 @@ const useStyles = makeStyles()((theme: Theme) => ({
 export const DomainWalletList: React.FC<DomainWalletListProps> = ({
   domain,
   wallets,
+  minCount = 2,
+  maxCount = 4,
 }) => {
+  const theme = useTheme();
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const showCount = Math.min(wallets.length, isMobile ? minCount : maxCount);
 
+  // hide components when there are no wallets
+  if (showCount === 0) {
+    return null;
+  }
+
+  // render the wallet list
   return (
     <Box className={classes.walletContainer}>
       <Box className={classes.sectionHeader}>
@@ -49,11 +62,18 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
         </Tooltip>
       </Box>
       <Grid container spacing={2}>
-        {wallets.map(w => (
-          <Grid key={w.address} item xs={6} sm={3}>
-            <DomainWallet domain={domain} wallet={w} />
-          </Grid>
-        ))}
+        {wallets
+          .sort(
+            (a, b) =>
+              parseFloat(b.value?.walletUsd?.replaceAll('$', '') || '0') -
+              parseFloat(a.value?.walletUsd?.replaceAll('$', '') || '0'),
+          )
+          .slice(0, showCount)
+          .map(w => (
+            <Grid key={w.address} item xs={12 / showCount}>
+              <DomainWallet domain={domain} wallet={w} />
+            </Grid>
+          ))}
       </Grid>
     </Box>
   );
@@ -62,4 +82,6 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
 export type DomainWalletListProps = {
   domain: string;
   wallets: SerializedWalletBalance[];
+  minCount?: number;
+  maxCount?: number;
 };

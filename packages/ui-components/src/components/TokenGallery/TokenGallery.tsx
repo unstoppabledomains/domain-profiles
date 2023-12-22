@@ -1,4 +1,4 @@
-import AutoAwesome from '@mui/icons-material/AutoAwesome';
+import GridViewIcon from '@mui/icons-material/GridView';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -244,7 +244,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
               t('profile.collapse')
             ) : (
               <div className={classes.nftGalleryLinks}>
-                <AutoAwesome sx={{marginRight: '5px'}} />{' '}
+                <GridViewIcon sx={{marginRight: '5px'}} />{' '}
                 {t('common.expandShowcase')}
               </div>
             )}
@@ -274,6 +274,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
       ) : (
         <NFTGalleryCarousel
           domain={domain}
+          maxNftCount={5}
           nfts={
             nfts
               ? nfts.filter(nft => nft.public && nft.verified).length < 15

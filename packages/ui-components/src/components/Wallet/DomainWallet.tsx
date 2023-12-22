@@ -81,7 +81,7 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
       <CardContent>
         <Box className={classes.walletContainer}>
           <Typography className={classes.balance} variant="body2">
-            {nativeAmount.toPrecision(3)} {wallet.symbol}
+            {nativeAmount.toFixed(5).replace(/\.0+$/, '') || 0} {wallet.symbol}
           </Typography>
           <Typography variant="caption">{wallet.value?.walletUsd}</Typography>
           <Box className={classes.detailsContainer}>

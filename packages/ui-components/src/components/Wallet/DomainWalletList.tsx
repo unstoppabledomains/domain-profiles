@@ -65,8 +65,14 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
         {wallets
           .sort(
             (a, b) =>
-              parseFloat(b.value?.walletUsd?.replaceAll('$', '') || '0') -
-              parseFloat(a.value?.walletUsd?.replaceAll('$', '') || '0'),
+              parseFloat(
+                b.value?.walletUsd?.replaceAll('$', '')?.replaceAll(',', '') ||
+                  '0',
+              ) -
+              parseFloat(
+                a.value?.walletUsd?.replaceAll('$', '')?.replaceAll(',', '') ||
+                  '0',
+              ),
           )
           .slice(0, showCount)
           .map(w => (

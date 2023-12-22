@@ -150,7 +150,12 @@ const NFTGalleryCarousel = ({
                   key={index}
                   data-testid={`nft-carousel-item-${index}`}
                 >
-                  <NftCard nft={nft} key={index} domain={domain} />
+                  <NftCard
+                    nft={nft}
+                    key={index}
+                    domain={domain}
+                    compact={true}
+                  />
                 </SwiperSlide>
               ))}
               {visiblePlaceholders.map(
@@ -158,6 +163,7 @@ const NFTGalleryCarousel = ({
                   badgeData && (
                     <SwiperSlide key={`placeholder-${index}}`}>
                       <NftCard
+                        compact={true}
                         nft={{
                           link: placeholder.link || badgeData.linkUrl || '',
                           collection: placeholder.price
@@ -196,6 +202,7 @@ const NFTGalleryCarousel = ({
           {[...new Array(loadingCount)].map(v => (
             <Grid item xs={12 / minNftCount} md={12 / maxNftCount}>
               <NftCard
+                compact={true}
                 nft={{
                   link: '',
                   name: '',

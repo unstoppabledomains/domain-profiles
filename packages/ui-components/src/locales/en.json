@@ -124,7 +124,7 @@
     "enterYourEmail": "Enter your email address",
     "error": "Error",
     "examples": "Examples",
-    "expandShowcase": "Expand showcase",
+    "expandShowcase": "View all",
     "facebook": "Facebook",
     "fillOutAllRequiredFields": "Fill out all required fields and submit again",
     "filter": "Filter",
@@ -173,6 +173,7 @@
     "send": "Send",
     "showAll": "Show all",
     "showLess": "Show less",
+    "since": "Since",
     "smartContract": "Smart contract",
     "somethingWentWrong": "Something went wrong",
     "status": "Status",
@@ -622,6 +623,13 @@
       "title": "Unstoppable Blue",
       "tooltip": "Join Unstoppable Blue for Exclusive Benefits!"
     }
+  },
+  "verifiedWallets": {
+    "firstTxDate": "First transaction {{date}}",
+    "nfts": "NFTs",
+    "title": "Wallets",
+    "verifiedOnly": "Ownership by {{domain}} has been verified",
+    "viewExplorer": "View on blockchain explorer"
   },
   "webacy": {
     "high": "Unsafe",

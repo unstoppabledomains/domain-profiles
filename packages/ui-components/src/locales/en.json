@@ -173,6 +173,7 @@
     "send": "Send",
     "showAll": "Show all",
     "showLess": "Show less",
+    "since": "Since",
     "smartContract": "Smart contract",
     "somethingWentWrong": "Something went wrong",
     "status": "Status",
@@ -624,6 +625,7 @@
     }
   },
   "verifiedWallets": {
+    "firstTxDate": "First transaction {{date}}",
     "nfts": "NFTs",
     "title": "Wallets",
     "verifiedOnly": "Ownership by {{domain}} has been verified",

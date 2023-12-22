@@ -1,4 +1,6 @@
+import CollectionsOutlinedIcon from '@mui/icons-material/CollectionsOutlined';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import HistoryIcon from '@mui/icons-material/History';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -29,6 +31,26 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '16px',
     height: '16px',
   },
+  balance: {
+    fontWeight: 'bold',
+  },
+  card: {
+    backgroundImage: `linear-gradient(${theme.palette.neutralShades[50]}, white)`,
+  },
+  detailsContainer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginTop: theme.spacing(2),
+  },
+  detailsIcon: {
+    color: theme.palette.neutralShades[600],
+    width: '14px',
+    height: '14px',
+    marginRight: theme.spacing(0.5),
+  },
+  detailsText: {
+    whiteSpace: 'nowrap',
+  },
 }));
 
 export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
@@ -46,7 +68,7 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
   const nativeAmount = parseFloat(wallet.balance);
 
   return (
-    <Card>
+    <Card className={classes.card}>
       <CardHeader
         title={wallet.name}
         subheader={
@@ -58,13 +80,32 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
       />
       <CardContent>
         <Box className={classes.walletContainer}>
-          <Typography variant="h6">
-            {nativeAmount.toPrecision(5)} {wallet.symbol}
+          <Typography className={classes.balance} variant="body2">
+            {nativeAmount.toPrecision(3)} {wallet.symbol}
           </Typography>
           <Typography variant="caption">{wallet.value?.walletUsd}</Typography>
-          <Typography variant="caption">
-            {wallet.stats?.nfts || 0} {t('verifiedWallets.nfts')}
-          </Typography>
+          <Box className={classes.detailsContainer}>
+            {wallet.firstTx && (
+              <Box display="flex" alignItems="center">
+                <HistoryIcon className={classes.detailsIcon} />
+                <Tooltip
+                  title={t('verifiedWallets.firstTxDate', {
+                    date: new Date(wallet.firstTx).toLocaleDateString(),
+                  })}
+                >
+                  <Typography className={classes.detailsText} variant="caption">
+                    {t('common.since')} {new Date(wallet.firstTx).getFullYear()}
+                  </Typography>
+                </Tooltip>
+              </Box>
+            )}
+            <Box display="flex" alignItems="center">
+              <CollectionsOutlinedIcon className={classes.detailsIcon} />
+              <Typography className={classes.detailsText} variant="caption">
+                {wallet.stats?.nfts || 0} {t('verifiedWallets.nfts')}
+              </Typography>
+            </Box>
+          </Box>
         </Box>
       </CardContent>
       <CardActions>

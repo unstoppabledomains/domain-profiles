@@ -50,7 +50,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
       </Box>
       <Grid container spacing={2}>
         {wallets.map(w => (
-          <Grid key={w.address} item xs={3}>
+          <Grid key={w.address} item xs={6} sm={3}>
             <DomainWallet domain={domain} wallet={w} />
           </Grid>
         ))}

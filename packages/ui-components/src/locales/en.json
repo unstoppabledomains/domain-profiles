@@ -623,6 +623,12 @@
       "tooltip": "Join Unstoppable Blue for Exclusive Benefits!"
     }
   },
+  "verifiedWallets": {
+    "nfts": "NFTs",
+    "title": "Wallets",
+    "verifiedOnly": "Ownership by {{domain}} has been verified",
+    "viewExplorer": "View on blockchain explorer"
+  },
   "webacy": {
     "high": "Unsafe",
     "low": "Safest",

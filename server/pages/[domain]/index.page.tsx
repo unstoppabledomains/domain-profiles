@@ -55,6 +55,7 @@ import {
   DomainProfileKeys,
   DomainProfileModal,
   DomainProfileTabType,
+  DomainWalletList,
   FollowButton,
   ForSaleOnOpenSea,
   Link,
@@ -411,6 +412,9 @@ const DomainProfile = ({
         if (recordsData?.records) {
           profileData.records = recordsData.records;
           setRecords(recordsData.records);
+        }
+        if (recordsData?.walletBalances) {
+          profileData.walletBalances = recordsData.walletBalances;
         }
       } catch (e) {
         notifyError(e, {msg: 'error loading webacy score'});
@@ -998,6 +1002,12 @@ const DomainProfile = ({
 
         {isLoaded ? (
           <Grid item xs={12} sm={12} md={8} className={classes.item}>
+            {profileData?.walletBalances && (
+              <DomainWalletList
+                wallets={profileData.walletBalances}
+                domain={domain}
+              />
+            )}
             {profileData?.cryptoVerifications &&
               profileData.cryptoVerifications.length > 0 && (
                 <TokenGallery

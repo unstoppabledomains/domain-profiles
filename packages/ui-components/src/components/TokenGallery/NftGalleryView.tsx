@@ -449,7 +449,7 @@ const NftGalleryView = ({
                     lastNftIndex < nfts.length ? lastNftIndex : nfts.length,
                   )
                   .map((nft, index) => (
-                    <Grid key={index} item xs={6} sm={4} md={4}>
+                    <Grid key={index} item xs={4} sm={3} md={3}>
                       <Box className={classes.cardContainer}>
                         <NftCard nft={nft} domain={domain} key={index} />
                       </Box>

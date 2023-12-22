@@ -288,6 +288,7 @@ export type SerializedPublicDomainProfileData = {
   metadata?: Record<string, string | boolean>;
   referralCode?: string;
   referralTier?: AffiliateTier;
+  walletBalances?: SerializedWalletBalance[];
   webacy?: WebacyRiskScore;
   messaging?: MessagingAttributes;
 };
@@ -304,6 +305,27 @@ export type SerializedUserDomainProfileData =
       type: string;
     };
   };
+
+export type SerializedWalletBalance = {
+  symbol: string;
+  name: string;
+  address: string;
+  type: 'native' | 'token';
+  balance?: string;
+  firstTx?: Date;
+  lastTx?: Date;
+  stats?: {
+    nfts?: string;
+    collections?: string;
+    transactions?: string;
+    transfers?: string;
+  };
+  value?: {
+    marketUsd?: string;
+    walletUsd?: string;
+  };
+  blockchainScanUrl: string;
+};
 
 export type SocialAccountUserInfo =
   | TwitterUserInfo

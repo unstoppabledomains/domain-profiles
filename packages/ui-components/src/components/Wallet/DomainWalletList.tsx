@@ -29,7 +29,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   verifiedIcon: {
     color: theme.palette.success.main,
-    marginLeft: theme.spacing(0.5),
+    marginLeft: theme.spacing(0.33),
     width: '15px',
     height: '15px',
   },

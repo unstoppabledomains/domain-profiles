@@ -627,7 +627,7 @@
   "verifiedWallets": {
     "firstTxDate": "First transaction {{date}}",
     "nfts": "NFTs",
-    "title": "Wallets",
+    "title": "Verified Wallets",
     "verifiedOnly": "Ownership by {{domain}} has been verified",
     "viewExplorer": "View on blockchain explorer"
   },

@@ -21,6 +21,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   sectionHeader: {
     display: 'flex',
+    alignItems: 'center',
     paddingBottom: theme.spacing(1),
     fontWeight: theme.typography.fontWeightBold,
     fontSize: theme.typography.h5.fontSize,
@@ -28,10 +29,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     lineHeight: 1.4,
   },
   verifiedIcon: {
-    color: theme.palette.success.main,
-    marginLeft: theme.spacing(0.33),
-    width: '15px',
-    height: '15px',
+    color: theme.palette.neutralShades[200],
+    marginLeft: theme.spacing(1),
+    width: '20px',
+    height: '20px',
   },
 }));
 

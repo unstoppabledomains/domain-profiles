@@ -47,10 +47,15 @@ const UnstoppableAnimated: React.FC<Props> = ({theme, hovering}) => {
   const [count, setCount] = useState(0);
   const logos = [
     'images/wallet-icons/MetaMask.svg',
-    'images/wallet-icons/WalletConnect.svg',
+    'images/wallet-button/wallet-connect.svg',
+    'images/wallet-button/trust-wallet.svg',
+    'images/wallet-button/blockchain.com.svg',
+    'images/wallet-button/coinbase.svg',
+    'images/wallet-button/crypto.com.svg',
+    'images/wallet-button/brave.svg',
     'images/wallet-icons/phantom.svg',
-    'images/wallet-icons/hashpack-white.svg',
-    'images/wallet-icons/unstoppable.svg',
+    'images/wallet-button/kresus.svg',
+    'images/wallet-button/unstoppable-domains.svg',
   ];
 
   useIntervalWhen(

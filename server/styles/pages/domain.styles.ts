@@ -168,6 +168,8 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   infoIcon: {
     marginLeft: theme.spacing(1),
     color: theme.palette.neutralShades[200],
+    width: '20px',
+    height: '20px',
   },
   domainName: {
     justifyContent: 'center',

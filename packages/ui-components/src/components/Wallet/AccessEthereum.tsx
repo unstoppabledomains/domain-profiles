@@ -10,7 +10,6 @@ import {useConnect, useDisconnect, useWalletClient} from 'wagmi';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import Link from '../../components/Link';
 import WalletButton from '../../components/Wallet/WalletButton';
 import useTranslationContext from '../../lib/i18n';
 import type {WagmiConnectorType, WalletName} from '../../lib/types/wallet';
@@ -30,6 +29,15 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   },
   button: {
     marginTop: theme.spacing(2),
+  },
+  link: {
+    fontWeight: 'bold',
+    textDecoration: 'none',
+    color: theme.palette.primary.main,
+    '&:hover': {
+      textDecoration: 'none',
+      color: theme.palette.primary.main,
+    },
   },
 }));
 
@@ -110,18 +118,21 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
 
   return (
     <>
-      <Box mb={2}>
+      <Box mb={2} display="flex" flexDirection="column" justifyContent="center">
         <Typography gutterBottom align="center">
           {t('auth.accessWalletDescription')}
         </Typography>
-        <Typography align="center">
+        <Typography variant="caption" align="center">
           {t('auth.moreInfo')}{' '}
-          <Link
-            external
-            to="https://unstoppabledomains.com/learn/web3-terms-101"
+          <a
+            target="_blank"
+            href="https://unstoppabledomains.com/learn/web3-terms-101"
+            rel="noreferrer"
+            className={classes.link}
           >
-            {t('common.guide')}.
-          </Link>
+            {t('common.guide')}
+          </a>
+          .
         </Typography>
       </Box>
       <>

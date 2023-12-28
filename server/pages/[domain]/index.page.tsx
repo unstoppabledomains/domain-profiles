@@ -623,7 +623,7 @@ const DomainProfile = ({
                   </>
                 ) : (
                   <LoginButton
-                    method={isMobile ? LoginMethod.Wallet : LoginMethod.Uauth}
+                    method={LoginMethod.Wallet}
                     loading={false}
                     isWhiteBg
                     hidden={false}

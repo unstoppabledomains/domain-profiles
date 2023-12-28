@@ -4,8 +4,8 @@
     "featured": "Featured"
   },
   "auth": {
-    "accessWallet": "Access Wallet",
-    "accessWalletDescription": "Access your Ethereum browser wallet.",
+    "accessWallet": "Connect Wallet",
+    "accessWalletDescription": "Select the wallet provider to manage your domain",
     "connectToLogin": "Connect your wallet to login",
     "loginWithUnstoppable": "Unstoppable Login",
     "moreInfo": "For more information please see this",
@@ -625,8 +625,12 @@
     }
   },
   "verifiedWallets": {
+    "copyWalletAddress": "Copy wallet address",
     "firstTxDate": "First transaction {{date}}",
     "nfts": "NFTs",
+    "othersWithWallet": "Find other users with {{chain}} wallets",
+    "qrCodeTitle": "Scan to send crypto to this wallet",
+    "scanWithWallet": "Scan {{chain}} address",
     "title": "Verified Wallets",
     "verifiedOnly": "Ownership by {{domain}} has been verified",
     "viewExplorer": "View on blockchain explorer"

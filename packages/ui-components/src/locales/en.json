@@ -630,7 +630,7 @@
     "nfts": "NFTs",
     "othersWithWallet": "Find other users with {{chain}} wallets",
     "qrCodeTitle": "Scan to send crypto to this wallet",
-    "scanWithWallet": "Scan {{chain}} address",
+    "scanWithWallet": "Scan with your {{chain}} wallet",
     "title": "Verified Wallets",
     "verifiedOnly": "Ownership by {{domain}} has been verified",
     "viewExplorer": "View on blockchain explorer"

@@ -164,7 +164,7 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
         <DialogTitle>
           <Box display="flex" flexDirection="column">
             <Typography variant="h6">
-              {t('verifiedWallets.scanWithWallet', {chain: wallet.symbol})}
+              {t('verifiedWallets.scanWithWallet', {chain: wallet.name})}
             </Typography>
             <Typography variant="caption">{wallet.address}</Typography>
           </Box>

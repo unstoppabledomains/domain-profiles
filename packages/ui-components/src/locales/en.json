@@ -633,12 +633,13 @@
     "last": "Last",
     "lastTxDate": "Last transaction {{date}}",
     "nfts": "NFTs",
-    "othersWithWallet": "Find other users with {{chain}} wallets",
-    "qrCodeTitle": "Scan to send crypto to this wallet",
+    "othersWithWallet": "Find {{chain}} users",
+    "qrCodeTitle": "Send crypto",
     "scanWithWallet": "Scan with your {{chain}} wallet",
     "title": "Verified Wallets",
+    "transactions": "transactions",
     "verifiedOnly": "Ownership by {{domain}} has been verified",
-    "viewExplorer": "View on blockchain explorer"
+    "viewExplorer": "Blockchain explorer"
   },
   "webacy": {
     "high": "Unsafe",

@@ -40,7 +40,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
   domain,
   wallets,
   minCount = 2,
-  maxCount = 4,
+  maxCount = 3,
 }) => {
   const theme = useTheme();
   const {classes} = useStyles();

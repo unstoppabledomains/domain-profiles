@@ -228,7 +228,7 @@
     "connectToVerify": "Connect your {{extension}} wallet to verify ownership of this address.",
     "coverJpgOrPngAndMaxSize": "Recommended: 1440x200px, 5MB max size, JPG or PNG.",
     "crypto": "Crypto Addresses",
-    "cryptoAddressesDescription": "Add crypto addresses to receive payments. Optionally verify an address on Ethereum, Polygon, Avalanche, Fantom or Solana to prove ownership.",
+    "cryptoAddressesDescription": "Add crypto addresses to receive payments. Optionally verify addresses on supported blockchains to unlock features for your domain.",
     "description": "Short bio",
     "displayName": "Name",
     "domainProfileImage": "Domain profile image",

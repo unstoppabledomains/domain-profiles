@@ -108,7 +108,7 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
           </Typography>
           <Typography variant="caption">{wallet.value?.walletUsd}</Typography>
           <Box className={classes.detailsContainer}>
-            {wallet.firstTx && (
+            {wallet.firstTx ? (
               <Box display="flex" alignItems="center">
                 <HistoryIcon className={classes.detailsIcon} />
                 <Tooltip
@@ -117,17 +117,39 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
                   })}
                 >
                   <Typography className={classes.detailsText} variant="caption">
-                    {t('common.since')} {new Date(wallet.firstTx).getFullYear()}
+                    {t('verifiedWallets.first')}{' '}
+                    {new Date(wallet.firstTx).getFullYear()}
                   </Typography>
                 </Tooltip>
               </Box>
+            ) : (
+              wallet.lastTx && (
+                <Box display="flex" alignItems="center">
+                  <HistoryIcon className={classes.detailsIcon} />
+                  <Tooltip
+                    title={t('verifiedWallets.lastTxDate', {
+                      date: new Date(wallet.lastTx).toLocaleDateString(),
+                    })}
+                  >
+                    <Typography
+                      className={classes.detailsText}
+                      variant="caption"
+                    >
+                      {t('verifiedWallets.last')}{' '}
+                      {new Date(wallet.lastTx).getFullYear()}
+                    </Typography>
+                  </Tooltip>
+                </Box>
+              )
             )}
-            <Box display="flex" alignItems="center">
-              <CollectionsOutlinedIcon className={classes.detailsIcon} />
-              <Typography className={classes.detailsText} variant="caption">
-                {wallet.stats?.nfts || 0} {t('verifiedWallets.nfts')}
-              </Typography>
-            </Box>
+            {wallet.stats?.nfts && (
+              <Box display="flex" alignItems="center">
+                <CollectionsOutlinedIcon className={classes.detailsIcon} />
+                <Typography className={classes.detailsText} variant="caption">
+                  {wallet.stats.nfts} {t('verifiedWallets.nfts')}
+                </Typography>
+              </Box>
+            )}
           </Box>
         </Box>
       </CardContent>

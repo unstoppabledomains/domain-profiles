@@ -82,6 +82,7 @@ import {
   isExternalDomain,
   parseRecords,
   splitDomain,
+  useDomainConfig,
   useEnsDomainStatus,
   useFeatureFlags,
   useTokenGallery,
@@ -126,7 +127,8 @@ const DomainProfile = ({
   // state management
   const [profileData, setProfileData] = useState(initialProfileData);
   const [loginClicked, setLoginClicked] = useState<boolean>();
-  const [showManageDomainModal, setShowManageDomainModal] = useState(false);
+  const {isOpen: showManageDomainModal, setIsOpen: setShowManageDomainModal} =
+    useDomainConfig();
   const [authAddress, setAuthAddress] = useState('');
   const [authDomain, setAuthDomain] = useState('');
   const [displayQrCode, setDisplayQrCode] = useState(false);

@@ -15,6 +15,7 @@ import truncateEthAddress from 'truncate-eth-address';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {useDomainConfig} from '../../hooks';
 import type {SerializedUserDomainProfileData} from '../../lib';
 import {isExternalDomain, useTranslationContext} from '../../lib';
 import {Crypto as CryptoTab} from './Tabs/Crypto';
@@ -88,7 +89,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
 }) => {
   const {classes, cx} = useStyles({width});
   const [t] = useTranslationContext();
-  const [tabValue, setTabValue] = useState(DomainProfileTabType.Profile);
+  const {configTab: tabValue, setConfigTab: setTabValue} = useDomainConfig();
   const [tabUnreadDot, setTabUnreadDot] = useState<
     Record<DomainProfileTabType, boolean>
   >({
@@ -111,7 +112,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
 
   return (
     <Box className={classes.container}>
-      <TabContext value={tabValue}>
+      <TabContext value={tabValue as DomainProfileTabType}>
         <Box className={classes.tabHeaderContainer}>
           {onClose && (
             <Box className={classes.actionContainer}>

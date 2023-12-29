@@ -213,7 +213,7 @@
     "addAvatar": "Add avatar",
     "addCover": "Add cover",
     "addCurrency": "Add Currency",
-    "addressNotVerified": "Please verify the ownership of this address. NFTs associated with this address will not be displayed on your public profile.",
+    "addressNotVerified": "Verify the ownership of this address. Wallets and NFTs associated with this address will not be displayed on your public profile.",
     "addressNotVerifiedNonOwner": "Ownership of this address has not been verified.",
     "addWebsite": "Add link to website",
     "allSet": "All set!",

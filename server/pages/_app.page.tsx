@@ -10,6 +10,7 @@ import 'react-medium-image-zoom/dist/styles.css';
 import 'swiper/css/bundle';
 
 import {
+  DomainConfigProvider,
   TokenGalleryProvider,
   UnstoppableMessagingProvider,
 } from '@unstoppabledomains/ui-components';
@@ -46,9 +47,11 @@ const WrappedApp = (props: WrappedAppProps) => {
         <CssBaseline enableColorScheme />
         <UnstoppableMessagingProvider>
           <TokenGalleryProvider>
-            <Layout>
-              <Component {...pageProps} />
-            </Layout>
+            <DomainConfigProvider>
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
+            </DomainConfigProvider>
           </TokenGalleryProvider>
         </UnstoppableMessagingProvider>
       </ThemeProvider>

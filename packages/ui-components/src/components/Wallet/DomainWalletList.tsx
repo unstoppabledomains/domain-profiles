@@ -29,13 +29,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   sectionHeaderContainer: {
     display: 'flex',
+    alignItems: 'center',
     justifyContent: 'space-between',
     margin: theme.spacing(6, 0, 0),
   },
   sectionHeader: {
     display: 'flex',
     alignItems: 'center',
-    paddingBottom: theme.spacing(1),
     fontWeight: theme.typography.fontWeightBold,
     fontSize: theme.typography.h5.fontSize,
     lineHeight: 1.4,

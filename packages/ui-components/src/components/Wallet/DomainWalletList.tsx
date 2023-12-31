@@ -1,5 +1,7 @@
+import AddCardOutlinedIcon from '@mui/icons-material/AddCardOutlined';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -11,14 +13,24 @@ import {Swiper, SwiperSlide} from 'swiper/react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {useDomainConfig} from '../../hooks';
 import {useTranslationContext} from '../../lib';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
+import {DomainProfileTabType} from '../Manage';
 import {DomainWallet} from './DomainWallet';
 
 const useStyles = makeStyles()((theme: Theme) => ({
+  button: {
+    color: theme.palette.neutralShades[500],
+  },
   walletContainer: {
     display: 'flex',
     flexDirection: 'column',
+  },
+  sectionHeaderContainer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    margin: theme.spacing(6, 0, 0),
   },
   sectionHeader: {
     display: 'flex',
@@ -26,7 +38,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     paddingBottom: theme.spacing(1),
     fontWeight: theme.typography.fontWeightBold,
     fontSize: theme.typography.h5.fontSize,
-    margin: theme.spacing(6, 0, 0),
     lineHeight: 1.4,
   },
   totalValue: {
@@ -73,6 +84,7 @@ const getValue = (usdValue?: string) => {
 
 export const DomainWalletList: React.FC<DomainWalletListProps> = ({
   domain,
+  isOwner,
   wallets,
   minCount = 2,
   maxCount = 3,
@@ -80,6 +92,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
   const theme = useTheme();
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const {setConfigTab, setIsOpen: setConfigOpen} = useDomainConfig();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const showCount = Math.min(wallets.length, isMobile ? minCount : maxCount);
 
@@ -95,24 +108,41 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
 
   SwiperCore.use([Autoplay, Navigation]);
 
+  const handleAddWallet = () => {
+    setConfigTab(DomainProfileTabType.Crypto);
+    setConfigOpen(true);
+  };
+
   // render the wallet list
   return (
     <Box className={classes.walletContainer}>
       <style>{swiperCss}</style>
-      <Box className={classes.sectionHeader}>
-        <Tooltip title={t('verifiedWallets.verifiedOnly', {domain})}>
-          <WalletOutlinedIcon className={classes.headerIcon} />
-        </Tooltip>
-        <Typography variant="h6">{t('verifiedWallets.title')}</Typography>
-        {totalValue > 0 && (
-          <Typography variant="body2" className={classes.totalValue}>
-            (
-            {totalValue.toLocaleString('en-US', {
-              style: 'currency',
-              currency: 'USD',
-            })}
-            )
-          </Typography>
+      <Box className={classes.sectionHeaderContainer}>
+        <Box className={classes.sectionHeader}>
+          <Tooltip title={t('verifiedWallets.verifiedOnly', {domain})}>
+            <WalletOutlinedIcon className={classes.headerIcon} />
+          </Tooltip>
+          <Typography variant="h6">{t('verifiedWallets.title')}</Typography>
+          {totalValue > 0 && (
+            <Typography variant="body2" className={classes.totalValue}>
+              (
+              {totalValue.toLocaleString('en-US', {
+                style: 'currency',
+                currency: 'USD',
+              })}
+              )
+            </Typography>
+          )}
+        </Box>
+        {isOwner && (
+          <Button
+            startIcon={<AddCardOutlinedIcon />}
+            className={classes.button}
+            onClick={handleAddWallet}
+            variant="text"
+          >
+            {t('verifiedWallets.addWallet')}
+          </Button>
         )}
       </Box>
       <Box className={classes.swiperContainer}>
@@ -178,6 +208,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
 
 export type DomainWalletListProps = {
   domain: string;
+  isOwner?: boolean;
   wallets: SerializedWalletBalance[];
   minCount?: number;
   maxCount?: number;

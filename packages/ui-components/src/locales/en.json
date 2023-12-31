@@ -627,6 +627,7 @@
     }
   },
   "verifiedWallets": {
+    "addWallet": "Add wallet",
     "copyWalletAddress": "Copy wallet address",
     "first": "Since",
     "firstTxDate": "First transaction {{date}}",

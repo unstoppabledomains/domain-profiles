@@ -1009,6 +1009,7 @@ const DomainProfile = ({
               <DomainWalletList
                 wallets={profileData.walletBalances}
                 domain={domain}
+                isOwner={isOwner}
               />
             )}
             {profileData?.cryptoVerifications &&

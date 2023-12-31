@@ -157,16 +157,16 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
           autoplay={false}
           breakpoints={{
             0: {
-              slidesPerView: showCount,
+              slidesPerView: Math.min(showCount, minCount),
               spaceBetween: 16,
             },
             320: {
-              slidesPerView: showCount,
+              slidesPerView: Math.min(showCount, minCount),
               spaceBetween: 16,
             },
             // when window width is >= 600px
             600: {
-              slidesPerView: showCount,
+              slidesPerView: Math.min(showCount, minCount),
               spaceBetween: 16,
             },
             // when window width is >= 640px

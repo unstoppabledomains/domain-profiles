@@ -3,11 +3,13 @@ import ChatIcon from '@mui/icons-material/Chat';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
+import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
 import HowToRegOutlinedIcon from '@mui/icons-material/HowToRegOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
 import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
+import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import RestoreOutlinedIcon from '@mui/icons-material/RestoreOutlined';
 import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
 import Avatar from '@mui/material/Avatar';
@@ -1097,6 +1099,9 @@ const DomainProfile = ({
                           )}
                           variant="h6"
                         >
+                          <HandshakeOutlinedIcon
+                            className={classes.headerIcon}
+                          />
                           {t('badges.featuredPartners')}
                           <Tooltip
                             title={
@@ -1200,6 +1205,7 @@ const DomainProfile = ({
                           )}
                           variant="h6"
                         >
+                          <PeopleOutlinedIcon className={classes.headerIcon} />
                           {t('badges.featuredCommunities')}
                           <Tooltip
                             title={t('badges.featuredCommunityInquiry')}

@@ -634,7 +634,7 @@
     "lastTxDate": "Last transaction {{date}}",
     "nfts": "NFTs",
     "othersWithWallet": "Find {{chain}} users",
-    "qrCodeTitle": "Send crypto",
+    "qrCodeTitle": "Deposit crypto",
     "scanWithWallet": "Scan with your {{chain}} wallet",
     "title": "Verified Wallets",
     "transactions": "transactions",

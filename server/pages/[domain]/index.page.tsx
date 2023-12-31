@@ -9,6 +9,7 @@ import IosShareIcon from '@mui/icons-material/IosShare';
 import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
 import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
 import RestoreOutlinedIcon from '@mui/icons-material/RestoreOutlined';
+import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -1040,6 +1041,9 @@ const DomainProfile = ({
                           )}
                           variant="h6"
                         >
+                          <WorkspacePremiumOutlinedIcon
+                            className={classes.headerIcon}
+                          />
                           {titleCase(badgeType)}
                         </Typography>
                         {index === 0 && (

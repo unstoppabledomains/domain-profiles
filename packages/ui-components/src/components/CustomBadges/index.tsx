@@ -16,7 +16,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginRight: theme.spacing(1),
   },
   button: {
-    color: theme.palette.primary.main,
+    color: theme.palette.neutralShades[500],
     fontWeight: theme.typography.fontWeightMedium,
     fontSize: theme.typography.body2.fontSize,
     lineHeight: 1.5,

@@ -92,7 +92,7 @@ const ShowHideButton: React.FC<ShowHideButtonProps> = ({
           flexDirection: 'row',
           alignItems: 'center',
           fontSize: 20,
-          color: showDomain ? 'neutralShades.600' : 'primaryShades.500',
+          color: showDomain ? 'neutralShades.600' : 'neutralShades.500',
         }}
         data-testid="show-hide-button"
       >

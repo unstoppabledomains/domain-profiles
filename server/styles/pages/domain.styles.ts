@@ -113,6 +113,10 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   loadingSpinner: {
     color: theme.palette.secondary.main,
   },
+  headerIcon: {
+    color: theme.palette.neutralShades[600],
+    marginRight: theme.spacing(1),
+  },
   sectionHeaderContainer: {
     display: 'flex',
     flexWrap: 'wrap',

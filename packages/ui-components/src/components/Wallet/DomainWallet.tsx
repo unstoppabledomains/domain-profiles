@@ -37,6 +37,8 @@ import {displayShortCryptoAddress} from '../../lib/displayCryptoAddress';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
 import {CryptoIcon} from '../Image';
 
+const bgNeutralShade = 800;
+
 const useStyles = makeStyles()((theme: Theme) => ({
   walletContainer: {
     display: 'flex',
@@ -55,39 +57,39 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   balanceContainer: {
     position: 'absolute',
-    bottom: 25,
-    left: 16,
+    bottom: 0,
+    left: 0,
     display: 'flex',
     justifyContent: 'space-between',
     background: `repeating-linear-gradient(
       -45deg,
-      ${theme.palette.neutralShades[800]},
-      ${theme.palette.neutralShades[800]} 5px,
-      ${theme.palette.neutralShades[700]} 5px,
-      ${theme.palette.neutralShades[700]} 6px
+      ${theme.palette.neutralShades[bgNeutralShade]},
+      ${theme.palette.neutralShades[bgNeutralShade]} 5px,
+      ${theme.palette.neutralShades[bgNeutralShade - 100]} 5px,
+      ${theme.palette.neutralShades[bgNeutralShade - 100]} 6px
     )`,
-    border: `2px solid ${theme.palette.neutralShades[800]}`,
+    border: `2px solid ${theme.palette.neutralShades[bgNeutralShade]}`,
     borderRadius: theme.shape.borderRadius,
     padding: theme.spacing(0.66),
-    marginTop: theme.spacing(1),
-    marginLeft: theme.spacing(-1),
-    marginRight: theme.spacing(-1),
-    marginBottom: theme.spacing(-2),
-    width: 'calc(100% - 16px)',
+    margin: theme.spacing(1),
+    width: 'calc(100% - 32px)',
   },
   card: {
     position: 'relative',
-    backgroundImage: `linear-gradient(${theme.palette.neutralShades[600]}, ${theme.palette.neutralShades[800]})`,
+    backgroundImage: `linear-gradient(${
+      theme.palette.neutralShades[bgNeutralShade - 200]
+    }, ${theme.palette.neutralShades[bgNeutralShade]})`,
     height: '100%',
+    minHeight: '210px',
   },
   detailsContainer: {
     display: 'flex',
     flexDirection: 'column',
     marginTop: theme.spacing(-4),
-    marginBottom: theme.spacing(4),
+    marginBottom: theme.spacing(3),
   },
   detailsIcon: {
-    color: theme.palette.neutralShades[400],
+    color: theme.palette.neutralShades[bgNeutralShade - 400],
     width: '14px',
     height: '14px',
     marginRight: theme.spacing(0.5),
@@ -101,7 +103,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginTop: theme.spacing(1),
   },
   headerMenuIcon: {
-    color: theme.palette.neutralShades[400],
+    color: theme.palette.neutralShades[bgNeutralShade - 400],
   },
   statsContainer: {
     display: 'flex',
@@ -109,7 +111,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginTop: theme.spacing(1),
   },
   subTitle: {
-    color: theme.palette.neutralShades[400],
+    color: theme.palette.neutralShades[bgNeutralShade - 400],
+    whiteSpace: 'nowrap',
   },
   title: {
     color: theme.palette.white,
@@ -166,7 +169,7 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
         subheader={
           <Tooltip title={wallet.address}>
             <Box display="flex" alignItems="center">
-              <Typography className={classes.subTitle} variant="body2">
+              <Typography className={classes.subTitle} variant="caption">
                 {displayShortCryptoAddress(wallet.address, 5, 5)}
               </Typography>
               <CopyToClipboard stringToCopy={wallet.address}>
@@ -184,7 +187,7 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
               onClick={handleOpenMenu}
               className={classes.headerMenuIcon}
             >
-              <MoreVertOutlinedIcon />
+              <MoreVertOutlinedIcon fontSize="small" />
             </IconButton>
             <Menu
               anchorEl={anchorEl}
@@ -224,14 +227,15 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
                   handleCloseMenu();
                   handleFindUsersClick();
                 }}
+                disabled={true}
               >
                 <ListItemIcon>
                   <GroupAddOutlinedIcon className={classes.actionIcon} />
                 </ListItemIcon>
                 <Typography variant="body2">
-                  {`${t('verifiedWallets.othersWithWallet', {
+                  {t('verifiedWallets.othersWithWallet', {
                     chain: wallet.name,
-                  })} (${t('common.comingSoon').toLowerCase()})`}
+                  })}
                 </Typography>
               </MenuItem>
             </Menu>

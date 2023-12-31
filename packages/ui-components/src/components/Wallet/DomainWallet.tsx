@@ -1,3 +1,4 @@
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import CollectionsOutlinedIcon from '@mui/icons-material/CollectionsOutlined';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import GroupAddOutlinedIcon from '@mui/icons-material/GroupAddOutlined';
@@ -38,6 +39,7 @@ import type {SerializedWalletBalance} from '../../lib/types/domain';
 import {CryptoIcon} from '../Image';
 
 const bgNeutralShade = 800;
+const currencyDecimals = 3;
 
 const useStyles = makeStyles()((theme: Theme) => ({
   walletContainer: {
@@ -51,9 +53,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
   balanceUsd: {
     color: theme.palette.neutralShades[100],
     fontWeight: 'bold',
+    whiteSpace: 'nowrap',
   },
   balanceNative: {
     color: theme.palette.neutralShades[200],
+    whiteSpace: 'nowrap',
   },
   balanceContainer: {
     position: 'absolute',
@@ -73,8 +77,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     padding: theme.spacing(0.66),
     margin: theme.spacing(1),
     width: 'calc(100% - 32px)',
+    overflow: 'auto',
   },
-  card: {
+  cardContainer: {
     position: 'relative',
     backgroundImage: `linear-gradient(${
       theme.palette.neutralShades[bgNeutralShade - 200]
@@ -104,6 +109,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   headerMenuIcon: {
     color: theme.palette.neutralShades[bgNeutralShade - 400],
+  },
+  menuContainer: {
+    position: 'absolute',
+    margin: theme.spacing(0.5),
+    top: 0,
+    right: 0,
   },
   statsContainer: {
     display: 'flex',
@@ -156,10 +167,14 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
   if (!wallet.balance) {
     return null;
   }
+
+  // native amount display value
   const nativeAmount = parseFloat(wallet.balance);
+  const nativeAmountDisplay =
+    nativeAmount.toFixed(currencyDecimals).replace(/\.0+$/, '') || '0';
 
   return (
-    <Card className={classes.card}>
+    <Card className={classes.cardContainer}>
       <CardHeader
         title={
           <Typography className={classes.title} variant="body2">
@@ -182,7 +197,7 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
         }
         avatar={<CryptoIcon currency={wallet.symbol as CurrenciesType} />}
         action={
-          <>
+          <Box className={classes.menuContainer}>
             <IconButton
               onClick={handleOpenMenu}
               className={classes.headerMenuIcon}
@@ -239,7 +254,7 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
                 </Typography>
               </MenuItem>
             </Menu>
-          </>
+          </Box>
         }
       />
       <CardContent>
@@ -304,10 +319,16 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
                   {wallet.value?.walletUsd}
                 </Typography>
               </Box>
-              <Typography className={classes.balanceNative} variant="caption">
-                {nativeAmount.toFixed(5).replace(/\.0+$/, '') || 0}{' '}
-                {wallet.symbol}
-              </Typography>
+              <Box mr={1}></Box>
+              <Box display="flex" alignItems="center">
+                <AccountBalanceWalletIcon className={classes.detailsIcon} />
+                <Typography className={classes.balanceNative} variant="caption">
+                  {nativeAmount > 0 && nativeAmountDisplay === '0'
+                    ? '~ 0'
+                    : nativeAmountDisplay}{' '}
+                  {wallet.symbol}
+                </Typography>
+              </Box>
             </Box>
           </Box>
         </Box>

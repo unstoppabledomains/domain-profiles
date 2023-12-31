@@ -140,6 +140,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
             className={classes.button}
             onClick={handleAddWallet}
             variant="text"
+            size="small"
           >
             {t('verifiedWallets.addWallet')}
           </Button>

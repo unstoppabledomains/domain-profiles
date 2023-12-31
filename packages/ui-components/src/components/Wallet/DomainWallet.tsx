@@ -77,7 +77,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     padding: theme.spacing(0.66),
     margin: theme.spacing(1),
     width: 'calc(100% - 32px)',
-    overflow: 'auto',
+    overflow: 'hidden',
   },
   cardContainer: {
     position: 'relative',

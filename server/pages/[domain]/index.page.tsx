@@ -1023,6 +1023,9 @@ const DomainProfile = ({
                   ownerAddress={ownerAddress}
                   profileServiceUrl={config.PROFILE.HOST_URL}
                   hideConfigureButton={true}
+                  walletNfts={profileData?.walletBalances
+                    ?.map(w => (w.stats?.nfts ? parseInt(w.stats.nfts, 10) : 0))
+                    .reduce((prev, curr) => prev + curr, 0)}
                 />
               )}
             {isForSale && !nftShowAll && openSeaLink && domainSellerEmail && (
@@ -1067,22 +1070,24 @@ const DomainProfile = ({
                           </div>
                         )}
                       </div>
-                      <Badges
-                        profile
-                        domain={domain}
-                        list={badgeList}
-                        countActive={
-                          badges.list?.filter(
-                            b => b.type === badgeType && b.active,
-                          ).length
-                        }
-                        countTotal={badgeList.length}
-                        badgesLastSyncedAt={badges.badgesLastSyncedAt}
-                        usageEnabled
-                        setWeb3Deps={setWeb3Deps}
-                        authWallet={authAddress}
-                        authDomain={authDomain}
-                      />
+                      <Box mb={1}>
+                        <Badges
+                          profile
+                          domain={domain}
+                          list={badgeList}
+                          countActive={
+                            badges.list?.filter(
+                              b => b.type === badgeType && b.active,
+                            ).length
+                          }
+                          countTotal={badgeList.length}
+                          badgesLastSyncedAt={badges.badgesLastSyncedAt}
+                          usageEnabled
+                          setWeb3Deps={setWeb3Deps}
+                          authWallet={authAddress}
+                          authDomain={authDomain}
+                        />
+                      </Box>
                     </div>
                   );
                 })}

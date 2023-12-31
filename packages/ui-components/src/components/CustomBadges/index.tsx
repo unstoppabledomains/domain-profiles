@@ -1,5 +1,5 @@
-import LeaderboardIcon from '@mui/icons-material/Leaderboard';
-import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
+import LeaderboardOutlinedIcon from '@mui/icons-material/LeaderboardOutlined';
+import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import type {Theme} from '@mui/material/styles';
@@ -17,9 +17,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   button: {
     color: theme.palette.neutralShades[500],
-    fontWeight: theme.typography.fontWeightMedium,
-    fontSize: theme.typography.body2.fontSize,
-    lineHeight: 1.5,
   },
   icon: {
     marginRight: theme.spacing(1),
@@ -45,10 +42,11 @@ const CustomBadges: React.FC = () => {
         <Button
           onClick={handleClick}
           variant={'text'}
+          size="small"
           data-testid={'custom-badge-button'}
           className={classes.button}
         >
-          <VolunteerActivismIcon className={classes.icon} />
+          <VolunteerActivismOutlinedIcon className={classes.icon} />
           {t('badges.create')}
         </Button>
       </Grid>
@@ -58,10 +56,11 @@ const CustomBadges: React.FC = () => {
             (window.location.href = `${config.UNSTOPPABLE_WEBSITE_URL}/leaderboard`)
           }
           variant={'text'}
+          size="small"
           data-testid={'leaderboard-button'}
           className={classes.button}
         >
-          <LeaderboardIcon className={classes.icon} />
+          <LeaderboardOutlinedIcon className={classes.icon} />
           {t('badges.leaderboard')}
         </Button>
       </Grid>

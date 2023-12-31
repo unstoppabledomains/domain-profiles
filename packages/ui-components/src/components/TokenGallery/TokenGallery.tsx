@@ -1,7 +1,9 @@
-import GridViewIcon from '@mui/icons-material/GridView';
+import CloseFullscreenOutlinedIcon from '@mui/icons-material/CloseFullscreenOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import OpenInFullOutlinedIcon from '@mui/icons-material/OpenInFullOutlined';
 import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
@@ -25,6 +27,7 @@ export interface TokenGalleryProps {
   ownerAddress: string;
   profileServiceUrl: string;
   hideConfigureButton?: boolean;
+  walletNfts?: number;
 }
 
 export const useStyles = makeStyles()((theme: Theme) => ({
@@ -61,25 +64,12 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   emptyGalleryText: {
     color: theme.palette.neutralShades[600],
   },
-  tokenCount: {
-    minWidth: '30px',
-    minHeight: '10px',
-    padding: '0px 5px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: '20px',
-    backgroundColor: theme.palette.primaryShades[200],
-    color: theme.palette.primary.main,
-    fontSize: theme.typography.h5.fontSize,
-    fontWeight: theme.typography.fontWeightBold,
-    marginLeft: '10px',
+  nftCount: {
+    color: theme.palette.neutralShades[600],
+    marginLeft: theme.spacing(1),
   },
   nftGalleryLinks: {
-    display: 'flex',
-    justifyContent: 'right',
-    verticalAlign: 'center',
-    fontSize: theme.typography.body2.fontSize,
+    color: theme.palette.neutralShades[500],
   },
   nftShowAll: {
     color: theme.palette.neutralShades[500],
@@ -106,6 +96,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
   ownerAddress,
   profileServiceUrl,
   hideConfigureButton,
+  walletNfts,
 }: TokenGalleryProps) => {
   const {classes, cx} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
@@ -214,13 +205,9 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
         <Typography className={classes.sectionHeader} variant="h6">
           <PhotoLibraryOutlinedIcon className={classes.headerIcon} />
           {t('profile.gallery')}
-          {expanded && (
-            <Typography
-              className={classes.tokenCount}
-              variant="h6"
-              data-testid="token-count"
-            >
-              {tokenCount}
+          {walletNfts && (
+            <Typography variant="body2" className={classes.nftCount}>
+              ({expanded ? `${tokenCount} / ${walletNfts}` : walletNfts})
             </Typography>
           )}
         </Typography>
@@ -240,19 +227,34 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
           )}
           <span
             data-testid="nftGallery-show-all-link"
-            onClick={async () => {
-              setExpanded(!expanded);
-              return false;
-            }}
             className={classes.nftShowAll}
           >
             {expanded ? (
-              t('profile.collapse')
+              <Button
+                variant="text"
+                startIcon={<CloseFullscreenOutlinedIcon />}
+                className={classes.nftGalleryLinks}
+                size="small"
+                onClick={async () => {
+                  setExpanded(!expanded);
+                  return false;
+                }}
+              >
+                {t('profile.collapse')}
+              </Button>
             ) : (
-              <div className={classes.nftGalleryLinks}>
-                <GridViewIcon sx={{marginRight: '5px'}} />{' '}
-                {t('common.expandShowcase')}
-              </div>
+              <Button
+                variant="text"
+                startIcon={<OpenInFullOutlinedIcon />}
+                className={classes.nftGalleryLinks}
+                size="small"
+                onClick={async () => {
+                  setExpanded(!expanded);
+                  return false;
+                }}
+              >
+                {t('common.expand')}
+              </Button>
             )}
           </span>
         </div>

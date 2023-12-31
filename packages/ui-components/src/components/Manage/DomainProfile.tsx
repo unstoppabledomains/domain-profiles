@@ -192,7 +192,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                     invisible={!tabUnreadDot[DomainProfileTabType.TokenGallery]}
                   >
                     <Box className={classes.tabLabel}>
-                      {t('profile.gallery')}
+                      {t('manage.tokenGallery')}
                     </Box>
                   </StyledTabBadge>
                 }

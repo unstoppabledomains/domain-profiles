@@ -27,7 +27,7 @@ export interface TokenGalleryProps {
   ownerAddress: string;
   profileServiceUrl: string;
   hideConfigureButton?: boolean;
-  walletNfts?: number;
+  totalCount?: number;
 }
 
 export const useStyles = makeStyles()((theme: Theme) => ({
@@ -96,7 +96,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
   ownerAddress,
   profileServiceUrl,
   hideConfigureButton,
-  walletNfts,
+  totalCount,
 }: TokenGalleryProps) => {
   const {classes, cx} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
@@ -205,11 +205,13 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
         <Typography className={classes.sectionHeader} variant="h6">
           <PhotoLibraryOutlinedIcon className={classes.headerIcon} />
           {t('profile.gallery')}
-          {walletNfts && (
-            <Typography variant="body2" className={classes.nftCount}>
-              ({expanded ? `${tokenCount} / ${walletNfts}` : walletNfts})
-            </Typography>
-          )}
+          <Typography
+            variant="body2"
+            className={classes.nftCount}
+            data-testid="token-count"
+          >
+            {totalCount && `(${totalCount})`}
+          </Typography>
         </Typography>
         <div className={cx(classes.sectionHeader, classes.nftGalleryLinks)}>
           {isOwner && (!hideConfigureButton || itemsToUpdate.length > 0) && (
@@ -225,13 +227,11 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
               hasNfts
             />
           )}
-          <span
-            data-testid="nftGallery-show-all-link"
-            className={classes.nftShowAll}
-          >
+          <Box className={classes.nftShowAll}>
             {expanded ? (
               <Button
                 variant="text"
+                data-testid="nftGallery-show-all-link"
                 startIcon={<CloseFullscreenOutlinedIcon />}
                 className={classes.nftGalleryLinks}
                 size="small"
@@ -245,6 +245,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
             ) : (
               <Button
                 variant="text"
+                data-testid="nftGallery-show-all-link"
                 startIcon={<OpenInFullOutlinedIcon />}
                 className={classes.nftGalleryLinks}
                 size="small"
@@ -256,7 +257,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
                 {t('common.expand')}
               </Button>
             )}
-          </span>
+          </Box>
         </div>
       </div>
       {nfts?.filter(nft => nft.public).length === 0 &&
@@ -277,7 +278,9 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
           isOwner={isOwner === true}
           nftSymbolVisible={nftSymbolVisible || {}}
           isAllNftsLoaded={isAllNftsLoaded}
+          tokenCount={tokenCount}
           setTokenCount={setTokenCount}
+          totalCount={totalCount}
         />
       ) : (
         <NFTGalleryCarousel

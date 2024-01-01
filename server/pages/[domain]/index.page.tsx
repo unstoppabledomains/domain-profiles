@@ -1023,7 +1023,7 @@ const DomainProfile = ({
                   ownerAddress={ownerAddress}
                   profileServiceUrl={config.PROFILE.HOST_URL}
                   hideConfigureButton={true}
-                  walletNfts={profileData?.walletBalances
+                  totalCount={profileData?.walletBalances
                     ?.map(w => (w.stats?.nfts ? parseInt(w.stats.nfts, 10) : 0))
                     .reduce((prev, curr) => prev + curr, 0)}
                 />

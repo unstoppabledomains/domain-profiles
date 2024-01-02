@@ -5,7 +5,6 @@ import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
 import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
-import HowToRegOutlinedIcon from '@mui/icons-material/HowToRegOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
@@ -19,7 +18,6 @@ import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
-import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
@@ -214,10 +212,8 @@ const DomainProfile = ({
     networkId: null,
     owner: ownerAddress,
   });
-  const needLeftSideDivider =
+  const hasMoreInfo =
     Boolean(profileData?.profile?.location) ||
-    verifiedSocials.length > 0 ||
-    humanityVerified ||
     ipfsHash ||
     profileData?.profile?.web2Url ||
     profileData?.webacy ||
@@ -613,7 +609,11 @@ const DomainProfile = ({
                   >
                     {domain}
                   </Typography>
-                  <VerifiedIcon className={classes.infoIcon} />
+                  {humanityVerified && (
+                    <Tooltip title={t('profile.humanityVerified')}>
+                      <VerifiedIcon className={classes.infoIcon} />
+                    </Tooltip>
+                  )}
                 </Box>
               </div>
             )}
@@ -737,7 +737,7 @@ const DomainProfile = ({
                       </Typography>
                     }
                     content={
-                      <Grid container mt={1} mb={2}>
+                      <Box mt={1} mb={1} display="flex" flexWrap="wrap">
                         {verifiedSocials
                           .filter(account => {
                             return (
@@ -747,7 +747,7 @@ const DomainProfile = ({
                           })
                           .map(account => {
                             return (
-                              <Grid key={account} item xs={2}>
+                              <Box mr={1}>
                                 <SocialAccountCard
                                   socialInfo={socialsInfo[account]}
                                   handleClickToCopy={handleClickToCopy}
@@ -761,10 +761,10 @@ const DomainProfile = ({
                                   }
                                   small
                                 />
-                              </Grid>
+                              </Box>
                             );
                           })}
-                      </Grid>
+                      </Box>
                     }
                   />
                 )}
@@ -804,205 +804,186 @@ const DomainProfile = ({
                     }
                   />
                 )}
-                {needLeftSideDivider && (
-                  <Box mt={3} mb={2}>
-                    <Divider />
-                  </Box>
-                )}
-                {humanityVerified && (
-                  <Tooltip
-                    placement="top"
-                    title={
-                      <div className={classes.humanityVerifiedTooltipContent}>
-                        {t('profile.useYourDomainToLoginToApplications')}
-                        <Link
-                          external
-                          href="https://unstoppablemarketplace.com/"
-                          className={classes.humanityVerifiedTooltipLink}
-                        >
-                          {t('profile.clickToSeeAllApplications')}
-                        </Link>
-                      </div>
-                    }
-                    arrow
-                  >
-                    <div>
-                      <Link
-                        external
-                        href="https://unstoppablemarketplace.com/"
-                        className={classes.humanityVerifiedLink}
-                      >
-                        <HowToRegOutlinedIcon
-                          className={classes.humanityVerifiedIcon}
-                        />
-                        {t('profile.humanityVerified')}
-                      </Link>
-                    </div>
-                  </Tooltip>
-                )}
-                {profileData?.webacy && (
-                  <Box className={classes.riskScoreContainer}>
-                    <Avatar
-                      src={`${config.ASSETS_BUCKET_URL}/images/webacy/logo.png`}
-                      className={classes.riskScoreLogo}
-                      onClick={() =>
-                        window.open(
-                          `https://dapp.webacy.com/unstoppable/${ownerAddress}`,
-                          '_blank',
-                        )
-                      }
-                    />
-                    <Typography className={classes.emailAndLocation}>
-                      {t('webacy.riskScore')}:
-                    </Typography>
-                    <Tooltip
-                      title={
-                        profileData.webacy.issues.length > 0 ? (
-                          profileData.webacy.issues.map(issue => (
-                            <>
-                              <Typography variant="caption">
-                                {
-                                  issue.categories?.wallet_characteristics
-                                    ?.description
-                                }
-                              </Typography>
-                              <List dense sx={{listStyleType: 'disc', pl: 4}}>
-                                {issue.tags.map(tag => (
-                                  <ListItem sx={{display: 'list-item'}}>
-                                    <Typography variant="caption">
-                                      {tag.name}
-                                    </Typography>
-                                  </ListItem>
-                                ))}
-                              </List>
-                            </>
-                          ))
-                        ) : (
-                          <Typography variant="caption">
-                            {t('webacy.riskScoreDescription')}
-                          </Typography>
-                        )
-                      }
-                    >
-                      <Chip
-                        color={
-                          profileData.webacy.high
-                            ? 'error'
-                            : profileData.webacy.medium
-                            ? 'default'
-                            : 'success'
-                        }
-                        size="small"
-                        icon={
-                          profileData.webacy.high ? (
-                            <OutlinedFlagIcon
-                              className={classes.riskScoreIcon}
+                {hasMoreInfo && (
+                  <LeftBarContentCollapse
+                    id="moreInfo"
+                    icon={<InfoOutlinedIcon />}
+                    header={t('profile.moreInformation')}
+                    content={
+                      <Box mt={2}>
+                        {profileData?.webacy && (
+                          <Box className={classes.riskScoreContainer}>
+                            <Avatar
+                              src={`${config.ASSETS_BUCKET_URL}/images/webacy/logo.png`}
+                              className={classes.riskScoreLogo}
+                              onClick={() =>
+                                window.open(
+                                  `https://dapp.webacy.com/unstoppable/${ownerAddress}`,
+                                  '_blank',
+                                )
+                              }
                             />
-                          ) : profileData.webacy.medium ? (
-                            <CheckCircleOutlinedIcon
-                              className={classes.riskScoreIcon}
-                            />
-                          ) : (
-                            <CheckCircleOutlinedIcon
-                              className={classes.riskScoreIcon}
-                            />
-                          )
-                        }
-                        label={
-                          profileData.webacy.high
-                            ? t('webacy.high')
-                            : profileData.webacy.medium
-                            ? t('webacy.medium')
-                            : t('webacy.low')
-                        }
-                      />
-                    </Tooltip>
-                    {isOwner &&
-                      !profileData.webacy.high &&
-                      !profileData.webacy.medium && (
-                        <Tooltip
-                          title={
-                            <Typography variant="caption">
-                              {t('webacy.share')}
+                            <Typography className={classes.emailAndLocation}>
+                              {t('webacy.riskScore')}:
                             </Typography>
-                          }
-                        >
-                          <IconButton
-                            size="small"
-                            className={classes.riskScoreShareButton}
-                            onClick={handleShareRiskScore}
-                          >
-                            <IosShareIcon
-                              className={classes.riskScoreShareIcon}
+                            <Tooltip
+                              title={
+                                profileData.webacy.issues.length > 0 ? (
+                                  profileData.webacy.issues.map(issue => (
+                                    <>
+                                      <Typography variant="caption">
+                                        {
+                                          issue.categories
+                                            ?.wallet_characteristics
+                                            ?.description
+                                        }
+                                      </Typography>
+                                      <List
+                                        dense
+                                        sx={{listStyleType: 'disc', pl: 4}}
+                                      >
+                                        {issue.tags.map(tag => (
+                                          <ListItem sx={{display: 'list-item'}}>
+                                            <Typography variant="caption">
+                                              {tag.name}
+                                            </Typography>
+                                          </ListItem>
+                                        ))}
+                                      </List>
+                                    </>
+                                  ))
+                                ) : (
+                                  <Typography variant="caption">
+                                    {t('webacy.riskScoreDescription')}
+                                  </Typography>
+                                )
+                              }
+                            >
+                              <Chip
+                                color={
+                                  profileData.webacy.high
+                                    ? 'error'
+                                    : profileData.webacy.medium
+                                    ? 'default'
+                                    : 'success'
+                                }
+                                size="small"
+                                icon={
+                                  profileData.webacy.high ? (
+                                    <OutlinedFlagIcon
+                                      className={classes.riskScoreIcon}
+                                    />
+                                  ) : profileData.webacy.medium ? (
+                                    <CheckCircleOutlinedIcon
+                                      className={classes.riskScoreIcon}
+                                    />
+                                  ) : (
+                                    <CheckCircleOutlinedIcon
+                                      className={classes.riskScoreIcon}
+                                    />
+                                  )
+                                }
+                                label={
+                                  profileData.webacy.high
+                                    ? t('webacy.high')
+                                    : profileData.webacy.medium
+                                    ? t('webacy.medium')
+                                    : t('webacy.low')
+                                }
+                              />
+                            </Tooltip>
+                            {isOwner &&
+                              !profileData.webacy.high &&
+                              !profileData.webacy.medium && (
+                                <Tooltip
+                                  title={
+                                    <Typography variant="caption">
+                                      {t('webacy.share')}
+                                    </Typography>
+                                  }
+                                >
+                                  <IconButton
+                                    size="small"
+                                    className={classes.riskScoreShareButton}
+                                    onClick={handleShareRiskScore}
+                                  >
+                                    <IosShareIcon
+                                      className={classes.riskScoreShareIcon}
+                                    />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
+                          </Box>
+                        )}
+                        {ipfsHash && (
+                          <Box mb={2} display="flex">
+                            <LaunchOutlinedIcon
+                              className={classes.sidebarIcon}
                             />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                  </Box>
-                )}
-                {ipfsHash && (
-                  <Box mb={2} display="flex">
-                    <LaunchOutlinedIcon className={classes.sidebarIcon} />
-                    <Link
-                      external
-                      href={`${config.IPFS_BASE_URL}${normalizeIpfsHash(
-                        ipfsHash,
-                      )}`}
-                      className={classes.websiteLink}
-                    >
-                      {`${domain} (${ipfsHash.slice(0, 10)}...${ipfsHash.slice(
-                        -4,
-                      )})`}
-                    </Link>
-                  </Box>
-                )}
-                {profileData?.profile?.web2Url && (
-                  <Box mb={2} display="flex">
-                    <LaunchOutlinedIcon className={classes.sidebarIcon} />
-                    <Link
-                      external
-                      href={profileData?.profile?.web2Url}
-                      className={classes.websiteLink}
-                    >
-                      {profileData?.profile?.web2Url.replace(
-                        /^https?:\/\/|\/$/g,
-                        '',
-                      )}
-                    </Link>
-                  </Box>
-                )}
-                {profileData?.profile?.location && (
-                  <Box mb={2} display="flex">
-                    <FmdGoodOutlinedIcon className={classes.sidebarIcon} />
-                    <Typography className={classes.emailAndLocation}>
-                      {profileData?.profile?.location}
-                    </Typography>
-                  </Box>
-                )}
-                {isEnsDomain && ensDomainStatus?.expiresAt && (
-                  <Box mb={2} display="flex">
-                    <RestoreOutlinedIcon className={classes.sidebarIcon} />
-                    <Typography className={classes.emailAndLocation}>
-                      {t('profile.thisDomainExpires', {
-                        action: isPast(new Date(ensDomainStatus.expiresAt))
-                          ? t('profile.expired')
-                          : t('profile.expires'),
-                        date: format(
-                          new Date(ensDomainStatus.expiresAt),
-                          'MMM d, yyyy',
-                        ),
-                      })}
-                    </Typography>
-                  </Box>
-                )}
-                {needLeftSideDivider && (
-                  <Box
-                    mt={2}
-                    mb={2}
-                    className={classes.emailAndLocationSecondDivider}
-                  >
-                    <Divider />
-                  </Box>
+                            <Link
+                              external
+                              href={`${config.IPFS_BASE_URL}${normalizeIpfsHash(
+                                ipfsHash,
+                              )}`}
+                              className={classes.websiteLink}
+                            >
+                              {`${domain} (${ipfsHash.slice(
+                                0,
+                                10,
+                              )}...${ipfsHash.slice(-4)})`}
+                            </Link>
+                          </Box>
+                        )}
+                        {profileData?.profile?.web2Url && (
+                          <Box mb={2} display="flex">
+                            <LaunchOutlinedIcon
+                              className={classes.sidebarIcon}
+                            />
+                            <Link
+                              external
+                              href={profileData?.profile?.web2Url}
+                              className={classes.websiteLink}
+                            >
+                              {profileData?.profile?.web2Url.replace(
+                                /^https?:\/\/|\/$/g,
+                                '',
+                              )}
+                            </Link>
+                          </Box>
+                        )}
+                        {profileData?.profile?.location && (
+                          <Box mb={2} display="flex">
+                            <FmdGoodOutlinedIcon
+                              className={classes.sidebarIcon}
+                            />
+                            <Typography className={classes.emailAndLocation}>
+                              {profileData?.profile?.location}
+                            </Typography>
+                          </Box>
+                        )}
+                        {isEnsDomain && ensDomainStatus?.expiresAt && (
+                          <Box mb={2} display="flex">
+                            <RestoreOutlinedIcon
+                              className={classes.sidebarIcon}
+                            />
+                            <Typography className={classes.emailAndLocation}>
+                              {t('profile.thisDomainExpires', {
+                                action: isPast(
+                                  new Date(ensDomainStatus.expiresAt),
+                                )
+                                  ? t('profile.expired')
+                                  : t('profile.expires'),
+                                date: format(
+                                  new Date(ensDomainStatus.expiresAt),
+                                  'MMM d, yyyy',
+                                ),
+                              })}
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+                    }
+                  />
                 )}
               </>
             )}

@@ -1,5 +1,6 @@
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Hidden from '@mui/material/Hidden';
 import type {Theme} from '@mui/material/styles';
@@ -20,26 +21,23 @@ const MAX_ADDRESSES_VISIBLE = 4;
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     position: 'relative',
-    marginTop: theme.spacing(3),
+    marginTop: theme.spacing(1),
     minHeight: 35,
   },
   parentRow: {
-    position: 'absolute',
-    top: 0,
-    left: `-${theme.spacing(2)}`,
-    paddingLeft: theme.spacing(2),
     display: 'flex',
-    overflowY: 'hidden',
-    overflowX: 'auto',
     whiteSpace: 'nowrap',
-    maxWidth: `calc(100% + ${theme.spacing(4)})`,
-    [theme.breakpoints.up('md')]: {
-      position: 'relative',
-      flexWrap: 'wrap',
-      top: 'initial',
-      left: 'initial',
-      paddingLeft: 'initial',
-      overflow: 'initial',
+    marginLeft: theme.spacing(0),
+    flexWrap: 'wrap',
+    paddingLeft: 'initial',
+    overflow: 'initial',
+    [theme.breakpoints.down('md')]: {
+      justifyContent: 'center',
+    },
+  },
+  cryptoContainer: {
+    [theme.breakpoints.down('md')]: {
+      marginTop: theme.spacing(1),
     },
   },
   showAllButton: {
@@ -98,17 +96,19 @@ const CryptoAddresses: React.FC<Props> = ({
             const currency = curr as CurrenciesType;
 
             return (
-              <CryptoAddress
-                key={currency}
-                currency={currency}
-                profileData={profileData}
-                showWarning={showWarning}
-                domain={domain}
-                isOwner={isOwner}
-                ownerAddress={ownerAddress}
-                singleAddress={addresses[currency]}
-                onCryptoAddressCopied={handleCryptoAddressCopied}
-              />
+              <Box className={classes.cryptoContainer}>
+                <CryptoAddress
+                  key={currency}
+                  currency={currency}
+                  profileData={profileData}
+                  showWarning={showWarning}
+                  domain={domain}
+                  isOwner={isOwner}
+                  ownerAddress={ownerAddress}
+                  singleAddress={addresses[currency]}
+                  onCryptoAddressCopied={handleCryptoAddressCopied}
+                />
+              </Box>
             );
           })}
           {multicoinAddressList.map(curr => {
@@ -116,17 +116,19 @@ const CryptoAddresses: React.FC<Props> = ({
             const versions = multicoinAddresses[currency];
 
             return (
-              <CryptoAddress
-                key={currency}
-                versions={versions}
-                currency={currency}
-                profileData={profileData}
-                showWarning={showWarning}
-                domain={domain}
-                isOwner={isOwner}
-                ownerAddress={ownerAddress}
-                onCryptoAddressCopied={handleCryptoAddressCopied}
-              />
+              <Box className={classes.cryptoContainer}>
+                <CryptoAddress
+                  key={currency}
+                  versions={versions}
+                  currency={currency}
+                  profileData={profileData}
+                  showWarning={showWarning}
+                  domain={domain}
+                  isOwner={isOwner}
+                  ownerAddress={ownerAddress}
+                  onCryptoAddressCopied={handleCryptoAddressCopied}
+                />
+              </Box>
             );
           })}
         </div>

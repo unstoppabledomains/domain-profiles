@@ -220,6 +220,12 @@ describe('<DomainProfile />', () => {
     customRender(<DomainProfile {...defaultProps()} />);
 
     await waitFor(() => {
+      const infoExpandButton = screen.getByTestId('expand-moreInfo');
+      expect(infoExpandButton).toBeInTheDocument();
+      userEvent.click(infoExpandButton);
+    });
+
+    await waitFor(() => {
       expect(
         screen.getAllByRole('link', {name: 'seller@gmail.com'}),
       ).toHaveLength(1);

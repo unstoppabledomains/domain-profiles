@@ -21,7 +21,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginBottom: theme.spacing(1),
   },
   content: {
+    display: 'flex',
     marginBottom: theme.spacing(1),
+    width: '100%',
+    [theme.breakpoints.down('md')]: {
+      justifyContent: 'center',
+      overflow: 'scroll',
+    },
   },
   icon: {
     display: 'flex',

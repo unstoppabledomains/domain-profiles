@@ -58,18 +58,20 @@ const CryptoAddresses: React.FC<Props> = ({
   showWarning,
   isOwner,
   onCryptoAddressCopied: handleCryptoAddressCopied,
+  showAll,
 }) => {
   const {classes} = useStyles();
   const theme = useTheme();
   const [t] = useTranslationContext();
   const isTabletOrMobile = useMediaQuery(theme.breakpoints.down('md'));
   const {addresses = {}, multicoinAddresses = {}} = records;
-  const [showWholeList, setShowWholeList] = useState(false);
+  const [showWholeList, setShowWholeList] = useState(showAll || false);
   let addressList = Object.keys(addresses);
   let multicoinAddressList = Object.keys(multicoinAddresses);
   const isToggleButtonVisible =
-    showWholeList ||
-    addressList.length + multicoinAddressList.length > MAX_ADDRESSES_VISIBLE;
+    !showAll &&
+    (showWholeList ||
+      addressList.length + multicoinAddressList.length > MAX_ADDRESSES_VISIBLE);
 
   if (!isTabletOrMobile && !showWholeList) {
     addressList = addressList.slice(0, MAX_ADDRESSES_VISIBLE);
@@ -158,5 +160,6 @@ export type Props = {
   showWarning?: boolean;
   domain?: string;
   isOwner?: boolean;
+  showAll?: boolean;
   onCryptoAddressCopied: () => void;
 };

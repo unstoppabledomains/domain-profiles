@@ -1,3 +1,4 @@
+import AlternateEmailOutlinedIcon from '@mui/icons-material/AlternateEmailOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import ChatIcon from '@mui/icons-material/Chat';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
@@ -12,10 +13,10 @@ import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import RestoreOutlinedIcon from '@mui/icons-material/RestoreOutlined';
 import VerifiedIcon from '@mui/icons-material/Verified';
+import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
@@ -25,8 +26,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import {useTheme} from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
+import LeftBarContentCollapse from 'components/LeftBarContentCollapse';
 import {format, isPast} from 'date-fns';
 import {normalizeIpfsHash} from 'lib/ipfs';
 import type {GetServerSideProps} from 'next';
@@ -85,7 +85,6 @@ import {
   getSeoTags,
   isExternalDomain,
   parseRecords,
-  splitDomain,
   useDomainConfig,
   useEnsDomainStatus,
   useFeatureFlags,
@@ -115,14 +114,12 @@ const DomainProfile = ({
 }: DomainProfilePageProps) => {
   // hooks
   const [t] = useTranslationContext();
-  const theme = useTheme();
   const {classes, cx} = useStyles();
   const isMounted = useIsMounted();
   const [imagePath, setImagePath] = useState<string>();
   const {enqueueSnackbar} = useSnackbar();
   const {chatUser, setOpenChat} = useUnstoppableMessaging();
   const {nfts, nftSymbolVisible, expanded: nftShowAll} = useTokenGallery();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [isLoaded, setIsLoaded] = useState(false);
   const [isReloadRequested, setIsReloadRequested] = useState(false);
   const {setWeb3Deps} = useWeb3Context();
@@ -237,7 +234,6 @@ const DomainProfile = ({
   const domainCover = profileData?.profile?.coverPath
     ? getImageUrl(profileData?.profile?.coverPath)
     : null;
-  const {label, sld, extension} = splitDomain(domain);
   const seoTags = getSeoTags({
     domain,
     title: t('nftCollection.unstoppableDomains'),
@@ -664,116 +660,151 @@ const DomainProfile = ({
             )}
             {isLoaded && (
               <>
-                {profileData?.profile?.description ? (
-                  <Box mt={3}>
-                    <Typography className={classes.description}>
-                      {profileData?.profile?.description
-                        ? profileData?.profile?.description
-                        : ''}
-                    </Typography>
-                  </Box>
-                ) : null}
+                <Box mt={3}>
+                  <Typography className={classes.description}>
+                    {profileData?.profile?.description
+                      ? profileData?.profile?.description
+                      : ''}
+                  </Typography>
+                </Box>
                 {profileData?.profile && (
-                  <div>
-                    <Box mt={1} className={classes.followingContainer}>
-                      <Button
-                        variant="text"
-                        className={classes.followCount}
-                        onClick={handleViewFollowingClick}
-                      >
-                        {`${profileData.social?.followingCount || 0} following`}
-                      </Button>
-                      <Button
-                        variant="text"
-                        className={classes.followCount}
-                        onClick={handleViewFollowersClick}
-                      >
-                        {`${
-                          (profileData.social?.followerCount || 0) +
-                          optimisticFollowCount
-                        } followers`}
-                      </Button>
-                    </Box>
-                    {followers && followers.length > 2 && (
-                      <div className={classes.followersPreviewContainer}>
-                        <Typography className={classes.followersPreviewTyp}>
-                          {t('profile.followedBy', {
-                            followers: followers.slice(0, 2).join(', '),
-                            othersCount:
-                              (profileData.social?.followerCount || 0) - 3,
-                          })}
-                        </Typography>
-                        <div className={classes.followersPreview}>
-                          {followers.slice(0, 3).map(follower => (
-                            <DomainPreview
-                              domain={follower}
-                              size={30}
-                              chatUser={chatUser}
-                              setOpenChat={setOpenChat}
-                              setWeb3Deps={setWeb3Deps}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-                {hasAddresses && (
-                  <CryptoAddresses
-                    onCryptoAddressCopied={handleClickToCopy}
-                    profileData={profileData}
-                    domain={domain}
-                    isOwner={isOwner}
-                    showWarning={
-                      featureFlags.variations
-                        ?.ecommerceServiceUsersPublicProfileAddressVerifiedCheck ||
-                      false
+                  <LeftBarContentCollapse
+                    icon={<PeopleOutlinedIcon />}
+                    header={
+                      <Box display="flex">
+                        <Box
+                          className={classes.followCount}
+                          onClick={handleViewFollowingClick}
+                        >
+                          {`${
+                            profileData.social?.followingCount || 0
+                          } following`}
+                        </Box>
+                        <Box className={classes.followCount}>·</Box>
+                        <Box
+                          className={classes.followCount}
+                          onClick={handleViewFollowersClick}
+                        >
+                          {`${
+                            (profileData.social?.followerCount || 0) +
+                            optimisticFollowCount
+                          } followers`}
+                        </Box>
+                      </Box>
                     }
-                    records={addressRecords}
-                    ownerAddress={ownerAddress}
+                    content={
+                      followers &&
+                      followers.length > 2 && (
+                        <div className={classes.followersPreviewContainer}>
+                          <Typography className={classes.followersPreviewTyp}>
+                            {t('profile.followedBy', {
+                              followers: followers.slice(0, 2).join(', '),
+                              othersCount:
+                                (profileData.social?.followerCount || 0) - 3,
+                            })}
+                          </Typography>
+                          <div className={classes.followersPreview}>
+                            {followers.slice(0, 3).map(follower => (
+                              <DomainPreview
+                                domain={follower}
+                                size={30}
+                                chatUser={chatUser}
+                                setOpenChat={setOpenChat}
+                                setWeb3Deps={setWeb3Deps}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    }
                   />
                 )}
-
+                {Boolean(verifiedSocials.length) && someSocialsPublic && (
+                  <LeftBarContentCollapse
+                    icon={<AlternateEmailOutlinedIcon />}
+                    header={
+                      <Typography>
+                        {t('profile.socialsCount', {
+                          count: verifiedSocials.filter(account => {
+                            return (
+                              profileData?.socialAccounts &&
+                              profileData.socialAccounts[account].location
+                            );
+                          }).length,
+                        })}
+                      </Typography>
+                    }
+                    content={
+                      <Grid container mt={1} mb={2}>
+                        {verifiedSocials
+                          .filter(account => {
+                            return (
+                              profileData?.socialAccounts &&
+                              profileData.socialAccounts[account].location
+                            );
+                          })
+                          .map(account => {
+                            return (
+                              <Grid key={account} item xs={2}>
+                                <SocialAccountCard
+                                  socialInfo={socialsInfo[account]}
+                                  handleClickToCopy={handleClickToCopy}
+                                  verified={
+                                    profileData!.socialAccounts![account]
+                                      .verified
+                                  }
+                                  verificationSupported={
+                                    featureFlags.variations
+                                      ?.udMeServiceDomainsEnableSocialVerification
+                                  }
+                                  small
+                                />
+                              </Grid>
+                            );
+                          })}
+                      </Grid>
+                    }
+                  />
+                )}
+                {hasAddresses && (
+                  <LeftBarContentCollapse
+                    icon={<WalletOutlinedIcon />}
+                    header={
+                      <Typography>
+                        {t('profile.addressCount', {
+                          count:
+                            (addressRecords.addresses
+                              ? Object.keys(addressRecords.addresses).length
+                              : 0) +
+                            (addressRecords.multicoinAddresses
+                              ? Object.keys(addressRecords.multicoinAddresses)
+                                  .length
+                              : 0),
+                        })}
+                      </Typography>
+                    }
+                    content={
+                      <CryptoAddresses
+                        onCryptoAddressCopied={handleClickToCopy}
+                        profileData={profileData}
+                        domain={domain}
+                        isOwner={isOwner}
+                        showWarning={
+                          featureFlags.variations
+                            ?.ecommerceServiceUsersPublicProfileAddressVerifiedCheck ||
+                          false
+                        }
+                        records={addressRecords}
+                        ownerAddress={ownerAddress}
+                        showAll={true}
+                      />
+                    }
+                  />
+                )}
                 {needLeftSideDivider && (
                   <Box mt={3} mb={2}>
                     <Divider />
                   </Box>
-                )}
-                {Boolean(verifiedSocials.length) && someSocialsPublic && (
-                  <div>
-                    <Grid container spacing={1}>
-                      {verifiedSocials
-                        .filter(account => {
-                          return (
-                            profileData?.socialAccounts &&
-                            profileData.socialAccounts[account].location
-                          );
-                        })
-                        .map(account => {
-                          return (
-                            <Grid key={account} item xs={2} md={3} lg={2}>
-                              <SocialAccountCard
-                                socialInfo={socialsInfo[account]}
-                                handleClickToCopy={handleClickToCopy}
-                                verified={
-                                  profileData!.socialAccounts![account].verified
-                                }
-                                verificationSupported={
-                                  featureFlags.variations
-                                    ?.udMeServiceDomainsEnableSocialVerification
-                                }
-                                small
-                              />
-                            </Grid>
-                          );
-                        })}
-                    </Grid>
-                    {needLeftSideDivider && (
-                      <Box mt={3} mb={2}>
-                        <Divider />
-                      </Box>
-                    )}
-                  </div>
                 )}
                 {humanityVerified && (
                   <Tooltip

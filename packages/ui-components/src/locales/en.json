@@ -413,6 +413,7 @@
     "yourNftGalleryIsReadyToLaunch": "Your NFT gallery is ready to launch"
   },
   "profile": {
+    "addressCount": "{{count}} Crypto Addresses",
     "addressNotVerifiedMessageOwner": "Your {{symbol}} NFTs are not currently visible to other users. Verify your {{symbol}} address to unlock the NFT gallery.",
     "addressNotVerifiedMessagePublic": "NFTs displayed in the {{symbol}} gallery may not belong to the owner of this domain. Proceed with caution.",
     "addressNotVerifiedTitle": "{{symbol}} Address not Verified",
@@ -483,6 +484,7 @@
     "showNfts": "View NFTs",
     "showQRCode": "Show QR Code",
     "socials": "Socials",
+    "socialsCount": "{{count}} Socials",
     "subscribers": "Subscribers",
     "successWeFound": "Success! We found {{count}} {{badges}} for you",
     "telegramScriptCouldNotBeLoaded": "Telegram script could not be loaded. Refresh the page.",

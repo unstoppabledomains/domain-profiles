@@ -159,6 +159,10 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     borderRadius: theme.shape.borderRadius,
     marginLeft: theme.spacing(1.5),
   },
+  badgeCount: {
+    color: theme.palette.neutralShades[600],
+    marginLeft: theme.spacing(1),
+  },
   badgeHeader: {
     margin: theme.spacing(6, 0, 2),
   },

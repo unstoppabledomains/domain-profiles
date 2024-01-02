@@ -989,7 +989,6 @@ const DomainProfile = ({
             )}
           </div>
         </Grid>
-
         {isLoaded ? (
           <Grid item xs={12} sm={12} md={8} className={classes.item}>
             {profileData?.walletBalances && (
@@ -1025,18 +1024,31 @@ const DomainProfile = ({
                   return (
                     <div key={badgeType}>
                       <div className={classes.sectionHeaderContainer}>
-                        <Typography
+                        <Box
                           className={cx(
                             classes.sectionHeader,
                             classes.badgeHeader,
                           )}
-                          variant="h6"
                         >
                           <WorkspacePremiumOutlinedIcon
                             className={classes.headerIcon}
                           />
-                          {titleCase(badgeType)}
-                        </Typography>
+                          <Typography variant="h6">
+                            {titleCase(badgeType)}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            className={classes.badgeCount}
+                          >
+                            (
+                            {
+                              badges.list?.filter(
+                                b => b.type === badgeType && b.active,
+                              ).length
+                            }
+                            )
+                          </Typography>
+                        </Box>
                         {index === 0 && (
                           <div
                             className={cx(

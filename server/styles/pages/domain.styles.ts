@@ -179,12 +179,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'center',
     fontSize: '1.75rem',
     lineHeight: 1.4,
-    color: theme.palette.primary.main,
-  },
-  domainExtension: {
-    wordBreak: 'normal',
-    display: 'inline',
-    whiteSpace: 'nowrap',
+    color: theme.palette.neutralShades[500],
   },
   displayName: {
     wordBreak: 'break-word',
@@ -236,6 +231,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     },
   },
   domainNameBox: {
+    display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     [theme.breakpoints.up('md')]: {
@@ -279,21 +275,11 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     marginRight: theme.spacing(0),
   },
   menuButtonContainer: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    bottom: theme.spacing(1),
-    color: theme.palette.common.white,
-    marginRight: theme.spacing(1),
-  },
-  shareMenu: {
-    marginRight: theme.spacing(2),
-    color: theme.palette.common.white,
-    [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing(0),
+    display: 'flex',
+    marginTop: theme.spacing(2),
+    [theme.breakpoints.down('md')]: {
+      justifyContent: 'center',
     },
-  },
-  editButton: {
-    color: theme.palette.common.white,
   },
   smallHidden: {
     [theme.breakpoints.down('sm')]: {display: 'none'},
@@ -312,8 +298,9 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     fontSize: 16,
   },
   description: {
-    fontSize: theme.typography.body1.fontSize,
+    fontSize: theme.typography.body2.fontSize,
     lineHeight: 1.5,
+    marginBottom: theme.spacing(2),
   },
   empty: {
     padding: theme.spacing(15, 0),

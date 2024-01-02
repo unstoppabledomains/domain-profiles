@@ -11,6 +11,7 @@ import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
 import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import RestoreOutlinedIcon from '@mui/icons-material/RestoreOutlined';
+import VerifiedIcon from '@mui/icons-material/Verified';
 import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -49,7 +50,7 @@ import {
   AccountButton,
   Badge,
   Badges,
-  CopyToClipboard,
+  ChipControlButton,
   CryptoAddresses,
   CustomBadges,
   DomainFieldTypes,
@@ -94,7 +95,6 @@ import {
   useWeb3Context,
 } from '@unstoppabledomains/ui-components';
 import {notifyError} from '@unstoppabledomains/ui-components/src/lib/error';
-import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
 type DomainProfileServerSideProps = GetServerSideProps & {
   params: {
@@ -547,61 +547,6 @@ const DomainProfile = ({
       >
         <Logo className={classes.logo} url={config.UD_ME_BASE_URL} inverse />
         <div className={classes.head}>
-          {isOwner !== undefined && (
-            <div className={classes.menuButtonContainer}>
-              <ShareMenu
-                toggleQrCode={toggleQrCode}
-                displayQrCode={displayQrCode}
-                domain={domain}
-                className={cx(classes.shareMenu, {
-                  [classes.smallHidden]: !isOwner,
-                })}
-                onProfileLinkCopied={handleClickToCopy}
-              />
-              {!isOwner ? (
-                <>
-                  {authDomain && (
-                    <Button
-                      data-testid="chat-button"
-                      onClick={() => setOpenChat(domain)}
-                      className={cx(classes.shareMenu, {
-                        [classes.smallHidden]: !isOwner,
-                      })}
-                      startIcon={<ChatIcon />}
-                    >
-                      {t('push.chat')}
-                    </Button>
-                  )}
-                  <FollowButton
-                    handleLogin={() => setLoginClicked(true)}
-                    setWeb3Deps={setWeb3Deps}
-                    authDomain={authDomain}
-                    domain={domain}
-                    authAddress={authAddress}
-                    onFollowClick={handleFollowClick}
-                    onUnfollowClick={handleUnfollowClick}
-                  />
-                </>
-              ) : isMobile ? (
-                <IconButton
-                  data-testid="edit-profile-button"
-                  onClick={() => setShowManageDomainModal(true)}
-                  className={cx(classes.editButton)}
-                >
-                  <EditOutlinedIcon />
-                </IconButton>
-              ) : (
-                <Button
-                  data-testid="edit-profile-button"
-                  onClick={() => setShowManageDomainModal(true)}
-                  className={cx(classes.editButton)}
-                  startIcon={<EditOutlinedIcon />}
-                >
-                  {t('manage.manageProfile')}
-                </Button>
-              )}
-            </div>
-          )}
           <div className={classes.topHeaderContainer}>
             <div className={classes.searchContainer}>
               <ProfileSearchBar setWeb3Deps={setWeb3Deps} />
@@ -664,35 +609,70 @@ const DomainProfile = ({
                     {profileData.profile.displayName}
                   </Typography>
                 </Box>
-                <Box mt={1} display="flex" className={classes.domainNameBox}>
+                <Box display="flex" className={classes.domainNameBox}>
                   <Typography
                     title={domain}
                     className={classes.domainName}
                     variant="h5"
-                    component="div"
                   >
-                    {sld ? `${label}.${sld}` : label}
-                    <div className={classes.domainExtension}>
-                      .{extension}
-                      <CopyToClipboard
-                        stringToCopy={domain}
-                        onCopy={handleClickToCopy}
-                      >
-                        <IconButton
-                          className={classes.copyIconButton}
-                          aria-label={t('profile.copyDomainName')}
-                          size="large"
-                        >
-                          <CopyContentIcon className={classes.copyIcon} />
-                        </IconButton>
-                      </CopyToClipboard>
-                    </div>
+                    {domain}
                   </Typography>
+                  <VerifiedIcon className={classes.infoIcon} />
                 </Box>
               </div>
             )}
+            {isOwner !== undefined && (
+              <Box className={classes.menuButtonContainer}>
+                {!isOwner ? (
+                  <>
+                    <FollowButton
+                      handleLogin={() => setLoginClicked(true)}
+                      setWeb3Deps={setWeb3Deps}
+                      authDomain={authDomain}
+                      domain={domain}
+                      authAddress={authAddress}
+                      onFollowClick={handleFollowClick}
+                      onUnfollowClick={handleUnfollowClick}
+                    />
+                    {authDomain && (
+                      <ChipControlButton
+                        data-testid="chat-button"
+                        onClick={() => setOpenChat(domain)}
+                        icon={<ChatIcon />}
+                        label={t('push.chat')}
+                        sx={{marginLeft: 1}}
+                      />
+                    )}
+                  </>
+                ) : (
+                  <ChipControlButton
+                    data-testid="edit-profile-button"
+                    onClick={() => setShowManageDomainModal(true)}
+                    icon={<EditOutlinedIcon />}
+                    label={t('manage.manageProfile')}
+                  />
+                )}
+                <Box ml={1}>
+                  <ShareMenu
+                    toggleQrCode={toggleQrCode}
+                    displayQrCode={displayQrCode}
+                    domain={domain}
+                    onProfileLinkCopied={handleClickToCopy}
+                  />
+                </Box>
+              </Box>
+            )}
             {isLoaded && (
               <>
+                {profileData?.profile?.description ? (
+                  <Box mt={3}>
+                    <Typography className={classes.description}>
+                      {profileData?.profile?.description
+                        ? profileData?.profile?.description
+                        : ''}
+                    </Typography>
+                  </Box>
+                ) : null}
                 {profileData?.profile && (
                   <div>
                     <Box mt={1} className={classes.followingContainer}>
@@ -738,16 +718,6 @@ const DomainProfile = ({
                     )}
                   </div>
                 )}
-                {profileData?.profile?.description ? (
-                  <Box mt={2}>
-                    <Typography className={classes.description}>
-                      {profileData?.profile?.description
-                        ? profileData?.profile?.description
-                        : ''}
-                    </Typography>
-                  </Box>
-                ) : null}
-
                 {hasAddresses && (
                   <CryptoAddresses
                     onCryptoAddressCopied={handleClickToCopy}

@@ -37,12 +37,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 type LeftBarContentCollapseProps = {
+  id: string;
   icon: React.ReactNode;
   header: React.ReactNode;
   content?: React.ReactNode;
 };
 
 const LeftBarContentCollapse: React.FC<LeftBarContentCollapseProps> = ({
+  id,
   header,
   icon,
   content,
@@ -63,7 +65,10 @@ const LeftBarContentCollapse: React.FC<LeftBarContentCollapseProps> = ({
         <Box className={classes.text}>{header}</Box>
         {content && (
           <Box ml={1} className={classes.icon}>
-            <ExpandMoreOutlinedIcon onClick={handleToggleExpanded} />
+            <ExpandMoreOutlinedIcon
+              onClick={handleToggleExpanded}
+              data-testid={`expand-${id}`}
+            />
           </Box>
         )}
       </Box>

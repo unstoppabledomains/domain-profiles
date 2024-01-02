@@ -257,6 +257,12 @@ describe('<DomainProfile />', () => {
     customRender(<DomainProfile {...defaultProps()} />);
 
     await waitFor(() => {
+      const socialExpandButton = screen.getByTestId('expand-socials');
+      expect(socialExpandButton).toBeInTheDocument();
+      userEvent.click(socialExpandButton);
+    });
+
+    await waitFor(() => {
       expect(screen.getByTitle('twitter logo')).toBeInTheDocument();
       expect(screen.getByTitle('reddit logo')).toBeInTheDocument();
       expect(screen.getByTitle('youtube logo')).toBeInTheDocument();
@@ -299,6 +305,12 @@ describe('<DomainProfile />', () => {
     });
 
     customRender(<DomainProfile {...props} />);
+
+    await waitFor(() => {
+      const addressExpandButton = screen.getByTestId('expand-addresses');
+      expect(addressExpandButton).toBeInTheDocument();
+      userEvent.click(addressExpandButton);
+    });
 
     await waitFor(() => {
       expect(screen.getByText('0x82...a12b')).toBeInTheDocument();

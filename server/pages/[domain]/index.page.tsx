@@ -669,6 +669,7 @@ const DomainProfile = ({
                 </Box>
                 {profileData?.profile && (
                   <LeftBarContentCollapse
+                    id="followers"
                     icon={<PeopleOutlinedIcon />}
                     header={
                       <Box display="flex">
@@ -721,6 +722,7 @@ const DomainProfile = ({
                 )}
                 {Boolean(verifiedSocials.length) && someSocialsPublic && (
                   <LeftBarContentCollapse
+                    id="socials"
                     icon={<AlternateEmailOutlinedIcon />}
                     header={
                       <Typography>
@@ -768,6 +770,7 @@ const DomainProfile = ({
                 )}
                 {hasAddresses && (
                   <LeftBarContentCollapse
+                    id="addresses"
                     icon={<WalletOutlinedIcon />}
                     header={
                       <Typography>

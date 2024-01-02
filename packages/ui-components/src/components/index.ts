@@ -9,6 +9,7 @@ export * from './Manage';
 export * from './TokenGallery';
 export * from './Wallet';
 export {default as Badges} from './Badges';
+export {default as ChipControlButton} from './ChipControlButton';
 export {default as CopyToClipboard} from './CopyToClipboard';
 export {default as CryptoAddresses} from './CryptoAddresses';
 export {default as CustomBadges} from './CustomBadges';

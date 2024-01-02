@@ -27,7 +27,6 @@ import {
   Logo,
   NftListing,
   ProfilePicture,
-  ShareMenu,
   UnlockSponsorsLeaderboard,
   getBadge,
   getDomainRankings,
@@ -183,17 +182,6 @@ const BadgePage = ({
         >
           <Logo className={classes.logo} inverse />
           <div className={classes.head}>
-            <div className={classes.shareMenuContainer}>
-              <ShareMenu
-                className={classes.shareMenu}
-                toggleQrCode={toggleQrCode}
-                displayQrCode={displayQrCode}
-                domain={badgeData.badge.code}
-                onProfileLinkCopied={handleClickToCopy}
-                isBadge
-              />
-            </div>
-
             <div className={classes.profileButtonContainer}>
               {authDomain ? (
                 <>

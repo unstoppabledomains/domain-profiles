@@ -14,6 +14,7 @@ import defaultTheme from '@unstoppabledomains/ui-kit/styles';
 import * as actions from '../actions';
 import {TranslationProvider} from '../lib';
 import {
+  DomainConfigProvider,
   TokenGalleryProvider,
   UnstoppableMessagingProvider,
   Web3ContextProvider,
@@ -33,23 +34,24 @@ const createTestQueryClient = () =>
 // test class to wrap test components with required providers
 const createWrapper =
   ({theme}: {theme?: Theme} = {}): React.FC =>
-  ({children}) =>
-    (
-      <QueryClientProvider client={createTestQueryClient()}>
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-        <ThemeProvider theme={(theme || defaultTheme) as any}>
-          <SnackbarProvider>
-            <Web3ContextProvider>
-              <TokenGalleryProvider>
-                <UnstoppableMessagingProvider>
+  ({children}) => (
+    <QueryClientProvider client={createTestQueryClient()}>
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      <ThemeProvider theme={(theme || defaultTheme) as any}>
+        <SnackbarProvider>
+          <Web3ContextProvider>
+            <TokenGalleryProvider>
+              <UnstoppableMessagingProvider>
+                <DomainConfigProvider>
                   <TranslationProvider>{children}</TranslationProvider>
-                </UnstoppableMessagingProvider>
-              </TokenGalleryProvider>
-            </Web3ContextProvider>
-          </SnackbarProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    );
+                </DomainConfigProvider>
+              </UnstoppableMessagingProvider>
+            </TokenGalleryProvider>
+          </Web3ContextProvider>
+        </SnackbarProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
 
 export const createMockRouter = (
   overrides: Partial<NextRouter> = {},

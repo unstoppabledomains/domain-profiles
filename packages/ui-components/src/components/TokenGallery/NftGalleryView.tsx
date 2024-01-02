@@ -5,6 +5,7 @@ import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
@@ -82,7 +83,9 @@ interface Props {
   nfts: Nft[];
   nftSymbolVisible: Record<string, boolean | undefined>;
   isAllNftsLoaded: boolean;
+  tokenCount: number;
   setTokenCount: (arg0: number) => void;
+  totalCount?: number;
 }
 
 const NftGalleryView = ({
@@ -91,7 +94,9 @@ const NftGalleryView = ({
   nftSymbolVisible,
   isOwner,
   isAllNftsLoaded,
+  tokenCount,
   setTokenCount,
+  totalCount,
 }: Props) => {
   // state management
   const imagesPerPage = 10;
@@ -380,10 +385,39 @@ const NftGalleryView = ({
               <div className={classes.filterListContainer}>
                 {!isAllNftsLoaded && (
                   <Tooltip title={t('nftCollection.loading')}>
-                    <CircularProgress
-                      sx={{marginLeft: '5px', marginRight: '10px'}}
-                      size="1.5rem"
-                    />
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        display: 'inline-flex',
+                        marginLeft: '5px',
+                        marginRight: '10px',
+                      }}
+                    >
+                      <CircularProgress size="1.5rem" />
+                      {totalCount && (
+                        <Box
+                          sx={{
+                            top: 0,
+                            left: 0,
+                            bottom: 0,
+                            right: 0,
+                            position: 'absolute',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            component="div"
+                            color="text.secondary"
+                            sx={{fontSize: '7px'}}
+                          >{`${Math.round(
+                            (100 * tokenCount) / totalCount,
+                          )}%`}</Typography>
+                        </Box>
+                      )}
+                    </Box>
                   </Tooltip>
                 )}
               </div>
@@ -449,7 +483,7 @@ const NftGalleryView = ({
                     lastNftIndex < nfts.length ? lastNftIndex : nfts.length,
                   )
                   .map((nft, index) => (
-                    <Grid key={index} item xs={4} sm={3} md={3}>
+                    <Grid key={index} item xs={6} sm={3} md={3}>
                       <Box className={classes.cardContainer}>
                         <NftCard nft={nft} domain={domain} key={index} />
                       </Box>

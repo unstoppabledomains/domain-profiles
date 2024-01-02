@@ -220,6 +220,12 @@ describe('<DomainProfile />', () => {
     customRender(<DomainProfile {...defaultProps()} />);
 
     await waitFor(() => {
+      const infoExpandButton = screen.getByTestId('expand-moreInfo');
+      expect(infoExpandButton).toBeInTheDocument();
+      userEvent.click(infoExpandButton);
+    });
+
+    await waitFor(() => {
       expect(
         screen.getAllByRole('link', {name: 'seller@gmail.com'}),
       ).toHaveLength(1);
@@ -255,6 +261,12 @@ describe('<DomainProfile />', () => {
 
   it('renders social account cards', async () => {
     customRender(<DomainProfile {...defaultProps()} />);
+
+    await waitFor(() => {
+      const socialExpandButton = screen.getByTestId('expand-socials');
+      expect(socialExpandButton).toBeInTheDocument();
+      userEvent.click(socialExpandButton);
+    });
 
     await waitFor(() => {
       expect(screen.getByTitle('twitter logo')).toBeInTheDocument();
@@ -299,6 +311,12 @@ describe('<DomainProfile />', () => {
     });
 
     customRender(<DomainProfile {...props} />);
+
+    await waitFor(() => {
+      const addressExpandButton = screen.getByTestId('expand-addresses');
+      expect(addressExpandButton).toBeInTheDocument();
+      userEvent.click(addressExpandButton);
+    });
 
     await waitFor(() => {
       expect(screen.getByText('0x82...a12b')).toBeInTheDocument();

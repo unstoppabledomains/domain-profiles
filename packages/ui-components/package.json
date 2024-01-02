@@ -54,6 +54,8 @@
     "@xmtp/content-type-remote-attachment": "^1.0.7",
     "@xmtp/proto": "^3.27.0",
     "@xmtp/xmtp-js": "^10.0.0",
+    "bip322-js": "^1.1.0",
+    "bitcoin-address-validation": "^2.2.3",
     "bluebird": "^3.7.2",
     "bs58": "^5.0.0",
     "clipboard-copy": "^4.0.1",

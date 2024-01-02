@@ -1,7 +1,6 @@
+import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
-import PersonAddIcon from '@mui/icons-material/PersonAddOutlined';
-import PersonRemoveIcon from '@mui/icons-material/PersonRemoveOutlined';
-import Button from '@mui/material/Button';
+import RemoveIcon from '@mui/icons-material/Remove';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import type {Theme} from '@mui/material/styles';
@@ -17,24 +16,12 @@ import {
 import {ProfileManager} from '../../components/Wallet/ProfileManager';
 import useTranslationContext from '../../lib/i18n';
 import type {Web3Dependencies} from '../../lib/types/web3';
+import ChipControlButton from '../ChipControlButton';
 
 const useStyles = makeStyles<{color?: string}>()((theme: Theme, {color}) => ({
-  followButton: {
-    borderColor: color || 'white',
-    color: color || 'white',
-    '&:hover': {
-      borderColor: 'initial',
-    },
-    width: 'inherit',
-  },
   followButtonSmall: {
     marginLeft: theme.spacing(0.5),
     color: color || 'white',
-  },
-  smallHidden: {
-    [theme.breakpoints.down('sm')]: {
-      display: 'none',
-    },
   },
 }));
 
@@ -126,29 +113,25 @@ const FollowButton: React.FC<FollowButtonProps> = ({
             size="small"
           >
             {isFollowing ? (
-              <PersonRemoveIcon fontSize="inherit" />
+              <RemoveIcon
+                fontSize="inherit"
+                sx={{'&&': {color: color || 'white'}}}
+              />
             ) : (
-              <PersonAddIcon fontSize="inherit" />
+              <AddIcon
+                fontSize="inherit"
+                sx={{'&&': {color: color || 'white'}}}
+              />
             )}
           </IconButton>
         </Tooltip>
       ) : (
-        <Button
-          className={classes.followButton}
+        <ChipControlButton
           onClick={handleClick}
-          variant="outlined"
-          size="small"
-          startIcon={
-            !isFollowing ? (
-              <PersonAddIcon className={classes.smallHidden} />
-            ) : (
-              <CheckIcon className={classes.smallHidden} />
-            )
-          }
+          icon={!isFollowing ? <AddIcon /> : <CheckIcon />}
+          label={isFollowing ? t('profile.following') : t('profile.follow')}
           data-testid="follow-button"
-        >
-          {isFollowing ? t('profile.following') : t('profile.follow')}
-        </Button>
+        />
       )}
       <ProfileManager
         domain={authDomain}

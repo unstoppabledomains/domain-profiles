@@ -14,12 +14,13 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import CopyToClipboard from '../../components/CopyToClipboard';
 import {CryptoIcon} from '../../components/Image/CryptoIcon';
-import Link from '../../components/Link';
+import {useDomainConfig} from '../../hooks';
 import {displayShortCryptoAddress} from '../../lib/displayCryptoAddress';
 import useTranslationContext from '../../lib/i18n';
 import type {CurrenciesType} from '../../lib/types/blockchain';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import type {MulticoinVersions} from '../../lib/types/records';
+import {DomainProfileTabType} from '../Manage';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   root: {
@@ -141,6 +142,7 @@ const CryptoAddress: React.FC<Props> = ({
   const [t] = useTranslationContext();
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const {classes} = useStyles();
+  const {setIsOpen: setConfigOpen, setConfigTab} = useDomainConfig();
 
   const [tooltipOpen, setTooltipOpen] = useState<boolean>(false);
   const filteredVersions = versions
@@ -197,6 +199,11 @@ const CryptoAddress: React.FC<Props> = ({
     setTooltipOpen(true);
   };
 
+  const handleVerifyClick = () => {
+    setConfigTab(DomainProfileTabType.Crypto);
+    setConfigOpen(true);
+  };
+
   const showTooltip = showWarning && !isVerified && isSupported(currency);
   const item = (
     <div
@@ -235,13 +242,13 @@ const CryptoAddress: React.FC<Props> = ({
                     : t('manage.addressNotVerifiedNonOwner')}
                   <br />
                   {isOwner ? (
-                    <Link
-                      to={`${config.UNSTOPPABLE_WEBSITE_URL}/manage?page=crypto&domain=${domain}`}
+                    <Button
                       className={classes.verifyLink}
-                      variant="caption"
+                      variant="text"
+                      onClick={handleVerifyClick}
                     >
                       {t('profile.verifyWalletAddress')}
-                    </Link>
+                    </Button>
                   ) : (
                     <Button className={classes.verifyLink} variant="text">
                       {t('profile.copyTheAddress')}

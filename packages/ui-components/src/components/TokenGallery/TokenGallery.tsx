@@ -1,6 +1,9 @@
-import GridViewIcon from '@mui/icons-material/GridView';
+import CloseFullscreenOutlinedIcon from '@mui/icons-material/CloseFullscreenOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import OpenInFullOutlinedIcon from '@mui/icons-material/OpenInFullOutlined';
+import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
@@ -24,6 +27,7 @@ export interface TokenGalleryProps {
   ownerAddress: string;
   profileServiceUrl: string;
   hideConfigureButton?: boolean;
+  totalCount?: number;
 }
 
 export const useStyles = makeStyles()((theme: Theme) => ({
@@ -35,7 +39,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     paddingBottom: theme.spacing(1),
     fontWeight: theme.typography.fontWeightBold,
     fontSize: theme.typography.h5.fontSize,
-    margin: theme.spacing(6, 0, 1),
+    margin: theme.spacing(6, 0, 0),
     lineHeight: 1.4,
   },
   nftGalleryConfigureButton: {
@@ -60,37 +64,28 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   emptyGalleryText: {
     color: theme.palette.neutralShades[600],
   },
-  tokenCount: {
-    minWidth: '30px',
-    minHeight: '10px',
-    padding: '0px 5px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: '20px',
-    backgroundColor: theme.palette.primaryShades[200],
-    color: theme.palette.primary.main,
-    fontSize: theme.typography.h5.fontSize,
-    fontWeight: theme.typography.fontWeightBold,
-    marginLeft: '10px',
+  nftCount: {
+    color: theme.palette.neutralShades[600],
+    marginLeft: theme.spacing(1),
   },
   nftGalleryLinks: {
-    display: 'flex',
-    justifyContent: 'right',
-    verticalAlign: 'center',
-    fontSize: theme.typography.body2.fontSize,
+    color: theme.palette.neutralShades[500],
   },
   nftShowAll: {
-    color: theme.palette.primary.main,
+    color: theme.palette.neutralShades[500],
     fontSize: theme.typography.body2.fontSize,
     lineHeight: 1.5,
     fontWeight: theme.typography.fontWeightMedium,
     transition: theme.transitions.create('color'),
     '&:hover': {
       textDecoration: 'none',
-      color: theme.palette.primary.main,
+      color: theme.palette.neutralShades[500],
     },
     cursor: 'pointer',
+  },
+  headerIcon: {
+    color: theme.palette.neutralShades[600],
+    marginRight: theme.spacing(1),
   },
 }));
 
@@ -101,6 +96,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
   ownerAddress,
   profileServiceUrl,
   hideConfigureButton,
+  totalCount,
 }: TokenGalleryProps) => {
   const {classes, cx} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
@@ -207,16 +203,15 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
     <div>
       <div className={classes.nftGalleryHeader}>
         <Typography className={classes.sectionHeader} variant="h6">
+          <PhotoLibraryOutlinedIcon className={classes.headerIcon} />
           {t('profile.gallery')}
-          {expanded && (
-            <Typography
-              className={classes.tokenCount}
-              variant="h6"
-              data-testid="token-count"
-            >
-              {tokenCount}
-            </Typography>
-          )}
+          <Typography
+            variant="body2"
+            className={classes.nftCount}
+            data-testid="token-count"
+          >
+            {totalCount && `(${totalCount})`}
+          </Typography>
         </Typography>
         <div className={cx(classes.sectionHeader, classes.nftGalleryLinks)}>
           {isOwner && (!hideConfigureButton || itemsToUpdate.length > 0) && (
@@ -232,23 +227,37 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
               hasNfts
             />
           )}
-          <span
-            data-testid="nftGallery-show-all-link"
-            onClick={async () => {
-              setExpanded(!expanded);
-              return false;
-            }}
-            className={classes.nftShowAll}
-          >
+          <Box className={classes.nftShowAll}>
             {expanded ? (
-              t('profile.collapse')
+              <Button
+                variant="text"
+                data-testid="nftGallery-show-all-link"
+                startIcon={<CloseFullscreenOutlinedIcon />}
+                className={classes.nftGalleryLinks}
+                size="small"
+                onClick={async () => {
+                  setExpanded(!expanded);
+                  return false;
+                }}
+              >
+                {t('profile.collapse')}
+              </Button>
             ) : (
-              <div className={classes.nftGalleryLinks}>
-                <GridViewIcon sx={{marginRight: '5px'}} />{' '}
-                {t('common.expandShowcase')}
-              </div>
+              <Button
+                variant="text"
+                data-testid="nftGallery-show-all-link"
+                startIcon={<OpenInFullOutlinedIcon />}
+                className={classes.nftGalleryLinks}
+                size="small"
+                onClick={async () => {
+                  setExpanded(!expanded);
+                  return false;
+                }}
+              >
+                {t('common.expand')}
+              </Button>
             )}
-          </span>
+          </Box>
         </div>
       </div>
       {nfts?.filter(nft => nft.public).length === 0 &&
@@ -269,7 +278,9 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
           isOwner={isOwner === true}
           nftSymbolVisible={nftSymbolVisible || {}}
           isAllNftsLoaded={isAllNftsLoaded}
+          tokenCount={tokenCount}
           setTokenCount={setTokenCount}
+          totalCount={totalCount}
         />
       ) : (
         <NFTGalleryCarousel

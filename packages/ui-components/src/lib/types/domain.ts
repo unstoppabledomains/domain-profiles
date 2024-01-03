@@ -70,6 +70,7 @@ export enum DomainFieldTypes {
   ReferralCode = 'referralCode',
   ReferralTier = 'referralTier',
   WebacyScore = 'webacyScore',
+  Market = 'market',
 }
 
 export enum DomainProfileKeys {
@@ -192,6 +193,19 @@ export type SerializedDomainCryptoVerification = {
   signedMessage: string;
 };
 
+export type SerializedDomainMarket = {
+  primary: {
+    type: 'purchase' | 'distribution';
+    cost: number;
+    price?: number;
+    payment?: {
+      date: string;
+      promoCredits: number;
+      collected: number;
+    };
+  };
+};
+
 export type SerializedDomainProfileAttributes = {
   // profile fields
   displayName?: string;
@@ -291,6 +305,7 @@ export type SerializedPublicDomainProfileData = {
   walletBalances?: SerializedWalletBalance[];
   webacy?: WebacyRiskScore;
   messaging?: MessagingAttributes;
+  market?: SerializedDomainMarket;
 };
 
 export type SerializedSocialAttributes = {

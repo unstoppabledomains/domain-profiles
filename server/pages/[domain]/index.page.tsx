@@ -5,16 +5,18 @@ import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
 import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
+import HealthAndSafetyOutlinedIcon from '@mui/icons-material/HealthAndSafetyOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import ManageHistoryOutlinedIcon from '@mui/icons-material/ManageHistoryOutlined';
 import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import RestoreOutlinedIcon from '@mui/icons-material/RestoreOutlined';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -35,6 +37,7 @@ import React, {useEffect, useState} from 'react';
 import useIsMounted from 'react-is-mounted-hook';
 import {useStyles} from 'styles/pages/domain.styles';
 import {titleCase} from 'title-case';
+import truncateEthAddress from 'truncate-eth-address';
 
 import config from '@unstoppabledomains/config';
 import type {
@@ -49,6 +52,7 @@ import {
   Badge,
   Badges,
   ChipControlButton,
+  CopyToClipboard,
   CryptoAddresses,
   CustomBadges,
   DomainFieldTypes,
@@ -92,6 +96,7 @@ import {
   useWeb3Context,
 } from '@unstoppabledomains/ui-components';
 import {notifyError} from '@unstoppabledomains/ui-components/src/lib/error';
+import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
 type DomainProfileServerSideProps = GetServerSideProps & {
   params: {
@@ -667,6 +672,27 @@ const DomainProfile = ({
                       : ''}
                   </Typography>
                 </Box>
+                <LeftBarContentCollapse
+                  id="ownerAddress"
+                  icon={<LockOutlinedIcon />}
+                  header={
+                    <Box display="flex" alignItems="center">
+                      <Typography>
+                        {t('profile.ownerAddress', {
+                          address: truncateEthAddress(ownerAddress),
+                        })}
+                      </Typography>
+                      <CopyToClipboard
+                        stringToCopy={ownerAddress}
+                        onCopy={handleClickToCopy}
+                      >
+                        <CopyContentIcon
+                          className={classes.contentCopyIconButton}
+                        />
+                      </CopyToClipboard>
+                    </Box>
+                  }
+                />
                 {profileData?.profile && (
                   <LeftBarContentCollapse
                     id="followers"
@@ -811,17 +837,120 @@ const DomainProfile = ({
                     header={t('profile.moreInformation')}
                     content={
                       <Box mt={2}>
+                        {ipfsHash && (
+                          <Box mb={2} display="flex">
+                            <LaunchOutlinedIcon
+                              className={classes.sidebarIcon}
+                            />
+                            <Link
+                              external
+                              href={`${config.IPFS_BASE_URL}${normalizeIpfsHash(
+                                ipfsHash,
+                              )}`}
+                              className={classes.websiteLink}
+                            >
+                              {`${domain} (${ipfsHash.slice(
+                                0,
+                                10,
+                              )}...${ipfsHash.slice(-4)})`}
+                            </Link>
+                          </Box>
+                        )}
+                        {profileData?.profile?.web2Url && (
+                          <Box mb={2} display="flex">
+                            <LaunchOutlinedIcon
+                              className={classes.sidebarIcon}
+                            />
+                            <Link
+                              external
+                              href={profileData?.profile?.web2Url}
+                              className={classes.websiteLink}
+                            >
+                              {profileData?.profile?.web2Url.replace(
+                                /^https?:\/\/|\/$/g,
+                                '',
+                              )}
+                            </Link>
+                          </Box>
+                        )}
+                        {profileData?.profile?.location && (
+                          <Box mb={2} display="flex">
+                            <FmdGoodOutlinedIcon
+                              className={classes.sidebarIcon}
+                            />
+                            <Typography className={classes.emailAndLocation}>
+                              {profileData?.profile?.location}
+                            </Typography>
+                          </Box>
+                        )}
+                        {isEnsDomain && ensDomainStatus?.expiresAt && (
+                          <Box mb={2} display="flex">
+                            <RestoreOutlinedIcon
+                              className={classes.sidebarIcon}
+                            />
+                            <Typography className={classes.emailAndLocation}>
+                              {t('profile.thisDomainExpires', {
+                                action: isPast(
+                                  new Date(ensDomainStatus.expiresAt),
+                                )
+                                  ? t('profile.expired')
+                                  : t('profile.expires'),
+                                date: format(
+                                  new Date(ensDomainStatus.expiresAt),
+                                  'MMM d, yyyy',
+                                ),
+                              })}
+                            </Typography>
+                          </Box>
+                        )}
+                        {profileData?.market?.primary?.payment && (
+                          <Box mb={2} display="flex">
+                            <ManageHistoryOutlinedIcon
+                              className={classes.sidebarIcon}
+                            />
+                            <Tooltip
+                              title={t('profile.purchaseBreakdown', {
+                                cash: profileData.market.primary.payment.collected.toLocaleString(
+                                  'en-US',
+                                  {
+                                    style: 'currency',
+                                    currency: 'USD',
+                                  },
+                                ),
+                                promoCredit:
+                                  profileData.market.primary.payment.promoCredits.toLocaleString(
+                                    'en-US',
+                                    {
+                                      style: 'currency',
+                                      currency: 'USD',
+                                    },
+                                  ),
+                              })}
+                            >
+                              <Typography className={classes.emailAndLocation}>
+                                {t('profile.purchasePrice', {
+                                  date: format(
+                                    new Date(
+                                      profileData.market.primary.payment.date,
+                                    ),
+                                    'MMM d, yyyy',
+                                  ),
+                                  cost: profileData.market.primary.cost.toLocaleString(
+                                    'en-US',
+                                    {
+                                      style: 'currency',
+                                      currency: 'USD',
+                                    },
+                                  ),
+                                })}
+                              </Typography>
+                            </Tooltip>
+                          </Box>
+                        )}
                         {profileData?.webacy && (
                           <Box className={classes.riskScoreContainer}>
-                            <Avatar
-                              src={`${config.ASSETS_BUCKET_URL}/images/webacy/logo.png`}
-                              className={classes.riskScoreLogo}
-                              onClick={() =>
-                                window.open(
-                                  `https://dapp.webacy.com/unstoppable/${ownerAddress}`,
-                                  '_blank',
-                                )
-                              }
+                            <HealthAndSafetyOutlinedIcon
+                              className={classes.sidebarIcon}
                             />
                             <Typography className={classes.emailAndLocation}>
                               {t('webacy.riskScore')}:
@@ -913,72 +1042,6 @@ const DomainProfile = ({
                                   </IconButton>
                                 </Tooltip>
                               )}
-                          </Box>
-                        )}
-                        {ipfsHash && (
-                          <Box mb={2} display="flex">
-                            <LaunchOutlinedIcon
-                              className={classes.sidebarIcon}
-                            />
-                            <Link
-                              external
-                              href={`${config.IPFS_BASE_URL}${normalizeIpfsHash(
-                                ipfsHash,
-                              )}`}
-                              className={classes.websiteLink}
-                            >
-                              {`${domain} (${ipfsHash.slice(
-                                0,
-                                10,
-                              )}...${ipfsHash.slice(-4)})`}
-                            </Link>
-                          </Box>
-                        )}
-                        {profileData?.profile?.web2Url && (
-                          <Box mb={2} display="flex">
-                            <LaunchOutlinedIcon
-                              className={classes.sidebarIcon}
-                            />
-                            <Link
-                              external
-                              href={profileData?.profile?.web2Url}
-                              className={classes.websiteLink}
-                            >
-                              {profileData?.profile?.web2Url.replace(
-                                /^https?:\/\/|\/$/g,
-                                '',
-                              )}
-                            </Link>
-                          </Box>
-                        )}
-                        {profileData?.profile?.location && (
-                          <Box mb={2} display="flex">
-                            <FmdGoodOutlinedIcon
-                              className={classes.sidebarIcon}
-                            />
-                            <Typography className={classes.emailAndLocation}>
-                              {profileData?.profile?.location}
-                            </Typography>
-                          </Box>
-                        )}
-                        {isEnsDomain && ensDomainStatus?.expiresAt && (
-                          <Box mb={2} display="flex">
-                            <RestoreOutlinedIcon
-                              className={classes.sidebarIcon}
-                            />
-                            <Typography className={classes.emailAndLocation}>
-                              {t('profile.thisDomainExpires', {
-                                action: isPast(
-                                  new Date(ensDomainStatus.expiresAt),
-                                )
-                                  ? t('profile.expired')
-                                  : t('profile.expires'),
-                                date: format(
-                                  new Date(ensDomainStatus.expiresAt),
-                                  'MMM d, yyyy',
-                                ),
-                              })}
-                            </Typography>
                           </Box>
                         )}
                       </Box>
@@ -1359,6 +1422,7 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         DomainFieldTypes.Profile,
         DomainFieldTypes.SocialAccounts,
         DomainFieldTypes.Records,
+        DomainFieldTypes.Market,
       ]),
       getIdentity({name: domain}),
     ]);

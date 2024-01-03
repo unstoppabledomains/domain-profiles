@@ -172,6 +172,14 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     width: '20px',
     height: '20px',
   },
+  contentCopyIconButton: {
+    color: theme.palette.neutralShades[300],
+    paddingTop: theme.spacing(0.5),
+    marginLeft: theme.spacing(1),
+    width: '20px',
+    height: '20px',
+    cursor: 'pointer',
+  },
   domainNameBox: {
     display: 'flex',
     justifyContent: 'center',

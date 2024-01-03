@@ -707,6 +707,7 @@ const DomainProfile = ({
                           <div className={classes.followersPreview}>
                             {followers.slice(0, 3).map(follower => (
                               <DomainPreview
+                                key={follower}
                                 domain={follower}
                                 size={30}
                                 chatUser={chatUser}
@@ -747,7 +748,7 @@ const DomainProfile = ({
                           })
                           .map(account => {
                             return (
-                              <Box mr={1}>
+                              <Box mr={1} key={account}>
                                 <SocialAccountCard
                                   socialInfo={socialsInfo[account]}
                                   handleClickToCopy={handleClickToCopy}

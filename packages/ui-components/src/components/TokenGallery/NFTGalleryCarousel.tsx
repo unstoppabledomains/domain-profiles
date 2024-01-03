@@ -81,20 +81,20 @@ const NFTGalleryCarousel = ({
    .swiper-button-next::after, .swiper-button-prev::after {
      font-size: var(--swiper-navigation-small);
    }
-    
+
  .swiper-button-prev, .swiper-button-next {
      box-sizing: border-box;
      width: 32px;
      height: 32px;
      background: rgba(255, 255, 255, 0.8);
-  
+
      border: 1px solid #DDDDDF;
      backdrop-filter: blur(2px);
- 
+
      border-radius: 50%;
   }
-  
- .swiper-wrapper { 
+
+ .swiper-wrapper {
   padding-bottom: 1rem;
  }
   `;
@@ -199,8 +199,8 @@ const NFTGalleryCarousel = ({
           className={classes.loadingContainer}
           spacing={2}
         >
-          {[...new Array(loadingCount)].map(v => (
-            <Grid item xs={12 / minNftCount} md={12 / maxNftCount}>
+          {[...new Array(loadingCount)].map((_, key) => (
+            <Grid key={key} item xs={12 / minNftCount} md={12 / maxNftCount}>
               <NftCard
                 compact={true}
                 nft={{

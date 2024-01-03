@@ -28,22 +28,23 @@ const createWrapper =
   ({theme}: {theme?: Theme} = {}): React.FC =>
   ({children}) => (
     <QueryClientProvider client={createTestQueryClient()}>
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      <ThemeProvider theme={(theme || defaultTheme) as any}>
-        <SnackbarProvider>
-          <uiComponents.Web3ContextProvider>
-            <uiComponents.TokenGalleryProvider>
-              <uiComponents.UnstoppableMessagingProvider>
-                <uiComponents.DomainConfigProvider>
-                  <uiComponents.TranslationProvider>
-                    {children}
-                  </uiComponents.TranslationProvider>
-                </uiComponents.DomainConfigProvider>
-              </uiComponents.UnstoppableMessagingProvider>
-            </uiComponents.TokenGalleryProvider>
-          </uiComponents.Web3ContextProvider>
-        </SnackbarProvider>
-      </ThemeProvider>
+      <uiComponents.EmotionCacheProvider>
+        <ThemeProvider theme={theme || defaultTheme}>
+          <SnackbarProvider>
+            <uiComponents.Web3ContextProvider>
+              <uiComponents.TokenGalleryProvider>
+                <uiComponents.UnstoppableMessagingProvider>
+                  <uiComponents.DomainConfigProvider>
+                    <uiComponents.TranslationProvider>
+                      {children}
+                    </uiComponents.TranslationProvider>
+                  </uiComponents.DomainConfigProvider>
+                </uiComponents.UnstoppableMessagingProvider>
+              </uiComponents.TokenGalleryProvider>
+            </uiComponents.Web3ContextProvider>
+          </SnackbarProvider>
+        </ThemeProvider>
+      </uiComponents.EmotionCacheProvider>
     </QueryClientProvider>
   );
 

@@ -5,7 +5,10 @@ import React from 'react';
 import 'react-medium-image-zoom/dist/styles.css';
 import 'swiper/css/bundle';
 
-import {UnstoppableMessagingProvider} from '@unstoppabledomains/ui-components';
+import {
+  BaseProvider,
+  UnstoppableMessagingProvider,
+} from '@unstoppabledomains/ui-components';
 
 // setup wrapped app props
 export type NextPageWithLayout = NextPage & {
@@ -31,9 +34,11 @@ const WrappedApp = (props: WrappedAppProps) => {
           content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, shrink-to-fit=no, user-scalable=0"
         />
       </Head>
-      <UnstoppableMessagingProvider>
-        <Component {...pageProps} />
-      </UnstoppableMessagingProvider>
+      <BaseProvider>
+        <UnstoppableMessagingProvider>
+          <Component {...pageProps} />
+        </UnstoppableMessagingProvider>
+      </BaseProvider>
     </>
   );
 };

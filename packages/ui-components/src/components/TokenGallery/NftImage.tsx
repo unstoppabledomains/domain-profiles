@@ -1,4 +1,5 @@
-import React from 'react';
+import Skeleton from '@mui/material/Skeleton';
+import React, {useState} from 'react';
 import {LazyLoadImage} from 'react-lazy-load-image-component';
 
 interface Props {
@@ -9,12 +10,27 @@ interface Props {
 }
 
 const NftImage = ({src, alt, className, onClick}: Props) => {
-  return (
+  const [isBroken, setIsBroken] = useState(false);
+
+  const handleError = () => {
+    setIsBroken(true);
+  };
+
+  return !isBroken ? (
     <LazyLoadImage
+      alt={alt}
       src={src}
       className={className}
       onClick={onClick}
-      alt={alt}
+      onError={handleError}
+    />
+  ) : (
+    <Skeleton
+      className={className}
+      variant="rectangular"
+      animation="wave"
+      width="100%"
+      height="100%"
     />
   );
 };

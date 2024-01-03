@@ -23,6 +23,7 @@ export type ManagerProps = {
   onFailed?: () => void;
   useLocalPushKey?: boolean;
   useLocalXmtpKey?: boolean;
+  forceWalletConnected?: boolean;
 };
 
 export const ONE_WEEK = 60 * 60 * 24 * 7 * 1000;
@@ -35,6 +36,7 @@ export const ProfileManager: React.FC<ManagerProps> = ({
   setSaveClicked,
   onSignature,
   onFailed,
+  forceWalletConnected,
   useLocalXmtpKey = true,
   useLocalPushKey = false,
 }) => {
@@ -46,6 +48,9 @@ export const ProfileManager: React.FC<ManagerProps> = ({
 
   useEffect(() => {
     if (saveClicked) {
+      if (forceWalletConnected && !web3Context?.web3Deps) {
+        setAccessWalletModalIsOpen(true);
+      }
       void handlePrepareSignature();
     }
   }, [saveClicked]);
@@ -58,7 +63,13 @@ export const ProfileManager: React.FC<ManagerProps> = ({
   }, [web3Context, messageResponse]);
 
   useEffect(() => {
+    // always require signature and expiry
     if (!signature || !expiry) {
+      return;
+    }
+
+    // optionally require web3deps to be set
+    if (forceWalletConnected && !web3Context?.web3Deps) {
       return;
     }
 
@@ -73,7 +84,7 @@ export const ProfileManager: React.FC<ManagerProps> = ({
     // store signature value on local device
     localStorage.setItem(getDomainSignatureValueKey(domain), signature);
     localStorage.setItem(getDomainSignatureExpiryKey(domain), expiry);
-  }, [signature, expiry]);
+  }, [signature, expiry, web3Context]);
 
   // handlePrepareSignature retrieves the message that must be signed for the profile
   // management request.

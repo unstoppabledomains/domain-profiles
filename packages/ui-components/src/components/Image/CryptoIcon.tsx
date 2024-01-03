@@ -2,8 +2,8 @@ import type {SvgIconProps} from '@mui/material/SvgIcon';
 import dynamic from 'next/dynamic';
 import React from 'react';
 
-import type {AllCurrenciesType} from '../../lib/types/blockchain';
-import {AllCurrencies} from '../../lib/types/blockchain';
+import type {CurrenciesType} from '../../lib/types/blockchain';
+import {Currencies} from '../../lib/types/blockchain';
 
 const Bitcoin = dynamic(
   () => import('@unstoppabledomains/ui-kit/icons/crypto/Bitcoin'),
@@ -420,287 +420,287 @@ const MContent = dynamic(
 );
 
 type Props = {
-  currency: AllCurrenciesType;
+  currency: CurrenciesType;
 } & SvgIconProps;
 
 export const CryptoIcon = React.forwardRef<SVGSVGElement, Props>(
   ({currency, ...rest}, ref) => {
     switch (currency) {
-      case AllCurrencies.BTC:
+      case Currencies.BTC:
         return <Bitcoin {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.ETH:
+      case Currencies.ETH:
         return <Ethereum {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.LTC:
+      case Currencies.LTC:
         return <Litecoin {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.XRP:
+      case Currencies.XRP:
         return <Ripple {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.ZIL:
+      case Currencies.ZIL:
         return <Zilliqa {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.ETC:
+      case Currencies.ETC:
         return <EthereumClassic {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.LINK:
+      case Currencies.LINK:
         return <Chainlink {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.USDC:
+      case Currencies.USDC:
         return <USDCoin {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.BAT:
+      case Currencies.BAT:
         return <BasicAttentionToken {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.REP:
+      case Currencies.REP:
         return <Augur {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.ZRX:
+      case Currencies.ZRX:
         return <ZRX {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.DAI:
+      case Currencies.DAI:
         return <Dai {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.BCH:
+      case Currencies.BCH:
         return <BitcoinCash {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.XMR:
+      case Currencies.XMR:
         return <Monero {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.DASH:
+      case Currencies.DASH:
         return <Dash {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.NEO:
+      case Currencies.NEO:
         return <Neo {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.DOGE:
+      case Currencies.DOGE:
         return <Doge {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.ZEC:
+      case Currencies.ZEC:
         return <Zcash {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.ADA:
+      case Currencies.ADA:
         return <Cardano {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.EOS:
+      case Currencies.EOS:
         return <EOS {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.XLM:
+      case Currencies.XLM:
         return <StellarLumens {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.BNB:
+      case Currencies.BNB:
         return <BinanceCoin {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.BTG:
+      case Currencies.BTG:
         return <BitcoinGold {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.NANO:
+      case Currencies.NANO:
         return <Nano {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.WAVES:
+      case Currencies.WAVES:
         return <WavesTech {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.KMD:
+      case Currencies.KMD:
         return <Komodo {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.AE:
+      case Currencies.AE:
         return <Aeternity {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.WAN:
+      case Currencies.WAN:
         return <Wanchain {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.UBQ:
+      case Currencies.UBQ:
         return <Ubiq {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.XTZ:
+      case Currencies.XTZ:
         return <Tezos {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.MIOTA:
+      case Currencies.MIOTA:
         return <Iota {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.VET:
+      case Currencies.VET:
         return <VeChain {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.QTUM:
+      case Currencies.QTUM:
         return <Qtum {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.ICX:
+      case Currencies.ICX:
         return <ICX {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.DGB:
+      case Currencies.DGB:
         return <DigiByte {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.XZC:
+      case Currencies.XZC:
         return <Zcoin {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.BURST:
+      case Currencies.BURST:
         return <Burst {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.DCR:
+      case Currencies.DCR:
         return <Decred {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.XEM:
+      case Currencies.XEM:
         return <NEM {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.LSK:
+      case Currencies.LSK:
         return <Lisk {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.ATOM:
+      case Currencies.ATOM:
         return <Cosmos {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.ONT:
+      case Currencies.ONT:
         return <Ontology {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.SMART:
+      case Currencies.SMART:
         return <SmartCash {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.TPAY:
+      case Currencies.TPAY:
         return <TokenPay {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.GRS:
+      case Currencies.GRS:
         return <GroestIcoin {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.GAS:
+      case Currencies.GAS:
         return <Gas {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.TRX:
+      case Currencies.TRX:
         return <TRON {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.VTHO:
+      case Currencies.VTHO:
         return <VeThorToken {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.BCD:
+      case Currencies.BCD:
         return <BitcoinDiamond {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.BTT:
+      case Currencies.BTT:
         return <BitTorrent {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.KIN:
+      case Currencies.KIN:
         return <Kin {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.RVN:
+      case Currencies.RVN:
         return <Ravencoin {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.ARK:
+      case Currencies.ARK:
         return <Ark {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.XVG:
+      case Currencies.XVG:
         return <Verge {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.ALGO:
+      case Currencies.ALGO:
         return <Algorand {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.NEBL:
+      case Currencies.NEBL:
         return <Neblio {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.BNTY:
+      case Currencies.BNTY:
         return <Bounty {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.ONE:
+      case Currencies.ONE:
         return <Harmony {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.HT:
+      case Currencies.HT:
         return <HuobiToken {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.ENJ:
+      case Currencies.ENJ:
         return <EnjinCoin {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.YFI:
+      case Currencies.YFI:
         return <YearnFinance {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.COMP:
+      case Currencies.COMP:
         return <Compound {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.BAL:
+      case Currencies.BAL:
         return <Balancer {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.AMPL:
+      case Currencies.AMPL:
         return <Ampleforth {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.USDT:
+      case Currencies.USDT:
         return <Tether {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.LEND:
+      case Currencies.LEND:
         return <Lend {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.BSV:
+      case Currencies.BSV:
         return <BitcoinSV {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.XDC:
+      case Currencies.XDC:
         return <XinFin {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.CRO:
+      case Currencies.CRO:
         return <CRO {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.FTM:
+      case Currencies.FTM:
         return <Fantom {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.STRAT:
+      case Currencies.STRAT:
         return <Stratis {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.SWTH:
+      case Currencies.SWTH:
         return <Switcheo {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.FUSE:
+      case Currencies.FUSE:
         return <FuseNetwork {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.AR:
+      case Currencies.AR:
         return <Arweave {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.NIM:
+      case Currencies.NIM:
         return <Nimiq {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.MATIC:
+      case Currencies.MATIC:
         return <Polygon {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.SOL:
+      case Currencies.SOL:
         return <Solana {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.CUSDT:
+      case Currencies.CUSDT:
         return <CompoundTether {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.AVAX:
+      case Currencies.AVAX:
         return <Avalanche {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.DOT:
+      case Currencies.DOT:
         return <Polkadot {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.BUSD:
+      case Currencies.BUSD:
         return <BinanceUSD {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.SHIB:
+      case Currencies.SHIB:
         return <SHIB {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.LUNA:
+      case Currencies.LUNA:
         return <Terra {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.CAKE:
+      case Currencies.CAKE:
         return <PancakeSwap {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.MANA:
+      case Currencies.MANA:
         return <MANA {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.EGLD:
+      case Currencies.EGLD:
         return <Elrond {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.SAND:
+      case Currencies.SAND:
         return <SAND {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.HBAR:
+      case Currencies.HBAR:
         return <Hedera {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.WAXP:
+      case Currencies.WAXP:
         return <WAXP {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies['1INCH']:
+      case Currencies['1INCH']:
         return <ONEINCH {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.BLOCKS:
+      case Currencies.BLOCKS:
         return <BLOCKS {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.THETA:
+      case Currencies.THETA:
         return <THETA {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.HNT:
+      case Currencies.HNT:
         return <Helium {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.SAFEMOON:
+      case Currencies.SAFEMOON:
         return <SafeMoon {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.NEAR:
+      case Currencies.NEAR:
         return <NEARProtocol {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.FIL:
+      case Currencies.FIL:
         return <Filecoin {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.AXS:
+      case Currencies.AXS:
         return <AxieInfinity {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.AMP:
+      case Currencies.AMP:
         return <Amp {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.CELO:
+      case Currencies.CELO:
         return <Celo {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.KSM:
+      case Currencies.KSM:
         return <Kusama {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.CSPR:
+      case Currencies.CSPR:
         return <Casper {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.UNI:
+      case Currencies.UNI:
         return <Uniswap {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.CEL:
+      case Currencies.CEL:
         return <Celsius {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.ERG:
+      case Currencies.ERG:
         return <Ergo {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.KAVA:
+      case Currencies.KAVA:
         return <Kava {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.LRC:
+      case Currencies.LRC:
         return <Loopring {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.POLY:
+      case Currencies.POLY:
         return <Polymath {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.TFUEL:
+      case Currencies.TFUEL:
         return <ThetaFuel {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.NEXO:
+      case Currencies.NEXO:
         return <Nexo {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.FLOW:
+      case Currencies.FLOW:
         return <Flow {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.ICP:
+      case Currencies.ICP:
         return <InternetComputer {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.TUSD:
+      case Currencies.TUSD:
         return <TrueUSD {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.KLV:
+      case Currencies.KLV:
         return <Klever {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.YLD:
+      case Currencies.YLD:
         return <YieldApp {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.OKT:
+      case Currencies.OKT:
         return <OKT {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.B2M:
+      case Currencies.B2M:
         return <Bit2Me {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.DOG:
+      case Currencies.DOG:
         return <TheDogeNFT {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.GALA:
+      case Currencies.GALA:
         return <Gala {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.MOBX:
+      case Currencies.MOBX:
         return <Mobix {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.FAB:
+      case Currencies.FAB:
         return <Fab {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.FIRO:
+      case Currencies.FIRO:
         return <Firo {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.FET:
+      case Currencies.FET:
         return <Fet {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.BEAM:
+      case Currencies.BEAM:
         return <Beam {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies['0ZK']:
+      case Currencies['0ZK']:
         return <RailgunIcon {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.SUI:
+      case Currencies.SUI:
         return <Sui {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.MOON:
+      case Currencies.MOON:
         return <Moon {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.SWEAT:
+      case Currencies.SWEAT:
         return <Sweat {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.DESO:
+      case Currencies.DESO:
         return <Deso {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.FLR:
+      case Currencies.FLR:
         return <FLR {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.SGB:
+      case Currencies.SGB:
         return <SGB {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.POKT:
+      case Currencies.POKT:
         return <POKT {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.XLA:
+      case Currencies.XLA:
         return <XLA {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.KAI:
+      case Currencies.KAI:
         return <KAI {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.APT:
+      case Currencies.APT:
         return <APT {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.GTH:
+      case Currencies.GTH:
         return <GTH {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.HI:
+      case Currencies.HI:
         return <HI {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.VERSE:
+      case Currencies.VERSE:
         return <Verse {...rest} fr={undefined} iconRef={ref} />;
-      case AllCurrencies.MCONTENT:
+      case Currencies.MCONTENT:
         return <MContent {...rest} fr={undefined} iconRef={ref} />;
       default:
         return null;

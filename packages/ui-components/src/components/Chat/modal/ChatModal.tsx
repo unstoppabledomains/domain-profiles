@@ -53,7 +53,7 @@ import {
   isAcceptedTopic,
 } from '../protocol/xmtp';
 import type {AddressResolution, PayloadData} from '../types';
-import {TabType, getCaip10Address} from '../types';
+import {SearchPlaceholder, TabType, getCaip10Address} from '../types';
 import CallToAction from './CallToAction';
 import Search from './Search';
 import Conversation from './dm/Conversation';
@@ -181,7 +181,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 }) => {
   const {cx, classes} = useStyles();
   const [t] = useTranslationContext();
-  const {data: featureFlags} = useFeatureFlags();
+  const {data: featureFlags} = useFeatureFlags(false, authDomain);
   const [loadingText, setLoadingText] = useState<string>();
   const [lastRefresh, setLastRefresh] = useState<Record<TabType, number>>({
     chat: 0,
@@ -301,7 +301,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     }
 
     // disable search panel if no text is shown
-    if (!searchValue) {
+    if (searchValue === undefined) {
       setConversationSearch(false);
       return;
     }
@@ -591,6 +591,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   };
 
   const handleNewChat = () => {
+    setSearchValue(SearchPlaceholder);
     setConversationSearch(true);
   };
 

@@ -1,5 +1,6 @@
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Hidden from '@mui/material/Hidden';
 import type {Theme} from '@mui/material/styles';
@@ -10,7 +11,7 @@ import React, {useState} from 'react';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import useTranslationContext from '../../lib/i18n';
-import type {AllCurrenciesType} from '../../lib/types/blockchain';
+import type {CurrenciesType} from '../../lib/types/blockchain';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import type {ParsedRecords} from '../../lib/types/records';
 import CryptoAddress from './CryptoAddress';
@@ -20,26 +21,23 @@ const MAX_ADDRESSES_VISIBLE = 4;
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     position: 'relative',
-    marginTop: theme.spacing(3),
+    marginTop: theme.spacing(1),
     minHeight: 35,
   },
   parentRow: {
-    position: 'absolute',
-    top: 0,
-    left: `-${theme.spacing(2)}`,
-    paddingLeft: theme.spacing(2),
     display: 'flex',
-    overflowY: 'hidden',
-    overflowX: 'auto',
     whiteSpace: 'nowrap',
-    maxWidth: `calc(100% + ${theme.spacing(4)})`,
-    [theme.breakpoints.up('md')]: {
-      position: 'relative',
-      flexWrap: 'wrap',
-      top: 'initial',
-      left: 'initial',
-      paddingLeft: 'initial',
-      overflow: 'initial',
+    marginLeft: theme.spacing(0),
+    flexWrap: 'wrap',
+    paddingLeft: 'initial',
+    overflow: 'initial',
+    [theme.breakpoints.down('md')]: {
+      justifyContent: 'center',
+    },
+  },
+  cryptoContainer: {
+    [theme.breakpoints.down('md')]: {
+      marginTop: theme.spacing(1),
     },
   },
   showAllButton: {
@@ -58,18 +56,20 @@ const CryptoAddresses: React.FC<Props> = ({
   showWarning,
   isOwner,
   onCryptoAddressCopied: handleCryptoAddressCopied,
+  showAll,
 }) => {
   const {classes} = useStyles();
   const theme = useTheme();
   const [t] = useTranslationContext();
   const isTabletOrMobile = useMediaQuery(theme.breakpoints.down('md'));
   const {addresses = {}, multicoinAddresses = {}} = records;
-  const [showWholeList, setShowWholeList] = useState(false);
+  const [showWholeList, setShowWholeList] = useState(showAll || false);
   let addressList = Object.keys(addresses);
   let multicoinAddressList = Object.keys(multicoinAddresses);
   const isToggleButtonVisible =
-    showWholeList ||
-    addressList.length + multicoinAddressList.length > MAX_ADDRESSES_VISIBLE;
+    !showAll &&
+    (showWholeList ||
+      addressList.length + multicoinAddressList.length > MAX_ADDRESSES_VISIBLE);
 
   if (!isTabletOrMobile && !showWholeList) {
     addressList = addressList.slice(0, MAX_ADDRESSES_VISIBLE);
@@ -93,38 +93,42 @@ const CryptoAddresses: React.FC<Props> = ({
       <div className={classes.container}>
         <div className={classes.parentRow}>
           {addressList.map(curr => {
-            const currency = curr as AllCurrenciesType;
+            const currency = curr as CurrenciesType;
 
             return (
-              <CryptoAddress
-                key={currency}
-                currency={currency}
-                profileData={profileData}
-                showWarning={showWarning}
-                domain={domain}
-                isOwner={isOwner}
-                ownerAddress={ownerAddress}
-                singleAddress={addresses[currency]}
-                onCryptoAddressCopied={handleCryptoAddressCopied}
-              />
+              <Box className={classes.cryptoContainer}>
+                <CryptoAddress
+                  key={currency}
+                  currency={currency}
+                  profileData={profileData}
+                  showWarning={showWarning}
+                  domain={domain}
+                  isOwner={isOwner}
+                  ownerAddress={ownerAddress}
+                  singleAddress={addresses[currency]}
+                  onCryptoAddressCopied={handleCryptoAddressCopied}
+                />
+              </Box>
             );
           })}
           {multicoinAddressList.map(curr => {
-            const currency = curr as AllCurrenciesType;
+            const currency = curr as CurrenciesType;
             const versions = multicoinAddresses[currency];
 
             return (
-              <CryptoAddress
-                key={currency}
-                versions={versions}
-                currency={currency}
-                profileData={profileData}
-                showWarning={showWarning}
-                domain={domain}
-                isOwner={isOwner}
-                ownerAddress={ownerAddress}
-                onCryptoAddressCopied={handleCryptoAddressCopied}
-              />
+              <Box className={classes.cryptoContainer}>
+                <CryptoAddress
+                  key={currency}
+                  versions={versions}
+                  currency={currency}
+                  profileData={profileData}
+                  showWarning={showWarning}
+                  domain={domain}
+                  isOwner={isOwner}
+                  ownerAddress={ownerAddress}
+                  onCryptoAddressCopied={handleCryptoAddressCopied}
+                />
+              </Box>
             );
           })}
         </div>
@@ -158,5 +162,6 @@ export type Props = {
   showWarning?: boolean;
   domain?: string;
   isOwner?: boolean;
+  showAll?: boolean;
   onCryptoAddressCopied: () => void;
 };

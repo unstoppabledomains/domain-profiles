@@ -4,6 +4,40 @@ import {
   MANAGEABLE_DOMAIN_LABEL,
 } from '../../lib/types/domain';
 
+export const convertCentToDollar = (cent: number): number => {
+  return cent / 100;
+};
+
+const getUsdNumberFormat = (showCents: boolean) => {
+  const locales: string[] = ['en-US'];
+  return new Intl.NumberFormat(
+    // Prefer browser's locale, fallback on en-US
+    locales.filter(x => Boolean(x)),
+    {
+      style: 'currency',
+      currency: 'USD',
+      // to hide cents, set the max fraction digits to zero
+      maximumFractionDigits: showCents ? 2 : 0,
+      minimumFractionDigits: showCents ? 2 : 0,
+    },
+  );
+};
+
+export const convertCentToUsdString = (
+  cent: number,
+  alwaysShowCents: boolean = false,
+): string => {
+  const dollars = convertCentToDollar(cent);
+  const cents = Math.abs(cent) % 100;
+
+  const formatter = getUsdNumberFormat(cents > 0 || alwaysShowCents);
+
+  // NOTE: for locales that result in whitespace in the formatted output
+  // the formatted string output uses NBSP (non-breaking space) characters (char code 160)
+  // rather than normal space characters (char code 32)
+  return formatter.format(dollars);
+};
+
 const isDomainFormatValid = (
   domain: string,
   labelValidationRegex: RegExp,
@@ -46,12 +80,12 @@ const isExternalDomainValid = (
   return Boolean(label) && isExternalDomainSuffixValid(extension);
 };
 
-export const isExternalDomainSuffixValid = (extension: string): boolean => {
-  return EXTERNAL_DOMAIN_SUFFIXES.includes(extension);
+export const isExternalDomain = (domain: string): boolean => {
+  return isExternalDomainValid(domain, MANAGEABLE_DOMAIN_LABEL, true);
 };
 
-export const isExternalDomainValidForManagement = (domain: string): boolean => {
-  return isExternalDomainValid(domain, MANAGEABLE_DOMAIN_LABEL, true);
+export const isExternalDomainSuffixValid = (extension: string): boolean => {
+  return EXTERNAL_DOMAIN_SUFFIXES.includes(extension);
 };
 
 /**

@@ -23,7 +23,8 @@ export default function getDefaultConfig(): Config {
         BLOCK_EXPLORER_BASE_URL: 'https://goerli.etherscan.io',
         DISABLE_CONTRACTS_CACHE: true,
         PROXY_READER_ADDRESS: '0xFc5f608149f4D9e2Ed0733efFe9DD57ee24BCF68',
-        OPEN_SEA_BASE_URL: 'https://testnets.opensea.io/assets/',
+        OPEN_SEA_BASE_URL: 'https://testnets.opensea.io/assets/goerli/',
+        ENS_CONTRACT_ADDRESS: '0x114d4603199df73e7d157787f8778e21fcd13066',
       },
       MATIC: {
         CHAIN_ID: 80001,
@@ -47,16 +48,7 @@ export default function getDefaultConfig(): Config {
     UNSTOPPABLE_CONTRACT_ADDRESS: '0xa9a6a3626993d487d2dbda3173cf58ca1a9d9e9f',
     UNSTOPPABLE_METADATA_ENDPOINT: 'https://api.ud-staging.com/metadata',
     IPFS_BASE_URL: 'https://ipfs.io',
-    VERIFICATION_SUPPORTED: [
-      'SOL',
-      'ETH',
-      'MATIC',
-      'FTM',
-      'AVAX',
-      'ADA',
-      'HBAR',
-      'BTC',
-    ],
+    VERIFICATION_SUPPORTED: ['SOL', 'ETH', 'MATIC', 'FTM', 'AVAX', 'BTC'],
     LOGIN_WITH_UNSTOPPABLE: {
       CLIENT_ID: '115148ec-364d-4e19-b7d8-2807e8f1b525',
       REDIRECT_URI:

@@ -121,10 +121,10 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
     const metadataImage = profile?.records?.['social.picture.value']
       ? `https://api.unstoppabledomains.com/metadata/image-src/${avatarDomain}?withOverlay=false`
       : null;
-    const uploadedImagePath = profile?.profile.imagePath
-      ? getImageUrl(profile.profile.imagePath)
+    const uploadedImagePath = profile?.profile?.imagePath
+      ? getImageUrl(profile.profile?.imagePath)
       : null;
-    const collectibleImage = profile?.profile.collectibleImage ?? null;
+    const collectibleImage = profile?.profile?.collectibleImage ?? null;
 
     const domainAvatar = metadataImage || uploadedImagePath || collectibleImage;
     return domainAvatar || '';

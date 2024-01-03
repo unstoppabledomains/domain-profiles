@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {utils} from 'ethers';
 import type {WalletClient} from 'wagmi';
 
 interface signMessageProps {
@@ -26,13 +28,19 @@ export class WalletClientSigner {
   // that needs to be signed
   async signMessage(message: string | signMessageProps): Promise<string> {
     if (typeof message === 'string') {
+      if (utils.isHexString(message)) {
+        return await this.wallet.signMessage({
+          account: this.address as any,
+          message: {
+            raw: message as any,
+          },
+        });
+      }
       return await this.wallet.signMessage({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         account: this.address as any,
         message,
       });
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return this.wallet.signMessage(message as any);
   }
 }

@@ -1,12 +1,14 @@
 import CallMadeIcon from '@mui/icons-material/CallMade';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import ErrorOutlinedIcon from '@mui/icons-material/ErrorOutlined';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import GoogleIcon from '@mui/icons-material/Google';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import RedditIcon from '@mui/icons-material/Reddit';
 import TelegramIcon from '@mui/icons-material/Telegram';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import YouTubeIcon from '@mui/icons-material/YouTube';
+import Badge from '@mui/material/Badge';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Tooltip from '@mui/material/Tooltip';
@@ -191,6 +193,18 @@ const useStyles = makeStyles<void, 'actionIcon'>()(
       fontWeight: theme.typography.fontWeightBold,
     },
     tooltipData: {},
+    verifiedBadge: {
+      backgroundColor: theme.palette.white,
+      color: theme.palette.white,
+      fill: theme.palette.success.main,
+      borderRadius: '50%',
+    },
+    nonVerifiedBadge: {
+      backgroundColor: theme.palette.white,
+      color: theme.palette.white,
+      fill: theme.palette.warning.main,
+      borderRadius: '50%',
+    },
   }),
 );
 
@@ -198,12 +212,16 @@ export type SocialAccountCardProps = {
   socialInfo: SocialAccountUserInfo | null;
   handleClickToCopy: () => void;
   small?: boolean;
+  verified?: boolean;
+  verificationSupported?: boolean;
 };
 
 const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
   socialInfo,
   handleClickToCopy,
   small,
+  verified,
+  verificationSupported,
 }) => {
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
@@ -287,29 +305,21 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
           link: socialInfo.url.replaceAll('.lens', ''),
         };
       }
-      case DomainProfileSocialMedia.Google: {
-        return {
-          Icon: GoogleIcon,
-          displayName: socialInfo.userName,
-          metricValue: '',
-          metricName: '',
-        };
-      }
-      default: {
-        throw new Error('Unknown account');
-      }
     }
+    return undefined;
   };
 
-  const {Icon, displayName, metricName, metricValue, metricValues, link} =
-    extractUserInfo();
+  const userInfo = extractUserInfo();
+  if (!userInfo) {
+    return null;
+  }
 
   const getCondensedTooltip = () => {
     const metrics =
-      metricValues?.map(m =>
+      userInfo?.metricValues?.map(m =>
         m.value ? `${m.name.toLocaleString()} ${m.value} ` : undefined,
       ) || [];
-    return [displayName, ...metrics].map((v, i) => (
+    return [userInfo?.displayName, ...metrics].map((v, i) => (
       <div>
         <Typography
           className={i === 0 ? classes.tooltipTitle : classes.tooltipData}
@@ -322,37 +332,56 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const Wrapper: any = !link ? CopyToClipboard : Link;
-  const wrapperProps = !link
-    ? {stringToCopy: displayName, onCopy: handleClickToCopy}
-    : {className: classes.link, external: true, to: link};
+  const Wrapper: any = !userInfo?.link ? CopyToClipboard : Link;
+  const wrapperProps = !userInfo?.link
+    ? {stringToCopy: userInfo?.displayName, onCopy: handleClickToCopy}
+    : {className: classes.link, external: true, to: userInfo?.link};
 
   return (
     <Wrapper {...wrapperProps}>
       {small ? (
         <Tooltip title={getCondensedTooltip()}>
           <div className={classes.smallIconContainer}>
-            <Icon
-              titleAccess={`${socialInfo?.kind} logo`}
-              classes={{
-                root: cx(
-                  classes.socialIcon,
-                  classes[`${socialInfo?.kind}Icon`],
-                ),
-              }}
-            />
+            <Badge
+              anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+              badgeContent={
+                verified ? (
+                  <CheckCircleIcon
+                    fontSize="small"
+                    className={classes.verifiedBadge}
+                  />
+                ) : (
+                  verificationSupported && (
+                    <ErrorOutlinedIcon
+                      fontSize="small"
+                      className={classes.nonVerifiedBadge}
+                    />
+                  )
+                )
+              }
+            >
+              <userInfo.Icon
+                titleAccess={`${socialInfo?.kind} logo`}
+                classes={{
+                  root: cx(
+                    classes.socialIcon,
+                    classes[`${socialInfo?.kind}Icon`],
+                  ),
+                }}
+              />
+            </Badge>
           </div>
         </Tooltip>
       ) : (
         <Card className={classes.card}>
           <CardContent classes={{root: classes.cardContentRoot}}>
-            {link ? (
+            {userInfo?.link ? (
               <CallMadeIcon
                 className={cx(
                   classes.icon,
                   classes.iconGrey,
                   classes.actionIcon,
-                  {[classes.iconCentered]: !metricName},
+                  {[classes.iconCentered]: !userInfo?.metricName},
                 )}
               />
             ) : (
@@ -361,12 +390,12 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
                   classes.icon,
                   classes.iconGrey,
                   classes.actionIcon,
-                  {[classes.iconCentered]: !metricName},
+                  {[classes.iconCentered]: !userInfo?.metricName},
                 )}
               />
             )}
             <div className={classes.accountIconContainer}>
-              <Icon
+              <userInfo.Icon
                 titleAccess={`${socialInfo?.kind} logo`}
                 classes={{
                   root: cx(
@@ -378,34 +407,36 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
             </div>
             <div className={classes.socialContentWrapper}>
               <Typography
-                title={displayName}
+                title={userInfo?.displayName}
                 variant="body2"
                 className={classes.name}
               >
-                {displayName}
+                {userInfo?.displayName}
               </Typography>
-              {metricValues && (
+              {userInfo?.metricValues && (
                 <Typography
                   variant="body2"
                   color="textSecondary"
                   className={classes.metricValues}
-                  title={metricValues
+                  title={userInfo?.metricValues
                     .map(m => `${m.name.toLocaleString()} ${m.value} `)
                     .join('\r\n')}
                 >
-                  {metricValues
+                  {userInfo?.metricValues
                     .map(m => `${m.name.toLocaleString()} ${m.value} `)
                     .join(',')}
                 </Typography>
               )}
-              {metricValue && (
+              {userInfo?.metricValue && (
                 <Typography
                   variant="body2"
                   color="textSecondary"
                   className={classes.metricValue}
                 >
-                  {metricValue &&
-                    `${metricValue.toLocaleString()} ${metricName}`}
+                  {userInfo?.metricValue &&
+                    `${userInfo?.metricValue.toLocaleString()} ${
+                      userInfo?.metricName
+                    }`}
                 </Typography>
               )}
             </div>

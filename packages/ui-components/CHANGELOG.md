@@ -3,9 +3,15 @@
 All notable changes to this project will be documented in this file. This
 project adheres to [Semantic Versioning](http://semver.org/).
 
-## 0.0.31
+## 0.0.32
 
 - Move `react-query` to peerDependencies
+
+## 0.0.31
+
+- Off-chain profile management React components
+- On-chain records management React components
+- Upgrade Push Protocol SDK packages to support token gated group chat
 
 ## 0.0.30
 

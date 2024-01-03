@@ -10,11 +10,15 @@ export enum Network {
 
 export type Nft = SerializedNftMetadata & {
   toggleVisibility?: (symbol: string, mint: string, visible: boolean) => void;
+  peerNfts?: Nft[];
 };
 
 export type NftMintItem = NftRequestItem & {
   symbol: string;
 };
+
+export const NftPageSize = 10;
+
 export interface NftRequestItem {
   mint: string;
   public: boolean;
@@ -26,6 +30,7 @@ export interface NftResponse {
   verified: boolean;
   enabled: boolean;
   cursor?: string;
+  showAllItems?: boolean;
 }
 
 export interface SerializedMarketplaceData {

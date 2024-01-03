@@ -4832,7 +4832,6 @@ __metadata:
     react-linkify: ^1.0.0-alpha
     react-medium-image-zoom: ^5.1.6
     react-qrcode-logo: ^2.8.0
-    react-query: ^3.39.3
     react-visibility-sensor: ^5.1.1
     rooks: ^5.7.0
     styled-components: ^5.3.5
@@ -4848,6 +4847,7 @@ __metadata:
     web3.storage: ^4.5.5
   peerDependencies:
     "@unstoppabledomains/ui-kit": ^0.3.15
+    react-query: ^3.39.3
   languageName: unknown
   linkType: soft
 

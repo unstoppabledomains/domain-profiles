@@ -1,6 +1,6 @@
 {
   "name": "@unstoppabledomains/ui-components",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "private": true,
   "description": "An open and reusable suite of Unstoppable Domains management components",
   "keywords": [
@@ -86,7 +86,6 @@
     "react-linkify": "^1.0.0-alpha",
     "react-medium-image-zoom": "^5.1.6",
     "react-qrcode-logo": "^2.8.0",
-    "react-query": "^3.39.3",
     "react-visibility-sensor": "^5.1.1",
     "rooks": "^5.7.0",
     "styled-components": "^5.3.5",
@@ -111,7 +110,8 @@
     "tslib": "^2.6.2"
   },
   "peerDependencies": {
-    "@unstoppabledomains/ui-kit": "^0.3.15"
+    "@unstoppabledomains/ui-kit": "^0.3.15",
+    "react-query": "^3.39.3"
   },
   "engines": {
     "node": "16.x.x",

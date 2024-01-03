@@ -80,5 +80,6 @@ export default function getDefaultConfig(): Config {
       SUPPORT_DOMAIN_NAME: 'support.crypto',
       SUPPORT_BUBBLE_SECONDS: 60,
     },
+    GATEWAY_API_KEY: process.env.GATEWAY_API_KEY || '',
   };
 }

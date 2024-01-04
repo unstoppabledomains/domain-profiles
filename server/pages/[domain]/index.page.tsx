@@ -8,12 +8,14 @@ import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
 import HealthAndSafetyOutlinedIcon from '@mui/icons-material/HealthAndSafetyOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import IosShareIcon from '@mui/icons-material/IosShare';
+import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import ManageHistoryOutlinedIcon from '@mui/icons-material/ManageHistoryOutlined';
 import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import RestoreOutlinedIcon from '@mui/icons-material/RestoreOutlined';
+import StarBorderOutlinedIcon from '@mui/icons-material/StarBorderOutlined';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
@@ -830,6 +832,39 @@ const DomainProfile = ({
                     }
                   />
                 )}
+                {profileData?.portfolio?.account?.domainCount &&
+                  profileData.portfolio.account.domainCount > 1 && (
+                    <LeftBarContentCollapse
+                      id="domains"
+                      icon={<LanguageOutlinedIcon />}
+                      header={
+                        <Typography>
+                          {t('profile.otherDomains', {
+                            count:
+                              profileData.portfolio.account.domainCount - 1,
+                          })}
+                        </Typography>
+                      }
+                      content={
+                        profileData.portfolio.wallet.primaryDomain ? (
+                          <Chip
+                            icon={<StarBorderOutlinedIcon />}
+                            onClick={() =>
+                              (window.location.href = `${config.UD_ME_BASE_URL}/${profileData.portfolio.wallet.primaryDomain}`)
+                            }
+                            label={
+                              <Typography variant="body2">
+                                {t('profile.primaryDomain', {
+                                  domain:
+                                    profileData.portfolio.wallet.primaryDomain,
+                                })}
+                              </Typography>
+                            }
+                          />
+                        ) : undefined
+                      }
+                    />
+                  )}
                 {hasMoreInfo && (
                   <LeftBarContentCollapse
                     id="moreInfo"

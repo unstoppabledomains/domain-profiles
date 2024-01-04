@@ -279,6 +279,22 @@ export type SerializedFollowerListData = {
   domain: string;
 };
 
+export type SerializedPortfolioSummary = {
+  wallet: {
+    address: string;
+    primaryDomain?: string;
+    domainCount: number;
+  };
+  account: {
+    domainCount: number;
+    spend?: {
+      collected: number;
+      storeCredit: number;
+      promoCredit: number;
+    };
+  };
+};
+
 export type SerializedProfileSearch = {
   name: string;
   imagePath: string;
@@ -307,6 +323,7 @@ export type SerializedPublicDomainProfileData = {
   webacy?: WebacyRiskScore;
   messaging?: MessagingAttributes;
   market?: SerializedDomainMarket;
+  portfolio?: SerializedPortfolioSummary;
 };
 
 export type SerializedSocialAttributes = {

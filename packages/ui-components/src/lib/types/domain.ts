@@ -71,6 +71,7 @@ export enum DomainFieldTypes {
   ReferralTier = 'referralTier',
   WebacyScore = 'webacyScore',
   Market = 'market',
+  Portfolio = 'portfolio',
 }
 
 export enum DomainProfileKeys {

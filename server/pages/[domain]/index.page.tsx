@@ -850,7 +850,7 @@ const DomainProfile = ({
                           <Chip
                             icon={<StarBorderOutlinedIcon />}
                             onClick={() =>
-                              (window.location.href = `${config.UD_ME_BASE_URL}/${profileData.portfolio.wallet.primaryDomain}`)
+                              (window.location.href = `${config.UD_ME_BASE_URL}/${profileData?.portfolio?.wallet?.primaryDomain}`)
                             }
                             label={
                               <Typography variant="body2">

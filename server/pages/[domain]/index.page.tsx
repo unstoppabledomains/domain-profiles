@@ -912,43 +912,23 @@ const DomainProfile = ({
                           <LeftBarContentCollapse
                             icon={<ManageHistoryOutlinedIcon />}
                             header={
-                              <Tooltip
-                                title={t('profile.purchaseBreakdown', {
-                                  cash: profileData.market.primary.payment.collected.toLocaleString(
+                              <Typography>
+                                {t('profile.purchasePrice', {
+                                  date: format(
+                                    new Date(
+                                      profileData.market.primary.payment.date,
+                                    ),
+                                    'MMM d, yyyy',
+                                  ),
+                                  cost: profileData.market.primary.cost.toLocaleString(
                                     'en-US',
                                     {
                                       style: 'currency',
                                       currency: 'USD',
                                     },
                                   ),
-                                  promoCredit:
-                                    profileData.market.primary.payment.promoCredits.toLocaleString(
-                                      'en-US',
-                                      {
-                                        style: 'currency',
-                                        currency: 'USD',
-                                      },
-                                    ),
                                 })}
-                              >
-                                <Typography>
-                                  {t('profile.purchasePrice', {
-                                    date: format(
-                                      new Date(
-                                        profileData.market.primary.payment.date,
-                                      ),
-                                      'MMM d, yyyy',
-                                    ),
-                                    cost: profileData.market.primary.cost.toLocaleString(
-                                      'en-US',
-                                      {
-                                        style: 'currency',
-                                        currency: 'USD',
-                                      },
-                                    ),
-                                  })}
-                                </Typography>
-                              </Tooltip>
+                              </Typography>
                             }
                             id="marketPrice"
                           />

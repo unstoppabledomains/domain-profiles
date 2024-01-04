@@ -476,7 +476,7 @@
     "ownerAddress": "Owned by {{address}}",
     "privacySettings": "Privacy settings",
     "purchaseBreakdown": "Cash: {{cash}}, Promo credit: {{promoCredit}}",
-    "purchasePrice": "Minted for {{cost}} on {{date}}",
+    "purchasePrice": "Purchased for {{cost}} on {{date}}",
     "refreshBadges": "Refresh badges",
     "sendMessage": "Send Message to Holders",
     "setUpToken": "Setup Collectibles Gallery",

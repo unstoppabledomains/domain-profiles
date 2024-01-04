@@ -37,6 +37,7 @@ steps:
       - '--min-instances=3'
       - '--max-instances=10'
       - '--update-env-vars=APP_VERSION=$COMMIT_SHA'
+      - '--update-secrets=GATEWAY_API_KEY=$_GATEWAY_API_KEY_SECRET'
       - '--quiet'
     id: Deploy
     entrypoint: gcloud
@@ -50,6 +51,7 @@ substitutions:
   _AR_HOSTNAME: us-central1-docker.pkg.dev
   _PLATFORM: managed
   _SERVICE_NAME: ud-me-stag
+  _GATEWAY_API_KEY_SECRET: kong_consumer_stag_ud-me:1
 tags:
   - gcp-cloud-build-deploy-cloud-run
   - gcp-cloud-build-deploy-cloud-run-managed

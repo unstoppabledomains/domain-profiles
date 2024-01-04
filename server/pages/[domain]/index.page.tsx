@@ -835,214 +835,225 @@ const DomainProfile = ({
                     id="moreInfo"
                     icon={<InfoOutlinedIcon />}
                     header={t('profile.moreInformation')}
+                    persist={true}
                     content={
-                      <Box mt={2}>
+                      <Box>
                         {ipfsHash && (
-                          <Box mb={2} display="flex">
-                            <LaunchOutlinedIcon
-                              className={classes.sidebarIcon}
-                            />
-                            <Link
-                              external
-                              href={`${config.IPFS_BASE_URL}${normalizeIpfsHash(
-                                ipfsHash,
-                              )}`}
-                              className={classes.websiteLink}
-                            >
-                              {`${domain} (${ipfsHash.slice(
-                                0,
-                                10,
-                              )}...${ipfsHash.slice(-4)})`}
-                            </Link>
-                          </Box>
+                          <LeftBarContentCollapse
+                            icon={<LaunchOutlinedIcon />}
+                            header={
+                              <Link
+                                external
+                                href={`${
+                                  config.IPFS_BASE_URL
+                                }${normalizeIpfsHash(ipfsHash)}`}
+                                className={classes.websiteLink}
+                              >
+                                {`${domain} (${ipfsHash.slice(
+                                  0,
+                                  10,
+                                )}...${ipfsHash.slice(-4)})`}
+                              </Link>
+                            }
+                            id="ipfs"
+                          />
                         )}
                         {profileData?.profile?.web2Url && (
-                          <Box mb={2} display="flex">
-                            <LaunchOutlinedIcon
-                              className={classes.sidebarIcon}
-                            />
-                            <Link
-                              external
-                              href={profileData?.profile?.web2Url}
-                              className={classes.websiteLink}
-                            >
-                              {profileData?.profile?.web2Url.replace(
-                                /^https?:\/\/|\/$/g,
-                                '',
-                              )}
-                            </Link>
-                          </Box>
+                          <LeftBarContentCollapse
+                            icon={<LaunchOutlinedIcon />}
+                            header={
+                              <Link
+                                external
+                                href={profileData?.profile?.web2Url}
+                                className={classes.websiteLink}
+                              >
+                                {profileData?.profile?.web2Url.replace(
+                                  /^https?:\/\/|\/$/g,
+                                  '',
+                                )}
+                              </Link>
+                            }
+                            id="web2Url"
+                          />
                         )}
                         {profileData?.profile?.location && (
-                          <Box mb={2} display="flex">
-                            <FmdGoodOutlinedIcon
-                              className={classes.sidebarIcon}
-                            />
-                            <Typography className={classes.emailAndLocation}>
-                              {profileData?.profile?.location}
-                            </Typography>
-                          </Box>
+                          <LeftBarContentCollapse
+                            icon={<FmdGoodOutlinedIcon />}
+                            header={
+                              <Typography>
+                                {profileData?.profile?.location}
+                              </Typography>
+                            }
+                            id="location"
+                          />
                         )}
                         {isEnsDomain && ensDomainStatus?.expiresAt && (
-                          <Box mb={2} display="flex">
-                            <RestoreOutlinedIcon
-                              className={classes.sidebarIcon}
-                            />
-                            <Typography className={classes.emailAndLocation}>
-                              {t('profile.thisDomainExpires', {
-                                action: isPast(
-                                  new Date(ensDomainStatus.expiresAt),
-                                )
-                                  ? t('profile.expired')
-                                  : t('profile.expires'),
-                                date: format(
-                                  new Date(ensDomainStatus.expiresAt),
-                                  'MMM d, yyyy',
-                                ),
-                              })}
-                            </Typography>
-                          </Box>
-                        )}
-                        {profileData?.market?.primary?.payment && (
-                          <Box mb={2} display="flex">
-                            <ManageHistoryOutlinedIcon
-                              className={classes.sidebarIcon}
-                            />
-                            <Tooltip
-                              title={t('profile.purchaseBreakdown', {
-                                cash: profileData.market.primary.payment.collected.toLocaleString(
-                                  'en-US',
-                                  {
-                                    style: 'currency',
-                                    currency: 'USD',
-                                  },
-                                ),
-                                promoCredit:
-                                  profileData.market.primary.payment.promoCredits.toLocaleString(
-                                    'en-US',
-                                    {
-                                      style: 'currency',
-                                      currency: 'USD',
-                                    },
-                                  ),
-                              })}
-                            >
-                              <Typography className={classes.emailAndLocation}>
-                                {t('profile.purchasePrice', {
+                          <LeftBarContentCollapse
+                            icon={<RestoreOutlinedIcon />}
+                            header={
+                              <Typography>
+                                {t('profile.thisDomainExpires', {
+                                  action: isPast(
+                                    new Date(ensDomainStatus.expiresAt),
+                                  )
+                                    ? t('profile.expired')
+                                    : t('profile.expires'),
                                   date: format(
-                                    new Date(
-                                      profileData.market.primary.payment.date,
-                                    ),
+                                    new Date(ensDomainStatus.expiresAt),
                                     'MMM d, yyyy',
-                                  ),
-                                  cost: profileData.market.primary.cost.toLocaleString(
-                                    'en-US',
-                                    {
-                                      style: 'currency',
-                                      currency: 'USD',
-                                    },
                                   ),
                                 })}
                               </Typography>
-                            </Tooltip>
-                          </Box>
+                            }
+                            id="ensExpiration"
+                          />
+                        )}
+                        {profileData?.market?.primary?.payment && (
+                          <LeftBarContentCollapse
+                            icon={<ManageHistoryOutlinedIcon />}
+                            header={
+                              <Tooltip
+                                title={t('profile.purchaseBreakdown', {
+                                  cash: profileData.market.primary.payment.collected.toLocaleString(
+                                    'en-US',
+                                    {
+                                      style: 'currency',
+                                      currency: 'USD',
+                                    },
+                                  ),
+                                  promoCredit:
+                                    profileData.market.primary.payment.promoCredits.toLocaleString(
+                                      'en-US',
+                                      {
+                                        style: 'currency',
+                                        currency: 'USD',
+                                      },
+                                    ),
+                                })}
+                              >
+                                <Typography>
+                                  {t('profile.purchasePrice', {
+                                    date: format(
+                                      new Date(
+                                        profileData.market.primary.payment.date,
+                                      ),
+                                      'MMM d, yyyy',
+                                    ),
+                                    cost: profileData.market.primary.cost.toLocaleString(
+                                      'en-US',
+                                      {
+                                        style: 'currency',
+                                        currency: 'USD',
+                                      },
+                                    ),
+                                  })}
+                                </Typography>
+                              </Tooltip>
+                            }
+                            id="marketPrice"
+                          />
                         )}
                         {profileData?.webacy && (
-                          <Box className={classes.riskScoreContainer}>
-                            <HealthAndSafetyOutlinedIcon
-                              className={classes.sidebarIcon}
-                            />
-                            <Typography className={classes.emailAndLocation}>
-                              {t('webacy.riskScore')}:
-                            </Typography>
-                            <Tooltip
-                              title={
-                                profileData.webacy.issues.length > 0 ? (
-                                  profileData.webacy.issues.map(issue => (
-                                    <>
-                                      <Typography variant="caption">
-                                        {
-                                          issue.categories
-                                            ?.wallet_characteristics
-                                            ?.description
-                                        }
-                                      </Typography>
-                                      <List
-                                        dense
-                                        sx={{listStyleType: 'disc', pl: 4}}
-                                      >
-                                        {issue.tags.map(tag => (
-                                          <ListItem sx={{display: 'list-item'}}>
-                                            <Typography variant="caption">
-                                              {tag.name}
-                                            </Typography>
-                                          </ListItem>
-                                        ))}
-                                      </List>
-                                    </>
-                                  ))
-                                ) : (
-                                  <Typography variant="caption">
-                                    {t('webacy.riskScoreDescription')}
-                                  </Typography>
-                                )
-                              }
-                            >
-                              <Chip
-                                color={
-                                  profileData.webacy.high
-                                    ? 'error'
-                                    : profileData.webacy.medium
-                                    ? 'default'
-                                    : 'success'
-                                }
-                                size="small"
-                                icon={
-                                  profileData.webacy.high ? (
-                                    <OutlinedFlagIcon
-                                      className={classes.riskScoreIcon}
-                                    />
-                                  ) : profileData.webacy.medium ? (
-                                    <CheckCircleOutlinedIcon
-                                      className={classes.riskScoreIcon}
-                                    />
-                                  ) : (
-                                    <CheckCircleOutlinedIcon
-                                      className={classes.riskScoreIcon}
-                                    />
-                                  )
-                                }
-                                label={
-                                  profileData.webacy.high
-                                    ? t('webacy.high')
-                                    : profileData.webacy.medium
-                                    ? t('webacy.medium')
-                                    : t('webacy.low')
-                                }
-                              />
-                            </Tooltip>
-                            {isOwner &&
-                              !profileData.webacy.high &&
-                              !profileData.webacy.medium && (
+                          <LeftBarContentCollapse
+                            icon={<HealthAndSafetyOutlinedIcon />}
+                            header={
+                              <Box display="flex" alignItems="center">
+                                <Typography mr={1}>
+                                  {t('webacy.riskScore')}:
+                                </Typography>
                                 <Tooltip
                                   title={
-                                    <Typography variant="caption">
-                                      {t('webacy.share')}
-                                    </Typography>
+                                    profileData.webacy.issues.length > 0 ? (
+                                      profileData.webacy.issues.map(issue => (
+                                        <>
+                                          <Typography variant="caption">
+                                            {
+                                              issue.categories
+                                                ?.wallet_characteristics
+                                                ?.description
+                                            }
+                                          </Typography>
+                                          <List
+                                            dense
+                                            sx={{listStyleType: 'disc', pl: 4}}
+                                          >
+                                            {issue.tags.map(tag => (
+                                              <ListItem
+                                                sx={{display: 'list-item'}}
+                                              >
+                                                <Typography variant="caption">
+                                                  {tag.name}
+                                                </Typography>
+                                              </ListItem>
+                                            ))}
+                                          </List>
+                                        </>
+                                      ))
+                                    ) : (
+                                      <Typography variant="caption">
+                                        {t('webacy.riskScoreDescription')}
+                                      </Typography>
+                                    )
                                   }
                                 >
-                                  <IconButton
+                                  <Chip
+                                    color={
+                                      profileData.webacy.high
+                                        ? 'error'
+                                        : profileData.webacy.medium
+                                        ? 'default'
+                                        : 'success'
+                                    }
                                     size="small"
-                                    className={classes.riskScoreShareButton}
-                                    onClick={handleShareRiskScore}
-                                  >
-                                    <IosShareIcon
-                                      className={classes.riskScoreShareIcon}
-                                    />
-                                  </IconButton>
+                                    icon={
+                                      profileData.webacy.high ? (
+                                        <OutlinedFlagIcon
+                                          className={classes.riskScoreIcon}
+                                        />
+                                      ) : profileData.webacy.medium ? (
+                                        <CheckCircleOutlinedIcon
+                                          className={classes.riskScoreIcon}
+                                        />
+                                      ) : (
+                                        <CheckCircleOutlinedIcon
+                                          className={classes.riskScoreIcon}
+                                        />
+                                      )
+                                    }
+                                    label={
+                                      profileData.webacy.high
+                                        ? t('webacy.high')
+                                        : profileData.webacy.medium
+                                        ? t('webacy.medium')
+                                        : t('webacy.low')
+                                    }
+                                  />
                                 </Tooltip>
-                              )}
-                          </Box>
+                                {isOwner &&
+                                  !profileData.webacy.high &&
+                                  !profileData.webacy.medium && (
+                                    <Tooltip
+                                      title={
+                                        <Typography variant="caption">
+                                          {t('webacy.share')}
+                                        </Typography>
+                                      }
+                                    >
+                                      <IconButton
+                                        size="small"
+                                        className={classes.riskScoreShareButton}
+                                        onClick={handleShareRiskScore}
+                                      >
+                                        <IosShareIcon
+                                          className={classes.riskScoreShareIcon}
+                                        />
+                                      </IconButton>
+                                    </Tooltip>
+                                  )}
+                              </Box>
+                            }
+                            id="webacy"
+                          />
                         )}
                       </Box>
                     }

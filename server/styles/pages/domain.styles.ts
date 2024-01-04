@@ -203,11 +203,6 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     marginRight: theme.spacing(1.5),
     fill: theme.palette.greyShades[900],
   },
-  riskScoreContainer: {
-    display: 'flex',
-    marginBottom: theme.spacing(2),
-    alignItems: 'center',
-  },
   riskScoreLogo: {
     width: '25px',
     height: '25px',
@@ -232,8 +227,9 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     marginRight: theme.spacing(1),
   },
   websiteLink: {
-    color: theme.palette.greyShades[900],
+    color: theme.palette.greyShades[600],
     transition: theme.transitions.create('color'),
+    fontWeight: 'normal',
     '&:hover': {
       textDecoration: 'none',
       color: theme.palette.primary.main,

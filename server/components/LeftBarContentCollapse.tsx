@@ -47,6 +47,7 @@ type LeftBarContentCollapseProps = {
   icon: React.ReactNode;
   header: React.ReactNode;
   content?: React.ReactNode;
+  persist?: boolean;
 };
 
 const LeftBarContentCollapse: React.FC<LeftBarContentCollapseProps> = ({
@@ -54,6 +55,7 @@ const LeftBarContentCollapse: React.FC<LeftBarContentCollapseProps> = ({
   header,
   icon,
   content,
+  persist,
 }) => {
   const {classes} = useStyles();
   const [expanded, setExpanded] = useState(false);
@@ -64,20 +66,24 @@ const LeftBarContentCollapse: React.FC<LeftBarContentCollapseProps> = ({
 
   return (
     <Box className={classes.container}>
-      <Box className={classes.header}>
-        <Box mr={1} className={classes.text}>
-          {icon}
-        </Box>
-        <Box className={classes.text}>{header}</Box>
-        {content && (
-          <Box ml={1} className={classes.icon}>
-            <ExpandMoreOutlinedIcon
-              onClick={handleToggleExpanded}
-              data-testid={`expand-${id}`}
-            />
+      {!persist || !expanded ? (
+        <Box className={classes.header}>
+          <Box mr={1} className={classes.text}>
+            {icon}
           </Box>
-        )}
-      </Box>
+          <Box className={classes.text}>{header}</Box>
+          {content && (
+            <Box ml={1} className={classes.icon}>
+              <ExpandMoreOutlinedIcon
+                onClick={handleToggleExpanded}
+                data-testid={`expand-${id}`}
+              />
+            </Box>
+          )}
+        </Box>
+      ) : (
+        <Box mt={-1} />
+      )}
       {expanded && <Box className={classes.content}>{content}</Box>}
     </Box>
   );

@@ -5,16 +5,20 @@ import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
 import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
+import HealthAndSafetyOutlinedIcon from '@mui/icons-material/HealthAndSafetyOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import IosShareIcon from '@mui/icons-material/IosShare';
+import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import ManageHistoryOutlinedIcon from '@mui/icons-material/ManageHistoryOutlined';
 import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import RestoreOutlinedIcon from '@mui/icons-material/RestoreOutlined';
+import StarBorderOutlinedIcon from '@mui/icons-material/StarBorderOutlined';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -35,6 +39,7 @@ import React, {useEffect, useState} from 'react';
 import useIsMounted from 'react-is-mounted-hook';
 import {useStyles} from 'styles/pages/domain.styles';
 import {titleCase} from 'title-case';
+import truncateEthAddress from 'truncate-eth-address';
 
 import config from '@unstoppabledomains/config';
 import type {
@@ -49,6 +54,7 @@ import {
   Badge,
   Badges,
   ChipControlButton,
+  CopyToClipboard,
   CryptoAddresses,
   CustomBadges,
   DomainFieldTypes,
@@ -91,7 +97,9 @@ import {
   useUnstoppableMessaging,
   useWeb3Context,
 } from '@unstoppabledomains/ui-components';
+import {getOwnerDomains} from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
 import {notifyError} from '@unstoppabledomains/ui-components/src/lib/error';
+import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
 type DomainProfileServerSideProps = GetServerSideProps & {
   params: {
@@ -127,6 +135,7 @@ const DomainProfile = ({
   const [loginClicked, setLoginClicked] = useState<boolean>();
   const {isOpen: showManageDomainModal, setIsOpen: setShowManageDomainModal} =
     useDomainConfig();
+  const [showOtherDomainsModal, setShowOtherDomainsModal] = useState(false);
   const [authAddress, setAuthAddress] = useState('');
   const [authDomain, setAuthDomain] = useState('');
   const [displayQrCode, setDisplayQrCode] = useState(false);
@@ -266,6 +275,14 @@ const DomainProfile = ({
 
   const handleViewFollowModalClose = async () => {
     setIsViewFollowModalOpen(false);
+  };
+
+  const handleOtherDomainsModalOpen = () => {
+    setShowOtherDomainsModal(true);
+  };
+
+  const handleOtherDomainsModalClose = () => {
+    setShowOtherDomainsModal(false);
   };
 
   const handleManageDomainModalUpdate = async (
@@ -497,7 +514,7 @@ const DomainProfile = ({
     badge => badge.gallery && badge.gallery.tier > 2,
   );
 
-  const retrieveFollowers = async (cursor?: number) => {
+  const retrieveFollowers = async (cursor?: number | string) => {
     const retData: {domains: string[]; cursor?: number} = {
       domains: [],
       cursor: undefined,
@@ -506,7 +523,7 @@ const DomainProfile = ({
       const followersData = await getFollowers(
         domain,
         viewFollowerRelationship,
-        cursor,
+        cursor as number,
       );
       if (followersData) {
         retData.domains = followersData.data.map(f => f.domain);
@@ -514,6 +531,23 @@ const DomainProfile = ({
       }
     } catch (e) {
       console.error('error retrieving followers', e);
+    }
+    return retData;
+  };
+
+  const retrieveOwnerDomains = async (cursor?: number | string) => {
+    const retData: {domains: string[]; cursor?: string} = {
+      domains: [],
+      cursor: undefined,
+    };
+    try {
+      const domainData = await getOwnerDomains(ownerAddress, cursor as string);
+      if (domainData) {
+        retData.domains = domainData.data.map(f => f.domain);
+        retData.cursor = domainData.meta.pagination.cursor;
+      }
+    } catch (e) {
+      console.error('error retrieving owner domains', e);
     }
     return retData;
   };
@@ -667,6 +701,45 @@ const DomainProfile = ({
                       : ''}
                   </Typography>
                 </Box>
+                <LeftBarContentCollapse
+                  id="ownerAddress"
+                  icon={<LockOutlinedIcon />}
+                  header={
+                    <Box display="flex" alignItems="center">
+                      <Typography>
+                        {t('profile.ownerAddress', {
+                          address: truncateEthAddress(ownerAddress),
+                        })}
+                      </Typography>
+                      <CopyToClipboard
+                        stringToCopy={ownerAddress}
+                        onCopy={handleClickToCopy}
+                      >
+                        <CopyContentIcon
+                          className={classes.contentCopyIconButton}
+                        />
+                      </CopyToClipboard>
+                    </Box>
+                  }
+                  content={
+                    profileData?.portfolio?.wallet.primaryDomain ? (
+                      <Chip
+                        icon={<StarBorderOutlinedIcon />}
+                        onClick={() =>
+                          (window.location.href = `${config.UD_ME_BASE_URL}/${profileData?.portfolio?.wallet?.primaryDomain}`)
+                        }
+                        label={
+                          <Typography variant="body2">
+                            {t('profile.primaryDomain', {
+                              domain:
+                                profileData.portfolio.wallet.primaryDomain,
+                            })}
+                          </Typography>
+                        }
+                      />
+                    ) : undefined
+                  }
+                />
                 {profileData?.profile && (
                   <LeftBarContentCollapse
                     id="followers"
@@ -804,182 +877,230 @@ const DomainProfile = ({
                     }
                   />
                 )}
+                {profileData?.portfolio?.account?.domainCount &&
+                  profileData.portfolio.account.domainCount > 1 && (
+                    <LeftBarContentCollapse
+                      id="domains"
+                      icon={<LanguageOutlinedIcon />}
+                      header={
+                        <Box
+                          className={classes.otherDomainsLabel}
+                          onClick={handleOtherDomainsModalOpen}
+                        >
+                          <Typography>
+                            {t('profile.otherDomains', {
+                              count:
+                                profileData.portfolio.account.domainCount - 1,
+                            })}
+                          </Typography>
+                        </Box>
+                      }
+                    />
+                  )}
                 {hasMoreInfo && (
                   <LeftBarContentCollapse
                     id="moreInfo"
                     icon={<InfoOutlinedIcon />}
                     header={t('profile.moreInformation')}
+                    persist={true}
                     content={
-                      <Box mt={2}>
-                        {profileData?.webacy && (
-                          <Box className={classes.riskScoreContainer}>
-                            <Avatar
-                              src={`${config.ASSETS_BUCKET_URL}/images/webacy/logo.png`}
-                              className={classes.riskScoreLogo}
-                              onClick={() =>
-                                window.open(
-                                  `https://dapp.webacy.com/unstoppable/${ownerAddress}`,
-                                  '_blank',
-                                )
-                              }
-                            />
-                            <Typography className={classes.emailAndLocation}>
-                              {t('webacy.riskScore')}:
-                            </Typography>
-                            <Tooltip
-                              title={
-                                profileData.webacy.issues.length > 0 ? (
-                                  profileData.webacy.issues.map(issue => (
-                                    <>
-                                      <Typography variant="caption">
-                                        {
-                                          issue.categories
-                                            ?.wallet_characteristics
-                                            ?.description
-                                        }
-                                      </Typography>
-                                      <List
-                                        dense
-                                        sx={{listStyleType: 'disc', pl: 4}}
-                                      >
-                                        {issue.tags.map(tag => (
-                                          <ListItem sx={{display: 'list-item'}}>
-                                            <Typography variant="caption">
-                                              {tag.name}
-                                            </Typography>
-                                          </ListItem>
-                                        ))}
-                                      </List>
-                                    </>
-                                  ))
-                                ) : (
-                                  <Typography variant="caption">
-                                    {t('webacy.riskScoreDescription')}
-                                  </Typography>
-                                )
-                              }
-                            >
-                              <Chip
-                                color={
-                                  profileData.webacy.high
-                                    ? 'error'
-                                    : profileData.webacy.medium
-                                    ? 'default'
-                                    : 'success'
-                                }
-                                size="small"
-                                icon={
-                                  profileData.webacy.high ? (
-                                    <OutlinedFlagIcon
-                                      className={classes.riskScoreIcon}
-                                    />
-                                  ) : profileData.webacy.medium ? (
-                                    <CheckCircleOutlinedIcon
-                                      className={classes.riskScoreIcon}
-                                    />
-                                  ) : (
-                                    <CheckCircleOutlinedIcon
-                                      className={classes.riskScoreIcon}
-                                    />
-                                  )
-                                }
-                                label={
-                                  profileData.webacy.high
-                                    ? t('webacy.high')
-                                    : profileData.webacy.medium
-                                    ? t('webacy.medium')
-                                    : t('webacy.low')
-                                }
-                              />
-                            </Tooltip>
-                            {isOwner &&
-                              !profileData.webacy.high &&
-                              !profileData.webacy.medium && (
-                                <Tooltip
-                                  title={
-                                    <Typography variant="caption">
-                                      {t('webacy.share')}
-                                    </Typography>
-                                  }
-                                >
-                                  <IconButton
-                                    size="small"
-                                    className={classes.riskScoreShareButton}
-                                    onClick={handleShareRiskScore}
-                                  >
-                                    <IosShareIcon
-                                      className={classes.riskScoreShareIcon}
-                                    />
-                                  </IconButton>
-                                </Tooltip>
-                              )}
-                          </Box>
-                        )}
+                      <Box>
                         {ipfsHash && (
-                          <Box mb={2} display="flex">
-                            <LaunchOutlinedIcon
-                              className={classes.sidebarIcon}
-                            />
-                            <Link
-                              external
-                              href={`${config.IPFS_BASE_URL}${normalizeIpfsHash(
-                                ipfsHash,
-                              )}`}
-                              className={classes.websiteLink}
-                            >
-                              {`${domain} (${ipfsHash.slice(
-                                0,
-                                10,
-                              )}...${ipfsHash.slice(-4)})`}
-                            </Link>
-                          </Box>
+                          <LeftBarContentCollapse
+                            icon={<LaunchOutlinedIcon />}
+                            header={
+                              <Link
+                                external
+                                href={`${
+                                  config.IPFS_BASE_URL
+                                }${normalizeIpfsHash(ipfsHash)}`}
+                                className={classes.websiteLink}
+                              >
+                                {`${domain} (${ipfsHash.slice(
+                                  0,
+                                  10,
+                                )}...${ipfsHash.slice(-4)})`}
+                              </Link>
+                            }
+                            id="ipfs"
+                          />
                         )}
                         {profileData?.profile?.web2Url && (
-                          <Box mb={2} display="flex">
-                            <LaunchOutlinedIcon
-                              className={classes.sidebarIcon}
-                            />
-                            <Link
-                              external
-                              href={profileData?.profile?.web2Url}
-                              className={classes.websiteLink}
-                            >
-                              {profileData?.profile?.web2Url.replace(
-                                /^https?:\/\/|\/$/g,
-                                '',
-                              )}
-                            </Link>
-                          </Box>
+                          <LeftBarContentCollapse
+                            icon={<LaunchOutlinedIcon />}
+                            header={
+                              <Link
+                                external
+                                href={profileData?.profile?.web2Url}
+                                className={classes.websiteLink}
+                              >
+                                {profileData?.profile?.web2Url.replace(
+                                  /^https?:\/\/|\/$/g,
+                                  '',
+                                )}
+                              </Link>
+                            }
+                            id="web2Url"
+                          />
                         )}
                         {profileData?.profile?.location && (
-                          <Box mb={2} display="flex">
-                            <FmdGoodOutlinedIcon
-                              className={classes.sidebarIcon}
-                            />
-                            <Typography className={classes.emailAndLocation}>
-                              {profileData?.profile?.location}
-                            </Typography>
-                          </Box>
+                          <LeftBarContentCollapse
+                            icon={<FmdGoodOutlinedIcon />}
+                            header={
+                              <Typography>
+                                {profileData?.profile?.location}
+                              </Typography>
+                            }
+                            id="location"
+                          />
                         )}
                         {isEnsDomain && ensDomainStatus?.expiresAt && (
-                          <Box mb={2} display="flex">
-                            <RestoreOutlinedIcon
-                              className={classes.sidebarIcon}
-                            />
-                            <Typography className={classes.emailAndLocation}>
-                              {t('profile.thisDomainExpires', {
-                                action: isPast(
-                                  new Date(ensDomainStatus.expiresAt),
-                                )
-                                  ? t('profile.expired')
-                                  : t('profile.expires'),
-                                date: format(
-                                  new Date(ensDomainStatus.expiresAt),
-                                  'MMM d, yyyy',
-                                ),
-                              })}
-                            </Typography>
-                          </Box>
+                          <LeftBarContentCollapse
+                            icon={<RestoreOutlinedIcon />}
+                            header={
+                              <Typography>
+                                {t('profile.thisDomainExpires', {
+                                  action: isPast(
+                                    new Date(ensDomainStatus.expiresAt),
+                                  )
+                                    ? t('profile.expired')
+                                    : t('profile.expires'),
+                                  date: format(
+                                    new Date(ensDomainStatus.expiresAt),
+                                    'MMM d, yyyy',
+                                  ),
+                                })}
+                              </Typography>
+                            }
+                            id="ensExpiration"
+                          />
+                        )}
+                        {profileData?.market?.primary?.payment && (
+                          <LeftBarContentCollapse
+                            icon={<ManageHistoryOutlinedIcon />}
+                            header={
+                              <Typography>
+                                {t('profile.purchasePrice', {
+                                  date: format(
+                                    new Date(
+                                      profileData.market.primary.payment.date,
+                                    ),
+                                    'MMM d, yyyy',
+                                  ),
+                                  cost: profileData.market.primary.cost.toLocaleString(
+                                    'en-US',
+                                    {
+                                      style: 'currency',
+                                      currency: 'USD',
+                                    },
+                                  ),
+                                })}
+                              </Typography>
+                            }
+                            id="marketPrice"
+                          />
+                        )}
+                        {profileData?.webacy && (
+                          <LeftBarContentCollapse
+                            icon={<HealthAndSafetyOutlinedIcon />}
+                            header={
+                              <Box display="flex" alignItems="center">
+                                <Typography mr={1}>
+                                  {t('webacy.riskScore')}:
+                                </Typography>
+                                <Tooltip
+                                  title={
+                                    profileData.webacy.issues.length > 0 ? (
+                                      profileData.webacy.issues.map(issue => (
+                                        <>
+                                          <Typography variant="caption">
+                                            {
+                                              issue.categories
+                                                ?.wallet_characteristics
+                                                ?.description
+                                            }
+                                          </Typography>
+                                          <List
+                                            dense
+                                            sx={{listStyleType: 'disc', pl: 4}}
+                                          >
+                                            {issue.tags.map(tag => (
+                                              <ListItem
+                                                sx={{display: 'list-item'}}
+                                              >
+                                                <Typography variant="caption">
+                                                  {tag.name}
+                                                </Typography>
+                                              </ListItem>
+                                            ))}
+                                          </List>
+                                        </>
+                                      ))
+                                    ) : (
+                                      <Typography variant="caption">
+                                        {t('webacy.riskScoreDescription')}
+                                      </Typography>
+                                    )
+                                  }
+                                >
+                                  <Chip
+                                    color={
+                                      profileData.webacy.high
+                                        ? 'error'
+                                        : profileData.webacy.medium
+                                        ? 'default'
+                                        : 'success'
+                                    }
+                                    size="small"
+                                    icon={
+                                      profileData.webacy.high ? (
+                                        <OutlinedFlagIcon
+                                          className={classes.riskScoreIcon}
+                                        />
+                                      ) : profileData.webacy.medium ? (
+                                        <CheckCircleOutlinedIcon
+                                          className={classes.riskScoreIcon}
+                                        />
+                                      ) : (
+                                        <CheckCircleOutlinedIcon
+                                          className={classes.riskScoreIcon}
+                                        />
+                                      )
+                                    }
+                                    label={
+                                      profileData.webacy.high
+                                        ? t('webacy.high')
+                                        : profileData.webacy.medium
+                                        ? t('webacy.medium')
+                                        : t('webacy.low')
+                                    }
+                                  />
+                                </Tooltip>
+                                {isOwner &&
+                                  !profileData.webacy.high &&
+                                  !profileData.webacy.medium && (
+                                    <Tooltip
+                                      title={
+                                        <Typography variant="caption">
+                                          {t('webacy.share')}
+                                        </Typography>
+                                      }
+                                    >
+                                      <IconButton
+                                        size="small"
+                                        className={classes.riskScoreShareButton}
+                                        onClick={handleShareRiskScore}
+                                      >
+                                        <IosShareIcon
+                                          className={classes.riskScoreShareIcon}
+                                        />
+                                      </IconButton>
+                                    </Tooltip>
+                                  )}
+                              </Box>
+                            }
+                            id="webacy"
+                          />
                         )}
                       </Box>
                     }
@@ -1308,17 +1429,28 @@ const DomainProfile = ({
         <DomainListModal
           title={
             viewFollowerRelationship === 'followers'
-              ? `${t('profile.followers')} ${
+              ? `${t('profile.followers')} (${
                   profileData.social?.followerCount || 0
-                }`
-              : `${t('profile.following')} ${
+                })`
+              : `${t('profile.following')} (${
                   profileData.social?.followingCount || 0
-                }`
+                })`
           }
           retrieveDomains={retrieveFollowers}
           open={isViewFollowModalOpen}
           setWeb3Deps={setWeb3Deps}
           onClose={handleViewFollowModalClose}
+        />
+      )}
+      {showOtherDomainsModal && profileData?.portfolio?.account.domainCount && (
+        <DomainListModal
+          title={t('profile.totalDomains', {
+            count: profileData.portfolio.account.domainCount,
+          })}
+          retrieveDomains={retrieveOwnerDomains}
+          open={showOtherDomainsModal}
+          setWeb3Deps={setWeb3Deps}
+          onClose={handleOtherDomainsModalClose}
         />
       )}
       {showManageDomainModal && (
@@ -1359,6 +1491,8 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         DomainFieldTypes.Profile,
         DomainFieldTypes.SocialAccounts,
         DomainFieldTypes.Records,
+        DomainFieldTypes.Market,
+        DomainFieldTypes.Portfolio,
       ]),
       getIdentity({name: domain}),
     ]);

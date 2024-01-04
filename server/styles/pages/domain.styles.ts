@@ -172,6 +172,14 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     width: '20px',
     height: '20px',
   },
+  contentCopyIconButton: {
+    color: theme.palette.neutralShades[300],
+    paddingTop: theme.spacing(0.5),
+    marginLeft: theme.spacing(1),
+    width: '20px',
+    height: '20px',
+    cursor: 'pointer',
+  },
   domainNameBox: {
     display: 'flex',
     justifyContent: 'center',
@@ -194,11 +202,6 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   sidebarIcon: {
     marginRight: theme.spacing(1.5),
     fill: theme.palette.greyShades[900],
-  },
-  riskScoreContainer: {
-    display: 'flex',
-    marginBottom: theme.spacing(2),
-    alignItems: 'center',
   },
   riskScoreLogo: {
     width: '25px',
@@ -224,8 +227,9 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     marginRight: theme.spacing(1),
   },
   websiteLink: {
-    color: theme.palette.greyShades[900],
+    color: theme.palette.greyShades[600],
     transition: theme.transitions.create('color'),
+    fontWeight: 'normal',
     '&:hover': {
       textDecoration: 'none',
       color: theme.palette.primary.main,
@@ -393,6 +397,9 @@ export const useStyles = makeStyles()((theme: Theme) => ({
       marginRight: 0,
       textAlign: 'initial',
     },
+  },
+  otherDomainsLabel: {
+    cursor: 'pointer',
   },
   footer: {
     ...theme.containers.main,

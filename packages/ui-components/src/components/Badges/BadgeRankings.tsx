@@ -61,7 +61,7 @@ const BadgeRankings: React.FC<Props> = ({
     setShowMore(false);
   };
 
-  const retrieveBadgeRankings = async (cursor?: number) => {
+  const retrieveBadgeRankings = async (cursor?: number | string) => {
     let rankings: SerializedDomainRank[] | undefined = [];
     if (type === 'holders') {
       rankings = await getDomainRankings(200, false, badgeCode);

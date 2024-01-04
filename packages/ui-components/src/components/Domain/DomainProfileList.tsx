@@ -1,9 +1,11 @@
 import KeyboardArrowRightOutlinedIcon from '@mui/icons-material/KeyboardArrowRightOutlined';
+import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Pagination from '@mui/material/Pagination';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useState} from 'react';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -83,6 +85,24 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     justifyContent: 'center',
   },
+  scrollableContainer: {
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    overscrollBehavior: 'contain',
+    height: '350px',
+    width: '100%',
+  },
+  infiniteScrollLoading: {
+    width: '100%',
+    alignItems: 'center',
+    textAlign: 'center',
+    justifyContent: 'center',
+    color: theme.palette.neutralShades[400],
+    marginBottom: theme.spacing(1),
+  },
+  loadingSpinner: {
+    color: 'inherit',
+  },
 }));
 
 type DomainProfileListProps = {
@@ -92,7 +112,9 @@ type DomainProfileListProps = {
   itemsPerPage?: number;
   onLastPage?: () => void;
   withPagination?: boolean;
+  withInfiniteScroll?: boolean;
   setWeb3Deps?: (value: Web3Dependencies | undefined) => void;
+  hasMore?: boolean;
 };
 
 const DomainProfileList: React.FC<DomainProfileListProps> = ({
@@ -101,8 +123,10 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
   showNumber = false,
   itemsPerPage = 7,
   withPagination = false,
+  withInfiniteScroll = false,
   setWeb3Deps,
   onLastPage,
+  hasMore = false,
 }) => {
   const {classes, cx} = useStyles();
   const [page, setPage] = useState(1);
@@ -115,7 +139,51 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
     }
   };
 
-  return (
+  return withInfiniteScroll && onLastPage ? (
+    <Box className={classes.scrollableContainer} id="scrollable-div">
+      <InfiniteScroll
+        scrollableTarget="scrollable-div"
+        hasMore={hasMore}
+        loader={
+          <Box className={classes.infiniteScrollLoading}>
+            <CircularProgress className={classes.loadingSpinner} />
+          </Box>
+        }
+        next={onLastPage}
+        dataLength={domains.length}
+        scrollThreshold={0.7}
+      >
+        {domains.map((domain, i) => (
+          <>
+            <a
+              className={cx(classes.row, {
+                [classes.rowFirst]: i === 0,
+              })}
+              href={`${config.UD_ME_BASE_URL}/${domain}`}
+              key={domain}
+            >
+              <div className={classes.leftContent}>
+                {showNumber && (
+                  <Typography className={classes.number}>
+                    {(page - 1) * itemsPerPage + i + 1}
+                  </Typography>
+                )}
+                <DomainPreview
+                  domain={domain}
+                  size={30}
+                  setWeb3Deps={setWeb3Deps}
+                />
+                <Typography className={classes.domainText}>{domain}</Typography>
+              </div>
+              <KeyboardArrowRightOutlinedIcon
+                className={classes.arrowRightIcon}
+              />
+            </a>
+          </>
+        ))}
+      </InfiniteScroll>
+    </Box>
+  ) : (
     <div className={classes.root}>
       {isLoading ? (
         <div className={classes.loaderContainer}>

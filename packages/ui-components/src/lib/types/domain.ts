@@ -194,6 +194,20 @@ export type SerializedDomainCryptoVerification = {
   signedMessage: string;
 };
 
+export type SerializedDomainListData = {
+  data: Array<{
+    domain: string;
+  }>;
+  meta: {
+    total_count: number;
+    pagination: {
+      cursor: string;
+      take: number;
+    };
+  };
+  address: string;
+};
+
 export type SerializedDomainMarket = {
   primary: {
     type: 'purchase' | 'distribution';

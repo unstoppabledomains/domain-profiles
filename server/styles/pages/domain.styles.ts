@@ -398,6 +398,9 @@ export const useStyles = makeStyles()((theme: Theme) => ({
       textAlign: 'initial',
     },
   },
+  otherDomainsLabel: {
+    cursor: 'pointer',
+  },
   footer: {
     ...theme.containers.main,
     maxWidth: 1256,

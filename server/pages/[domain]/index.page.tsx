@@ -97,6 +97,7 @@ import {
   useUnstoppableMessaging,
   useWeb3Context,
 } from '@unstoppabledomains/ui-components';
+import {getOwnerDomains} from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
 import {notifyError} from '@unstoppabledomains/ui-components/src/lib/error';
 import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
@@ -134,6 +135,7 @@ const DomainProfile = ({
   const [loginClicked, setLoginClicked] = useState<boolean>();
   const {isOpen: showManageDomainModal, setIsOpen: setShowManageDomainModal} =
     useDomainConfig();
+  const [showOtherDomainsModal, setShowOtherDomainsModal] = useState(false);
   const [authAddress, setAuthAddress] = useState('');
   const [authDomain, setAuthDomain] = useState('');
   const [displayQrCode, setDisplayQrCode] = useState(false);
@@ -273,6 +275,14 @@ const DomainProfile = ({
 
   const handleViewFollowModalClose = async () => {
     setIsViewFollowModalOpen(false);
+  };
+
+  const handleOtherDomainsModalOpen = () => {
+    setShowOtherDomainsModal(true);
+  };
+
+  const handleOtherDomainsModalClose = () => {
+    setShowOtherDomainsModal(false);
   };
 
   const handleManageDomainModalUpdate = async (
@@ -504,7 +514,7 @@ const DomainProfile = ({
     badge => badge.gallery && badge.gallery.tier > 2,
   );
 
-  const retrieveFollowers = async (cursor?: number) => {
+  const retrieveFollowers = async (cursor?: number | string) => {
     const retData: {domains: string[]; cursor?: number} = {
       domains: [],
       cursor: undefined,
@@ -513,7 +523,7 @@ const DomainProfile = ({
       const followersData = await getFollowers(
         domain,
         viewFollowerRelationship,
-        cursor,
+        cursor as number,
       );
       if (followersData) {
         retData.domains = followersData.data.map(f => f.domain);
@@ -521,6 +531,23 @@ const DomainProfile = ({
       }
     } catch (e) {
       console.error('error retrieving followers', e);
+    }
+    return retData;
+  };
+
+  const retrieveOwnerDomains = async (cursor?: number | string) => {
+    const retData: {domains: string[]; cursor?: string} = {
+      domains: [],
+      cursor: undefined,
+    };
+    try {
+      const domainData = await getOwnerDomains(ownerAddress, cursor as string);
+      if (domainData) {
+        retData.domains = domainData.data.map(f => f.domain);
+        retData.cursor = domainData.meta.pagination.cursor;
+      }
+    } catch (e) {
+      console.error('error retrieving owner domains', e);
     }
     return retData;
   };
@@ -694,6 +721,24 @@ const DomainProfile = ({
                       </CopyToClipboard>
                     </Box>
                   }
+                  content={
+                    profileData?.portfolio?.wallet.primaryDomain ? (
+                      <Chip
+                        icon={<StarBorderOutlinedIcon />}
+                        onClick={() =>
+                          (window.location.href = `${config.UD_ME_BASE_URL}/${profileData?.portfolio?.wallet?.primaryDomain}`)
+                        }
+                        label={
+                          <Typography variant="body2">
+                            {t('profile.primaryDomain', {
+                              domain:
+                                profileData.portfolio.wallet.primaryDomain,
+                            })}
+                          </Typography>
+                        }
+                      />
+                    ) : undefined
+                  }
                 />
                 {profileData?.profile && (
                   <LeftBarContentCollapse
@@ -838,30 +883,17 @@ const DomainProfile = ({
                       id="domains"
                       icon={<LanguageOutlinedIcon />}
                       header={
-                        <Typography>
-                          {t('profile.otherDomains', {
-                            count:
-                              profileData.portfolio.account.domainCount - 1,
-                          })}
-                        </Typography>
-                      }
-                      content={
-                        profileData.portfolio.wallet.primaryDomain ? (
-                          <Chip
-                            icon={<StarBorderOutlinedIcon />}
-                            onClick={() =>
-                              (window.location.href = `${config.UD_ME_BASE_URL}/${profileData?.portfolio?.wallet?.primaryDomain}`)
-                            }
-                            label={
-                              <Typography variant="body2">
-                                {t('profile.primaryDomain', {
-                                  domain:
-                                    profileData.portfolio.wallet.primaryDomain,
-                                })}
-                              </Typography>
-                            }
-                          />
-                        ) : undefined
+                        <Box
+                          className={classes.otherDomainsLabel}
+                          onClick={handleOtherDomainsModalOpen}
+                        >
+                          <Typography>
+                            {t('profile.otherDomains', {
+                              count:
+                                profileData.portfolio.account.domainCount - 1,
+                            })}
+                          </Typography>
+                        </Box>
                       }
                     />
                   )}
@@ -1397,17 +1429,28 @@ const DomainProfile = ({
         <DomainListModal
           title={
             viewFollowerRelationship === 'followers'
-              ? `${t('profile.followers')} ${
+              ? `${t('profile.followers')} (${
                   profileData.social?.followerCount || 0
-                }`
-              : `${t('profile.following')} ${
+                })`
+              : `${t('profile.following')} (${
                   profileData.social?.followingCount || 0
-                }`
+                })`
           }
           retrieveDomains={retrieveFollowers}
           open={isViewFollowModalOpen}
           setWeb3Deps={setWeb3Deps}
           onClose={handleViewFollowModalClose}
+        />
+      )}
+      {showOtherDomainsModal && profileData?.portfolio?.account.domainCount && (
+        <DomainListModal
+          title={t('profile.totalDomains', {
+            count: profileData.portfolio.account.domainCount,
+          })}
+          retrieveDomains={retrieveOwnerDomains}
+          open={showOtherDomainsModal}
+          setWeb3Deps={setWeb3Deps}
+          onClose={handleOtherDomainsModalClose}
         />
       )}
       {showManageDomainModal && (

@@ -1,14 +1,14 @@
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import {useSnackbar} from 'notistack';
 import React, {useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 
 import {ProfileManager} from '../../components/Wallet/ProfileManager';
+import {fetchApi} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 import type {Web3Dependencies} from '../../lib/types/web3';
 
@@ -62,8 +62,8 @@ const ShowHideButton: React.FC<ShowHideButtonProps> = ({
   };
 
   const handleSaveProfile = async (signature: string, expiry: string) => {
-    const domainNftUrl = `${config.PROFILE.HOST_URL}/user/${domain}`;
-    await fetch(domainNftUrl, {
+    await fetchApi(`/user/${domain}`, {
+      host: config.PROFILE.HOST_URL,
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -85,38 +85,22 @@ const ShowHideButton: React.FC<ShowHideButtonProps> = ({
 
   return (
     <>
-      <Stack
-        onClick={handleClick}
-        sx={{
-          cursor: 'pointer',
-          flexDirection: 'row',
-          alignItems: 'center',
-          fontSize: 20,
-          color: showDomain ? 'neutralShades.600' : 'primaryShades.500',
-        }}
-        data-testid="show-hide-button"
-      >
-        {showDomain ? (
-          <RemoveCircleOutlineIcon fontSize="inherit" color="inherit" />
-        ) : (
-          <AddCircleOutlineIcon fontSize="inherit" color="inherit" />
-        )}
-        {
-          <Tooltip title={tooltip || ''}>
-            <Typography
-              sx={{
-                fontSize: 14,
-                fontWeight: 600,
-                marginLeft: 0.5,
-              }}
-            >
-              {showDomain
-                ? hideText || t('domainSuggestion.hide')
-                : showText || t('domainSuggestion.show')}
-            </Typography>
-          </Tooltip>
-        }
-      </Stack>
+      <Tooltip title={tooltip || ''}>
+        <Button
+          startIcon={
+            showDomain ? <RemoveCircleOutlineIcon /> : <AddCircleOutlineIcon />
+          }
+          data-testid="show-hide-button"
+          onClick={handleClick}
+          variant="text"
+          size="small"
+          sx={{color: showDomain ? 'neutralShades.600' : 'neutralShades.500'}}
+        >
+          {showDomain
+            ? hideText || t('domainSuggestion.hide')
+            : showText || t('domainSuggestion.show')}
+        </Button>
+      </Tooltip>
       <ProfileManager
         domain={domain}
         ownerAddress={ownerAddress!}

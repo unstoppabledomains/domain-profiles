@@ -220,6 +220,12 @@ describe('<DomainProfile />', () => {
     customRender(<DomainProfile {...defaultProps()} />);
 
     await waitFor(() => {
+      const infoExpandButton = screen.getByTestId('expand-moreInfo');
+      expect(infoExpandButton).toBeInTheDocument();
+      userEvent.click(infoExpandButton);
+    });
+
+    await waitFor(() => {
       expect(
         screen.getAllByRole('link', {name: 'seller@gmail.com'}),
       ).toHaveLength(1);
@@ -299,6 +305,12 @@ describe('<DomainProfile />', () => {
     });
 
     customRender(<DomainProfile {...props} />);
+
+    await waitFor(() => {
+      const addressExpandButton = screen.getByTestId('expand-addresses');
+      expect(addressExpandButton).toBeInTheDocument();
+      userEvent.click(addressExpandButton);
+    });
 
     await waitFor(() => {
       expect(screen.getByText('0x82...a12b')).toBeInTheDocument();
@@ -1306,71 +1318,6 @@ describe('Owner operations', () => {
     await waitFor(() =>
       expect(screen.getByTestId('nftGallery-modal-save')).toBeInTheDocument(),
     );
-  });
-
-  it('displays clickable options menu', async () => {
-    jest.spyOn(domainProfileActions, 'getDomainNfts').mockResolvedValue({
-      ['SOL']: {
-        address: 'sol-address',
-        enabled: true,
-        verified: true,
-        cursor: '1',
-        nfts: [
-          {
-            name: 'test-sol-nft-name',
-            mint: 'test-sol-nft-mint',
-            link: 'test-nft-link',
-            collection: 'test-collection',
-            video_url: '',
-            image_url: 'https://test-nft-jpg',
-            description: 'test-nft-description',
-            public: true,
-          },
-        ],
-      },
-      ['ETH']: {
-        address: 'eth-address',
-        enabled: true,
-        verified: false,
-        cursor: '1',
-        nfts: [
-          {
-            name: 'test-eth-nft-name',
-            mint: 'test-eth-nft-mint',
-            link: 'test-nft-link',
-            collection: 'test-collection',
-            video_url: '',
-            image_url: 'https://test-nft-jpg',
-            description: 'test-nft-description',
-            public: true,
-          },
-        ],
-      },
-    });
-
-    customRender(<DomainProfile {...tokenGalleryProps} />);
-
-    await waitFor(() =>
-      expect(screen.getAllByText('test-sol-nft-name').length).toBeGreaterThan(
-        0,
-      ),
-    );
-
-    // find and click the options menu
-    const vizIcons = screen.getAllByTestId(`nft-card-more-info`);
-    expect(vizIcons.length).toBeGreaterThan(0);
-
-    // expect the pending button not yet to be present
-    expect(() => screen.getByTestId('nftGallery-confirm-button')).toThrow();
-
-    // click the hide menu option
-    userEvent.click(vizIcons[0]);
-    const hideMenuOption = screen.getAllByTestId('nft-card-hide-nft');
-    expect(hideMenuOption.length).toBeGreaterThan(0);
-    userEvent.click(hideMenuOption[0]);
-
-    // expect the pending button to now be rendered
-    expect(screen.getByTestId(`nftGallery-confirm-button`));
   });
 
   it('does not render the chat or follow buttons on own domain', async () => {

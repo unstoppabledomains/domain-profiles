@@ -1,6 +1,6 @@
 {
   "name": "@unstoppabledomains/ui-components",
-  "version": "0.0.32",
+  "version": "0.0.34",
   "private": true,
   "description": "An open and reusable suite of Unstoppable Domains management components",
   "keywords": [
@@ -54,6 +54,8 @@
     "@xmtp/content-type-remote-attachment": "^1.1.4",
     "@xmtp/proto": "^3.35.0",
     "@xmtp/xmtp-js": "11.3.0-beta.17",
+    "bip322-js": "^1.1.0",
+    "bitcoin-address-validation": "^2.2.3",
     "bluebird": "^3.7.2",
     "bs58": "^5.0.0",
     "clipboard-copy": "^4.0.1",
@@ -69,7 +71,6 @@
     "next-secure-headers": "^2.2.0",
     "next-seo": "^6.1.0",
     "next-transpile-modules": "^10.0.0",
-    "notistack": "^2.0.5",
     "numeral": "^2.0.6",
     "qs": "^6.11.2",
     "ramda": "^0.27.1",
@@ -84,7 +85,6 @@
     "react-linkify": "^1.0.0-alpha",
     "react-medium-image-zoom": "^5.1.6",
     "react-qrcode-logo": "^2.8.0",
-    "react-query": "^3.39.3",
     "react-visibility-sensor": "^5.1.1",
     "rooks": "^5.7.0",
     "styled-components": "^5.3.5",
@@ -109,7 +109,9 @@
     "tslib": "^2.6.2"
   },
   "peerDependencies": {
-    "@unstoppabledomains/ui-kit": "^0.3.15"
+    "@unstoppabledomains/ui-kit": "^0.3.15",
+    "notistack": "^2.0.5",
+    "react-query": "^3.39.3"
   },
   "engines": {
     "node": "16.x.x",

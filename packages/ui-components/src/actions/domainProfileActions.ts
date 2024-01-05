@@ -5,16 +5,21 @@ import config from '@unstoppabledomains/config';
 
 import type {AddressResolution} from '../components/Chat/types';
 import type {NftResponse} from '../lib';
+import {NftPageSize} from '../lib';
 import {fetchApi} from '../lib/fetchApi';
 import type {
   DomainFieldTypes,
   ImageData,
   SerializedBulkDomainResponse,
+  SerializedDomainListData,
   SerializedFollowerListData,
+  SerializedProfileSearch,
   SerializedPublicDomainProfileData,
   SerializedUserDomainProfileData,
 } from '../lib/types/domain';
 import {DomainProfileSocialMedia} from '../lib/types/domain';
+
+export const DOMAIN_LIST_PAGE_SIZE = 8;
 
 const queryKey = {
   followStatus: () => ['domainProfile', 'followingStatus'],
@@ -70,6 +75,7 @@ export const getDomainNfts = async (
   const queryStringParams = QueryString.stringify({
     symbols,
     cursor,
+    limit: NftPageSize,
   });
   const domainNftUrl = `/public/${domain}/nfts?${queryStringParams}`;
   return await fetchApi(domainNftUrl, {host: config.PROFILE.HOST_URL});
@@ -83,7 +89,21 @@ export const getFollowers = async (
   const domainProfileUrl = `/followers/${domain}?${QueryString.stringify(
     {
       relationship_type: relationship,
-      take: 100,
+      take: DOMAIN_LIST_PAGE_SIZE,
+      cursor,
+    },
+    {skipNulls: true},
+  )}`;
+  return await fetchApi(domainProfileUrl, {host: config.PROFILE.HOST_URL});
+};
+
+export const getOwnerDomains = async (
+  address: string,
+  cursor?: string,
+): Promise<SerializedDomainListData | undefined> => {
+  const domainProfileUrl = `/user/${address.toLowerCase()}/domains?${QueryString.stringify(
+    {
+      take: DOMAIN_LIST_PAGE_SIZE,
       cursor,
     },
     {skipNulls: true},
@@ -132,14 +152,16 @@ export const getProfileUserData = async (
   });
 };
 
-export const searchProfiles = async (query: string): Promise<string[]> => {
-  const data: Array<{name: string}> | undefined = await fetchApi(
-    `/search?name=${query}`,
+export const searchProfiles = async (
+  query: string,
+): Promise<SerializedProfileSearch[]> => {
+  const data = await fetchApi(
+    `/search?name=${query}&include-suggestions=true&profile-required=true&reverse-resolution-required=false`,
     {
       host: config.PROFILE.HOST_URL,
     },
   );
-  return data ? data.map(profile => profile.name) : [];
+  return data ? data : [];
 };
 
 export const setProfileUserData = async (

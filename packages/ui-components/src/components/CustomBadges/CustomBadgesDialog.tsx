@@ -18,7 +18,7 @@ import React, {useEffect, useState} from 'react';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getBadge, getMarketplaceBadgeDetails} from '../../actions/badgeActions';
+import {getMarketplaceBadgeDetails} from '../../actions/badgeActions';
 import {notifyError} from '../../lib/error';
 import useTranslationContext from '../../lib/i18n';
 
@@ -179,11 +179,10 @@ const CustomBadgesDialog: React.FC<Props> = ({open, handleClose}) => {
       if (collectionUrl !== '') {
         try {
           setLoading(true);
-          const response = await getMarketplaceBadgeDetails(collectionUrl);
-          const resp = await response.json();
+          const resp = await getMarketplaceBadgeDetails(collectionUrl);
           setLoading(false);
 
-          if (response.status === 200) {
+          if (resp) {
             setBadgeDetails({
               ...badgeDetails,
               logo: resp.logo,
@@ -199,9 +198,7 @@ const CustomBadgesDialog: React.FC<Props> = ({open, handleClose}) => {
               disableButton: false,
               exists: false,
             });
-          }
-
-          if (response.status === 400) {
+          } else {
             setError({
               ...error,
               error: true,
@@ -211,38 +208,6 @@ const CustomBadgesDialog: React.FC<Props> = ({open, handleClose}) => {
             setBadgeDetails({
               ...badgeDetails,
               preview: false,
-            });
-          }
-
-          if (response.status === 404) {
-            setError({
-              ...error,
-              error: true,
-              message: t('badges.notExist'),
-              disableButton: true,
-            });
-            setBadgeDetails({
-              ...badgeDetails,
-              preview: false,
-            });
-          }
-
-          if (response.status === 409) {
-            const existingBadgeDetails = await getBadge(resp.code, true);
-            if (!existingBadgeDetails) {
-              return;
-            }
-            setError({
-              error: true,
-              message: t('badges.alreadyExists'),
-              disableButton: true,
-              exists: true,
-            });
-            setBadgeDetails({
-              code: resp.code,
-              preview: true,
-              logo: existingBadgeDetails.badge.logo,
-              name: existingBadgeDetails.badge.name,
             });
           }
         } catch (e) {

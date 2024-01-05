@@ -85,8 +85,8 @@ const useStyles = makeStyles<void, 'actionIcon'>()(
       cursor: 'pointer',
       backgroundColor: theme.palette.neutralShades[100],
       borderRadius: '50%',
-      width: 50,
-      height: 50,
+      width: 30,
+      height: 30,
     },
     divider: {
       marginTop: theme.spacing(2),
@@ -113,9 +113,15 @@ const useStyles = makeStyles<void, 'actionIcon'>()(
     lensIcon: {
       backgroundColor: '#282e29',
       borderRadius: '50%',
+      fontSize: 30,
     },
     telegramIcon: {
       fill: '#229ED9',
+    },
+    monochromeIcon: {
+      backgroundColor: 'initial',
+      fill: theme.palette.neutralShades[400],
+      filter: 'grayscale(100%)',
     },
     metricValue: {
       minHeight: 20,
@@ -179,7 +185,7 @@ const useStyles = makeStyles<void, 'actionIcon'>()(
       },
     },
     socialIcon: {
-      fontSize: 32,
+      fontSize: 20,
     },
     link: {
       '&:hover': {
@@ -212,6 +218,7 @@ export type SocialAccountCardProps = {
   socialInfo: SocialAccountUserInfo | null;
   handleClickToCopy: () => void;
   small?: boolean;
+  monochrome?: boolean;
   verified?: boolean;
   verificationSupported?: boolean;
 };
@@ -220,6 +227,7 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
   socialInfo,
   handleClickToCopy,
   small,
+  monochrome,
   verified,
   verificationSupported,
 }) => {
@@ -348,7 +356,9 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
                 verified ? (
                   <CheckCircleIcon
                     fontSize="small"
-                    className={classes.verifiedBadge}
+                    className={cx(classes.verifiedBadge, {
+                      [classes.monochromeIcon]: monochrome,
+                    })}
                   />
                 ) : (
                   verificationSupported && (
@@ -366,6 +376,7 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
                   root: cx(
                     classes.socialIcon,
                     classes[`${socialInfo?.kind}Icon`],
+                    monochrome ? classes.monochromeIcon : undefined,
                   ),
                 }}
               />

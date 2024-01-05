@@ -140,11 +140,16 @@ const nextConfig = {
       // Headers for homepage
       ...['/'].map(source => ({
         source,
-        headers: fastlyCacheHeaders({
-          staleIfError: 86400, // 1 day
-          staleWhileRevalidate: 86400, // 1 day
-          ttl: 3600, // 1 hour
-        }),
+        headers: [
+          ...fastlyCacheHeaders({
+            ttl: 86400, // 1 day
+          }),
+          {
+            key: 'Content-Security-Policy',
+            value:
+              'connect-src * data: blob:; img-src * data: blob:; object-src *',
+          },
+        ],
       })),
       // Headers for domain profile
       {

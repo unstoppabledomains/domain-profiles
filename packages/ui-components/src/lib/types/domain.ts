@@ -46,6 +46,13 @@ export type DiscordUserInfo = {
   userName: string;
 } | null;
 
+export type DomainCryptoVerificationBodyPOST = {
+  symbol: string;
+  address: string;
+  plaintextMessage: string;
+  signedMessage: string;
+};
+
 export type DomainDescription = {
   name: string;
   label: string;
@@ -63,14 +70,9 @@ export enum DomainFieldTypes {
   ReferralCode = 'referralCode',
   ReferralTier = 'referralTier',
   WebacyScore = 'webacyScore',
+  Market = 'market',
+  Portfolio = 'portfolio',
 }
-
-export type DomainCryptoVerificationBodyPOST = {
-  symbol: string;
-  address: string;
-  plaintextMessage: string;
-  signedMessage: string;
-};
 
 export enum DomainProfileKeys {
   AuthAddress = 'authAddress',
@@ -192,6 +194,33 @@ export type SerializedDomainCryptoVerification = {
   signedMessage: string;
 };
 
+export type SerializedDomainListData = {
+  data: Array<{
+    domain: string;
+  }>;
+  meta: {
+    total_count: number;
+    pagination: {
+      cursor: string;
+      take: number;
+    };
+  };
+  address: string;
+};
+
+export type SerializedDomainMarket = {
+  primary: {
+    type: 'purchase' | 'distribution';
+    cost: number;
+    price?: number;
+    payment?: {
+      date: string;
+      promoCredits: number;
+      collected: number;
+    };
+  };
+};
+
 export type SerializedDomainProfileAttributes = {
   // profile fields
   displayName?: string;
@@ -264,6 +293,34 @@ export type SerializedFollowerListData = {
   domain: string;
 };
 
+export type SerializedPortfolioSummary = {
+  wallet: {
+    address: string;
+    primaryDomain?: string;
+    domainCount: number;
+  };
+  account: {
+    domainCount: number;
+    spend?: {
+      collected: number;
+      storeCredit: number;
+      promoCredit: number;
+    };
+  };
+};
+
+export type SerializedProfileSearch = {
+  name: string;
+  imagePath: string;
+  imageType: string;
+  ownerAddress: string;
+  linkUrl: string;
+  market?: {
+    price: number;
+    location: 'primary' | 'secondary';
+  };
+};
+
 export type SerializedPublicDomainProfileData = {
   profile?: SerializedDomainProfileAttributes;
   social?: SerializedSocialAttributes;
@@ -276,8 +333,11 @@ export type SerializedPublicDomainProfileData = {
   metadata?: Record<string, string | boolean>;
   referralCode?: string;
   referralTier?: AffiliateTier;
+  walletBalances?: SerializedWalletBalance[];
   webacy?: WebacyRiskScore;
   messaging?: MessagingAttributes;
+  market?: SerializedDomainMarket;
+  portfolio?: SerializedPortfolioSummary;
 };
 
 export type SerializedSocialAttributes = {
@@ -292,6 +352,27 @@ export type SerializedUserDomainProfileData =
       type: string;
     };
   };
+
+export type SerializedWalletBalance = {
+  symbol: string;
+  name: string;
+  address: string;
+  type: 'native' | 'token';
+  balance?: string;
+  firstTx?: Date;
+  lastTx?: Date;
+  stats?: {
+    nfts?: string;
+    collections?: string;
+    transactions?: string;
+    transfers?: string;
+  };
+  value?: {
+    marketUsd?: string;
+    walletUsd?: string;
+  };
+  blockchainScanUrl: string;
+};
 
 export type SocialAccountUserInfo =
   | TwitterUserInfo

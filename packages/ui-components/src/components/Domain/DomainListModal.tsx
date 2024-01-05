@@ -3,6 +3,7 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {DOMAIN_LIST_PAGE_SIZE} from '../../actions';
 import Modal from '../../components/Modal';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import DomainProfileList from './DomainProfileList';
@@ -24,15 +25,15 @@ type ModalProps = {
   title: string;
   showNumber?: boolean;
   retrieveDomains: (
-    cursor?: number,
-  ) => Promise<{domains: string[]; cursor?: number}>;
+    cursor?: number | string,
+  ) => Promise<{domains: string[]; cursor?: number | string}>;
   setWeb3Deps?: (value: Web3Dependencies | undefined) => void;
 };
 
 export const DomainListModal = (props: ModalProps) => {
   const {classes} = useStyles();
   const [domains, setDomains] = useState<string[]>([]);
-  const [cursor, setCursor] = useState<number>();
+  const [cursor, setCursor] = useState<number | string>();
   const [isLoading, setIsLoading] = useState(true);
   const [retrievedAll, setRetrievedAll] = useState(false);
 
@@ -57,9 +58,11 @@ export const DomainListModal = (props: ModalProps) => {
     if (resp.domains.length) {
       setDomains(d => [...d, ...resp.domains]);
       setCursor(resp.cursor);
-      if (resp.domains.length < 100) {
+      if (resp.domains.length < DOMAIN_LIST_PAGE_SIZE) {
         setRetrievedAll(true);
       }
+    } else {
+      setRetrievedAll(true);
     }
     setIsLoading(false);
   };
@@ -76,10 +79,10 @@ export const DomainListModal = (props: ModalProps) => {
         <DomainProfileList
           domains={domains}
           isLoading={isLoading}
-          withPagination
-          showNumber={props.showNumber}
+          withInfiniteScroll={true}
           setWeb3Deps={props.setWeb3Deps}
           onLastPage={handleRetrieveDomains}
+          hasMore={!retrievedAll}
         />
       </div>
     </Modal>

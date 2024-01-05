@@ -113,6 +113,10 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   loadingSpinner: {
     color: theme.palette.secondary.main,
   },
+  headerIcon: {
+    color: theme.palette.neutralShades[600],
+    marginRight: theme.spacing(1),
+  },
   sectionHeaderContainer: {
     display: 'flex',
     flexWrap: 'wrap',
@@ -147,9 +151,6 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     },
     cursor: 'pointer',
   },
-  badgeHeader: {
-    margin: theme.spacing(6, 0, 2),
-  },
   sectionHeaderLabel: {
     padding: theme.spacing(0, 0.75),
     fontSize: theme.typography.body2.fontSize,
@@ -158,27 +159,37 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     borderRadius: theme.shape.borderRadius,
     marginLeft: theme.spacing(1.5),
   },
-  copyIconButton: {
-    width: 32,
-    height: 32,
+  badgeCount: {
+    color: theme.palette.neutralShades[600],
+    marginLeft: theme.spacing(1),
   },
-  copyIcon: {
-    fontSize: 20,
+  badgeHeader: {
+    margin: theme.spacing(6, 0, 2),
   },
   infoIcon: {
     marginLeft: theme.spacing(1),
     color: theme.palette.neutralShades[200],
+    width: '20px',
+    height: '20px',
+  },
+  contentCopyIconButton: {
+    color: theme.palette.neutralShades[600],
+    paddingTop: theme.spacing(0.5),
+    cursor: 'pointer',
+  },
+  domainNameBox: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    [theme.breakpoints.up('md')]: {
+      justifyContent: 'initial',
+    },
   },
   domainName: {
     justifyContent: 'center',
     fontSize: '1.75rem',
     lineHeight: 1.4,
-    color: theme.palette.primary.main,
-  },
-  domainExtension: {
-    wordBreak: 'normal',
-    display: 'inline',
-    whiteSpace: 'nowrap',
+    color: theme.palette.neutralShades[500],
   },
   displayName: {
     wordBreak: 'break-word',
@@ -188,11 +199,6 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   sidebarIcon: {
     marginRight: theme.spacing(1.5),
     fill: theme.palette.greyShades[900],
-  },
-  riskScoreContainer: {
-    display: 'flex',
-    marginBottom: theme.spacing(2),
-    alignItems: 'center',
   },
   riskScoreLogo: {
     width: '25px',
@@ -217,29 +223,30 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     fontWeight: theme.typography.fontWeightMedium,
     marginRight: theme.spacing(1),
   },
-  verifyButton: {
-    fontWeight: theme.typography.fontWeightLight,
-    color: 'red',
+  reverseResolutionProfileLink: {
+    color: theme.palette.white,
+    transition: theme.transitions.create('color'),
+    fontWeight: 'bold',
+    fontSize: theme.typography.body2.fontSize,
+    '&:hover': {
+      textDecoration: 'none',
+      color: theme.palette.neutralShades[200],
+    },
+    marginRight: theme.spacing(1),
+    cursor: 'pointer',
   },
   websiteLink: {
-    color: theme.palette.greyShades[900],
+    color: theme.palette.greyShades[600],
     transition: theme.transitions.create('color'),
+    fontWeight: 'normal',
     '&:hover': {
       textDecoration: 'none',
       color: theme.palette.primary.main,
     },
   },
-  domainNameBox: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    [theme.breakpoints.up('md')]: {
-      justifyContent: 'initial',
-    },
-  },
-  emailAndLocationSecondDivider: {
-    [theme.breakpoints.up('md')]: {
-      display: 'none',
-    },
+  divider: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(2),
   },
   loginContainer: {
     display: 'flex',
@@ -273,41 +280,21 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     marginRight: theme.spacing(0),
   },
   menuButtonContainer: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    bottom: theme.spacing(1),
-    color: theme.palette.common.white,
-    marginRight: theme.spacing(1),
-  },
-  shareMenu: {
-    marginRight: theme.spacing(2),
-    color: theme.palette.common.white,
-    [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing(0),
-    },
-  },
-  editButton: {
-    color: theme.palette.common.white,
-  },
-  smallHidden: {
-    [theme.breakpoints.down('sm')]: {display: 'none'},
-  },
-  followingContainer: {
     display: 'flex',
-    marginLeft: `-${theme.spacing(1)}`,
+    marginTop: theme.spacing(2),
     [theme.breakpoints.down('md')]: {
       justifyContent: 'center',
-      marginLeft: 0,
     },
   },
   followCount: {
     color: theme.palette.neutralShades[600],
-    fontWeight: 600,
-    fontSize: 16,
+    cursor: 'pointer',
+    marginRight: theme.spacing(1),
   },
   description: {
-    fontSize: theme.typography.body1.fontSize,
+    fontSize: theme.typography.body2.fontSize,
     lineHeight: 1.5,
+    marginBottom: theme.spacing(2),
   },
   empty: {
     padding: theme.spacing(15, 0),
@@ -347,13 +334,6 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     fontSize: theme.typography.caption.fontSize,
     maxWidth: 220,
   },
-  featuredTooltipLink: {
-    fontSize: 'inherit',
-    color: theme.palette.greyShades[200],
-  },
-  featuredContentHidden: {
-    color: theme.palette.greyShades[400],
-  },
   humanityVerifiedTooltipLink: {
     display: 'block',
     fontSize: 'inherit',
@@ -364,60 +344,23 @@ export const useStyles = makeStyles()((theme: Theme) => ({
       color: theme.palette.white,
     },
   },
-  followersPreviewContainer: {
-    display: 'flex',
-    width: '100%',
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2),
-    [theme.breakpoints.down('md')]: {
-      justifyContent: 'center',
-      flexDirection: 'row-reverse',
-    },
+  featuredTooltipLink: {
+    fontSize: 'inherit',
+    color: theme.palette.greyShades[200],
   },
-  followersPreview: {
-    display: 'flex',
-    position: 'relative',
-    width: '5em',
-    '& > div': {
-      position: 'absolute',
-    },
-    '& img': {
-      border: `2px solid ${theme.palette.neutralShades[200]} !important`,
-      width: '30px !important',
-      height: '30px !important',
-    },
-    '& div:nth-of-type(1)': {
-      zIndex: 103,
-      [theme.breakpoints.down('sm')]: {
-        zIndex: 0,
-      },
-    },
-    '& div:nth-of-type(2)': {
-      zIndex: 102,
-      marginLeft: '20px',
-      [theme.breakpoints.down('sm')]: {
-        zIndex: 0,
-      },
-    },
-    '& div:nth-of-type(3)': {
-      zIndex: 101,
-      marginLeft: '40px',
-      [theme.breakpoints.down('sm')]: {
-        zIndex: 0,
-      },
-    },
+  featuredContentHidden: {
+    color: theme.palette.greyShades[400],
   },
-  followersPreviewTyp: {
-    color: theme.palette.neutralShades[600],
-    fontWeight: 400,
-    fontSize: 14,
-    maxWidth: 252,
-    marginRight: theme.spacing(1),
+  socialContainer: {
+    display: 'flex',
+    flexDirection: 'column',
     width: '100%',
     [theme.breakpoints.down('md')]: {
-      marginRight: 0,
-      textAlign: 'initial',
+      alignItems: 'center',
     },
+  },
+  otherDomainsLabel: {
+    cursor: 'pointer',
   },
   footer: {
     ...theme.containers.main,
@@ -427,26 +370,8 @@ export const useStyles = makeStyles()((theme: Theme) => ({
       margin: 0,
     },
   },
-  hidden: {
-    display: 'none',
-  },
-  disabledPageWrapper: {
-    width: '100%',
-    height: '80vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'column',
-  },
   unstoppableLogo: {
     fontSize: 64,
     marginBottom: theme.spacing(3),
-  },
-  disabledPageDescription: {
-    fontSize: theme.typography.h6.fontSize,
-    lineHeight: 1.5,
-    textAlign: 'center',
-    fontWeight: theme.typography.fontWeightRegular,
-    margin: theme.spacing(2, 4, 0),
   },
 }));

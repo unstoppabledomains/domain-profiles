@@ -48,7 +48,7 @@ export default function getDefaultConfig(): Config {
     UNSTOPPABLE_CONTRACT_ADDRESS: '0xa9a6a3626993d487d2dbda3173cf58ca1a9d9e9f',
     UNSTOPPABLE_METADATA_ENDPOINT: 'https://api.ud-staging.com/metadata',
     IPFS_BASE_URL: 'https://ipfs.io',
-    VERIFICATION_SUPPORTED: ['SOL', 'ETH', 'MATIC', 'FTM', 'AVAX'],
+    VERIFICATION_SUPPORTED: ['SOL', 'ETH', 'MATIC', 'FTM', 'AVAX', 'BTC'],
     LOGIN_WITH_UNSTOPPABLE: {
       CLIENT_ID: '115148ec-364d-4e19-b7d8-2807e8f1b525',
       REDIRECT_URI:
@@ -80,5 +80,6 @@ export default function getDefaultConfig(): Config {
       SUPPORT_DOMAIN_NAME: 'support.crypto',
       SUPPORT_BUBBLE_SECONDS: 60,
     },
+    GATEWAY_API_KEY: process.env.GATEWAY_API_KEY || '',
   };
 }

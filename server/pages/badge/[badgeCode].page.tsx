@@ -4,8 +4,6 @@ import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import {useTheme} from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import type {GetServerSideProps} from 'next';
 import {NextSeo} from 'next-seo';
 import {useSnackbar} from 'notistack';
@@ -29,7 +27,6 @@ import {
   Logo,
   NftListing,
   ProfilePicture,
-  ShareMenu,
   UnlockSponsorsLeaderboard,
   getBadge,
   getDomainRankings,
@@ -97,10 +94,8 @@ const BadgePage = ({
 }: BadgePageProps) => {
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
-  const theme = useTheme();
   const isMounted = useIsMounted();
   const {enqueueSnackbar} = useSnackbar();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // general state management
   const [authAddress, setAuthAddress] = useState('');
@@ -187,17 +182,6 @@ const BadgePage = ({
         >
           <Logo className={classes.logo} inverse />
           <div className={classes.head}>
-            <div className={classes.shareMenuContainer}>
-              <ShareMenu
-                className={classes.shareMenu}
-                toggleQrCode={toggleQrCode}
-                displayQrCode={displayQrCode}
-                domain={badgeData.badge.code}
-                onProfileLinkCopied={handleClickToCopy}
-                isBadge
-              />
-            </div>
-
             <div className={classes.profileButtonContainer}>
               {authDomain ? (
                 <>
@@ -210,7 +194,7 @@ const BadgePage = ({
                 </>
               ) : (
                 <LoginButton
-                  method={isMobile ? LoginMethod.Wallet : LoginMethod.Uauth}
+                  method={LoginMethod.Wallet}
                   loading={false}
                   isWhiteBg
                   hidden={false}

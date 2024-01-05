@@ -1,16 +1,13 @@
-import IosShareIcon from '@mui/icons-material/IosShare';
 import LinkIcon from '@mui/icons-material/Link';
 import QrCodeIcon from '@mui/icons-material/QrCode2';
+import ShareIcon from '@mui/icons-material/Share';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
 import type {Theme} from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import React, {useState} from 'react';
 
 import config from '@unstoppabledomains/config';
@@ -22,6 +19,7 @@ import CopyToClipboard from '../../components/CopyToClipboard';
 import Link from '../../components/Link';
 import formSocialMediaLink from '../../lib/formSocialMediaLink';
 import useTranslationContext from '../../lib/i18n';
+import ChipControlButton from '../ChipControlButton';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   link: {
@@ -80,8 +78,9 @@ const ShareMenu: React.FC<ShareMenuProps> = ({
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [anchorEl, setAnchorEl] = useState<
+    HTMLButtonElement | HTMLDivElement | null
+  >(null);
 
   const linkUrl = `${config.UD_ME_BASE_URL}/${
     isBadge ? 'badge/' : ''
@@ -127,7 +126,7 @@ const ShareMenu: React.FC<ShareMenuProps> = ({
     },
   ];
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleChipClick = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -141,28 +140,16 @@ const ShareMenu: React.FC<ShareMenuProps> = ({
   };
 
   return (
-    <>
-      {isMobile ? (
-        <IconButton
-          className={className}
-          aria-controls="simple-menu"
-          aria-haspopup="true"
-          onClick={handleClick}
-        >
-          <IosShareIcon />
-        </IconButton>
-      ) : (
-        <Button
-          data-testid="share-button"
-          className={className}
-          aria-controls="simple-menu"
-          aria-haspopup="true"
-          onClick={handleClick}
-          startIcon={<IosShareIcon />}
-        >
-          {t('profile.share')}
-        </Button>
-      )}
+    <Box display="flex">
+      <ChipControlButton
+        data-testid="share-button"
+        className={className}
+        aria-controls="simple-menu"
+        aria-haspopup="true"
+        onClick={handleChipClick}
+        icon={<ShareIcon />}
+        label={t('profile.share')}
+      />
       <Menu
         id="simple-menu"
         anchorEl={anchorEl}
@@ -219,7 +206,7 @@ const ShareMenu: React.FC<ShareMenuProps> = ({
           </Link>
         ))}
       </Menu>
-    </>
+    </Box>
   );
 };
 

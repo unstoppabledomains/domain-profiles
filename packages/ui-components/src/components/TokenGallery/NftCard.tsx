@@ -50,11 +50,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
   placeholderTxt: {
     color: theme.palette.neutralShades[600],
   },
+  loadingContainer: {
+    display: 'flex',
+    alignContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+  },
   loadingImg: {
-    marginTop: theme.spacing(15),
-    [theme.breakpoints.down('sm')]: {
-      marginTop: theme.spacing(10),
-    },
+    padding: theme.spacing(1),
   },
   optionsButton: {
     marginRight: theme.spacing(-1),
@@ -65,9 +68,10 @@ interface Props {
   domain: string;
   nft: Nft;
   placeholder?: boolean;
+  compact?: boolean;
 }
 
-const NftCard = ({nft, domain, placeholder}: Props) => {
+const NftCard = ({nft, compact, placeholder}: Props) => {
   const [t] = useTranslationContext();
   const videoRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -266,66 +270,71 @@ const NftCard = ({nft, domain, placeholder}: Props) => {
               alt={nft.name}
             />
           ) : (
-            <Box className={cx(classes.nftImage, classes.loadingImg)}>
-              <CircularProgress color="secondary" />
+            <Box className={cx(classes.nftImage, classes.loadingContainer)}>
+              <CircularProgress
+                className={classes.loadingImg}
+                color="secondary"
+              />
             </Box>
           )}
         </Box>
-        <Box className={'NFT-infoContainer'}>
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            alignContent="center"
-          >
+        {!compact && (
+          <Box className={'NFT-infoContainer'}>
             <Box
-              data-testid={'nft-info-name'}
-              className={cx('NFT-name', {
-                [classes.placeholderTxt]: placeholder || !nft.public,
-              })}
-              onClick={handleClick}
+              display="flex"
+              justifyContent="space-between"
               alignItems="center"
               alignContent="center"
-              textAlign="center"
-              display="flex"
             >
-              {nft.symbol && (
-                <CryptoIcon
-                  currency={nft.symbol as CurrenciesType}
-                  classes={{root: classes.currencyIcon}}
-                />
-              )}
-              {nft.name ? (
-                <Typography>{nft.name}</Typography>
-              ) : (
-                placeholder && (
-                  <Skeleton width="300px" height={25} variant="text" />
-                )
+              <Box
+                data-testid={'nft-info-name'}
+                className={cx('NFT-name', {
+                  [classes.placeholderTxt]: placeholder || !nft.public,
+                })}
+                onClick={handleClick}
+                alignItems="center"
+                alignContent="center"
+                textAlign="center"
+                display="flex"
+              >
+                {nft.symbol && (
+                  <CryptoIcon
+                    currency={nft.symbol as CurrenciesType}
+                    classes={{root: classes.currencyIcon}}
+                  />
+                )}
+                {nft.name ? (
+                  <Typography>{nft.name}</Typography>
+                ) : (
+                  placeholder && (
+                    <Skeleton width="300px" height={25} variant="text" />
+                  )
+                )}
+              </Box>
+              {nft.owner && nft.toggleVisibility && (
+                <IconButton
+                  data-testid="nft-card-more-info"
+                  className={classes.optionsButton}
+                  onClick={handleOpenMenu}
+                >
+                  <MoreVertIcon />
+                </IconButton>
               )}
             </Box>
-            {nft.owner && nft.toggleVisibility && (
-              <IconButton
-                data-testid="nft-card-more-info"
-                className={classes.optionsButton}
-                onClick={handleOpenMenu}
-              >
-                <MoreVertIcon />
-              </IconButton>
-            )}
+            <Typography
+              className={cx('NFT-collection', {
+                [classes.placeholderTxt]: placeholder,
+              })}
+              variant="caption"
+            >
+              {nft?.collection
+                ? nft.collection
+                : placeholder && (
+                    <Skeleton width="75%" height={22} variant="text" />
+                  )}
+            </Typography>
           </Box>
-          <Typography
-            className={cx('NFT-collection', {
-              [classes.placeholderTxt]: placeholder,
-            })}
-            variant="caption"
-          >
-            {nft?.collection
-              ? nft.collection
-              : placeholder && (
-                  <Skeleton width="75%" height={22} variant="text" />
-                )}
-          </Typography>
-        </Box>
+        )}
         <Menu
           anchorEl={anchorEl}
           onClose={handleCloseMenu}
@@ -371,6 +380,15 @@ const NftCard = ({nft, domain, placeholder}: Props) => {
         </Menu>
         <NftModal handleClose={handleClose} open={open} nft={nft} />
       </Box>
+      {compact && (
+        <Box mt={1}>
+          {nft.name ? (
+            <Typography variant="caption">{nft.name}</Typography>
+          ) : (
+            placeholder && <Skeleton width="100%" height={24} variant="text" />
+          )}
+        </Box>
+      )}
     </>
   );
 };

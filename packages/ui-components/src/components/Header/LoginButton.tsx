@@ -1,7 +1,7 @@
-import AccountBalanceWalletOutlined from '@mui/icons-material/AccountBalanceWalletOutlined';
 import type {ButtonProps} from '@mui/material/Button';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
@@ -48,27 +48,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-const getLoginMethodIcon = (
-  method: LoginMethod,
-  isWhiteBg?: boolean,
-  hovering?: boolean,
-) => {
-  switch (method) {
-    case LoginMethod.Wallet:
-      return <AccountBalanceWalletOutlined />;
-    case LoginMethod.Uauth:
-      return (
-        <UnstoppableAnimated
-          theme={isWhiteBg ? LogoTheme.Primary : LogoTheme.White}
-          hovering={hovering ?? false}
-        />
-      );
-
-    default:
-      return undefined;
-  }
-};
-
 type ButtonSkeletonProps = {
   big?: boolean;
 };
@@ -95,6 +74,7 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
   hidden,
   isWhiteBg,
   big,
+  onLoginComplete,
   ...props
 }) => {
   const {classes, cx} = useStyles();
@@ -124,8 +104,8 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
       setAccessWalletOpen(true);
       return;
     }
-    const loginResult = await loginWithAddress();
-    props.onLoginComplete(loginResult.address, loginResult.domain);
+    const {address, domain} = await loginWithAddress();
+    onLoginComplete(address, domain);
   };
 
   const handleAccessWalletComplete = async (
@@ -133,39 +113,44 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
   ) => {
     if (web3Dependencies) {
       setWeb3Deps(web3Dependencies);
-      const loginResult = await loginWithAddress(web3Dependencies.address);
-      props.onLoginComplete(loginResult.address, loginResult.domain);
+      const {address, domain} = await loginWithAddress(
+        web3Dependencies.address,
+      );
+      onLoginComplete(address, domain);
       setAccessWalletOpen(false);
     }
   };
 
   return (
     <>
-      <Button
-        {...props}
-        variant="contained"
-        color="primary"
-        fullWidth
-        size="large"
-        className={cx(classes.button, {
-          [classes.uauthWhite]: isUauth || isWhiteBg,
-        })}
-        onClick={handleClick}
-        onMouseEnter={() => setHovering(true)}
-        onMouseLeave={() => setHovering(false)}
-        startIcon={
-          isWallet && big
-            ? undefined
-            : getLoginMethodIcon(method, isWhiteBg, hovering)
-        }
-        disableElevation
-        data-testid={`${method}-auth-button`}
-        data-cy={`${method}-auth-button`}
-      >
-        <Typography variant="body1" className={classes.buttonText}>
-          {isWallet ? t('common.connect') : t(`auth.loginWithUnstoppable`)}
-        </Typography>
-      </Button>
+      <Tooltip title={t('auth.connectToLogin')}>
+        <Button
+          {...props}
+          variant="contained"
+          color="primary"
+          fullWidth
+          size="large"
+          className={cx(classes.button, {
+            [classes.uauthWhite]: isUauth || isWhiteBg,
+          })}
+          onClick={handleClick}
+          onMouseEnter={() => setHovering(true)}
+          onMouseLeave={() => setHovering(false)}
+          startIcon={
+            <UnstoppableAnimated
+              theme={isWhiteBg ? LogoTheme.Primary : LogoTheme.White}
+              hovering={hovering ?? false}
+            />
+          }
+          disableElevation
+          data-testid={`${method}-auth-button`}
+          data-cy={`${method}-auth-button`}
+        >
+          <Typography variant="body1" className={classes.buttonText}>
+            {isWallet ? t('common.connect') : t(`auth.loginWithUnstoppable`)}
+          </Typography>
+        </Button>
+      </Tooltip>
       <AccessWalletModal
         prompt={true}
         onComplete={deps => handleAccessWalletComplete(deps)}

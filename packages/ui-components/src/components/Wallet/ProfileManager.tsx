@@ -6,6 +6,7 @@ import React, {useContext, useEffect, useState} from 'react';
 import config from '@unstoppabledomains/config';
 
 import {AccessWalletModal} from '../../components/Wallet/AccessWallet';
+import {fetchApi} from '../../lib';
 import {DomainProfileKeys} from '../../lib/types/domain';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import {Web3Context} from '../../providers/Web3ContextProvider';
@@ -107,18 +108,18 @@ export const ProfileManager: React.FC<ManagerProps> = ({
     }
 
     // request a new domain signature
-    const domainProfileUrl = `${
-      config.PROFILE.HOST_URL
-    }/user/${domain}/signature?device=true&expiry=${Date.now() + ONE_WEEK}`;
-    const response = await fetch(domainProfileUrl, {
-      method: 'GET',
-      mode: 'cors',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+    const responseBody = await fetchApi<MessageResponse>(
+      `/user/${domain}/signature?device=true&expiry=${Date.now() + ONE_WEEK}`,
+      {
+        host: config.PROFILE.HOST_URL,
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
       },
-    });
-    const responseBody: MessageResponse = await response.json();
+    );
 
     // sign with locally stored XMTP key if available
     const localXmtpKey = getXmtpLocalKey(ownerAddress);

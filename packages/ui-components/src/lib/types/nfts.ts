@@ -16,6 +16,9 @@ export type Nft = SerializedNftMetadata & {
 export type NftMintItem = NftRequestItem & {
   symbol: string;
 };
+
+export const NftPageSize = 10;
+
 export interface NftRequestItem {
   mint: string;
   public: boolean;

@@ -39,3 +39,10 @@ window.URL.createObjectURL = jest.fn();
     return null;
   }
 };
+
+// It fails in tests so we mock it
+jest.mock('bip322-js', () => ({
+  Verifier: {
+    verifySignature: jest.fn(),
+  },
+}));

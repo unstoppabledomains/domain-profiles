@@ -1,10 +1,9 @@
 import ChatIcon from '@mui/icons-material/ChatOutlined';
 import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
-import Grid from '@mui/material/Grid';
 import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -14,7 +13,6 @@ import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getProfileData} from '../../actions';
-import {useFeatureFlags} from '../../actions/featureFlagActions';
 import {splitDomain} from '../../lib/domain/format';
 import getImageUrl from '../../lib/domain/getImageUrl';
 import {notifyError} from '../../lib/error';
@@ -27,6 +25,7 @@ import {
   Web2SuffixesList,
 } from '../../lib/types/domain';
 import type {Web3Dependencies} from '../../lib/types/web3';
+import ChipControlButton from '../ChipControlButton';
 import FollowButton from './FollowButton';
 
 const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
@@ -41,19 +40,7 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
     marginLeft: theme.spacing(-1),
     marginRight: theme.spacing(-1),
     marginBottom: theme.spacing(-2),
-  },
-  actionIcon: {
-    marginLeft: theme.spacing(0.5),
-    color: theme.palette.neutralShades[600],
-  },
-  actionButton: {
-    width: '100%',
-    color: '#7d7d7d',
-    borderColor: '#7d7d7d',
     marginTop: theme.spacing(2),
-    '&:hover': {
-      borderColor: 'initial',
-    },
   },
   contentContainer: {
     width: '250px',
@@ -75,9 +62,6 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
     marginRight: theme.spacing(1),
     color: theme.palette.primary.main,
     backgroundColor: 'white',
-    border: `2px solid ${theme.palette.neutralShades[200]}`,
-    width: `${size}px !important`,
-    height: `${size}px !important`,
   },
   avatarCard: {
     marginRight: theme.spacing(1),
@@ -107,7 +91,6 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
   const {classes} = useStyles({size});
   const [profileData, setProfileData] =
     useState<SerializedPublicDomainProfileData>();
-  const {data: featureFlags} = useFeatureFlags();
   const [authAddress, setAuthAddress] = useState<string>();
   const [authDomain, setAuthDomain] = useState<string>();
   const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
@@ -241,54 +224,32 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
                 </div>
               </div>
             </div>
-            <div className={classes.actionContainer}>
-              {setWeb3Deps && (
-                <Grid container spacing={1}>
-                  <Grid
-                    item
-                    sm={
-                      featureFlags?.variations?.ecommerceServiceUsersEnableChat
-                        ? 6
-                        : 12
-                    }
-                  >
-                    {authDomain &&
-                      authAddress &&
-                      authDomain.toLowerCase() !== domain.toLowerCase() && (
-                        <div className={classes.actionButton}>
-                          <FollowButton
-                            domain={domain}
-                            authDomain={authDomain}
-                            authAddress={authAddress}
-                            setWeb3Deps={setWeb3Deps}
-                            color="#7d7d7d"
-                          />
-                        </div>
-                      )}
-                  </Grid>
-                  {featureFlags?.variations
-                    ?.ecommerceServiceUsersEnableChat && (
-                    <Grid item sm={chatUser ? 6 : 12}>
-                      {chatUser &&
-                        setOpenChat &&
-                        authDomain &&
-                        authAddress &&
-                        authDomain.toLowerCase() !== domain.toLowerCase() && (
-                          <Button
-                            className={classes.actionButton}
-                            variant="outlined"
-                            onClick={() => setOpenChat(domain)}
-                            startIcon={<ChatIcon />}
-                            size="small"
-                          >
-                            {t('push.chat')}
-                          </Button>
-                        )}
-                    </Grid>
+            {setWeb3Deps && (
+              <Box className={classes.actionContainer}>
+                {authDomain &&
+                  authAddress &&
+                  authDomain.toLowerCase() !== domain.toLowerCase() && (
+                    <FollowButton
+                      domain={domain}
+                      authDomain={authDomain}
+                      authAddress={authAddress}
+                      setWeb3Deps={setWeb3Deps}
+                    />
                   )}
-                </Grid>
-              )}
-            </div>
+                {chatUser &&
+                  setOpenChat &&
+                  authDomain &&
+                  authAddress &&
+                  authDomain.toLowerCase() !== domain.toLowerCase() && (
+                    <ChipControlButton
+                      onClick={() => setOpenChat(domain)}
+                      icon={<ChatIcon />}
+                      label={t('push.chat')}
+                      sx={{marginLeft: 1}}
+                    />
+                  )}
+              </Box>
+            )}
           </CardContent>
         </Card>
       </Popover>

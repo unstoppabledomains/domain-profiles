@@ -74,6 +74,7 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
   hidden,
   isWhiteBg,
   big,
+  onLoginComplete,
   ...props
 }) => {
   const {classes, cx} = useStyles();
@@ -103,8 +104,8 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
       setAccessWalletOpen(true);
       return;
     }
-    const loginResult = await loginWithAddress();
-    props.onLoginComplete(loginResult.address, loginResult.domain);
+    const {address, domain} = await loginWithAddress();
+    onLoginComplete(address, domain);
   };
 
   const handleAccessWalletComplete = async (
@@ -112,8 +113,10 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
   ) => {
     if (web3Dependencies) {
       setWeb3Deps(web3Dependencies);
-      const loginResult = await loginWithAddress(web3Dependencies.address);
-      props.onLoginComplete(loginResult.address, loginResult.domain);
+      const {address, domain} = await loginWithAddress(
+        web3Dependencies.address,
+      );
+      onLoginComplete(address, domain);
       setAccessWalletOpen(false);
     }
   };

@@ -1,6 +1,6 @@
 {
   "name": "@unstoppabledomains/ui-components",
-  "version": "0.0.32",
+  "version": "0.0.33",
   "private": true,
   "description": "An open and reusable suite of Unstoppable Domains management components",
   "keywords": [
@@ -71,7 +71,6 @@
     "next-secure-headers": "^2.2.0",
     "next-seo": "^6.1.0",
     "next-transpile-modules": "^10.0.0",
-    "notistack": "^2.0.5",
     "numeral": "^2.0.6",
     "qs": "^6.11.2",
     "ramda": "^0.27.1",
@@ -111,6 +110,7 @@
   },
   "peerDependencies": {
     "@unstoppabledomains/ui-kit": "^0.3.15",
+    "notistack": "^2.0.5",
     "react-query": "^3.39.3"
   },
   "engines": {

@@ -1,7 +1,5 @@
 import React, {useState} from 'react';
 
-import BaseProvider from './BaseProvider';
-
 type Props = {
   children: React.ReactNode;
 };
@@ -43,11 +41,9 @@ const UnstoppableMessagingProvider: React.FC<Props> = ({children}) => {
   };
 
   return (
-    <BaseProvider>
-      <UnstoppableMessagingContext.Provider value={value}>
-        {children}
-      </UnstoppableMessagingContext.Provider>
-    </BaseProvider>
+    <UnstoppableMessagingContext.Provider value={value}>
+      {children}
+    </UnstoppableMessagingContext.Provider>
   );
 };
 

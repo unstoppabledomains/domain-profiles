@@ -1,5 +1,3 @@
-import CssBaseline from '@mui/material/CssBaseline';
-import {ThemeProvider} from '@mui/material/styles';
 import Layout from 'components/app/Layout';
 import type {NextPage} from 'next';
 import {NextSeo} from 'next-seo';
@@ -10,6 +8,7 @@ import 'react-medium-image-zoom/dist/styles.css';
 import 'swiper/css/bundle';
 
 import {
+  BaseProvider,
   DomainConfigProvider,
   TokenGalleryProvider,
   UnstoppableMessagingProvider,
@@ -42,9 +41,7 @@ const WrappedApp = (props: WrappedAppProps) => {
         />
       </Head>
       <NextSeo title="Unstoppable Domains" />
-      <ThemeProvider theme={pageTheme}>
-        {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-        <CssBaseline enableColorScheme />
+      <BaseProvider theme={pageTheme}>
         <UnstoppableMessagingProvider>
           <TokenGalleryProvider>
             <DomainConfigProvider>
@@ -54,7 +51,7 @@ const WrappedApp = (props: WrappedAppProps) => {
             </DomainConfigProvider>
           </TokenGalleryProvider>
         </UnstoppableMessagingProvider>
-      </ThemeProvider>
+      </BaseProvider>
     </>
   );
 };

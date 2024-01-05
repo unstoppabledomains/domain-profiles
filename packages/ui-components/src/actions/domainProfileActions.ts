@@ -11,12 +11,15 @@ import type {
   DomainFieldTypes,
   ImageData,
   SerializedBulkDomainResponse,
+  SerializedDomainListData,
   SerializedFollowerListData,
   SerializedProfileSearch,
   SerializedPublicDomainProfileData,
   SerializedUserDomainProfileData,
 } from '../lib/types/domain';
 import {DomainProfileSocialMedia} from '../lib/types/domain';
+
+export const DOMAIN_LIST_PAGE_SIZE = 8;
 
 const queryKey = {
   followStatus: () => ['domainProfile', 'followingStatus'],
@@ -86,7 +89,21 @@ export const getFollowers = async (
   const domainProfileUrl = `/followers/${domain}?${QueryString.stringify(
     {
       relationship_type: relationship,
-      take: 100,
+      take: DOMAIN_LIST_PAGE_SIZE,
+      cursor,
+    },
+    {skipNulls: true},
+  )}`;
+  return await fetchApi(domainProfileUrl, {host: config.PROFILE.HOST_URL});
+};
+
+export const getOwnerDomains = async (
+  address: string,
+  cursor?: string,
+): Promise<SerializedDomainListData | undefined> => {
+  const domainProfileUrl = `/user/${address.toLowerCase()}/domains?${QueryString.stringify(
+    {
+      take: DOMAIN_LIST_PAGE_SIZE,
       cursor,
     },
     {skipNulls: true},

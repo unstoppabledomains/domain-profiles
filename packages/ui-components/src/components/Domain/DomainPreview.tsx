@@ -62,9 +62,6 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
     marginRight: theme.spacing(1),
     color: theme.palette.primary.main,
     backgroundColor: 'white',
-    border: `2px solid ${theme.palette.neutralShades[200]}`,
-    width: `${size}px !important`,
-    height: `${size}px !important`,
   },
   avatarCard: {
     marginRight: theme.spacing(1),

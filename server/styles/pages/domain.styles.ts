@@ -172,6 +172,11 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     width: '20px',
     height: '20px',
   },
+  contentCopyIconButton: {
+    color: theme.palette.neutralShades[600],
+    paddingTop: theme.spacing(0.5),
+    cursor: 'pointer',
+  },
   domainNameBox: {
     display: 'flex',
     justifyContent: 'center',
@@ -194,11 +199,6 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   sidebarIcon: {
     marginRight: theme.spacing(1.5),
     fill: theme.palette.greyShades[900],
-  },
-  riskScoreContainer: {
-    display: 'flex',
-    marginBottom: theme.spacing(2),
-    alignItems: 'center',
   },
   riskScoreLogo: {
     width: '25px',
@@ -223,18 +223,30 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     fontWeight: theme.typography.fontWeightMedium,
     marginRight: theme.spacing(1),
   },
-  websiteLink: {
-    color: theme.palette.greyShades[900],
+  reverseResolutionProfileLink: {
+    color: theme.palette.white,
     transition: theme.transitions.create('color'),
+    fontWeight: 'bold',
+    fontSize: theme.typography.body2.fontSize,
+    '&:hover': {
+      textDecoration: 'none',
+      color: theme.palette.neutralShades[200],
+    },
+    marginRight: theme.spacing(1),
+    cursor: 'pointer',
+  },
+  websiteLink: {
+    color: theme.palette.greyShades[600],
+    transition: theme.transitions.create('color'),
+    fontWeight: 'normal',
     '&:hover': {
       textDecoration: 'none',
       color: theme.palette.primary.main,
     },
   },
-  emailAndLocationSecondDivider: {
-    [theme.breakpoints.up('md')]: {
-      display: 'none',
-    },
+  divider: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(2),
   },
   loginContainer: {
     display: 'flex',
@@ -339,60 +351,16 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   featuredContentHidden: {
     color: theme.palette.greyShades[400],
   },
-  followersPreviewContainer: {
+  socialContainer: {
     display: 'flex',
-    width: '100%',
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2),
-    [theme.breakpoints.down('md')]: {
-      justifyContent: 'center',
-      flexDirection: 'row-reverse',
-    },
-  },
-  followersPreview: {
-    display: 'flex',
-    position: 'relative',
-    width: '5em',
-    '& > div': {
-      position: 'absolute',
-    },
-    '& img': {
-      border: `2px solid ${theme.palette.neutralShades[200]} !important`,
-      width: '30px !important',
-      height: '30px !important',
-    },
-    '& div:nth-of-type(1)': {
-      zIndex: 103,
-      [theme.breakpoints.down('sm')]: {
-        zIndex: 0,
-      },
-    },
-    '& div:nth-of-type(2)': {
-      zIndex: 102,
-      marginLeft: '20px',
-      [theme.breakpoints.down('sm')]: {
-        zIndex: 0,
-      },
-    },
-    '& div:nth-of-type(3)': {
-      zIndex: 101,
-      marginLeft: '40px',
-      [theme.breakpoints.down('sm')]: {
-        zIndex: 0,
-      },
-    },
-  },
-  followersPreviewTyp: {
-    color: theme.palette.neutralShades[600],
-    fontWeight: 400,
-    fontSize: 14,
-    maxWidth: 252,
-    marginRight: theme.spacing(1),
+    flexDirection: 'column',
     width: '100%',
     [theme.breakpoints.down('md')]: {
-      marginRight: 0,
-      textAlign: 'initial',
+      alignItems: 'center',
     },
+  },
+  otherDomainsLabel: {
+    cursor: 'pointer',
   },
   footer: {
     ...theme.containers.main,

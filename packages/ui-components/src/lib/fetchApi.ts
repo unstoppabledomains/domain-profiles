@@ -21,7 +21,7 @@ export const fetchApi = async <T = any>(
     : `${config.UNSTOPPABLE_API_URL}/api/${normalizedPath}`;
 
   // add the authorization header if the request is going to the profile API
-  if (url.startsWith(config.PROFILE.HOST_URL)) {
+  if (url.startsWith(config.PROFILE.HOST_URL) && config.GATEWAY_API_KEY) {
     options.headers = {
       ...options.headers,
       ['Authorization']: `Bearer ${config.GATEWAY_API_KEY}`,

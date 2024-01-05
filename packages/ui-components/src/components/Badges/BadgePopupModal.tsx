@@ -5,6 +5,7 @@ import IosShareIcon from '@mui/icons-material/IosShare';
 import LinkIcon from '@mui/icons-material/Link';
 import SendIcon from '@mui/icons-material/Send';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
+import AvatarGroup from '@mui/material/AvatarGroup';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -19,7 +20,6 @@ import Typography from '@mui/material/Typography';
 import {styled} from '@mui/material/styles';
 import {useRouter} from 'next/router';
 import {useSnackbar} from 'notistack';
-import numeral from 'numeral';
 import React, {useState} from 'react';
 
 import config from '@unstoppabledomains/config';
@@ -304,25 +304,21 @@ const BadgePopupModal = ({
                     </Link>
                   )}
                   <Typography className={classes.modalUsageText}>
-                    {holdersFeatured?.map(holdersDomain => (
-                      <DomainPreview
-                        key={`holder-${badgeCode}-${holdersDomain}`}
-                        domain={holdersDomain}
-                        size={20}
-                        chatUser={chatUser}
-                        setOpenChat={setOpenChat}
-                        setWeb3Deps={setWeb3Deps}
-                      />
-                    ))}
-                    {holdersRemaining && (
-                      <div className={classes.remainingHolders}>
-                        {holdersFeatured && holdersFeatured?.length > 0 && '+'}
-                        {numeral(holdersRemaining).format('0a')}{' '}
-                        {holdersFeatured && holdersFeatured?.length > 0
-                          ? 'other'
-                          : 'holder'}
-                        {holdersRemaining > 1 && 's'}
-                      </div>
+                    {holdersFeatured && holdersFeatured.length > 0 && (
+                      <AvatarGroup
+                        total={holdersRemaining || 0 + holdersFeatured.length}
+                      >
+                        {holdersFeatured?.map(holdersDomain => (
+                          <DomainPreview
+                            key={`holder-${badgeCode}-${holdersDomain}`}
+                            domain={holdersDomain}
+                            size={20}
+                            chatUser={chatUser}
+                            setOpenChat={setOpenChat}
+                            setWeb3Deps={setWeb3Deps}
+                          />
+                        ))}
+                      </AvatarGroup>
                     )}
                   </Typography>
                 </>

@@ -263,12 +263,6 @@ describe('<DomainProfile />', () => {
     customRender(<DomainProfile {...defaultProps()} />);
 
     await waitFor(() => {
-      const socialExpandButton = screen.getByTestId('expand-socials');
-      expect(socialExpandButton).toBeInTheDocument();
-      userEvent.click(socialExpandButton);
-    });
-
-    await waitFor(() => {
       expect(screen.getByTitle('twitter logo')).toBeInTheDocument();
       expect(screen.getByTitle('reddit logo')).toBeInTheDocument();
       expect(screen.getByTitle('youtube logo')).toBeInTheDocument();

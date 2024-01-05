@@ -1,4 +1,5 @@
 import CssBaseline from '@mui/material/CssBaseline';
+import type {Theme} from '@mui/material/styles';
 import {ThemeProvider} from '@mui/material/styles';
 import {SnackbarProvider} from 'notistack';
 import React from 'react';
@@ -24,20 +25,21 @@ const queryClient = new QueryClient({
 });
 
 // setup emotion cache for MUI
-const {EmotionCacheProvider, withEmotionCache} =
+export const {EmotionCacheProvider, withEmotionCache} =
   createEmotionSsrAdvancedApproach({key: 'css'});
-export {withEmotionCache};
 
 type Props = {
   children: React.ReactNode;
+  theme?: Theme;
 };
 
-const BaseProvider: React.FC<Props> = ({children}) => {
+const BaseProvider: React.FC<Props> = ({children, theme = lightTheme}) => {
   return (
     <TranslationProvider>
       <EmotionCacheProvider>
         <QueryClientProvider client={queryClient}>
-          <ThemeProvider theme={lightTheme}>
+          <ThemeProvider theme={theme}>
+            {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
             <CssBaseline enableColorScheme />
             <SnackbarProvider
               anchorOrigin={{

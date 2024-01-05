@@ -70,9 +70,9 @@ import Button from '@mui/material/Button';
 import React from 'react';
 
 import {
+  BaseProvider,
   UnstoppableMessaging,
   UnstoppableMessagingProvider,
-  Web3ContextProvider,
   useUnstoppableMessaging,
 } from '@unstoppabledomains/ui-components';
 
@@ -87,12 +87,12 @@ const MyPage = () => {
   };
 
   return (
-    <Web3ContextProvider>
+    <BaseProvider>
       <UnstoppableMessagingProvider>
         <UnstoppableMessaging />
         <Button onClick={handleOpenChat}>Open chat</Button>
       </UnstoppableMessagingProvider>
-    </Web3ContextProvider>
+    </BaseProvider>
   );
 };
 

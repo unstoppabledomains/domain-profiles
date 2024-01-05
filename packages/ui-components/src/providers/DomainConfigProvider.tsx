@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 
 import {DomainProfileTabType} from '../components';
-import BaseProvider from './BaseProvider';
 
 type Props = {
   children: React.ReactNode;
@@ -31,11 +30,9 @@ const DomainConfigProvider: React.FC<Props> = ({children}) => {
   };
 
   return (
-    <BaseProvider>
-      <DomainConfigContext.Provider value={value}>
-        {children}
-      </DomainConfigContext.Provider>
-    </BaseProvider>
+    <DomainConfigContext.Provider value={value}>
+      {children}
+    </DomainConfigContext.Provider>
   );
 };
 

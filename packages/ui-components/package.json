@@ -1,6 +1,6 @@
 {
   "name": "@unstoppabledomains/ui-components",
-  "version": "0.0.33",
+  "version": "0.0.34",
   "private": true,
   "description": "An open and reusable suite of Unstoppable Domains management components",
   "keywords": [
@@ -51,9 +51,9 @@
     "@unstoppabledomains/config": "workspace:^",
     "@unstoppabledomains/resolution": "^8.5.0",
     "@web3-react/core": "^8.2.2",
-    "@xmtp/content-type-remote-attachment": "^1.0.7",
-    "@xmtp/proto": "^3.27.0",
-    "@xmtp/xmtp-js": "^10.0.0",
+    "@xmtp/content-type-remote-attachment": "^1.1.4",
+    "@xmtp/proto": "^3.35.0",
+    "@xmtp/xmtp-js": "11.3.0",
     "bip322-js": "^1.1.0",
     "bitcoin-address-validation": "^2.2.3",
     "bluebird": "^3.7.2",

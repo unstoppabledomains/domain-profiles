@@ -10,6 +10,7 @@ import {
 import type {signature} from '@xmtp/proto';
 import {fetcher} from '@xmtp/proto';
 import type {
+  ConsentState,
   Conversation,
   DecodedMessage,
   SignedPublicKeyBundle,
@@ -28,6 +29,8 @@ import {Web3Storage} from 'web3.storage';
 
 import config from '@unstoppabledomains/config';
 
+import {getUnstoppableConsents} from '../../../actions';
+import type {ConsentPreferences} from '../../../lib';
 import {notifyError} from '../../../lib/error';
 import {getXmtpLocalKey, setXmtpLocalKey} from '../storage';
 import {registerClientTopics} from './registration';
@@ -35,6 +38,7 @@ import {Upload} from './upload';
 
 export interface ConversationMeta {
   conversation: Conversation;
+  consentState: ConsentState;
   preview: string;
   timestamp: number;
   visible: boolean;
@@ -62,54 +66,34 @@ export const getConversation = async (
   return await xmtp.conversations.newConversation(peerAddress);
 };
 
-// getConversationPreview retrieve latest message associated with conversation
-export const getConversationPreview = async (
-  conversation: ConversationMeta,
-): Promise<ConversationMeta> => {
-  // retrieve conversation metadata
-  const latestMessage = await conversation.conversation.messages({
-    limit: 1,
-    direction: SortDirection.SORT_DIRECTION_DESCENDING,
-  });
-  conversation.timestamp = conversation.conversation.createdAt.getTime();
-  if (latestMessage && latestMessage.length > 0) {
-    const message = latestMessage[0];
-
-    // set the preview text
-    conversation.preview = `${
-      message.senderAddress.toLowerCase() ===
-      message.conversation.clientAddress.toLowerCase()
-        ? 'You: '
-        : ''
-    }${
-      message.contentType.sameAs(ContentTypeText)
-        ? message.content
-        : 'Attachment'
-    }`;
-
-    // set the timestamp
-    conversation.timestamp = message.sent.getTime();
-  }
-  return conversation;
-};
-
 export const getConversations = async (
   address: string,
 ): Promise<ConversationMeta[]> => {
   const xmtp = await getXmtpClient(address);
   const chats: ConversationMeta[] = [];
-  const conversations = await xmtp.conversations.list();
+  const [conversations, udConsents] = await Promise.all([
+    // load conversations from XMTP network
+    xmtp.conversations.list(),
+    // retrieve existing UD consents
+    getUnstoppableConsents(address),
+    // retrieve XMTP protocol consents
+    xmtp.contacts.refreshConsentList(),
+  ]);
+
+  // build a list of filtered conversations
   for (const conversation of conversations) {
     // filter self conversations
     if (conversation.peerAddress.toLowerCase() === address.toLowerCase()) {
       continue;
     }
 
+    // create a default conversation metadata object
     chats.push({
       conversation,
       preview: 'New conversation',
       timestamp: 0,
       visible: true,
+      consentState: 'unknown',
     });
   }
 
@@ -120,7 +104,12 @@ export const getConversations = async (
   await Bluebird.map(
     chats,
     async chat => {
-      await getConversationPreview(chat);
+      await Promise.all([
+        // retrieve the message preview
+        loadConversationPreview(chat),
+        // retrieve the consent state
+        loadConversationConsentState(xmtp, chat, udConsents),
+      ]);
     },
     {
       concurrency: 10,
@@ -170,7 +159,6 @@ export const getRemoteAttachment = async (
   } catch (e) {
     notifyError(e, {msg: 'error loading remote attachment'});
   }
-
   return;
 };
 
@@ -223,15 +211,67 @@ export const initXmtpAccount = async (address: string, signer: Signer) => {
   }
 };
 
-export const isAcceptedTopic = (
-  topic: string,
-  acceptedTopics: string[],
-): boolean => {
-  return acceptedTopics.includes('*') || acceptedTopics.includes(topic);
-};
-
 export const isXmtpUser = async (address: string): Promise<boolean> => {
   return await Client.canMessage(address, xmtpOpts);
+};
+
+// loadConversationConsentState retrieves the consent state for this conversation
+export const loadConversationConsentState = async (
+  xmtp: Client,
+  chat: ConversationMeta,
+  udConsents?: ConsentPreferences,
+): Promise<ConversationMeta> => {
+  // retrieve the protocol layer consent state
+  let consentState = xmtp.contacts.consentState(chat.conversation.peerAddress);
+
+  // attempt to migrate UD consent state if protocol state is unknown
+  if (udConsents && consentState === 'unknown') {
+    if (udConsents.accepted_topics?.includes(chat.conversation.topic)) {
+      // migrate existing UD allowlist entry to XMTP allowlist
+      await chat.conversation.allow();
+      consentState = 'allowed';
+    }
+    if (udConsents.blocked_topics?.includes(chat.conversation.topic)) {
+      // migrate existing UD blocklist entry to XMTP blocklist
+      await chat.conversation.deny();
+      consentState = 'denied';
+    }
+  }
+
+  // populate the consent state
+  chat.consentState = consentState;
+  return chat;
+};
+
+// loadConversationPreview retrieve latest message associated with conversation
+export const loadConversationPreview = async (
+  conversation: ConversationMeta,
+): Promise<ConversationMeta> => {
+  // retrieve conversation metadata
+  const latestMessage = await conversation.conversation.messages({
+    limit: 1,
+    direction: SortDirection.SORT_DIRECTION_DESCENDING,
+  });
+  conversation.timestamp = conversation.conversation.createdAt.getTime();
+  if (latestMessage && latestMessage.length > 0) {
+    const message = latestMessage[0];
+
+    // set the preview text
+    conversation.preview = `${
+      message.senderAddress.toLowerCase() ===
+      message.conversation.clientAddress.toLowerCase()
+        ? 'You: '
+        : ''
+    }${
+      message.contentType.sameAs(ContentTypeText)
+        ? message.content
+        : 'Attachment'
+    }`;
+
+    // set the timestamp
+    conversation.timestamp = message.sent.getTime();
+  }
+  return conversation;
 };
 
 export const sendRemoteAttachment = async (
@@ -303,7 +343,6 @@ export const sendRemoteAttachment = async (
   // send the attachment to the conversation
   return await conversation.send(remoteAttachment, {
     contentType: ContentTypeRemoteAttachment,
-    contentFallback: `Attachment: ${file.name} (${formatFileSize(file.size)})`,
   });
 };
 

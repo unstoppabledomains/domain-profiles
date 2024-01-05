@@ -11,7 +11,7 @@ This repository contains the following:
 1. Unstoppable Domains configuration variables, found in the `packages/config`
    directory
 
-## Public Endpoints
+## Live Endpoints
 
 The UD.me profile service is hosted on both `testnet` (staging) and `mainnet`
 (production) environments. Example Unstoppable Domains profiles for each
@@ -19,6 +19,20 @@ environment are provided below.
 
 - Staging: https://staging.ud.me/aaron.x
 - Production: https://ud.me/quirk.x
+
+## Import into your own project
+
+The React components contained in the `domain-profiles` project can be used in
+your own project, and imported directly from NPM. Some of the components
+available include:
+
+- Unstoppable Messaging
+- Token Gallery
+- Domain Profile Management
+- Wallet connect modal
+- Domain preview popup
+- Badges
+- More...
 
 ### Installation
 
@@ -45,22 +59,11 @@ npm install react react-dom
 yarn add react react-dom
 ```
 
-## Usage
+### Usage
 
-The React components contained in the `domain-profiles` project can be used in
-your own project, and imported directly from NPM. Some of the components
-available include:
-
-- Unstoppable Messaging
-- Token Gallery
-- Wallet connect modal
-- Domain preview popup
-- Badges
-- More...
-
-As an example, the following demonstrates how to add Unstoppable Messaging to
-your existing Web3 React dApp. The full source code for this example is
-available on the
+As an example, the following snippet demonstrates how to add Unstoppable
+Messaging to your existing Web3 React dApp. The full source code for this
+example is available on the
 [Unstoppable Domains GitHub](examples/unstoppable-messaging/README.md), and a
 [live demo](https://ud.me/examples/unstoppable-messaging) has been provided as
 well.
@@ -101,6 +104,12 @@ export default MyPage;
 
 ## Contributing
 
+We welcome contributions from the Web3 community. Please feel free to open
+issues or pull requests on this repo, and our team will work with you to make
+changes.
+
+### Running locally
+
 To contribute changes to the `domain-profiles` project, you'll need to clone the
 project and build it in your local environment. The following commands show how
 to clone the repo and run the UD.me website locally on your system.
@@ -115,8 +124,15 @@ yarn install # install dependencies
 yarn build   # build shared packages
 
 # Run the development server
-yarn workspace server run dev
+yarn workspace server run dev:staging
 ```
+
+You can now view the locally running service in your browser. Here are some
+example local endpoints for testing.
+
+- http://localhost:3000/aaron.x
+- http://localhost:3000/examples/unstoppable-messaging
+- http://localhost:3000/examples/domain-management
 
 ### Testing
 

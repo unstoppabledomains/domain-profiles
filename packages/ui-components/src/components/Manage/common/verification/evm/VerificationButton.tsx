@@ -58,8 +58,9 @@ export const EvmVerificationButton: FC<VerificationProps> = ({
 
       // sign a message linking the domain and secondary wallet address
       const messageText = await getSignatureMessage(domain, currency, address);
-      const signature =
-        await web3Context.web3Deps.signer.signMessage(messageText);
+      const signature = await web3Context.web3Deps.signer.signMessage(
+        messageText,
+      );
 
       // verify the signature before saving
       const signer = recoverPersonalSignature({

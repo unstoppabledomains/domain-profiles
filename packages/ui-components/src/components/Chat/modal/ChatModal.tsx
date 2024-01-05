@@ -31,7 +31,6 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getDomainPreferences} from '../../../actions';
 import {useFeatureFlags} from '../../../actions/featureFlagActions';
 import {
   getDomainSignatureExpiryKey,
@@ -47,11 +46,7 @@ import type {Web3Dependencies} from '../../../lib/types/web3';
 import {registerClientTopics} from '../protocol/registration';
 import {getAddressMetadata} from '../protocol/resolution';
 import type {ConversationMeta} from '../protocol/xmtp';
-import {
-  getConversation,
-  getConversations,
-  isAcceptedTopic,
-} from '../protocol/xmtp';
+import {getConversation, getConversations} from '../protocol/xmtp';
 import type {AddressResolution, PayloadData} from '../types';
 import {SearchPlaceholder, TabType, getCaip10Address} from '../types';
 import CallToAction from './CallToAction';
@@ -215,9 +210,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   // conversations to display in the current inbox view
   const visibleConversations = conversations?.filter(c =>
     conversationRequestView
-      ? !isAcceptedTopic(c.conversation.topic, acceptedTopics) &&
+      ? !acceptedTopics.includes(c.conversation.topic) &&
         !blockedTopics.includes(c.conversation.topic)
-      : isAcceptedTopic(c.conversation.topic, acceptedTopics),
+      : acceptedTopics.includes(c.conversation.topic),
   );
 
   useEffect(() => {
@@ -226,7 +221,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       void checkBrowserSettings();
 
       // load user settings
-      void loadUserSettings();
+      void loadUserProfile();
 
       // tab handling
       if (tabValue === TabType.Chat) {
@@ -287,7 +282,30 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     if (getRequestCount() === 0) {
       setConversationRequestView(false);
     }
+    if (conversations) {
+      setConversations([...conversations]);
+    }
   }, [acceptedTopics, blockedTopics]);
+
+  useEffect(() => {
+    if (!conversations) {
+      return;
+    }
+
+    // set initial topic consent values
+    if (acceptedTopics.length === 0 && blockedTopics.length === 0) {
+      setAcceptedTopics(
+        conversations
+          .filter(c => c.consentState === 'allowed')
+          .map(c => c.conversation.topic),
+      );
+      setBlockedTopics(
+        conversations
+          .filter(c => c.consentState === 'denied')
+          .map(c => c.conversation.topic),
+      );
+    }
+  }, [conversations]);
 
   useEffect(() => {
     if (!visibleConversations) {
@@ -376,32 +394,6 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       communities: lastRefresh.communities,
       chat: lastRefresh.chat,
     });
-  };
-
-  const loadUserSettings = async () => {
-    // load blocked topics and user data from profile service
-    await Promise.all([loadBlockedTopics(), loadUserProfile()]);
-  };
-
-  const loadBlockedTopics = async () => {
-    // skip if already loaded
-    if (acceptedTopics.length > 0) {
-      return;
-    }
-
-    // request the domain's blocked topics from profile API
-    setAcceptedTopics(['*']);
-    if (authDomain && isDomainValidForManagement(authDomain)) {
-      const responseJSON = await getDomainPreferences(authDomain);
-
-      // set blocked topics from result
-      if (responseJSON?.blocked_topics) {
-        setBlockedTopics(responseJSON.blocked_topics);
-      }
-      if (responseJSON?.accepted_topics) {
-        setAcceptedTopics(responseJSON.accepted_topics);
-      }
-    }
   };
 
   // loadUserProfile authenticates with user token to retrieve private data about the
@@ -526,6 +518,11 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         conversation: msg.conversation,
         preview: getMessagePreview(msg),
         timestamp: msg.sent.getTime(),
+        consentState:
+          msg.senderAddress.toLowerCase() ===
+          msg.conversation.clientAddress.toLowerCase()
+            ? 'allowed' // messages sent by client are allowed by default
+            : 'unknown', // messages received by client are unknown by default
         visible: true,
       };
 
@@ -552,6 +549,11 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         conversation: msg.conversation,
         preview: getMessagePreview(msg),
         timestamp: msg.sent.getTime(),
+        consentState:
+          msg.senderAddress.toLowerCase() ===
+          msg.conversation.clientAddress.toLowerCase()
+            ? 'allowed' // messages sent by client are allowed by default
+            : 'unknown', // messages received by client are unknown by default
         visible: true,
       };
 
@@ -707,6 +709,11 @@ export const ChatModal: React.FC<ChatModalProps> = ({
           conversation,
           preview: getMessagePreview(msg),
           timestamp: msg.sent.getTime(),
+          consentState:
+            msg.senderAddress.toLowerCase() ===
+            conversation.clientAddress.toLowerCase()
+              ? 'allowed' // messages sent by client are allowed by default
+              : 'unknown', // messages received by client are unknown by default
           visible: true,
         },
         ...conversations.sort((a, b): number => {
@@ -745,7 +752,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     return (
       conversations?.filter(
         c =>
-          !isAcceptedTopic(c.conversation.topic, acceptedTopics) &&
+          !acceptedTopics.includes(c.conversation.topic) &&
           !blockedTopics.includes(c.conversation.topic),
       ).length || 0
     );

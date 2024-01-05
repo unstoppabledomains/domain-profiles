@@ -119,7 +119,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     fontSize: '18px',
     lineHeight: '24px',
   },
-
   modalUsageText: {
     display: 'flex',
     fontSize: theme.typography.caption.fontSize,

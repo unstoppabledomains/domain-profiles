@@ -1,4 +1,3 @@
-import AlternateEmailOutlinedIcon from '@mui/icons-material/AlternateEmailOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import ChatIcon from '@mui/icons-material/Chat';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
@@ -10,18 +9,17 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import ManageHistoryOutlinedIcon from '@mui/icons-material/ManageHistoryOutlined';
 import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import RestoreOutlinedIcon from '@mui/icons-material/RestoreOutlined';
-import StarBorderOutlinedIcon from '@mui/icons-material/StarBorderOutlined';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
@@ -55,11 +53,11 @@ import {
   Badges,
   ChipControlButton,
   CopyToClipboard,
+  CrownIcon,
   CryptoAddresses,
   CustomBadges,
   DomainFieldTypes,
   DomainListModal,
-  DomainPreview,
   DomainProfileKeys,
   DomainProfileModal,
   DomainProfileTabType,
@@ -160,7 +158,6 @@ const DomainProfile = ({
     isFetched: isFeatureFlagFetched,
   } = useFeatureFlags(false, domain);
 
-  const [followers, setFollowers] = useState<string[]>([]);
   const [isViewFollowModalOpen, setIsViewFollowModalOpen] = useState(false);
   const [viewFollowerRelationship, setViewFollowerRelationship] = useState(
     'followers' as 'following' | 'followers',
@@ -225,7 +222,6 @@ const DomainProfile = ({
     Boolean(profileData?.profile?.location) ||
     ipfsHash ||
     profileData?.profile?.web2Url ||
-    profileData?.webacy ||
     ensDomainStatus?.expiresAt;
 
   const hasAddresses = Boolean(
@@ -390,12 +386,11 @@ const DomainProfile = ({
 
     // retrieve additional profile data at page load time
     const loadAll = async () => {
-      await Promise.all([
-        loadCryptoRecords(),
-        loadBadges(),
-        loadFollowers(),
-        loadWebacyScore(),
-      ]);
+      // non blocking page elements
+      void Promise.all([loadBadges(), loadWebacyScore()]);
+
+      // blocking page elements
+      await Promise.all([loadCryptoRecords()]);
 
       // page can be displayed now without flicker
       setIsLoaded(true);
@@ -467,22 +462,6 @@ const DomainProfile = ({
       ]);
     } catch (e) {
       notifyError(e, {msg: 'error loading badges'});
-    }
-  };
-
-  const loadFollowers = async () => {
-    if (
-      profileData?.social?.followerCount &&
-      profileData.social.followerCount > 0
-    ) {
-      try {
-        const loadedFollowers = await retrieveFollowers();
-        if (loadedFollowers?.domains && loadedFollowers.domains.length > 0) {
-          setFollowers([...loadedFollowers.domains]);
-        }
-      } catch (e) {
-        notifyError(e, {msg: 'error loading followers'});
-      }
     }
   };
 
@@ -644,8 +623,26 @@ const DomainProfile = ({
                     {domain}
                   </Typography>
                   {humanityVerified && (
-                    <Tooltip title={t('profile.humanityVerified')}>
+                    <Tooltip
+                      title={
+                        <Typography variant="caption">
+                          {t('profile.humanityVerified')}
+                        </Typography>
+                      }
+                    >
                       <VerifiedIcon className={classes.infoIcon} />
+                    </Tooltip>
+                  )}
+                  {domain.toLowerCase() ===
+                    profileData?.portfolio?.wallet?.primaryDomain?.toLowerCase() && (
+                    <Tooltip
+                      title={
+                        <Typography variant="caption">
+                          {t('profile.currentPrimaryDomain')}
+                        </Typography>
+                      }
+                    >
+                      <CrownIcon className={classes.infoIcon} />
                     </Tooltip>
                   )}
                 </Box>
@@ -703,144 +700,98 @@ const DomainProfile = ({
                 </Box>
                 <LeftBarContentCollapse
                   id="ownerAddress"
-                  icon={<LockOutlinedIcon />}
+                  icon={
+                    <CopyToClipboard
+                      stringToCopy={ownerAddress}
+                      onCopy={handleClickToCopy}
+                    >
+                      <CopyContentIcon
+                        className={classes.contentCopyIconButton}
+                      />
+                    </CopyToClipboard>
+                  }
                   header={
-                    <Box display="flex" alignItems="center">
+                    <Tooltip
+                      title={
+                        profileData?.portfolio?.wallet.primaryDomain ? (
+                          <Box display="flex" flexDirection="column">
+                            <Typography variant="body2">
+                              {t('profile.primaryDomain', {
+                                address: truncateEthAddress(ownerAddress),
+                                domain:
+                                  profileData.portfolio.wallet.primaryDomain,
+                              })}
+                            </Typography>
+                            <Box mt={1} display="flex">
+                              <CopyToClipboard
+                                stringToCopy={ownerAddress}
+                                onCopy={handleClickToCopy}
+                              >
+                                <Typography
+                                  className={
+                                    classes.reverseResolutionProfileLink
+                                  }
+                                >
+                                  {t('profile.copyAddress')}
+                                </Typography>
+                              </CopyToClipboard>
+                              {domain.toLowerCase() !==
+                                profileData?.portfolio?.wallet?.primaryDomain?.toLowerCase() && (
+                                <Link
+                                  className={
+                                    classes.reverseResolutionProfileLink
+                                  }
+                                  href={`${config.UD_ME_BASE_URL}/${profileData?.portfolio?.wallet?.primaryDomain}`}
+                                >
+                                  {t('profile.viewProfile')}
+                                </Link>
+                              )}
+                            </Box>
+                          </Box>
+                        ) : (
+                          ''
+                        )
+                      }
+                    >
                       <Typography>
                         {t('profile.ownerAddress', {
                           address: truncateEthAddress(ownerAddress),
                         })}
                       </Typography>
-                      <CopyToClipboard
-                        stringToCopy={ownerAddress}
-                        onCopy={handleClickToCopy}
-                      >
-                        <CopyContentIcon
-                          className={classes.contentCopyIconButton}
-                        />
-                      </CopyToClipboard>
-                    </Box>
-                  }
-                  content={
-                    profileData?.portfolio?.wallet.primaryDomain ? (
-                      <Chip
-                        icon={<StarBorderOutlinedIcon />}
-                        onClick={() =>
-                          (window.location.href = `${config.UD_ME_BASE_URL}/${profileData?.portfolio?.wallet?.primaryDomain}`)
-                        }
-                        label={
-                          <Typography variant="body2">
-                            {t('profile.primaryDomain', {
-                              domain:
-                                profileData.portfolio.wallet.primaryDomain,
-                            })}
-                          </Typography>
-                        }
-                      />
-                    ) : undefined
+                    </Tooltip>
                   }
                 />
                 {profileData?.profile && (
-                  <LeftBarContentCollapse
-                    id="followers"
-                    icon={<PeopleOutlinedIcon />}
-                    header={
-                      <Box display="flex">
-                        <Box
-                          className={classes.followCount}
-                          onClick={handleViewFollowingClick}
-                        >
-                          {`${
-                            profileData.social?.followingCount || 0
-                          } following`}
+                  <Box mt={-0.5}>
+                    <LeftBarContentCollapse
+                      id="followers"
+                      icon={<PeopleOutlinedIcon />}
+                      header={
+                        <Box display="flex">
+                          <Box
+                            className={classes.followCount}
+                            onClick={handleViewFollowingClick}
+                          >
+                            <Typography>
+                              {`${
+                                profileData.social?.followingCount || 0
+                              } following`}
+                            </Typography>
+                          </Box>
+                          <Box className={classes.followCount}>·</Box>
+                          <Box
+                            className={classes.followCount}
+                            onClick={handleViewFollowersClick}
+                          >
+                            <Typography>{`${
+                              (profileData.social?.followerCount || 0) +
+                              optimisticFollowCount
+                            } followers`}</Typography>
+                          </Box>
                         </Box>
-                        <Box className={classes.followCount}>·</Box>
-                        <Box
-                          className={classes.followCount}
-                          onClick={handleViewFollowersClick}
-                        >
-                          {`${
-                            (profileData.social?.followerCount || 0) +
-                            optimisticFollowCount
-                          } followers`}
-                        </Box>
-                      </Box>
-                    }
-                    content={
-                      followers &&
-                      followers.length > 2 && (
-                        <div className={classes.followersPreviewContainer}>
-                          <Typography className={classes.followersPreviewTyp}>
-                            {t('profile.followedBy', {
-                              followers: followers.slice(0, 2).join(', '),
-                              othersCount:
-                                (profileData.social?.followerCount || 0) - 3,
-                            })}
-                          </Typography>
-                          <div className={classes.followersPreview}>
-                            {followers.slice(0, 3).map(follower => (
-                              <DomainPreview
-                                key={follower}
-                                domain={follower}
-                                size={30}
-                                chatUser={chatUser}
-                                setOpenChat={setOpenChat}
-                                setWeb3Deps={setWeb3Deps}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      )
-                    }
-                  />
-                )}
-                {Boolean(verifiedSocials.length) && someSocialsPublic && (
-                  <LeftBarContentCollapse
-                    id="socials"
-                    icon={<AlternateEmailOutlinedIcon />}
-                    header={
-                      <Typography>
-                        {t('profile.socialsCount', {
-                          count: verifiedSocials.filter(account => {
-                            return (
-                              profileData?.socialAccounts &&
-                              profileData.socialAccounts[account].location
-                            );
-                          }).length,
-                        })}
-                      </Typography>
-                    }
-                    content={
-                      <Box mt={1} mb={1} display="flex" flexWrap="wrap">
-                        {verifiedSocials
-                          .filter(account => {
-                            return (
-                              profileData?.socialAccounts &&
-                              profileData.socialAccounts[account].location
-                            );
-                          })
-                          .map(account => {
-                            return (
-                              <Box mr={1} key={account}>
-                                <SocialAccountCard
-                                  socialInfo={socialsInfo[account]}
-                                  handleClickToCopy={handleClickToCopy}
-                                  verified={
-                                    profileData!.socialAccounts![account]
-                                      .verified
-                                  }
-                                  verificationSupported={
-                                    featureFlags.variations
-                                      ?.udMeServiceDomainsEnableSocialVerification
-                                  }
-                                  small
-                                />
-                              </Box>
-                            );
-                          })}
-                      </Box>
-                    }
-                  />
+                      }
+                    />
+                  </Box>
                 )}
                 {hasAddresses && (
                   <LeftBarContentCollapse
@@ -898,11 +849,142 @@ const DomainProfile = ({
                       }
                     />
                   )}
+                {profileData?.market?.primary?.payment && (
+                  <LeftBarContentCollapse
+                    icon={<ManageHistoryOutlinedIcon />}
+                    header={
+                      <Typography>
+                        {t(
+                          profileData.market.primary.cost
+                            ? 'profile.purchasePrice'
+                            : 'profile.registrationPrice',
+                          {
+                            date: format(
+                              new Date(profileData.market.primary.payment.date),
+                              'MMM d, yyyy',
+                            ),
+                            cost: profileData.market.primary.cost.toLocaleString(
+                              'en-US',
+                              {
+                                style: 'currency',
+                                currency: 'USD',
+                              },
+                            ),
+                          },
+                        )}
+                      </Typography>
+                    }
+                    id="marketPrice"
+                  />
+                )}
+                {profileData?.webacy && (
+                  <Box mb={-0.5} mt={-0.5}>
+                    <LeftBarContentCollapse
+                      icon={<HealthAndSafetyOutlinedIcon />}
+                      header={
+                        <Box display="flex" alignItems="center">
+                          <Typography mr={1}>
+                            {t('webacy.riskScore')}:
+                          </Typography>
+                          <Tooltip
+                            title={
+                              profileData.webacy.issues.length > 0 ? (
+                                profileData.webacy.issues.map(issue => (
+                                  <>
+                                    <Typography variant="caption">
+                                      {
+                                        issue.categories?.wallet_characteristics
+                                          ?.description
+                                      }
+                                    </Typography>
+                                    <List
+                                      dense
+                                      sx={{listStyleType: 'disc', pl: 4}}
+                                    >
+                                      {issue.tags.map(tag => (
+                                        <ListItem sx={{display: 'list-item'}}>
+                                          <Typography variant="caption">
+                                            {tag.name}
+                                          </Typography>
+                                        </ListItem>
+                                      ))}
+                                    </List>
+                                  </>
+                                ))
+                              ) : (
+                                <Typography variant="caption">
+                                  {t('webacy.riskScoreDescription')}
+                                </Typography>
+                              )
+                            }
+                          >
+                            <Chip
+                              color={
+                                profileData.webacy.high
+                                  ? 'error'
+                                  : profileData.webacy.medium
+                                  ? 'default'
+                                  : 'success'
+                              }
+                              size="small"
+                              icon={
+                                profileData.webacy.high ? (
+                                  <OutlinedFlagIcon
+                                    className={classes.riskScoreIcon}
+                                  />
+                                ) : profileData.webacy.medium ? (
+                                  <CheckCircleOutlinedIcon
+                                    className={classes.riskScoreIcon}
+                                  />
+                                ) : (
+                                  <CheckCircleOutlinedIcon
+                                    className={classes.riskScoreIcon}
+                                  />
+                                )
+                              }
+                              label={
+                                profileData.webacy.high
+                                  ? t('webacy.high')
+                                  : profileData.webacy.medium
+                                  ? t('webacy.medium')
+                                  : t('webacy.low')
+                              }
+                            />
+                          </Tooltip>
+                          {isOwner &&
+                            !profileData.webacy.high &&
+                            !profileData.webacy.medium && (
+                              <Tooltip
+                                title={
+                                  <Typography variant="caption">
+                                    {t('webacy.share')}
+                                  </Typography>
+                                }
+                              >
+                                <IconButton
+                                  size="small"
+                                  className={classes.riskScoreShareButton}
+                                  onClick={handleShareRiskScore}
+                                >
+                                  <IosShareIcon
+                                    className={classes.riskScoreShareIcon}
+                                  />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                        </Box>
+                      }
+                      id="webacy"
+                    />
+                  </Box>
+                )}
                 {hasMoreInfo && (
                   <LeftBarContentCollapse
                     id="moreInfo"
                     icon={<InfoOutlinedIcon />}
-                    header={t('profile.moreInformation')}
+                    header={
+                      <Typography>{t('profile.moreInformation')}</Typography>
+                    }
                     persist={true}
                     content={
                       <Box>
@@ -976,136 +1058,46 @@ const DomainProfile = ({
                             id="ensExpiration"
                           />
                         )}
-                        {profileData?.market?.primary?.payment && (
-                          <LeftBarContentCollapse
-                            icon={<ManageHistoryOutlinedIcon />}
-                            header={
-                              <Typography>
-                                {t('profile.purchasePrice', {
-                                  date: format(
-                                    new Date(
-                                      profileData.market.primary.payment.date,
-                                    ),
-                                    'MMM d, yyyy',
-                                  ),
-                                  cost: profileData.market.primary.cost.toLocaleString(
-                                    'en-US',
-                                    {
-                                      style: 'currency',
-                                      currency: 'USD',
-                                    },
-                                  ),
-                                })}
-                              </Typography>
-                            }
-                            id="marketPrice"
-                          />
-                        )}
-                        {profileData?.webacy && (
-                          <LeftBarContentCollapse
-                            icon={<HealthAndSafetyOutlinedIcon />}
-                            header={
-                              <Box display="flex" alignItems="center">
-                                <Typography mr={1}>
-                                  {t('webacy.riskScore')}:
-                                </Typography>
-                                <Tooltip
-                                  title={
-                                    profileData.webacy.issues.length > 0 ? (
-                                      profileData.webacy.issues.map(issue => (
-                                        <>
-                                          <Typography variant="caption">
-                                            {
-                                              issue.categories
-                                                ?.wallet_characteristics
-                                                ?.description
-                                            }
-                                          </Typography>
-                                          <List
-                                            dense
-                                            sx={{listStyleType: 'disc', pl: 4}}
-                                          >
-                                            {issue.tags.map(tag => (
-                                              <ListItem
-                                                sx={{display: 'list-item'}}
-                                              >
-                                                <Typography variant="caption">
-                                                  {tag.name}
-                                                </Typography>
-                                              </ListItem>
-                                            ))}
-                                          </List>
-                                        </>
-                                      ))
-                                    ) : (
-                                      <Typography variant="caption">
-                                        {t('webacy.riskScoreDescription')}
-                                      </Typography>
-                                    )
-                                  }
-                                >
-                                  <Chip
-                                    color={
-                                      profileData.webacy.high
-                                        ? 'error'
-                                        : profileData.webacy.medium
-                                        ? 'default'
-                                        : 'success'
-                                    }
-                                    size="small"
-                                    icon={
-                                      profileData.webacy.high ? (
-                                        <OutlinedFlagIcon
-                                          className={classes.riskScoreIcon}
-                                        />
-                                      ) : profileData.webacy.medium ? (
-                                        <CheckCircleOutlinedIcon
-                                          className={classes.riskScoreIcon}
-                                        />
-                                      ) : (
-                                        <CheckCircleOutlinedIcon
-                                          className={classes.riskScoreIcon}
-                                        />
-                                      )
-                                    }
-                                    label={
-                                      profileData.webacy.high
-                                        ? t('webacy.high')
-                                        : profileData.webacy.medium
-                                        ? t('webacy.medium')
-                                        : t('webacy.low')
-                                    }
-                                  />
-                                </Tooltip>
-                                {isOwner &&
-                                  !profileData.webacy.high &&
-                                  !profileData.webacy.medium && (
-                                    <Tooltip
-                                      title={
-                                        <Typography variant="caption">
-                                          {t('webacy.share')}
-                                        </Typography>
-                                      }
-                                    >
-                                      <IconButton
-                                        size="small"
-                                        className={classes.riskScoreShareButton}
-                                        onClick={handleShareRiskScore}
-                                      >
-                                        <IosShareIcon
-                                          className={classes.riskScoreShareIcon}
-                                        />
-                                      </IconButton>
-                                    </Tooltip>
-                                  )}
-                              </Box>
-                            }
-                            id="webacy"
-                          />
-                        )}
                       </Box>
                     }
                   />
+                )}
+                {Boolean(verifiedSocials.length) && someSocialsPublic && (
+                  <Box className={classes.socialContainer}>
+                    <Divider
+                      className={classes.divider}
+                      variant="fullWidth"
+                      flexItem
+                    />
+                    <Box mb={1} display="flex" flexWrap="wrap">
+                      {verifiedSocials
+                        .filter(account => {
+                          return (
+                            profileData?.socialAccounts &&
+                            profileData.socialAccounts[account].location
+                          );
+                        })
+                        .map(account => {
+                          return (
+                            <Box mr={1} key={account}>
+                              <SocialAccountCard
+                                socialInfo={socialsInfo[account]}
+                                handleClickToCopy={handleClickToCopy}
+                                verified={
+                                  profileData!.socialAccounts![account].verified
+                                }
+                                verificationSupported={
+                                  featureFlags.variations
+                                    ?.udMeServiceDomainsEnableSocialVerification
+                                }
+                                small
+                                monochrome
+                              />
+                            </Box>
+                          );
+                        })}
+                    </Box>
+                  </Box>
                 )}
               </>
             )}

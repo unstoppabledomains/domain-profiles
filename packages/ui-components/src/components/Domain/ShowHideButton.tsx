@@ -8,6 +8,7 @@ import React, {useState} from 'react';
 import config from '@unstoppabledomains/config';
 
 import {ProfileManager} from '../../components/Wallet/ProfileManager';
+import {fetchApi} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 import type {Web3Dependencies} from '../../lib/types/web3';
 
@@ -61,8 +62,8 @@ const ShowHideButton: React.FC<ShowHideButtonProps> = ({
   };
 
   const handleSaveProfile = async (signature: string, expiry: string) => {
-    const domainNftUrl = `${config.PROFILE.HOST_URL}/user/${domain}`;
-    await fetch(domainNftUrl, {
+    await fetchApi(`/user/${domain}`, {
+      host: config.PROFILE.HOST_URL,
       method: 'POST',
       mode: 'cors',
       headers: {

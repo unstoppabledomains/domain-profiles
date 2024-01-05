@@ -13,6 +13,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import config from '@unstoppabledomains/config';
 
 import {ProfileManager} from '../../../../components/Wallet/ProfileManager';
+import {fetchApi} from '../../../../lib';
 import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedUserDomainProfileData} from '../../../../lib/types/domain';
@@ -165,9 +166,10 @@ export const Compose: React.FC<ComposeProps> = ({
     try {
       // request the domain's user data from profile API
       if (authDomain && signature && expiry) {
-        const response = await fetch(
-          `${config.PROFILE.HOST_URL}/user/${authDomain}?fields=profile`,
+        const userProfile = await fetchApi<SerializedUserDomainProfileData>(
+          `/user/${authDomain}?fields=profile`,
           {
+            host: config.PROFILE.HOST_URL,
             mode: 'cors',
             headers: {
               Accept: 'application/json',
@@ -180,8 +182,6 @@ export const Compose: React.FC<ComposeProps> = ({
         );
 
         // set user profile data from result
-        const userProfile: SerializedUserDomainProfileData =
-          await response.json();
         if (userProfile?.storage) {
           setStorageApiKey(userProfile.storage.apiKey);
         }

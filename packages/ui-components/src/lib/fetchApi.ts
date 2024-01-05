@@ -20,21 +20,20 @@ export const fetchApi = async <T = any>(
     ? `${options.host}/${normalizedPath}`
     : `${config.UNSTOPPABLE_API_URL}/api/${normalizedPath}`;
 
-  if (!options.headers) {
-    options.headers = new Headers();
-  }
-
   // add the authorization header if the request is going to the profile API
   if (url.startsWith(config.PROFILE.HOST_URL)) {
-    (options.headers as Headers).append(
-      'Authorization',
-      `Bearer ${config.GATEWAY_API_KEY}`,
-    );
+    options.headers = {
+      ...options.headers,
+      ['Authorization']: `Bearer ${config.GATEWAY_API_KEY}`,
+    };
   }
 
   // force refresh forces to retrieve a fresh version from the server
   if (options.forceRefresh) {
-    (options.headers as Headers).append('X-Fastly-Force-Refresh', 'true');
+    options.headers = {
+      ...options.headers,
+      ['X-Fastly-Force-Refresh']: 'true',
+    };
   }
 
   // make the request

@@ -19,14 +19,14 @@ export const getBadge = async (
 };
 
 export const getMarketplaceBadgeDetails = async (url: string) => {
-  const response = await fetch(`${config.PROFILE.HOST_URL}/badges/claim`, {
+  return await fetchApi(`/badges/claim`, {
+    host: config.PROFILE.HOST_URL,
     method: 'POST',
-    headers: new Headers({
+    headers: {
       'Content-Type': 'application/json',
-    }),
+    },
     body: JSON.stringify({link: url}),
   });
-  return response;
 };
 
 export const getSponsorRankings = async (

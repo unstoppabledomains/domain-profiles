@@ -1079,7 +1079,7 @@ const DomainProfile = ({
                         })
                         .map(account => {
                           return (
-                            <Box mr={1}>
+                            <Box mr={1} key={account}>
                               <SocialAccountCard
                                 socialInfo={socialsInfo[account]}
                                 handleClickToCopy={handleClickToCopy}

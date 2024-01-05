@@ -15,6 +15,7 @@ import * as actions from '../actions';
 import {TranslationProvider} from '../lib';
 import {
   DomainConfigProvider,
+  EmotionCacheProvider,
   TokenGalleryProvider,
   UnstoppableMessagingProvider,
   Web3ContextProvider,
@@ -36,20 +37,21 @@ const createWrapper =
   ({theme}: {theme?: Theme} = {}): React.FC =>
   ({children}) => (
     <QueryClientProvider client={createTestQueryClient()}>
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      <ThemeProvider theme={(theme || defaultTheme) as any}>
-        <SnackbarProvider>
-          <Web3ContextProvider>
-            <TokenGalleryProvider>
-              <UnstoppableMessagingProvider>
-                <DomainConfigProvider>
-                  <TranslationProvider>{children}</TranslationProvider>
-                </DomainConfigProvider>
-              </UnstoppableMessagingProvider>
-            </TokenGalleryProvider>
-          </Web3ContextProvider>
-        </SnackbarProvider>
-      </ThemeProvider>
+      <EmotionCacheProvider>
+        <ThemeProvider theme={theme || defaultTheme}>
+          <SnackbarProvider>
+            <Web3ContextProvider>
+              <TokenGalleryProvider>
+                <UnstoppableMessagingProvider>
+                  <DomainConfigProvider>
+                    <TranslationProvider>{children}</TranslationProvider>
+                  </DomainConfigProvider>
+                </UnstoppableMessagingProvider>
+              </TokenGalleryProvider>
+            </Web3ContextProvider>
+          </SnackbarProvider>
+        </ThemeProvider>
+      </EmotionCacheProvider>
     </QueryClientProvider>
   );
 

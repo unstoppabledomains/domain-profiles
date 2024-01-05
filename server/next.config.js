@@ -82,10 +82,6 @@ const nextConfig = {
       test: /\.test\.tsx?$/,
       loader: 'ignore-loader',
     });
-    config.module.rules.push({
-      test: /\.wasm$/,
-      type: 'asset/resource',
-    });
     config.module.noParse = /gun\.js|gun\/sea\.js/;
     config.output.chunkLoadingGlobal = 'wpJsonpUD';
     config.resolve.extensions.push('.d.ts', '.ts', '.tsx');

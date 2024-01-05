@@ -23,7 +23,7 @@ import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {ProfileManager} from '../../components/Wallet/ProfileManager';
-import type {NftMintItem, NftRequestItem, NftResponse} from '../../lib';
+import {fetchApi, type NftMintItem, type NftRequestItem, type NftResponse} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 import type {Web3Dependencies} from '../../lib/types/web3';
 
@@ -159,8 +159,8 @@ export const Manager: React.FC<ManagerProps> = ({
     });
 
     // make the request
-    const domainNftUrl = `${profileServiceUrl}/user/${domain}/nfts`;
-    await fetch(domainNftUrl, {
+    await fetchApi(`/user/${domain}/nfts`, {
+      host: profileServiceUrl,
       method: 'POST',
       mode: 'cors',
       headers: {

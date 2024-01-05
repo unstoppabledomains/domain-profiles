@@ -83,6 +83,7 @@ export type Config = {
     SUPPORT_DOMAIN_NAME: string;
     SUPPORT_BUBBLE_SECONDS: number;
   };
+  GATEWAY_API_KEY: string;
 };
 
 export type ConfigOverride = DeepPartial<Config>;

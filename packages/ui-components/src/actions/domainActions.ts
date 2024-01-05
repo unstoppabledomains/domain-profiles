@@ -118,20 +118,21 @@ export const postCryptoVerification = async (
   domain: string,
   domainCryptoVerificationBodyPost: DomainCryptoVerificationBodyPOST,
 ): Promise<void> => {
-  const verifyResponse = await fetch(
-    `${config.PROFILE.HOST_URL}/user/${domain}/address/${domainCryptoVerificationBodyPost.symbol}`,
+  const verifyResponse = await fetchApi(
+    `/user/${domain}/address/${domainCryptoVerificationBodyPost.symbol}`,
     {
+      host: config.PROFILE.HOST_URL,
       method: 'POST',
-      headers: new Headers({
+      headers: {
         'Content-Type': 'application/json',
-      }),
+      },
       body: JSON.stringify({
         message: domainCryptoVerificationBodyPost.plaintextMessage,
         signature: domainCryptoVerificationBodyPost.signedMessage,
       }),
     },
   );
-  if (!verifyResponse.ok) {
+  if (!verifyResponse) {
     throw new Error('failed to verify domain crypto address');
   }
 };

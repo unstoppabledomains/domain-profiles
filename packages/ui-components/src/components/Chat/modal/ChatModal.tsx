@@ -38,7 +38,7 @@ import {
   getDomainSignatureValueKey,
 } from '../../../components/Wallet/ProfileManager';
 import useFetchNotifications from '../../../hooks/useFetchNotification';
-import {isDomainValidForManagement} from '../../../lib';
+import {fetchApi, isDomainValidForManagement} from '../../../lib';
 import {notifyError} from '../../../lib/error';
 import useTranslationContext from '../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../lib/types/badge';
@@ -423,9 +423,10 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
       // request the domain's user data from profile API if signature is available
       if (authDomain && authExpiry && authSignature) {
-        const response = await fetch(
-          `${config.PROFILE.HOST_URL}/user/${authDomain}?fields=profile`,
+        const responseJSON = await fetchApi<SerializedUserDomainProfileData>(
+          `/user/${authDomain}?fields=profile`,
           {
+            host: config.PROFILE.HOST_URL,
             mode: 'cors',
             headers: {
               Accept: 'application/json',
@@ -438,8 +439,6 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         );
 
         // set user profile data from result
-        const responseJSON: SerializedUserDomainProfileData =
-          await response.json();
         if (responseJSON?.storage) {
           setUserProfile(responseJSON);
         }

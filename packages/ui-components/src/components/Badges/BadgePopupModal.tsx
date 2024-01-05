@@ -6,6 +6,7 @@ import LinkIcon from '@mui/icons-material/Link';
 import SendIcon from '@mui/icons-material/Send';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import AvatarGroup from '@mui/material/AvatarGroup';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -309,14 +310,16 @@ const BadgePopupModal = ({
                         total={holdersRemaining || 0 + holdersFeatured.length}
                       >
                         {holdersFeatured?.map(holdersDomain => (
-                          <DomainPreview
-                            key={`holder-${badgeCode}-${holdersDomain}`}
-                            domain={holdersDomain}
-                            size={20}
-                            chatUser={chatUser}
-                            setOpenChat={setOpenChat}
-                            setWeb3Deps={setWeb3Deps}
-                          />
+                          <Box mr={-1}>
+                            <DomainPreview
+                              key={`holder-${badgeCode}-${holdersDomain}`}
+                              domain={holdersDomain}
+                              size={20}
+                              chatUser={chatUser}
+                              setOpenChat={setOpenChat}
+                              setWeb3Deps={setWeb3Deps}
+                            />
+                          </Box>
                         ))}
                       </AvatarGroup>
                     )}

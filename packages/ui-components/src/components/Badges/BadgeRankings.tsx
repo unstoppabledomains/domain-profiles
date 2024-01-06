@@ -93,6 +93,7 @@ const BadgeRankings: React.FC<Props> = ({
         </Typography>
         <div className={classes.contentContainer}>
           <DomainProfileList
+            id={'domainRankings'}
             domains={domains}
             isLoading={false}
             showNumber
@@ -111,6 +112,7 @@ const BadgeRankings: React.FC<Props> = ({
         </div>
       </Grid>
       <DomainListModal
+        id="holderRankings"
         title={
           type === 'holders'
             ? t('badge.badgeHolders')

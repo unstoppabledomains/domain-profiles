@@ -480,7 +480,7 @@
     "privacySettings": "Privacy settings",
     "purchaseBreakdown": "Cash: {{cash}}, Promo credit: {{promoCredit}}",
     "purchasePrice": "Purchased for {{cost}} on {{date}}",
-    "registrationPrice": "Registered for {{cost}} on {{date}}",
+    "registrationPrice": "Registered on {{date}}",
     "refreshBadges": "Refresh badges",
     "sendMessage": "Send Message to Holders",
     "setUpToken": "Setup Collectibles Gallery",

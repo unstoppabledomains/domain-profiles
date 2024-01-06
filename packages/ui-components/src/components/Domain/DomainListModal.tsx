@@ -20,6 +20,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 type ModalProps = {
+  id: string;
   open: boolean;
   onClose: () => void;
   title: string;
@@ -77,6 +78,7 @@ export const DomainListModal = (props: ModalProps) => {
     >
       <div className={classes.contentContainer}>
         <DomainProfileList
+          id={props.id}
           domains={domains}
           isLoading={isLoading}
           withInfiniteScroll={true}

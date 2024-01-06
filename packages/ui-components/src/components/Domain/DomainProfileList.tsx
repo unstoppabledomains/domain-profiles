@@ -106,6 +106,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 type DomainProfileListProps = {
+  id: string;
   domains: string[];
   isLoading: boolean;
   showNumber?: boolean;
@@ -118,6 +119,7 @@ type DomainProfileListProps = {
 };
 
 const DomainProfileList: React.FC<DomainProfileListProps> = ({
+  id,
   domains,
   isLoading,
   showNumber = false,
@@ -140,9 +142,9 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
   };
 
   return withInfiniteScroll && onLastPage ? (
-    <Box className={classes.scrollableContainer} id="scrollable-div">
+    <Box className={classes.scrollableContainer} id={`scrollableDiv-${id}`}>
       <InfiniteScroll
-        scrollableTarget="scrollable-div"
+        scrollableTarget={`scrollableDiv-${id}`}
         hasMore={hasMore}
         loader={
           <Box className={classes.infiniteScrollLoading}>
@@ -154,7 +156,7 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
         scrollThreshold={0.7}
       >
         {domains.map((domain, i) => (
-          <>
+          <Box key={`domainList-${domain}-${i}`}>
             <a
               className={cx(classes.row, {
                 [classes.rowFirst]: i === 0,
@@ -179,7 +181,7 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
                 className={classes.arrowRightIcon}
               />
             </a>
-          </>
+          </Box>
         ))}
       </InfiniteScroll>
     </Box>

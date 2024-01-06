@@ -1418,8 +1418,9 @@ const DomainProfile = ({
           </Grid>
         )}
       </Grid>
-      {profileData && (
+      {isViewFollowModalOpen && profileData && (
         <DomainListModal
+          id="followerList"
           title={
             viewFollowerRelationship === 'followers'
               ? `${t('profile.followers')} (${
@@ -1437,6 +1438,7 @@ const DomainProfile = ({
       )}
       {showOtherDomainsModal && profileData?.portfolio?.account.domainCount && (
         <DomainListModal
+          id="domainList"
           title={t('profile.totalDomains', {
             count: profileData.portfolio.account.domainCount,
           })}

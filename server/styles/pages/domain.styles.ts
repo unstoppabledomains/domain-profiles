@@ -73,9 +73,6 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     [theme.breakpoints.down('sm')]: {
       left: theme.spacing(2),
     },
-    [theme.breakpoints.down('sm')]: {
-      zIndex: 0,
-    },
   },
   profilePicture: {
     display: 'flex',

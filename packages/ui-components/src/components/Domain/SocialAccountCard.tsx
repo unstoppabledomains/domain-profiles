@@ -113,7 +113,6 @@ const useStyles = makeStyles<void, 'actionIcon'>()(
     lensIcon: {
       backgroundColor: '#282e29',
       borderRadius: '50%',
-      fontSize: 30,
     },
     telegramIcon: {
       fill: '#229ED9',

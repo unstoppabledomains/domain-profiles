@@ -152,6 +152,12 @@ const defaultBadges: DomainBadgesResponse = {
         enabled: true,
         tier: 3,
       },
+      marketplace: {
+        floorPrice: {
+          currency: 'ETH',
+          value: 1,
+        },
+      },
     },
   ],
   badgesLastSyncedAt: new Date(),
@@ -244,7 +250,7 @@ describe('<DomainProfile />', () => {
     });
   });
 
-  it('does not render featured partners when disabled', async () => {
+  it('does not render featured community when disabled', async () => {
     const props = defaultProps();
     props.profileData!.profile = {
       showDomainSuggestion: false,
@@ -256,7 +262,7 @@ describe('<DomainProfile />', () => {
     await waitFor(() => {
       expect(screen.getByText('Badges')).toBeInTheDocument();
     });
-    expect(() => screen.getByText('Featured Partners')).toThrow();
+    expect(() => screen.getByText('Featured Community')).toThrow();
   });
 
   it('renders social account cards', async () => {
@@ -1369,11 +1375,11 @@ describe('Owner operations', () => {
     });
   });
 
-  it('renders the featured partner show/hide button', async () => {
+  it('renders the featured community show/hide button', async () => {
     customRender(<DomainProfile {...tokenGalleryProps} />);
     await waitFor(() => {
       expect(screen.getByText('Badges')).toBeInTheDocument();
-      expect(screen.getByText('Featured Partners')).toBeInTheDocument();
+      expect(screen.getByText('Featured Community')).toBeInTheDocument();
       expect(
         screen.getByTestId('showhide-featuredPartners'),
       ).toBeInTheDocument();

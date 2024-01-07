@@ -10,6 +10,8 @@ const useUnstoppableMessaging = () => {
     setOpenCommunity,
     isChatReady,
     setIsChatReady,
+    isChatOpen,
+    setIsChatOpen,
     chatAddress,
     setChatAddress,
     chatUser,
@@ -19,6 +21,7 @@ const useUnstoppableMessaging = () => {
     !setOpenChat ||
     !setOpenCommunity ||
     !setIsChatReady ||
+    !setIsChatOpen ||
     !setChatUser ||
     !setChatAddress
   ) {
@@ -33,6 +36,8 @@ const useUnstoppableMessaging = () => {
     setOpenCommunity,
     isChatReady,
     setIsChatReady,
+    isChatOpen,
+    setIsChatOpen,
     chatAddress,
     setChatAddress,
     chatUser,

@@ -4,7 +4,6 @@ import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
-import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
 import HealthAndSafetyOutlinedIcon from '@mui/icons-material/HealthAndSafetyOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import IosShareIcon from '@mui/icons-material/IosShare';
@@ -1210,20 +1209,12 @@ const DomainProfile = ({
                         className={cx(classes.sectionHeader)}
                         variant="h6"
                       >
-                        <HandshakeOutlinedIcon className={classes.headerIcon} />
-                        {t('badges.featuredPartners')}
+                        <AutoAwesomeOutlinedIcon
+                          className={classes.headerIcon}
+                        />
+                        {t('badges.featuredCommunities')}
                         <Tooltip
-                          title={
-                            <Box>
-                              {t('badges.featuredPartnerInquiry')}{' '}
-                              <Link
-                                href="mailto:bd@unstoppabledomains.com"
-                                className={classes.featuredTooltipLink}
-                              >
-                                bd@unstoppabledomains.com
-                              </Link>
-                            </Box>
-                          }
+                          title={t('badges.featuredCommunityInquiry')}
                           placement="top"
                           arrow
                         >

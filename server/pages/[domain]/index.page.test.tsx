@@ -256,7 +256,7 @@ describe('<DomainProfile />', () => {
     await waitFor(() => {
       expect(screen.getByText('Badges')).toBeInTheDocument();
     });
-    expect(() => screen.getByText('Featured Partners')).toThrow();
+    expect(() => screen.getByText('Featured Partner')).toThrow();
   });
 
   it('renders social account cards', async () => {
@@ -1373,7 +1373,7 @@ describe('Owner operations', () => {
     customRender(<DomainProfile {...tokenGalleryProps} />);
     await waitFor(() => {
       expect(screen.getByText('Badges')).toBeInTheDocument();
-      expect(screen.getByText('Featured Partners')).toBeInTheDocument();
+      expect(screen.getByText('Featured Partner')).toBeInTheDocument();
       expect(
         screen.getByTestId('showhide-featuredPartners'),
       ).toBeInTheDocument();

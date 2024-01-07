@@ -467,7 +467,7 @@ const DomainProfile = ({
         ),
       ]);
       const featuredPartners = badgeData?.list?.filter(
-        badge => badge.gallery && badge.gallery.tier >= 2,
+        badge => badge.gallery && badge.gallery.tier >= 2 && badge.marketplace,
       );
       if (featuredPartners && featuredPartners.length > 0) {
         setFeaturedPartner(shuffle(featuredPartners)[0]);

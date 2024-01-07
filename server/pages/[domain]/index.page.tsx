@@ -2,6 +2,7 @@ import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import ChatIcon from '@mui/icons-material/Chat';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
 import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
 import HealthAndSafetyOutlinedIcon from '@mui/icons-material/HealthAndSafetyOutlined';
@@ -15,7 +16,6 @@ import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import RestoreOutlinedIcon from '@mui/icons-material/RestoreOutlined';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
-import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -26,9 +26,12 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import {useTheme} from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import LeftBarContentCollapse from 'components/LeftBarContentCollapse';
 import {format, isPast} from 'date-fns';
 import {normalizeIpfsHash} from 'lib/ipfs';
+import {shuffle} from 'lodash';
 import type {GetServerSideProps} from 'next';
 import {NextSeo} from 'next-seo';
 import {useSnackbar} from 'notistack';
@@ -44,6 +47,7 @@ import type {
   Blockchain,
   DomainBadgesResponse,
   PersonaIdentity,
+  SerializedCryptoWalletBadge,
   SerializedDomainProfileSocialAccountsUserInfo,
   SerializedPublicDomainProfileData,
 } from '@unstoppabledomains/ui-components';
@@ -120,9 +124,11 @@ const DomainProfile = ({
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
   const isMounted = useIsMounted();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [imagePath, setImagePath] = useState<string>();
   const {enqueueSnackbar} = useSnackbar();
-  const {chatUser, setOpenChat} = useUnstoppableMessaging();
+  const {isChatOpen, setOpenChat} = useUnstoppableMessaging();
   const {nfts, nftSymbolVisible, expanded: nftShowAll} = useTokenGallery();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isReloadRequested, setIsReloadRequested] = useState(false);
@@ -152,6 +158,9 @@ const DomainProfile = ({
   const [showFeaturedPartner, setShowFeaturedPartner] = useState(
     profileData?.profile?.showFeaturedPartner ?? false,
   );
+  const [featuredPartner, setFeaturedPartner] =
+    useState<SerializedCryptoWalletBadge>();
+
   const {
     data: featureFlags,
     isSuccess: isFeatureFlagSuccess,
@@ -460,6 +469,12 @@ const DomainProfile = ({
             .sort(),
         ),
       ]);
+      const featuredPartners = badgeData?.list?.filter(
+        badge => badge.gallery && badge.gallery.tier > 2,
+      );
+      if (featuredPartners && featuredPartners.length > 0) {
+        setFeaturedPartner(shuffle(featuredPartners)[0]);
+      }
     } catch (e) {
       notifyError(e, {msg: 'error loading badges'});
     }
@@ -486,11 +501,6 @@ const DomainProfile = ({
       badge.gallery.tier === 2 &&
       badge.contracts &&
       getNftsForContract(badge.contracts).length > 0,
-  );
-
-  // featured partner list
-  const featuredPartners = badges?.list?.filter(
-    badge => badge.gallery && badge.gallery.tier > 2,
   );
 
   const retrieveFollowers = async (cursor?: number | string) => {
@@ -538,7 +548,7 @@ const DomainProfile = ({
   return (
     <Box className={classes.container}>
       <NextSeo {...seoTags} />
-      <div
+      <Box
         className={cx(classes.headWrapper, {
           [classes.headWrapperWithCover]: !!domainCover,
         })}
@@ -550,24 +560,26 @@ const DomainProfile = ({
             : undefined
         }
       >
-        <Logo className={classes.logo} url={config.UD_ME_BASE_URL} inverse />
-        <div className={classes.head}>
-          <div className={classes.topHeaderContainer}>
-            <div className={classes.searchContainer}>
+        {(!isChatOpen || !isMobile) && (
+          <Logo className={classes.logo} url={config.UD_ME_BASE_URL} inverse />
+        )}
+        <Box className={classes.head}>
+          <Box className={classes.topHeaderContainer}>
+            <Box className={classes.searchContainer}>
               <ProfileSearchBar setWeb3Deps={setWeb3Deps} />
-            </div>
+            </Box>
             {isOwner !== undefined && (
-              <div className={classes.loginContainer}>
+              <Box className={classes.loginContainer}>
                 {authDomain ? (
                   <>
                     {featureFlags?.variations
                       ?.ecommerceServiceUsersEnableChat && (
-                      <div className={classes.chatContainer}>
+                      <Box className={classes.chatContainer}>
                         <UnstoppableMessaging
                           address={authAddress}
                           disableSupportBubble
                         />
-                      </div>
+                      </Box>
                     )}
                     <AccountButton
                       domain={domain}
@@ -586,11 +598,11 @@ const DomainProfile = ({
                     onLoginComplete={handleLoginComplete}
                   />
                 )}
-              </div>
+              </Box>
             )}
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
 
       <Grid
         container
@@ -598,17 +610,17 @@ const DomainProfile = ({
         data-testid="mainContentContainer"
       >
         <Grid item xs={12} sm={12} md={4} className={classes.item}>
-          <div className={classes.leftPanel}>
-            <div className={classes.profilePicture}>
+          <Box className={classes.leftPanel}>
+            <Box className={classes.profilePicture}>
               <ProfilePicture
                 src={imagePath}
                 domain={domain}
                 imageType={profileData?.profile?.imageType}
                 hasUdBlueBadge={hasUdBlueBadge}
               />
-            </div>
+            </Box>
             {profileData?.profile?.displayName && (
-              <div>
+              <Box>
                 <Box mt={4}>
                   <Typography variant="h4" className={classes.displayName}>
                     {profileData.profile.displayName}
@@ -646,7 +658,7 @@ const DomainProfile = ({
                     </Tooltip>
                   )}
                 </Box>
-              </div>
+              </Box>
             )}
             {isOwner !== undefined && (
               <Box className={classes.menuButtonContainer}>
@@ -1101,7 +1113,7 @@ const DomainProfile = ({
                 )}
               </>
             )}
-          </div>
+          </Box>
         </Grid>
         {isLoaded ? (
           <Grid item xs={12} sm={12} md={8} className={classes.item}>
@@ -1136,15 +1148,15 @@ const DomainProfile = ({
                     b => b.type === badgeType,
                   );
                   return (
-                    <div key={badgeType}>
-                      <div className={classes.sectionHeaderContainer}>
+                    <Box key={badgeType}>
+                      <Box className={classes.sectionHeaderContainer}>
                         <Box
                           className={cx(
                             classes.sectionHeader,
                             classes.badgeHeader,
                           )}
                         >
-                          <WorkspacePremiumOutlinedIcon
+                          <EmojiEventsOutlinedIcon
                             className={classes.headerIcon}
                           />
                           <Typography variant="h6">
@@ -1164,23 +1176,23 @@ const DomainProfile = ({
                           </Typography>
                         </Box>
                         {index === 0 && (
-                          <div
+                          <Box
                             className={cx(
                               classes.sectionHeader,
                               classes.sectionHeaderLinks,
                             )}
                           >
-                            <div
+                            <Box
                               className={cx(
                                 classes.sectionHeaderLink,
                                 classes.sectionHeaderLinks,
                               )}
                             >
-                              <CustomBadges />
-                            </div>
-                          </div>
+                              {!isMobile && <CustomBadges />}
+                            </Box>
+                          </Box>
                         )}
-                      </div>
+                      </Box>
                       <Box mb={1}>
                         <Badges
                           profile
@@ -1199,126 +1211,116 @@ const DomainProfile = ({
                           authDomain={authDomain}
                         />
                       </Box>
-                    </div>
+                    </Box>
                   );
                 })}
                 <Box sx={{marginTop: '25px'}} />
-                {(isOwner || showFeaturedPartner) &&
-                  featuredPartners &&
-                  featuredPartners.length > 0 && (
-                    <>
-                      <div className={classes.sectionHeaderContainer}>
-                        <Typography
+                {(isOwner || showFeaturedPartner) && featuredPartner && (
+                  <>
+                    <Box className={classes.sectionHeaderContainer}>
+                      <Typography
+                        className={cx(classes.sectionHeader)}
+                        variant="h6"
+                      >
+                        <HandshakeOutlinedIcon className={classes.headerIcon} />
+                        {t('badges.featuredPartners')}
+                        <Tooltip
+                          title={
+                            <Box>
+                              {t('badges.featuredPartnerInquiry')}{' '}
+                              <Link
+                                href="mailto:bd@unstoppabledomains.com"
+                                className={classes.featuredTooltipLink}
+                              >
+                                bd@unstoppabledomains.com
+                              </Link>
+                            </Box>
+                          }
+                          placement="top"
+                          arrow
+                        >
+                          <InfoOutlinedIcon className={classes.infoIcon} />
+                        </Tooltip>
+                      </Typography>
+                      {isOwner && (
+                        <Box
+                          data-testid="showhide-featuredPartners"
                           className={cx(
                             classes.sectionHeader,
-                            classes.badgeHeader,
+                            classes.sectionHeaderLinks,
                           )}
-                          variant="h6"
                         >
-                          <HandshakeOutlinedIcon
-                            className={classes.headerIcon}
-                          />
-                          {t('badges.featuredPartners')}
-                          <Tooltip
-                            title={
-                              <div>
-                                {t('badges.featuredPartnerInquiry')}{' '}
-                                <Link
-                                  href="mailto:bd@unstoppabledomains.com"
-                                  className={classes.featuredTooltipLink}
-                                >
-                                  bd@unstoppabledomains.com
-                                </Link>
-                              </div>
-                            }
-                            placement="top"
-                            arrow
-                          >
-                            <InfoOutlinedIcon className={classes.infoIcon} />
-                          </Tooltip>
-                        </Typography>
-                        {isOwner && (
-                          <div
-                            data-testid="showhide-featuredPartners"
+                          <Box
                             className={cx(
-                              classes.sectionHeader,
+                              classes.sectionHeaderLink,
                               classes.sectionHeaderLinks,
                             )}
                           >
-                            <Box
-                              className={cx(
-                                classes.sectionHeaderLink,
-                                classes.sectionHeaderLinks,
-                              )}
-                            >
-                              <ShowHideButton
-                                domain={domain}
-                                ownerAddress={ownerAddress}
-                                showDomain={showFeaturedPartner}
-                                setShowDomain={setShowFeaturedPartner}
-                                recordName="showFeaturedPartner"
-                                setWeb3Deps={setWeb3Deps}
-                                tooltip={
-                                  showFeaturedPartner
-                                    ? t('badges.hide')
-                                    : t('badges.show')
-                                }
-                              />
-                            </Box>
-                          </div>
-                        )}
-                      </div>
-                      {showFeaturedPartner ? (
-                        <Grid container spacing={2}>
-                          {featuredPartners.map(badge => (
-                            <Grid item xs={12}>
-                              <Badge
-                                domain={domain}
-                                {...badge}
-                                small
-                                usageEnabled
-                                tooltipPlacement="top"
-                                profile
-                                iconOnly={false}
-                                setWeb3Deps={setWeb3Deps}
-                              />
-                              <NFTGalleryCarousel
-                                domain={domain}
-                                nfts={getNftsForContract(badge.contracts || [])}
-                                nftSymbolVisible={nftSymbolVisible || {}}
-                                autoPlay={false}
-                                minNftCount={2}
-                                maxNftCount={4}
-                                showPlaceholder={true}
-                                badgeData={badge}
-                              />
-                            </Grid>
-                          ))}
-                        </Grid>
-                      ) : (
-                        <Typography
-                          className={classes.featuredContentHidden}
-                          variant="body2"
-                        >
-                          {t('badges.featuredContentHidden', {
-                            type: t('badges.partner'),
-                          })}
-                        </Typography>
+                            <ShowHideButton
+                              domain={domain}
+                              ownerAddress={ownerAddress}
+                              showDomain={showFeaturedPartner}
+                              setShowDomain={setShowFeaturedPartner}
+                              recordName="showFeaturedPartner"
+                              setWeb3Deps={setWeb3Deps}
+                              tooltip={
+                                showFeaturedPartner
+                                  ? t('badges.hide')
+                                  : t('badges.show')
+                              }
+                            />
+                          </Box>
+                        </Box>
                       )}
-                    </>
-                  )}
+                    </Box>
+                    {showFeaturedPartner ? (
+                      <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                          <Badge
+                            domain={domain}
+                            {...featuredPartner}
+                            small
+                            usageEnabled
+                            tooltipPlacement="top"
+                            profile
+                            iconOnly={false}
+                            setWeb3Deps={setWeb3Deps}
+                          />
+                          <NFTGalleryCarousel
+                            domain={domain}
+                            nfts={getNftsForContract(
+                              featuredPartner.contracts || [],
+                            )}
+                            nftSymbolVisible={nftSymbolVisible || {}}
+                            autoPlay={false}
+                            minNftCount={2}
+                            maxNftCount={4}
+                            showPlaceholder={true}
+                            badgeData={featuredPartner}
+                          />
+                        </Grid>
+                      </Grid>
+                    ) : (
+                      <Typography
+                        className={classes.featuredContentHidden}
+                        variant="body2"
+                      >
+                        {t('badges.featuredContentHidden', {
+                          type: t('badges.partner'),
+                        })}
+                      </Typography>
+                    )}
+                  </>
+                )}
                 {(isOwner || showFeaturedCommunity) &&
                   featuredCommunities &&
                   featuredCommunities.length > 0 &&
                   nfts &&
                   nfts.length > 0 && (
                     <>
-                      <div className={classes.sectionHeaderContainer}>
+                      <Box className={classes.sectionHeaderContainer}>
                         <Typography
-                          className={cx(
-                            classes.sectionHeader,
-                            classes.badgeHeader,
-                          )}
+                          className={classes.sectionHeader}
                           variant="h6"
                         >
                           <PeopleOutlinedIcon className={classes.headerIcon} />
@@ -1332,7 +1334,7 @@ const DomainProfile = ({
                           </Tooltip>
                         </Typography>
                         {isOwner && (
-                          <div
+                          <Box
                             className={cx(
                               classes.sectionHeader,
                               classes.sectionHeaderLinks,
@@ -1358,9 +1360,9 @@ const DomainProfile = ({
                                 }
                               />
                             </Box>
-                          </div>
+                          </Box>
                         )}
-                      </div>
+                      </Box>
                       {showFeaturedCommunity ? (
                         <Grid container spacing={2}>
                           {featuredCommunities.map(badge => (
@@ -1402,12 +1404,12 @@ const DomainProfile = ({
               </>
             )}
             {!hasContent && !nftShowAll && (
-              <div className={classes.empty}>
+              <Box className={classes.empty}>
                 <AutoAwesomeOutlinedIcon className={classes.emptyIcon} />
                 {metadata.blockchain
                   ? t('profile.emptyMinted')
                   : t('profile.emptyNotMinted')}
-              </div>
+              </Box>
             )}
           </Grid>
         ) : (

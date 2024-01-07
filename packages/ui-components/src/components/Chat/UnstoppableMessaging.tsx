@@ -124,6 +124,8 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     openCommunity: externalCommunityId,
     setOpenCommunity: setExternalCommunityId,
     setIsChatReady,
+    isChatOpen: chatWindowOpen,
+    setIsChatOpen: setChatWindowOpen,
     chatAddress,
     setChatAddress,
     chatUser,
@@ -147,7 +149,6 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
 
   // Chat window state
   const [chatOpen, setChatOpen] = useState(false);
-  const [chatWindowOpen, setChatWindowOpen] = useState(false);
   const [chatIncomingMessage, setChatIncomingMessage] =
     useState<DecodedMessage>();
   const [pushIncomingMessage, setPushIncomingMessage] =
@@ -966,7 +967,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
             setActiveChat={setActiveChat}
             setActiveCommunity={setActiveCommunity}
             activeTab={activeTab}
-            open={chatWindowOpen}
+            open={chatWindowOpen || false}
             incomingMessage={chatIncomingMessage}
             incomingGroup={pushIncomingMessage}
             incomingNotification={appIncomingNotification}

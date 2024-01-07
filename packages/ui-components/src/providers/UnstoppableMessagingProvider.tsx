@@ -5,11 +5,13 @@ type Props = {
 };
 
 type SetString = (s?: string) => void;
-type SetIsChatReady = (isReady: boolean) => void;
+type SetBoolean = (isReady: boolean) => void;
 
 export const UnstoppableMessagingContext = React.createContext<{
-  setIsChatReady?: SetIsChatReady;
+  setIsChatReady?: SetBoolean;
   isChatReady?: boolean;
+  setIsChatOpen?: SetBoolean;
+  isChatOpen?: boolean;
   setOpenChat?: SetString;
   openChat?: string;
   setOpenCommunity?: SetString;
@@ -22,6 +24,7 @@ export const UnstoppableMessagingContext = React.createContext<{
 
 const UnstoppableMessagingProvider: React.FC<Props> = ({children}) => {
   const [isChatReady, setIsChatReady] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatAddress, setChatAddress] = useState<string>();
   const [chatUser, setChatUser] = useState<string>();
   const [activeChatId, setActiveChatId] = useState<string>();
@@ -30,6 +33,8 @@ const UnstoppableMessagingProvider: React.FC<Props> = ({children}) => {
   const value = {
     setIsChatReady,
     isChatReady,
+    setIsChatOpen,
+    isChatOpen,
     setOpenChat: setActiveChatId,
     openChat: activeChatId,
     setOpenCommunity: setActiveCommunityId,

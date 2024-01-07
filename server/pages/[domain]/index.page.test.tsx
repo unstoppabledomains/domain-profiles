@@ -152,6 +152,12 @@ const defaultBadges: DomainBadgesResponse = {
         enabled: true,
         tier: 3,
       },
+      marketplace: {
+        floorPrice: {
+          currency: 'ETH',
+          value: 1,
+        },
+      },
     },
   ],
   badgesLastSyncedAt: new Date(),

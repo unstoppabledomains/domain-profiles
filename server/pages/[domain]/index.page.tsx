@@ -152,9 +152,6 @@ const DomainProfile = ({
   const [metadata, setMetadata] = useState<Record<string, string | boolean>>(
     {},
   );
-  const [showFeaturedCommunity, setShowFeaturedCommunity] = useState(
-    profileData?.profile?.showFeaturedCommunity ?? false,
-  );
   const [showFeaturedPartner, setShowFeaturedPartner] = useState(
     profileData?.profile?.showFeaturedPartner ?? false,
   );
@@ -470,7 +467,7 @@ const DomainProfile = ({
         ),
       ]);
       const featuredPartners = badgeData?.list?.filter(
-        badge => badge.gallery && badge.gallery.tier > 2,
+        badge => badge.gallery && badge.gallery.tier >= 2,
       );
       if (featuredPartners && featuredPartners.length > 0) {
         setFeaturedPartner(shuffle(featuredPartners)[0]);
@@ -493,15 +490,6 @@ const DomainProfile = ({
         )
       : [];
   };
-
-  // featured community list
-  const featuredCommunities = badges?.list?.filter(
-    badge =>
-      badge.gallery &&
-      badge.gallery.tier === 2 &&
-      badge.contracts &&
-      getNftsForContract(badge.contracts).length > 0,
-  );
 
   const retrieveFollowers = async (cursor?: number | string) => {
     const retData: {domains: string[]; cursor?: number} = {
@@ -1312,95 +1300,6 @@ const DomainProfile = ({
                     )}
                   </>
                 )}
-                {(isOwner || showFeaturedCommunity) &&
-                  featuredCommunities &&
-                  featuredCommunities.length > 0 &&
-                  nfts &&
-                  nfts.length > 0 && (
-                    <>
-                      <Box className={classes.sectionHeaderContainer}>
-                        <Typography
-                          className={classes.sectionHeader}
-                          variant="h6"
-                        >
-                          <PeopleOutlinedIcon className={classes.headerIcon} />
-                          {t('badges.featuredCommunities')}
-                          <Tooltip
-                            title={t('badges.featuredCommunityInquiry')}
-                            placement="top"
-                            arrow
-                          >
-                            <InfoOutlinedIcon className={classes.infoIcon} />
-                          </Tooltip>
-                        </Typography>
-                        {isOwner && (
-                          <Box
-                            className={cx(
-                              classes.sectionHeader,
-                              classes.sectionHeaderLinks,
-                            )}
-                          >
-                            <Box
-                              className={cx(
-                                classes.sectionHeaderLink,
-                                classes.sectionHeaderLinks,
-                              )}
-                            >
-                              <ShowHideButton
-                                domain={domain}
-                                ownerAddress={ownerAddress}
-                                showDomain={showFeaturedCommunity}
-                                setShowDomain={setShowFeaturedCommunity}
-                                recordName="showFeaturedCommunity"
-                                setWeb3Deps={setWeb3Deps}
-                                tooltip={
-                                  showFeaturedCommunity
-                                    ? t('badges.hide')
-                                    : t('badges.show')
-                                }
-                              />
-                            </Box>
-                          </Box>
-                        )}
-                      </Box>
-                      {showFeaturedCommunity ? (
-                        <Grid container spacing={2}>
-                          {featuredCommunities.map(badge => (
-                            <Grid item xs={6} md={3}>
-                              <Badge
-                                domain={domain}
-                                {...badge}
-                                small
-                                usageEnabled
-                                tooltipPlacement="top"
-                                profile
-                                iconOnly={false}
-                                setWeb3Deps={setWeb3Deps}
-                              />
-                              <NFTGalleryCarousel
-                                domain={domain}
-                                nfts={getNftsForContract(badge.contracts || [])}
-                                nftSymbolVisible={nftSymbolVisible || {}}
-                                autoPlay={false}
-                                minNftCount={1}
-                                maxNftCount={1}
-                                showPlaceholder
-                              />
-                            </Grid>
-                          ))}
-                        </Grid>
-                      ) : (
-                        <Typography
-                          className={classes.featuredContentHidden}
-                          variant="body2"
-                        >
-                          {t('badges.featuredContentHidden', {
-                            type: t('badges.community'),
-                          })}
-                        </Typography>
-                      )}
-                    </>
-                  )}
               </>
             )}
             {!hasContent && !nftShowAll && (

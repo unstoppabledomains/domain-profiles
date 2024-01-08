@@ -5,7 +5,7 @@ import IosShareIcon from '@mui/icons-material/IosShare';
 import LinkIcon from '@mui/icons-material/Link';
 import SendIcon from '@mui/icons-material/Send';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
-import AvatarGroup from '@mui/material/AvatarGroup';
+import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -19,6 +19,7 @@ import type {TooltipProps} from '@mui/material/Tooltip';
 import Tooltip, {tooltipClasses} from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import {styled} from '@mui/material/styles';
+import Humanize from 'humanize-plus';
 import {useRouter} from 'next/router';
 import {useSnackbar} from 'notistack';
 import React, {useState} from 'react';
@@ -306,11 +307,9 @@ const BadgePopupModal = ({
                   )}
                   <Typography className={classes.modalUsageText}>
                     {holdersFeatured && holdersFeatured.length > 0 && (
-                      <AvatarGroup
-                        total={holdersRemaining || 0 + holdersFeatured.length}
-                      >
+                      <>
                         {holdersFeatured?.map(holdersDomain => (
-                          <Box mr={-1}>
+                          <Box className={classes.domainPreview}>
                             <DomainPreview
                               key={`holder-${badgeCode}-${holdersDomain}`}
                               domain={holdersDomain}
@@ -321,7 +320,17 @@ const BadgePopupModal = ({
                             />
                           </Box>
                         ))}
-                      </AvatarGroup>
+                        <Box className={classes.domainPreview}>
+                          <Avatar className={classes.holdersRemaining}>
+                            <Typography variant="body2">
+                              +
+                              {Humanize.compactInteger(
+                                holdersRemaining || 0 + holdersFeatured.length,
+                              )}
+                            </Typography>
+                          </Avatar>
+                        </Box>
+                      </>
                     )}
                   </Typography>
                 </>

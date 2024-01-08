@@ -161,6 +161,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     chat: Date.now(),
     notification: Date.now(),
     communities: Date.now(),
+    loading: 0,
   });
   const [chatWalletConnected, setChatWalletConnected] = useState(false);
   const [chatSnackbar, setChatSnackbar] = useState<snackbarProps>();
@@ -581,6 +582,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
           communities: Date.now(),
           chat: chatWindowUpdated.chat,
           notification: chatWindowUpdated.notification,
+          loading: chatWindowUpdated.loading,
         });
       });
 
@@ -617,6 +619,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
           notification: Date.now(),
           chat: chatWindowUpdated.chat,
           communities: chatWindowUpdated.communities,
+          loading: chatWindowUpdated.loading,
         });
       });
     }
@@ -638,6 +641,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         chat: Date.now(),
         notification: chatWindowUpdated.notification,
         communities: chatWindowUpdated.communities,
+        loading: chatWindowUpdated.loading,
       });
     });
   };
@@ -829,6 +833,12 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       // clear new message flag and set last read timestamp
       setIsNewMessage(false);
 
+      // open the chat modal to the communities tab and show a loading
+      // spinner while the group is joined or opened.
+      setActiveTab(TabType.Loading);
+      setChatOpen(true);
+      handleOpenChat();
+
       // set the active chat if provided
       const groupChatInfo = await joinBadgeGroupChat(
         badgeCode,
@@ -848,10 +858,6 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         setActiveCommunity(groupChatInfo);
         setActiveTab(TabType.Communities);
       }
-
-      // open the push chat window
-      setChatOpen(true);
-      handleOpenChat();
     }
   };
 

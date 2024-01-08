@@ -229,6 +229,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
     color: '#fff',
     fontWeight: '600',
   },
+  domainPreview: {
+    marginRight: theme.spacing(-1),
+  },
+  holdersRemaining: {
+    backgroundColor: theme.palette.secondary.main,
+    color: theme.palette.white,
+    border: '2px solid white',
+  },
 }));
 
 export default useStyles;

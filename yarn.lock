@@ -4022,6 +4022,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/humanize-plus@npm:^1.8.2":
+  version: 1.8.2
+  resolution: "@types/humanize-plus@npm:1.8.2"
+  checksum: a95ba6e42b71d3a11bf1b5c1f9ae2d76f4344191c88ff4149a89d53857b4d5b45df8c54555bcb7b7b6faf3198a470aba264414b5a140f82092c705c2d26d4075
+  languageName: node
+  linkType: hard
+
 "@types/is-empty@npm:^1.0.0":
   version: 1.2.1
   resolution: "@types/is-empty@npm:1.2.1"
@@ -4777,6 +4784,7 @@ __metadata:
     "@testing-library/react": ^12.1.2
     "@testing-library/react-hooks": ^7.0.2
     "@types/bluebird": 3.5.34
+    "@types/humanize-plus": ^1.8.2
     "@types/jest": ^29.5.5
     "@types/lodash": ^4.14.199
     "@types/lodash.merge": ^4.6.7
@@ -4806,6 +4814,7 @@ __metadata:
     filesize: ^10.0.8
     font-awesome: ^4.7.0
     hash.js: ^1.1.7
+    humanize-plus: ^1.8.2
     jest: ^29.1.0
     js-base64: ^3.7.5
     lodash: ^4.17.21
@@ -11178,6 +11187,13 @@ __metadata:
   dependencies:
     ms: ^2.0.0
   checksum: 9c7a74a2827f9294c009266c82031030eae811ca87b0da3dceb8d6071b9bde22c9f3daef0469c3c533cc67a97d8a167cd9fc0389350e5f415f61a79b171ded16
+  languageName: node
+  linkType: hard
+
+"humanize-plus@npm:^1.8.2":
+  version: 1.8.2
+  resolution: "humanize-plus@npm:1.8.2"
+  checksum: 466498a794ecf7c8a246441941241649618da6bebe6627900f919ea993bf5c30c3e7f05cf3a04c2fad9e4ec0f7a15ee2a09ceb216a440b08a830eda66f684131
   languageName: node
   linkType: hard
 

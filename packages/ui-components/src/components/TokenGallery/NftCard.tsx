@@ -62,6 +62,15 @@ const useStyles = makeStyles()((theme: Theme) => ({
   optionsButton: {
     marginRight: theme.spacing(-1),
   },
+  compactText: {
+    color: theme.palette.neutralShades[400],
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+  },
+  compactTitle: {
+    color: theme.palette.neutralShades[500],
+    fontWeight: 'bold',
+  },
 }));
 
 interface Props {
@@ -381,11 +390,23 @@ const NftCard = ({nft, compact, placeholder}: Props) => {
         <NftModal handleClose={handleClose} open={open} nft={nft} />
       </Box>
       {compact && (
-        <Box mt={1}>
+        <Box mt={1} display="flex" flexDirection="column">
           {nft.name ? (
-            <Typography variant="caption">{nft.name}</Typography>
+            <Typography
+              className={cx(classes.compactText, classes.compactTitle)}
+              variant="caption"
+            >
+              {nft.name}
+            </Typography>
           ) : (
             placeholder && <Skeleton width="100%" height={24} variant="text" />
+          )}
+          {nft.collection ? (
+            <Typography className={cx(classes.compactText)} variant="caption">
+              {nft.collection}
+            </Typography>
+          ) : (
+            placeholder && <Skeleton width="60%" height={24} variant="text" />
           )}
         </Box>
       )}

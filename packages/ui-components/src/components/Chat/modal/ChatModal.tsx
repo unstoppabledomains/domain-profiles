@@ -90,6 +90,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginTop: theme.spacing(10),
     color: theme.palette.neutralShades[400],
   },
+  loadingTab: {
+    display: 'flex',
+    alignItems: 'center',
+    height: '100%',
+    marginTop: theme.spacing(-3),
+  },
   loadingText: {
     marginTop: theme.spacing(1),
     color: 'inherit',
@@ -182,11 +188,13 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     chat: 0,
     communities: 0,
     notification: 0,
+    loading: 0,
   });
   const [tabUnreadDot, setTabUnreadDot] = useState<Record<TabType, boolean>>({
     chat: false,
     communities: false,
     notification: false,
+    loading: false,
   });
   const [searchValue, setSearchValue] = useState<string>();
   const [tabValue, setTabValue] = useState(TabType.Chat);
@@ -358,6 +366,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
           chat: Date.now(),
           communities: lastRefresh.communities,
           notification: lastRefresh.notification,
+          loading: lastRefresh.loading,
         });
         return localConversations;
       } catch (e) {
@@ -393,6 +402,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       notification: tabRefresh[TabType.Notification],
       communities: lastRefresh.communities,
       chat: lastRefresh.chat,
+      loading: lastRefresh.loading,
     });
   };
 
@@ -452,6 +462,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         notification: Date.now(),
         communities: lastRefresh.communities,
         chat: lastRefresh.chat,
+        loading: lastRefresh.loading,
       });
     }
 
@@ -469,6 +480,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       notification: lastRefresh.notification,
       chat: lastRefresh.chat,
       communities: Date.now(),
+      loading: lastRefresh.loading,
     });
 
     // set notification dot if needed
@@ -804,6 +816,18 @@ export const ChatModal: React.FC<ChatModalProps> = ({
           onBack={handleCloseChat}
           onClose={onClose}
         />
+      ) : tabValue === TabType.Loading ? (
+        <Box className={classes.loadingTab}>
+          <CallToAction
+            icon="ForumOutlinedIcon"
+            title={t('push.loadingYourChat')}
+            subTitle={
+              <Box mt={2}>
+                <CircularProgress className={classes.loadingSpinner} />
+              </Box>
+            }
+          />
+        </Box>
       ) : (
         <Card className={classes.chatModalContentContainer} variant="outlined">
           <CardHeader

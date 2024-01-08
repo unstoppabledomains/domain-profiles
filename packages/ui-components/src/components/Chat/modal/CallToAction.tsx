@@ -83,7 +83,7 @@ export type CallToActionProps = {
     | 'GroupsIcon'
     | 'NotificationsActiveOutlinedIcon';
   title: string;
-  subTitle?: string;
+  subTitle?: React.ReactNode;
   buttonText?: string;
   handleButtonClick?: () => void;
 };

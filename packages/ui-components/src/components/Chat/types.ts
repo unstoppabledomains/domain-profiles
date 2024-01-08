@@ -71,6 +71,7 @@ export enum TabType {
   Chat = 'chat',
   Communities = 'communities',
   Notification = 'notification',
+  Loading = 'loading',
 }
 
 export interface TopicRegistration {

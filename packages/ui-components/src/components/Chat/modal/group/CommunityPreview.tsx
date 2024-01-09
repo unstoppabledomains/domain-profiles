@@ -182,36 +182,43 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
           badge.groupChatTimestamp = msgData[0].timestamp;
           badge.groupChatLatestMessage = `${fromDomain}: ${msgBody}`;
           await onRefresh();
+          return;
         }
-      } else {
-        setLatestMessage(t('push.noGroupMessages'));
       }
+
+      // latest message not available
+      setLatestMessage(t('push.noGroupMessages'));
+      badge.groupChatLatestMessage = t('push.noGroupMessages');
     }
   };
 
   const renderMessagePreview = (message: IMessageIPFS) => {
-    if (!message.messageObj) {
-      message.messageObj = {
-        content:
-          message.messageType === 'Text'
-            ? message.messageContent
-            : t('push.unsupportedContent'),
-      };
-    }
-    // build message text to render
-    const messageToRender =
-      typeof message.messageObj === 'string'
-        ? (message.messageObj as string)
-        : (message.messageObj.content as string);
+    try {
+      if (!message.messageObj) {
+        message.messageObj = {
+          content:
+            message.messageType === 'Text'
+              ? message.messageContent
+              : t('push.unsupportedContent'),
+        };
+      }
+      // build message text to render
+      const messageToRender =
+        typeof message.messageObj === 'string'
+          ? (message.messageObj as string)
+          : (message.messageObj.content as string);
 
-    // return early if the message is not decrypted
-    if (
-      messageToRender.toLowerCase() === PUSH_DECRYPT_ERROR_MESSAGE.toLowerCase()
-    ) {
-      return;
+      // return early if the message is not decrypted
+      if (
+        messageToRender.toLowerCase() ===
+        PUSH_DECRYPT_ERROR_MESSAGE.toLowerCase()
+      ) {
+        return;
+      }
+      return messageToRender;
+    } catch (e) {
+      return undefined;
     }
-
-    return messageToRender;
   };
 
   const handleMoreInfoClicked = () => {

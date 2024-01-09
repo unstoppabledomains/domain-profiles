@@ -8,6 +8,7 @@ import React, {useEffect, useState} from 'react';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {useFeatureFlags} from '../../../../actions';
 import {getDomainBadges} from '../../../../actions/domainActions';
 import {getProfileData} from '../../../../actions/domainProfileActions';
 import useTranslationContext from '../../../../lib/i18n';
@@ -58,6 +59,7 @@ export const CommunityList: React.FC<CommunityListProps> = ({
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const {data: featureFlags} = useFeatureFlags(false, domain);
   const [badges, setBadges] = useState<SerializedCryptoWalletBadge[]>();
   const [inGroupMap, setInGroupMap] = useState<Record<string, boolean>>({});
   const [isUdBlue, setIsUdBlue] = useState<boolean>(false);
@@ -103,7 +105,11 @@ export const CommunityList: React.FC<CommunityListProps> = ({
     setInGroupMap(groups);
     setBadges(badgeData.list.filter(b => !filteredBadgeCodes.includes(b.code)));
     if (domainProfile?.profile?.udBlue) {
-      setIsUdBlue(domainProfile.profile.udBlue);
+      setIsUdBlue(
+        domainProfile.profile.udBlue ||
+          !featureFlags.variations
+            ?.ecommerceServiceUsersEnableChatCommunityUdBlue,
+      );
     }
     setLoadingText(undefined);
   };
@@ -142,7 +148,7 @@ export const CommunityList: React.FC<CommunityListProps> = ({
           );
         })
         .map((badge, i, sortedBadges) => (
-          <>
+          <Box key={`community-container-${badge.code}`}>
             {i > 0 &&
               inGroup(sortedBadges[i - 1].groupChatId) &&
               !inGroup(badge.groupChatId) && (
@@ -162,7 +168,7 @@ export const CommunityList: React.FC<CommunityListProps> = ({
               searchTerm={searchTerm}
               setActiveCommunity={setActiveCommunity}
             />
-          </>
+          </Box>
         ))}
     </Box>
   ) : (

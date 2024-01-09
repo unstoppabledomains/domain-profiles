@@ -55,6 +55,7 @@ export const Community: React.FC<CommunityProps> = ({
   const {classes} = useConversationStyles({isChatRequest: false});
   const [t] = useTranslationContext();
   const [isLoading, setIsLoading] = useState(true);
+  const [isRenderedMessage, setIsRenderedMessage] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [pushMessages, setPushMessages] = useState<IMessageIPFS[]>([]);
@@ -154,7 +155,12 @@ export const Community: React.FC<CommunityProps> = ({
     }
   };
 
-  const scrollToLatestMessage = (ref: React.RefObject<HTMLElement>) => {
+  const handleOnRender = (ref: React.RefObject<HTMLElement>) => {
+    setIsRenderedMessage(true);
+  };
+
+  const handleOnRenderAndScroll = (ref: React.RefObject<HTMLElement>) => {
+    handleOnRender(ref);
     ref.current?.scrollIntoView({
       behavior: 'auto',
     });
@@ -208,12 +214,11 @@ export const Community: React.FC<CommunityProps> = ({
         renderCallback={
           pushMessages.length > 0 &&
           message.timestamp! >= pushMessages[0].timestamp!
-            ? scrollToLatestMessage
-            : undefined
+            ? handleOnRenderAndScroll
+            : handleOnRender
         }
       />
-    ))
-    .filter(message => message);
+    ));
 
   return (
     <Card className={classes.cardContainer} variant="outlined">
@@ -294,33 +299,32 @@ export const Community: React.FC<CommunityProps> = ({
               </Typography>
             </Box>
           ) : badge.groupChatId ? (
-            renderedPushMessages.length === 0 ? (
-              <CallToAction
-                icon="ForumOutlinedIcon"
-                title={t('push.joinedGroupChat')}
-                subTitle={t('push.joinedGroupChatDescription')}
-              />
-            ) : (
-              <InfiniteScroll
-                inverse={true}
-                style={{display: 'flex', flexDirection: 'column-reverse'}}
-                className={classes.infiniteScroll}
-                scrollableTarget="scrollable-div"
-                hasMore={hasMoreMessages}
-                next={loadPreviousPage}
-                dataLength={renderedPushMessages.length}
-                loader={
-                  <Box className={classes.ininiteScrollLoading}>
-                    <CircularProgress className={classes.loadingSpinner} />
-                  </Box>
-                }
-                scrollThreshold={0.9}
-              >
-                {renderedPushMessages}
-              </InfiniteScroll>
-            )
+            <InfiniteScroll
+              inverse={true}
+              style={{display: 'flex', flexDirection: 'column-reverse'}}
+              className={classes.infiniteScroll}
+              scrollableTarget="scrollable-div"
+              hasMore={hasMoreMessages}
+              next={loadPreviousPage}
+              dataLength={renderedPushMessages.length}
+              loader={
+                <Box className={classes.infiniteScrollLoading}>
+                  <CircularProgress className={classes.loadingSpinner} />
+                </Box>
+              }
+              scrollThreshold={0.9}
+            >
+              {renderedPushMessages}
+            </InfiniteScroll>
           ) : (
             <CallToAction icon="CloudOffIcon" title={t('push.chatNotReady')} />
+          )}
+          {!isLoading && !isRenderedMessage && (
+            <CallToAction
+              icon="ForumOutlinedIcon"
+              title={t('push.joinedGroupChat')}
+              subTitle={t('push.joinedGroupChatDescription')}
+            />
           )}
         </Box>
       </CardContent>

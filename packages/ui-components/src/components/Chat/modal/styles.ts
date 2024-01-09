@@ -261,7 +261,7 @@ export const useConversationStyles = makeStyles<{
     margin: 0,
     padding: 0,
   },
-  ininiteScrollLoading: {
+  infiniteScrollLoading: {
     width: '100%',
     alignItems: 'center',
     textAlign: 'center',

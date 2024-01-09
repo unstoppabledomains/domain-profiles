@@ -35,15 +35,7 @@ export const CommunityConversationBubble: React.FC<
   const {cx, classes} = useConversationBubbleStyles({isAttachment});
 
   useEffect(() => {
-    if (renderCallback) {
-      renderCallback(messageRef);
-    }
-    try {
-      void renderContent();
-    } catch (e) {
-      notifyError(e, {msg: 'error loading message'});
-      setRenderedContent(<Box>{t('push.errorLoadingMessage')}</Box>);
-    }
+    void renderContent();
   }, []);
 
   const renderPeerAvatar = async () => {
@@ -57,123 +49,136 @@ export const CommunityConversationBubble: React.FC<
   };
 
   const renderContent = async () => {
-    // build message object if required from deprecated client
-    if (!message.messageObj) {
-      message.messageObj = {
-        content:
-          message.messageType === 'Text'
-            ? message.messageContent
-            : t('push.unsupportedContent'),
-      };
-    }
-
-    // build message text to render
-    const messageToRender =
-      typeof message.messageObj === 'string'
-        ? (message.messageObj as string)
-        : (message.messageObj.content as string);
-
-    // return early if the message is not decrypted
-    if (
-      messageToRender.toLowerCase() === PUSH_DECRYPT_ERROR_MESSAGE.toLowerCase()
-    ) {
-      return;
-    }
-
-    // load the peer avatar
-    if (!hideAvatar) {
-      await renderPeerAvatar();
-    }
-
-    // decorator for links
-    const componentDecorator = (href: string, text: string, key: number) => (
-      <div
-        key={key}
-        className={classes.chatLink}
-        onClick={() => setClickedUrl(href)}
-      >
-        {text}
-      </div>
-    );
-
-    // handling for text content type
-    if (message.messageType === MessageType.Text) {
-      setRenderedContent(
-        <Box>
-          <Linkify componentDecorator={componentDecorator}>
-            <Emoji>{messageToRender}</Emoji>
-          </Linkify>
-        </Box>,
-      );
-      // handling for remote attachments
-    } else if (
-      message.messageType === MessageType.Media &&
-      featureFlags.variations?.ecommerceServiceUsersEnableChatCommunityMedia
-    ) {
-      setIsLoading(true);
-
-      // fetch the remote media
-      const mediaUrl =
-        typeof message.messageObj === 'string'
-          ? message.messageObj
-          : (message.messageObj.content as string);
-      const fetchResponse = await fetch(mediaUrl);
-
-      // process the media response
-      if (fetchResponse) {
-        // create a file reference for download
-        const mediaBlob = await fetchResponse.blob();
-        const objectURL = URL.createObjectURL(mediaBlob);
-
-        // handling for image attachment types
-        if (mediaUrl.toLowerCase().includes('image/')) {
-          // show the image content
-          setRenderedContent(
-            <Box>
-              <Zoom>
-                <img
-                  className={
-                    message.fromCAIP10
-                      .toLowerCase()
-                      .includes(address.toLowerCase())
-                      ? classes.imageAttachmentRight
-                      : classes.imageAttachmentLeft
-                  }
-                  src={objectURL}
-                />
-              </Zoom>
-            </Box>,
-          );
-        }
-        // handling for non-image attachment types
-        else {
-          // show generic download icon
-          setRenderedContent(
-            <a
-              className={classes.genericAttachment}
-              href={objectURL}
-              download={t('common.download')}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <DownloadIcon className={classes.downloadIcon} />
-              <Typography variant="body2">
-                {t('common.download')} ({formatFileSize(mediaBlob.size)})
-              </Typography>
-            </a>,
-          );
-        }
-
-        // set the attachment styling
-        setIsAttachment(true);
+    try {
+      // build message object if required from deprecated client
+      if (!message.messageObj) {
+        message.messageObj = {
+          content:
+            message.messageType === 'Text'
+              ? message.messageContent
+              : t('push.unsupportedContent'),
+        };
       }
-      setIsLoading(false);
-    } else {
-      setRenderedContent(
-        <Typography className={classes.unsupportedMediaText} variant="caption">
-          {t('push.unsupportedContent')}
-        </Typography>,
+
+      // build message text to render
+      const messageToRender =
+        typeof message.messageObj === 'string'
+          ? (message.messageObj as string)
+          : (message.messageObj.content as string);
+
+      // return early if the message is not decrypted
+      if (
+        messageToRender.toLowerCase() ===
+        PUSH_DECRYPT_ERROR_MESSAGE.toLowerCase()
+      ) {
+        return;
+      }
+
+      // load the peer avatar
+      if (!hideAvatar) {
+        await renderPeerAvatar();
+      }
+
+      // decorator for links
+      const componentDecorator = (href: string, text: string, key: number) => (
+        <div
+          key={key}
+          className={classes.chatLink}
+          onClick={() => setClickedUrl(href)}
+        >
+          {text}
+        </div>
       );
+
+      // handling for text content type
+      if (message.messageType === MessageType.Text) {
+        setRenderedContent(
+          <Box>
+            <Linkify componentDecorator={componentDecorator}>
+              <Emoji>{messageToRender}</Emoji>
+            </Linkify>
+          </Box>,
+        );
+        // handling for remote attachments
+      } else if (
+        message.messageType === MessageType.Media &&
+        featureFlags.variations?.ecommerceServiceUsersEnableChatCommunityMedia
+      ) {
+        setIsLoading(true);
+
+        // fetch the remote media
+        const mediaUrl =
+          typeof message.messageObj === 'string'
+            ? message.messageObj
+            : (message.messageObj.content as string);
+        const fetchResponse = await fetch(mediaUrl);
+
+        // process the media response
+        if (fetchResponse) {
+          // create a file reference for download
+          const mediaBlob = await fetchResponse.blob();
+          const objectURL = URL.createObjectURL(mediaBlob);
+
+          // handling for image attachment types
+          if (mediaUrl.toLowerCase().includes('image/')) {
+            // show the image content
+            setRenderedContent(
+              <Box>
+                <Zoom>
+                  <img
+                    className={
+                      message.fromCAIP10
+                        .toLowerCase()
+                        .includes(address.toLowerCase())
+                        ? classes.imageAttachmentRight
+                        : classes.imageAttachmentLeft
+                    }
+                    src={objectURL}
+                  />
+                </Zoom>
+              </Box>,
+            );
+          }
+          // handling for non-image attachment types
+          else {
+            // show generic download icon
+            setRenderedContent(
+              <a
+                className={classes.genericAttachment}
+                href={objectURL}
+                download={t('common.download')}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <DownloadIcon className={classes.downloadIcon} />
+                <Typography variant="body2">
+                  {t('common.download')} ({formatFileSize(mediaBlob.size)})
+                </Typography>
+              </a>,
+            );
+          }
+
+          // set the attachment styling
+          setIsAttachment(true);
+        }
+        setIsLoading(false);
+      } else {
+        setRenderedContent(
+          <Typography
+            className={classes.unsupportedMediaText}
+            variant="caption"
+          >
+            {t('push.unsupportedContent')}
+          </Typography>,
+        );
+      }
+
+      // message loaded successfully
+      if (renderCallback) {
+        renderCallback(messageRef);
+      }
+    } catch (e) {
+      notifyError(e, {msg: 'error loading message'});
     }
   };
 

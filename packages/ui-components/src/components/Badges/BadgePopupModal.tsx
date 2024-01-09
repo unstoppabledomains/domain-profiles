@@ -309,7 +309,10 @@ const BadgePopupModal = ({
                     {holdersFeatured && holdersFeatured.length > 0 && (
                       <>
                         {holdersFeatured?.map(holdersDomain => (
-                          <Box className={classes.domainPreview}>
+                          <Box
+                            className={classes.domainPreview}
+                            key={`domainPreview-${badgeCode}-${holdersDomain}`}
+                          >
                             <DomainPreview
                               key={`holder-${badgeCode}-${holdersDomain}`}
                               domain={holdersDomain}

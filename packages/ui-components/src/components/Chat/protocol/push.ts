@@ -24,23 +24,27 @@ export const acceptGroupInvite = async (
   address: string,
   pushKey: string,
 ) => {
-  // check for an existing group chat request
-  const requests = await PushAPI.chat.requests({
-    account: getAddressAccount(address),
-    pgpPrivateKey: pushKey,
-    env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-  });
-  const groupChatRequest = requests.filter(r => r.chatId === chatId);
-
-  // accept invite request if present
-  if (groupChatRequest.length > 0) {
-    await PushAPI.chat.approve({
+  try {
+    // check for an existing group chat request
+    const requests = await PushAPI.chat.requests({
       account: getAddressAccount(address),
       pgpPrivateKey: pushKey,
       env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-      senderAddress: chatId,
-      overrideSecretKeyGeneration: false,
     });
+    const groupChatRequest = requests.filter(r => r.chatId === chatId);
+
+    // accept invite request if present
+    if (groupChatRequest.length > 0) {
+      await PushAPI.chat.approve({
+        account: getAddressAccount(address),
+        pgpPrivateKey: pushKey,
+        env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+        senderAddress: chatId,
+        overrideSecretKeyGeneration: false,
+      });
+    }
+  } catch (e) {
+    notifyError(e, {msg: 'error accepting group invitation'});
   }
 };
 
@@ -49,18 +53,22 @@ export const decryptMessage = async (
   pushKey: string,
   msg: IMessageIPFS,
 ): Promise<IMessageIPFS | undefined> => {
-  const connectedUser = await getPushUser(address);
-  if (!connectedUser) {
-    return undefined;
-  }
-  const decryptedMessage = await PushAPI.chat.decryptConversation({
-    env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-    pgpPrivateKey: pushKey,
-    messages: [msg],
-    connectedUser,
-  });
-  if (decryptedMessage.length > 0) {
-    return decryptedMessage[0];
+  try {
+    const connectedUser = await getPushUser(address);
+    if (!connectedUser) {
+      return undefined;
+    }
+    const decryptedMessage = await PushAPI.chat.decryptConversation({
+      env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+      pgpPrivateKey: pushKey,
+      messages: [msg],
+      connectedUser,
+    });
+    if (decryptedMessage.length > 0) {
+      return decryptedMessage[0];
+    }
+  } catch (e) {
+    notifyError(e, {msg: 'error decrypting message'});
   }
   return undefined;
 };
@@ -109,8 +117,9 @@ export const getLatestMessage = async (
       toDecrypt: true,
     });
   } catch (e) {
-    return undefined;
+    notifyError(e, {msg: 'error retrieving latest message'});
   }
+  return undefined;
 };
 
 export const getMessages = async (
@@ -119,35 +128,45 @@ export const getMessages = async (
   pushKey: string,
   threadhash?: string,
 ) => {
-  // get thread hash of the group chat
-  if (!threadhash) {
-    const hashResponse = await PushAPI.chat.conversationHash({
+  try {
+    // get thread hash of the group chat
+    if (!threadhash) {
+      const hashResponse = await PushAPI.chat.conversationHash({
+        account: getAddressAccount(address),
+        env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+        conversationId: chatId,
+      });
+      threadhash = hashResponse.threadHash;
+    }
+
+    // retrieve the group chat
+    return await PushAPI.chat.history({
       account: getAddressAccount(address),
       env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-      conversationId: chatId,
+      threadhash,
+      pgpPrivateKey: pushKey,
+      toDecrypt: true,
+      limit: PUSH_PAGE_SIZE,
     });
-    threadhash = hashResponse.threadHash;
+  } catch (e) {
+    notifyError(e, {msg: 'error retrieving chat history'});
   }
-
-  // retrieve the group chat
-  return await PushAPI.chat.history({
-    account: getAddressAccount(address),
-    env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-    threadhash,
-    pgpPrivateKey: pushKey,
-    toDecrypt: true,
-    limit: PUSH_PAGE_SIZE,
-  });
+  return [];
 };
 
 // getPushUser defined here to allow for test mock
 export const getPushUser = async (
   address: string,
 ): Promise<PushAPI.IUser | undefined> => {
-  return await PushAPI.user.get({
-    account: getAddressAccount(address),
-    env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-  });
+  try {
+    return await PushAPI.user.get({
+      account: getAddressAccount(address),
+      env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+    });
+  } catch (e) {
+    notifyError(e, {msg: 'error getting push user'});
+  }
+  return undefined;
 };
 
 export const sendMessage = async (

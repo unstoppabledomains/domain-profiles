@@ -180,7 +180,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
 
           // set group chat state
           badge.groupChatTimestamp = msgData[0].timestamp;
-          badge.groupChatLatestMessage = msgBody;
+          badge.groupChatLatestMessage = `${fromDomain}: ${msgBody}`;
           await onRefresh();
         }
       } else {

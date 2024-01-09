@@ -89,24 +89,28 @@ export const getLatestMessage = async (
   pushKey: string,
   threadhash?: string,
 ) => {
-  // get thread hash of the group chat
-  if (!threadhash) {
-    const hashResponse = await PushAPI.chat.conversationHash({
+  try {
+    // get thread hash of the group chat
+    if (!threadhash) {
+      const hashResponse = await PushAPI.chat.conversationHash({
+        account: getAddressAccount(address),
+        env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+        conversationId: chatId,
+      });
+      threadhash = hashResponse.threadHash;
+    }
+
+    // retrieve the group chat
+    return await PushAPI.chat.latest({
       account: getAddressAccount(address),
       env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-      conversationId: chatId,
+      threadhash,
+      pgpPrivateKey: pushKey,
+      toDecrypt: true,
     });
-    threadhash = hashResponse.threadHash;
+  } catch (e) {
+    return undefined;
   }
-
-  // retrieve the group chat
-  return await PushAPI.chat.latest({
-    account: getAddressAccount(address),
-    env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-    threadhash,
-    pgpPrivateKey: pushKey,
-    toDecrypt: true,
-  });
 };
 
 export const getMessages = async (

@@ -48,6 +48,8 @@ export type SerializedCryptoWalletBadge = {
   contracts?: string[];
   marketplace?: SerializedMarketplaceData;
   groupChatId?: string;
+  groupChatLatestMessage?: string;
+  groupChatTimestamp?: number;
   gallery?: {
     enabled: boolean;
     tier: number;

@@ -193,6 +193,28 @@ export const Community: React.FC<CommunityProps> = ({
     );
   };
 
+  const renderedPushMessages = pushMessages
+    .filter(
+      (message, index) =>
+        pushMessages.findIndex(item => item.timestamp === message.timestamp) ===
+        index,
+    )
+    .map(message => (
+      <CommunityConversationBubble
+        address={address}
+        message={message}
+        key={message.timestamp}
+        onBlockTopic={() => handleBlockSender(message.fromCAIP10)}
+        renderCallback={
+          pushMessages.length > 0 &&
+          message.timestamp! >= pushMessages[0].timestamp!
+            ? scrollToLatestMessage
+            : undefined
+        }
+      />
+    ))
+    .filter(message => message);
+
   return (
     <Card className={classes.cardContainer} variant="outlined">
       <CardHeader
@@ -272,7 +294,7 @@ export const Community: React.FC<CommunityProps> = ({
               </Typography>
             </Box>
           ) : badge.groupChatId ? (
-            pushMessages.length === 0 ? (
+            renderedPushMessages.length === 0 ? (
               <CallToAction
                 icon="ForumOutlinedIcon"
                 title={t('push.joinedGroupChat')}
@@ -286,7 +308,7 @@ export const Community: React.FC<CommunityProps> = ({
                 scrollableTarget="scrollable-div"
                 hasMore={hasMoreMessages}
                 next={loadPreviousPage}
-                dataLength={pushMessages.length}
+                dataLength={renderedPushMessages.length}
                 loader={
                   <Box className={classes.ininiteScrollLoading}>
                     <CircularProgress className={classes.loadingSpinner} />
@@ -294,27 +316,7 @@ export const Community: React.FC<CommunityProps> = ({
                 }
                 scrollThreshold={0.9}
               >
-                {pushMessages
-                  .filter(
-                    (message, index) =>
-                      pushMessages.findIndex(
-                        item => item.timestamp === message.timestamp,
-                      ) === index,
-                  )
-                  .map(message => (
-                    <CommunityConversationBubble
-                      address={address}
-                      message={message}
-                      key={message.timestamp}
-                      onBlockTopic={() => handleBlockSender(message.fromCAIP10)}
-                      renderCallback={
-                        pushMessages.length > 0 &&
-                        message.timestamp! >= pushMessages[0].timestamp!
-                          ? scrollToLatestMessage
-                          : undefined
-                      }
-                    />
-                  ))}
+                {renderedPushMessages}
               </InfiniteScroll>
             )
           ) : (

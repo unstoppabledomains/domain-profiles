@@ -83,6 +83,36 @@ export const getGroupInfo = async (chatId?: string) => {
   }
 };
 
+export const getLatestMessage = async (
+  chatId: string,
+  address: string,
+  pushKey: string,
+  threadhash?: string,
+) => {
+  try {
+    // get thread hash of the group chat
+    if (!threadhash) {
+      const hashResponse = await PushAPI.chat.conversationHash({
+        account: getAddressAccount(address),
+        env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+        conversationId: chatId,
+      });
+      threadhash = hashResponse.threadHash;
+    }
+
+    // retrieve the group chat
+    return await PushAPI.chat.latest({
+      account: getAddressAccount(address),
+      env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+      threadhash,
+      pgpPrivateKey: pushKey,
+      toDecrypt: true,
+    });
+  } catch (e) {
+    return undefined;
+  }
+};
+
 export const getMessages = async (
   chatId: string,
   address: string,

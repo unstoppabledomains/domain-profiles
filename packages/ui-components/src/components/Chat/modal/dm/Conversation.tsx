@@ -390,7 +390,7 @@ export const Conversation: React.FC<ConversationProps> = ({
                   next={loadPreviousPage}
                   dataLength={xmtpMessages.length}
                   loader={
-                    <Box className={classes.ininiteScrollLoading}>
+                    <Box className={classes.infiniteScrollLoading}>
                       <CircularProgress className={classes.loadingSpinner} />
                     </Box>
                   }

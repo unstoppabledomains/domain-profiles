@@ -45,7 +45,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginRight: theme.spacing(0.25),
   },
   communityGradient: {
-    backgroundImage: `linear-gradient(${theme.palette.neutralShades[100]}, ${theme.palette.neutralShades[200]})`,
+    backgroundImage: `linear-gradient(225deg, ${theme.palette.white} 0%, ${theme.palette.blueGreyShades[100]} 100%)`,
   },
   communityTitle: {
     display: 'flex',

@@ -41,7 +41,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
   communityContainer: {
     position: 'relative',
     marginBottom: theme.spacing(2),
-    marginRight: theme.spacing(0),
+    marginLeft: theme.spacing(0.25),
+    marginRight: theme.spacing(0.25),
+  },
+  communityGradient: {
+    backgroundImage: `linear-gradient(${theme.palette.neutralShades[100]}, ${theme.palette.neutralShades[200]})`,
   },
   communityTitle: {
     display: 'flex',
@@ -270,9 +274,8 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
       <Card
         className={cx(classes.communityContainer, {
           [classes.hideBorder]: inGroup,
+          [classes.communityGradient]: !inGroup,
         })}
-        variant="outlined"
-        elevation={0}
       >
         <CardHeader
           title={

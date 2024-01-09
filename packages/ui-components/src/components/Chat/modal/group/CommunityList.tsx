@@ -108,6 +108,13 @@ export const CommunityList: React.FC<CommunityListProps> = ({
     setLoadingText(undefined);
   };
 
+  const reloadBadges = async () => {
+    if (!badges) {
+      return;
+    }
+    setBadges([...badges]);
+  };
+
   const inGroup = (chatId?: string) => {
     if (!chatId) {
       return false;
@@ -129,6 +136,7 @@ export const CommunityList: React.FC<CommunityListProps> = ({
       {badges
         ?.sort((a, b) => {
           return (
+            (b.groupChatTimestamp || 0) - (a.groupChatTimestamp || 0) ||
             Number(inGroup(b.groupChatId)) - Number(inGroup(a.groupChatId)) ||
             a.name.localeCompare(b.name)
           );
@@ -150,6 +158,7 @@ export const CommunityList: React.FC<CommunityListProps> = ({
               isUdBlue={isUdBlue}
               pushKey={pushKey}
               onReload={loadBadges}
+              onRefresh={reloadBadges}
               searchTerm={searchTerm}
               setActiveCommunity={setActiveCommunity}
             />

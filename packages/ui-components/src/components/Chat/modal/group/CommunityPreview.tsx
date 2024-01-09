@@ -126,6 +126,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
   isUdBlue,
   pushKey,
   onReload,
+  onRefresh,
   searchTerm,
   setActiveCommunity,
 }) => {
@@ -153,6 +154,14 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
 
   const loadLatest = async () => {
     if (inGroup && badge.groupChatId) {
+      // latest state already retrieved
+      if (badge.groupChatTimestamp) {
+        setLatestTimestamp(moment(badge.groupChatTimestamp).fromNow());
+        setLatestMessage(badge.groupChatLatestMessage);
+        return;
+      }
+
+      // retrieve latest state since it is missing
       const msgData = await getLatestMessage(
         badge.groupChatId,
         address,
@@ -168,6 +177,11 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
               : (await getReverseResolution(fromUser)) || fromUser;
           setLatestTimestamp(moment(msgData[0].timestamp).fromNow());
           setLatestMessage(`${fromDomain}: ${msgBody}`);
+
+          // set group chat state
+          badge.groupChatTimestamp = msgData[0].timestamp;
+          badge.groupChatLatestMessage = msgBody;
+          await onRefresh();
         }
       } else {
         setLatestMessage(t('push.noGroupMessages'));
@@ -397,6 +411,7 @@ export type CommunityPreviewProps = {
   pushKey: string;
   searchTerm?: string;
   onReload: () => Promise<void>;
+  onRefresh: () => Promise<void>;
   setActiveCommunity: (v: SerializedCryptoWalletBadge) => void;
 };
 

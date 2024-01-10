@@ -6,6 +6,7 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React from 'react';
@@ -31,6 +32,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
   emptyButton: {
     marginTop: theme.spacing(2),
   },
+  loadingSpinnerContainer: {
+    marginTop: theme.spacing(2),
+    height: '100px',
+  },
+  loadingSpinner: {
+    color: theme.palette.neutralShades[400],
+  },
 }));
 
 export const CallToAction: React.FC<CallToActionProps> = ({
@@ -38,6 +46,7 @@ export const CallToAction: React.FC<CallToActionProps> = ({
   title,
   subTitle,
   buttonText,
+  loading,
   handleButtonClick,
 }) => {
   const {classes} = useStyles();
@@ -60,7 +69,14 @@ export const CallToAction: React.FC<CallToActionProps> = ({
         )
       )}
       <Typography variant="h6">{title}</Typography>
-      <Typography variant="body2">{subTitle}</Typography>
+      <Typography mt={1} variant="body2">
+        {subTitle}
+      </Typography>
+      {loading && (
+        <Box className={classes.loadingSpinnerContainer}>
+          <CircularProgress className={classes.loadingSpinner} />
+        </Box>
+      )}
       {buttonText && handleButtonClick && (
         <Button
           variant="contained"
@@ -85,6 +101,7 @@ export type CallToActionProps = {
   title: string;
   subTitle?: React.ReactNode;
   buttonText?: string;
+  loading?: boolean;
   handleButtonClick?: () => void;
 };
 

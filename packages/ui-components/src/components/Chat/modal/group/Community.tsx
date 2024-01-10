@@ -289,20 +289,8 @@ export const Community: React.FC<CommunityProps> = ({
             <CallToAction
               icon="ForumOutlinedIcon"
               title={t('push.joinedGroupChat')}
-              subTitle={
-                <Box>
-                  <Typography mb={2}>
-                    {t('push.joinedGroupChatDescription')}
-                  </Typography>
-                  <Box sx={{height: '100px'}}>
-                    {isLoading && (
-                      <Box className={classes.loadingContainer}>
-                        <CircularProgress className={classes.loadingSpinner} />
-                      </Box>
-                    )}
-                  </Box>
-                </Box>
-              }
+              subTitle={t('push.joinedGroupChatDescription')}
+              loading={isLoading}
             />
           ) : badge.groupChatId ? (
             <InfiniteScroll

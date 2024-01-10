@@ -19,6 +19,7 @@ export enum MessageType {
 
 export const PUSH_DECRYPT_ERROR_MESSAGE = 'Unable to Decrypt Message';
 export const PUSH_PAGE_SIZE = 20;
+export const PUSH_USERS: Record<string, PushAPI.IUser> = {};
 
 export const acceptGroupInvite = async (
   chatId: string,
@@ -158,11 +159,22 @@ export const getMessages = async (
 export const getPushUser = async (
   address: string,
 ): Promise<PushAPI.IUser | undefined> => {
+  // attempt to retrieve user from cache
+  const cachedUser = PUSH_USERS[address.toLowerCase()];
+  if (cachedUser) {
+    return cachedUser;
+  }
+
   try {
-    return await PushAPI.user.get({
+    // retrieve the push user
+    const pushUser = await PushAPI.user.get({
       account: getAddressAccount(address),
       env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
     });
+    if (pushUser) {
+      PUSH_USERS[address.toLowerCase()] = pushUser;
+      return pushUser;
+    }
   } catch (e) {
     notifyError(e, {msg: 'error getting push user'});
   }

@@ -821,11 +821,8 @@ export const ChatModal: React.FC<ChatModalProps> = ({
           <CallToAction
             icon="ForumOutlinedIcon"
             title={t('push.loadingYourChat')}
-            subTitle={
-              <Box mt={2}>
-                <CircularProgress className={classes.loadingSpinner} />
-              </Box>
-            }
+            subTitle={t('push.loadingYourChatDescription')}
+            loading={true}
           />
         </Box>
       ) : (

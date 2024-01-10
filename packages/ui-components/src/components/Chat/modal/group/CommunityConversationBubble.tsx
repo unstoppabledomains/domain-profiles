@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import DownloadIcon from '@mui/icons-material/Download';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -14,7 +15,11 @@ import Zoom from 'react-medium-image-zoom';
 import {useFeatureFlags} from '../../../../actions/featureFlagActions';
 import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
-import {MessageType, PUSH_DECRYPT_ERROR_MESSAGE} from '../../protocol/push';
+import {
+  MessageType,
+  PUSH_DECRYPT_ERROR_MESSAGE,
+  decryptMessage,
+} from '../../protocol/push';
 import {getAddressMetadata} from '../../protocol/resolution';
 import {formatFileSize} from '../../protocol/xmtp';
 import LinkWarningModal from '../LinkWarningModal';
@@ -22,11 +27,19 @@ import {useConversationBubbleStyles} from '../styles';
 
 export const CommunityConversationBubble: React.FC<
   CommunityConversationBubbleProps
-> = ({address, hideAvatar, message, onBlockTopic, renderCallback}) => {
+> = ({
+  address,
+  hideAvatar,
+  message: encryptedMessage,
+  pushKey,
+  onBlockTopic,
+  renderCallback,
+}) => {
   const [t] = useTranslationContext();
   const {data: featureFlags} = useFeatureFlags();
   const messageRef = useRef<HTMLElement>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isDecrypting, setIsDecrypting] = useState(true);
+  const [isMediaLoading, setIsMediaLoading] = useState(false);
   const [peerAvatarLink, setPeerAvatarLink] = useState<string>();
   const [peerDisplayName, setPeerDisplayName] = useState<string>();
   const [isAttachment, setIsAttachment] = useState(false);
@@ -49,6 +62,12 @@ export const CommunityConversationBubble: React.FC<
 
   const renderContent = async () => {
     try {
+      // decrypt the message if needed
+      const message = await decryptMessage(address, pushKey, encryptedMessage);
+      if (!message) {
+        return;
+      }
+
       // build message object if required from deprecated client
       if (!message.messageObj) {
         message.messageObj = {
@@ -119,7 +138,7 @@ export const CommunityConversationBubble: React.FC<
         message.messageType === MessageType.Media &&
         featureFlags.variations?.ecommerceServiceUsersEnableChatCommunityMedia
       ) {
-        setIsLoading(true);
+        setIsMediaLoading(true);
 
         // fetch the remote media
         const mediaUrl =
@@ -176,7 +195,7 @@ export const CommunityConversationBubble: React.FC<
           // set the attachment styling
           setIsAttachment(true);
         }
-        setIsLoading(false);
+        setIsMediaLoading(false);
       } else {
         setRenderedContent(
           <Typography
@@ -194,11 +213,13 @@ export const CommunityConversationBubble: React.FC<
       }
     } catch (e) {
       notifyError(e, {msg: 'error loading message'});
+    } finally {
+      setIsDecrypting(false);
     }
   };
 
   return renderedContent ? (
-    message.messageType === MessageType.Meta ? (
+    encryptedMessage.messageType === MessageType.Meta ? (
       <Box ref={messageRef} className={classes.metadata}>
         <Typography mr={0.5} variant="caption">
           -- {peerDisplayName}
@@ -212,17 +233,23 @@ export const CommunityConversationBubble: React.FC<
       <Box
         ref={messageRef}
         className={cx(
-          message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
+          encryptedMessage.fromCAIP10
+            .toLowerCase()
+            .includes(address.toLowerCase())
             ? classes.rightRow
             : classes.leftRow,
-          message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
+          encryptedMessage.fromCAIP10
+            .toLowerCase()
+            .includes(address.toLowerCase())
             ? classes.rightMargin
             : classes.leftMargin,
         )}
       >
         <Box
           className={
-            message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
+            encryptedMessage.fromCAIP10
+              .toLowerCase()
+              .includes(address.toLowerCase())
               ? undefined
               : classes.avatarContainer
           }
@@ -234,7 +261,9 @@ export const CommunityConversationBubble: React.FC<
           )}
           <Box
             className={cx(
-              message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
+              encryptedMessage.fromCAIP10
+                .toLowerCase()
+                .includes(address.toLowerCase())
                 ? classes.rightRow
                 : classes.leftRow,
             )}
@@ -252,22 +281,22 @@ export const CommunityConversationBubble: React.FC<
                 variant="body2"
                 className={cx(
                   classes.msg,
-                  message.fromCAIP10
+                  encryptedMessage.fromCAIP10
                     .toLowerCase()
                     .includes(address.toLowerCase())
                     ? classes.right
                     : classes.left,
-                  message.fromCAIP10
+                  encryptedMessage.fromCAIP10
                     .toLowerCase()
                     .includes(address.toLowerCase())
                     ? classes.rightFirst
                     : classes.leftFirst,
                 )}
               >
-                {isLoading ? (
+                {isMediaLoading ? (
                   <Box
                     className={
-                      message.fromCAIP10
+                      encryptedMessage.fromCAIP10
                         .toLowerCase()
                         .includes(address.toLowerCase())
                         ? classes.loadingContainerRight
@@ -283,13 +312,15 @@ export const CommunityConversationBubble: React.FC<
                   renderedContent
                 )}
               </Typography>
-              {message.timestamp && (
-                <Tooltip title={new Date(message.timestamp).toLocaleString()}>
+              {encryptedMessage.timestamp && (
+                <Tooltip
+                  title={new Date(encryptedMessage.timestamp).toLocaleString()}
+                >
                   <Typography
                     variant="caption"
                     className={classes.chatTimestamp}
                   >
-                    {new Date(message.timestamp).toLocaleTimeString()}
+                    {new Date(encryptedMessage.timestamp).toLocaleTimeString()}
                   </Typography>
                 </Tooltip>
               )}
@@ -305,13 +336,28 @@ export const CommunityConversationBubble: React.FC<
         )}
       </Box>
     )
-  ) : null;
+  ) : (
+    <Box ref={messageRef} className={classes.metadata}>
+      <Typography variant="caption">
+        <Box className={classes.metadata}>
+          --
+          {isDecrypting ? (
+            <CircularProgress size={10} className={classes.encryptStateIcon} />
+          ) : (
+            <LockOutlinedIcon className={classes.encryptStateIcon} />
+          )}
+          {isDecrypting ? t('push.decrypting') : t('push.encrypted')} --
+        </Box>
+      </Typography>
+    </Box>
+  );
 };
 
 export type CommunityConversationBubbleProps = {
   address: string;
   hideAvatar?: string;
   message: IMessageIPFS;
+  pushKey: string;
   onBlockTopic: () => void;
   renderCallback?: (ref: React.RefObject<HTMLElement>) => void;
 };

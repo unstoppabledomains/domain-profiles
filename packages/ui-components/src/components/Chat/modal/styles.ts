@@ -83,6 +83,13 @@ export const useConversationBubbleStyles = makeStyles<{
     cursor: 'pointer',
     textDecoration: 'underline',
   },
+  encryptStateIcon: {
+    color: theme.palette.neutralShades[400],
+    marginLeft: theme.spacing(0.5),
+    marginRight: theme.spacing(0.5),
+    width: '10px',
+    height: '10px',
+  },
   imageAttachmentRight: {
     borderRadius: theme.spacing(2.5, 2.5, 0, 2.5),
     margin: theme.spacing(-1, -2, 0, -2),
@@ -126,7 +133,9 @@ export const useConversationBubbleStyles = makeStyles<{
     color: 'inherit',
   },
   metadata: {
-    display: 'inline-block',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     textAlign: 'center',
     fontStyle: 'italic',
     color: theme.palette.neutralShades[400],

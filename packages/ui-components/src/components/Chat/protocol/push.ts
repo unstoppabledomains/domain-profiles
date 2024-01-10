@@ -146,7 +146,6 @@ export const getMessages = async (
       env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
       threadhash,
       pgpPrivateKey: pushKey,
-      toDecrypt: true,
       limit: PUSH_PAGE_SIZE,
     });
   } catch (e) {

@@ -240,14 +240,14 @@ export const Community: React.FC<CommunityProps> = ({
         action={
           <Box className={classes.headerActionContainer}>
             {authDomain && (
-              <Tooltip title={t('profile.moreInformation')}>
+              <Tooltip title={t('push.moreGroupInfo')}>
                 <InfoOutlinedIcon
                   className={classes.headerCloseIcon}
                   onClick={handleMoreInfo}
                 />
               </Tooltip>
             )}
-            <Tooltip title={t('common.more')}>
+            <Tooltip title={t('common.options')}>
               <IconButton
                 onClick={handleOpenMenu}
                 className={classes.headerCloseIcon}

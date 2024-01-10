@@ -31,6 +31,7 @@ import type {
   SerializedCryptoWalletBadge,
 } from '../../../../lib/types/badge';
 import {
+  MessageType,
   PUSH_DECRYPT_ERROR_MESSAGE,
   acceptGroupInvite,
   getLatestMessage,
@@ -176,11 +177,18 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
               ? t('common.you')
               : (await getReverseResolution(fromUser)) || fromUser;
           setLatestTimestamp(moment(msgData[0].timestamp).fromNow());
-          setLatestMessage(`${fromDomain}: ${msgBody}`);
+          setLatestMessage(
+            msgData[0].messageType === MessageType.Meta
+              ? msgBody
+              : `${fromDomain}: ${msgBody}`,
+          );
 
           // set group chat state
           badge.groupChatTimestamp = msgData[0].timestamp;
-          badge.groupChatLatestMessage = `${fromDomain}: ${msgBody}`;
+          badge.groupChatLatestMessage =
+            msgData[0].messageType === MessageType.Meta
+              ? msgBody
+              : `${fromDomain}: ${msgBody}`;
           await onRefresh();
           return;
         }
@@ -194,6 +202,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
 
   const renderMessagePreview = (message: IMessageIPFS) => {
     try {
+      // parse the message
       if (!message.messageObj) {
         message.messageObj = {
           content:
@@ -202,6 +211,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
               : t('push.unsupportedContent'),
         };
       }
+
       // build message text to render
       const messageToRender =
         typeof message.messageObj === 'string'
@@ -214,6 +224,15 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
         PUSH_DECRYPT_ERROR_MESSAGE.toLowerCase()
       ) {
         return;
+      }
+
+      // display special preview for metadata events
+      if (message.messageType === MessageType.Meta) {
+        if (messageToRender.toLowerCase().includes('add')) {
+          return t('push.userJoinedGroup');
+        } else if (messageToRender.toLowerCase().includes('remove')) {
+          return t('push.userLeftGroup');
+        }
       }
       return messageToRender;
     } catch (e) {

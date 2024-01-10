@@ -125,6 +125,12 @@ export const useConversationBubbleStyles = makeStyles<{
   loadingIcon: {
     color: 'inherit',
   },
+  metadata: {
+    display: 'inline-block',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    color: theme.palette.neutralShades[400],
+  },
   unsupportedMediaText: {
     fontStyle: 'italic',
   },

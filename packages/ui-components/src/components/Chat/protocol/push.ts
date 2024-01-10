@@ -14,6 +14,7 @@ import {formatFileSize} from './xmtp';
 export enum MessageType {
   Text = 'Text',
   Media = 'MediaEmbed',
+  Meta = 'Meta',
 }
 
 export const PUSH_DECRYPT_ERROR_MESSAGE = 'Unable to Decrypt Message';

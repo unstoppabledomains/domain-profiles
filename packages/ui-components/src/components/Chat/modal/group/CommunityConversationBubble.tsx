@@ -38,8 +38,7 @@ export const CommunityConversationBubble: React.FC<
     void renderContent();
   }, []);
 
-  const renderPeerAvatar = async () => {
-    const peerAddress = message.fromCAIP10.replace('eip155:', '');
+  const renderPeerAvatar = async (peerAddress: string) => {
     if (peerAddress.toLowerCase().includes(address.toLowerCase())) {
       return;
     }
@@ -76,7 +75,11 @@ export const CommunityConversationBubble: React.FC<
 
       // load the peer avatar
       if (!hideAvatar) {
-        await renderPeerAvatar();
+        await renderPeerAvatar(
+          MessageType.Meta && (message.messageObj as any)?.info?.affected
+            ? (message.messageObj as any).info.affected[0]
+            : message.fromCAIP10.replace('eip155:', ''),
+        );
       }
 
       // decorator for links
@@ -99,8 +102,20 @@ export const CommunityConversationBubble: React.FC<
             </Linkify>
           </Box>,
         );
-        // handling for remote attachments
+      } else if (message.messageType === MessageType.Meta) {
+        // handling of meta message
+        const metaData = message.messageObj as any;
+        setRenderedContent(
+          <Typography variant="caption">
+            {metaData.content === 'REMOVE_MEMBER'
+              ? t('common.left')
+              : t('common.joined')}
+            {message.timestamp &&
+              ` @ ${new Date(message.timestamp).toLocaleTimeString()}`}
+          </Typography>,
+        );
       } else if (
+        // handling for remote attachments
         message.messageType === MessageType.Media &&
         featureFlags.variations?.ecommerceServiceUsersEnableChatCommunityMedia
       ) {
@@ -183,89 +198,113 @@ export const CommunityConversationBubble: React.FC<
   };
 
   return renderedContent ? (
-    <Box
-      ref={messageRef}
-      className={cx(
-        message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
-          ? classes.rightRow
-          : classes.leftRow,
-        message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
-          ? classes.rightMargin
-          : classes.leftMargin,
-      )}
-    >
+    message.messageType === MessageType.Meta ? (
+      <Box ref={messageRef} className={classes.metadata}>
+        <Typography mr={0.5} variant="caption">
+          -- {peerDisplayName}
+        </Typography>
+        {renderedContent}
+        <Typography ml={0.5} variant="caption">
+          --
+        </Typography>
+      </Box>
+    ) : (
       <Box
-        className={
+        ref={messageRef}
+        className={cx(
           message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
-            ? undefined
-            : classes.avatarContainer
-        }
-      >
-        {peerAvatarLink && peerDisplayName && (
-          <Tooltip title={peerDisplayName}>
-            <Avatar src={peerAvatarLink} className={classes.avatar} />
-          </Tooltip>
+            ? classes.rightRow
+            : classes.leftRow,
+          message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
+            ? classes.rightMargin
+            : classes.leftMargin,
         )}
+      >
         <Box
-          className={cx(
+          className={
             message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
-              ? classes.rightRow
-              : classes.leftRow,
-          )}
+              ? undefined
+              : classes.avatarContainer
+          }
         >
-          <Box className={cx(classes.msgContainer)}>
-            {peerDisplayName && (
-              <Typography variant="caption" className={classes.chatDisplayName}>
-                {peerDisplayName}
-              </Typography>
+          {peerAvatarLink && peerDisplayName && (
+            <Tooltip title={peerDisplayName}>
+              <Avatar src={peerAvatarLink} className={classes.avatar} />
+            </Tooltip>
+          )}
+          <Box
+            className={cx(
+              message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
+                ? classes.rightRow
+                : classes.leftRow,
             )}
-            <Typography
-              variant="body2"
-              className={cx(
-                classes.msg,
-                message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
-                  ? classes.right
-                  : classes.left,
-                message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
-                  ? classes.rightFirst
-                  : classes.leftFirst,
-              )}
-            >
-              {isLoading ? (
-                <Box
-                  className={
-                    message.fromCAIP10
-                      .toLowerCase()
-                      .includes(address.toLowerCase())
-                      ? classes.loadingContainerRight
-                      : classes.loadingContainerLeft
-                  }
+          >
+            <Box className={cx(classes.msgContainer)}>
+              {peerDisplayName && (
+                <Typography
+                  variant="caption"
+                  className={classes.chatDisplayName}
                 >
-                  <CircularProgress className={classes.loadingIcon} />
-                  <Typography variant="caption">
-                    {t('push.loadingAttachment')}
-                  </Typography>
-                </Box>
-              ) : (
-                renderedContent
+                  {peerDisplayName}
+                </Typography>
               )}
-            </Typography>
-            {message.timestamp && (
-              <Typography variant="caption" className={classes.chatTimestamp}>
-                {new Date(message.timestamp).toLocaleTimeString()}
+              <Typography
+                variant="body2"
+                className={cx(
+                  classes.msg,
+                  message.fromCAIP10
+                    .toLowerCase()
+                    .includes(address.toLowerCase())
+                    ? classes.right
+                    : classes.left,
+                  message.fromCAIP10
+                    .toLowerCase()
+                    .includes(address.toLowerCase())
+                    ? classes.rightFirst
+                    : classes.leftFirst,
+                )}
+              >
+                {isLoading ? (
+                  <Box
+                    className={
+                      message.fromCAIP10
+                        .toLowerCase()
+                        .includes(address.toLowerCase())
+                        ? classes.loadingContainerRight
+                        : classes.loadingContainerLeft
+                    }
+                  >
+                    <CircularProgress className={classes.loadingIcon} />
+                    <Typography variant="caption">
+                      {t('push.loadingAttachment')}
+                    </Typography>
+                  </Box>
+                ) : (
+                  renderedContent
+                )}
               </Typography>
-            )}
+              {message.timestamp && (
+                <Tooltip title={new Date(message.timestamp).toLocaleString()}>
+                  <Typography
+                    variant="caption"
+                    className={classes.chatTimestamp}
+                  >
+                    {new Date(message.timestamp).toLocaleTimeString()}
+                  </Typography>
+                </Tooltip>
+              )}
+            </Box>
           </Box>
         </Box>
+        {clickedUrl && (
+          <LinkWarningModal
+            url={clickedUrl}
+            onBlockTopic={onBlockTopic}
+            onClose={() => setClickedUrl(undefined)}
+          />
+        )}
       </Box>
-      {clickedUrl && (
-        <LinkWarningModal
-          url={clickedUrl}
-          onBlockTopic={onBlockTopic}
-          onClose={() => setClickedUrl(undefined)}
-        />
-      )}
-    </Box>
+    )
   ) : null;
 };
 

@@ -1,6 +1,6 @@
 {
   "name": "@unstoppabledomains/ui-components",
-  "version": "0.0.34",
+  "version": "0.0.35",
   "private": true,
   "description": "An open and reusable suite of Unstoppable Domains management components",
   "keywords": [
@@ -60,6 +60,7 @@
     "bluebird": "^3.7.2",
     "bs58": "^5.0.0",
     "clipboard-copy": "^4.0.1",
+    "compress-json": "^3.0.0",
     "date-fns": "^2.16.1",
     "filesize": "^10.0.8",
     "font-awesome": "^4.7.0",

@@ -308,7 +308,7 @@ export const Conversation: React.FC<ConversationProps> = ({
                   </Tooltip>
                 </Badge>
               ))}
-            <Tooltip title={t('common.more')}>
+            <Tooltip title={t('common.options')}>
               <IconButton
                 onClick={handleOpenMenu}
                 className={classes.headerCloseIcon}

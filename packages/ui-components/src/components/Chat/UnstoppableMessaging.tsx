@@ -840,22 +840,27 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       handleOpenChat();
 
       // set the active chat if provided
-      const groupChatInfo = await joinBadgeGroupChat(
-        badgeCode,
-        chatAddress,
-        pushKey,
-      );
-      if (groupChatInfo?.groupChatId) {
-        // accept the chat request for the user and change to the
-        // group conversation panel
-        await acceptGroupInvite(
-          groupChatInfo.groupChatId,
+      try {
+        const groupChatInfo = await joinBadgeGroupChat(
+          badgeCode,
           chatAddress,
           pushKey,
         );
-      }
-      if (groupChatInfo) {
-        setActiveCommunity(groupChatInfo);
+        if (groupChatInfo?.groupChatId) {
+          // accept the chat request for the user and change to the
+          // group conversation panel
+          await acceptGroupInvite(
+            groupChatInfo.groupChatId,
+            chatAddress,
+            pushKey,
+          );
+        }
+        if (groupChatInfo) {
+          setActiveCommunity(groupChatInfo);
+        }
+      } catch (e) {
+        notifyError(e, {msg: 'error joining group'});
+      } finally {
         setActiveTab(TabType.Communities);
       }
     }

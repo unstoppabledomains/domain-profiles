@@ -1,7 +1,12 @@
+import type * as PushAPI from '@pushprotocol/restapi';
 import {fetcher} from '@xmtp/proto';
+import {compress, decompress} from 'compress-json';
 
 import {DomainProfileKeys} from '../../lib/types/domain';
 import type {AddressResolution} from './types';
+
+export const PUSH_MESSAGES: Record<string, PushAPI.IMessageIPFS> = {};
+export const PUSH_USERS: Record<string, PushAPI.IUser> = {};
 
 export const getCacheKey = (prefix: string, address: string): string => {
   return `${DomainProfileKeys.Messaging}-${prefix}-${address}`;
@@ -17,6 +22,17 @@ export const getCachedResolution = (
     return JSON.parse(cachedResolution);
   }
   return;
+};
+
+export const getLocalKey = <T>(key: string) => {
+  const cachedDataStr = localStorage.getItem(
+    getCacheKey(DomainProfileKeys.GenericKeyValue, ''),
+  );
+  if (!cachedDataStr) {
+    return;
+  }
+  const cachedData: Record<string, T> = decompress(JSON.parse(cachedDataStr));
+  return cachedData[key];
 };
 
 export const getPushLocalKey = (address: string): string => {
@@ -44,6 +60,27 @@ export const setCachedResolution = (resolution: AddressResolution): void => {
     getCacheKey(DomainProfileKeys.Resolution, resolution.address.toLowerCase()),
     JSON.stringify(resolution),
   );
+};
+
+export const setLocalKey = <T>(key: string, msg: T) => {
+  if (!key) {
+    return;
+  }
+  const cachedDataStr = localStorage.getItem(
+    getCacheKey(DomainProfileKeys.GenericKeyValue, ''),
+  );
+  const cachedData: Record<string, T> = cachedDataStr
+    ? decompress(JSON.parse(cachedDataStr))
+    : {};
+  cachedData[key] = msg;
+  try {
+    localStorage.setItem(
+      getCacheKey(DomainProfileKeys.GenericKeyValue, ''),
+      JSON.stringify(compress(cachedData)),
+    );
+  } catch (e) {
+    localStorage.removeItem(getCacheKey(DomainProfileKeys.GenericKeyValue, ''));
+  }
 };
 
 export const setPushLocalKey = (address: string, key: string) => {

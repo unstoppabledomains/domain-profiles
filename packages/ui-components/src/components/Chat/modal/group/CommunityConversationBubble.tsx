@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import DownloadIcon from '@mui/icons-material/Download';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -14,7 +15,11 @@ import Zoom from 'react-medium-image-zoom';
 import {useFeatureFlags} from '../../../../actions/featureFlagActions';
 import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
-import {MessageType, PUSH_DECRYPT_ERROR_MESSAGE} from '../../protocol/push';
+import {
+  MessageType,
+  PUSH_DECRYPT_ERROR_MESSAGE,
+  decryptMessage,
+} from '../../protocol/push';
 import {getAddressMetadata} from '../../protocol/resolution';
 import {formatFileSize} from '../../protocol/xmtp';
 import LinkWarningModal from '../LinkWarningModal';
@@ -22,11 +27,19 @@ import {useConversationBubbleStyles} from '../styles';
 
 export const CommunityConversationBubble: React.FC<
   CommunityConversationBubbleProps
-> = ({address, hideAvatar, message, onBlockTopic, renderCallback}) => {
+> = ({
+  address,
+  hideAvatar,
+  message: encryptedMessage,
+  pushKey,
+  onBlockTopic,
+  renderCallback,
+}) => {
   const [t] = useTranslationContext();
   const {data: featureFlags} = useFeatureFlags();
   const messageRef = useRef<HTMLElement>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isDecrypting, setIsDecrypting] = useState(true);
+  const [isMediaLoading, setIsMediaLoading] = useState(false);
   const [peerAvatarLink, setPeerAvatarLink] = useState<string>();
   const [peerDisplayName, setPeerDisplayName] = useState<string>();
   const [isAttachment, setIsAttachment] = useState(false);
@@ -38,8 +51,7 @@ export const CommunityConversationBubble: React.FC<
     void renderContent();
   }, []);
 
-  const renderPeerAvatar = async () => {
-    const peerAddress = message.fromCAIP10.replace('eip155:', '');
+  const renderPeerAvatar = async (peerAddress: string) => {
     if (peerAddress.toLowerCase().includes(address.toLowerCase())) {
       return;
     }
@@ -50,6 +62,12 @@ export const CommunityConversationBubble: React.FC<
 
   const renderContent = async () => {
     try {
+      // decrypt the message if needed
+      const message = await decryptMessage(address, pushKey, encryptedMessage);
+      if (!message) {
+        return;
+      }
+
       // build message object if required from deprecated client
       if (!message.messageObj) {
         message.messageObj = {
@@ -76,7 +94,11 @@ export const CommunityConversationBubble: React.FC<
 
       // load the peer avatar
       if (!hideAvatar) {
-        await renderPeerAvatar();
+        await renderPeerAvatar(
+          MessageType.Meta && (message.messageObj as any)?.info?.affected
+            ? (message.messageObj as any).info.affected[0]
+            : message.fromCAIP10.replace('eip155:', ''),
+        );
       }
 
       // decorator for links
@@ -99,12 +121,24 @@ export const CommunityConversationBubble: React.FC<
             </Linkify>
           </Box>,
         );
-        // handling for remote attachments
+      } else if (message.messageType === MessageType.Meta) {
+        // handling of meta message
+        const metaData = message.messageObj as any;
+        setRenderedContent(
+          <Typography variant="caption">
+            {metaData.content === 'REMOVE_MEMBER'
+              ? t('common.left')
+              : t('common.joined')}
+            {message.timestamp &&
+              ` @ ${new Date(message.timestamp).toLocaleTimeString()}`}
+          </Typography>,
+        );
       } else if (
+        // handling for remote attachments
         message.messageType === MessageType.Media &&
         featureFlags.variations?.ecommerceServiceUsersEnableChatCommunityMedia
       ) {
-        setIsLoading(true);
+        setIsMediaLoading(true);
 
         // fetch the remote media
         const mediaUrl =
@@ -161,7 +195,7 @@ export const CommunityConversationBubble: React.FC<
           // set the attachment styling
           setIsAttachment(true);
         }
-        setIsLoading(false);
+        setIsMediaLoading(false);
       } else {
         setRenderedContent(
           <Typography
@@ -179,100 +213,151 @@ export const CommunityConversationBubble: React.FC<
       }
     } catch (e) {
       notifyError(e, {msg: 'error loading message'});
+    } finally {
+      setIsDecrypting(false);
     }
   };
 
   return renderedContent ? (
-    <Box
-      ref={messageRef}
-      className={cx(
-        message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
-          ? classes.rightRow
-          : classes.leftRow,
-        message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
-          ? classes.rightMargin
-          : classes.leftMargin,
-      )}
-    >
+    encryptedMessage.messageType === MessageType.Meta ? (
+      <Box ref={messageRef} className={classes.metadata}>
+        <Typography mr={0.5} variant="caption">
+          -- {peerDisplayName}
+        </Typography>
+        {renderedContent}
+        <Typography ml={0.5} variant="caption">
+          --
+        </Typography>
+      </Box>
+    ) : (
       <Box
-        className={
-          message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
-            ? undefined
-            : classes.avatarContainer
-        }
-      >
-        {peerAvatarLink && peerDisplayName && (
-          <Tooltip title={peerDisplayName}>
-            <Avatar src={peerAvatarLink} className={classes.avatar} />
-          </Tooltip>
+        ref={messageRef}
+        className={cx(
+          encryptedMessage.fromCAIP10
+            .toLowerCase()
+            .includes(address.toLowerCase())
+            ? classes.rightRow
+            : classes.leftRow,
+          encryptedMessage.fromCAIP10
+            .toLowerCase()
+            .includes(address.toLowerCase())
+            ? classes.rightMargin
+            : classes.leftMargin,
         )}
+      >
         <Box
-          className={cx(
-            message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
-              ? classes.rightRow
-              : classes.leftRow,
-          )}
+          className={
+            encryptedMessage.fromCAIP10
+              .toLowerCase()
+              .includes(address.toLowerCase())
+              ? undefined
+              : classes.avatarContainer
+          }
         >
-          <Box className={cx(classes.msgContainer)}>
-            {peerDisplayName && (
-              <Typography variant="caption" className={classes.chatDisplayName}>
-                {peerDisplayName}
-              </Typography>
+          {peerAvatarLink && peerDisplayName && (
+            <Tooltip title={peerDisplayName}>
+              <Avatar src={peerAvatarLink} className={classes.avatar} />
+            </Tooltip>
+          )}
+          <Box
+            className={cx(
+              encryptedMessage.fromCAIP10
+                .toLowerCase()
+                .includes(address.toLowerCase())
+                ? classes.rightRow
+                : classes.leftRow,
             )}
-            <Typography
-              variant="body2"
-              className={cx(
-                classes.msg,
-                message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
-                  ? classes.right
-                  : classes.left,
-                message.fromCAIP10.toLowerCase().includes(address.toLowerCase())
-                  ? classes.rightFirst
-                  : classes.leftFirst,
-              )}
-            >
-              {isLoading ? (
-                <Box
-                  className={
-                    message.fromCAIP10
-                      .toLowerCase()
-                      .includes(address.toLowerCase())
-                      ? classes.loadingContainerRight
-                      : classes.loadingContainerLeft
-                  }
+          >
+            <Box className={cx(classes.msgContainer)}>
+              {peerDisplayName && (
+                <Typography
+                  variant="caption"
+                  className={classes.chatDisplayName}
                 >
-                  <CircularProgress className={classes.loadingIcon} />
-                  <Typography variant="caption">
-                    {t('push.loadingAttachment')}
-                  </Typography>
-                </Box>
-              ) : (
-                renderedContent
+                  {peerDisplayName}
+                </Typography>
               )}
-            </Typography>
-            {message.timestamp && (
-              <Typography variant="caption" className={classes.chatTimestamp}>
-                {new Date(message.timestamp).toLocaleTimeString()}
+              <Typography
+                variant="body2"
+                className={cx(
+                  classes.msg,
+                  encryptedMessage.fromCAIP10
+                    .toLowerCase()
+                    .includes(address.toLowerCase())
+                    ? classes.right
+                    : classes.left,
+                  encryptedMessage.fromCAIP10
+                    .toLowerCase()
+                    .includes(address.toLowerCase())
+                    ? classes.rightFirst
+                    : classes.leftFirst,
+                )}
+              >
+                {isMediaLoading ? (
+                  <Box
+                    className={
+                      encryptedMessage.fromCAIP10
+                        .toLowerCase()
+                        .includes(address.toLowerCase())
+                        ? classes.loadingContainerRight
+                        : classes.loadingContainerLeft
+                    }
+                  >
+                    <CircularProgress className={classes.loadingIcon} />
+                    <Typography variant="caption">
+                      {t('push.loadingAttachment')}
+                    </Typography>
+                  </Box>
+                ) : (
+                  renderedContent
+                )}
               </Typography>
-            )}
+              {encryptedMessage.timestamp && (
+                <Tooltip
+                  title={new Date(encryptedMessage.timestamp).toLocaleString()}
+                >
+                  <Typography
+                    variant="caption"
+                    className={classes.chatTimestamp}
+                  >
+                    {new Date(encryptedMessage.timestamp).toLocaleTimeString()}
+                  </Typography>
+                </Tooltip>
+              )}
+            </Box>
           </Box>
         </Box>
+        {clickedUrl && (
+          <LinkWarningModal
+            url={clickedUrl}
+            onBlockTopic={onBlockTopic}
+            onClose={() => setClickedUrl(undefined)}
+          />
+        )}
       </Box>
-      {clickedUrl && (
-        <LinkWarningModal
-          url={clickedUrl}
-          onBlockTopic={onBlockTopic}
-          onClose={() => setClickedUrl(undefined)}
-        />
-      )}
+    )
+  ) : (
+    <Box ref={messageRef} className={classes.metadata}>
+      <Typography variant="caption">
+        <Box className={classes.metadata}>
+          --
+          {isDecrypting ? (
+            <CircularProgress size={10} className={classes.encryptStateIcon} />
+          ) : (
+            <LockOutlinedIcon className={classes.encryptStateIcon} />
+          )}
+          {isDecrypting ? t('push.decrypting') : t('push.encrypted')} --
+        </Box>
+      </Typography>
     </Box>
-  ) : null;
+  );
 };
 
 export type CommunityConversationBubbleProps = {
   address: string;
   hideAvatar?: string;
   message: IMessageIPFS;
+  pushKey: string;
   onBlockTopic: () => void;
   renderCallback?: (ref: React.RefObject<HTMLElement>) => void;
 };

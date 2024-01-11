@@ -28,7 +28,7 @@ import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../../lib/types/badge';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
-import {PUSH_PAGE_SIZE, decryptMessage, getMessages} from '../../protocol/push';
+import {PUSH_PAGE_SIZE, getMessages} from '../../protocol/push';
 import CallToAction from '../CallToAction';
 import {useConversationStyles} from '../styles';
 import CommunityCompose from './CommunityCompose';
@@ -55,7 +55,7 @@ export const Community: React.FC<CommunityProps> = ({
   const {classes} = useConversationStyles({isChatRequest: false});
   const [t] = useTranslationContext();
   const [isLoading, setIsLoading] = useState(true);
-  const [isRenderedMessage, setIsRenderedMessage] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [pushMessages, setPushMessages] = useState<IMessageIPFS[]>([]);
@@ -74,14 +74,7 @@ export const Community: React.FC<CommunityProps> = ({
     }
     const processMessage = async () => {
       if (incomingMessage.toDID === badge.groupChatId) {
-        const decryptedMsg = await decryptMessage(
-          address,
-          pushKey,
-          incomingMessage,
-        );
-        if (decryptedMsg) {
-          setPushMessages([decryptedMsg, ...pushMessages]);
-        }
+        setPushMessages([incomingMessage, ...pushMessages]);
       }
     };
     void processMessage();
@@ -155,12 +148,7 @@ export const Community: React.FC<CommunityProps> = ({
     }
   };
 
-  const handleOnRender = (ref: React.RefObject<HTMLElement>) => {
-    setIsRenderedMessage(true);
-  };
-
   const handleOnRenderAndScroll = (ref: React.RefObject<HTMLElement>) => {
-    handleOnRender(ref);
     ref.current?.scrollIntoView({
       behavior: 'auto',
     });
@@ -178,6 +166,7 @@ export const Community: React.FC<CommunityProps> = ({
     if (!badge.groupChatId) {
       return;
     }
+    setIsLeaving(true);
     await joinBadgeGroupChat(badge.code, address, pushKey, true);
   };
 
@@ -209,13 +198,14 @@ export const Community: React.FC<CommunityProps> = ({
       <CommunityConversationBubble
         address={address}
         message={message}
+        pushKey={pushKey}
         key={message.timestamp}
         onBlockTopic={() => handleBlockSender(message.fromCAIP10)}
         renderCallback={
           pushMessages.length > 0 &&
           message.timestamp! >= pushMessages[0].timestamp!
             ? handleOnRenderAndScroll
-            : handleOnRender
+            : undefined
         }
       />
     ));
@@ -240,14 +230,14 @@ export const Community: React.FC<CommunityProps> = ({
         action={
           <Box className={classes.headerActionContainer}>
             {authDomain && (
-              <Tooltip title={t('profile.moreInformation')}>
+              <Tooltip title={t('push.moreGroupInfo')}>
                 <InfoOutlinedIcon
                   className={classes.headerCloseIcon}
                   onClick={handleMoreInfo}
                 />
               </Tooltip>
             )}
-            <Tooltip title={t('common.more')}>
+            <Tooltip title={t('common.options')}>
               <IconButton
                 onClick={handleOpenMenu}
                 className={classes.headerCloseIcon}
@@ -270,7 +260,11 @@ export const Community: React.FC<CommunityProps> = ({
                 }}
               >
                 <ListItemIcon>
-                  <LogoutIcon fontSize="small" />
+                  {isLeaving ? (
+                    <CircularProgress size={16} color="inherit" />
+                  ) : (
+                    <LogoutIcon fontSize="small" />
+                  )}
                 </ListItemIcon>
                 <Typography variant="body2">{t('push.leave')}</Typography>
               </MenuItem>
@@ -291,13 +285,13 @@ export const Community: React.FC<CommunityProps> = ({
       />
       <CardContent>
         <Box className={classes.conversationContainer} id="scrollable-div">
-          {isLoading ? (
-            <Box className={classes.loadingContainer}>
-              <CircularProgress className={classes.loadingSpinner} />
-              <Typography className={classes.loadingText}>
-                {t('push.loadingConversation')}
-              </Typography>
-            </Box>
+          {pushMessages.length === 0 ? (
+            <CallToAction
+              icon="ForumOutlinedIcon"
+              title={t('push.joinedGroupChat')}
+              subTitle={t('push.joinedGroupChatDescription')}
+              loading={isLoading}
+            />
           ) : badge.groupChatId ? (
             <InfiniteScroll
               inverse={true}
@@ -318,13 +312,6 @@ export const Community: React.FC<CommunityProps> = ({
             </InfiniteScroll>
           ) : (
             <CallToAction icon="CloudOffIcon" title={t('push.chatNotReady')} />
-          )}
-          {!isLoading && !isRenderedMessage && (
-            <CallToAction
-              icon="ForumOutlinedIcon"
-              title={t('push.joinedGroupChat')}
-              subTitle={t('push.joinedGroupChatDescription')}
-            />
           )}
         </Box>
       </CardContent>

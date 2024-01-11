@@ -8,12 +8,14 @@ import {Web3Storage} from 'web3.storage';
 import config from '@unstoppabledomains/config';
 
 import {notifyError} from '../../../lib/error';
+import {getLocalKey, setLocalKey} from '../storage';
 import {Upload} from './upload';
 import {formatFileSize} from './xmtp';
 
 export enum MessageType {
   Text = 'Text',
   Media = 'MediaEmbed',
+  Meta = 'Meta',
 }
 
 export const PUSH_DECRYPT_ERROR_MESSAGE = 'Unable to Decrypt Message';
@@ -53,6 +55,12 @@ export const decryptMessage = async (
   pushKey: string,
   msg: IMessageIPFS,
 ): Promise<IMessageIPFS | undefined> => {
+  if (msg.link) {
+    const cachedMsg = getLocalKey<IMessageIPFS>(msg.link);
+    if (cachedMsg) {
+      return cachedMsg;
+    }
+  }
   try {
     const connectedUser = await getPushUser(address);
     if (!connectedUser) {
@@ -64,7 +72,8 @@ export const decryptMessage = async (
       messages: [msg],
       connectedUser,
     });
-    if (decryptedMessage.length > 0) {
+    if (msg.link && decryptedMessage.length > 0) {
+      setLocalKey<IMessageIPFS>(msg.link, decryptedMessage[0]);
       return decryptedMessage[0];
     }
   } catch (e) {
@@ -109,13 +118,15 @@ export const getLatestMessage = async (
     }
 
     // retrieve the group chat
-    return await PushAPI.chat.latest({
+    const encryptedMsg = await PushAPI.chat.latest({
       account: getAddressAccount(address),
       env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
       threadhash,
       pgpPrivateKey: pushKey,
-      toDecrypt: true,
     });
+    if (encryptedMsg && encryptedMsg.length > 0) {
+      return await decryptMessage(address, pushKey, encryptedMsg[0]);
+    }
   } catch (e) {
     notifyError(e, {msg: 'error retrieving latest message'});
   }
@@ -145,7 +156,6 @@ export const getMessages = async (
       env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
       threadhash,
       pgpPrivateKey: pushKey,
-      toDecrypt: true,
       limit: PUSH_PAGE_SIZE,
     });
   } catch (e) {
@@ -158,11 +168,22 @@ export const getMessages = async (
 export const getPushUser = async (
   address: string,
 ): Promise<PushAPI.IUser | undefined> => {
+  // attempt to retrieve user from cache
+  const cachedUser = getLocalKey<PushAPI.IUser>(address);
+  if (cachedUser) {
+    return cachedUser;
+  }
+
   try {
-    return await PushAPI.user.get({
+    // retrieve the push user
+    const pushUser = await PushAPI.user.get({
       account: getAddressAccount(address),
       env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
     });
+    if (pushUser) {
+      setLocalKey(address, pushUser);
+      return pushUser;
+    }
   } catch (e) {
     notifyError(e, {msg: 'error getting push user'});
   }

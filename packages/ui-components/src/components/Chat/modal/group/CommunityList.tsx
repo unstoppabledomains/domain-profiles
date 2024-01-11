@@ -64,6 +64,7 @@ export const CommunityList: React.FC<CommunityListProps> = ({
   const [inGroupMap, setInGroupMap] = useState<Record<string, boolean>>({});
   const [isUdBlue, setIsUdBlue] = useState<boolean>(false);
   const [loadingText, setLoadingText] = useState<string>();
+  const [isSorted, setIsSorted] = useState(false);
 
   useEffect(() => {
     // only load once when domain is first defined
@@ -72,6 +73,19 @@ export const CommunityList: React.FC<CommunityListProps> = ({
     }
     void loadBadges();
   }, [domain]);
+
+  useEffect(() => {
+    if (!badges) {
+      return;
+    }
+    const activeGroupCount = badges.filter(b => inGroup(b.groupChatId)).length;
+    const renderedGroupCount = badges.filter(
+      b => b.groupChatLatestMessage,
+    ).length;
+    setIsSorted(
+      activeGroupCount === 0 || activeGroupCount === renderedGroupCount,
+    );
+  }, [badges]);
 
   const loadBadges = async () => {
     // query user badges
@@ -114,7 +128,7 @@ export const CommunityList: React.FC<CommunityListProps> = ({
     setLoadingText(undefined);
   };
 
-  const reloadBadges = async () => {
+  const refreshBadges = async () => {
     if (!badges) {
       return;
     }
@@ -164,9 +178,10 @@ export const CommunityList: React.FC<CommunityListProps> = ({
               isUdBlue={isUdBlue}
               pushKey={pushKey}
               onReload={loadBadges}
-              onRefresh={reloadBadges}
+              onRefresh={refreshBadges}
               searchTerm={searchTerm}
               setActiveCommunity={setActiveCommunity}
+              visible={!inGroup(badge.groupChatId) || isSorted}
             />
           </Box>
         ))}

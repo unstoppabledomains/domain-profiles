@@ -2,6 +2,7 @@
 import DownloadIcon from '@mui/icons-material/Download';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import {ContentTypeRemoteAttachment} from '@xmtp/content-type-remote-attachment';
 import type {DecodedMessage} from '@xmtp/xmtp-js';
@@ -177,9 +178,11 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
               renderedContent
             )}
           </Typography>
-          <Typography variant="caption" className={classes.chatTimestamp}>
-            {message.sent.toLocaleTimeString()}
-          </Typography>
+          <Tooltip title={message.sent.toLocaleString()}>
+            <Typography variant="caption" className={classes.chatTimestamp}>
+              {message.sent.toLocaleTimeString()}
+            </Typography>
+          </Tooltip>
         </Box>
       </Box>
       {clickedUrl && (

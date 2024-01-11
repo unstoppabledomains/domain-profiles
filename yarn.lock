@@ -4809,6 +4809,7 @@ __metadata:
     bluebird: ^3.7.2
     bs58: ^5.0.0
     clipboard-copy: ^4.0.1
+    compress-json: ^3.0.0
     date-fns: ^2.16.1
     eslint-plugin-i18n-json: ^3.1.0
     filesize: ^10.0.8
@@ -7582,6 +7583,13 @@ __metadata:
   version: 1.8.2
   resolution: "common-tags@npm:1.8.2"
   checksum: 767a6255a84bbc47df49a60ab583053bb29a7d9687066a18500a516188a062c4e4cd52de341f22de0b07062e699b1b8fe3cfa1cb55b241cb9301aeb4f45b4dff
+  languageName: node
+  linkType: hard
+
+"compress-json@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "compress-json@npm:3.0.0"
+  checksum: c6b524007cad0c1e6641cd201d5a53946bc3abc33be7c2cce55311f52250e5c598cff64c6a0aada6294eb13bce17778be4cca3f9329a318636a530afeb96d618
   languageName: node
   linkType: hard
 

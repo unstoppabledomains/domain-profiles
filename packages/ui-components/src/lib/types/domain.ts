@@ -80,6 +80,7 @@ export enum DomainProfileKeys {
   Messaging = 'web3-messaging',
   Signature = 'domain-sig',
   Resolution = 'reverse-resolution',
+  GenericKeyValue = 'kv',
 }
 
 export enum DomainProfileSocialMedia {

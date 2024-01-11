@@ -60,6 +60,7 @@
     "bluebird": "^3.7.2",
     "bs58": "^5.0.0",
     "clipboard-copy": "^4.0.1",
+    "compress-json": "^3.0.0",
     "date-fns": "^2.16.1",
     "filesize": "^10.0.8",
     "font-awesome": "^4.7.0",

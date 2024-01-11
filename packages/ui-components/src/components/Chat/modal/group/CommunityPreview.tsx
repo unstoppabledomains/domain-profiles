@@ -130,6 +130,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
   onRefresh,
   searchTerm,
   setActiveCommunity,
+  visible,
 }) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
@@ -162,41 +163,48 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
         return;
       }
 
-      // retrieve latest state since it is missing
-      const msgData = await getLatestMessage(
-        badge.groupChatId,
-        address,
-        pushKey,
-      );
-      if (msgData && msgData.length > 0 && msgData[0].timestamp) {
-        const msgBody = renderMessagePreview(msgData[0]);
-        const fromUser = fromCaip10Address(msgData[0].fromCAIP10);
-        if (fromUser && msgBody) {
-          const fromDomain =
-            fromUser.toLowerCase() === address.toLowerCase()
-              ? t('common.you')
-              : (await getReverseResolution(fromUser)) || fromUser;
-          setLatestTimestamp(moment(msgData[0].timestamp).fromNow());
-          setLatestMessage(
-            msgData[0].messageType === MessageType.Meta
-              ? msgBody
-              : `${fromDomain}: ${msgBody}`,
-          );
+      try {
+        // retrieve latest state since it is missing
+        const msgData = await getLatestMessage(
+          badge.groupChatId,
+          address,
+          pushKey,
+        );
+        if (msgData?.timestamp) {
+          const msgBody = renderMessagePreview(msgData);
+          const fromUser = fromCaip10Address(msgData.fromCAIP10);
+          if (fromUser && msgBody) {
+            const fromDomain =
+              fromUser.toLowerCase() === address.toLowerCase()
+                ? t('common.you')
+                : (await getReverseResolution(fromUser)) || fromUser;
+            setLatestTimestamp(moment(msgData.timestamp).fromNow());
+            setLatestMessage(
+              msgData.messageType === MessageType.Meta
+                ? msgBody
+                : `${fromDomain}: ${msgBody}`,
+            );
 
-          // set group chat state
-          badge.groupChatTimestamp = msgData[0].timestamp;
-          badge.groupChatLatestMessage =
-            msgData[0].messageType === MessageType.Meta
-              ? msgBody
-              : `${fromDomain}: ${msgBody}`;
-          await onRefresh();
-          return;
+            // set group chat state
+            badge.groupChatTimestamp = msgData.timestamp;
+            badge.groupChatLatestMessage =
+              msgData.messageType === MessageType.Meta
+                ? msgBody
+                : `${fromDomain}: ${msgBody}`;
+            return;
+          }
         }
-      }
 
-      // latest message not available
-      setLatestMessage(t('push.noGroupMessages'));
-      badge.groupChatLatestMessage = t('push.noGroupMessages');
+        // latest message not available
+        setLatestMessage(t('push.noGroupMessages'));
+        badge.groupChatLatestMessage = t('push.noGroupMessages');
+      } catch (e) {
+        notifyError(e, {msg: 'error retrieving latest message'});
+      } finally {
+        // always callback after group lookup complete, regardless of the
+        // success result. Tells the caller that rendering is complete.
+        await onRefresh();
+      }
     }
   };
 
@@ -310,122 +318,148 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
   };
 
   return isSearchTermMatch() ? (
-    <>
-      <Card
-        className={cx(classes.communityContainer, {
-          [classes.hideBorder]: inGroup,
-          [classes.communityGradient]: !inGroup,
-        })}
-      >
-        <CardHeader
-          title={
-            <Box className={classes.clickable} onClick={handleChatClicked}>
-              <Typography
-                className={classes.communityTitle}
-                variant="subtitle2"
-              >
-                {badge.name}
-              </Typography>
-              {inGroup && latestMessage ? (
-                <Typography variant="caption" className={classes.latestMessage}>
-                  {latestMessage}
+    visible ? (
+      <>
+        <Card
+          className={cx(classes.communityContainer, {
+            [classes.hideBorder]: inGroup,
+            [classes.communityGradient]: !inGroup,
+          })}
+        >
+          <CardHeader
+            title={
+              <Box className={classes.clickable} onClick={handleChatClicked}>
+                <Typography
+                  className={classes.communityTitle}
+                  variant="subtitle2"
+                >
+                  {badge.name}
                 </Typography>
-              ) : !inGroup && badgeInfo ? (
-                <Typography variant="caption">
-                  {numeral(badgeInfo.usage.holders).format('0a')}{' '}
-                  {t('badges.holder')}
-                </Typography>
-              ) : (
-                <Skeleton variant="text" sx={{maxWidth: '75px'}} />
-              )}
-            </Box>
-          }
-          avatar={
-            inGroup ? (
-              <Badge
-                anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
-                overlap="circular"
-                badgeContent={
-                  <CheckCircleIcon
-                    fontSize="small"
-                    className={classes.joinedBadgeIcon}
+                {inGroup && latestMessage ? (
+                  <Typography
+                    variant="caption"
+                    className={classes.latestMessage}
+                  >
+                    {latestMessage}
+                  </Typography>
+                ) : !inGroup && badgeInfo ? (
+                  <Typography variant="caption">
+                    {numeral(badgeInfo.usage.holders).format('0a')}{' '}
+                    {t('badges.holder')}
+                  </Typography>
+                ) : (
+                  <Skeleton variant="text" sx={{maxWidth: '75px'}} />
+                )}
+              </Box>
+            }
+            avatar={
+              inGroup ? (
+                <Badge
+                  anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+                  overlap="circular"
+                  badgeContent={
+                    <CheckCircleIcon
+                      fontSize="small"
+                      className={classes.joinedBadgeIcon}
+                    />
+                  }
+                >
+                  <Avatar
+                    onClick={handleMoreInfoClicked}
+                    className={classes.communityIcon}
+                    src={badge.logo}
                   />
-                }
-              >
+                </Badge>
+              ) : (
                 <Avatar
                   onClick={handleMoreInfoClicked}
                   className={classes.communityIcon}
                   src={badge.logo}
                 />
-              </Badge>
-            ) : (
-              <Avatar
-                onClick={handleMoreInfoClicked}
-                className={classes.communityIcon}
-                src={badge.logo}
-              />
-            )
-          }
-          action={
-            latestTimestamp && (
-              <Box className={classes.latestTimestamp}>
-                <Typography variant="caption">{latestTimestamp}</Typography>
-              </Box>
-            )
-          }
-        />
-        {!inGroup && (
-          <Box>
-            <CardContent className={classes.contentContainer}>
-              <Typography variant="body2">
-                {badge.description.length > maxDescriptionLength
-                  ? `${badge.description.substring(0, maxDescriptionLength)}...`
-                  : badge.description}
-              </Typography>
-            </CardContent>
-            <CardActions>
-              <Box className={classes.actionContainer}>
-                <LoadingButton
-                  onClick={handleChatClicked}
-                  loading={joining}
-                  size="small"
-                  variant="contained"
-                  className={classes.actionButton}
-                >
-                  {inGroup ? t('push.chat') : t('push.join')}
-                </LoadingButton>
-                {inGroup && (
+              )
+            }
+            action={
+              latestTimestamp && (
+                <Box className={classes.latestTimestamp}>
+                  <Typography variant="caption">{latestTimestamp}</Typography>
+                </Box>
+              )
+            }
+          />
+          {!inGroup && (
+            <Box>
+              <CardContent className={classes.contentContainer}>
+                <Typography variant="body2">
+                  {badge.description.length > maxDescriptionLength
+                    ? `${badge.description.substring(
+                        0,
+                        maxDescriptionLength,
+                      )}...`
+                    : badge.description}
+                </Typography>
+              </CardContent>
+              <CardActions>
+                <Box className={classes.actionContainer}>
                   <LoadingButton
-                    onClick={handleLeaveClicked}
-                    loading={leaving}
+                    onClick={handleChatClicked}
+                    loading={joining}
                     size="small"
-                    variant="text"
+                    variant="contained"
                     className={classes.actionButton}
                   >
-                    {t('push.leave')}
+                    {inGroup ? t('push.chat') : t('push.join')}
                   </LoadingButton>
+                  {inGroup && (
+                    <LoadingButton
+                      onClick={handleLeaveClicked}
+                      loading={leaving}
+                      size="small"
+                      variant="text"
+                      className={classes.actionButton}
+                    >
+                      {t('push.leave')}
+                    </LoadingButton>
+                  )}
+                </Box>
+                {errorMsg && (
+                  <>
+                    <ErrorIcon className={classes.errorIcon} />
+                    <Typography variant="caption" className={classes.errorText}>
+                      {errorMsg}
+                    </Typography>
+                  </>
                 )}
-              </Box>
-              {errorMsg && (
-                <>
-                  <ErrorIcon className={classes.errorIcon} />
-                  <Typography variant="caption" className={classes.errorText}>
-                    {errorMsg}
-                  </Typography>
-                </>
-              )}
-            </CardActions>
-          </Box>
+              </CardActions>
+            </Box>
+          )}
+        </Card>
+        {inGroup && <Divider variant="fullWidth" />}
+        {udBlueModalOpen && (
+          <LearnMoreUdBlue
+            isOpen={udBlueModalOpen}
+            handleClose={() => setUdBlueModalOpen(false)}
+          />
         )}
-      </Card>
-      {inGroup && <Divider variant="fullWidth" />}
-      {udBlueModalOpen && (
-        <LearnMoreUdBlue
-          isOpen={udBlueModalOpen}
-          handleClose={() => setUdBlueModalOpen(false)}
+      </>
+    ) : (
+      <Box
+        display="flex"
+        width="100%"
+        alignItems="center"
+        ml={2}
+        mt={3.5}
+        mb={3}
+      >
+        <Skeleton
+          variant="circular"
+          sx={{width: '50px', height: '50px', marginRight: '10px'}}
         />
-      )}
-    </>
+        <Box display="flex" flexDirection="column">
+          <Skeleton variant="text" sx={{width: '250px'}} />
+          <Skeleton variant="text" sx={{width: '75px'}} />
+        </Box>
+      </Box>
+    )
   ) : null;
 };
 
@@ -436,6 +470,7 @@ export type CommunityPreviewProps = {
   isUdBlue: boolean;
   pushKey: string;
   searchTerm?: string;
+  visible?: boolean;
   onReload: () => Promise<void>;
   onRefresh: () => Promise<void>;
   setActiveCommunity: (v: SerializedCryptoWalletBadge) => void;

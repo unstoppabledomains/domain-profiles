@@ -56,6 +56,7 @@ export const Community: React.FC<CommunityProps> = ({
   const [t] = useTranslationContext();
   const [isLoading, setIsLoading] = useState(true);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [isViewableMessage, setIsViewableMessage] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [pushMessages, setPushMessages] = useState<IMessageIPFS[]>([]);
@@ -148,7 +149,12 @@ export const Community: React.FC<CommunityProps> = ({
     }
   };
 
+  const handleOnRender = (ref: React.RefObject<HTMLElement>) => {
+    setIsViewableMessage(true);
+  };
+
   const handleOnRenderAndScroll = (ref: React.RefObject<HTMLElement>) => {
+    handleOnRender(ref);
     ref.current?.scrollIntoView({
       behavior: 'auto',
     });
@@ -191,8 +197,9 @@ export const Community: React.FC<CommunityProps> = ({
   const renderedPushMessages = pushMessages
     .filter(
       (message, index) =>
+        message.messageType &&
         pushMessages.findIndex(item => item.timestamp === message.timestamp) ===
-        index,
+          index,
     )
     .map(message => (
       <CommunityConversationBubble
@@ -202,10 +209,9 @@ export const Community: React.FC<CommunityProps> = ({
         key={message.timestamp}
         onBlockTopic={() => handleBlockSender(message.fromCAIP10)}
         renderCallback={
-          pushMessages.length > 0 &&
           message.timestamp! >= pushMessages[0].timestamp!
             ? handleOnRenderAndScroll
-            : undefined
+            : handleOnRender
         }
       />
     ));
@@ -285,17 +291,21 @@ export const Community: React.FC<CommunityProps> = ({
       />
       <CardContent>
         <Box className={classes.conversationContainer} id="scrollable-div">
-          {pushMessages.length === 0 ? (
+          {!isViewableMessage && (
             <CallToAction
               icon="ForumOutlinedIcon"
               title={t('push.joinedGroupChat')}
               subTitle={t('push.joinedGroupChatDescription')}
               loading={isLoading}
             />
-          ) : badge.groupChatId ? (
+          )}
+          {badge.groupChatId ? (
             <InfiniteScroll
               inverse={true}
-              style={{display: 'flex', flexDirection: 'column-reverse'}}
+              style={{
+                display: isViewableMessage ? 'flex' : 'none',
+                flexDirection: 'column-reverse',
+              }}
               className={classes.infiniteScroll}
               scrollableTarget="scrollable-div"
               hasMore={hasMoreMessages}

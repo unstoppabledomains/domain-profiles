@@ -1,3 +1,5 @@
+import * as Web3Signer from '@ucanto/principal/ed25519';
+import * as Web3UpClient from '@web3-storage/w3up-client';
 import type {
   Attachment,
   RemoteAttachment,
@@ -25,16 +27,17 @@ import Bluebird from 'bluebird';
 import type {Signer} from 'ethers';
 import {sha256} from 'ethers/lib/utils';
 import {filesize} from 'filesize';
-import {Web3Storage} from 'web3.storage';
 
 import config from '@unstoppabledomains/config';
 
 import {getUnstoppableConsents} from '../../../actions';
 import type {ConsentPreferences} from '../../../lib';
 import {notifyError} from '../../../lib/error';
+import {sleep} from '../../../lib/sleep';
 import {getXmtpLocalKey, setXmtpLocalKey} from '../storage';
 import {registerClientTopics} from './registration';
-import {Upload} from './upload';
+import type {W3UpKey} from './types';
+import {Upload, parseW3UpProof} from './upload';
 
 export interface ConversationMeta {
   conversation: Conversation;
@@ -277,7 +280,7 @@ export const loadConversationPreview = async (
 export const sendRemoteAttachment = async (
   conversation: Conversation,
   file: File,
-  apiKey: string,
+  token: string,
 ): Promise<DecodedMessage> => {
   // check max file size in bytes
   if (file.size > config.XMTP.MAX_ATTACHMENT_BYTES) {
@@ -301,16 +304,29 @@ export const sendRemoteAttachment = async (
     new AttachmentCodec(),
   );
 
-  // upload the attachment somewhere and get a URL
-  const web3Storage = new Web3Storage({
-    token: apiKey,
-  });
+  // parse and verify the w3-up token format
+  const w3upToken: W3UpKey = JSON.parse(token);
+  if (!w3upToken.key || !w3upToken.proof) {
+    throw new Error('invalid w3-up token');
+  }
+
+  // prepare to upload the file using w3-up service
+  const principal = Web3Signer.parse(w3upToken.key);
+  const client = await Web3UpClient.create({principal});
+  const proof = await parseW3UpProof(w3upToken.proof);
+  const space = await client.addSpace(proof);
+  await client.setCurrentSpace(space.did());
+
+  // encrypt the uploaded file
   const upload = new Upload(
     'XMTPEncryptedContent',
     encryptedAttachment.payload,
   );
-  const cid = await web3Storage.put([upload]);
-  const url = `https://${cid}.ipfs.w3s.link/XMTPEncryptedContent`;
+
+  // upload the file and retrieve the UUID
+  const cid = await client.uploadFile(upload);
+  const cidToString = cid.toString();
+  const url = `https://w3s.link/ipfs/${cidToString}`;
 
   // create the remote attachment
   const remoteAttachment: RemoteAttachment = {
@@ -341,9 +357,17 @@ export const sendRemoteAttachment = async (
   };
 
   // send the attachment to the conversation
-  return await conversation.send(remoteAttachment, {
+  const sentMessage = await conversation.send(remoteAttachment, {
     contentType: ContentTypeRemoteAttachment,
   });
+
+  // wait a moment, as there seems to be a bug on the w3s IPFS gateway that results
+  // in the wrong URL format (https://<cid>.ipfs.dweb.link/) to be requested if the
+  // expected URL is retrieved too quickly after upload. The provided URL format is
+  // correct (https://w3s.link/ipfs/<cid>), but results in a redirect on the client
+  // side if used immediately in the client UX and causes a broken image link.
+  await sleep(3000);
+  return sentMessage;
 };
 
 export const signMessage = async (

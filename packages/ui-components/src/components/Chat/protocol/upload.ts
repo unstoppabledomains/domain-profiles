@@ -1,3 +1,5 @@
+import {CarReader} from '@ipld/car';
+import * as Delegation from '@ucanto/core/delegation';
 import type {Filelike} from 'web3.storage';
 
 export class Upload implements Filelike {
@@ -19,4 +21,15 @@ export class Upload implements Filelike {
       },
     });
   }
+}
+
+export async function parseW3UpProof(data: string) {
+  const blocks = [];
+  const reader = await CarReader.fromBytes(Buffer.from(data, 'base64'));
+  for await (const block of reader.blocks()) {
+    blocks.push(block);
+  }
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  return Delegation.importDAG(blocks);
 }

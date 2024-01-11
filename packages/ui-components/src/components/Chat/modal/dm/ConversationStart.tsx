@@ -1,7 +1,7 @@
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
-import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -145,10 +145,7 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
         title={t('push.newMessage')}
         action={
           <Box className={classes.headerActionContainer}>
-            <KeyboardDoubleArrowDownIcon
-              className={classes.headerCloseIcon}
-              onClick={onClose}
-            />
+            <CloseIcon className={classes.headerCloseIcon} onClick={onClose} />
           </Box>
         }
       />

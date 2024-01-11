@@ -55,7 +55,7 @@ export const Community: React.FC<CommunityProps> = ({
   const {classes} = useConversationStyles({isChatRequest: false});
   const [t] = useTranslationContext();
   const [isLoading, setIsLoading] = useState(true);
-  const [isRenderedMessage, setIsRenderedMessage] = useState<boolean>();
+  const [isLeaving, setIsLeaving] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [pushMessages, setPushMessages] = useState<IMessageIPFS[]>([]);
@@ -148,12 +148,7 @@ export const Community: React.FC<CommunityProps> = ({
     }
   };
 
-  const handleOnRender = (ref: React.RefObject<HTMLElement>) => {
-    setIsRenderedMessage(true);
-  };
-
   const handleOnRenderAndScroll = (ref: React.RefObject<HTMLElement>) => {
-    handleOnRender(ref);
     ref.current?.scrollIntoView({
       behavior: 'auto',
     });
@@ -171,6 +166,7 @@ export const Community: React.FC<CommunityProps> = ({
     if (!badge.groupChatId) {
       return;
     }
+    setIsLeaving(true);
     await joinBadgeGroupChat(badge.code, address, pushKey, true);
   };
 
@@ -209,7 +205,7 @@ export const Community: React.FC<CommunityProps> = ({
           pushMessages.length > 0 &&
           message.timestamp! >= pushMessages[0].timestamp!
             ? handleOnRenderAndScroll
-            : handleOnRender
+            : undefined
         }
       />
     ));
@@ -264,7 +260,11 @@ export const Community: React.FC<CommunityProps> = ({
                 }}
               >
                 <ListItemIcon>
-                  <LogoutIcon fontSize="small" />
+                  {isLeaving ? (
+                    <CircularProgress size={16} color="inherit" />
+                  ) : (
+                    <LogoutIcon fontSize="small" />
+                  )}
                 </ListItemIcon>
                 <Typography variant="body2">{t('push.leave')}</Typography>
               </MenuItem>

@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import AddCommentOutlinedIcon from '@mui/icons-material/AddCommentOutlined';
+import CloseIcon from '@mui/icons-material/Close';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
-import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
@@ -604,6 +603,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   };
 
   const handleNewChat = () => {
+    setTabValue(TabType.Chat);
     setSearchValue(SearchPlaceholder);
     setConversationSearch(true);
   };
@@ -840,15 +840,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                     onClick={handleNewChat}
                   />
                 </Tooltip>
-                {authDomain && isDomainValidForManagement(authDomain) ? (
-                  <Tooltip title={t('push.settings')}>
-                    <SettingsOutlinedIcon
-                      className={classes.headerActionIcon}
-                      onClick={handleSettingsClick}
-                      id="settings-button"
-                    />
-                  </Tooltip>
-                ) : (
+                {(!authDomain || !isDomainValidForManagement(authDomain)) && (
                   <Badge color="warning" variant="dot">
                     <Tooltip title={t('push.getAnIdentity')}>
                       <FingerprintIcon
@@ -861,7 +853,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                   </Badge>
                 )}
                 <Tooltip title={t('common.close')}>
-                  <KeyboardDoubleArrowDownIcon
+                  <CloseIcon
                     className={classes.headerActionIcon}
                     onClick={onClose}
                   />

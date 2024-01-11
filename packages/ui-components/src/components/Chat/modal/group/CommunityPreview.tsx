@@ -377,7 +377,8 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
             )
           }
           action={
-            latestTimestamp && (
+            latestTimestamp &&
+            visible && (
               <Box className={classes.latestTimestamp}>
                 <Typography variant="caption">{latestTimestamp}</Typography>
               </Box>

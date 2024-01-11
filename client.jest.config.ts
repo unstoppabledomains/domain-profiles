@@ -32,6 +32,8 @@ const config: InitialOptionsTsJest = {
   moduleNameMapper: {
     ['@xmtp/(.*)']: '<rootDir>/tests/mocks/empty.js',
     ['@pushprotocol/(.*)']: '<rootDir>/tests/mocks/empty.js',
+    ['@ipld/(.*)']: '<rootDir>/tests/mocks/empty.js',
+    ['@ucanto/(.*)']: '<rootDir>/tests/mocks/empty.js',
     'web3.storage': '<rootDir>/tests/mocks/empty.js',
     ['wagmi']: '<rootDir>/tests/mocks/empty.js',
     'react-medium-image-zoom': '<rootDir>/tests/mocks/empty.js',

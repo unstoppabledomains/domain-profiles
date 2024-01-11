@@ -9,6 +9,7 @@ import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
+import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
@@ -57,10 +58,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
     cursor: 'pointer',
   },
   actionContainer: {
+    display: 'flex',
     margin: theme.spacing(1),
+    width: '100%',
   },
   actionButton: {
     marginRight: theme.spacing(1),
+    width: '100%',
   },
   contentContainer: {
     display: 'flex',
@@ -116,6 +120,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     top: 0,
     right: 0,
   },
+  loadingText: {
+    marginLeft: theme.spacing(1),
+    whiteSpace: 'nowrap',
+  },
 }));
 
 const maxDescriptionLength = 125;
@@ -126,7 +134,6 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
   inGroup,
   isUdBlue,
   pushKey,
-  onReload,
   onRefresh,
   searchTerm,
   setActiveCommunity,
@@ -136,8 +143,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
   const [t] = useTranslationContext();
   const [latestMessage, setLatestMessage] = useState<string>();
   const [latestTimestamp, setLatestTimestamp] = useState<string>();
-  const [joining, setJoining] = useState<boolean>();
-  const [leaving, setLeaving] = useState<boolean>();
+  const [joiningState, setJoiningState] = useState<string>();
   const [errorMsg, setErrorMsg] = useState<string>();
   const [badgeInfo, setBadgeInfo] = useState<SerializedBadgeInfo>();
   const [udBlueModalOpen, setUdBlueModalOpen] = useState(false);
@@ -263,7 +269,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
 
     // retrieve group Chat ID from messaging API
     try {
-      setJoining(true);
+      setJoiningState(t('push.joiningGroupState'));
       setErrorMsg(undefined);
       if (!inGroup) {
         const groupChatInfo = await joinBadgeGroupChat(
@@ -274,6 +280,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
         if (groupChatInfo?.groupChatId) {
           // accept the chat request for the user and change to the
           // group conversation panel
+          setJoiningState(t('push.acceptingInviteState'));
           await acceptGroupInvite(groupChatInfo.groupChatId, address, pushKey);
         }
         badge.groupChatId = groupChatInfo?.groupChatId;
@@ -284,23 +291,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
       notifyError(e, {msg: 'error joining group'});
       setErrorMsg(t('push.joinCommunityError'));
     } finally {
-      setJoining(false);
-    }
-  };
-
-  const handleLeaveClicked = async () => {
-    if (!badge.groupChatId) {
-      return;
-    }
-    setLeaving(true);
-    try {
-      await joinBadgeGroupChat(badge.code, address, pushKey, true);
-      await onReload();
-    } catch (e) {
-      notifyError(e, {msg: 'error leaving group'});
-      setErrorMsg(t('push.leaveCommunityError'));
-    } finally {
-      setLeaving(false);
+      setJoiningState(undefined);
     }
   };
 
@@ -318,42 +309,43 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
   };
 
   return isSearchTermMatch() ? (
-    visible ? (
-      <>
-        <Card
-          className={cx(classes.communityContainer, {
-            [classes.hideBorder]: inGroup,
-            [classes.communityGradient]: !inGroup,
-          })}
-        >
-          <CardHeader
-            title={
-              <Box className={classes.clickable} onClick={handleChatClicked}>
+    <>
+      <Card
+        className={cx(classes.communityContainer, {
+          [classes.hideBorder]: inGroup,
+          [classes.communityGradient]: !inGroup,
+        })}
+      >
+        <CardHeader
+          title={
+            <Box className={classes.clickable} onClick={handleChatClicked}>
+              {visible ? (
                 <Typography
                   className={classes.communityTitle}
                   variant="subtitle2"
                 >
                   {badge.name}
                 </Typography>
-                {inGroup && latestMessage ? (
-                  <Typography
-                    variant="caption"
-                    className={classes.latestMessage}
-                  >
-                    {latestMessage}
-                  </Typography>
-                ) : !inGroup && badgeInfo ? (
-                  <Typography variant="caption">
-                    {numeral(badgeInfo.usage.holders).format('0a')}{' '}
-                    {t('badges.holder')}
-                  </Typography>
-                ) : (
-                  <Skeleton variant="text" sx={{maxWidth: '75px'}} />
-                )}
-              </Box>
-            }
-            avatar={
-              inGroup ? (
+              ) : (
+                <Skeleton variant="text" sx={{maxWidth: '250px'}} />
+              )}
+              {visible && inGroup && latestMessage ? (
+                <Typography variant="caption" className={classes.latestMessage}>
+                  {latestMessage}
+                </Typography>
+              ) : !inGroup && badgeInfo ? (
+                <Typography variant="caption">
+                  {numeral(badgeInfo.usage.holders).format('0a')}{' '}
+                  {t('badges.holder')}
+                </Typography>
+              ) : (
+                <Skeleton variant="text" sx={{maxWidth: '75px'}} />
+              )}
+            </Box>
+          }
+          avatar={
+            inGroup ? (
+              visible ? (
                 <Badge
                   anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
                   overlap="circular"
@@ -371,95 +363,80 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
                   />
                 </Badge>
               ) : (
-                <Avatar
-                  onClick={handleMoreInfoClicked}
+                <Skeleton
+                  variant="circular"
                   className={classes.communityIcon}
-                  src={badge.logo}
                 />
               )
-            }
-            action={
-              latestTimestamp && (
-                <Box className={classes.latestTimestamp}>
-                  <Typography variant="caption">{latestTimestamp}</Typography>
-                </Box>
-              )
-            }
-          />
-          {!inGroup && (
-            <Box>
-              <CardContent className={classes.contentContainer}>
-                <Typography variant="body2">
-                  {badge.description.length > maxDescriptionLength
-                    ? `${badge.description.substring(
-                        0,
-                        maxDescriptionLength,
-                      )}...`
-                    : badge.description}
-                </Typography>
-              </CardContent>
-              <CardActions>
-                <Box className={classes.actionContainer}>
-                  <LoadingButton
-                    onClick={handleChatClicked}
-                    loading={joining}
-                    size="small"
-                    variant="contained"
-                    className={classes.actionButton}
-                  >
-                    {inGroup ? t('push.chat') : t('push.join')}
-                  </LoadingButton>
-                  {inGroup && (
-                    <LoadingButton
-                      onClick={handleLeaveClicked}
-                      loading={leaving}
-                      size="small"
-                      variant="text"
-                      className={classes.actionButton}
-                    >
-                      {t('push.leave')}
-                    </LoadingButton>
-                  )}
-                </Box>
-                {errorMsg && (
-                  <>
-                    <ErrorIcon className={classes.errorIcon} />
-                    <Typography variant="caption" className={classes.errorText}>
-                      {errorMsg}
-                    </Typography>
-                  </>
-                )}
-              </CardActions>
-            </Box>
-          )}
-        </Card>
-        {inGroup && <Divider variant="fullWidth" />}
-        {udBlueModalOpen && (
-          <LearnMoreUdBlue
-            isOpen={udBlueModalOpen}
-            handleClose={() => setUdBlueModalOpen(false)}
-          />
-        )}
-      </>
-    ) : (
-      <Box
-        display="flex"
-        width="100%"
-        alignItems="center"
-        ml={2}
-        mt={3.5}
-        mb={3}
-      >
-        <Skeleton
-          variant="circular"
-          sx={{width: '50px', height: '50px', marginRight: '10px'}}
+            ) : (
+              <Avatar
+                onClick={handleMoreInfoClicked}
+                className={classes.communityIcon}
+                src={badge.logo}
+              />
+            )
+          }
+          action={
+            latestTimestamp && (
+              <Box className={classes.latestTimestamp}>
+                <Typography variant="caption">{latestTimestamp}</Typography>
+              </Box>
+            )
+          }
         />
-        <Box display="flex" flexDirection="column">
-          <Skeleton variant="text" sx={{width: '250px'}} />
-          <Skeleton variant="text" sx={{width: '75px'}} />
-        </Box>
-      </Box>
-    )
+        {!inGroup && (
+          <Box>
+            <CardContent className={classes.contentContainer}>
+              <Typography variant="body2">
+                {badge.description.length > maxDescriptionLength
+                  ? `${badge.description.substring(0, maxDescriptionLength)}...`
+                  : badge.description}
+              </Typography>
+            </CardContent>
+            <CardActions>
+              <Box className={classes.actionContainer}>
+                <LoadingButton
+                  onClick={handleChatClicked}
+                  fullWidth={true}
+                  loading={joiningState !== undefined}
+                  loadingIndicator={
+                    <Box display="flex" alignItems="center">
+                      <CircularProgress size={16} color="inherit" />
+                      <Typography
+                        className={classes.loadingText}
+                        variant="caption"
+                      >
+                        {joiningState}...
+                      </Typography>
+                    </Box>
+                  }
+                  size="small"
+                  variant="contained"
+                  className={classes.actionButton}
+                >
+                  {inGroup ? t('push.chat') : t('push.join')}
+                </LoadingButton>
+              </Box>
+              {errorMsg && (
+                <>
+                  <ErrorIcon className={classes.errorIcon} />
+                  <Typography variant="caption" className={classes.errorText}>
+                    {errorMsg}
+                  </Typography>
+                </>
+              )}
+            </CardActions>
+          </Box>
+        )}
+      </Card>
+      {inGroup && <Divider variant="fullWidth" />}
+      {udBlueModalOpen && (
+        <LearnMoreUdBlue
+          isOpen={udBlueModalOpen}
+          handleClose={() => setUdBlueModalOpen(false)}
+        />
+      )}
+    </>
   ) : null;
 };
 

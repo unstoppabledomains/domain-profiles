@@ -552,6 +552,8 @@
     "joinCommunity": "Join a Community",
     "joinCommunityError": "Unable to join community",
     "joined": "Joined group",
+    "joiningGroupState": "Requesting to join group",
+    "acceptingInviteState": "Configuring encryption keys",
     "joinedGroupChat": "Group Chat",
     "joinedGroupChatDescription": "Since messages are end-to-end encrypted, you can only see chat history from the point you joined the group.",
     "leave": "Leave group",

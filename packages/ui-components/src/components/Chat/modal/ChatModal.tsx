@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import AddCommentOutlinedIcon from '@mui/icons-material/AddCommentOutlined';
+import ChatIcon from '@mui/icons-material/ChatOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
-import ChatIcon from '@mui/icons-material/ForumOutlined';
 import GroupsIcon from '@mui/icons-material/GroupOutlined';
 import AppsIcon from '@mui/icons-material/NotificationsActiveOutlined';
+import SmsOutlinedIcon from '@mui/icons-material/SmsOutlined';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
@@ -112,7 +112,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   newChatIcon: {
     marginRight: theme.spacing(0.7),
     color: theme.palette.primary.main,
-    transform: 'scaleX(-1)',
   },
   headerActionIcon: {
     marginLeft: theme.spacing(1),
@@ -835,7 +834,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
             action={
               <Box className={classes.headerActionContainer}>
                 <Tooltip title={t('push.chatNew')}>
-                  <AddCommentOutlinedIcon
+                  <SmsOutlinedIcon
                     className={cx(
                       classes.headerActionIcon,
                       classes.newChatIcon,
@@ -1016,6 +1015,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                     <CallToAction
                       icon={'GroupsIcon'}
                       title={t('push.communitiesNotReady')}
+                      subTitle={t('push.communitiesNotReadyDescription')}
                       buttonText={t('manage.enable')}
                       handleButtonClick={onInitPushAccount}
                     />
@@ -1064,6 +1064,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                     <CallToAction
                       icon={'NotificationsActiveOutlinedIcon'}
                       title={t('push.notificationsNotReady')}
+                      subTitle={t('push.notificationsNotReadyDescription')}
                       buttonText={t('manage.enable')}
                       handleButtonClick={onInitPushAccount}
                     />

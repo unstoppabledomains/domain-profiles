@@ -72,10 +72,7 @@ export const CallToAction: React.FC<CallToActionProps> = ({
       <Typography mt={1} variant="body2">
         {subTitle}
       </Typography>
-      <Box className={classes.loadingSpinnerContainer}>
-        {loading && <CircularProgress className={classes.loadingSpinner} />}
-      </Box>
-      {buttonText && handleButtonClick && (
+      {buttonText && handleButtonClick ? (
         <Button
           variant="contained"
           onClick={handleButtonClick}
@@ -83,6 +80,10 @@ export const CallToAction: React.FC<CallToActionProps> = ({
         >
           {buttonText}
         </Button>
+      ) : (
+        <Box className={classes.loadingSpinnerContainer}>
+          {loading && <CircularProgress className={classes.loadingSpinner} />}
+        </Box>
       )}
     </Box>
   );

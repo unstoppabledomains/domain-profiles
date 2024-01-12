@@ -124,13 +124,11 @@ export const CommunityList: React.FC<CommunityListProps> = ({
       setBadges(
         badgeData.list.filter(b => !filteredBadgeCodes.includes(b.code)),
       );
-      if (domainProfile?.profile?.udBlue) {
-        setIsUdBlue(
-          domainProfile.profile.udBlue ||
-            !featureFlags.variations
-              ?.ecommerceServiceUsersEnableChatCommunityUdBlue,
-        );
-      }
+      setIsUdBlue(
+        domainProfile?.profile?.udBlue ||
+          !featureFlags.variations
+            ?.ecommerceServiceUsersEnableChatCommunityUdBlue,
+      );
     } catch (e) {
       notifyError(e, {msg: 'error loading badges'});
     }

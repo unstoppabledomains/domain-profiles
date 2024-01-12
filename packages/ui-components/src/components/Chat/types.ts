@@ -65,8 +65,6 @@ export interface PushNotification {
   source: string;
 }
 
-export const SearchPlaceholder = 'placeholder';
-
 export enum TabType {
   Chat = 'chat',
   Communities = 'communities',

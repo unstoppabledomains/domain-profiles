@@ -50,7 +50,7 @@ import {getAddressMetadata} from '../protocol/resolution';
 import type {ConversationMeta} from '../protocol/xmtp';
 import {getConversation, getConversations} from '../protocol/xmtp';
 import type {AddressResolution, PayloadData} from '../types';
-import {SearchPlaceholder, TabType, getCaip10Address} from '../types';
+import {TabType, getCaip10Address} from '../types';
 import CallToAction from './CallToAction';
 import Search from './Search';
 import Conversation from './dm/Conversation';
@@ -301,18 +301,23 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       return;
     }
 
-    // set initial topic consent values
-    if (acceptedTopics.length === 0 && blockedTopics.length === 0) {
-      setAcceptedTopics(
-        conversations
-          .filter(c => c.consentState === 'allowed')
-          .map(c => c.conversation.topic),
-      );
-      setBlockedTopics(
-        conversations
-          .filter(c => c.consentState === 'denied')
-          .map(c => c.conversation.topic),
-      );
+    // accepted topics available in conversation list
+    const at = conversations
+      .filter(c => c.consentState === 'allowed')
+      .map(c => c.conversation.topic);
+
+    // blocked topics available in conversation list
+    const bt = conversations
+      .filter(c => c.consentState === 'denied')
+      .map(c => c.conversation.topic);
+
+    // set accepted and blocked topic state if different than the values
+    // available in conversation
+    if (acceptedTopics.length !== at.length) {
+      setAcceptedTopics(at);
+    }
+    if (blockedTopics.length !== bt.length) {
+      setBlockedTopics(bt);
     }
   }, [conversations]);
 
@@ -328,7 +333,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     }
 
     // disable search panel if no text is shown
-    if (searchValue === undefined) {
+    if (!searchValue) {
       setConversationSearch(false);
       return;
     }
@@ -606,16 +611,12 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
   const handleNewChat = () => {
     setTabValue(TabType.Chat);
-    setSearchValue(SearchPlaceholder);
+    setSearchValue('');
     setConversationSearch(true);
   };
 
   const handleIdentityClick = async () => {
     window.open(`${config.UNSTOPPABLE_WEBSITE_URL}/search`, '_blank');
-  };
-
-  const handleSettingsClick = async () => {
-    window.location.href = `${config.UNSTOPPABLE_WEBSITE_URL}/manage?domain=${authDomain}&page=web3Messaging`;
   };
 
   const handleOpenChatFromName = async (name: string) => {

@@ -11,6 +11,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {useFeatureFlags} from '../../../../actions';
 import {getDomainBadges} from '../../../../actions/domainActions';
 import {getProfileData} from '../../../../actions/domainProfileActions';
+import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../../lib/types/badge';
 import {
@@ -88,42 +89,50 @@ export const CommunityList: React.FC<CommunityListProps> = ({
   }, [badges]);
 
   const loadBadges = async () => {
-    // query user badges
-    setLoadingText(t('push.loadingCommunities'));
-    const [badgeData, domainProfile] = await Promise.all([
-      getDomainBadges(domain, {withoutPartners: true}),
-      getProfileData(domain, [DomainFieldTypes.Profile], Date.now()),
-    ]);
+    try {
+      // query user badges
+      setLoadingText(t('push.loadingCommunities'));
+      const [badgeData, domainProfile] = await Promise.all([
+        getDomainBadges(domain, {withoutPartners: true}),
+        getProfileData(domain, [DomainFieldTypes.Profile], Date.now()),
+      ]);
 
-    // determine group membership
-    const groups: Record<string, boolean> = {};
-    await Bluebird.map(
-      badgeData.list,
-      async b => {
-        if (!b.groupChatId) {
+      // determine group membership
+      const groups: Record<string, boolean> = {};
+      await Bluebird.map(
+        badgeData.list,
+        async b => {
+          if (!b.groupChatId) {
+            return;
+          }
+          const groupData = await getGroupInfo(b.groupChatId);
+          if (groupData) {
+            const groupWallets = groupData.members.map(m =>
+              m.wallet.replace('eip155:', '').toLowerCase(),
+            );
+            groups[b.groupChatId] = groupWallets.includes(
+              address.toLowerCase(),
+            );
+          }
           return;
-        }
-        const groupData = await getGroupInfo(b.groupChatId);
-        if (groupData) {
-          const groupWallets = groupData.members.map(m =>
-            m.wallet.replace('eip155:', '').toLowerCase(),
-          );
-          groups[b.groupChatId] = groupWallets.includes(address.toLowerCase());
-        }
-        return;
-      },
-      {concurrency: 3},
-    );
-
-    // save user state
-    setInGroupMap(groups);
-    setBadges(badgeData.list.filter(b => !filteredBadgeCodes.includes(b.code)));
-    if (domainProfile?.profile?.udBlue) {
-      setIsUdBlue(
-        domainProfile.profile.udBlue ||
-          !featureFlags.variations
-            ?.ecommerceServiceUsersEnableChatCommunityUdBlue,
+        },
+        {concurrency: 3},
       );
+
+      // save user state
+      setInGroupMap(groups);
+      setBadges(
+        badgeData.list.filter(b => !filteredBadgeCodes.includes(b.code)),
+      );
+      if (domainProfile?.profile?.udBlue) {
+        setIsUdBlue(
+          domainProfile.profile.udBlue ||
+            !featureFlags.variations
+              ?.ecommerceServiceUsersEnableChatCommunityUdBlue,
+        );
+      }
+    } catch (e) {
+      notifyError(e, {msg: 'error loading badges'});
     }
     setLoadingText(undefined);
   };

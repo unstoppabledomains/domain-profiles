@@ -332,17 +332,13 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       return;
     }
 
-    // disable search panel if no text is shown
-    if (!searchValue) {
-      setConversationSearch(false);
-      return;
-    }
-
     // enable search panel if no conversations are visible
-    const visibleNonFilteredConversations = visibleConversations.filter(
-      c => c.visible,
-    );
-    setConversationSearch(visibleNonFilteredConversations.length === 0);
+    if (searchValue !== '') {
+      const visibleNonFilteredConversations = visibleConversations.filter(
+        c => c.visible,
+      );
+      setConversationSearch(visibleNonFilteredConversations.length === 0);
+    }
   }, [visibleConversations, searchValue, tabValue]);
 
   const checkBrowserSettings = async () => {
@@ -687,7 +683,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   };
 
   const handleCloseSearch = () => {
-    setSearchValue(undefined);
+    setSearchValue('');
     setConversationSearch(false);
   };
 
@@ -757,6 +753,10 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   ) => {
     // set conversation visibility
     conversation.visible = visible;
+  };
+
+  const handleAddDomain = () => {
+    window.open(`${config.UNSTOPPABLE_WEBSITE_URL}/search`, '_blank');
   };
 
   const handleAppSubscribe = () => {
@@ -886,26 +886,24 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                     value={TabType.Chat}
                   />
                   {featureFlags.variations
-                    ?.ecommerceServiceUsersEnableChatCommunity &&
-                    authDomain &&
-                    isDomainValidForManagement(authDomain) && (
-                      <Tab
-                        icon={<GroupsIcon />}
-                        label={
-                          <StyledTabBadge
-                            color="primary"
-                            variant="dot"
-                            invisible={
-                              !tabUnreadDot[TabType.Communities] &&
-                              pushKey !== undefined
-                            }
-                          >
-                            {t('push.communities')}
-                          </StyledTabBadge>
-                        }
-                        value={TabType.Communities}
-                      />
-                    )}
+                    ?.ecommerceServiceUsersEnableChatCommunity && (
+                    <Tab
+                      icon={<GroupsIcon />}
+                      label={
+                        <StyledTabBadge
+                          color="primary"
+                          variant="dot"
+                          invisible={
+                            !tabUnreadDot[TabType.Communities] &&
+                            pushKey !== undefined
+                          }
+                        >
+                          {t('push.communities')}
+                        </StyledTabBadge>
+                      }
+                      value={TabType.Communities}
+                    />
+                  )}
                   <Tab
                     icon={<AppsIcon />}
                     label={
@@ -1004,7 +1002,10 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                   value={TabType.Communities}
                   className={classes.tabContentItem}
                 >
-                  {pushAccount && pushKey && authDomain ? (
+                  {pushAccount &&
+                  pushKey &&
+                  authDomain &&
+                  isDomainValidForManagement(authDomain) ? (
                     <CommunityList
                       address={xmtpAddress}
                       domain={authDomain}
@@ -1016,9 +1017,21 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                     <CallToAction
                       icon={'GroupsIcon'}
                       title={t('push.communitiesNotReady')}
-                      subTitle={t('push.communitiesNotReadyDescription')}
-                      buttonText={t('manage.enable')}
-                      handleButtonClick={onInitPushAccount}
+                      subTitle={`${t('push.communitiesNotReadyDescription')} ${
+                        authDomain && isDomainValidForManagement(authDomain)
+                          ? ''
+                          : t('push.communitiesRequireADomain')
+                      }`}
+                      buttonText={
+                        authDomain && isDomainValidForManagement(authDomain)
+                          ? t('manage.enable')
+                          : t('push.communitiesGetADomain')
+                      }
+                      handleButtonClick={
+                        authDomain && isDomainValidForManagement(authDomain)
+                          ? onInitPushAccount
+                          : handleAddDomain
+                      }
                     />
                   )}
                 </TabPanel>

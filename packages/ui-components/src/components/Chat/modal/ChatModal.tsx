@@ -2,6 +2,9 @@
 import AddCommentOutlinedIcon from '@mui/icons-material/AddCommentOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
+import ChatIcon from '@mui/icons-material/ForumOutlined';
+import GroupsIcon from '@mui/icons-material/GroupOutlined';
+import AppsIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
@@ -870,6 +873,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                   className={classes.tabList}
                 >
                   <Tab
+                    icon={<ChatIcon />}
                     label={
                       <StyledTabBadge
                         color="primary"
@@ -886,6 +890,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                     authDomain &&
                     isDomainValidForManagement(authDomain) && (
                       <Tab
+                        icon={<GroupsIcon />}
                         label={
                           <StyledTabBadge
                             color="primary"
@@ -902,6 +907,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                       />
                     )}
                   <Tab
+                    icon={<AppsIcon />}
                     label={
                       <StyledTabBadge
                         color="primary"

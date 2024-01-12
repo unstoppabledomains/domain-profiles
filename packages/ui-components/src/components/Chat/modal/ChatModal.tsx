@@ -297,27 +297,22 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   }, [acceptedTopics, blockedTopics]);
 
   useEffect(() => {
-    if (!conversations) {
+    if (!conversations || conversations.length === 0) {
       return;
     }
 
-    // accepted topics available in conversation list
-    const at = conversations
-      .filter(c => c.consentState === 'allowed')
-      .map(c => c.conversation.topic);
-
-    // blocked topics available in conversation list
-    const bt = conversations
-      .filter(c => c.consentState === 'denied')
-      .map(c => c.conversation.topic);
-
-    // set accepted and blocked topic state if different than the values
-    // available in conversation
-    if (acceptedTopics.length !== at.length) {
-      setAcceptedTopics(at);
-    }
-    if (blockedTopics.length !== bt.length) {
-      setBlockedTopics(bt);
+    // set initial topic consent values
+    if (acceptedTopics.length === 0 && blockedTopics.length === 0) {
+      setAcceptedTopics(
+        conversations
+          .filter(c => c.consentState === 'allowed')
+          .map(c => c.conversation.topic),
+      );
+      setBlockedTopics(
+        conversations
+          .filter(c => c.consentState === 'denied')
+          .map(c => c.conversation.topic),
+      );
     }
   }, [conversations]);
 

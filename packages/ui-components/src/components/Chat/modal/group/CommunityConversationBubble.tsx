@@ -12,6 +12,8 @@ import Emoji from 'react-emoji-render';
 import Linkify from 'react-linkify';
 import Zoom from 'react-medium-image-zoom';
 
+import config from '@unstoppabledomains/config';
+
 import {useFeatureFlags} from '../../../../actions/featureFlagActions';
 import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
@@ -39,6 +41,7 @@ export const CommunityConversationBubble: React.FC<
   const {data: featureFlags} = useFeatureFlags();
   const messageRef = useRef<HTMLElement>(null);
   const [isDecrypting, setIsDecrypting] = useState(true);
+  const [isDecryptionError, setIsDecryptionError] = useState(false);
   const [isMediaLoading, setIsMediaLoading] = useState(false);
   const [peerAvatarLink, setPeerAvatarLink] = useState<string>();
   const [peerDisplayName, setPeerDisplayName] = useState<string>();
@@ -65,6 +68,7 @@ export const CommunityConversationBubble: React.FC<
       // decrypt the message if needed
       const message = await decryptMessage(address, pushKey, encryptedMessage);
       if (!message) {
+        setIsDecryptionError(true);
         return;
       }
 
@@ -89,6 +93,7 @@ export const CommunityConversationBubble: React.FC<
         messageToRender.toLowerCase() ===
         PUSH_DECRYPT_ERROR_MESSAGE.toLowerCase()
       ) {
+        setIsDecryptionError(true);
         return;
       }
 
@@ -121,6 +126,9 @@ export const CommunityConversationBubble: React.FC<
             </Linkify>
           </Box>,
         );
+        if (renderCallback) {
+          renderCallback(messageRef);
+        }
       } else if (message.messageType === MessageType.Meta) {
         // handling of meta message
         const metaData = message.messageObj as any;
@@ -196,6 +204,9 @@ export const CommunityConversationBubble: React.FC<
           setIsAttachment(true);
         }
         setIsMediaLoading(false);
+        if (renderCallback) {
+          renderCallback(messageRef);
+        }
       } else {
         setRenderedContent(
           <Typography
@@ -205,11 +216,6 @@ export const CommunityConversationBubble: React.FC<
             {t('push.unsupportedContent')}
           </Typography>,
         );
-      }
-
-      // message loaded successfully
-      if (renderCallback) {
-        renderCallback(messageRef);
       }
     } catch (e) {
       notifyError(e, {msg: 'error loading message'});
@@ -256,7 +262,16 @@ export const CommunityConversationBubble: React.FC<
         >
           {peerAvatarLink && peerDisplayName && (
             <Tooltip title={peerDisplayName}>
-              <Avatar src={peerAvatarLink} className={classes.avatar} />
+              <Avatar
+                onClick={() =>
+                  window.open(
+                    `${config.UD_ME_BASE_URL}/${peerDisplayName}`,
+                    '_blank',
+                  )
+                }
+                src={peerAvatarLink}
+                className={classes.avatar}
+              />
             </Tooltip>
           )}
           <Box
@@ -338,17 +353,36 @@ export const CommunityConversationBubble: React.FC<
     )
   ) : (
     <Box ref={messageRef} className={classes.metadata}>
-      <Typography variant="caption">
-        <Box className={classes.metadata}>
-          --
-          {isDecrypting ? (
-            <CircularProgress size={10} className={classes.encryptStateIcon} />
-          ) : (
-            <LockOutlinedIcon className={classes.encryptStateIcon} />
-          )}
-          {isDecrypting ? t('push.decrypting') : t('push.encrypted')} --
-        </Box>
-      </Typography>
+      <Tooltip title={isDecryptionError ? t('push.encryptedDescription') : ''}>
+        <Typography variant="caption">
+          <Box
+            className={cx(classes.metadata, {
+              [classes.encryptedStateWarning]: isDecryptionError,
+            })}
+          >
+            --
+            {isDecrypting ? (
+              <CircularProgress
+                size={10}
+                className={classes.encryptStateIcon}
+              />
+            ) : (
+              isDecryptionError && (
+                <LockOutlinedIcon
+                  className={cx(
+                    classes.encryptStateIcon,
+                    classes.encryptedStateWarning,
+                  )}
+                />
+              )
+            )}
+            {isDecrypting
+              ? t('push.decrypting')
+              : isDecryptionError && t('push.encrypted')}{' '}
+            --
+          </Box>
+        </Typography>
+      </Tooltip>
     </Box>
   );
 };

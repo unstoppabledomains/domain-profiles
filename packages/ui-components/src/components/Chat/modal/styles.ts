@@ -14,6 +14,7 @@ export const useConversationBubbleStyles = makeStyles<{
     marginBottom: theme.spacing(3.5),
     backgroundColor: theme.palette.primary.main,
     color: 'white',
+    cursor: 'pointer',
   },
   msgContainer: {
     display: 'flex',
@@ -83,8 +84,11 @@ export const useConversationBubbleStyles = makeStyles<{
     cursor: 'pointer',
     textDecoration: 'underline',
   },
+  encryptedStateWarning: {
+    color: theme.palette.warning.main,
+  },
   encryptStateIcon: {
-    color: theme.palette.neutralShades[400],
+    color: theme.palette.neutralShades[500],
     marginLeft: theme.spacing(0.5),
     marginRight: theme.spacing(0.5),
     width: '10px',
@@ -138,7 +142,8 @@ export const useConversationBubbleStyles = makeStyles<{
     justifyContent: 'center',
     textAlign: 'center',
     fontStyle: 'italic',
-    color: theme.palette.neutralShades[400],
+    color: theme.palette.neutralShades[500],
+    marginBottom: theme.spacing(1),
   },
   unsupportedMediaText: {
     fontStyle: 'italic',

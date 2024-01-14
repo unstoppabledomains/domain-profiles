@@ -112,6 +112,7 @@ type DomainProfileListProps = {
   showNumber?: boolean;
   itemsPerPage?: number;
   onLastPage?: () => void;
+  onClick?: (domain: string) => void;
   withPagination?: boolean;
   withInfiniteScroll?: boolean;
   setWeb3Deps?: (value: Web3Dependencies | undefined) => void;
@@ -128,6 +129,7 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
   withInfiniteScroll = false,
   setWeb3Deps,
   onLastPage,
+  onClick,
   hasMore = false,
 }) => {
   const {classes, cx} = useStyles();
@@ -161,7 +163,8 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
               className={cx(classes.row, {
                 [classes.rowFirst]: i === 0,
               })}
-              href={`${config.UD_ME_BASE_URL}/${domain}`}
+              onClick={onClick ? () => onClick(domain) : undefined}
+              href={!onClick ? `${config.UD_ME_BASE_URL}/${domain}` : undefined}
               key={domain}
             >
               <div className={classes.leftContent}>

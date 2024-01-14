@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import type {GroupDTO} from '@pushprotocol/restapi';
 import Bluebird from 'bluebird';
 import React, {useEffect, useState} from 'react';
 
@@ -62,7 +63,12 @@ export const CommunityList: React.FC<CommunityListProps> = ({
   const [t] = useTranslationContext();
   const {data: featureFlags} = useFeatureFlags(false, domain);
   const [badges, setBadges] = useState<SerializedCryptoWalletBadge[]>();
-  const [inGroupMap, setInGroupMap] = useState<Record<string, boolean>>({});
+  const [inGroupMap, setInGroupMap] = useState<
+    Record<string, GroupDTO | undefined>
+  >({});
+  const [allGroupMap, setAllGroupMap] = useState<
+    Record<string, GroupDTO | undefined>
+  >({});
   const [isUdBlue, setIsUdBlue] = useState<boolean>(false);
   const [loadingText, setLoadingText] = useState<string>();
   const [isSorted, setIsSorted] = useState(false);
@@ -98,7 +104,8 @@ export const CommunityList: React.FC<CommunityListProps> = ({
       ]);
 
       // determine group membership
-      const groups: Record<string, boolean> = {};
+      const allGroups: Record<string, GroupDTO | undefined> = {};
+      const inGroups: Record<string, GroupDTO | undefined> = {};
       await Bluebird.map(
         badgeData.list,
         async b => {
@@ -110,9 +117,10 @@ export const CommunityList: React.FC<CommunityListProps> = ({
             const groupWallets = groupData.members.map(m =>
               m.wallet.replace('eip155:', '').toLowerCase(),
             );
-            groups[b.groupChatId] = groupWallets.includes(
-              address.toLowerCase(),
-            );
+            if (groupWallets.includes(address.toLowerCase())) {
+              inGroups[b.groupChatId] = groupData;
+            }
+            allGroups[b.groupChatId] = groupData;
           }
           return;
         },
@@ -120,7 +128,8 @@ export const CommunityList: React.FC<CommunityListProps> = ({
       );
 
       // save user state
-      setInGroupMap(groups);
+      setInGroupMap(inGroups);
+      setAllGroupMap(allGroups);
       setBadges(
         badgeData.list.filter(b => !filteredBadgeCodes.includes(b.code)),
       );
@@ -146,7 +155,7 @@ export const CommunityList: React.FC<CommunityListProps> = ({
     if (!chatId) {
       return false;
     }
-    return inGroupMap[chatId];
+    return inGroupMap[chatId] !== undefined;
   };
 
   const handleGetBadge = () => {
@@ -182,6 +191,7 @@ export const CommunityList: React.FC<CommunityListProps> = ({
               address={address}
               badge={badge}
               inGroup={inGroup(badge.groupChatId)}
+              groupInfo={allGroupMap[badge.code]}
               isUdBlue={isUdBlue}
               pushKey={pushKey}
               onReload={loadBadges}

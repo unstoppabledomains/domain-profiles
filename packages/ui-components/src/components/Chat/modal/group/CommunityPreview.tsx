@@ -14,7 +14,7 @@ import Divider from '@mui/material/Divider';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import type {IMessageIPFS} from '@pushprotocol/restapi';
+import type {GroupDTO, IMessageIPFS} from '@pushprotocol/restapi';
 import moment from 'moment';
 import numeral from 'numeral';
 import React, {useEffect, useState} from 'react';
@@ -134,6 +134,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
   inGroup,
   isUdBlue,
   pushKey,
+  groupInfo,
   onRefresh,
   searchTerm,
   setActiveCommunity,
@@ -449,6 +450,7 @@ export type CommunityPreviewProps = {
   pushKey: string;
   searchTerm?: string;
   visible?: boolean;
+  groupInfo?: GroupDTO;
   onReload: () => Promise<void>;
   onRefresh: () => Promise<void>;
   setActiveCommunity: (v: SerializedCryptoWalletBadge) => void;

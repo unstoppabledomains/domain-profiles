@@ -1,13 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import BlockIcon from '@mui/icons-material/Block';
 import DownloadIcon from '@mui/icons-material/Download';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {IMessageIPFS} from '@pushprotocol/restapi';
 import React, {useEffect, useRef, useState} from 'react';
+import type {MouseEvent} from 'react';
 import Emoji from 'react-emoji-render';
 import Linkify from 'react-linkify';
 import Zoom from 'react-medium-image-zoom';
@@ -34,12 +40,16 @@ export const CommunityConversationBubble: React.FC<
   hideAvatar,
   message: encryptedMessage,
   pushKey,
-  onBlockTopic,
+  blocked,
+  onBlockUser,
+  onUnblockUser,
   renderCallback,
 }) => {
   const [t] = useTranslationContext();
   const {data: featureFlags} = useFeatureFlags();
   const messageRef = useRef<HTMLElement>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [isBlocking, setIsBlocking] = useState(false);
   const [isDecrypting, setIsDecrypting] = useState(true);
   const [isDecryptionError, setIsDecryptionError] = useState(false);
   const [isMediaLoading, setIsMediaLoading] = useState(false);
@@ -53,6 +63,21 @@ export const CommunityConversationBubble: React.FC<
   useEffect(() => {
     void renderContent();
   }, []);
+
+  const handleOpenMenu = (e: MouseEvent<HTMLElement>) => {
+    setAnchorEl(e.currentTarget);
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+  };
+
+  const handleBlockUser = async () => {
+    setIsBlocking(true);
+    const blockFn = blocked ? onUnblockUser : onBlockUser;
+    await blockFn();
+    setIsBlocking(false);
+  };
 
   const renderPeerAvatar = async (peerAddress: string) => {
     if (peerAddress.toLowerCase().includes(address.toLowerCase())) {
@@ -225,7 +250,7 @@ export const CommunityConversationBubble: React.FC<
   };
 
   return renderedContent ? (
-    encryptedMessage.messageType === MessageType.Meta ? (
+    blocked ? null : encryptedMessage.messageType === MessageType.Meta ? (
       <Box ref={messageRef} className={classes.metadata}>
         <Typography mr={0.5} variant="caption">
           -- {peerDisplayName}
@@ -261,18 +286,49 @@ export const CommunityConversationBubble: React.FC<
           }
         >
           {peerAvatarLink && peerDisplayName && (
-            <Tooltip title={peerDisplayName}>
-              <Avatar
-                onClick={() =>
-                  window.open(
-                    `${config.UD_ME_BASE_URL}/${peerDisplayName}`,
-                    '_blank',
-                  )
-                }
-                src={peerAvatarLink}
-                className={classes.avatar}
-              />
-            </Tooltip>
+            <Box>
+              <Tooltip title={peerDisplayName}>
+                <Avatar
+                  onClick={handleOpenMenu}
+                  src={peerAvatarLink}
+                  className={classes.avatar}
+                />
+              </Tooltip>
+              <Menu
+                anchorEl={anchorEl}
+                onClose={handleCloseMenu}
+                open={Boolean(anchorEl)}
+                anchorOrigin={{horizontal: 'left', vertical: 'bottom'}}
+              >
+                <MenuItem
+                  onClick={() =>
+                    window.open(
+                      `${config.UD_ME_BASE_URL}/${peerDisplayName}`,
+                      '_blank',
+                    )
+                  }
+                >
+                  <ListItemIcon>
+                    <InfoOutlinedIcon fontSize="small" />
+                  </ListItemIcon>
+                  <Typography variant="body2">
+                    {t('profile.viewProfile')}
+                  </Typography>
+                </MenuItem>
+                <MenuItem onClick={handleBlockUser}>
+                  <ListItemIcon>
+                    {isBlocking ? (
+                      <CircularProgress size={16} color="inherit" />
+                    ) : (
+                      <BlockIcon fontSize="small" />
+                    )}
+                  </ListItemIcon>
+                  <Typography variant="body2">
+                    {blocked ? t('manage.unblock') : t('push.blockAndReport')}
+                  </Typography>
+                </MenuItem>
+              </Menu>
+            </Box>
           )}
           <Box
             className={cx(
@@ -345,7 +401,7 @@ export const CommunityConversationBubble: React.FC<
         {clickedUrl && (
           <LinkWarningModal
             url={clickedUrl}
-            onBlockTopic={onBlockTopic}
+            onBlockTopic={onBlockUser}
             onClose={() => setClickedUrl(undefined)}
           />
         )}
@@ -392,7 +448,9 @@ export type CommunityConversationBubbleProps = {
   hideAvatar?: string;
   message: IMessageIPFS;
   pushKey: string;
-  onBlockTopic: () => void;
+  blocked?: boolean;
+  onBlockUser: () => Promise<void>;
+  onUnblockUser: () => Promise<void>;
   renderCallback?: (ref: React.RefObject<HTMLElement>) => void;
 };
 

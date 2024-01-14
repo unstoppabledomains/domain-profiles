@@ -23,6 +23,7 @@ type ModalProps = {
   id: string;
   open: boolean;
   onClose: () => void;
+  onClick?: (domain: string) => void;
   title: string;
   showNumber?: boolean;
   retrieveDomains: (
@@ -85,6 +86,7 @@ export const DomainListModal = (props: ModalProps) => {
           setWeb3Deps={props.setWeb3Deps}
           onLastPage={handleRetrieveDomains}
           hasMore={!retrievedAll}
+          onClick={props.onClick}
         />
       </div>
     </Modal>

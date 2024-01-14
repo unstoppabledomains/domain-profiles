@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
 
@@ -25,6 +27,7 @@ type ModalProps = {
   onClose: () => void;
   onClick?: (domain: string) => void;
   title: string;
+  subtitle?: string;
   showNumber?: boolean;
   retrieveDomains: (
     cursor?: number | string,
@@ -77,6 +80,11 @@ export const DomainListModal = (props: ModalProps) => {
       titleStyle={classes.titleStyle}
       noContentPadding
     >
+      {props.subtitle && (
+        <Box display="flex" width="100%" justifyItems="left">
+          <Typography variant="body2">{props.subtitle}</Typography>
+        </Box>
+      )}
       <div className={classes.contentContainer}>
         <DomainProfileList
           id={props.id}

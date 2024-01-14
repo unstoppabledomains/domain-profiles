@@ -471,13 +471,18 @@ export const Community: React.FC<CommunityProps> = ({
           title={t('push.memberCount', {count: groupInfo?.members.length || 0})}
           open={isViewingMemberList}
           onClose={() => setIsViewingMemberList(false)}
+          onClick={(domain: string) =>
+            window.open(`${config.UD_ME_BASE_URL}/${domain}`, '_blank')
+          }
           retrieveDomains={handleRetrieveMembers}
+          setWeb3Deps={setWeb3Deps}
         />
       )}
       {isViewingBlockedList && (
         <DomainListModal
           id="blockedMembers"
           title={t('push.blockCount', {count: blockedAddresses.length})}
+          subtitle={t('push.clickToUnblock')}
           open={isViewingBlockedList}
           onClose={() => setIsViewingBlockedList(false)}
           onClick={handleUnblockDomain}

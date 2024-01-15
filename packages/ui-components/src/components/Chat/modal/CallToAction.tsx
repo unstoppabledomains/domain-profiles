@@ -3,6 +3,7 @@ import CloudOffIcon from '@mui/icons-material/CloudOff';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
 import GroupsIcon from '@mui/icons-material/Groups';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -63,9 +64,11 @@ export const CallToAction: React.FC<CallToActionProps> = ({
         <ForumOutlinedIcon className={classes.emptyIcon} />
       ) : icon === 'EmojiEventsOutlinedIcon' ? (
         <EmojiEventsOutlinedIcon className={classes.emptyIcon} />
+      ) : icon === 'NotificationsActiveOutlinedIcon' ? (
+        <NotificationsActiveOutlinedIcon className={classes.emptyIcon} />
       ) : (
-        icon === 'NotificationsActiveOutlinedIcon' && (
-          <NotificationsActiveOutlinedIcon className={classes.emptyIcon} />
+        icon === 'LockOutlinedIcon' && (
+          <LockOutlinedIcon className={classes.emptyIcon} />
         )
       )}
       <Typography variant="h6">{title}</Typography>
@@ -96,7 +99,8 @@ export type CallToActionProps = {
     | 'ForumOutlinedIcon'
     | 'EmojiEventsOutlinedIcon'
     | 'GroupsIcon'
-    | 'NotificationsActiveOutlinedIcon';
+    | 'NotificationsActiveOutlinedIcon'
+    | 'LockOutlinedIcon';
   title: string;
   subTitle?: React.ReactNode;
   buttonText?: string;

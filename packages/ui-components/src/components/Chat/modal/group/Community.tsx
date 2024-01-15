@@ -61,11 +61,11 @@ export const Community: React.FC<CommunityProps> = ({
   storageApiKey,
   setWeb3Deps,
   onBack,
-  onClose,
 }) => {
   const {classes} = useConversationStyles({isChatRequest: false});
   const [t] = useTranslationContext();
   const [isLoading, setIsLoading] = useState(true);
+  const [isMember, setIsMember] = useState(true);
   const [isLeaving, setIsLeaving] = useState(false);
   const [isViewableMessage, setIsViewableMessage] = useState(false);
   const [isViewingMemberList, setIsViewingMemberList] = useState(false);
@@ -163,6 +163,11 @@ export const Community: React.FC<CommunityProps> = ({
         getMessages(badge.groupChatId, address, pushKey),
         getGroupInfo(badge.groupChatId),
       ]);
+      setIsMember(
+        group?.members
+          .map(m => fromCaip10Address(m.wallet)?.toLowerCase())
+          .includes(address.toLowerCase()) || false,
+      );
       setGroupInfo(group);
       setHasMoreMessages(initialMessages.length >= PUSH_PAGE_SIZE);
       setPushMessages(initialMessages);
@@ -354,6 +359,7 @@ export const Community: React.FC<CommunityProps> = ({
             )}
             <Tooltip title={t('common.options')}>
               <IconButton
+                disabled={!isMember}
                 onClick={handleOpenMenu}
                 className={classes.headerCloseIcon}
               >
@@ -419,15 +425,26 @@ export const Community: React.FC<CommunityProps> = ({
       />
       <CardContent>
         <Box className={classes.conversationContainer} id="scrollable-div">
-          {!isViewableMessage && (
+          {!isMember ? (
             <CallToAction
-              icon="ForumOutlinedIcon"
-              title={t('push.joinedGroupChat')}
-              subTitle={t('push.joinedGroupChatDescription')}
+              icon="LockOutlinedIcon"
+              title={t('push.noGroupAccess')}
+              subTitle={t('push.noGroupAccessDescription')}
+              buttonText={t('push.noGroupAccessButton')}
+              handleButtonClick={onBack}
               loading={isLoading}
             />
+          ) : (
+            !isViewableMessage && (
+              <CallToAction
+                icon="ForumOutlinedIcon"
+                title={t('push.joinedGroupChat')}
+                subTitle={t('push.joinedGroupChatDescription')}
+                loading={isLoading}
+              />
+            )
           )}
-          {badge.groupChatId ? (
+          {isMember && badge.groupChatId && (
             <InfiniteScroll
               inverse={true}
               style={{
@@ -448,8 +465,6 @@ export const Community: React.FC<CommunityProps> = ({
             >
               {renderedPushMessages}
             </InfiniteScroll>
-          ) : (
-            <CallToAction icon="CloudOffIcon" title={t('push.chatNotReady')} />
           )}
         </Box>
       </CardContent>

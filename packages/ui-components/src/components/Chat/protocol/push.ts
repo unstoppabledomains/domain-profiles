@@ -12,6 +12,7 @@ import {notifyError} from '../../../lib/error';
 import {sleep} from '../../../lib/sleep';
 import {getLocalKey, setLocalKey} from '../storage';
 import {fromCaip10Address} from '../types';
+import {registerClientTopics} from './registration';
 import {isEthAddress} from './resolution';
 import type {W3UpKey} from './types';
 import {Upload, parseW3UpProof} from './upload';
@@ -331,6 +332,42 @@ export const updateBlockedList = async (
       },
     }),
   );
+
+  // update block list reporting, which allows blocked user addresses to be
+  // aggregated by the service. Action can be taken to limit usage of abusive
+  // addresses reported over a given threshold.
+  try {
+    // list of blocked address registrations
+    const blockedRegistrations =
+      add?.map(a => {
+        const addr = fromCaip10Address(a)?.toLowerCase();
+        return {
+          topic: `/push/addr-${addr}`,
+          peerAddress: addr!,
+          block: true,
+          accept: false,
+        };
+      }) || [];
+    // list of unblocked address registrations
+    const unblockRegistrations =
+      remove?.map(a => {
+        const addr = fromCaip10Address(a)?.toLowerCase();
+        return {
+          topic: `/push/addr-${addr}`,
+          peerAddress: addr!,
+          block: false,
+          accept: true,
+        };
+      }) || [];
+    // batch registration of all changes to block list
+    await registerClientTopics(address.toLowerCase(), [
+      ...blockedRegistrations,
+      ...unblockRegistrations,
+    ]);
+  } catch (e) {
+    // graceful failure
+    notifyError(e, {msg: 'unable to update block list registration'});
+  }
 
   // return the aggregated blocked list
   return validatedList;

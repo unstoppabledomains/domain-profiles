@@ -29,7 +29,24 @@ export const useConversationBubbleStyles = makeStyles<{
     display: 'inline-block',
     wordBreak: 'break-word',
   },
+  optionsContainer: {
+    marginTop: theme.spacing(2),
+    marginRight: theme.spacing(-5),
+    position: 'absolute',
+    right: 0,
+    top: 0,
+  },
+  blockColor: {
+    color: theme.palette.error.main,
+  },
+  optionsIconOn: {
+    color: theme.palette.neutralShades[400],
+  },
+  optionsIconOff: {
+    color: theme.palette.white,
+  },
   leftRow: {
+    position: 'relative',
     display: 'inline-block',
     textAlign: 'left',
   },

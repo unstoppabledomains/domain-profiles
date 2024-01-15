@@ -68,6 +68,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '450px',
     height: '600px',
     margin: theme.spacing(1),
+    boxShadow: theme.shadows[6],
     zIndex: 200,
     [theme.breakpoints.down('sm')]: {
       width: '100%',
@@ -775,7 +776,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     <Card
       className={classes.chatModalContainer}
       sx={{display: open ? '' : 'none'}}
-      elevation={2}
+      variant="elevation"
     >
       {conversationSearch ? (
         <ConversationStart

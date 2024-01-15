@@ -469,6 +469,7 @@ export const Community: React.FC<CommunityProps> = ({
         <DomainListModal
           id="groupMembers"
           title={t('push.memberCount', {count: groupInfo?.members.length || 0})}
+          subtitle={t('push.memberCountDescription', {name: badge.name})}
           open={isViewingMemberList}
           onClose={() => setIsViewingMemberList(false)}
           onClick={(domain: string) =>

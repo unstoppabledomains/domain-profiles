@@ -12,9 +12,10 @@ import CardHeader from '@mui/material/CardHeader';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Skeleton from '@mui/material/Skeleton';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import type {IMessageIPFS} from '@pushprotocol/restapi';
+import type {GroupDTO, IMessageIPFS} from '@pushprotocol/restapi';
 import moment from 'moment';
 import numeral from 'numeral';
 import React, {useEffect, useState} from 'react';
@@ -134,6 +135,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
   inGroup,
   isUdBlue,
   pushKey,
+  groupInfo,
   onRefresh,
   searchTerm,
   setActiveCommunity,
@@ -334,10 +336,23 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
                   {latestMessage}
                 </Typography>
               ) : !inGroup && badgeInfo ? (
-                <Typography variant="caption">
-                  {numeral(badgeInfo.usage.holders).format('0a')}{' '}
-                  {t('badges.holder')}
-                </Typography>
+                <Tooltip
+                  title={
+                    badgeInfo
+                      ? t('badges.holderAndSubscriberCount', {
+                          subscribed: numeral(
+                            groupInfo ? groupInfo.members.length : 0,
+                          ).format('0a'),
+                        })
+                      : ''
+                  }
+                >
+                  <Typography variant="caption">
+                    {t('badges.holders', {
+                      holders: numeral(badgeInfo.usage.holders).format('0a'),
+                    })}
+                  </Typography>
+                </Tooltip>
               ) : (
                 <Skeleton variant="text" sx={{maxWidth: '75px'}} />
               )}
@@ -449,6 +464,7 @@ export type CommunityPreviewProps = {
   pushKey: string;
   searchTerm?: string;
   visible?: boolean;
+  groupInfo?: GroupDTO;
   onReload: () => Promise<void>;
   onRefresh: () => Promise<void>;
   setActiveCommunity: (v: SerializedCryptoWalletBadge) => void;

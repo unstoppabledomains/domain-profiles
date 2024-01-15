@@ -11,6 +11,8 @@ import config from '@unstoppabledomains/config';
 import {notifyError} from '../../../lib/error';
 import {sleep} from '../../../lib/sleep';
 import {getLocalKey, setLocalKey} from '../storage';
+import {fromCaip10Address} from '../types';
+import {isEthAddress} from './resolution';
 import type {W3UpKey} from './types';
 import {Upload, parseW3UpProof} from './upload';
 import {formatFileSize} from './xmtp';
@@ -281,4 +283,55 @@ export const signMessage = async (
   pushKey: string,
 ): Promise<string> => {
   return await sign({message, signingKey: pushKey});
+};
+
+export const updateBlockedList = async (
+  address: string,
+  pushKey: string,
+  add?: string[],
+  remove?: string[],
+): Promise<string[]> => {
+  // get current list of blocked addresses for user
+  const pushUser = await PushAPI.user.get({
+    account: getAddressAccount(address),
+    env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+  });
+
+  // add necessary users to blocked list
+  const blockedUsers = pushUser?.profile?.blockedUsersList || [];
+  if (add) {
+    blockedUsers.push(...add);
+  }
+
+  // remove any necessary addresses from blocked list
+  const validatedList = [...new Set(blockedUsers)]
+    .map(a => fromCaip10Address(a.toLowerCase()) || '')
+    .filter(a => a.length > 0)
+    .filter(a => a.toLowerCase() !== address.toLowerCase())
+    .filter(a => isEthAddress(a))
+    .filter(
+      blockedAddr =>
+        !remove ||
+        remove.length === 0 ||
+        !remove
+          .map(r => r.toLowerCase())
+          .includes(fromCaip10Address(blockedAddr.toLowerCase()) || ''),
+    );
+
+  // update the protocol list with blocked users and update the
+  // cached push user in local storage
+  setLocalKey(
+    address,
+    await PushAPI.user.profile.update({
+      account: getAddressAccount(address),
+      pgpPrivateKey: pushKey,
+      env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+      profile: {
+        blockedUsersList: validatedList,
+      },
+    }),
+  );
+
+  // return the aggregated blocked list
+  return validatedList;
 };

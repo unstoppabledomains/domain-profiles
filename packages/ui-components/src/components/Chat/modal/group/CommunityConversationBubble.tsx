@@ -3,9 +3,11 @@ import BlockIcon from '@mui/icons-material/Block';
 import DownloadIcon from '@mui/icons-material/Download';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import IconButton from '@mui/material/IconButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -50,6 +52,7 @@ export const CommunityConversationBubble: React.FC<
   const messageRef = useRef<HTMLElement>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isBlocking, setIsBlocking] = useState(false);
+  const [isMouseOver, setIsMouseOver] = useState(false);
   const [isDecrypting, setIsDecrypting] = useState(true);
   const [isDecryptionError, setIsDecryptionError] = useState(false);
   const [isMediaLoading, setIsMediaLoading] = useState(false);
@@ -77,6 +80,14 @@ export const CommunityConversationBubble: React.FC<
     const blockFn = blocked ? onUnblockUser : onBlockUser;
     await blockFn();
     setIsBlocking(false);
+  };
+
+  const handleMouseOver = () => {
+    setIsMouseOver(true);
+  };
+
+  const handleMouseOut = () => {
+    setIsMouseOver(false);
   };
 
   const renderPeerAvatar = async (peerAddress: string) => {
@@ -262,6 +273,20 @@ export const CommunityConversationBubble: React.FC<
       </Box>
     ) : (
       <Box
+        onMouseOver={
+          encryptedMessage.fromCAIP10
+            .toLowerCase()
+            .includes(address.toLowerCase())
+            ? undefined
+            : handleMouseOver
+        }
+        onMouseOut={
+          encryptedMessage.fromCAIP10
+            .toLowerCase()
+            .includes(address.toLowerCase())
+            ? undefined
+            : handleMouseOut
+        }
         ref={messageRef}
         className={cx(
           encryptedMessage.fromCAIP10
@@ -318,12 +343,12 @@ export const CommunityConversationBubble: React.FC<
                 <MenuItem onClick={handleBlockUser}>
                   <ListItemIcon>
                     {isBlocking ? (
-                      <CircularProgress size={16} color="inherit" />
+                      <CircularProgress size={16} color="error" />
                     ) : (
-                      <BlockIcon fontSize="small" />
+                      <BlockIcon color="error" fontSize="small" />
                     )}
                   </ListItemIcon>
-                  <Typography variant="body2">
+                  <Typography variant="body2" className={classes.blockColor}>
                     {blocked ? t('manage.unblock') : t('push.blockAndReport')}
                   </Typography>
                 </MenuItem>
@@ -405,6 +430,16 @@ export const CommunityConversationBubble: React.FC<
             onClose={() => setClickedUrl(undefined)}
           />
         )}
+        <Box onMouseOver={handleMouseOver} className={classes.optionsContainer}>
+          <IconButton onClick={handleOpenMenu}>
+            <MoreHorizIcon
+              className={
+                isMouseOver ? classes.optionsIconOn : classes.optionsIconOff
+              }
+              fontSize="small"
+            />
+          </IconButton>
+        </Box>
       </Box>
     )
   ) : (

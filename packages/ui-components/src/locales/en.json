@@ -580,6 +580,7 @@
     "loadingYourChat": "Joining chat...",
     "loadingYourChatDescription": "The group chat is being updated with your encryption keys to enable end-to-end encryption between members.",
     "memberCount": "Members ({{count}})",
+    "memberCountDescription": "Members in this list have access to messages sent to the {{name}} group chat",
     "messages": "Messages",
     "messagingAvailable": "Unstoppable Messaging available for setup",
     "messagingEnabled": "Unstoppable Messaging enabled",

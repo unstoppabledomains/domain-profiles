@@ -81,7 +81,7 @@ export const DomainListModal = (props: ModalProps) => {
       noContentPadding
     >
       {props.subtitle && (
-        <Box display="flex" width="100%" justifyItems="left">
+        <Box display="flex" width="100%" justifyItems="left" maxWidth="400px">
           <Typography variant="body2">{props.subtitle}</Typography>
         </Box>
       )}

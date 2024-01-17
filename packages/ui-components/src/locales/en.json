@@ -600,6 +600,7 @@
     "notificationsShort": "Apps",
     "open": "Show messages for {{domain}}",
     "openGroupChat": "Open group chat",
+    "reacted": "reacted",
     "searchChat": "Search wallets or domains",
     "searchCommunities": "Search groups",
     "searchNotification": "Search notifications",

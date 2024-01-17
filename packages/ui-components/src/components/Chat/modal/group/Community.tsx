@@ -39,6 +39,7 @@ import {
   updateBlockedList,
 } from '../../protocol/push';
 import {getAddressMetadata} from '../../protocol/resolution';
+import type {Reaction} from '../../protocol/types';
 import {fromCaip10Address} from '../../types';
 import CallToAction from '../CallToAction';
 import {useConversationStyles} from '../styles';
@@ -70,6 +71,7 @@ export const Community: React.FC<CommunityProps> = ({
   const [isViewableMessage, setIsViewableMessage] = useState(false);
   const [isViewingMemberList, setIsViewingMemberList] = useState(false);
   const [isViewingBlockedList, setIsViewingBlockedList] = useState(false);
+  const [emojiReactions, setEmojiReactions] = useState<Reaction[]>([]);
   const [groupInfo, setGroupInfo] = useState<GroupDTO>();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
@@ -322,6 +324,8 @@ export const Community: React.FC<CommunityProps> = ({
         onUnblockUser={async () =>
           await handleBlockSender(undefined, message.fromCAIP10)
         }
+        emojiReactions={emojiReactions}
+        setEmojiReactions={setEmojiReactions}
         renderCallback={
           message.timestamp! >= pushMessages[0].timestamp!
             ? handleOnRenderAndScroll

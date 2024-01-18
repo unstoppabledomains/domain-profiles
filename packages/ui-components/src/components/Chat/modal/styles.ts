@@ -20,6 +20,7 @@ export const useConversationBubbleStyles = makeStyles<{
     display: 'flex',
     flexDirection: 'column',
     marginBottom: theme.spacing(1),
+    position: 'relative',
   },
   msg: {
     overflow: 'hidden',
@@ -31,10 +32,45 @@ export const useConversationBubbleStyles = makeStyles<{
   },
   optionsContainer: {
     marginTop: theme.spacing(2),
-    marginRight: theme.spacing(-5),
+    marginRight: theme.spacing(-10),
     position: 'absolute',
     right: 0,
     top: 0,
+    display: 'flex',
+  },
+  emojiContainer: {
+    alignItems: 'center',
+    backgroundColor: theme.palette.white,
+    boxShadow: theme.shadows[1],
+    marginTop: theme.spacing(4),
+    marginRight: theme.spacing(1),
+    borderRadius: theme.shape.borderRadius,
+    position: 'absolute',
+    display: 'flex',
+    right: 0,
+    top: 0,
+  },
+  emoji: {
+    margin: theme.spacing(1),
+    cursor: 'pointer',
+  },
+  reactionContainer: {
+    display: 'flex',
+    marginTop: theme.spacing(-1),
+    marginBottom: theme.spacing(0.5),
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+  },
+  reaction: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: theme.shadows[1],
+    backgroundColor: theme.palette.white,
+    borderRadius: '50%',
+    marginRight: theme.spacing(-0.5),
+    width: '22px',
+    height: '22px',
   },
   blockColor: {
     color: theme.palette.error.main,
@@ -51,14 +87,14 @@ export const useConversationBubbleStyles = makeStyles<{
     textAlign: 'left',
   },
   leftMargin: {
-    marginRight: theme.spacing(5),
+    marginRight: theme.spacing(10),
   },
   rightRow: {
     display: 'inline-block',
     textAlign: 'right',
   },
   rightMargin: {
-    marginLeft: theme.spacing(5),
+    marginLeft: theme.spacing(10),
   },
   left: {
     borderTopRightRadius: theme.spacing(2.5),
@@ -88,8 +124,9 @@ export const useConversationBubbleStyles = makeStyles<{
     borderBottomRightRadius: theme.spacing(2.5),
   },
   chatDisplayName: {
-    color: theme.palette.neutralShades[800],
-    fontSize: 10,
+    color: theme.palette.neutralShades[700],
+    fontSize: 11,
+    fontWeight: 'bold',
   },
   chatTimestamp: {
     color: theme.palette.neutralShades[400],

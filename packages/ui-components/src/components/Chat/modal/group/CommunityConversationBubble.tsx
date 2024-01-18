@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import BlockIcon from '@mui/icons-material/Block';
 import DownloadIcon from '@mui/icons-material/Download';
+import EmojiEmotionsOutlinedIcon from '@mui/icons-material/EmojiEmotionsOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
 import IconButton from '@mui/material/IconButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Menu from '@mui/material/Menu';
@@ -29,9 +31,12 @@ import {
   MessageType,
   PUSH_DECRYPT_ERROR_MESSAGE,
   decryptMessage,
+  sendReaction,
 } from '../../protocol/push';
 import {getAddressMetadata} from '../../protocol/resolution';
+import type {Reaction} from '../../protocol/types';
 import {formatFileSize} from '../../protocol/xmtp';
+import {fromCaip10Address} from '../../types';
 import LinkWarningModal from '../LinkWarningModal';
 import {useConversationBubbleStyles} from '../styles';
 
@@ -43,6 +48,8 @@ export const CommunityConversationBubble: React.FC<
   message: encryptedMessage,
   pushKey,
   blocked,
+  emojiReactions,
+  setEmojiReactions,
   onBlockUser,
   onUnblockUser,
   renderCallback,
@@ -50,8 +57,10 @@ export const CommunityConversationBubble: React.FC<
   const [t] = useTranslationContext();
   const {data: featureFlags} = useFeatureFlags();
   const messageRef = useRef<HTMLElement>(null);
+  const [message, setMessage] = useState<IMessageIPFS>();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isBlocking, setIsBlocking] = useState(false);
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isMouseOver, setIsMouseOver] = useState(false);
   const [isDecrypting, setIsDecrypting] = useState(true);
   const [isDecryptionError, setIsDecryptionError] = useState(false);
@@ -61,6 +70,7 @@ export const CommunityConversationBubble: React.FC<
   const [isAttachment, setIsAttachment] = useState(false);
   const [renderedContent, setRenderedContent] = useState<React.ReactElement>();
   const [clickedUrl, setClickedUrl] = useState<string>();
+
   const {cx, classes} = useConversationBubbleStyles({isAttachment});
 
   useEffect(() => {
@@ -69,6 +79,22 @@ export const CommunityConversationBubble: React.FC<
 
   const handleOpenMenu = (e: MouseEvent<HTMLElement>) => {
     setAnchorEl(e.currentTarget);
+  };
+
+  const handleOpenEmojiPicker = () => {
+    setIsEmojiPickerOpen(true);
+  };
+
+  const handleCloseEmojiPicker = () => {
+    setIsEmojiPickerOpen(false);
+  };
+
+  const handleSendEmoji = async (e: string) => {
+    setIsEmojiPickerOpen(false);
+    if (!message?.link) {
+      return;
+    }
+    await sendReaction(message.toCAIP10, address, pushKey, message.link, e);
   };
 
   const handleCloseMenu = () => {
@@ -97,32 +123,38 @@ export const CommunityConversationBubble: React.FC<
     const addressData = await getAddressMetadata(peerAddress);
     setPeerDisplayName(addressData?.name || peerAddress);
     setPeerAvatarLink(addressData?.avatarUrl);
+    return addressData?.name || peerAddress;
   };
 
   const renderContent = async () => {
     try {
       // decrypt the message if needed
-      const message = await decryptMessage(address, pushKey, encryptedMessage);
-      if (!message) {
+      const decryptedMessage = await decryptMessage(
+        address,
+        pushKey,
+        encryptedMessage,
+      );
+      if (!decryptedMessage) {
         setIsDecryptionError(true);
         return;
       }
 
       // build message object if required from deprecated client
-      if (!message.messageObj) {
-        message.messageObj = {
+      setMessage(decryptedMessage);
+      if (!decryptedMessage.messageObj) {
+        decryptedMessage.messageObj = {
           content:
-            message.messageType === 'Text'
-              ? message.messageContent
+            decryptedMessage.messageType === 'Text'
+              ? decryptedMessage.messageContent
               : t('push.unsupportedContent'),
         };
       }
 
       // build message text to render
       const messageToRender =
-        typeof message.messageObj === 'string'
-          ? (message.messageObj as string)
-          : (message.messageObj.content as string);
+        typeof decryptedMessage.messageObj === 'string'
+          ? (decryptedMessage.messageObj as string)
+          : (decryptedMessage.messageObj.content as string);
 
       // return early if the message is not decrypted
       if (
@@ -134,13 +166,11 @@ export const CommunityConversationBubble: React.FC<
       }
 
       // load the peer avatar
-      if (!hideAvatar) {
-        await renderPeerAvatar(
-          MessageType.Meta && (message.messageObj as any)?.info?.affected
-            ? (message.messageObj as any).info.affected[0]
-            : message.fromCAIP10.replace('eip155:', ''),
-        );
-      }
+      const peerAddress =
+        MessageType.Meta && (decryptedMessage.messageObj as any)?.info?.affected
+          ? (decryptedMessage.messageObj as any).info.affected[0]
+          : decryptedMessage.fromCAIP10.replace('eip155:', '');
+      const displayName = hideAvatar ? '' : await renderPeerAvatar(peerAddress);
 
       // decorator for links
       const componentDecorator = (href: string, text: string, key: number) => (
@@ -154,7 +184,7 @@ export const CommunityConversationBubble: React.FC<
       );
 
       // handling for text content type
-      if (message.messageType === MessageType.Text) {
+      if (decryptedMessage.messageType === MessageType.Text) {
         setRenderedContent(
           <Box>
             <Linkify componentDecorator={componentDecorator}>
@@ -165,30 +195,45 @@ export const CommunityConversationBubble: React.FC<
         if (renderCallback) {
           renderCallback(messageRef);
         }
-      } else if (message.messageType === MessageType.Meta) {
+      } else if (decryptedMessage.messageType === MessageType.Reaction) {
+        if (decryptedMessage.link) {
+          emojiReactions.push({
+            messageId: (decryptedMessage.messageObj as any)?.reference,
+            senderAddress: fromCaip10Address(decryptedMessage.fromCAIP10) || '',
+            displayName: peerAddress
+              .toLowerCase()
+              .includes(address.toLowerCase())
+              ? t('common.you')
+              : displayName,
+            content: messageToRender,
+          });
+          setEmojiReactions([...emojiReactions]);
+        }
+        setRenderedContent(<Emoji>{messageToRender}</Emoji>);
+      } else if (decryptedMessage.messageType === MessageType.Meta) {
         // handling of meta message
-        const metaData = message.messageObj as any;
+        const metaData = decryptedMessage.messageObj as any;
         setRenderedContent(
           <Typography variant="caption">
             {metaData.content === 'REMOVE_MEMBER'
               ? t('common.left')
               : t('common.joined')}
-            {message.timestamp &&
-              ` @ ${new Date(message.timestamp).toLocaleTimeString()}`}
+            {decryptedMessage.timestamp &&
+              ` @ ${new Date(decryptedMessage.timestamp).toLocaleTimeString()}`}
           </Typography>,
         );
       } else if (
         // handling for remote attachments
-        message.messageType === MessageType.Media &&
+        decryptedMessage.messageType === MessageType.Media &&
         featureFlags.variations?.ecommerceServiceUsersEnableChatCommunityMedia
       ) {
         setIsMediaLoading(true);
 
         // fetch the remote media
         const mediaUrl =
-          typeof message.messageObj === 'string'
-            ? message.messageObj
-            : (message.messageObj.content as string);
+          typeof decryptedMessage.messageObj === 'string'
+            ? decryptedMessage.messageObj
+            : (decryptedMessage.messageObj.content as string);
         const fetchResponse = await fetch(mediaUrl);
 
         // process the media response
@@ -205,7 +250,7 @@ export const CommunityConversationBubble: React.FC<
                 <Zoom>
                   <img
                     className={
-                      message.fromCAIP10
+                      decryptedMessage.fromCAIP10
                         .toLowerCase()
                         .includes(address.toLowerCase())
                         ? classes.imageAttachmentRight
@@ -264,9 +309,22 @@ export const CommunityConversationBubble: React.FC<
     blocked ? null : encryptedMessage.messageType === MessageType.Meta ? (
       <Box ref={messageRef} className={classes.metadata}>
         <Typography mr={0.5} variant="caption">
-          -- {peerDisplayName}
+          -- {peerDisplayName || t('common.you')}
         </Typography>
         {renderedContent}
+        <Typography ml={0.5} variant="caption">
+          --
+        </Typography>
+      </Box>
+    ) : encryptedMessage.messageType === MessageType.Reaction ? (
+      <Box ref={messageRef} className={classes.metadata}>
+        <Typography mr={0.5} variant="caption">
+          -- {peerDisplayName || t('common.you')}{' '}
+        </Typography>
+        <Typography variant="caption">
+          {t('push.reacted')} @{' '}
+          {new Date(message?.timestamp || 0).toLocaleTimeString()}
+        </Typography>
         <Typography ml={0.5} variant="caption">
           --
         </Typography>
@@ -408,6 +466,18 @@ export const CommunityConversationBubble: React.FC<
                   renderedContent
                 )}
               </Typography>
+              <Box className={classes.reactionContainer}>
+                {emojiReactions
+                  .filter(r => r.messageId === message?.link)
+                  .sort((a, b) => a.content.localeCompare(b.content))
+                  .map(r => (
+                    <Tooltip title={r.displayName || r.senderAddress}>
+                      <Box className={classes.reaction}>
+                        <Typography variant="body2">{r.content}</Typography>
+                      </Box>
+                    </Tooltip>
+                  ))}
+              </Box>
               {encryptedMessage.timestamp && (
                 <Tooltip
                   title={new Date(encryptedMessage.timestamp).toLocaleString()}
@@ -431,14 +501,95 @@ export const CommunityConversationBubble: React.FC<
           />
         )}
         <Box onMouseOver={handleMouseOver} className={classes.optionsContainer}>
-          <IconButton onClick={handleOpenMenu}>
-            <MoreHorizIcon
+          <IconButton onClick={handleOpenEmojiPicker}>
+            <EmojiEmotionsOutlinedIcon
               className={
-                isMouseOver ? classes.optionsIconOn : classes.optionsIconOff
+                isMouseOver || isEmojiPickerOpen
+                  ? classes.optionsIconOn
+                  : classes.optionsIconOff
               }
               fontSize="small"
             />
           </IconButton>
+          <IconButton onClick={handleOpenMenu}>
+            <MoreHorizIcon
+              className={
+                isMouseOver || isEmojiPickerOpen
+                  ? classes.optionsIconOn
+                  : classes.optionsIconOff
+              }
+              fontSize="small"
+            />
+          </IconButton>
+          {isEmojiPickerOpen && (
+            <ClickAwayListener onClickAway={handleCloseEmojiPicker}>
+              <Box className={classes.emojiContainer}>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('👍')}
+                  variant="body2"
+                >
+                  👍
+                </Typography>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('👎')}
+                  variant="body2"
+                >
+                  👎
+                </Typography>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('❤️')}
+                  variant="body2"
+                >
+                  ❤️
+                </Typography>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('👏')}
+                  variant="body2"
+                >
+                  👏
+                </Typography>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('😂')}
+                  variant="body2"
+                >
+                  😂
+                </Typography>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('😢')}
+                  variant="body2"
+                >
+                  😢
+                </Typography>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('😡')}
+                  variant="body2"
+                >
+                  😡
+                </Typography>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('😲')}
+                  variant="body2"
+                >
+                  😲
+                </Typography>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('🔥')}
+                  variant="body2"
+                >
+                  🔥
+                </Typography>
+              </Box>
+            </ClickAwayListener>
+          )}
         </Box>
       </Box>
     )
@@ -484,6 +635,8 @@ export type CommunityConversationBubbleProps = {
   message: IMessageIPFS;
   pushKey: string;
   blocked?: boolean;
+  emojiReactions: Reaction[];
+  setEmojiReactions: (v: Reaction[]) => void;
   onBlockUser: () => Promise<void>;
   onUnblockUser: () => Promise<void>;
   renderCallback?: (ref: React.RefObject<HTMLElement>) => void;

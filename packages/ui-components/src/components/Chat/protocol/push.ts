@@ -22,6 +22,7 @@ export enum MessageType {
   Text = 'Text',
   Media = 'MediaEmbed',
   Meta = 'Meta',
+  Reaction = 'Reaction',
 }
 
 export const PUSH_DECRYPT_ERROR_MESSAGE = 'Unable to Decrypt Message';
@@ -215,6 +216,33 @@ export const sendMessage = async (
   sentMessage.messageObj = {
     content: message,
   };
+  return sentMessage;
+};
+
+export const sendReaction = async (
+  chatId: string,
+  address: string,
+  pushKey: string,
+  messageId: string,
+  reactionContent: string,
+) => {
+  const messageObj: PushAPI.Message = {
+    content: reactionContent,
+    type: MessageType.Reaction,
+    reference: messageId,
+  };
+  const message = {
+    account: getAddressAccount(address),
+    pgpPrivateKey: pushKey,
+    env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+    to: chatId,
+    message: messageObj,
+    messageType: messageObj.type,
+    messageObj: {
+      content: JSON.stringify(messageObj),
+    },
+  };
+  const sentMessage = await PushAPI.chat.send(message);
   return sentMessage;
 };
 

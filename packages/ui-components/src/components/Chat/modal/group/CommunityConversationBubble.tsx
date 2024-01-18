@@ -123,6 +123,7 @@ export const CommunityConversationBubble: React.FC<
     const addressData = await getAddressMetadata(peerAddress);
     setPeerDisplayName(addressData?.name || peerAddress);
     setPeerAvatarLink(addressData?.avatarUrl);
+    return addressData?.name || peerAddress;
   };
 
   const renderContent = async () => {
@@ -165,14 +166,11 @@ export const CommunityConversationBubble: React.FC<
       }
 
       // load the peer avatar
-      if (!hideAvatar) {
-        await renderPeerAvatar(
-          MessageType.Meta &&
-            (decryptedMessage.messageObj as any)?.info?.affected
-            ? (decryptedMessage.messageObj as any).info.affected[0]
-            : decryptedMessage.fromCAIP10.replace('eip155:', ''),
-        );
-      }
+      const peerAddress =
+        MessageType.Meta && (decryptedMessage.messageObj as any)?.info?.affected
+          ? (decryptedMessage.messageObj as any).info.affected[0]
+          : decryptedMessage.fromCAIP10.replace('eip155:', '');
+      const displayName = hideAvatar ? '' : await renderPeerAvatar(peerAddress);
 
       // decorator for links
       const componentDecorator = (href: string, text: string, key: number) => (
@@ -202,6 +200,11 @@ export const CommunityConversationBubble: React.FC<
           emojiReactions.push({
             messageId: (decryptedMessage.messageObj as any)?.reference,
             senderAddress: fromCaip10Address(decryptedMessage.fromCAIP10) || '',
+            displayName: peerAddress
+              .toLowerCase()
+              .includes(address.toLowerCase())
+              ? t('common.you')
+              : displayName,
             content: messageToRender,
           });
           setEmojiReactions([...emojiReactions]);
@@ -468,7 +471,7 @@ export const CommunityConversationBubble: React.FC<
                   .filter(r => r.messageId === message?.link)
                   .sort((a, b) => a.content.localeCompare(b.content))
                   .map(r => (
-                    <Tooltip title={r.senderAddress}>
+                    <Tooltip title={r.displayName || r.senderAddress}>
                       <Box className={classes.reaction}>
                         <Typography variant="body2">{r.content}</Typography>
                       </Box>
@@ -501,7 +504,9 @@ export const CommunityConversationBubble: React.FC<
           <IconButton onClick={handleOpenEmojiPicker}>
             <EmojiEmotionsOutlinedIcon
               className={
-                isMouseOver ? classes.optionsIconOn : classes.optionsIconOff
+                isMouseOver || isEmojiPickerOpen
+                  ? classes.optionsIconOn
+                  : classes.optionsIconOff
               }
               fontSize="small"
             />
@@ -509,7 +514,9 @@ export const CommunityConversationBubble: React.FC<
           <IconButton onClick={handleOpenMenu}>
             <MoreHorizIcon
               className={
-                isMouseOver ? classes.optionsIconOn : classes.optionsIconOff
+                isMouseOver || isEmojiPickerOpen
+                  ? classes.optionsIconOn
+                  : classes.optionsIconOff
               }
               fontSize="small"
             />
@@ -517,33 +524,69 @@ export const CommunityConversationBubble: React.FC<
           {isEmojiPickerOpen && (
             <ClickAwayListener onClickAway={handleCloseEmojiPicker}>
               <Box className={classes.emojiContainer}>
-                <IconButton disableRipple onClick={() => handleSendEmoji('👍')}>
-                  <Typography variant="body2">👍</Typography>
-                </IconButton>
-                <IconButton disableRipple onClick={() => handleSendEmoji('👎')}>
-                  <Typography variant="body2">👎</Typography>
-                </IconButton>
-                <IconButton disableRipple onClick={() => handleSendEmoji('❤️')}>
-                  <Typography variant="body2">❤️</Typography>
-                </IconButton>
-                <IconButton disableRipple onClick={() => handleSendEmoji('👏')}>
-                  <Typography variant="body2">👏</Typography>
-                </IconButton>
-                <IconButton disableRipple onClick={() => handleSendEmoji('😂')}>
-                  <Typography variant="body2">😂</Typography>
-                </IconButton>
-                <IconButton disableRipple onClick={() => handleSendEmoji('😢')}>
-                  <Typography variant="body2">😢</Typography>
-                </IconButton>
-                <IconButton disableRipple onClick={() => handleSendEmoji('😡')}>
-                  <Typography variant="body2">😡</Typography>
-                </IconButton>
-                <IconButton disableRipple onClick={() => handleSendEmoji('😲')}>
-                  <Typography variant="body2">😲</Typography>
-                </IconButton>
-                <IconButton disableRipple onClick={() => handleSendEmoji('🔥')}>
-                  <Typography variant="body2">🔥</Typography>
-                </IconButton>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('👍')}
+                  variant="body2"
+                >
+                  👍
+                </Typography>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('👎')}
+                  variant="body2"
+                >
+                  👎
+                </Typography>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('❤️')}
+                  variant="body2"
+                >
+                  ❤️
+                </Typography>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('👏')}
+                  variant="body2"
+                >
+                  👏
+                </Typography>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('😂')}
+                  variant="body2"
+                >
+                  😂
+                </Typography>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('😢')}
+                  variant="body2"
+                >
+                  😢
+                </Typography>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('😡')}
+                  variant="body2"
+                >
+                  😡
+                </Typography>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('😲')}
+                  variant="body2"
+                >
+                  😲
+                </Typography>
+                <Typography
+                  className={classes.emoji}
+                  onClick={() => handleSendEmoji('🔥')}
+                  variant="body2"
+                >
+                  🔥
+                </Typography>
               </Box>
             </ClickAwayListener>
           )}

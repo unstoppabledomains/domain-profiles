@@ -39,6 +39,7 @@ export const useConversationBubbleStyles = makeStyles<{
     display: 'flex',
   },
   emojiContainer: {
+    alignItems: 'center',
     backgroundColor: theme.palette.white,
     boxShadow: theme.shadows[1],
     marginTop: theme.spacing(4),
@@ -48,6 +49,10 @@ export const useConversationBubbleStyles = makeStyles<{
     display: 'flex',
     right: 0,
     top: 0,
+  },
+  emoji: {
+    margin: theme.spacing(1),
+    cursor: 'pointer',
   },
   reactionContainer: {
     display: 'flex',
@@ -119,8 +124,9 @@ export const useConversationBubbleStyles = makeStyles<{
     borderBottomRightRadius: theme.spacing(2.5),
   },
   chatDisplayName: {
-    color: theme.palette.neutralShades[800],
-    fontSize: 10,
+    color: theme.palette.neutralShades[700],
+    fontSize: 11,
+    fontWeight: 'bold',
   },
   chatTimestamp: {
     color: theme.palette.neutralShades[400],

@@ -243,7 +243,7 @@ export const CommunityConversationBubble: React.FC<
           const objectURL = URL.createObjectURL(mediaBlob);
 
           // handling for image attachment types
-          if (mediaUrl.toLowerCase().includes('image/')) {
+          if (mediaBlob.type.toLowerCase().includes('image/')) {
             // show the image content
             setRenderedContent(
               <Box>

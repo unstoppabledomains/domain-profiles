@@ -249,6 +249,9 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
         } else if (messageToRender.toLowerCase().includes('remove')) {
           return t('push.userLeftGroup');
         }
+      } else if (message.messageType === MessageType.Media) {
+        // special handling for attachments preview
+        return t('push.attachment');
       }
       return messageToRender;
     } catch (e) {

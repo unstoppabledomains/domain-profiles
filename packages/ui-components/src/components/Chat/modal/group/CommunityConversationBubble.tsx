@@ -471,7 +471,10 @@ export const CommunityConversationBubble: React.FC<
                   .filter(r => r.messageId === message?.link)
                   .sort((a, b) => a.content.localeCompare(b.content))
                   .map(r => (
-                    <Tooltip title={r.displayName || r.senderAddress}>
+                    <Tooltip
+                      key={r.messageId}
+                      title={r.displayName || r.senderAddress}
+                    >
                       <Box className={classes.reaction}>
                         <Typography variant="body2">{r.content}</Typography>
                       </Box>

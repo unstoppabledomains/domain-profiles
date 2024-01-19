@@ -60,6 +60,7 @@ export const useConversationBubbleStyles = makeStyles<{
     marginBottom: theme.spacing(0.5),
     marginLeft: theme.spacing(1),
     marginRight: theme.spacing(1),
+    zIndex: 1000,
   },
   reaction: {
     display: 'flex',
@@ -150,13 +151,13 @@ export const useConversationBubbleStyles = makeStyles<{
   },
   imageAttachmentRight: {
     borderRadius: theme.spacing(2.5, 2.5, 0, 2.5),
-    margin: theme.spacing(-1, -2, 0, -2),
+    margin: theme.spacing(-1, -2, -2, -2),
     cursor: 'pointer',
     maxWidth: '250px',
   },
   imageAttachmentLeft: {
     borderRadius: theme.spacing(2.5, 2.5, 2.5, 0),
-    margin: theme.spacing(-1, -2, 0, -2),
+    margin: theme.spacing(-1, -2, -2, -2),
     cursor: 'pointer',
     maxWidth: '250px',
   },

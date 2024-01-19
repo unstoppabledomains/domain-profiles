@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file. This
 project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.0.38
+
+- Group chat emoji reaction support
+- Group chat media support
+
 ## 0.0.37
 
 - Block list support for group chat

@@ -3,13 +3,13 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {customRender} from 'tests/test-utils';
 
-import type {
-  DomainBadgesResponse,
-  SerializedPublicDomainProfileData,
-} from '@unstoppabledomains/ui-components';
 import {
   DomainProfileKeys,
   PersonaInquiryStatus,
+} from '@unstoppabledomains/ui-components';
+import type {
+  DomainBadgesResponse,
+  SerializedPublicDomainProfileData,
 } from '@unstoppabledomains/ui-components';
 import * as badgeActions from '@unstoppabledomains/ui-components/src/actions/badgeActions';
 import * as domainActions from '@unstoppabledomains/ui-components/src/actions/domainActions';

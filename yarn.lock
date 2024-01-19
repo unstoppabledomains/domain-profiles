@@ -19,6 +19,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@adraffy/ens-normalize@npm:1.10.0":
+  version: 1.10.0
+  resolution: "@adraffy/ens-normalize@npm:1.10.0"
+  checksum: af0540f963a2632da2bbc37e36ea6593dcfc607b937857133791781e246d47f870d5e3d21fa70d5cfe94e772c284588c81ea3f5b7f4ea8fbb824369444e4dbcb
+  languageName: node
+  linkType: hard
+
 "@adraffy/ens-normalize@npm:1.9.4":
   version: 1.9.4
   resolution: "@adraffy/ens-normalize@npm:1.9.4"
@@ -3002,13 +3009,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pushprotocol/restapi@npm:1.4.45":
-  version: 1.4.45
-  resolution: "@pushprotocol/restapi@npm:1.4.45"
+"@pushprotocol/restapi@npm:1.6.3":
+  version: 1.6.3
+  resolution: "@pushprotocol/restapi@npm:1.6.3"
   dependencies:
     "@ambire/signature-validator": ^1.3.1
     "@metamask/eth-sig-util": ^5.0.2
-    "@pushprotocol/socket": ^0.5.2
     axios: ^0.27.2
     buffer: ^6.0.3
     crypto-js: ^4.1.1
@@ -3017,19 +3023,19 @@ __metadata:
     livepeer: ^2.5.8
     openpgp: ^5.5.0
     simple-peer: ^9.11.1
-    socket.io-client: ^4.5.2
+    socket.io-client: ^4.7.2
     tslib: ^2.3.0
     unique-names-generator: ^4.7.1
     uuid: ^9.0.0
     video-stream-merger: ^4.0.1
-    viem: ^1.3.0
+    viem: ^1.20.3
   peerDependencies:
-    ethers: ^5.6.8
-  checksum: 08324581fdad86fca1dc6e947263468ed010f0d1ca95d58ffeee97b4d00e64e31dec182c5cde8c3f2c3fbddec6e64e2178c2bf6b6d675919de1d51a449757216
+    ethers: ^5.0.0 || ^6.0.0
+  checksum: 2627ea4ee4e2168a4da386c57308f5fe14cfb9e68e89152380284002e72a5a94543475a8e846d1b59c9828926b565e2b279770bc8384e66fb764a1e3e07b51e0
   languageName: node
   linkType: hard
 
-"@pushprotocol/socket@npm:^0.5.1, @pushprotocol/socket@npm:^0.5.2":
+"@pushprotocol/socket@npm:^0.5.1":
   version: 0.5.2
   resolution: "@pushprotocol/socket@npm:0.5.2"
   dependencies:
@@ -4036,6 +4042,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/crypto-js@npm:^4.2.1":
+  version: 4.2.1
+  resolution: "@types/crypto-js@npm:4.2.1"
+  checksum: 2111fb39a879e6c346a657cd4994534b8ff54d34dbfe45f82587e84165af0d9a3b8448c0d9a8ddabc81b5875295ea049462e7b969dbeb7cf24ae205e66dcf15a
+  languageName: node
+  linkType: hard
+
 "@types/debug@npm:^4.0.0, @types/debug@npm:^4.1.7":
   version: 4.1.9
   resolution: "@types/debug@npm:4.1.9"
@@ -4959,7 +4972,7 @@ __metadata:
     "@mui/icons-material": 5.10.3
     "@mui/lab": 5.0.0-alpha.98
     "@mui/material": 5.10.4
-    "@pushprotocol/restapi": 1.4.45
+    "@pushprotocol/restapi": 1.6.3
     "@pushprotocol/socket": ^0.5.1
     "@solana/wallet-adapter-phantom": ^0.9.9
     "@solana/web3.js": ^1.50.1
@@ -4968,6 +4981,7 @@ __metadata:
     "@testing-library/react": ^12.1.2
     "@testing-library/react-hooks": ^7.0.2
     "@types/bluebird": 3.5.34
+    "@types/crypto-js": ^4.2.1
     "@types/humanize-plus": ^1.8.2
     "@types/jest": ^29.5.5
     "@types/lodash": ^4.14.199
@@ -18724,6 +18738,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"socket.io-client@npm:^4.7.2":
+  version: 4.7.4
+  resolution: "socket.io-client@npm:4.7.4"
+  dependencies:
+    "@socket.io/component-emitter": ~3.1.0
+    debug: ~4.3.2
+    engine.io-client: ~6.5.2
+    socket.io-parser: ~4.2.4
+  checksum: 7254f441ff5bf82cc301204b71578eff083a701fb6e636b75a42092d7806ada3b58bbb9914e150c22f50606f5b4c7290a5951605c62ff59d6d59f1aad140ead7
+  languageName: node
+  linkType: hard
+
 "socket.io-parser@npm:~4.2.4":
   version: 4.2.4
   resolution: "socket.io-parser@npm:4.2.4"
@@ -20965,11 +20991,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:^1.3.0":
-  version: 1.16.5
-  resolution: "viem@npm:1.16.5"
+"viem@npm:^1.20.3":
+  version: 1.21.4
+  resolution: "viem@npm:1.21.4"
   dependencies:
-    "@adraffy/ens-normalize": 1.9.4
+    "@adraffy/ens-normalize": 1.10.0
     "@noble/curves": 1.2.0
     "@noble/hashes": 1.3.2
     "@scure/bip32": 1.3.2
@@ -20982,7 +21008,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: cc07bbc8ebf616c2cc6e14f08eea59d1b34df294d1dcba72090bf10e224e87c17014db593bcff223fe6c7c30999448d786d67d9e18691906f51900db940af821
+  checksum: c351fdea2d53d2d781ac73c964348b3b9fc5dd46f9eb53903e867705fc9e30a893cb9f2c8d7a00acdcdeca27d14eeebf976eed9f948c28c47018dc9211369117
   languageName: node
   linkType: hard
 

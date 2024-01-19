@@ -47,6 +47,7 @@ export const useConversationBubbleStyles = makeStyles<{
     borderRadius: theme.shape.borderRadius,
     position: 'absolute',
     display: 'flex',
+    zIndex: 1001,
     right: 0,
     top: 0,
   },

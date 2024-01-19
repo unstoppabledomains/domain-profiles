@@ -36,6 +36,7 @@ import {
   MessageType,
   PUSH_DECRYPT_ERROR_MESSAGE,
   acceptGroupInvite,
+  decryptMessage,
   getLatestMessage,
 } from '../../protocol/push';
 import {fromCaip10Address} from '../../types';
@@ -137,6 +138,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
   pushKey,
   groupInfo,
   onRefresh,
+  incomingMessage,
   searchTerm,
   setActiveCommunity,
   visible,
@@ -158,14 +160,24 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
     void Promise.all([loadBadge(), loadLatest()]);
   }, [badge]);
 
+  useEffect(() => {
+    if (!incomingMessage) {
+      return;
+    }
+    if (badge.groupChatId !== incomingMessage.toDID) {
+      return;
+    }
+    void loadLatest(incomingMessage);
+  }, [incomingMessage]);
+
   const loadBadge = async () => {
     setBadgeInfo(await getBadge(badge.code));
   };
 
-  const loadLatest = async () => {
+  const loadLatest = async (msg?: IMessageIPFS) => {
     if (inGroup && badge.groupChatId) {
       // latest state already retrieved
-      if (badge.groupChatTimestamp) {
+      if (badge.groupChatTimestamp && !msg) {
         setLatestTimestamp(moment(badge.groupChatTimestamp).fromNow());
         setLatestMessage(badge.groupChatLatestMessage);
         return;
@@ -173,11 +185,9 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
 
       try {
         // retrieve latest state since it is missing
-        const msgData = await getLatestMessage(
-          badge.groupChatId,
-          address,
-          pushKey,
-        );
+        const msgData = msg
+          ? await decryptMessage(address, pushKey, msg)
+          : await getLatestMessage(badge.groupChatId, address, pushKey);
         if (msgData?.timestamp) {
           const msgBody = renderMessagePreview(msgData);
           const fromUser = fromCaip10Address(msgData.fromCAIP10);
@@ -469,6 +479,7 @@ export type CommunityPreviewProps = {
   searchTerm?: string;
   visible?: boolean;
   groupInfo?: GroupDTO;
+  incomingMessage?: IMessageIPFS;
   onReload: () => Promise<void>;
   onRefresh: () => Promise<void>;
   setActiveCommunity: (v: SerializedCryptoWalletBadge) => void;

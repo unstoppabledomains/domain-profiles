@@ -4,6 +4,7 @@ import GroupsIcon from '@mui/icons-material/GroupOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MoreVertOutlinedIcon from '@mui/icons-material/MoreVertOutlined';
+import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -19,6 +20,7 @@ import Typography from '@mui/material/Typography';
 import {styled} from '@mui/material/styles';
 import type {GroupDTO, IMessageIPFS} from '@pushprotocol/restapi';
 import Bluebird from 'bluebird';
+import {useSnackbar} from 'notistack';
 import type {MouseEvent} from 'react';
 import React, {useEffect, useState} from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
@@ -30,6 +32,8 @@ import {notifyError} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../../lib/types/badge';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
+import type {CopyModule} from '../../../CopyToClipboard';
+import {noop} from '../../../CopyToClipboard';
 import {DomainListModal} from '../../../Domain';
 import {
   PUSH_PAGE_SIZE,
@@ -65,6 +69,7 @@ export const Community: React.FC<CommunityProps> = ({
 }) => {
   const {classes} = useConversationStyles({isChatRequest: false});
   const [t] = useTranslationContext();
+  const {enqueueSnackbar} = useSnackbar();
   const [isLoading, setIsLoading] = useState(true);
   const [isMember, setIsMember] = useState(true);
   const [isLeaving, setIsLeaving] = useState(false);
@@ -192,12 +197,29 @@ export const Community: React.FC<CommunityProps> = ({
     });
   };
 
+  const handleClickToCopy = () => {
+    enqueueSnackbar(t('common.copied'), {variant: 'success'});
+  };
+
   const handleOpenMenu = (e: MouseEvent<HTMLElement>) => {
     setAnchorEl(e.currentTarget);
   };
 
   const handleCloseMenu = () => {
     setAnchorEl(null);
+  };
+
+  const handleShareInvite = () => {
+    void (import('clipboard-copy') as Promise<CopyModule>).then(
+      (mod: CopyModule) => {
+        mod
+          .default(
+            `${config.UD_ME_BASE_URL}/${authDomain}?openBadgeCode=${badge.code}&action=invite`,
+          )
+          .then(handleClickToCopy)
+          .catch(noop);
+      },
+    );
   };
 
   const handleLeaveChat = async () => {
@@ -407,6 +429,18 @@ export const Community: React.FC<CommunityProps> = ({
                   </Typography>
                 </MenuItem>
               )}
+              <MenuItem
+                onClick={() => {
+                  handleShareInvite();
+                }}
+              >
+                <ListItemIcon>
+                  <ShareOutlinedIcon fontSize="small" />
+                </ListItemIcon>
+                <Typography variant="body2">
+                  {t('push.shareInviteLink')}
+                </Typography>
+              </MenuItem>
               <MenuItem
                 onClick={async () => {
                   await handleLeaveChat();

@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file. This
 project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.0.39
+
+- Group chat dynamic preview and sorting
+- Improved styling for group chat media
+
 ## 0.0.38
 
 - Group chat emoji reaction support

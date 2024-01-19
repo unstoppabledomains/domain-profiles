@@ -89,7 +89,7 @@ export const getEnsDomainStatus = async (
   });
 };
 
-export const getReverseResolution = async (
+export const getStrictReverseResolution = async (
   address: string,
 ): Promise<string | undefined> => {
   const resolutionResponse = await fetchApi(

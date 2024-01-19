@@ -14,7 +14,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {
   getProfileData,
-  getReverseResolution,
+  getStrictReverseResolution,
   useFeatureFlags,
 } from '../../../actions';
 import {
@@ -108,7 +108,7 @@ export const Reverse: React.FC<ReverseProps> = ({address, domain}) => {
         DomainFieldTypes.Records,
         DomainFieldTypes.CryptoVerifications,
       ]),
-      getReverseResolution(address),
+      getStrictReverseResolution(address),
     ]);
     if (profileData?.metadata) {
       setIsReverse(!!profileData.metadata.reverse);

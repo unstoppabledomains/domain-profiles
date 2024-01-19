@@ -3,13 +3,13 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {customRender} from 'tests/test-utils';
 
-import type {
-  DomainBadgesResponse,
-  SerializedPublicDomainProfileData,
-} from '@unstoppabledomains/ui-components';
 import {
   DomainProfileKeys,
   PersonaInquiryStatus,
+} from '@unstoppabledomains/ui-components';
+import type {
+  DomainBadgesResponse,
+  SerializedPublicDomainProfileData,
 } from '@unstoppabledomains/ui-components';
 import * as badgeActions from '@unstoppabledomains/ui-components/src/actions/badgeActions';
 import * as domainActions from '@unstoppabledomains/ui-components/src/actions/domainActions';
@@ -179,8 +179,8 @@ describe('<DomainProfile />', () => {
       },
     });
     jest
-      .spyOn(domainActions, 'getReverseResolution')
-      .mockResolvedValue('foo.crypto');
+      .spyOn(domainProfileActions, 'getProfileReverseResolution')
+      .mockResolvedValue({address: '', name: 'foo.crypto'});
     jest.spyOn(domainProfileActions, 'getFollowers').mockResolvedValue({
       data: [{domain: 'follower1.crypto'}],
       meta: {
@@ -343,8 +343,8 @@ describe('Token gallery for multiple blockchains', () => {
       },
     });
     jest
-      .spyOn(domainActions, 'getReverseResolution')
-      .mockResolvedValue('foo.crypto');
+      .spyOn(domainProfileActions, 'getProfileReverseResolution')
+      .mockResolvedValue({address: '', name: 'foo.crypto'});
     jest.spyOn(domainProfileActions, 'getFollowers').mockResolvedValue({
       data: [{domain: 'follower1.crypto'}],
       meta: {
@@ -648,8 +648,8 @@ describe('Token gallery for single blockchain', () => {
       },
     });
     jest
-      .spyOn(domainActions, 'getReverseResolution')
-      .mockResolvedValue('foo.crypto');
+      .spyOn(domainProfileActions, 'getProfileReverseResolution')
+      .mockResolvedValue({address: '', name: 'foo.crypto'});
     jest.spyOn(domainProfileActions, 'getFollowers').mockResolvedValue({
       data: [{domain: 'follower1.crypto'}],
       meta: {
@@ -776,8 +776,8 @@ describe('Token gallery carousel', () => {
       },
     });
     jest
-      .spyOn(domainActions, 'getReverseResolution')
-      .mockResolvedValue('foo.crypto');
+      .spyOn(domainProfileActions, 'getProfileReverseResolution')
+      .mockResolvedValue({address: '', name: 'foo.crypto'});
     jest.spyOn(domainProfileActions, 'getFollowers').mockResolvedValue({
       data: [{domain: 'follower1.crypto'}],
       meta: {
@@ -1094,8 +1094,8 @@ describe('Owner operations', () => {
       },
     });
     jest
-      .spyOn(domainActions, 'getReverseResolution')
-      .mockResolvedValue('foo.crypto');
+      .spyOn(domainProfileActions, 'getProfileReverseResolution')
+      .mockResolvedValue({address: '', name: 'foo.crypto'});
     jest.spyOn(domainProfileActions, 'getFollowers').mockResolvedValue({
       data: [{domain: 'follower1.crypto'}],
       meta: {

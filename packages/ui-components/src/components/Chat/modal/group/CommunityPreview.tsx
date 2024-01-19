@@ -22,7 +22,7 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getReverseResolution} from '../../../../actions';
+import {getProfileReverseResolution} from '../../../../actions';
 import {getBadge} from '../../../../actions/badgeActions';
 import {joinBadgeGroupChat} from '../../../../actions/messageActions';
 import LearnMoreUdBlue from '../../../../components/LearnMoreUdBlue';
@@ -185,7 +185,8 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
             const fromDomain =
               fromUser.toLowerCase() === address.toLowerCase()
                 ? t('common.you')
-                : (await getReverseResolution(fromUser)) || fromUser;
+                : (await getProfileReverseResolution(fromUser))?.name ||
+                  fromUser;
             setLatestTimestamp(moment(msgData.timestamp).fromNow());
             setLatestMessage(
               msgData.messageType === MessageType.Meta
@@ -249,6 +250,9 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
         } else if (messageToRender.toLowerCase().includes('remove')) {
           return t('push.userLeftGroup');
         }
+      } else if (message.messageType === MessageType.Media) {
+        // special handling for attachments preview
+        return t('push.attachment');
       }
       return messageToRender;
     } catch (e) {

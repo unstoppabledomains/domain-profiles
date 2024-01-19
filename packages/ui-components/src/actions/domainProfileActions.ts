@@ -100,10 +100,12 @@ export const getFollowers = async (
 export const getOwnerDomains = async (
   address: string,
   cursor?: string,
+  strict?: boolean,
 ): Promise<SerializedDomainListData | undefined> => {
   const domainProfileUrl = `/user/${address.toLowerCase()}/domains?${QueryString.stringify(
     {
       take: DOMAIN_LIST_PAGE_SIZE,
+      strict,
       cursor,
     },
     {skipNulls: true},
@@ -126,12 +128,28 @@ export const getProfileData = async (
   return await fetchApi(domainProfileUrl, {host: config.PROFILE.HOST_URL});
 };
 
-export const getProfileResolution = async (
+export const getProfileReverseResolution = async (
   address: string,
 ): Promise<AddressResolution | undefined> => {
-  return await fetchApi(`/resolve/${address}`, {
+  // return defined reverse resolution name if available
+  const reverseResolution = await fetchApi(`/resolve/${address}`, {
     host: config.PROFILE.HOST_URL,
   });
+  if (reverseResolution?.name) {
+    return reverseResolution;
+  }
+
+  // return first owner domain as a fallback
+  const ownerDomains = await getOwnerDomains(address, undefined, true);
+  if (ownerDomains?.data && ownerDomains.data.length > 0) {
+    return {
+      address,
+      name: ownerDomains.data[0].domain,
+    };
+  }
+
+  // return undefined if no domains available
+  return undefined;
 };
 
 export const getProfileUserData = async (

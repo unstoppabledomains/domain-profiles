@@ -1,4 +1,4 @@
-import {getProfileResolution} from '../../../actions/domainProfileActions';
+import {getProfileReverseResolution} from '../../../actions/domainProfileActions';
 import {notifyError} from '../../../lib/error';
 import {getCachedResolution, setCachedResolution} from '../storage';
 import type {AddressResolution} from '../types';
@@ -18,7 +18,7 @@ export const getAddressMetadata = async (
   // attempt resolution
   try {
     // retrieve the reverse resolution details
-    const resolution = await getProfileResolution(sanitizedValue);
+    const resolution = await getProfileReverseResolution(sanitizedValue);
     if (resolution?.address) {
       setCachedResolution(resolution);
       return resolution;

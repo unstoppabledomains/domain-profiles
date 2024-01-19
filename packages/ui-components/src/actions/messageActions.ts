@@ -5,13 +5,13 @@ import type {TopicRegistration} from '../components/Chat/types';
 import {fetchApi} from '../lib/fetchApi';
 import type {SerializedCryptoWalletBadge} from '../lib/types/badge';
 import type {ConsentPreferences, SendMessageParams} from '../lib/types/message';
-import {getReverseResolution} from './domainActions';
+import {getProfileReverseResolution} from './domainProfileActions';
 
 export const getUnstoppableConsents = async (address: string) => {
-  const domain = await getReverseResolution(address);
-  if (domain) {
+  const domain = await getProfileReverseResolution(address);
+  if (domain?.name) {
     return await fetchApi<ConsentPreferences>(
-      `/user/${domain}/notifications/preferences`,
+      `/user/${domain.name}/notifications/preferences`,
       {
         host: config.PROFILE.HOST_URL,
       },

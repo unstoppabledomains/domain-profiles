@@ -1,6 +1,6 @@
 import config from '@unstoppabledomains/config';
 
-import {getReverseResolution} from '../../actions/domainActions';
+import {getProfileReverseResolution} from '../../actions';
 import {DomainProfileKeys} from '../../lib/types/domain';
 import type {LoginResult} from '../../lib/types/wallet';
 import {getUAuth} from '../../lib/uauth';
@@ -20,7 +20,8 @@ export const loginWithAddress = async (
       // wait for wallet connection
       loginResult.address = address.toLowerCase();
       loginResult.domain =
-        (await getReverseResolution(loginResult.address)) || 'Wallet';
+        (await getProfileReverseResolution(loginResult.address))?.name ||
+        'Wallet';
     } else {
       // complete the login with UD flow
       const uauth = await getUAuth({
@@ -35,7 +36,7 @@ export const loginWithAddress = async (
       // determine the user's primary domain (if available)
       loginResult.address = authorization.idToken.wallet_address.toLowerCase();
       loginResult.domain =
-        (await getReverseResolution(loginResult.address)) ||
+        (await getProfileReverseResolution(loginResult.address))?.name ||
         authorization.idToken.sub;
     }
 

@@ -18,11 +18,9 @@ import React, {useContext, useEffect, useState} from 'react';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {getProfileReverseResolution} from '../../actions';
 import {getNotificationConfigurations} from '../../actions/backendActions';
-import {
-  getDomainBadges,
-  getReverseResolution,
-} from '../../actions/domainActions';
+import {getDomainBadges} from '../../actions/domainActions';
 import {isAddressSpam, joinBadgeGroupChat} from '../../actions/messageActions';
 import {AccessWalletModal} from '../../components/Wallet/AccessWallet';
 import {parsePartnerMetadata} from '../../hooks/useFetchNotification';
@@ -270,9 +268,9 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
 
       // check address reverse resolution if domain is not provided
       if (!chatUser) {
-        const addressName = await getReverseResolution(chatAddress);
-        if (addressName) {
-          setChatUser(addressName);
+        const addressName = await getProfileReverseResolution(chatAddress);
+        if (addressName?.name) {
+          setChatUser(addressName.name);
         }
       }
 
@@ -368,9 +366,9 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
 
     // if chat address is not set, retrieve it from the domain resolution
     if (!chatAddress) {
-      const resolutionAddress = await getReverseResolution(chatUser);
-      if (resolutionAddress) {
-        setChatAddress(resolutionAddress);
+      const resolutionAddress = await getProfileReverseResolution(chatUser);
+      if (resolutionAddress?.address) {
+        setChatAddress(resolutionAddress.address);
       }
     }
 

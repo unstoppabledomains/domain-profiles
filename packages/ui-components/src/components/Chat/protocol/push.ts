@@ -1,5 +1,8 @@
 import type {IMessageIPFS} from '@pushprotocol/restapi';
 import * as PushAPI from '@pushprotocol/restapi';
+import {aesDecrypt} from '@pushprotocol/restapi/src/lib/chat/helpers';
+import {getEncryptedSecret} from '@pushprotocol/restapi/src/lib/chat/helpers/getEncryptedSecret';
+import * as PGP from '@pushprotocol/restapi/src/lib/chat/helpers/pgp';
 import {sign} from '@pushprotocol/restapi/src/lib/chat/helpers/pgp';
 import {ENV} from '@pushprotocol/restapi/src/lib/constants';
 import * as Web3Signer from '@ucanto/principal/ed25519';
@@ -73,20 +76,65 @@ export const decryptMessage = async (
     if (!connectedUser) {
       return undefined;
     }
-    const decryptedMessage = await PushAPI.chat.decryptConversation({
-      env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-      pgpPrivateKey: pushKey,
-      messages: [msg],
-      connectedUser,
-    });
-    if (msg.link && decryptedMessage.length > 0) {
-      setLocalKey<IMessageIPFS>(msg.link, decryptedMessage[0]);
-      return decryptedMessage[0];
+
+    // decrypt the message with PGP
+    const decryptedMessage = await decryptMessageWithPGP(
+      msg,
+      pushKey,
+      config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+    );
+
+    if (msg.link && decryptedMessage) {
+      setLocalKey<IMessageIPFS>(msg.link, decryptedMessage);
+      return decryptedMessage;
     }
   } catch (e) {
     notifyError(e, {msg: 'error decrypting message'});
   }
   return undefined;
+};
+
+export const decryptMessageWithPGP = async (
+  message: IMessageIPFS | PushAPI.IMessageIPFSWithCID,
+  pgpPrivateKey: string,
+  env: ENV,
+  pgpHelper = PGP.PGPHelper,
+): Promise<IMessageIPFS | PushAPI.IMessageIPFSWithCID | undefined> => {
+  const decryptedMessage: IMessageIPFS | PushAPI.IMessageIPFSWithCID = {
+    ...message,
+  };
+  try {
+    if (message.encType === 'pgpv1:group') {
+      message.encryptedSecret = await getEncryptedSecret({
+        sessionKey: message.sessionKey as string,
+        env,
+      });
+    }
+    const secretKey: string = await pgpHelper.pgpDecrypt({
+      cipherText: message.encryptedSecret,
+      toPrivateKeyArmored: pgpPrivateKey,
+    });
+    decryptedMessage.messageContent = aesDecrypt({
+      cipherText: message.messageContent,
+      secretKey,
+    });
+    if (message.messageObj) {
+      const plainText = aesDecrypt({
+        cipherText: message.messageObj as string,
+        secretKey,
+      });
+      try {
+        decryptedMessage.messageObj = JSON.parse(plainText);
+      } catch (parseErr) {
+        decryptedMessage.messageObj = plainText;
+      }
+    }
+  } catch (err) {
+    notifyError(err, {msg: 'error decrypting message'});
+    return undefined;
+  }
+
+  return decryptedMessage;
 };
 
 // getAddressAccount normalizes expected account format

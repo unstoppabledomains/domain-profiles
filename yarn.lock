@@ -4042,6 +4042,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/crypto-js@npm:^4.2.1":
+  version: 4.2.1
+  resolution: "@types/crypto-js@npm:4.2.1"
+  checksum: 2111fb39a879e6c346a657cd4994534b8ff54d34dbfe45f82587e84165af0d9a3b8448c0d9a8ddabc81b5875295ea049462e7b969dbeb7cf24ae205e66dcf15a
+  languageName: node
+  linkType: hard
+
 "@types/debug@npm:^4.0.0, @types/debug@npm:^4.1.7":
   version: 4.1.9
   resolution: "@types/debug@npm:4.1.9"
@@ -4974,6 +4981,7 @@ __metadata:
     "@testing-library/react": ^12.1.2
     "@testing-library/react-hooks": ^7.0.2
     "@types/bluebird": 3.5.34
+    "@types/crypto-js": ^4.2.1
     "@types/humanize-plus": ^1.8.2
     "@types/jest": ^29.5.5
     "@types/lodash": ^4.14.199

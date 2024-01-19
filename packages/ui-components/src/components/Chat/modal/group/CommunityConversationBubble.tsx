@@ -368,7 +368,7 @@ export const CommunityConversationBubble: React.FC<
               : classes.avatarContainer
           }
         >
-          {peerAvatarLink && peerDisplayName && (
+          {peerDisplayName && (
             <Box>
               <Tooltip title={peerDisplayName}>
                 <Avatar

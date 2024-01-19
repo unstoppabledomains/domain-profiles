@@ -1007,6 +1007,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                       domain={authDomain}
                       pushKey={pushKey}
                       searchTerm={searchValue}
+                      incomingMessage={incomingGroup}
                       setActiveCommunity={setActiveCommunity}
                     />
                   ) : (

@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import type {GroupDTO} from '@pushprotocol/restapi';
+import type {GroupDTO, IMessageIPFS} from '@pushprotocol/restapi';
 import Bluebird from 'bluebird';
 import React, {useEffect, useState} from 'react';
 
@@ -57,6 +57,7 @@ export const CommunityList: React.FC<CommunityListProps> = ({
   domain,
   pushKey,
   searchTerm,
+  incomingMessage,
   setActiveCommunity,
 }) => {
   const {classes} = useStyles();
@@ -197,6 +198,7 @@ export const CommunityList: React.FC<CommunityListProps> = ({
               onReload={loadBadges}
               onRefresh={refreshBadges}
               searchTerm={searchTerm}
+              incomingMessage={incomingMessage}
               setActiveCommunity={setActiveCommunity}
               visible={!inGroup(badge.groupChatId) || isSorted}
             />
@@ -218,6 +220,7 @@ export type CommunityListProps = {
   domain: string;
   pushKey: string;
   searchTerm?: string;
+  incomingMessage?: IMessageIPFS;
   setActiveCommunity: (v: SerializedCryptoWalletBadge) => void;
 };
 

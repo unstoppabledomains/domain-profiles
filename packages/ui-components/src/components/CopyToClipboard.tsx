@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import type {ReactNode} from 'react';
 import React from 'react';
 
-type CopyModule = {default: (text: string) => Promise<void>};
+export type CopyModule = {default: (text: string) => Promise<void>};
 
 export const noop = () => {};
 

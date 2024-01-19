@@ -635,6 +635,7 @@
       "title": "Unstoppable Messaging",
       "yourWallet": "your wallet"
     },
+    "shareInviteLink": "Share invite",
     "showRequests": "View chat requests ({{count}})",
     "spamWarning": "Others have reported this sender as spam",
     "typeMessage": "Type your message...",

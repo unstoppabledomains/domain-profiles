@@ -78,10 +78,6 @@ const swiperCss = `
  }
 `;
 
-const getValue = (usdValue?: string) => {
-  return parseFloat(usdValue?.replaceAll('$', '')?.replaceAll(',', '') || '0');
-};
-
 export const DomainWalletList: React.FC<DomainWalletListProps> = ({
   domain,
   isOwner,
@@ -103,7 +99,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
 
   // calculate total balance
   const totalValue = wallets
-    .map(w => getValue(w.value?.walletUsd))
+    .map(w => w.totalValueUsdAmt || 0)
     .reduce((sum, current) => sum + current, 0);
 
   SwiperCore.use([Autoplay, Navigation]);
@@ -180,17 +176,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
           <>
             {wallets
               .sort(
-                (a, b) =>
-                  parseFloat(
-                    b.value?.walletUsd
-                      ?.replaceAll('$', '')
-                      ?.replaceAll(',', '') || '0',
-                  ) -
-                  parseFloat(
-                    a.value?.walletUsd
-                      ?.replaceAll('$', '')
-                      ?.replaceAll(',', '') || '0',
-                  ),
+                (a, b) => (b.totalValueUsdAmt || 0) - (a.totalValueUsdAmt || 0),
               )
               .map((wallet, index) => (
                 <SwiperSlide

@@ -354,12 +354,7 @@ export type SerializedUserDomainProfileData =
     };
   };
 
-export type SerializedWalletBalance = {
-  symbol: string;
-  name: string;
-  address: string;
-  type: 'native' | 'token';
-  balance?: string;
+export type SerializedWalletBalance = SerializedWalletToken & {
   firstTx?: Date;
   lastTx?: Date;
   stats?: {
@@ -368,11 +363,25 @@ export type SerializedWalletBalance = {
     transactions?: string;
     transfers?: string;
   };
+  tokens?: SerializedWalletToken[];
+  blockchainScanUrl: string;
+  totalValueUsd?: string;
+  totalValueUsdAmt?: number;
+};
+
+export type SerializedWalletToken = {
+  type: 'native' | 'erc20';
+  address: string;
+  symbol: string;
+  name: string;
+  logoUrl?: string;
+  balance?: string;
   value?: {
     marketUsd?: string;
+    marketUsdAmt?: number;
     walletUsd?: string;
+    walletUsdAmt?: number;
   };
-  blockchainScanUrl: string;
 };
 
 export type SocialAccountUserInfo =

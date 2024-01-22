@@ -8,6 +8,7 @@ import MoreVertOutlinedIcon from '@mui/icons-material/MoreVertOutlined';
 import QrCode2OutlinedIcon from '@mui/icons-material/QrCode2Outlined';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import TollOutlinedIcon from '@mui/icons-material/TollOutlined';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -85,7 +86,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
       theme.palette.neutralShades[bgNeutralShade - 200]
     }, ${theme.palette.neutralShades[bgNeutralShade]})`,
     height: '100%',
-    minHeight: '210px',
+    minHeight: '235px',
   },
   detailsContainer: {
     display: 'flex',
@@ -120,6 +121,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     alignItems: 'center',
     marginTop: theme.spacing(1),
+    width: 'calc(100%  - 1px)',
+    justifyContent: 'space-between',
   },
   subTitle: {
     color: theme.palette.neutralShades[bgNeutralShade - 400],
@@ -243,6 +246,7 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
                   handleFindUsersClick();
                 }}
                 disabled={true}
+                sx={{display: 'none'}}
               >
                 <ListItemIcon>
                   <GroupAddOutlinedIcon className={classes.actionIcon} />
@@ -263,63 +267,125 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
             <Divider className={classes.divider} />
             {wallet.stats?.transactions && (
               <Box className={classes.statsContainer}>
-                <ReceiptLongOutlinedIcon className={classes.detailsIcon} />
-                <Typography className={classes.detailsText} variant="caption">
-                  {wallet.stats.transactions}{' '}
-                  {t('verifiedWallets.transactions')}
-                </Typography>
+                <Box display="flex" alignItems="center">
+                  <ReceiptLongOutlinedIcon className={classes.detailsIcon} />
+                  <Typography className={classes.detailsText} variant="caption">
+                    {wallet.stats.transactions}{' '}
+                    {parseInt(wallet.stats.transactions, 10) === 1
+                      ? t('verifiedWallets.transaction')
+                      : t('verifiedWallets.transactions')}
+                  </Typography>
+                </Box>
               </Box>
             )}
             {wallet.firstTx ? (
               <Box className={classes.statsContainer}>
-                <HistoryIcon className={classes.detailsIcon} />
-                <Tooltip
-                  title={t('verifiedWallets.firstTxDate', {
-                    date: new Date(wallet.firstTx).toLocaleDateString(),
-                  })}
-                >
-                  <Typography className={classes.detailsText} variant="caption">
-                    {t('verifiedWallets.first')}{' '}
-                    {new Date(wallet.firstTx).getFullYear()}
-                  </Typography>
-                </Tooltip>
-              </Box>
-            ) : (
-              wallet.lastTx && (
-                <Box className={classes.statsContainer}>
+                <Box display="flex" alignItems="center">
                   <HistoryIcon className={classes.detailsIcon} />
                   <Tooltip
-                    title={t('verifiedWallets.lastTxDate', {
-                      date: new Date(wallet.lastTx).toLocaleDateString(),
+                    title={t('verifiedWallets.firstTxDate', {
+                      date: new Date(wallet.firstTx).toLocaleDateString(),
                     })}
                   >
                     <Typography
                       className={classes.detailsText}
                       variant="caption"
                     >
-                      {t('verifiedWallets.last')}{' '}
-                      {new Date(wallet.lastTx).getFullYear()}
+                      {t('verifiedWallets.first')}{' '}
+                      {new Date(wallet.firstTx).getFullYear()}
                     </Typography>
                   </Tooltip>
+                </Box>
+              </Box>
+            ) : (
+              wallet.lastTx && (
+                <Box className={classes.statsContainer}>
+                  <Box display="flex" alignItems="center">
+                    <HistoryIcon className={classes.detailsIcon} />
+                    <Tooltip
+                      title={t('verifiedWallets.lastTxDate', {
+                        date: new Date(wallet.lastTx).toLocaleDateString(),
+                      })}
+                    >
+                      <Typography
+                        className={classes.detailsText}
+                        variant="caption"
+                      >
+                        {t('verifiedWallets.last')}{' '}
+                        {new Date(wallet.lastTx).getFullYear()}
+                      </Typography>
+                    </Tooltip>
+                  </Box>
                 </Box>
               )
             )}
             {wallet.stats?.nfts && (
               <Box className={classes.statsContainer}>
-                <CollectionsOutlinedIcon className={classes.detailsIcon} />
-                <Typography className={classes.detailsText} variant="caption">
-                  {wallet.stats.nfts} {t('verifiedWallets.nfts')}
-                </Typography>
+                <Box display="flex" alignItems="center">
+                  <CollectionsOutlinedIcon className={classes.detailsIcon} />
+                  <Typography className={classes.detailsText} variant="caption">
+                    {wallet.stats.nfts}{' '}
+                    {parseInt(wallet.stats.nfts, 10) === 1
+                      ? t('verifiedWallets.nft')
+                      : t('verifiedWallets.nfts')}
+                  </Typography>
+                </Box>
               </Box>
             )}
+            {wallet.tokens && wallet.tokens.length > 0 && (
+              <Tooltip
+                title={
+                  <Box display="flex" flexDirection="column">
+                    {wallet.tokens
+                      .sort(
+                        (a, b) =>
+                          (b.value?.walletUsdAmt || 0) -
+                          (a.value?.walletUsdAmt || 0),
+                      )
+                      .map(walletToken => (
+                        <Typography variant="caption" key={walletToken.name}>
+                          - {walletToken.name} (
+                          {walletToken.value?.walletUsd || '$0.00'})
+                        </Typography>
+                      ))}
+                  </Box>
+                }
+              >
+                <Box className={classes.statsContainer}>
+                  <Box display="flex" alignItems="center">
+                    <TollOutlinedIcon className={classes.detailsIcon} />
+                    <Typography
+                      className={classes.detailsText}
+                      variant="caption"
+                    >
+                      {wallet.tokens.length}{' '}
+                      {wallet.tokens.length === 1
+                        ? t('verifiedWallets.token')
+                        : t('verifiedWallets.tokens')}
+                    </Typography>
+                  </Box>
+                  <Box mr={1}></Box>
+                  <Box display="flex" alignItems="center">
+                    <MonetizationOnIcon className={classes.detailsIcon} />
+                    <Typography
+                      className={classes.balanceUsd}
+                      variant="caption"
+                    >
+                      {wallet.tokens
+                        .map(
+                          walletToken => walletToken.value?.walletUsdAmt || 0,
+                        )
+                        .reduce((p, c) => p + c, 0)
+                        .toLocaleString('en-US', {
+                          style: 'currency',
+                          currency: 'USD',
+                        })}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Tooltip>
+            )}
             <Box className={classes.balanceContainer}>
-              <Box display="flex" alignItems="center">
-                <MonetizationOnIcon className={classes.detailsIcon} />
-                <Typography className={classes.balanceUsd} variant="caption">
-                  {wallet.value?.walletUsd}
-                </Typography>
-              </Box>
-              <Box mr={1}></Box>
               <Box display="flex" alignItems="center">
                 <AccountBalanceWalletIcon className={classes.detailsIcon} />
                 <Typography className={classes.balanceNative} variant="caption">
@@ -327,6 +393,13 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
                     ? '~ 0'
                     : nativeAmountDisplay}{' '}
                   {wallet.symbol}
+                </Typography>
+              </Box>
+              <Box mr={1}></Box>
+              <Box display="flex" alignItems="center">
+                <MonetizationOnIcon className={classes.detailsIcon} />
+                <Typography className={classes.balanceUsd} variant="caption">
+                  {wallet.value?.walletUsd}
                 </Typography>
               </Box>
             </Box>

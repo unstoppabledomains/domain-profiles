@@ -17,7 +17,7 @@ export type NftMintItem = NftRequestItem & {
   symbol: string;
 };
 
-export const NftPageSize = 10;
+export const NftPageSize = 25;
 
 export interface NftRequestItem {
   mint: string;

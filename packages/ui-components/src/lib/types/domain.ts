@@ -383,7 +383,7 @@ export type SerializedWalletNftCollection = {
   floorPrice?: SerializedFloorPrice[];
   latestAcquiredDate: Date;
   name: string;
-  nftIds: string[];
+  nftIds?: string[];
   ownedCount: number;
   totalOwners: number;
   totalSupply: number;

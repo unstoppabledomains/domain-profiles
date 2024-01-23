@@ -279,6 +279,12 @@ export type SerializedDomainSocialAccount = {
   public?: boolean;
 };
 
+export type SerializedFloorPrice = {
+  marketPlaceName: string;
+  valueUsd: string;
+  valueUsdAmt: number;
+};
+
 export type SerializedFollowerListData = {
   data: Array<{
     domain: string;
@@ -363,8 +369,24 @@ export type SerializedWalletBalance = SerializedWalletToken & {
     transactions?: string;
     transfers?: string;
   };
+  nfts?: SerializedWalletNftCollection[];
   tokens?: SerializedWalletToken[];
   blockchainScanUrl: string;
+  totalValueUsd?: string;
+  totalValueUsdAmt?: number;
+};
+
+export type SerializedWalletNftCollection = {
+  category?: string;
+  contractAddresses: string[];
+  description?: string;
+  floorPrice?: SerializedFloorPrice[];
+  latestAcquiredDate: Date;
+  name: string;
+  nftIds: string[];
+  ownedCount: number;
+  totalOwners: number;
+  totalSupply: number;
   totalValueUsd?: string;
   totalValueUsdAmt?: number;
 };

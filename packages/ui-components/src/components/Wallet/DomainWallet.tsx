@@ -320,23 +320,68 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
               )
             )}
             {wallet.stats?.nfts && (
-              <Box className={classes.statsContainer}>
-                <Box display="flex" alignItems="center">
-                  <CollectionsOutlinedIcon className={classes.detailsIcon} />
-                  <Typography className={classes.detailsText} variant="caption">
-                    {wallet.stats.nfts}{' '}
-                    {parseInt(wallet.stats.nfts, 10) === 1
-                      ? t('verifiedWallets.nft')
-                      : t('verifiedWallets.nfts')}
-                  </Typography>
+              <Tooltip
+                title={
+                  <Box display="flex" flexDirection="column">
+                    {wallet.nfts
+                      ?.filter(nftCollection => nftCollection.totalValueUsdAmt)
+                      .sort(
+                        (a, b) =>
+                          (b.totalValueUsdAmt || 0) - (a.totalValueUsdAmt || 0),
+                      )
+                      .map(nftCollection => (
+                        <Typography variant="caption" key={nftCollection.name}>
+                          - {nftCollection.name} (
+                          {nftCollection.totalValueUsd || '$0.00'})
+                        </Typography>
+                      ))
+                      .slice(0, 10)}
+                  </Box>
+                }
+              >
+                <Box className={classes.statsContainer}>
+                  <Box display="flex" alignItems="center">
+                    <CollectionsOutlinedIcon className={classes.detailsIcon} />
+                    <Typography
+                      className={classes.detailsText}
+                      variant="caption"
+                    >
+                      {wallet.stats.nfts}{' '}
+                      {parseInt(wallet.stats.nfts, 10) === 1
+                        ? t('verifiedWallets.nft')
+                        : t('verifiedWallets.nfts')}
+                    </Typography>
+                  </Box>
+                  <Box mr={1}></Box>
+                  {wallet.nfts && (
+                    <Box display="flex" alignItems="center">
+                      <MonetizationOnIcon className={classes.detailsIcon} />
+                      <Typography
+                        className={classes.balanceUsd}
+                        variant="caption"
+                      >
+                        {wallet.nfts
+                          ?.map(
+                            nftCollection =>
+                              nftCollection.totalValueUsdAmt || 0,
+                          )
+                          .reduce((p, c) => p + c, 0)
+                          .toLocaleString('en-US', {
+                            style: 'currency',
+                            currency: 'USD',
+                          })}
+                      </Typography>
+                    </Box>
+                  )}
                 </Box>
-              </Box>
+              </Tooltip>
             )}
             {wallet.tokens && wallet.tokens.length > 0 && (
               <Tooltip
                 title={
                   <Box display="flex" flexDirection="column">
                     {wallet.tokens
+                      .filter(walletToken => walletToken.value?.walletUsdAmt)
                       .sort(
                         (a, b) =>
                           (b.value?.walletUsdAmt || 0) -
@@ -347,7 +392,8 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
                           - {walletToken.name} (
                           {walletToken.value?.walletUsd || '$0.00'})
                         </Typography>
-                      ))}
+                      ))
+                      .slice(0, 10)}
                   </Box>
                 }
               >

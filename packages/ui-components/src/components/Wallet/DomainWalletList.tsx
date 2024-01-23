@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import numeral from 'numeral';
 import React from 'react';
 import SwiperCore, {Autoplay, Navigation} from 'swiper';
 import {Swiper, SwiperSlide} from 'swiper/react';
@@ -109,6 +110,10 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
     setConfigOpen(true);
   };
 
+  const getDisplayBalance = (balanceUsd: number): string => {
+    return numeral(balanceUsd).format('$0.00a');
+  };
+
   // render the wallet list
   return (
     <Box className={classes.walletContainer}>
@@ -121,12 +126,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
           <Typography variant="h6">{t('verifiedWallets.title')}</Typography>
           {totalValue > 0 && (
             <Typography variant="body2" className={classes.totalValue}>
-              (
-              {totalValue.toLocaleString('en-US', {
-                style: 'currency',
-                currency: 'USD',
-              })}
-              )
+              ({getDisplayBalance(totalValue)})
             </Typography>
           )}
         </Box>

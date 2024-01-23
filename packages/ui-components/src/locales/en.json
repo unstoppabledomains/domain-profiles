@@ -680,6 +680,8 @@
     "title": "Verified Wallets",
     "token": "Token",
     "tokens": "Tokens",
+    "topNfts": "Top NFTs",
+    "topTokens": "Top Tokens",
     "transaction": "Transaction",
     "transactions": "Transactions",
     "verifiedOnly": "Ownership by {{domain}} has been verified",

@@ -72,6 +72,7 @@ export enum DomainFieldTypes {
   WebacyScore = 'webacyScore',
   Market = 'market',
   Portfolio = 'portfolio',
+  WalletBalances = 'walletBalances',
 }
 
 export enum DomainProfileKeys {

@@ -49,6 +49,7 @@ import type {
   SerializedCryptoWalletBadge,
   SerializedDomainProfileSocialAccountsUserInfo,
   SerializedPublicDomainProfileData,
+  SerializedWalletBalance,
 } from '@unstoppabledomains/ui-components';
 import {
   AccountButton,
@@ -148,6 +149,8 @@ const DomainProfile = ({
   const [badges, setBadges] = useState<DomainBadgesResponse>();
   const [badgesDisabled, setBadgesDisabled] = useState(true);
   const [records, setRecords] = useState<Record<string, string>>({});
+  const [walletBalances, setWalletBalances] =
+    useState<SerializedWalletBalance[]>();
   const [metadata, setMetadata] = useState<Record<string, string | boolean>>(
     {},
   );
@@ -392,7 +395,7 @@ const DomainProfile = ({
     // retrieve additional profile data at page load time
     const loadAll = async () => {
       // non blocking page elements
-      void Promise.all([loadBadges(), loadWebacyScore()]);
+      void Promise.all([loadBadges(), loadWallets(), loadWebacyScore()]);
 
       // blocking page elements
       await Promise.all([loadCryptoRecords()]);
@@ -427,8 +430,21 @@ const DomainProfile = ({
           profileData.records = recordsData.records;
           setRecords(recordsData.records);
         }
+      } catch (e) {
+        notifyError(e, {msg: 'error loading webacy score'});
+      }
+    }
+  };
+
+  const loadWallets = async () => {
+    if (profileData) {
+      try {
+        const recordsData = await getProfileData(domain, [
+          DomainFieldTypes.WalletBalances,
+        ]);
         if (recordsData?.walletBalances) {
           profileData.walletBalances = recordsData.walletBalances;
+          setWalletBalances(recordsData.walletBalances);
         }
       } catch (e) {
         notifyError(e, {msg: 'error loading webacy score'});
@@ -1104,13 +1120,11 @@ const DomainProfile = ({
         </Grid>
         {isLoaded ? (
           <Grid item xs={12} sm={12} md={8} className={classes.item}>
-            {profileData?.walletBalances && (
-              <DomainWalletList
-                wallets={profileData.walletBalances}
-                domain={domain}
-                isOwner={isOwner}
-              />
-            )}
+            <DomainWalletList
+              wallets={walletBalances}
+              domain={domain}
+              isOwner={isOwner}
+            />
             {profileData?.cryptoVerifications &&
               profileData.cryptoVerifications.length > 0 && (
                 <TokenGallery
@@ -1120,7 +1134,7 @@ const DomainProfile = ({
                   ownerAddress={ownerAddress}
                   profileServiceUrl={config.PROFILE.HOST_URL}
                   hideConfigureButton={true}
-                  totalCount={profileData?.walletBalances
+                  totalCount={walletBalances
                     ?.map(w => (w.stats?.nfts ? parseInt(w.stats.nfts, 10) : 0))
                     .reduce((prev, curr) => prev + curr, 0)}
                 />

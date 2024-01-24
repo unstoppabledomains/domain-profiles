@@ -314,6 +314,8 @@ export type SerializedPortfolioSummary = {
       storeCredit: number;
       promoCredit: number;
     };
+    value?: string;
+    valueAmt?: number;
   };
 };
 

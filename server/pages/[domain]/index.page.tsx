@@ -34,6 +34,7 @@ import {shuffle} from 'lodash';
 import type {GetServerSideProps} from 'next';
 import {NextSeo} from 'next-seo';
 import {useSnackbar} from 'notistack';
+import numeral from 'numeral';
 import QueryString from 'qs';
 import React, {useEffect, useState} from 'react';
 import useIsMounted from 'react-is-mounted-hook';
@@ -1348,6 +1349,15 @@ const DomainProfile = ({
           title={t('profile.totalDomains', {
             count: profileData.portfolio.account.domainCount,
           })}
+          subtitle={
+            profileData?.portfolio?.account?.valueAmt
+              ? t('profile.portfolioValue', {
+                  value: numeral(
+                    profileData.portfolio.account.valueAmt / 100,
+                  ).format('$0.00a'),
+                })
+              : undefined
+          }
           retrieveDomains={retrieveOwnerDomains}
           open={showOtherDomainsModal}
           setWeb3Deps={setWeb3Deps}

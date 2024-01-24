@@ -485,6 +485,7 @@
     "openSea": "OpenSea",
     "otherDomains": "{{count}} Other domains",
     "ownerAddress": "Owned by {{address}}",
+    "portfolioValue": "Total value {{value}} based on purchase price",
     "primaryDomain": "Address {{address}} resolves to primary domain {{domain}}",
     "privacySettings": "Privacy settings",
     "purchaseBreakdown": "Cash: {{cash}}, Promo credit: {{promoCredit}}",

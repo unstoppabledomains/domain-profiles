@@ -189,6 +189,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 
   attributeContainer: {
+    display: 'flex',
+    flexDirection: 'column',
     marginBottom: theme.spacing(1),
     marginRight: theme.spacing(1),
     backgroundColor: theme.palette.neutralShades[600],
@@ -503,11 +505,11 @@ const NftModal: React.FC<NftModalProps> = ({
                     >
                       <Typography
                         className={classes.nftDetailsSectionName}
-                        variant="body1"
+                        variant="caption"
                       >
                         {trait}
                       </Typography>
-                      <Typography variant="subtitle2">
+                      <Typography variant="caption" fontWeight="bold">
                         {nft.traits![trait]}
                       </Typography>
                     </div>

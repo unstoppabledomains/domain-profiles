@@ -17,6 +17,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -370,44 +372,68 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
                         {allTokens.filter(
                           walletToken => walletToken.type === 'NFT',
                         ).length > 0 && (
-                          <Typography variant="body2" fontWeight="bold">
-                            {t('verifiedWallets.topNfts')}
-                          </Typography>
-                        )}
-                        {allTokens
-                          .filter(walletToken => walletToken.type === 'NFT')
-                          .sort((a, b) => b.value - a.value)
-                          .map(walletToken => (
-                            <Typography
-                              variant="caption"
-                              key={walletToken.name}
-                            >
-                              - {walletToken.name} (
-                              {getDisplayBalance(walletToken.value)})
+                          <>
+                            <Typography variant="body2" fontWeight="bold">
+                              {t('verifiedWallets.topNfts')}
                             </Typography>
-                          ))
-                          .slice(0, tokenSummaryCount)}
+                            <Typography variant="caption">
+                              {t('verifiedWallets.topNftsDescription')}
+                            </Typography>
+                          </>
+                        )}
+                        <Box ml={2}>
+                          <List sx={{listStyleType: 'disc'}}>
+                            {allTokens
+                              .filter(walletToken => walletToken.type === 'NFT')
+                              .sort((a, b) => b.value - a.value)
+                              .map(walletToken => (
+                                <ListItem
+                                  sx={{display: 'list-item'}}
+                                  key={walletToken.name}
+                                >
+                                  {walletToken.name} (
+                                  {getDisplayBalance(walletToken.value)})
+                                </ListItem>
+                              ))
+                              .slice(0, tokenSummaryCount)}
+                          </List>
+                        </Box>
                         {allTokens.filter(
                           walletToken => walletToken.type === 'Token',
                         ).length > 0 && (
-                          <Typography mt={1} variant="body2" fontWeight="bold">
-                            {t('verifiedWallets.topTokens')}
-                          </Typography>
-                        )}
-                        {allTokens
-                          .filter(walletToken => walletToken.type === 'Token')
-                          .sort((a, b) => b.value - a.value)
-                          .map(walletToken => (
+                          <>
                             <Typography
-                              variant="caption"
-                              key={walletToken.name}
+                              mt={1}
+                              variant="body2"
+                              fontWeight="bold"
                             >
-                              - {walletToken.name} (
-                              {getDisplayBalance(walletToken.value)})
+                              {t('verifiedWallets.topTokens')}
                             </Typography>
-                          ))
-                          .slice(0, tokenSummaryCount)}
-                        <Typography mt={1} variant="caption">
+                            <Typography variant="caption">
+                              {t('verifiedWallets.topTokensDescription')}
+                            </Typography>
+                          </>
+                        )}
+                        <Box ml={2}>
+                          <List sx={{listStyleType: 'disc'}}>
+                            {allTokens
+                              .filter(
+                                walletToken => walletToken.type === 'Token',
+                              )
+                              .sort((a, b) => b.value - a.value)
+                              .map(walletToken => (
+                                <ListItem
+                                  sx={{display: 'list-item'}}
+                                  key={walletToken.name}
+                                >
+                                  {walletToken.name} (
+                                  {getDisplayBalance(walletToken.value)})
+                                </ListItem>
+                              ))
+                              .slice(0, tokenSummaryCount)}
+                          </List>
+                        </Box>
+                        <Typography mt={-2} variant="caption">
                           <a
                             className={classes.tooltipLink}
                             href={wallet.blockchainScanUrl}

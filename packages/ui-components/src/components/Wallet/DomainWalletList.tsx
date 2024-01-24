@@ -2,11 +2,14 @@ import AddCardOutlinedIcon from '@mui/icons-material/AddCardOutlined';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import numeral from 'numeral';
 import React from 'react';
 import SwiperCore, {Autoplay, Navigation} from 'swiper';
 import {Swiper, SwiperSlide} from 'swiper/react';
@@ -26,6 +29,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
   walletContainer: {
     display: 'flex',
     flexDirection: 'column',
+  },
+  walletPlaceholder: {
+    height: '210px',
+    width: '100%',
+    borderRadius: theme.shape.borderRadius,
   },
   sectionHeaderContainer: {
     display: 'flex',
@@ -90,7 +98,9 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
   const [t] = useTranslationContext();
   const {setConfigTab, setIsOpen: setConfigOpen} = useDomainConfig();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const showCount = Math.min(wallets.length, isMobile ? minCount : maxCount);
+  const showCount = wallets
+    ? Math.min(wallets.length, isMobile ? minCount : maxCount)
+    : minCount;
 
   // hide components when there are no wallets
   if (showCount === 0) {
@@ -98,15 +108,20 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
   }
 
   // calculate total balance
-  const totalValue = wallets
-    .map(w => w.totalValueUsdAmt || 0)
-    .reduce((sum, current) => sum + current, 0);
+  const totalValue =
+    wallets
+      ?.map(w => w.totalValueUsdAmt || 0)
+      .reduce((sum, current) => sum + current, 0) || 0;
 
   SwiperCore.use([Autoplay, Navigation]);
 
   const handleAddWallet = () => {
     setConfigTab(DomainProfileTabType.Crypto);
     setConfigOpen(true);
+  };
+
+  const getDisplayBalance = (balanceUsd: number): string => {
+    return numeral(balanceUsd).format('$0.00a');
   };
 
   // render the wallet list
@@ -121,12 +136,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
           <Typography variant="h6">{t('verifiedWallets.title')}</Typography>
           {totalValue > 0 && (
             <Typography variant="body2" className={classes.totalValue}>
-              (
-              {totalValue.toLocaleString('en-US', {
-                style: 'currency',
-                currency: 'USD',
-              })}
-              )
+              ({getDisplayBalance(totalValue)})
             </Typography>
           )}
         </Box>
@@ -142,53 +152,71 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
           </Button>
         )}
       </Box>
-      <Box className={classes.swiperContainer}>
-        <Swiper
-          data-testid={'nft-gallery-carousel'}
-          slidesPerGroup={1}
-          loop={false}
-          loopFillGroupWithBlank={false}
-          pagination={false}
-          navigation={false}
-          className={classes.swiper}
-          autoplay={false}
-          breakpoints={{
-            0: {
-              slidesPerView: Math.min(showCount, minCount),
-              spaceBetween: 16,
-            },
-            320: {
-              slidesPerView: Math.min(showCount, minCount),
-              spaceBetween: 16,
-            },
-            // when window width is >= 600px
-            600: {
-              slidesPerView: Math.min(showCount, minCount),
-              spaceBetween: 16,
-            },
-            // when window width is >= 640px
-            768: {
-              slidesPerView: Math.min(showCount, maxCount),
-              spaceBetween: 16,
-            },
-          }}
-        >
-          <>
-            {wallets
-              .sort(
-                (a, b) => (b.totalValueUsdAmt || 0) - (a.totalValueUsdAmt || 0),
-              )
-              .map((wallet, index) => (
-                <SwiperSlide
-                  key={index}
-                  data-testid={`nft-carousel-item-${index}`}
-                >
-                  <DomainWallet key={index} domain={domain} wallet={wallet} />
-                </SwiperSlide>
-              ))}
-          </>
-        </Swiper>
-      </Box>
+      {wallets ? (
+        <Box className={classes.swiperContainer}>
+          <Swiper
+            data-testid={'nft-gallery-carousel'}
+            slidesPerGroup={1}
+            loop={false}
+            loopFillGroupWithBlank={false}
+            pagination={false}
+            navigation={false}
+            className={classes.swiper}
+            autoplay={false}
+            breakpoints={{
+              0: {
+                slidesPerView: Math.min(showCount, minCount),
+                spaceBetween: 16,
+              },
+              320: {
+                slidesPerView: Math.min(showCount, minCount),
+                spaceBetween: 16,
+              },
+              // when window width is >= 600px
+              600: {
+                slidesPerView: Math.min(showCount, minCount),
+                spaceBetween: 16,
+              },
+              // when window width is >= 640px
+              768: {
+                slidesPerView: Math.min(showCount, maxCount),
+                spaceBetween: 16,
+              },
+            }}
+          >
+            <>
+              {wallets
+                .sort(
+                  (a, b) =>
+                    (b.totalValueUsdAmt || 0) - (a.totalValueUsdAmt || 0),
+                )
+                .map((wallet, index) => (
+                  <SwiperSlide
+                    key={index}
+                    data-testid={`nft-carousel-item-${index}`}
+                  >
+                    <DomainWallet key={index} domain={domain} wallet={wallet} />
+                  </SwiperSlide>
+                ))}
+            </>
+          </Swiper>
+        </Box>
+      ) : (
+        <Grid mt={0.5} mb={1.5} container spacing={2}>
+          <Grid item xs={6}>
+            <Skeleton
+              variant="rectangular"
+              className={classes.walletPlaceholder}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <Skeleton
+              variant="rectangular"
+              className={classes.walletPlaceholder}
+            />
+          </Grid>
+        </Grid>
+      )}
     </Box>
   );
 };
@@ -196,7 +224,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
 export type DomainWalletListProps = {
   domain: string;
   isOwner?: boolean;
-  wallets: SerializedWalletBalance[];
+  wallets?: SerializedWalletBalance[];
   minCount?: number;
   maxCount?: number;
 };

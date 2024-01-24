@@ -72,6 +72,7 @@ export enum DomainFieldTypes {
   WebacyScore = 'webacyScore',
   Market = 'market',
   Portfolio = 'portfolio',
+  WalletBalances = 'walletBalances',
 }
 
 export enum DomainProfileKeys {
@@ -279,6 +280,12 @@ export type SerializedDomainSocialAccount = {
   public?: boolean;
 };
 
+export type SerializedFloorPrice = {
+  marketPlaceName: string;
+  valueUsd: string;
+  valueUsdAmt: number;
+};
+
 export type SerializedFollowerListData = {
   data: Array<{
     domain: string;
@@ -307,6 +314,8 @@ export type SerializedPortfolioSummary = {
       storeCredit: number;
       promoCredit: number;
     };
+    value?: string;
+    valueAmt?: number;
   };
 };
 
@@ -363,8 +372,24 @@ export type SerializedWalletBalance = SerializedWalletToken & {
     transactions?: string;
     transfers?: string;
   };
+  nfts?: SerializedWalletNftCollection[];
   tokens?: SerializedWalletToken[];
   blockchainScanUrl: string;
+  totalValueUsd?: string;
+  totalValueUsdAmt?: number;
+};
+
+export type SerializedWalletNftCollection = {
+  category?: string;
+  contractAddresses: string[];
+  description?: string;
+  floorPrice?: SerializedFloorPrice[];
+  latestAcquiredDate: Date;
+  name: string;
+  nftIds?: string[];
+  ownedCount: number;
+  totalOwners: number;
+  totalSupply: number;
   totalValueUsd?: string;
   totalValueUsdAmt?: number;
 };

@@ -1,3 +1,5 @@
+import type {SerializedDomainMarket} from './domain';
+
 export enum Network {
   Mainnet = '1',
   Goerli = '5',
@@ -17,7 +19,7 @@ export type NftMintItem = NftRequestItem & {
   symbol: string;
 };
 
-export const NftPageSize = 10;
+export const NftPageSize = 25;
 
 export interface NftRequestItem {
   mint: string;
@@ -50,6 +52,7 @@ export type SerializedNftMetadata = {
   description: string;
   video_url: string;
   collection: string;
+  collectionLink?: string;
   tags?: string[];
   owner?: boolean;
   public?: boolean;
@@ -60,6 +63,16 @@ export type SerializedNftMetadata = {
   contractType?: string;
   ownerAddress?: string;
   price?: SerializedPrice;
+  mintDetails?: SerializedDomainMarket;
+  createdDate?: Date;
+  acquiredDate?: Date;
+  traits?: Record<string, string>;
+  rarity?: {
+    rank?: number;
+    score?: number;
+    uniqueAttributes?: number;
+  };
+  supply?: number;
 };
 
 export type SerializedPrice = {

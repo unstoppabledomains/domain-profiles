@@ -1,5 +1,4 @@
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import CollectionsOutlinedIcon from '@mui/icons-material/CollectionsOutlined';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import GroupAddOutlinedIcon from '@mui/icons-material/GroupAddOutlined';
 import HistoryIcon from '@mui/icons-material/History';
@@ -18,6 +17,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -26,6 +27,7 @@ import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
 import type {Theme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import numeral from 'numeral';
 import React, {useState} from 'react';
 import type {MouseEvent} from 'react';
 import {QRCode} from 'react-qrcode-logo';
@@ -40,7 +42,7 @@ import type {SerializedWalletBalance} from '../../lib/types/domain';
 import {CryptoIcon} from '../Image';
 
 const bgNeutralShade = 800;
-const currencyDecimals = 3;
+const tokenSummaryCount = 3;
 
 const useStyles = makeStyles()((theme: Theme) => ({
   walletContainer: {
@@ -61,9 +63,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
     whiteSpace: 'nowrap',
   },
   balanceContainer: {
+    width: 'calc(100% - 32px)',
+    display: 'flex',
+    flexDirection: 'column',
     position: 'absolute',
     bottom: 0,
     left: 0,
+  },
+  nativeBalanceContainer: {
     display: 'flex',
     justifyContent: 'space-between',
     background: `repeating-linear-gradient(
@@ -77,8 +84,16 @@ const useStyles = makeStyles()((theme: Theme) => ({
     borderRadius: theme.shape.borderRadius,
     padding: theme.spacing(0.66),
     margin: theme.spacing(1),
-    width: 'calc(100% - 32px)',
+    width: '100%',
     overflow: 'hidden',
+  },
+  tokenBalanceContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    marginLeft: theme.spacing(2),
+    marginTop: theme.spacing(1),
+    width: 'calc(100%  - 1px)',
+    justifyContent: 'space-between',
   },
   cardContainer: {
     position: 'relative',
@@ -86,7 +101,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
       theme.palette.neutralShades[bgNeutralShade - 200]
     }, ${theme.palette.neutralShades[bgNeutralShade]})`,
     height: '100%',
-    minHeight: '235px',
+    minHeight: '210px',
   },
   detailsContainer: {
     display: 'flex',
@@ -132,6 +147,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     color: theme.palette.white,
     fontWeight: 'bold',
   },
+  tooltipLink: {
+    fontWeight: 'bold',
+    color: '#fff',
+    textDecoration: 'none',
+  },
 }));
 
 export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
@@ -166,6 +186,14 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
     setAnchorEl(null);
   };
 
+  const getDisplayBalance = (balanceUsd: number): string => {
+    return numeral(balanceUsd).format('$0.00a');
+  };
+
+  const getDisplayValue = (v: number): string => {
+    return numeral(v).format('0.00a').replaceAll('.00', '');
+  };
+
   // determine the wallet balance
   if (!wallet.balance) {
     return null;
@@ -173,8 +201,24 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
 
   // native amount display value
   const nativeAmount = parseFloat(wallet.balance);
-  const nativeAmountDisplay =
-    nativeAmount.toFixed(currencyDecimals).replace(/\.0+$/, '') || '0';
+  const nativeAmountDisplay = getDisplayValue(nativeAmount);
+
+  // aggregated token list
+  const allTokenCount =
+    parseInt(wallet.stats?.nfts || '0', 10) +
+    (wallet.tokens ? wallet.tokens?.length : 0);
+  const allTokens = [
+    ...(wallet?.nfts?.map(walletNft => ({
+      type: 'NFT',
+      name: walletNft.name,
+      value: walletNft.totalValueUsdAmt || 0,
+    })) || []),
+    ...(wallet?.tokens?.map(walletToken => ({
+      type: 'Token',
+      name: walletToken.name,
+      value: walletToken.value?.walletUsdAmt || 0,
+    })) || []),
+  ].filter(walletToken => walletToken.value > 0.01);
 
   return (
     <Card className={classes.cardContainer}>
@@ -270,7 +314,7 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
                 <Box display="flex" alignItems="center">
                   <ReceiptLongOutlinedIcon className={classes.detailsIcon} />
                   <Typography className={classes.detailsText} variant="caption">
-                    {wallet.stats.transactions}{' '}
+                    {getDisplayValue(parseInt(wallet.stats.transactions, 10))}{' '}
                     {parseInt(wallet.stats.transactions, 10) === 1
                       ? t('verifiedWallets.transaction')
                       : t('verifiedWallets.transactions')}
@@ -319,88 +363,142 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
                 </Box>
               )
             )}
-            {wallet.stats?.nfts && (
-              <Box className={classes.statsContainer}>
+            <Box className={classes.balanceContainer}>
+              {allTokenCount > 0 && (
+                <Tooltip
+                  title={
+                    allTokens.length > 0 ? (
+                      <Box display="flex" flexDirection="column">
+                        {allTokens.filter(
+                          walletToken => walletToken.type === 'NFT',
+                        ).length > 0 && (
+                          <>
+                            <Typography variant="body2" fontWeight="bold">
+                              {t('verifiedWallets.topNfts')}
+                            </Typography>
+                            <Typography variant="caption">
+                              {t('verifiedWallets.topNftsDescription')}
+                            </Typography>
+                          </>
+                        )}
+                        <Box ml={2}>
+                          <List sx={{listStyleType: 'disc'}}>
+                            {allTokens
+                              .filter(walletToken => walletToken.type === 'NFT')
+                              .sort((a, b) => b.value - a.value)
+                              .map(walletToken => (
+                                <ListItem
+                                  sx={{display: 'list-item'}}
+                                  key={walletToken.name}
+                                >
+                                  {walletToken.name} (
+                                  {getDisplayBalance(walletToken.value)})
+                                </ListItem>
+                              ))
+                              .slice(0, tokenSummaryCount)}
+                          </List>
+                        </Box>
+                        {allTokens.filter(
+                          walletToken => walletToken.type === 'Token',
+                        ).length > 0 && (
+                          <>
+                            <Typography
+                              mt={1}
+                              variant="body2"
+                              fontWeight="bold"
+                            >
+                              {t('verifiedWallets.topTokens')}
+                            </Typography>
+                            <Typography variant="caption">
+                              {t('verifiedWallets.topTokensDescription')}
+                            </Typography>
+                          </>
+                        )}
+                        <Box ml={2}>
+                          <List sx={{listStyleType: 'disc'}}>
+                            {allTokens
+                              .filter(
+                                walletToken => walletToken.type === 'Token',
+                              )
+                              .sort((a, b) => b.value - a.value)
+                              .map(walletToken => (
+                                <ListItem
+                                  sx={{display: 'list-item'}}
+                                  key={walletToken.name}
+                                >
+                                  {walletToken.name} (
+                                  {getDisplayBalance(walletToken.value)})
+                                </ListItem>
+                              ))
+                              .slice(0, tokenSummaryCount)}
+                          </List>
+                        </Box>
+                        <Typography mt={-2} variant="caption">
+                          <a
+                            className={classes.tooltipLink}
+                            href={wallet.blockchainScanUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {t('common.more')}...
+                          </a>
+                        </Typography>
+                      </Box>
+                    ) : (
+                      ''
+                    )
+                  }
+                >
+                  <Box className={classes.tokenBalanceContainer}>
+                    <Box display="flex" alignItems="center">
+                      <TollOutlinedIcon className={classes.detailsIcon} />
+                      <Typography
+                        className={classes.detailsText}
+                        variant="caption"
+                      >
+                        {getDisplayValue(allTokenCount)}{' '}
+                        {allTokenCount === 1
+                          ? t('verifiedWallets.token')
+                          : t('verifiedWallets.tokens')}
+                      </Typography>
+                    </Box>
+                    <Box mr={1}></Box>
+                    <Box display="flex" alignItems="center">
+                      <MonetizationOnIcon className={classes.detailsIcon} />
+                      <Typography
+                        className={classes.balanceUsd}
+                        variant="caption"
+                      >
+                        {getDisplayBalance(
+                          allTokens
+                            .map(walletToken => walletToken.value)
+                            .reduce((p, c) => p + c, 0),
+                        )}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Tooltip>
+              )}
+              <Box className={classes.nativeBalanceContainer}>
                 <Box display="flex" alignItems="center">
-                  <CollectionsOutlinedIcon className={classes.detailsIcon} />
-                  <Typography className={classes.detailsText} variant="caption">
-                    {wallet.stats.nfts}{' '}
-                    {parseInt(wallet.stats.nfts, 10) === 1
-                      ? t('verifiedWallets.nft')
-                      : t('verifiedWallets.nfts')}
+                  <AccountBalanceWalletIcon className={classes.detailsIcon} />
+                  <Typography
+                    className={classes.balanceNative}
+                    variant="caption"
+                  >
+                    {nativeAmount > 0 && nativeAmountDisplay === '0'
+                      ? '~ 0'
+                      : nativeAmountDisplay}{' '}
+                    {wallet.symbol}
                   </Typography>
                 </Box>
-              </Box>
-            )}
-            {wallet.tokens && wallet.tokens.length > 0 && (
-              <Tooltip
-                title={
-                  <Box display="flex" flexDirection="column">
-                    {wallet.tokens
-                      .sort(
-                        (a, b) =>
-                          (b.value?.walletUsdAmt || 0) -
-                          (a.value?.walletUsdAmt || 0),
-                      )
-                      .map(walletToken => (
-                        <Typography variant="caption" key={walletToken.name}>
-                          - {walletToken.name} (
-                          {walletToken.value?.walletUsd || '$0.00'})
-                        </Typography>
-                      ))}
-                  </Box>
-                }
-              >
-                <Box className={classes.statsContainer}>
-                  <Box display="flex" alignItems="center">
-                    <TollOutlinedIcon className={classes.detailsIcon} />
-                    <Typography
-                      className={classes.detailsText}
-                      variant="caption"
-                    >
-                      {wallet.tokens.length}{' '}
-                      {wallet.tokens.length === 1
-                        ? t('verifiedWallets.token')
-                        : t('verifiedWallets.tokens')}
-                    </Typography>
-                  </Box>
-                  <Box mr={1}></Box>
-                  <Box display="flex" alignItems="center">
-                    <MonetizationOnIcon className={classes.detailsIcon} />
-                    <Typography
-                      className={classes.balanceUsd}
-                      variant="caption"
-                    >
-                      {wallet.tokens
-                        .map(
-                          walletToken => walletToken.value?.walletUsdAmt || 0,
-                        )
-                        .reduce((p, c) => p + c, 0)
-                        .toLocaleString('en-US', {
-                          style: 'currency',
-                          currency: 'USD',
-                        })}
-                    </Typography>
-                  </Box>
+                <Box mr={1}></Box>
+                <Box display="flex" alignItems="center">
+                  <MonetizationOnIcon className={classes.detailsIcon} />
+                  <Typography className={classes.balanceUsd} variant="caption">
+                    {getDisplayBalance(wallet.value?.walletUsdAmt || 0)}
+                  </Typography>
                 </Box>
-              </Tooltip>
-            )}
-            <Box className={classes.balanceContainer}>
-              <Box display="flex" alignItems="center">
-                <AccountBalanceWalletIcon className={classes.detailsIcon} />
-                <Typography className={classes.balanceNative} variant="caption">
-                  {nativeAmount > 0 && nativeAmountDisplay === '0'
-                    ? '~ 0'
-                    : nativeAmountDisplay}{' '}
-                  {wallet.symbol}
-                </Typography>
-              </Box>
-              <Box mr={1}></Box>
-              <Box display="flex" alignItems="center">
-                <MonetizationOnIcon className={classes.detailsIcon} />
-                <Typography className={classes.balanceUsd} variant="caption">
-                  {wallet.value?.walletUsd}
-                </Typography>
               </Box>
             </Box>
           </Box>

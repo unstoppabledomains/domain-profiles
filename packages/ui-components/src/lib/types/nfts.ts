@@ -50,6 +50,7 @@ export type SerializedNftMetadata = {
   description: string;
   video_url: string;
   collection: string;
+  collectionLink?: string;
   tags?: string[];
   owner?: boolean;
   public?: boolean;
@@ -60,6 +61,15 @@ export type SerializedNftMetadata = {
   contractType?: string;
   ownerAddress?: string;
   price?: SerializedPrice;
+  createdDate?: Date;
+  acquiredDate?: Date;
+  traits?: Record<string, string>;
+  rarity?: {
+    rank?: number;
+    score?: number;
+    uniqueAttributes?: number;
+  };
+  supply?: number;
 };
 
 export type SerializedPrice = {

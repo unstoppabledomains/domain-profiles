@@ -5,6 +5,7 @@ import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
 import Modal from '@mui/material/Modal';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
@@ -434,6 +435,36 @@ const NftModal: React.FC<NftModalProps> = ({
                         {nft.rarity.rank}
                         {nft.supply && ` / ${nft.supply}`}
                       </Typography>
+                    </div>
+                  )}
+                  {nft.mintDetails?.primary && (
+                    <div className={classes.detailSections}>
+                      <Typography
+                        className={classes.nftDetailsSectionName}
+                        variant="body1"
+                      >
+                        {t('nftCollection.mintPrice')}
+                      </Typography>
+                      <Tooltip
+                        title={
+                          nft.mintDetails.primary.payment?.promoCredits
+                            ? t('nftCollection.mintPriceCashPromo', {
+                                cashAmount: numeral(
+                                  nft.mintDetails.primary.payment.collected,
+                                ).format('$0.00'),
+                                promoAmount: numeral(
+                                  nft.mintDetails.primary.payment.promoCredits,
+                                ).format('$0.00'),
+                              })
+                            : ''
+                        }
+                      >
+                        <Typography variant="subtitle2">
+                          {numeral(nft.mintDetails.primary.cost).format(
+                            '$0.00',
+                          )}
+                        </Typography>
+                      </Tooltip>
                     </div>
                   )}
                   {nft.price?.value && (

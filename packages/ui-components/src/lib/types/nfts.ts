@@ -1,3 +1,5 @@
+import type {SerializedDomainMarket} from './domain';
+
 export enum Network {
   Mainnet = '1',
   Goerli = '5',
@@ -61,6 +63,7 @@ export type SerializedNftMetadata = {
   contractType?: string;
   ownerAddress?: string;
   price?: SerializedPrice;
+  mintDetails?: SerializedDomainMarket;
   createdDate?: Date;
   acquiredDate?: Date;
   traits?: Record<string, string>;

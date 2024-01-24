@@ -377,6 +377,8 @@
     "manageVisibilityTitle": "Visibility Changes",
     "mayBeAvailableAtALaterTime": "may be available at a later time",
     "metamask": "Metamask",
+    "mintPrice": "Mint price",
+    "mintPriceCashPromo": "{{cashAmount}} collected / {{promoAmount}} promo credits",
     "more": "more",
     "nftDetails": "Details",
     "noNftsConfigured": "There are currently no collectibles on display in your gallery. Expand your showcase to choose the items others will see when they visit your profile.",

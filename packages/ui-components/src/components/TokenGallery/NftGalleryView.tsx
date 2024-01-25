@@ -394,7 +394,7 @@ const NftGalleryView = ({
                       }}
                     >
                       <CircularProgress size="1.5rem" />
-                      {totalCount && (
+                      {totalCount && tokenCount > 0 && (
                         <Box
                           sx={{
                             top: 0,

@@ -27,7 +27,6 @@ export interface TokenGalleryProps {
   ownerAddress: string;
   profileServiceUrl: string;
   hideConfigureButton?: boolean;
-  totalCount?: number;
 }
 
 export const useStyles = makeStyles()((theme: Theme) => ({
@@ -96,7 +95,6 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
   ownerAddress,
   profileServiceUrl,
   hideConfigureButton,
-  totalCount,
 }: TokenGalleryProps) => {
   const {classes, cx} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
@@ -116,6 +114,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
   const [itemsToUpdate, setItemsToUpdate] = useState<NftMintItem[]>([]);
   const [isAllNftsLoaded, setIsAllNftsLoaded] = useState(false);
   const [tokenCount, setTokenCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
 
   // NFT gallery data paging method
   const getNextNftPage = getNextNftPageFn({
@@ -133,6 +132,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
     setNfts,
     setNftSymbolVisible,
     setTokenCount,
+    setTotalCount,
   });
 
   // effect to load the first page of NFT data, and also to refresh the

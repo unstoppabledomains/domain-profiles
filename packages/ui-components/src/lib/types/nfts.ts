@@ -33,6 +33,7 @@ export interface NftResponse {
   enabled: boolean;
   cursor?: string;
   showAllItems?: boolean;
+  totalCount?: number;
 }
 
 export interface SerializedMarketplaceData {

@@ -845,28 +845,47 @@ const DomainProfile = ({
                     }
                   />
                 )}
-                {profileData?.portfolio?.account?.domainCount &&
-                  profileData.portfolio.account.domainCount > 1 && (
-                    <LeftBarContentCollapse
-                      id="domains"
-                      icon={<LanguageOutlinedIcon />}
-                      header={
-                        <Box
-                          className={classes.otherDomainsLabel}
+                {(profileData?.portfolio?.account?.domainCount || 0) > 1 && (
+                  <LeftBarContentCollapse
+                    id="domains"
+                    icon={<LanguageOutlinedIcon />}
+                    header={
+                      <Box
+                        className={classes.otherDomainsLabel}
+                        onClick={handleOtherDomainsModalOpen}
+                      >
+                        <Typography>
+                          {t('profile.otherDomains', {
+                            count:
+                              profileData!.portfolio!.account.domainCount - 1,
+                          })}
+                        </Typography>
+                      </Box>
+                    }
+                    content={
+                      <Box mt={1} mb={1}>
+                        <Link
+                          href="#"
+                          className={classes.websiteLink}
                           onClick={handleOtherDomainsModalOpen}
                         >
-                          <Typography>
-                            {t('profile.otherDomains', {
-                              count:
-                                profileData.portfolio.account.domainCount - 1,
-                            })}
+                          <Typography variant="body2">
+                            {profileData?.portfolio?.account?.valueAmt
+                              ? `${t('profile.portfolioValue', {
+                                  value: numeral(
+                                    profileData.portfolio.account.valueAmt /
+                                      100,
+                                  ).format('$0.00a'),
+                                })}. ${t('profile.clickToViewPortfolio')}.`
+                              : undefined}
                           </Typography>
-                        </Box>
-                      }
-                    />
-                  )}
-                {profileData?.market?.primary?.cost &&
-                  profileData.market?.primary?.date && (
+                        </Link>
+                      </Box>
+                    }
+                  />
+                )}
+                {(profileData?.market?.primary?.cost || 0) > 0 &&
+                  profileData?.market?.primary?.date && (
                     <LeftBarContentCollapse
                       icon={<ManageHistoryOutlinedIcon />}
                       header={
@@ -880,7 +899,7 @@ const DomainProfile = ({
                                 new Date(profileData.market.primary.date),
                                 'MMM d, yyyy',
                               ),
-                              cost: profileData.market.primary.cost.toLocaleString(
+                              cost: profileData!.market!.primary!.cost!.toLocaleString(
                                 'en-US',
                                 {
                                   style: 'currency',

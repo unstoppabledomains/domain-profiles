@@ -211,16 +211,17 @@ export type SerializedDomainListData = {
 };
 
 export type SerializedDomainMarket = {
-  primary: {
-    type: 'purchase' | 'distribution';
-    cost: number;
-    price?: number;
+  primary?: {
+    type: 'mint' | 'purchase' | 'distribution';
+    cost?: number;
+    date?: Date;
     payment?: {
-      date: string;
-      promoCredits: number;
-      collected: number;
+      method?: string;
+      promoCredits?: number;
+      collected?: number;
     };
   };
+  secondary?: SerializedSecondarySale[];
 };
 
 export type SerializedDomainProfileAttributes = {
@@ -348,6 +349,17 @@ export type SerializedPublicDomainProfileData = {
   messaging?: MessagingAttributes;
   market?: SerializedDomainMarket;
   portfolio?: SerializedPortfolioSummary;
+};
+
+export type SerializedSecondarySale = {
+  date: Date;
+  txHash?: string;
+  marketPlace?: string;
+  payment?: {
+    symbol: string;
+    valueUsd: number;
+    valueNative: number;
+  };
 };
 
 export type SerializedSocialAttributes = {

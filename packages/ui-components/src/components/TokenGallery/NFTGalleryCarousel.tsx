@@ -166,15 +166,18 @@ const NFTGalleryCarousel = ({
                         compact={true}
                         nft={{
                           link: placeholder.link || badgeData.linkUrl || '',
-                          collection: placeholder.price
+                          collection: placeholder.floorPrice
                             ? t('nftCollection.addToCollection', {
                                 value: parseFloat(
-                                  placeholders[index].price!.value.toFixed(4),
+                                  placeholders[index].floorPrice!.value.toFixed(
+                                    4,
+                                  ),
                                 ),
-                                currency: placeholders[index].price!.currency,
+                                currency:
+                                  placeholders[index].floorPrice!.currency,
                               })
                             : placeholder.name || badgeData.name,
-                          name: placeholder.price
+                          name: placeholder.floorPrice
                             ? t('cards.available')
                             : t('apps.featured'),
                           description: badgeData.description,

@@ -323,14 +323,19 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
               </Box>
             )}
             {wallet.firstTx ? (
-              <Box className={classes.statsContainer}>
-                <Box display="flex" alignItems="center">
-                  <HistoryIcon className={classes.detailsIcon} />
-                  <Tooltip
-                    title={t('verifiedWallets.firstTxDate', {
+              <Tooltip
+                arrow
+                title={
+                  <Typography variant="caption">
+                    {t('verifiedWallets.firstTxDate', {
                       date: new Date(wallet.firstTx).toLocaleDateString(),
                     })}
-                  >
+                  </Typography>
+                }
+              >
+                <Box className={classes.statsContainer}>
+                  <Box display="flex" alignItems="center">
+                    <HistoryIcon className={classes.detailsIcon} />
                     <Typography
                       className={classes.detailsText}
                       variant="caption"
@@ -338,19 +343,24 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
                       {t('verifiedWallets.first')}{' '}
                       {new Date(wallet.firstTx).getFullYear()}
                     </Typography>
-                  </Tooltip>
+                  </Box>
                 </Box>
-              </Box>
+              </Tooltip>
             ) : (
               wallet.lastTx && (
-                <Box className={classes.statsContainer}>
-                  <Box display="flex" alignItems="center">
-                    <HistoryIcon className={classes.detailsIcon} />
-                    <Tooltip
-                      title={t('verifiedWallets.lastTxDate', {
+                <Tooltip
+                  arrow
+                  title={
+                    <Typography variant="caption">
+                      {t('verifiedWallets.lastTxDate', {
                         date: new Date(wallet.lastTx).toLocaleDateString(),
                       })}
-                    >
+                    </Typography>
+                  }
+                >
+                  <Box className={classes.statsContainer}>
+                    <Box display="flex" alignItems="center">
+                      <HistoryIcon className={classes.detailsIcon} />
                       <Typography
                         className={classes.detailsText}
                         variant="caption"
@@ -358,14 +368,15 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
                         {t('verifiedWallets.last')}{' '}
                         {new Date(wallet.lastTx).getFullYear()}
                       </Typography>
-                    </Tooltip>
+                    </Box>
                   </Box>
-                </Box>
+                </Tooltip>
               )
             )}
             <Box className={classes.balanceContainer}>
               {allTokenCount > 0 && (
                 <Tooltip
+                  arrow
                   title={
                     allTokens.length > 0 ? (
                       <Box display="flex" flexDirection="column">
@@ -479,27 +490,41 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
                   </Box>
                 </Tooltip>
               )}
-              <Box className={classes.nativeBalanceContainer}>
-                <Box display="flex" alignItems="center">
-                  <AccountBalanceWalletIcon className={classes.detailsIcon} />
-                  <Typography
-                    className={classes.balanceNative}
-                    variant="caption"
-                  >
-                    {nativeAmount > 0 && nativeAmountDisplay === '0'
-                      ? '~ 0'
-                      : nativeAmountDisplay}{' '}
-                    {wallet.symbol}
-                  </Typography>
+              <Tooltip
+                arrow
+                title={
+                  wallet.value?.marketUsd ? (
+                    <Typography variant="caption">{`${nativeAmount} ${wallet.symbol} @ ${wallet.value.marketUsd}`}</Typography>
+                  ) : (
+                    ''
+                  )
+                }
+              >
+                <Box className={classes.nativeBalanceContainer}>
+                  <Box display="flex" alignItems="center">
+                    <AccountBalanceWalletIcon className={classes.detailsIcon} />
+                    <Typography
+                      className={classes.balanceNative}
+                      variant="caption"
+                    >
+                      {nativeAmount > 0 && nativeAmountDisplay === '0'
+                        ? '~ 0'
+                        : nativeAmountDisplay}{' '}
+                      {wallet.symbol}
+                    </Typography>
+                  </Box>
+                  <Box mr={1}></Box>
+                  <Box display="flex" alignItems="center">
+                    <MonetizationOnIcon className={classes.detailsIcon} />
+                    <Typography
+                      className={classes.balanceUsd}
+                      variant="caption"
+                    >
+                      {getDisplayBalance(wallet.value?.walletUsdAmt || 0)}
+                    </Typography>
+                  </Box>
                 </Box>
-                <Box mr={1}></Box>
-                <Box display="flex" alignItems="center">
-                  <MonetizationOnIcon className={classes.detailsIcon} />
-                  <Typography className={classes.balanceUsd} variant="caption">
-                    {getDisplayBalance(wallet.value?.walletUsdAmt || 0)}
-                  </Typography>
-                </Box>
-              </Box>
+              </Tooltip>
             </Box>
           </Box>
         </Box>

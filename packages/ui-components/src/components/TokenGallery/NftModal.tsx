@@ -5,7 +5,6 @@ import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
 import Modal from '@mui/material/Modal';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
@@ -191,7 +190,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   attributeContainer: {
     display: 'flex',
     flexDirection: 'column',
-    marginBottom: theme.spacing(1),
     marginRight: theme.spacing(1),
     backgroundColor: theme.palette.neutralShades[600],
     borderRadius: theme.shape.borderRadius,
@@ -199,6 +197,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 
   detailSections: {
+    marginBottom: theme.spacing(1),
     marginRight: '1.5rem',
     [theme.breakpoints.only('sm')]: {
       fontSize: '12px',
@@ -394,34 +393,33 @@ const NftModal: React.FC<NftModalProps> = ({
                 {handleDescription(nft.description, nft.link)}
               </section>
             )}
-            {(nft.symbol || nft.mint) && (
+            {(nft.acquiredDate ||
+              nft.rarity?.rank ||
+              nft.saleDetails ||
+              nft.floorPrice) && (
               <section className={classes.details}>
                 <Typography variant="subtitle2" className={classes.sectionName}>
                   {t('nftCollection.nftDetails')}
                 </Typography>
                 <div className={classes.detailsText}>
-                  {nft.mint?.includes('/') && (
-                    <div className={classes.detailSections}>
-                      <Typography
-                        className={classes.nftDetailsSectionName}
-                        data-testid={'contract-header'}
-                        variant="body1"
-                      >
-                        {t('nftCollection.contract')}
-                      </Typography>
-                      {handleContractAddress(nft?.mint || '')}
-                    </div>
-                  )}
-                  {nft.mint && (
+                  {nft.acquiredDate && (
                     <div className={classes.detailSections}>
                       <Typography
                         className={classes.nftDetailsSectionName}
                         data-testid={'token-id-header'}
                         variant="body1"
                       >
-                        {t('nftCollection.tokenId')}
+                        {t('nftCollection.hodlDays')}
                       </Typography>
-                      {handleContractAddress(nft?.mint || '', 1)}
+                      <Typography variant="subtitle2">
+                        {Math.ceil(
+                          Math.abs(
+                            new Date().getTime() -
+                              new Date(nft.acquiredDate).getTime(),
+                          ) /
+                            (1000 * 3600 * 24),
+                        )}
+                      </Typography>
                     </div>
                   )}
                   {nft.rarity?.rank && (
@@ -439,7 +437,8 @@ const NftModal: React.FC<NftModalProps> = ({
                       </Typography>
                     </div>
                   )}
-                  {nft.mintDetails?.primary && (
+                  {nft.saleDetails?.primary?.cost &&
+                  nft.saleDetails.primary.cost > 0 ? (
                     <div className={classes.detailSections}>
                       <Typography
                         className={classes.nftDetailsSectionName}
@@ -447,29 +446,30 @@ const NftModal: React.FC<NftModalProps> = ({
                       >
                         {t('nftCollection.mintPrice')}
                       </Typography>
-                      <Tooltip
-                        title={
-                          nft.mintDetails.primary.payment?.promoCredits
-                            ? t('nftCollection.mintPriceCashPromo', {
-                                cashAmount: numeral(
-                                  nft.mintDetails.primary.payment.collected,
-                                ).format('$0.00'),
-                                promoAmount: numeral(
-                                  nft.mintDetails.primary.payment.promoCredits,
-                                ).format('$0.00'),
-                              })
-                            : ''
-                        }
-                      >
-                        <Typography variant="subtitle2">
-                          {numeral(nft.mintDetails.primary.cost).format(
-                            '$0.00',
-                          )}
-                        </Typography>
-                      </Tooltip>
+                      <Typography variant="subtitle2">
+                        {numeral(nft.saleDetails.primary.cost).format('$0.00')}
+                      </Typography>
                     </div>
-                  )}
-                  {nft.price?.value && (
+                  ) : null}
+                  {nft.saleDetails?.secondary &&
+                    nft.saleDetails.secondary.length > 0 &&
+                    nft.saleDetails.secondary[0].payment?.valueUsd &&
+                    nft.saleDetails.secondary[0].payment.valueUsd > 0 && (
+                      <div className={classes.detailSections}>
+                        <Typography
+                          className={classes.nftDetailsSectionName}
+                          variant="body1"
+                        >
+                          {t('nftCollection.secondaryPrice')}
+                        </Typography>
+                        <Typography variant="subtitle2">
+                          {numeral(
+                            nft.saleDetails.secondary[0].payment.valueUsd,
+                          ).format('$0.00')}
+                        </Typography>
+                      </div>
+                    )}
+                  {nft.floorPrice?.value && nft.floorPrice.value > 0 && (
                     <div className={classes.detailSections}>
                       <Typography
                         className={classes.nftDetailsSectionName}
@@ -478,10 +478,10 @@ const NftModal: React.FC<NftModalProps> = ({
                         {t('badges.floorPrice')}
                       </Typography>
                       <Typography variant="subtitle2">
-                        {nft.price.currency === 'USD'
-                          ? numeral(nft.price.value).format('$0.00')
-                          : `${numeral(nft.price.value).format('0.00')} ${
-                              nft.price.currency
+                        {nft.floorPrice.currency === 'USD'
+                          ? numeral(nft.floorPrice.value).format('$0.00')
+                          : `${numeral(nft.floorPrice.value).format('0.00')} ${
+                              nft.floorPrice.currency
                             }`}
                       </Typography>
                     </div>
@@ -515,6 +515,39 @@ const NftModal: React.FC<NftModalProps> = ({
                     </div>
                   ))}
                 </Box>
+              </section>
+            )}
+            {(nft.collection || nft.mint) && (
+              <section className={classes.details}>
+                <Typography variant="subtitle2" className={classes.sectionName}>
+                  {t('verifiedWallets.token')}
+                </Typography>
+                <div className={classes.detailsText}>
+                  {nft.mint?.includes('/') && (
+                    <div className={classes.detailSections}>
+                      <Typography
+                        className={classes.nftDetailsSectionName}
+                        data-testid={'contract-header'}
+                        variant="body1"
+                      >
+                        {t('nftCollection.contract')}
+                      </Typography>
+                      {handleContractAddress(nft?.mint || '')}
+                    </div>
+                  )}
+                  {nft.mint && (
+                    <div className={classes.detailSections}>
+                      <Typography
+                        className={classes.nftDetailsSectionName}
+                        data-testid={'token-id-header'}
+                        variant="body1"
+                      >
+                        {t('nftCollection.tokenId')}
+                      </Typography>
+                      {handleContractAddress(nft?.mint || '', 1)}
+                    </div>
+                  )}
+                </div>
               </section>
             )}
           </div>

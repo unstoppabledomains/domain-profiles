@@ -16,6 +16,7 @@ import RestoreOutlinedIcon from '@mui/icons-material/RestoreOutlined';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
@@ -845,56 +846,101 @@ const DomainProfile = ({
                     }
                   />
                 )}
-                {profileData?.portfolio?.account?.domainCount &&
-                  profileData.portfolio.account.domainCount > 1 && (
-                    <LeftBarContentCollapse
-                      id="domains"
-                      icon={<LanguageOutlinedIcon />}
-                      header={
-                        <Box
-                          className={classes.otherDomainsLabel}
-                          onClick={handleOtherDomainsModalOpen}
-                        >
-                          <Typography>
-                            {t('profile.otherDomains', {
+                {(profileData?.portfolio?.account?.domainCount || 0) > 1 && (
+                  <LeftBarContentCollapse
+                    id="domains"
+                    icon={<LanguageOutlinedIcon />}
+                    header={
+                      <Box
+                        className={classes.otherDomainsLabel}
+                        onClick={handleOtherDomainsModalOpen}
+                        display="flex"
+                        alignItems="center"
+                      >
+                        <Typography>
+                          {t('profile.otherDomains', {
+                            count:
+                              profileData!.portfolio!.account.domainCount - 1,
+                          })}
+                        </Typography>
+                        <Typography ml={1} variant="body2">
+                          {profileData?.portfolio?.account?.valueAmt
+                            ? ` (${numeral(
+                                profileData.portfolio.account.valueAmt / 100,
+                              ).format('$0.00a')})`
+                            : ''}
+                        </Typography>
+                      </Box>
+                    }
+                    content={
+                      profileData?.portfolio?.account?.valueAmt ? (
+                        <Box mt={1}>
+                          <Typography className={classes.description}>
+                            {t('profile.portfolioValueVerbose', {
+                              domain,
                               count:
-                                profileData.portfolio.account.domainCount - 1,
+                                profileData!.portfolio!.account.domainCount,
+                              value: numeral(
+                                profileData.portfolio.account.valueAmt / 100,
+                              ).format('$0.00a'),
                             })}
+                            <Box mt={1}>
+                              <Button
+                                color="info"
+                                size="small"
+                                variant="contained"
+                                onClick={handleOtherDomainsModalOpen}
+                              >
+                                {t('profile.clickToViewPortfolio')}
+                              </Button>
+                            </Box>
                           </Typography>
                         </Box>
-                      }
-                    />
-                  )}
-                {profileData?.market?.primary?.payment && (
-                  <LeftBarContentCollapse
-                    icon={<ManageHistoryOutlinedIcon />}
-                    header={
-                      <Typography>
-                        {t(
-                          profileData.market.primary.cost
-                            ? 'profile.purchasePrice'
-                            : 'profile.registrationPrice',
-                          {
-                            date: format(
-                              new Date(profileData.market.primary.payment.date),
-                              'MMM d, yyyy',
-                            ),
-                            cost: profileData.market.primary.cost.toLocaleString(
-                              'en-US',
-                              {
-                                style: 'currency',
-                                currency: 'USD',
-                              },
-                            ),
-                          },
-                        )}
-                      </Typography>
+                      ) : undefined
                     }
-                    id="marketPrice"
                   />
                 )}
+                {(profileData?.market?.primary?.cost || 0) > 0 &&
+                  profileData?.market?.primary?.date && (
+                    <LeftBarContentCollapse
+                      icon={<ManageHistoryOutlinedIcon />}
+                      header={
+                        <Typography>
+                          {t(
+                            profileData.market.primary.cost
+                              ? 'profile.purchasePrice'
+                              : 'profile.registrationPrice',
+                            {
+                              date: format(
+                                new Date(profileData.market.primary.date),
+                                'MMM d, yyyy',
+                              ),
+                              cost: profileData!.market!.primary!.cost!.toLocaleString(
+                                'en-US',
+                                {
+                                  style: 'currency',
+                                  currency: 'USD',
+                                },
+                              ),
+                            },
+                          )}
+                        </Typography>
+                      }
+                      id="marketPrice"
+                    />
+                  )}
                 {profileData?.webacy && (
-                  <Box mb={-0.5} mt={-0.5}>
+                  <Box
+                    mb={-0.5}
+                    mt={-0.5}
+                    className={classes.otherDomainsLabel}
+                    onClick={() =>
+                      window.open(
+                        `https://dapp.webacy.com/unstoppable/${domain}`,
+                        '_blank',
+                      )
+                    }
+                  >
                     <LeftBarContentCollapse
                       icon={<HealthAndSafetyOutlinedIcon />}
                       header={
@@ -903,6 +949,7 @@ const DomainProfile = ({
                             {t('webacy.riskScore')}:
                           </Typography>
                           <Tooltip
+                            arrow
                             title={
                               profileData.webacy.issues.length > 0 ? (
                                 profileData.webacy.issues.map(issue => (

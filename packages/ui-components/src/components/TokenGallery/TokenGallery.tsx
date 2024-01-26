@@ -210,7 +210,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
             className={classes.nftCount}
             data-testid="token-count"
           >
-            {totalCount && `(${totalCount})`}
+            {totalCount > 0 && `(${totalCount})`}
           </Typography>
         </Typography>
         <div className={cx(classes.sectionHeader, classes.nftGalleryLinks)}>

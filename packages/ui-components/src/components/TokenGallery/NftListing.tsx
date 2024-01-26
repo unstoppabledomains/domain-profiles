@@ -84,7 +84,7 @@ const NftListing: React.FC<Props> = ({listings}) => {
             className={classes.image}
           >
             <Typography className={classes.price}>
-              {listing.price?.value} {listing.price?.currency}
+              {listing.floorPrice?.value} {listing.floorPrice?.currency}
             </Typography>
           </a>
         </Grid>
@@ -112,7 +112,7 @@ const NftListing: React.FC<Props> = ({listings}) => {
                 className={classes.image}
               >
                 <Typography className={classes.price}>
-                  {listing.price?.value} {listing.price?.currency}
+                  {listing.floorPrice?.value} {listing.floorPrice?.currency}
                 </Typography>
               </a>
             </Grid>

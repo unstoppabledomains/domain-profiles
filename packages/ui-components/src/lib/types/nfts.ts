@@ -63,8 +63,8 @@ export type SerializedNftMetadata = {
   verified?: boolean;
   contractType?: string;
   ownerAddress?: string;
-  price?: SerializedPrice;
-  mintDetails?: SerializedDomainMarket;
+  floorPrice?: SerializedPrice;
+  saleDetails?: SerializedDomainMarket;
   createdDate?: Date;
   acquiredDate?: Date;
   traits?: Record<string, string>;

@@ -865,34 +865,35 @@ const DomainProfile = ({
                       }
                     />
                   )}
-                {profileData?.market?.primary?.payment && (
-                  <LeftBarContentCollapse
-                    icon={<ManageHistoryOutlinedIcon />}
-                    header={
-                      <Typography>
-                        {t(
-                          profileData.market.primary.cost
-                            ? 'profile.purchasePrice'
-                            : 'profile.registrationPrice',
-                          {
-                            date: format(
-                              new Date(profileData.market.primary.payment.date),
-                              'MMM d, yyyy',
-                            ),
-                            cost: profileData.market.primary.cost.toLocaleString(
-                              'en-US',
-                              {
-                                style: 'currency',
-                                currency: 'USD',
-                              },
-                            ),
-                          },
-                        )}
-                      </Typography>
-                    }
-                    id="marketPrice"
-                  />
-                )}
+                {profileData?.market?.primary?.cost &&
+                  profileData.market?.primary?.date && (
+                    <LeftBarContentCollapse
+                      icon={<ManageHistoryOutlinedIcon />}
+                      header={
+                        <Typography>
+                          {t(
+                            profileData.market.primary.cost
+                              ? 'profile.purchasePrice'
+                              : 'profile.registrationPrice',
+                            {
+                              date: format(
+                                new Date(profileData.market.primary.date),
+                                'MMM d, yyyy',
+                              ),
+                              cost: profileData.market.primary.cost.toLocaleString(
+                                'en-US',
+                                {
+                                  style: 'currency',
+                                  currency: 'USD',
+                                },
+                              ),
+                            },
+                          )}
+                        </Typography>
+                      }
+                      id="marketPrice"
+                    />
+                  )}
                 {profileData?.webacy && (
                   <Box mb={-0.5} mt={-0.5}>
                     <LeftBarContentCollapse

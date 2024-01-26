@@ -90,7 +90,7 @@
     "beta": "Beta"
   },
   "common": {
-     "account": "Account",
+    "account": "Account",
     "addDomainCue": "Add a Web3 domain to start your journey on the decentralized web.",
     "address": "address",
     "and": "and",
@@ -424,7 +424,6 @@
     "yourNftGalleryIsReadyToLaunch": "Your NFT gallery is ready to launch"
   },
   "profile": {
-    "clickToViewPortfolio": "Click to browse the domain portfolio",
     "addressCount": "{{count}} Crypto addresses",
     "addressNotVerifiedMessageOwner": "Your {{symbol}} NFTs are not currently visible to other users. Verify your {{symbol}} address to unlock the NFT gallery.",
     "addressNotVerifiedMessagePublic": "NFTs displayed in the {{symbol}} gallery may not belong to the owner of this domain. Proceed with caution.",
@@ -432,6 +431,7 @@
     "badge": "badge",
     "badges": "Badges",
     "badgesAreSyncedFromDomainOwnerWallet": "Badges are synced from domain owner wallet: {{address}}",
+    "clickToViewPortfolio": "Browse portfolio",
     "collapse": "Collapse",
     "collectingYourBadges": "Collecting your badges...",
     "configured": "Configured",
@@ -489,6 +489,7 @@
     "otherDomains": "{{count}} Other domains",
     "ownerAddress": "Owned by {{address}}",
     "portfolioValue": "Total value {{value}} based on purchase price",
+    "portfolioValueVerbose": "{{domain}} belongs to a portfolio of {{count}} domains valued at {{value}} by purchase price.",
     "primaryDomain": "Address {{address}} resolves to primary domain {{domain}}",
     "privacySettings": "Privacy settings",
     "purchaseBreakdown": "Cash: {{cash}}, Promo credit: {{promoCredit}}",

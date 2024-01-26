@@ -16,6 +16,7 @@ import RestoreOutlinedIcon from '@mui/icons-material/RestoreOutlined';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
@@ -853,6 +854,8 @@ const DomainProfile = ({
                       <Box
                         className={classes.otherDomainsLabel}
                         onClick={handleOtherDomainsModalOpen}
+                        display="flex"
+                        alignItems="center"
                       >
                         <Typography>
                           {t('profile.otherDomains', {
@@ -860,26 +863,38 @@ const DomainProfile = ({
                               profileData!.portfolio!.account.domainCount - 1,
                           })}
                         </Typography>
+                        <Typography ml={1} variant="body2">
+                          {profileData?.portfolio?.account?.valueAmt
+                            ? ` (${numeral(
+                                profileData.portfolio.account.valueAmt / 100,
+                              ).format('$0.00a')})`
+                            : undefined}
+                        </Typography>
                       </Box>
                     }
                     content={
-                      <Box mt={1} mb={1}>
-                        <Link
-                          href="#"
-                          className={classes.websiteLink}
-                          onClick={handleOtherDomainsModalOpen}
-                        >
-                          <Typography variant="body2">
-                            {profileData?.portfolio?.account?.valueAmt
-                              ? `${t('profile.portfolioValue', {
-                                  value: numeral(
-                                    profileData.portfolio.account.valueAmt /
-                                      100,
-                                  ).format('$0.00a'),
-                                })}. ${t('profile.clickToViewPortfolio')}.`
-                              : undefined}
-                          </Typography>
-                        </Link>
+                      <Box mt={1}>
+                        <Typography className={classes.description}>
+                          {t('profile.portfolioValueVerbose', {
+                            domain,
+                            count: profileData!.portfolio!.account.domainCount,
+                            value: profileData?.portfolio?.account?.valueAmt
+                              ? numeral(
+                                  profileData.portfolio.account.valueAmt / 100,
+                                ).format('$0.00a')
+                              : '$0',
+                          })}
+                          <Box mt={1}>
+                            <Button
+                              color="info"
+                              size="small"
+                              variant="contained"
+                              onClick={handleOtherDomainsModalOpen}
+                            >
+                              {t('profile.clickToViewPortfolio')}
+                            </Button>
+                          </Box>
+                        </Typography>
                       </Box>
                     }
                   />
@@ -914,7 +929,17 @@ const DomainProfile = ({
                     />
                   )}
                 {profileData?.webacy && (
-                  <Box mb={-0.5} mt={-0.5}>
+                  <Box
+                    mb={-0.5}
+                    mt={-0.5}
+                    className={classes.otherDomainsLabel}
+                    onClick={() =>
+                      window.open(
+                        `https://dapp.webacy.com/unstoppable/${domain}`,
+                        '_blank',
+                      )
+                    }
+                  >
                     <LeftBarContentCollapse
                       icon={<HealthAndSafetyOutlinedIcon />}
                       header={
@@ -923,6 +948,7 @@ const DomainProfile = ({
                             {t('webacy.riskScore')}:
                           </Typography>
                           <Tooltip
+                            arrow
                             title={
                               profileData.webacy.issues.length > 0 ? (
                                 profileData.webacy.issues.map(issue => (

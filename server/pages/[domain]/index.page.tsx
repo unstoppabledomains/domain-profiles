@@ -868,34 +868,35 @@ const DomainProfile = ({
                             ? ` (${numeral(
                                 profileData.portfolio.account.valueAmt / 100,
                               ).format('$0.00a')})`
-                            : undefined}
+                            : ''}
                         </Typography>
                       </Box>
                     }
                     content={
-                      <Box mt={1}>
-                        <Typography className={classes.description}>
-                          {t('profile.portfolioValueVerbose', {
-                            domain,
-                            count: profileData!.portfolio!.account.domainCount,
-                            value: profileData?.portfolio?.account?.valueAmt
-                              ? numeral(
-                                  profileData.portfolio.account.valueAmt / 100,
-                                ).format('$0.00a')
-                              : '$0',
-                          })}
-                          <Box mt={1}>
-                            <Button
-                              color="info"
-                              size="small"
-                              variant="contained"
-                              onClick={handleOtherDomainsModalOpen}
-                            >
-                              {t('profile.clickToViewPortfolio')}
-                            </Button>
-                          </Box>
-                        </Typography>
-                      </Box>
+                      profileData?.portfolio?.account?.valueAmt ? (
+                        <Box mt={1}>
+                          <Typography className={classes.description}>
+                            {t('profile.portfolioValueVerbose', {
+                              domain,
+                              count:
+                                profileData!.portfolio!.account.domainCount,
+                              value: numeral(
+                                profileData.portfolio.account.valueAmt / 100,
+                              ).format('$0.00a'),
+                            })}
+                            <Box mt={1}>
+                              <Button
+                                color="info"
+                                size="small"
+                                variant="contained"
+                                onClick={handleOtherDomainsModalOpen}
+                              >
+                                {t('profile.clickToViewPortfolio')}
+                              </Button>
+                            </Box>
+                          </Typography>
+                        </Box>
+                      ) : undefined
                     }
                   />
                 )}

@@ -1,6 +1,5 @@
 import config from '@unstoppabledomains/config';
 
-import {notifyError} from '../lib/error';
 import {fetchApi} from '../lib/fetchApi';
 import type {
   DomainBadgesResponse,
@@ -16,15 +15,6 @@ export const getDomainBadges = async (
   domain: string,
   {withoutPartners}: {forceRefresh?: boolean; withoutPartners?: boolean} = {},
 ): Promise<DomainBadgesResponse> => {
-  // request a badge refresh but do not wait for the processing
-  // to be completed before continuing. Some badge operations
-  // are lengthy and would significantly impact response time.
-  // Calling in this way allows processing to happen in background
-  // and request to return immediately with the existing badges.
-  fetchApi(`/domains/${domain}/sync_badges`).catch(e =>
-    notifyError(e, {msg: 'error syncing badges'}, 'warning'),
-  );
-
   // retrieve badge data from profile API
   const data = await fetchApi(
     `/public/${domain}/badges?partners=${withoutPartners ? 'false' : 'true'}`,

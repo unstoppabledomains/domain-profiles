@@ -479,9 +479,9 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
                   },
                 });
               }
-            } catch (e) {
+            } catch (profileErr) {
               // fail gracefully, as this API fails from time to time
-              notifyError(e as Error);
+              notifyError(profileErr as Error);
             }
 
             // set configuration state
@@ -489,30 +489,35 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
             setPushLocalKey(chatAddress, decryptedPvtKey);
           }
 
-          // retrieve all of the user's current subscriptions
-          setConfigState(ConfigurationState.QuerySubscriptions);
-          const userSubscriptions = await PushAPI.user.getSubscriptions({
-            user: getCaip10Address(pushUserAccount.wallets),
-            env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-          });
+          try {
+            // retrieve all of the user's current subscriptions
+            setConfigState(ConfigurationState.QuerySubscriptions);
+            const userSubscriptions = await PushAPI.user.getSubscriptions({
+              user: getCaip10Address(pushUserAccount.wallets),
+              env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+            });
 
-          // check the status of the desired subscription
-          for (const desiredSub of config.PUSH.CHANNELS) {
-            const isSubscribed =
-              userSubscriptions?.filter((sub: {channel: string}) =>
-                desiredSub.toLowerCase().includes(sub.channel.toLowerCase()),
-              ).length > 0;
-            if (!isSubscribed) {
-              setConfigState(ConfigurationState.RegisterPush);
-              await PushAPI.channels.subscribe({
-                signer: web3Context.web3Deps
-                  .signer as unknown as PushAPI.SignerType,
-                channelAddress: desiredSub,
-                userAddress: getCaip10Address(pushUserAccount.wallets),
-                env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-                onError: (e: unknown) => notifyError(e),
-              });
+            // check the status of the desired subscription
+            for (const desiredSub of config.PUSH.CHANNELS) {
+              const isSubscribed =
+                userSubscriptions?.filter((sub: {channel: string}) =>
+                  desiredSub.toLowerCase().includes(sub.channel.toLowerCase()),
+                ).length > 0;
+              if (!isSubscribed) {
+                setConfigState(ConfigurationState.RegisterPush);
+                await PushAPI.channels.subscribe({
+                  signer: web3Context.web3Deps
+                    .signer as unknown as PushAPI.SignerType,
+                  channelAddress: desiredSub,
+                  userAddress: getCaip10Address(pushUserAccount.wallets),
+                  env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
+                  onError: (e: unknown) => notifyError(e),
+                });
+              }
             }
+          } catch (subscriptionErr) {
+            // fail gracefully, as these subscriptions are not critical
+            notifyError(subscriptionErr as Error);
           }
         }
       }

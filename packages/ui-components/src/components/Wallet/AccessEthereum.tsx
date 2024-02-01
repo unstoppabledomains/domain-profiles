@@ -5,13 +5,14 @@ import type {Theme} from '@mui/material/styles';
 import type {GetWalletClientResult} from '@wagmi/core';
 import type {Signer} from 'ethers';
 import React, {useEffect, useState} from 'react';
-import type {Connector} from 'wagmi';
 import {useConnect, useDisconnect, useWalletClient} from 'wagmi';
+import type {Connector} from 'wagmi';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import WalletButton from '../../components/Wallet/WalletButton';
 import useTranslationContext from '../../lib/i18n';
+import {sleep} from '../../lib/sleep';
 import type {WagmiConnectorType, WalletName} from '../../lib/types/wallet';
 import {WalletOptions} from '../../lib/types/wallet';
 import type {Web3Dependencies} from '../../lib/types/web3';
@@ -48,6 +49,7 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
   const {classes} = useStyles();
   const [t] = useTranslationContext();
   const [selectedWallet, setSelectedWallet] = useState<WalletName>();
+  const [selectedConnector, setSelectedConnector] = useState<Connector>();
 
   // wagmi hooks
   const {disconnect} = useDisconnect();
@@ -82,10 +84,12 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
   }, [connectError]);
 
   const handleClick = async (walletName: WalletName, connector: Connector) => {
+    setSelectedConnector(connector);
     setSelectedWallet(walletName);
     for (let i = 0; i < 10; i++) {
       try {
         const connectedAddress = await connectAsync({connector});
+        await sleep(500);
         if (!connectedAddress || connectedSigner) {
           break;
         }
@@ -109,6 +113,7 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
     onComplete({
       address,
       signer: walletClientSigner as unknown as Signer,
+      provider: await selectedConnector?.getProvider(),
     });
   };
 

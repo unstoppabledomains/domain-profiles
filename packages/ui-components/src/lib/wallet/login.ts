@@ -4,7 +4,7 @@ import {getProfileReverseResolution} from '../../actions';
 import {DomainProfileKeys} from '../../lib/types/domain';
 import type {LoginResult} from '../../lib/types/wallet';
 import {getUAuth} from '../../lib/uauth';
-import {notifyError} from '../error';
+import {notifyEvent} from '../error';
 
 export const loginWithAddress = async (
   address?: string,
@@ -60,7 +60,9 @@ export const loginWithAddress = async (
     // return the login result
     return loginResult;
   } catch (loginError) {
-    notifyError(loginError, {msg: 'login error'});
+    notifyEvent(loginError, 'error', 'PROFILE', 'Authorization', {
+      msg: 'login error',
+    });
     throw loginError;
   }
 };

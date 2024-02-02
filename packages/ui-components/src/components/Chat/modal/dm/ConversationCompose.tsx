@@ -14,7 +14,7 @@ import config from '@unstoppabledomains/config';
 
 import {ProfileManager} from '../../../../components/Wallet/ProfileManager';
 import {fetchApi} from '../../../../lib';
-import {notifyError} from '../../../../lib/error';
+import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedUserDomainProfileData} from '../../../../lib/types/domain';
 import {DomainProfileKeys} from '../../../../lib/types/domain';
@@ -129,7 +129,9 @@ export const Compose: React.FC<ComposeProps> = ({
         setTextboxTerm('');
         setErrorMessage('');
       } catch (e) {
-        notifyError(e, {msg: 'error sending message'});
+        notifyEvent(e, 'error', 'MESSAGING', 'XMTP', {
+          msg: 'error sending message',
+        });
         setErrorMessage(t('push.errorSendingMessage'));
       } finally {
         setIsSending(false);
@@ -187,7 +189,9 @@ export const Compose: React.FC<ComposeProps> = ({
         }
       }
     } catch (e) {
-      notifyError(e, {msg: 'unable to load user profile'});
+      notifyEvent(e, 'error', 'MESSAGING', 'Fetch', {
+        msg: 'unable to load user profile',
+      });
     }
   };
 
@@ -207,7 +211,9 @@ export const Compose: React.FC<ComposeProps> = ({
         sendCallback(sentMessage);
         setErrorMessage('');
       } catch (e) {
-        notifyError(e, {msg: 'error uploading file'});
+        notifyEvent(e, 'error', 'MESSAGING', 'XMTP', {
+          msg: 'error uploading file',
+        });
         setErrorMessage(t('push.errorSendingAttachment'));
       } finally {
         setUploadFile(undefined);

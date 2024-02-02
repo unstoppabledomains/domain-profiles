@@ -12,7 +12,7 @@ import Emoji from 'react-emoji-render';
 import Linkify from 'react-linkify';
 import Zoom from 'react-medium-image-zoom';
 
-import {notifyError} from '../../../../lib/error';
+import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import {formatFileSize, getRemoteAttachment} from '../../protocol/xmtp';
 import LinkWarningModal from '../LinkWarningModal';
@@ -39,7 +39,9 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
     try {
       void renderContent();
     } catch (e) {
-      notifyError(e, {msg: 'error loading message'});
+      notifyEvent(e, 'error', 'MESSAGING', 'XMTP', {
+        msg: 'error loading message',
+      });
       setRenderedContent(<Box>{t('push.errorLoadingMessage')}</Box>);
     }
   }, []);

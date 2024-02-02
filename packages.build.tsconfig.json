@@ -7,7 +7,6 @@
     "forceConsistentCasingInFileNames": true,
     "ignoreDeprecations": "5.0",
     "importHelpers": true,
-    "inlineSourceMap": false,
     "isolatedModules": true,
     "jsx": "react",
     "lib": ["esnext"],

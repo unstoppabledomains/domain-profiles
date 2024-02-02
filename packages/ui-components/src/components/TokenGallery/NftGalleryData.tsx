@@ -2,7 +2,7 @@ import {useState} from 'react';
 
 import {getDomainNfts} from '../../actions';
 import type {Nft, NftMintItem, NftResponse} from '../../lib';
-import {notifyError} from '../../lib/error';
+import {notifyEvent} from '../../lib/error';
 
 export enum NftTag {
   All = 'all',
@@ -179,12 +179,8 @@ export const getNextNftPageFn = (
   }
 
   const isImageUrl = (url?: string): boolean => {
-    try {
-      if (url?.toLowerCase().startsWith('https://')) {
-        return true;
-      }
-    } catch (e) {
-      notifyError(e, {msg: 'unable to parse url'}, 'warning');
+    if (url?.toLowerCase().startsWith('https://')) {
+      return true;
     }
     return false;
   };
@@ -197,7 +193,9 @@ export const getNextNftPageFn = (
       props.setNftDataLoading(true);
       return await getDomainNfts(props.domain, symbols, cursor);
     } catch (e) {
-      notifyError(e, {msg: 'error retrieving NFT data'});
+      notifyEvent(e, 'error', 'TOKEN_GALLERY', 'Fetch', {
+        msg: 'error retrieving NFT data',
+      });
     } finally {
       props.setNftDataLoading(false);
     }

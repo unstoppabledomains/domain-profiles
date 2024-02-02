@@ -15,7 +15,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {getProfileData} from '../../actions';
 import {splitDomain} from '../../lib/domain/format';
 import getImageUrl from '../../lib/domain/getImageUrl';
-import {notifyError} from '../../lib/error';
+import {notifyEvent} from '../../lib/error';
 import useTranslationContext from '../../lib/i18n';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import {
@@ -128,7 +128,9 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
           setProfileData(profileJSON);
         }
       } catch (e) {
-        notifyError(e, {msg: 'error fetching profile data'}, 'warning');
+        notifyEvent(e, 'warning', 'PROFILE', 'Fetch', {
+          msg: 'error fetching profile data',
+        });
       }
     };
     void fetchData();

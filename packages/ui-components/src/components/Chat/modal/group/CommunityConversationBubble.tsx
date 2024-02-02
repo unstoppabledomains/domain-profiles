@@ -25,7 +25,7 @@ import Zoom from 'react-medium-image-zoom';
 import config from '@unstoppabledomains/config';
 
 import {useFeatureFlags} from '../../../../actions/featureFlagActions';
-import {notifyError} from '../../../../lib/error';
+import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import {
   MessageType,
@@ -299,7 +299,9 @@ export const CommunityConversationBubble: React.FC<
         );
       }
     } catch (e) {
-      notifyError(e, {msg: 'error loading message'});
+      notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+        msg: 'error loading message',
+      });
     } finally {
       setIsDecrypting(false);
     }

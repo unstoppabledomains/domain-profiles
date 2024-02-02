@@ -5,6 +5,7 @@ FROM launcher.gcr.io/google/nodejs AS builder
 
 # Prepare arguments
 ARG service
+ARG BUGSNAG_API_KEY
 ARG APP_ENV=production
 ARG APP_VERSION=docker-build
 ARG CLIENT_URL=https://ud.me
@@ -14,6 +15,7 @@ ARG CLIENT_URL=https://ud.me
 ENV NODE_ENV development
 ENV APP_ENV $APP_ENV
 ENV APP_VERSION $APP_VERSION
+ENV BUGSNAG_API_KEY $BUGSNAG_API_KEY
 ENV CLIENT_URL $CLIENT_URL
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV YARN_IGNORE_NODE 1

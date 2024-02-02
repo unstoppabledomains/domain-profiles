@@ -56,6 +56,9 @@ export type Config = {
     CLIENT_ID: string;
     REDIRECT_URI: string;
   };
+  BUGSNAG: {
+    API_KEY: string;
+  };
   COOKIE: {
     SECURE: boolean;
     SAME_SITE: boolean | 'lax' | 'none' | 'strict';

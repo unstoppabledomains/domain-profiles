@@ -40,7 +40,7 @@ import {
 } from '../../../components/Wallet/ProfileManager';
 import useFetchNotifications from '../../../hooks/useFetchNotification';
 import {fetchApi, isDomainValidForManagement} from '../../../lib';
-import {notifyError} from '../../../lib/error';
+import {notifyEvent} from '../../../lib/error';
 import useTranslationContext from '../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../lib/types/badge';
 import type {SerializedUserDomainProfileData} from '../../../lib/types/domain';
@@ -368,7 +368,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         });
         return localConversations;
       } catch (e) {
-        notifyError(e, {msg: 'error loading conversations'}, 'warning');
+        notifyEvent(e, 'warning', 'MESSAGING', 'XMTP', {
+          msg: 'error loading conversations',
+        });
       } finally {
         if (!isAlreadyLoading) {
           setLoadingText(undefined);
@@ -444,7 +446,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         }
       }
     } catch (e) {
-      notifyError(e, {msg: 'unable to load user profile'}, 'warning');
+      notifyEvent(e, 'warning', 'MESSAGING', 'Fetch', {
+        msg: 'unable to load user profile',
+      });
     }
   };
 
@@ -619,7 +623,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         return await handleOpenChatFromAddress(peer);
       }
     } catch (e) {
-      notifyError(e, {msg: 'error opening chat for user'}, 'warning');
+      notifyEvent(e, 'warning', 'MESSAGING', 'Resolution', {
+        msg: 'error opening chat for user',
+      });
     } finally {
       setLoadingText(undefined);
     }
@@ -663,7 +669,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         }
       }
     } catch (e) {
-      notifyError(e, {msg: 'error opening chat from address'}, 'warning');
+      notifyEvent(e, 'warning', 'MESSAGING', 'XMTP', {
+        msg: 'error opening chat from address',
+      });
     } finally {
       setConversationMetadata(peer);
       setLoadingText(undefined);

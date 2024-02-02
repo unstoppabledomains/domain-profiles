@@ -12,7 +12,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {useFeatureFlags} from '../../../../actions';
 import {getDomainBadges} from '../../../../actions/domainActions';
 import {getProfileData} from '../../../../actions/domainProfileActions';
-import {notifyError} from '../../../../lib/error';
+import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../../lib/types/badge';
 import {
@@ -140,7 +140,9 @@ export const CommunityList: React.FC<CommunityListProps> = ({
             ?.ecommerceServiceUsersEnableChatCommunityUdBlue,
       );
     } catch (e) {
-      notifyError(e, {msg: 'error loading badges'});
+      notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+        msg: 'error loading badges',
+      });
     }
     setLoadingText(undefined);
   };

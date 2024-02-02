@@ -26,7 +26,7 @@ import type {
   SerializedPublicDomainProfileData,
 } from '../../../lib';
 import {DomainFieldTypes, useTranslationContext} from '../../../lib';
-import {notifyError} from '../../../lib/error';
+import {notifyEvent} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import AddCurrencyModal from '../common/AddCurrencyModal';
 import CurrencyInput from '../common/CurrencyInput';
@@ -227,7 +227,9 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
       // sign a message linking the domain and secondary wallet address
       return await web3Deps.signer.signMessage(msg);
     } catch (signError) {
-      notifyError(signError, {msg: 'signature error'}, 'warning');
+      notifyEvent(signError, 'warning', 'PROFILE', 'Signature', {
+        msg: 'signature error',
+      });
     }
     return undefined;
   };
@@ -261,7 +263,9 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
       }
       return true;
     } catch (e) {
-      notifyError(e, {msg: 'error validating wallet'}, 'warning');
+      notifyEvent(e, 'warning', 'PROFILE', 'Signature', {
+        msg: 'error validating wallet',
+      });
     }
     return false;
   };

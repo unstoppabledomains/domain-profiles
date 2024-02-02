@@ -30,6 +30,7 @@ const config: InitialOptionsTsJest = {
   moduleDirectories: ['node_modules', '<rootDir>/server'],
   testPathIgnorePatterns: ['/node_modules/', '/build/'],
   moduleNameMapper: {
+    ['@bugsnag/(.*)']: '<rootDir>/tests/mocks/empty.js',
     ['@xmtp/(.*)']: '<rootDir>/tests/mocks/empty.js',
     ['@pushprotocol/(.*)']: '<rootDir>/tests/mocks/empty.js',
     ['@ipld/(.*)']: '<rootDir>/tests/mocks/empty.js',

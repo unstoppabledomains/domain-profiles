@@ -28,7 +28,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import config from '@unstoppabledomains/config';
 
 import {joinBadgeGroupChat} from '../../../../actions/messageActions';
-import {notifyError} from '../../../../lib/error';
+import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../../lib/types/badge';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
@@ -144,7 +144,9 @@ export const Community: React.FC<CommunityProps> = ({
         setPushMessages([...pushMessages, ...previousMessages.slice(1)]);
       }
     } catch (e) {
-      notifyError(e, {msg: 'error fetching previous conversations'});
+      notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+        msg: 'error fetching previous conversations',
+      });
     }
   };
 
@@ -179,7 +181,9 @@ export const Community: React.FC<CommunityProps> = ({
       setHasMoreMessages(initialMessages.length >= PUSH_PAGE_SIZE);
       setPushMessages(initialMessages);
     } catch (e) {
-      notifyError(e, {msg: 'error loading conversation'});
+      notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+        msg: 'error loading conversation',
+      });
     } finally {
       // loading complete
       setIsLoading(false);

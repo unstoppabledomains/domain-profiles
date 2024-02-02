@@ -1,6 +1,6 @@
 import config from '@unstoppabledomains/config';
 
-import {notifyError} from './error';
+import {notifyEvent} from './error';
 
 export interface FetchOptions extends RequestInit {
   host?: string;
@@ -40,10 +40,12 @@ export const fetchApi = async <T = any>(
   return fetch(url, options).then(async (res: Response) => {
     if (!res.ok) {
       const severity = res.status < 500 ? 'warning' : 'error';
-      notifyError(
-        new Error(`error fetching API`),
-        {status: res.status, url},
+      notifyEvent(
+        new Error(`error fetching API endpoint`),
         severity,
+        'REQUEST',
+        'Fetch',
+        {msg: 'fetch error', meta: {status: res.status, url}},
       );
       return undefined;
     }

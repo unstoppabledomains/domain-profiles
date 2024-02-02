@@ -68,6 +68,8 @@ const nextConfig = {
   compress: false,
   reactStrictMode: true,
   pageExtensions: ['page.tsx', 'api.ts'],
+  // source maps are used in bugsnag to make it easier to map production errors to a line of code
+  productionBrowserSourceMaps: true,
   experimental: {
     externalDir: true,
     forceSwcTransforms: true,

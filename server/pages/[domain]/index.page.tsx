@@ -102,7 +102,7 @@ import {
   useWeb3Context,
 } from '@unstoppabledomains/ui-components';
 import {getOwnerDomains} from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
-import {notifyError} from '@unstoppabledomains/ui-components/src/lib/error';
+import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
 import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
 type DomainProfileServerSideProps = GetServerSideProps & {
@@ -385,6 +385,9 @@ const DomainProfile = ({
   }, [isMounted, isFeatureFlagSuccess, featureFlags, ownerAddress]);
 
   useEffect(() => {
+    // report the initial page load
+    notifyEvent('loading profile page', 'info', 'PROFILE', 'Info');
+
     // determine social account status
     if (profileData?.socialAccounts) {
       setIsSomeSocialsPublic(
@@ -433,7 +436,9 @@ const DomainProfile = ({
           setRecords(recordsData.records);
         }
       } catch (e) {
-        notifyError(e, {msg: 'error loading webacy score'});
+        notifyEvent(e, 'error', 'PROFILE', 'Resolution', {
+          msg: 'error retrieving records',
+        });
       }
     }
   };
@@ -449,7 +454,9 @@ const DomainProfile = ({
           setWalletBalances(recordsData.walletBalances);
         }
       } catch (e) {
-        notifyError(e, {msg: 'error loading webacy score'});
+        notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+          msg: 'error retrieving wallets',
+        });
       }
     }
   };
@@ -465,7 +472,9 @@ const DomainProfile = ({
           profileData.webacy = webacyData.webacy;
         }
       } catch (e) {
-        notifyError(e, {msg: 'error loading webacy score'});
+        notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+          msg: 'error retrieving webacy score',
+        });
       }
     }
   };
@@ -490,7 +499,9 @@ const DomainProfile = ({
         setFeaturedPartner(shuffle(featuredPartners)[0]);
       }
     } catch (e) {
-      notifyError(e, {msg: 'error loading badges'});
+      notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+        msg: 'error retrieving badges',
+      });
     }
   };
 

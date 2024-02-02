@@ -27,7 +27,7 @@ import {parsePartnerMetadata} from '../../hooks/useFetchNotification';
 import useUnstoppableMessaging from '../../hooks/useUnstoppableMessaging';
 import useWeb3Context from '../../hooks/useWeb3Context';
 import {isDomainValidForManagement} from '../../lib';
-import {notifyError} from '../../lib/error';
+import {notifyEvent} from '../../lib/error';
 import useTranslationContext from '../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../lib/types/badge';
 import {DomainNotificationSettingsKey} from '../../lib/types/message';
@@ -481,7 +481,9 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
               }
             } catch (profileErr) {
               // fail gracefully, as this API fails from time to time
-              notifyError(profileErr as Error);
+              notifyEvent(profileErr, 'warning', 'MESSAGING', 'PushProtocol', {
+                msg: 'error updating profile',
+              });
             }
 
             // set configuration state
@@ -511,13 +513,22 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
                   channelAddress: desiredSub,
                   userAddress: getCaip10Address(pushUserAccount.wallets),
                   env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
-                  onError: (e: unknown) => notifyError(e),
+                  onError: (e: unknown) =>
+                    notifyEvent(e, 'warning', 'MESSAGING', 'PushProtocol', {
+                      msg: 'subscription error',
+                    }),
                 });
               }
             }
           } catch (subscriptionErr) {
             // fail gracefully, as these subscriptions are not critical
-            notifyError(subscriptionErr as Error);
+            notifyEvent(
+              subscriptionErr,
+              'warning',
+              'MESSAGING',
+              'PushProtocol',
+              {msg: 'error subscribing to channels'},
+            );
           }
         }
       }
@@ -534,7 +545,14 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         return;
       }
     } catch (e) {
-      notifyError(e);
+      notifyEvent(e, 'error', 'MESSAGING', 'Authorization', {
+        msg: 'error configuring messaging',
+        meta: {
+          address: chatAddress,
+          pushSetupRequired,
+          xmtpSetupRequired,
+        },
+      });
       setConfigState(ConfigurationState.Error);
       return;
     }
@@ -545,7 +563,13 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
 
   const listenForMessages = async () => {
     if (!chatAddress || !xmtpKey) {
-      notifyError(new Error('Required messaging accounts not defined'));
+      notifyEvent(
+        new Error('Required messaging accounts not defined'),
+        'error',
+        'MESSAGING',
+        'Fetch',
+        {msg: 'accounts not defined'},
+      );
       return;
     }
 
@@ -862,7 +886,9 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
           setActiveCommunity(groupChatInfo);
         }
       } catch (e) {
-        notifyError(e, {msg: 'error joining group'});
+        notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+          msg: 'error joining group',
+        });
       } finally {
         setActiveTab(TabType.Communities);
       }

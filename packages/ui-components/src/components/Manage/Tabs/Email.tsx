@@ -15,7 +15,7 @@ import {getProfileUserData, setProfileUserData} from '../../../actions';
 import {useWeb3Context} from '../../../hooks';
 import type {SerializedUserDomainProfileData} from '../../../lib';
 import {DomainFieldTypes, useTranslationContext} from '../../../lib';
-import {notifyError} from '../../../lib/error';
+import {notifyEvent} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import BulkUpdateLoadingButton from '../common/BulkUpdateLoadingButton';
 import ManageInput from '../common/ManageInput';
@@ -126,7 +126,9 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
       }
     } catch (e) {
       setUpdateErrorMessage(t('manage.updateError'));
-      notifyError(e, {msg: 'unable to manage user profile'});
+      notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+        msg: 'unable to manage user profile',
+      });
     }
   };
 

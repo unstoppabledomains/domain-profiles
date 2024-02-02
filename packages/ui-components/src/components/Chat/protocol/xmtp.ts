@@ -32,7 +32,7 @@ import config from '@unstoppabledomains/config';
 
 import {getUnstoppableConsents} from '../../../actions';
 import type {ConsentPreferences} from '../../../lib';
-import {notifyError} from '../../../lib/error';
+import {notifyEvent} from '../../../lib/error';
 import {sleep} from '../../../lib/sleep';
 import {getXmtpLocalKey, setXmtpLocalKey} from '../storage';
 import {registerClientTopics} from './registration';
@@ -160,7 +160,9 @@ export const getRemoteAttachment = async (
     );
     return attachment;
   } catch (e) {
-    notifyError(e, {msg: 'error loading remote attachment'});
+    notifyEvent(e, 'error', 'MESSAGING', 'XMTP', {
+      msg: 'error loading remote attachment',
+    });
   }
   return;
 };
@@ -209,7 +211,7 @@ export const initXmtpAccount = async (address: string, signer: Signer) => {
     // create a client for the first time using the wallet signer reference
     await getXmtpClient(address, signer);
   } catch (e) {
-    notifyError(e, {}, 'warning');
+    notifyEvent(e, 'warning', 'MESSAGING', 'XMTP');
     throw e;
   }
 };

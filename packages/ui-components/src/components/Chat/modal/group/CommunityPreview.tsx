@@ -26,7 +26,7 @@ import {getProfileReverseResolution} from '../../../../actions';
 import {getBadge} from '../../../../actions/badgeActions';
 import {joinBadgeGroupChat} from '../../../../actions/messageActions';
 import LearnMoreUdBlue from '../../../../components/LearnMoreUdBlue';
-import {notifyError} from '../../../../lib/error';
+import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {
   SerializedBadgeInfo,
@@ -218,7 +218,9 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
         setLatestMessage(t('push.noGroupMessages'));
         badge.groupChatLatestMessage = t('push.noGroupMessages');
       } catch (e) {
-        notifyError(e, {msg: 'error retrieving latest message'});
+        notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+          msg: 'error retrieving latest message',
+        });
       } finally {
         // always callback after group lookup complete, regardless of the
         // success result. Tells the caller that rendering is complete.
@@ -304,7 +306,9 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
       setActiveCommunity(badge);
     } catch (e) {
       // unable to join group
-      notifyError(e, {msg: 'error joining group'});
+      notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+        msg: 'error joining group',
+      });
       setErrorMsg(t('push.joinCommunityError'));
     } finally {
       setJoiningState(undefined);

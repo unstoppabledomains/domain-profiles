@@ -599,12 +599,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@bugsnag/browser-performance@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "@bugsnag/browser-performance@npm:2.2.0"
+  dependencies:
+    "@bugsnag/core-performance": ^2.2.0
+    "@bugsnag/cuid": ^3.0.2
+    "@bugsnag/delivery-fetch-performance": ^2.2.0
+    "@bugsnag/request-tracker-performance": ^2.2.0
+  checksum: 1f13696e51ebdd41de40c7961c484f9ce35021f9405e265e530d7160a20bd983ba6a34565d03e98c608ac28a39825537d8f18eecd088290ccaab53375a14502b
+  languageName: node
+  linkType: hard
+
 "@bugsnag/browser@npm:^7.22.3":
   version: 7.22.3
   resolution: "@bugsnag/browser@npm:7.22.3"
   dependencies:
     "@bugsnag/core": ^7.19.0
   checksum: 099477ec2b2d60bc454c2347c76b31cce8a988d79e7bb74f878a10664d1aa6de91b6bc6eb4d0459cf62f603d0331ad1357934f97b09e6972c68f6b486200a089
+  languageName: node
+  linkType: hard
+
+"@bugsnag/core-performance@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "@bugsnag/core-performance@npm:2.2.0"
+  checksum: 47f8e1fbc01520ccdc3e071de1168c9ac9647d8dcba2790cf32c2dd7b460289b76b41830ed5913812da6d37bee17fb4ec1266378b64be3525924908aefb7ae4c
   languageName: node
   linkType: hard
 
@@ -621,10 +640,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bugsnag/cuid@npm:^3.0.0":
+"@bugsnag/cuid@npm:^3.0.0, @bugsnag/cuid@npm:^3.0.2":
   version: 3.0.2
   resolution: "@bugsnag/cuid@npm:3.0.2"
   checksum: cf85d78f0107b25bcfc4396e5c2cf7eb58a28777f07b9c6e976d529417a8284bb69ec715f13917c2b6ad3803e7bb563621b0374c31e09d4c6b3156aba9939955
+  languageName: node
+  linkType: hard
+
+"@bugsnag/delivery-fetch-performance@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "@bugsnag/delivery-fetch-performance@npm:2.2.0"
+  dependencies:
+    "@bugsnag/core-performance": ^2.2.0
+  checksum: 495f4f2589f081473d1850c33c9209b8b09700e303dab7131a61fd77de63405ccb54746c496ec1db9d03824760bc7651e303cf0720ad875400f54d72b2356804
   languageName: node
   linkType: hard
 
@@ -661,6 +689,15 @@ __metadata:
     "@bugsnag/core":
       optional: true
   checksum: b245c24df126da9bb413972ade7f1a947ba161ddfb837a980d2be7329ab43feee437d0fb7390a9eaa0cd251f5a41f38c53878bb5601d891ecfe511f5e3671251
+  languageName: node
+  linkType: hard
+
+"@bugsnag/request-tracker-performance@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "@bugsnag/request-tracker-performance@npm:2.2.0"
+  dependencies:
+    "@bugsnag/core-performance": ^2.2.0
+  checksum: 641342b545bd053926e653116c472c1067c867e83f951a556f4fd4ff8b9a25d05c988eda273b555bf7cfcdb43d2b5d9dfb3ddc7006c83a73b15cf910c65f0a6f
   languageName: node
   linkType: hard
 
@@ -5014,6 +5051,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@unstoppabledomains/config@workspace:packages/config"
   dependencies:
+    "@bugsnag/browser-performance": ^2.2.0
     "@bugsnag/js": ^7.16.2
     "@bugsnag/plugin-react": ^7.16.2
     "@types/lodash": ^4.14.199

@@ -29,7 +29,7 @@ import {
   isExternalDomain,
   useTranslationContext,
 } from '../../../../lib';
-import {notifyError} from '../../../../lib/error';
+import {notifyEvent} from '../../../../lib/error';
 import {ProfileManager} from '../../../Wallet/ProfileManager';
 import {DomainProfileTabType} from '../../DomainProfile';
 import BulkUpdateLoadingButton from '../../common/BulkUpdateLoadingButton';
@@ -230,7 +230,7 @@ export const Profile: React.FC<ProfileProps> = ({
       }
     } catch (e) {
       setUpdateErrorMessage(t('manage.updateError'));
-      notifyError(e, 'error', 'PROFILE', 'Fetch', {
+      notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
         msg: 'unable to manage user profile',
       });
     }

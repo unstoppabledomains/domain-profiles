@@ -19,7 +19,7 @@ import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getMarketplaceBadgeDetails} from '../../actions/badgeActions';
-import {notifyError} from '../../lib/error';
+import {notifyEvent} from '../../lib/error';
 import useTranslationContext from '../../lib/i18n';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -211,7 +211,7 @@ const CustomBadgesDialog: React.FC<Props> = ({open, handleClose}) => {
             });
           }
         } catch (e) {
-          notifyError(e, 'error', 'BADGES', 'Fetch');
+          notifyEvent(e, 'error', 'BADGES', 'Fetch');
           return e;
         }
       }

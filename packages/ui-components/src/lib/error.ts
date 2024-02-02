@@ -11,7 +11,7 @@ export type ErrorMetadata = {
   meta?: Record<string, any>;
 };
 
-export const notifyError = (
+export const notifyEvent = (
   error: any,
   severity: SeverityLevel,
   appContext: keyof typeof BugsnagErrorContexts,

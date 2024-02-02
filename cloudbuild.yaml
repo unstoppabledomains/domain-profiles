@@ -52,7 +52,7 @@ substitutions:
   _AR_HOSTNAME: us-central1-docker.pkg.dev
   _PLATFORM: managed
   _SERVICE_NAME: ud-me-stag
-  _BUGSNAG_API_KEY: bugsnag_api_key_stag_ud-me:2
+  _BUGSNAG_API_KEY_SECRET: bugsnag_api_key_stag_ud-me:2
   _GATEWAY_API_KEY_SECRET: kong_consumer_stag_ud-me:1
 tags:
   - gcp-cloud-build-deploy-cloud-run

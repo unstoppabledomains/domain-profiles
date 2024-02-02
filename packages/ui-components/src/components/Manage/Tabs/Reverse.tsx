@@ -25,7 +25,7 @@ import {
 } from '../../../actions/pav3Actions';
 import {useWeb3Context} from '../../../hooks';
 import {DomainFieldTypes, useTranslationContext} from '../../../lib';
-import {notifyError} from '../../../lib/error';
+import {notifyEvent} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import {TabHeader} from '../common/TabHeader';
 
@@ -195,7 +195,7 @@ export const Reverse: React.FC<ReverseProps> = ({address, domain}) => {
       }
       return true;
     } catch (e) {
-      notifyError(e, 'warning', 'PROFILE', 'Signature', {
+      notifyEvent(e, 'warning', 'PROFILE', 'Signature', {
         msg: 'error validating wallet',
       });
     }
@@ -213,7 +213,7 @@ export const Reverse: React.FC<ReverseProps> = ({address, domain}) => {
       // sign a message linking the domain and secondary wallet address
       return await web3Deps.signer.signMessage(msg);
     } catch (signError) {
-      notifyError(signError, 'warning', 'PROFILE', 'Signature', {
+      notifyEvent(signError, 'warning', 'PROFILE', 'Signature', {
         msg: 'signature error',
       });
     }

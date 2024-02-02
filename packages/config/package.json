@@ -16,6 +16,7 @@
   "module": "build/src/index.js",
   "typings": "build/src/index.d.ts",
   "dependencies": {
+    "@bugsnag/browser-performance": "^2.2.0",
     "@bugsnag/js": "^7.16.2",
     "@bugsnag/plugin-react": "^7.16.2",
     "@types/lodash": "^4.14.199",

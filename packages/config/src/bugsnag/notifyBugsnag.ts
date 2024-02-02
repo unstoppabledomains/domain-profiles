@@ -1,3 +1,4 @@
+import BugsnagPerformance from '@bugsnag/browser-performance';
 import Bugsnag, {Client as BugsnagClient} from '@bugsnag/js';
 import BugsnagPluginReact from '@bugsnag/plugin-react';
 import React from 'react';
@@ -11,22 +12,27 @@ declare global {
 }
 
 export const getBugsnag = (): BugsnagClient | undefined => {
+  if (!config.BUGSNAG.API_KEY) {
+    return undefined;
+  }
   if (global.bugsnag) {
     return global.bugsnag;
   }
+
+  // create a shared bugsnag client
   const bugsnagClient =
     global.bugsnag ??
-    (config.BUGSNAG.API_KEY
-      ? Bugsnag.start({
-          apiKey: config.BUGSNAG.API_KEY,
-          plugins: [new BugsnagPluginReact(React)],
-          releaseStage: config.APP_ENV,
-          enabledReleaseStages: ['development', 'staging', 'production'],
-          logger: null,
-        })
-      : undefined);
-
+    Bugsnag.start({
+      apiKey: config.BUGSNAG.API_KEY,
+      plugins: [new BugsnagPluginReact(React)],
+      releaseStage: config.APP_ENV,
+      enabledReleaseStages: ['development', 'staging', 'production'],
+      logger: null,
+    });
   global.bugsnag = bugsnagClient;
+
+  // start performance monitoring
+  BugsnagPerformance.start({apiKey: config.BUGSNAG.API_KEY});
   return bugsnagClient;
 };
 

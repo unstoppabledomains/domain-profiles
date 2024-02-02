@@ -3,7 +3,7 @@ import {useQuery} from 'react-query';
 import config, {getLaunchDarklyDefaults} from '@unstoppabledomains/config';
 import type {LaunchDarklyCamelFlagSet} from '@unstoppabledomains/config';
 
-import {notifyError} from '../lib/error';
+import {notifyEvent} from '../lib/error';
 import {fetchApi} from '../lib/fetchApi';
 
 const BASE_QUERY_KEY = 'featureFlags';
@@ -34,7 +34,7 @@ export const fetchFeatureFlags = async (
       variations: {...DEFAULT_FEATURE_FLAGS.variations, ...featureFlags},
     };
   } catch (e) {
-    notifyError(e, 'warning', 'INFRASTRUCTURE', 'Fetch');
+    notifyEvent(e, 'warning', 'INFRASTRUCTURE', 'Fetch');
   }
   return DEFAULT_FEATURE_FLAGS;
 };

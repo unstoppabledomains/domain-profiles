@@ -9,7 +9,7 @@ import React, {useEffect, useState} from 'react';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useIsTabActive} from '../../hooks/useIsTabActive';
-import {notifyError} from '../../lib/error';
+import {notifyEvent} from '../../lib/error';
 import useTranslationContext from '../../lib/i18n';
 import {getAddressMetadata} from './protocol/resolution';
 
@@ -86,7 +86,7 @@ export const IncomingChatSnackbar = React.forwardRef<
           setAvatarUrl(addressMetadata.avatarUrl);
         }
       } catch (e) {
-        notifyError(e, 'warning', 'MESSAGING', 'Resolution', {
+        notifyEvent(e, 'warning', 'MESSAGING', 'Resolution', {
           msg: 'error looking up reverse resolution',
         });
       }

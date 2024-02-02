@@ -102,7 +102,7 @@ import {
   useWeb3Context,
 } from '@unstoppabledomains/ui-components';
 import {getOwnerDomains} from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
-import {notifyError} from '@unstoppabledomains/ui-components/src/lib/error';
+import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
 import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
 type DomainProfileServerSideProps = GetServerSideProps & {
@@ -385,11 +385,8 @@ const DomainProfile = ({
   }, [isMounted, isFeatureFlagSuccess, featureFlags, ownerAddress]);
 
   useEffect(() => {
-    // TODO - REMOVE ME
-    notifyError(new Error('JUST A TEST'), 'info', 'PROFILE', 'Validation', {
-      msg: 'error message details',
-      meta: {key1: 'val1', key2: 'val2'},
-    });
+    // report the initial page load
+    notifyEvent('loading profile page', 'info', 'PROFILE', 'Validation');
 
     // determine social account status
     if (profileData?.socialAccounts) {
@@ -439,7 +436,7 @@ const DomainProfile = ({
           setRecords(recordsData.records);
         }
       } catch (e) {
-        notifyError(e, 'error', 'PROFILE', 'Resolution', {
+        notifyEvent(e, 'error', 'PROFILE', 'Resolution', {
           msg: 'error retrieving records',
         });
       }
@@ -457,7 +454,7 @@ const DomainProfile = ({
           setWalletBalances(recordsData.walletBalances);
         }
       } catch (e) {
-        notifyError(e, 'error', 'PROFILE', 'Fetch', {
+        notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
           msg: 'error retrieving wallets',
         });
       }
@@ -475,7 +472,7 @@ const DomainProfile = ({
           profileData.webacy = webacyData.webacy;
         }
       } catch (e) {
-        notifyError(e, 'error', 'PROFILE', 'Fetch', {
+        notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
           msg: 'error retrieving webacy score',
         });
       }
@@ -502,7 +499,7 @@ const DomainProfile = ({
         setFeaturedPartner(shuffle(featuredPartners)[0]);
       }
     } catch (e) {
-      notifyError(e, 'error', 'PROFILE', 'Fetch', {
+      notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
         msg: 'error retrieving badges',
       });
     }

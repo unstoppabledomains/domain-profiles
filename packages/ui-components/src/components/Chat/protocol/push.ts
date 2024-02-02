@@ -11,7 +11,7 @@ import {ethers} from 'ethers';
 
 import config from '@unstoppabledomains/config';
 
-import {notifyError} from '../../../lib/error';
+import {notifyEvent} from '../../../lib/error';
 import {sleep} from '../../../lib/sleep';
 import {getLocalKey, setLocalKey} from '../storage';
 import {fromCaip10Address} from '../types';
@@ -56,7 +56,7 @@ export const acceptGroupInvite = async (
       });
     }
   } catch (e) {
-    notifyError(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
       msg: 'error accepting group invitation',
     });
   }
@@ -91,7 +91,7 @@ export const decryptMessage = async (
       return decryptedMessage;
     }
   } catch (e) {
-    notifyError(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
       msg: 'error decrypting message',
     });
   }
@@ -134,7 +134,7 @@ export const decryptMessageWithPGP = async (
       }
     }
   } catch (err) {
-    notifyError(err, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(err, 'error', 'MESSAGING', 'PushProtocol', {
       msg: 'error decrypting message',
     });
     return undefined;
@@ -156,7 +156,7 @@ export const getGroupInfo = async (chatId?: string) => {
       chatId,
     });
   } catch (e) {
-    notifyError(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
       msg: 'error getting group',
     });
     return;
@@ -191,7 +191,7 @@ export const getLatestMessage = async (
       return await decryptMessage(address, pushKey, encryptedMsg[0]);
     }
   } catch (e) {
-    notifyError(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
       msg: 'error retrieving latest message',
     });
   }
@@ -224,7 +224,7 @@ export const getMessages = async (
       limit: PUSH_PAGE_SIZE,
     });
   } catch (e) {
-    notifyError(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
       msg: 'error retrieving chat history',
     });
   }
@@ -252,7 +252,7 @@ export const getPushUser = async (
       return pushUser;
     }
   } catch (e) {
-    notifyError(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
       msg: 'error getting push user',
     });
   }
@@ -456,7 +456,7 @@ export const updateBlockedList = async (
     ]);
   } catch (e) {
     // graceful failure
-    notifyError(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
       msg: 'unable to update block list registration',
     });
   }

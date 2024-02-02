@@ -9,7 +9,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {getProfileData} from '../../actions/domainProfileActions';
 import DropDownMenu from '../../components/DropDownMenu';
 import getImageUrl from '../../lib/domain/getImageUrl';
-import {notifyError} from '../../lib/error';
+import {notifyEvent} from '../../lib/error';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import {DomainFieldTypes} from '../../lib/types/domain';
 
@@ -108,7 +108,7 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
     // set state
     setIsOwner(domainOwner.toLowerCase() === authAddress.toLowerCase());
     fetchData(authDomain).catch(e =>
-      notifyError(e, 'error', 'PROFILE', 'Resolution'),
+      notifyEvent(e, 'error', 'PROFILE', 'Resolution'),
     );
   }, [authAddress, authDomain, domainOwner]);
 

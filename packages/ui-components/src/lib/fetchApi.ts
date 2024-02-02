@@ -40,7 +40,7 @@ export const fetchApi = async <T = any>(
   return fetch(url, options)
     .then(async (res: Response) => {
       if (!res.ok) {
-        const severity = res.status > 404 ? 'error' : 'warning';
+        const severity = res.status >= 429 ? 'error' : 'warning';
         notifyEvent(
           new Error(`unexpected response code`),
           severity,

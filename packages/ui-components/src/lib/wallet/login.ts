@@ -60,7 +60,9 @@ export const loginWithAddress = async (
     // return the login result
     return loginResult;
   } catch (loginError) {
-    notifyError(loginError, {msg: 'login error'});
+    notifyError(loginError, 'error', 'PROFILE', 'Authorization', {
+      msg: 'login error',
+    });
     throw loginError;
   }
 };

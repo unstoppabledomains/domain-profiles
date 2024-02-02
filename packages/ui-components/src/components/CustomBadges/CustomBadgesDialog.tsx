@@ -211,7 +211,7 @@ const CustomBadgesDialog: React.FC<Props> = ({open, handleClose}) => {
             });
           }
         } catch (e) {
-          notifyError(e);
+          notifyError(e, 'error', 'BADGES', 'Fetch');
           return e;
         }
       }

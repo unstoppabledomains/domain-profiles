@@ -126,7 +126,9 @@ export const Conversation: React.FC<ConversationProps> = ({
         setXmtpMessages([...xmtpMessages, ...previousMessages.slice(1)]);
       }
     } catch (e) {
-      notifyError(e, {msg: 'error fetching previous conversations'});
+      notifyError(e, 'error', 'MESSAGING', 'XMTP', {
+        msg: 'error fetching previous conversations',
+      });
     }
   };
 
@@ -155,7 +157,9 @@ export const Conversation: React.FC<ConversationProps> = ({
         );
       }
     } catch (e) {
-      notifyError(e, {msg: 'error loading conversation'});
+      notifyError(e, 'error', 'MESSAGING', 'XMTP', {
+        msg: 'error loading conversation',
+      });
     } finally {
       // loading complete
       setIsLoading(false);

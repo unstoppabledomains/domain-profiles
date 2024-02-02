@@ -42,8 +42,10 @@ export const fetchApi = async <T = any>(
       const severity = res.status < 500 ? 'warning' : 'error';
       notifyError(
         new Error(`error fetching API`),
-        {status: res.status, url},
         severity,
+        'INFRASTRUCTURE',
+        'Fetch',
+        {msg: 'fetch error', meta: {status: res.status, url}},
       );
       return undefined;
     }

@@ -54,6 +54,9 @@ export default function getDefaultConfig(): Config {
       REDIRECT_URI:
         process.env.NEXT_PUBLIC_CLIENT_URL || 'http://localhost:3000',
     },
+    BUGSNAG: {
+      API_KEY: process.env.BUGSNAG_API_KEY || '',
+    },
     COOKIE: {
       SECURE: true,
       SAME_SITE: 'lax',

@@ -1,24 +1,59 @@
-export type Severity = 'info' | 'warning' | 'error';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type {
+  BugsnagErrorClasses,
+  BugsnagErrorContexts,
+  SeverityLevel,
+} from '@unstoppabledomains/config';
+import {notifyBugsnag} from '@unstoppabledomains/config';
+
+export type ErrorMetadata = {
+  msg: string;
+  meta?: Record<string, any>;
+};
 
 export const notifyError = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  additionalMetaData?: Record<string, any>,
-  // default severity for bugsnag if not set it warning for handled exceptions and error for unhandled
-  severity?: Severity,
+  severity: SeverityLevel,
+  appContext: keyof typeof BugsnagErrorContexts,
+  errorClass: keyof typeof BugsnagErrorClasses,
+  metadata?: ErrorMetadata,
 ) => {
+  const isReported = notifyBugsnag({
+    error,
+    appContext,
+    errorClass,
+    severity,
+    metadata,
+  });
   switch (severity) {
     case 'info':
       // eslint-disable-next-line no-console
-      console.info(error?.message ? error.message : error, additionalMetaData);
+      console.info(
+        error?.message ? error.message : error,
+        JSON.stringify({
+          additionalMetaData: metadata,
+          isReported,
+        }),
+      );
       break;
     case 'warning':
       // eslint-disable-next-line no-console
-      console.warn(error?.message ? error.message : error, additionalMetaData);
+      console.warn(
+        error?.message ? error.message : error,
+        JSON.stringify({
+          additionalMetaData: metadata,
+          isReported,
+        }),
+      );
       break;
     default:
       // eslint-disable-next-line no-console
-      console.error(error, additionalMetaData);
+      console.error(
+        error,
+        JSON.stringify({
+          additionalMetaData: metadata,
+          isReported,
+        }),
+      );
   }
 };

@@ -385,6 +385,12 @@ const DomainProfile = ({
   }, [isMounted, isFeatureFlagSuccess, featureFlags, ownerAddress]);
 
   useEffect(() => {
+    // TODO - REMOVE ME
+    notifyError(new Error('JUST A TEST'), 'info', 'PROFILE', 'Validation', {
+      msg: 'error message details',
+      meta: {key1: 'val1', key2: 'val2'},
+    });
+
     // determine social account status
     if (profileData?.socialAccounts) {
       setIsSomeSocialsPublic(
@@ -433,7 +439,9 @@ const DomainProfile = ({
           setRecords(recordsData.records);
         }
       } catch (e) {
-        notifyError(e, {msg: 'error loading webacy score'});
+        notifyError(e, 'error', 'PROFILE', 'Resolution', {
+          msg: 'error retrieving records',
+        });
       }
     }
   };
@@ -449,7 +457,9 @@ const DomainProfile = ({
           setWalletBalances(recordsData.walletBalances);
         }
       } catch (e) {
-        notifyError(e, {msg: 'error loading webacy score'});
+        notifyError(e, 'error', 'PROFILE', 'Fetch', {
+          msg: 'error retrieving wallets',
+        });
       }
     }
   };
@@ -465,7 +475,9 @@ const DomainProfile = ({
           profileData.webacy = webacyData.webacy;
         }
       } catch (e) {
-        notifyError(e, {msg: 'error loading webacy score'});
+        notifyError(e, 'error', 'PROFILE', 'Fetch', {
+          msg: 'error retrieving webacy score',
+        });
       }
     }
   };
@@ -490,7 +502,9 @@ const DomainProfile = ({
         setFeaturedPartner(shuffle(featuredPartners)[0]);
       }
     } catch (e) {
-      notifyError(e, {msg: 'error loading badges'});
+      notifyError(e, 'error', 'PROFILE', 'Fetch', {
+        msg: 'error retrieving badges',
+      });
     }
   };
 

@@ -128,7 +128,9 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
           setProfileData(profileJSON);
         }
       } catch (e) {
-        notifyError(e, {msg: 'error fetching profile data'}, 'warning');
+        notifyError(e, 'warning', 'PROFILE', 'Fetch', {
+          msg: 'error fetching profile data',
+        });
       }
     };
     void fetchData();

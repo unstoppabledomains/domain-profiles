@@ -37,6 +37,7 @@ steps:
       - '--min-instances=3'
       - '--max-instances=10'
       - '--update-env-vars=APP_VERSION=$COMMIT_SHA'
+      - '--update-secrets=BUGSNAG_API_KEY=$_BUGSNAG_API_KEY_SECRET'
       - '--update-secrets=GATEWAY_API_KEY=$_GATEWAY_API_KEY_SECRET'
       - '--quiet'
     id: Deploy
@@ -51,6 +52,7 @@ substitutions:
   _AR_HOSTNAME: us-central1-docker.pkg.dev
   _PLATFORM: managed
   _SERVICE_NAME: ud-me-stag
+  _BUGSNAG_API_KEY: bugsnag_api_key_stag_ud-me:1
   _GATEWAY_API_KEY_SECRET: kong_consumer_stag_ud-me:1
 tags:
   - gcp-cloud-build-deploy-cloud-run

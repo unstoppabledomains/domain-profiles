@@ -230,7 +230,9 @@ export const Profile: React.FC<ProfileProps> = ({
       }
     } catch (e) {
       setUpdateErrorMessage(t('manage.updateError'));
-      notifyError(e, {msg: 'unable to manage user profile'});
+      notifyError(e, 'error', 'PROFILE', 'Fetch', {
+        msg: 'unable to manage user profile',
+      });
     }
   };
 

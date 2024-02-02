@@ -34,7 +34,7 @@ export const fetchFeatureFlags = async (
       variations: {...DEFAULT_FEATURE_FLAGS.variations, ...featureFlags},
     };
   } catch (e) {
-    notifyError(e);
+    notifyError(e, 'warning', 'INFRASTRUCTURE', 'Fetch');
   }
   return DEFAULT_FEATURE_FLAGS;
 };

@@ -37,22 +37,33 @@ export const fetchApi = async <T = any>(
   }
 
   // make the request
-  return fetch(url, options).then(async (res: Response) => {
-    if (!res.ok) {
-      const severity = res.status < 500 ? 'warning' : 'error';
-      notifyEvent(
-        new Error(`error fetching API endpoint`),
-        severity,
-        'REQUEST',
-        'Fetch',
-        {msg: 'fetch error', meta: {status: res.status, url}},
-      );
+  return fetch(url, options)
+    .then(async (res: Response) => {
+      if (!res.ok) {
+        const severity = res.status > 404 ? 'error' : 'warning';
+        notifyEvent(
+          new Error(`unexpected response code`),
+          severity,
+          'REQUEST',
+          'Fetch',
+          {
+            msg: 'unexpected response code',
+            meta: {status: res.status, url},
+          },
+        );
+        return undefined;
+      }
+      try {
+        return await res.json();
+      } catch (e) {
+        return undefined;
+      }
+    })
+    .catch(e => {
+      notifyEvent(e, 'error', 'REQUEST', 'Fetch', {
+        msg: 'fetch error',
+        meta: {url},
+      });
       return undefined;
-    }
-    try {
-      return await res.json();
-    } catch (e) {
-      return undefined;
-    }
-  });
+    });
 };

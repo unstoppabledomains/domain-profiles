@@ -386,7 +386,14 @@ const DomainProfile = ({
 
   useEffect(() => {
     // report the initial page load
-    notifyEvent('loading profile page', 'info', 'PROFILE', 'Info');
+    notifyEvent(
+      'loading profile page',
+      'info',
+      'PROFILE',
+      'Info',
+      undefined,
+      true,
+    );
 
     // determine social account status
     if (profileData?.socialAccounts) {

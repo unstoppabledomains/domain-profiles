@@ -17,22 +17,16 @@ export const notifyEvent = (
   appContext: keyof typeof BugsnagErrorContexts,
   errorClass: keyof typeof BugsnagErrorClasses,
   metadata?: ErrorMetadata,
+  forceSend?: boolean,
 ) => {
-  const isReported = notifyBugsnag({
-    error,
-    appContext,
-    errorClass,
-    severity,
-    metadata,
-  });
+  let sendToBugsnag = forceSend || false;
   switch (severity) {
     case 'info':
       // eslint-disable-next-line no-console
       console.info(
         error?.message ? error.message : error,
         JSON.stringify({
-          additionalMetaData: metadata,
-          isReported,
+          metadata,
         }),
       );
       break;
@@ -41,8 +35,7 @@ export const notifyEvent = (
       console.warn(
         error?.message ? error.message : error,
         JSON.stringify({
-          additionalMetaData: metadata,
-          isReported,
+          metadata,
         }),
       );
       break;
@@ -51,9 +44,18 @@ export const notifyEvent = (
       console.error(
         error,
         JSON.stringify({
-          additionalMetaData: metadata,
-          isReported,
+          metadata,
         }),
       );
+      sendToBugsnag = true;
+  }
+  if (sendToBugsnag) {
+    notifyBugsnag({
+      error,
+      appContext,
+      errorClass,
+      severity,
+      metadata,
+    });
   }
 };

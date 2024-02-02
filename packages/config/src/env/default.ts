@@ -55,7 +55,7 @@ export default function getDefaultConfig(): Config {
         process.env.NEXT_PUBLIC_CLIENT_URL || 'http://localhost:3000',
     },
     BUGSNAG: {
-      API_KEY: process.env.BUGSNAG_API_KEY || '',
+      API_KEY: process.env.NEXT_PUBLIC_BUGSNAG_API_KEY || '',
     },
     COOKIE: {
       SECURE: true,

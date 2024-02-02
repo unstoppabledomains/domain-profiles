@@ -41,9 +41,9 @@ export const fetchApi = async <T = any>(
     if (!res.ok) {
       const severity = res.status < 500 ? 'warning' : 'error';
       notifyEvent(
-        new Error(`error fetching API`),
+        new Error(`error fetching API endpoint`),
         severity,
-        'INFRASTRUCTURE',
+        'REQUEST',
         'Fetch',
         {msg: 'fetch error', meta: {status: res.status, url}},
       );

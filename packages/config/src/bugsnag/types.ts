@@ -11,7 +11,7 @@ export type SeverityLevel = 'info' | 'warning' | 'error';
 
 export enum BugsnagErrorContexts {
   'BADGES',
-  'INFRASTRUCTURE',
+  'REQUEST',
   'MESSAGING',
   'PROFILE',
   'TOKEN_GALLERY',
@@ -26,4 +26,5 @@ export enum BugsnagErrorClasses {
   Validation = 'Validation Error',
   PushProtocol = 'Push Protocol Error',
   XMTP = 'XMTP Error',
+  Info = 'Information',
 }

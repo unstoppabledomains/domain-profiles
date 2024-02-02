@@ -23,6 +23,7 @@ export const getBugsnag = (): BugsnagClient | undefined => {
   const bugsnagClient =
     global.bugsnag ??
     Bugsnag.start({
+      appVersion: config.APP_VERSION,
       apiKey: config.BUGSNAG.API_KEY,
       plugins: [new BugsnagPluginReact(React)],
       releaseStage: config.APP_ENV,

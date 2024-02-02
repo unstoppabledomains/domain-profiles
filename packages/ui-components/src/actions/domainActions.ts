@@ -22,13 +22,14 @@ export const getDomainBadges = async (
       host: config.PROFILE.HOST_URL,
     },
   );
-  const badges = data?.badges?.map((badge: SerializedCryptoWalletBadge) => {
-    return {
-      ...badge,
-      active: true,
-      expired: false,
-    };
-  });
+  const badges =
+    data?.badges?.map((badge: SerializedCryptoWalletBadge) => {
+      return {
+        ...badge,
+        active: true,
+        expired: false,
+      };
+    }) || [];
 
   // add partner badges to the response if available
   data?.partners?.map((partnerBadge: SerializedCryptoWalletBadge) => {

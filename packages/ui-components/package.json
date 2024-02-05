@@ -30,7 +30,7 @@
     "@mui/icons-material": "5.10.3",
     "@mui/lab": "5.0.0-alpha.98",
     "@mui/material": "5.10.4",
-    "@pushprotocol/restapi": "1.6.3",
+    "@pushprotocol/restapi": "1.6.6",
     "@pushprotocol/socket": "^0.5.1",
     "@solana/wallet-adapter-phantom": "^0.9.9",
     "@solana/web3.js": "^1.50.1",

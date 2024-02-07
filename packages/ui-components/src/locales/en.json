@@ -1,4 +1,13 @@
 {
+  "activity": {
+    "appInteraction": "App interaction",
+    "from": "From {{subject}}",
+    "gas": "Tx Fee",
+    "received": "Received",
+    "sent": "Sent",
+    "title": "Activity",
+    "to": "To {{subject}}"
+  },
   "apps": {
     "clearAll": "Clear all",
     "featured": "Featured"

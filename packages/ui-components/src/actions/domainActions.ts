@@ -1,3 +1,5 @@
+import QueryString from 'qs';
+
 import config from '@unstoppabledomains/config';
 
 import {fetchApi} from '../lib/fetchApi';
@@ -9,6 +11,7 @@ import type {
   DomainCryptoVerificationBodyPOST,
   EnsDomainStatusResponse,
   SerializedDomainRank,
+  SerializedTxns,
 } from '../lib/types/domain';
 
 export const getDomainBadges = async (
@@ -70,6 +73,27 @@ export const getDomainRankings = async (
       host: config.PROFILE.HOST_URL,
     },
   );
+};
+
+export const getDomainTransactions = async (
+  domain: string,
+  symbol: string,
+  cursor?: string,
+): Promise<SerializedTxns | undefined> => {
+  // retrieve badge data from profile API
+  const data = await fetchApi(
+    `/public/${domain}/transactions?${QueryString.stringify({
+      symbols: symbol,
+      cursor,
+    })}`,
+    {
+      host: config.PROFILE.HOST_URL,
+    },
+  );
+  if (!data || !data[symbol.toUpperCase()]) {
+    return;
+  }
+  return data[symbol.toUpperCase()];
 };
 
 export const getEnsDomainStatus = async (

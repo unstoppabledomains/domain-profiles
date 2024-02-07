@@ -40,6 +40,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
     justifyContent: 'space-between',
     margin: theme.spacing(6, 0, 0),
+    minHeight: '42px',
   },
   sectionHeader: {
     display: 'flex',
@@ -90,8 +91,8 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
   domain,
   isOwner,
   wallets,
-  minCount = 2,
-  maxCount = 3,
+  minCount = 1,
+  maxCount = 1,
 }) => {
   const theme = useTheme();
   const {classes} = useStyles();
@@ -203,13 +204,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
         </Box>
       ) : (
         <Grid mt={0.5} mb={1.5} container spacing={2}>
-          <Grid item xs={6}>
-            <Skeleton
-              variant="rectangular"
-              className={classes.walletPlaceholder}
-            />
-          </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={12}>
             <Skeleton
               variant="rectangular"
               className={classes.walletPlaceholder}

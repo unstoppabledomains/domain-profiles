@@ -68,6 +68,7 @@ import {
   DomainProfileModal,
   DomainProfileTabType,
   DomainWalletList,
+  DomainWalletTransactions,
   FollowButton,
   ForSaleOnOpenSea,
   Link,
@@ -142,6 +143,7 @@ const DomainProfile = ({
   const {isOpen: showManageDomainModal, setIsOpen: setShowManageDomainModal} =
     useDomainConfig();
   const [showOtherDomainsModal, setShowOtherDomainsModal] = useState(false);
+  const [showWalletTxns, setShowWalletTxns] = useState(false);
   const [authAddress, setAuthAddress] = useState('');
   const [authDomain, setAuthDomain] = useState('');
   const [displayQrCode, setDisplayQrCode] = useState(false);
@@ -459,6 +461,11 @@ const DomainProfile = ({
         if (recordsData?.walletBalances) {
           profileData.walletBalances = recordsData.walletBalances;
           setWalletBalances(recordsData.walletBalances);
+          const isTxns =
+            recordsData.walletBalances
+              .map(w => w.txns?.txns.length || 0)
+              .reduce((c, p) => c + p, 0) > 0;
+          setShowWalletTxns(isTxns);
         }
       } catch (e) {
         notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
@@ -1186,11 +1193,23 @@ const DomainProfile = ({
         </Grid>
         {isLoaded ? (
           <Grid item xs={12} sm={12} md={8} className={classes.item}>
-            <DomainWalletList
-              wallets={walletBalances}
-              domain={domain}
-              isOwner={isOwner}
-            />
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <DomainWalletList
+                  wallets={walletBalances}
+                  domain={domain}
+                  isOwner={isOwner}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <DomainWalletTransactions
+                  wallets={walletBalances}
+                  domain={domain}
+                  isOwner={isOwner}
+                />
+              </Grid>
+            </Grid>
+
             {profileData?.cryptoVerifications &&
               profileData.cryptoVerifications.length > 0 && (
                 <TokenGallery

@@ -367,6 +367,33 @@ export type SerializedSocialAttributes = {
   followerCount?: number;
 };
 
+export type SerializedTx = {
+  hash: string;
+  block: string;
+  from: {
+    address: string;
+    link: string;
+    label?: string;
+  };
+  to: {
+    address: string;
+    link: string;
+    label?: string;
+  };
+  value: number;
+  gas: number;
+  method: string;
+  timestamp: Date;
+  link: string;
+  success: boolean;
+  symbol: string;
+};
+
+export type SerializedTxns = {
+  txns: SerializedTx[];
+  cursor?: string;
+};
+
 export type SerializedUserDomainProfileData =
   SerializedPublicDomainProfileData & {
     storage?: {
@@ -385,6 +412,7 @@ export type SerializedWalletBalance = SerializedWalletToken & {
     transfers?: string;
   };
   nfts?: SerializedWalletNftCollection[];
+  txns?: SerializedTxns;
   tokens?: SerializedWalletToken[];
   blockchainScanUrl: string;
   totalValueUsd?: string;

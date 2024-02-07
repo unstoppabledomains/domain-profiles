@@ -3,15 +3,15 @@ export interface LoginResult {
   domain: string;
 }
 
+interface walletProps {
+  connectorType: WagmiConnectorType;
+}
+
 export type WagmiConnectorType =
   | 'injected'
   | 'metaMask'
   | 'walletConnect'
   | 'coinbaseWallet';
-
-interface walletProps {
-  connectorType: WagmiConnectorType;
-}
 
 export enum WalletName {
   MetaMask = 'MetaMask',

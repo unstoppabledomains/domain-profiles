@@ -108,16 +108,22 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   txSent: {
     fontWeight: 'bold',
-    color: theme.palette.neutralShades[bgNeutralShade - 600],
+    color: theme.palette.white,
   },
   txFee: {
     color: theme.palette.neutralShades[bgNeutralShade - 400],
   },
   txTime: {
     color: theme.palette.neutralShades[bgNeutralShade - 400],
+    marginBottom: theme.spacing(1),
   },
   txLink: {
     cursor: 'pointer',
+  },
+  txImgPreview: {
+    width: '50px',
+    height: '50px',
+    borderRadius: theme.shape.borderRadius,
   },
 }));
 
@@ -126,29 +132,22 @@ export const DomainWalletTransactions: React.FC<
 > = ({domain, wallets}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
-  const [cursors, setCursors] = useState<Record<string, string[]>>({});
+  const [cursors, setCursors] = useState<Record<string, string>>({});
   const [txns, setTxns] = useState<SerializedTx[]>();
   const [hasMore, setHasMore] = useState<boolean>(false);
 
   useEffect(() => {
     const initialTxns: SerializedTx[] = [];
-    const initialCursors: Record<string, string[]> = {};
+    const initialCursors: Record<string, string> = {};
     wallets?.map(w => {
-      if (w.txns?.txns) {
-        initialTxns.push(...w.txns.txns);
+      if (w.txns?.data) {
+        initialTxns.push(...w.txns.data);
       }
-      if (w.txns?.cursors) {
-        initialCursors[w.symbol] = [];
-        if (w.txns.cursors.transactions) {
-          setHasMore(true);
-          initialCursors[w.symbol].push(w.txns.cursors.transactions);
-        }
-        if (w.txns.cursors.transfers) {
-          setHasMore(true);
-          initialCursors[w.symbol].push(w.txns.cursors.transfers);
-        }
+      if (w.txns?.cursor) {
+        setHasMore(true);
+        initialCursors[w.symbol] = w.txns.cursor;
       }
-      w.txns?.txns.map(tx => {
+      w.txns?.data.map(tx => {
         tx.symbol = w.symbol;
       });
     });
@@ -163,33 +162,30 @@ export const DomainWalletTransactions: React.FC<
   const handleNext = async () => {
     let isNewCursor = false;
     const newTxns: SerializedTx[] = [];
-    const newCursors: Record<string, string[]> = {};
+    const newCursors: Record<string, string> = {};
     await Bluebird.map(
       Object.keys(cursors),
       async symbol => {
-        newCursors[symbol] = [];
-        for (const cursor of cursors[symbol]) {
-          try {
-            const v = await getDomainTransactions(domain, symbol, cursor);
-            if (v?.txns) {
-              newTxns.push(...v.txns);
-            }
-            if (v?.cursors?.transactions) {
-              isNewCursor = true;
-              newCursors[symbol].push(v.cursors.transactions);
-            }
-            if (v?.cursors?.transfers) {
-              isNewCursor = true;
-              newCursors[symbol].push(v.cursors.transfers);
-            }
-            v?.txns.map(tx => {
-              tx.symbol = symbol;
-            });
-          } catch (e) {
-            notifyEvent(e, 'warning', 'WALLET', 'Fetch', {
-              msg: 'unable to retrieve transactions',
-            });
+        try {
+          const v = await getDomainTransactions(
+            domain,
+            symbol,
+            cursors[symbol],
+          );
+          if (v?.data) {
+            newTxns.push(...v.data);
           }
+          if (v?.cursor) {
+            isNewCursor = true;
+            newCursors[symbol] = v.cursor;
+          }
+          v?.data.map(tx => {
+            tx.symbol = symbol;
+          });
+        } catch (e) {
+          notifyEvent(e, 'warning', 'WALLET', 'Fetch', {
+            msg: 'unable to retrieve transactions',
+          });
         }
       },
       {concurrency: 3},
@@ -199,12 +195,12 @@ export const DomainWalletTransactions: React.FC<
     setTxns([...txns!, ...newTxns]);
   };
 
-  const renderActivity = (tx: SerializedTx) => {
+  const renderActivity = (tx: SerializedTx, prev?: SerializedTx) => {
     const isSender =
       (wallets || []).filter(
         w => w.address.toLowerCase() === tx.from.address.toLowerCase(),
       ).length > 0;
-    const isNft = tx.method.startsWith('NFT:');
+    const isNft = tx.type === 'nft';
     const isXfer = tx.value > 0;
     const actionName =
       isSender && isXfer
@@ -212,7 +208,7 @@ export const DomainWalletTransactions: React.FC<
         : !isSender && isXfer
         ? t('activity.received')
         : isNft
-        ? `${isSender ? t('activity.sent') : t('activity.received')} ${
+        ? `${isSender ? t('activity.sent') : t('activity.received')} NFT ${
             tx.method
           }`
         : !['unknown', 'transfer'].includes(tx.method.toLowerCase())
@@ -240,9 +236,18 @@ export const DomainWalletTransactions: React.FC<
         : isSender
         ? tx.to.link
         : tx.from.link;
+    const currDate = moment(tx.timestamp).format('LL');
+    const prevDate = prev ? moment(prev.timestamp).format('LL') : '';
 
     return (
-      <>
+      <React.Fragment key={tx.hash}>
+        {currDate !== prevDate && (
+          <Grid item xs={12}>
+            <Typography variant="body2" className={classes.txTime}>
+              {currDate}
+            </Typography>
+          </Grid>
+        )}
         <Grid
           item
           xs={2}
@@ -256,7 +261,7 @@ export const DomainWalletTransactions: React.FC<
             />
           </Box>
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={isNft ? 8 : 6}>
           <Box display="flex" flexDirection="column">
             <Typography
               variant="body2"
@@ -272,14 +277,17 @@ export const DomainWalletTransactions: React.FC<
             >
               {actionSubject}
             </Typography>
-            <Typography variant="caption" className={classes.txTime}>
-              {moment(tx.timestamp).fromNow()}
-            </Typography>
           </Box>
         </Grid>
-        <Grid item xs={4}>
-          <Box display="flex" flexDirection="column" textAlign="right">
-            {tx.value > 0 && (
+        <Grid item xs={isNft ? 2 : 4}>
+          <Box
+            display="flex"
+            flexDirection="column"
+            textAlign="right"
+            justifyContent="right"
+            justifyItems="right"
+          >
+            {!isNft && tx.value > 0 && (
               <Typography
                 variant="body2"
                 className={isSender ? classes.txSent : classes.txReceived}
@@ -288,24 +296,36 @@ export const DomainWalletTransactions: React.FC<
                 {tx.value.toFixed(3)} {tx.symbol}
               </Typography>
             )}
-            {tx.gas > 0 && (
+            {!isNft && tx.gas > 0 && (
               <Typography variant="caption" className={classes.txFee}>
                 -{tx.gas.toFixed(3)} {t('activity.gas')}
               </Typography>
+            )}
+            {isNft && tx.imageUrl && (
+              <Box display="flex" justifyContent="right">
+                <img className={classes.txImgPreview} src={tx.imageUrl} />
+              </Box>
             )}
           </Box>
         </Grid>
         <Grid item xs={12}>
           <Divider />
         </Grid>
-      </>
+      </React.Fragment>
     );
   };
 
   // calculate total balance
   const txCount = (wallets || [])
-    .map(w => parseInt(w.stats?.transactions || '0', 10))
+    .map(
+      w =>
+        parseInt(w.stats?.transactions || '0', 10) +
+        parseInt(w.stats?.transfers || '0', 10),
+    )
     .reduce((p, c) => p + c, 0);
+  const sortedTxns = txns?.sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+  );
 
   // render the wallet list
   return (
@@ -344,13 +364,9 @@ export const DomainWalletTransactions: React.FC<
               scrollThreshold={0.7}
             >
               <Grid container spacing={1}>
-                {txns
-                  ?.sort(
-                    (a, b) =>
-                      new Date(b.timestamp).getTime() -
-                      new Date(a.timestamp).getTime(),
-                  )
-                  .map(tx => renderActivity(tx))}
+                {sortedTxns?.map((tx, i) =>
+                  renderActivity(tx, i > 0 ? sortedTxns[i - 1] : undefined),
+                )}
               </Grid>
             </InfiniteScroll>
           ) : (

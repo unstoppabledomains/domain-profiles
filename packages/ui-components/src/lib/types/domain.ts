@@ -380,6 +380,8 @@ export type SerializedTx = {
     link: string;
     label?: string;
   };
+  type: 'nft' | 'native';
+  imageUrl?: string;
   value: number;
   gas: number;
   method: string;
@@ -390,11 +392,8 @@ export type SerializedTx = {
 };
 
 export type SerializedTxns = {
-  txns: SerializedTx[];
-  cursors?: {
-    transactions?: string;
-    transfers?: string;
-  };
+  data: SerializedTx[];
+  cursor?: string;
 };
 
 export type SerializedUserDomainProfileData =

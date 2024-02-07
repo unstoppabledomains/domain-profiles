@@ -143,7 +143,6 @@ const DomainProfile = ({
   const {isOpen: showManageDomainModal, setIsOpen: setShowManageDomainModal} =
     useDomainConfig();
   const [showOtherDomainsModal, setShowOtherDomainsModal] = useState(false);
-  const [showWalletTxns, setShowWalletTxns] = useState(false);
   const [authAddress, setAuthAddress] = useState('');
   const [authDomain, setAuthDomain] = useState('');
   const [displayQrCode, setDisplayQrCode] = useState(false);
@@ -461,11 +460,6 @@ const DomainProfile = ({
         if (recordsData?.walletBalances) {
           profileData.walletBalances = recordsData.walletBalances;
           setWalletBalances(recordsData.walletBalances);
-          const isTxns =
-            recordsData.walletBalances
-              .map(w => w.txns?.txns.length || 0)
-              .reduce((c, p) => c + p, 0) > 0;
-          setShowWalletTxns(isTxns);
         }
       } catch (e) {
         notifyEvent(e, 'error', 'PROFILE', 'Fetch', {

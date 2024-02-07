@@ -124,21 +124,29 @@ const useStyles = makeStyles()((theme: Theme) => ({
 export const DomainWalletTransactions: React.FC<
   DomainWalletTransactionsProps
 > = ({domain, wallets}) => {
-  const {classes, cx} = useStyles();
+  const {classes} = useStyles();
   const [t] = useTranslationContext();
-  const [cursors, setCursors] = useState<Record<string, string>>({});
+  const [cursors, setCursors] = useState<Record<string, string[]>>({});
   const [txns, setTxns] = useState<SerializedTx[]>();
   const [hasMore, setHasMore] = useState<boolean>(false);
 
   useEffect(() => {
     const initialTxns: SerializedTx[] = [];
-    const initialCursors: Record<string, string> = {};
+    const initialCursors: Record<string, string[]> = {};
     wallets?.map(w => {
       if (w.txns?.txns) {
         initialTxns.push(...w.txns.txns);
       }
-      if (w.txns?.cursor) {
-        initialCursors[w.symbol] = w.txns.cursor;
+      if (w.txns?.cursors) {
+        initialCursors[w.symbol] = [];
+        if (w.txns.cursors.transactions) {
+          setHasMore(true);
+          initialCursors[w.symbol].push(w.txns.cursors.transactions);
+        }
+        if (w.txns.cursors.transfers) {
+          setHasMore(true);
+          initialCursors[w.symbol].push(w.txns.cursors.transfers);
+        }
       }
       w.txns?.txns.map(tx => {
         tx.symbol = w.symbol;
@@ -146,7 +154,6 @@ export const DomainWalletTransactions: React.FC<
     });
     setTxns(initialTxns);
     setCursors(initialCursors);
-    setHasMore((wallets || []).filter(w => w.txns?.cursor).length > 0);
   }, [wallets]);
 
   const handleClick = (link: string) => {
@@ -154,37 +161,42 @@ export const DomainWalletTransactions: React.FC<
   };
 
   const handleNext = async () => {
+    let isNewCursor = false;
     const newTxns: SerializedTx[] = [];
-    const newCursors: Record<string, string> = {};
+    const newCursors: Record<string, string[]> = {};
     await Bluebird.map(
       Object.keys(cursors),
       async symbol => {
-        try {
-          const v = await getDomainTransactions(
-            domain,
-            symbol,
-            cursors[symbol],
-          );
-          if (v?.txns) {
-            newTxns.push(...v.txns);
+        newCursors[symbol] = [];
+        for (const cursor of cursors[symbol]) {
+          try {
+            const v = await getDomainTransactions(domain, symbol, cursor);
+            if (v?.txns) {
+              newTxns.push(...v.txns);
+            }
+            if (v?.cursors?.transactions) {
+              isNewCursor = true;
+              newCursors[symbol].push(v.cursors.transactions);
+            }
+            if (v?.cursors?.transfers) {
+              isNewCursor = true;
+              newCursors[symbol].push(v.cursors.transfers);
+            }
+            v?.txns.map(tx => {
+              tx.symbol = symbol;
+            });
+          } catch (e) {
+            notifyEvent(e, 'warning', 'WALLET', 'Fetch', {
+              msg: 'unable to retrieve transactions',
+            });
           }
-          if (v?.cursor) {
-            newCursors[symbol] = v.cursor;
-          }
-          v?.txns.map(tx => {
-            tx.symbol = symbol;
-          });
-        } catch (e) {
-          notifyEvent(e, 'warning', 'WALLET', 'Fetch', {
-            msg: 'unable to retrieve transactions',
-          });
         }
       },
       {concurrency: 3},
     );
+    setHasMore(isNewCursor);
     setCursors(newCursors);
     setTxns([...txns!, ...newTxns]);
-    setHasMore(Object.keys(newCursors).length > 0);
   };
 
   const renderActivity = (tx: SerializedTx) => {
@@ -192,24 +204,31 @@ export const DomainWalletTransactions: React.FC<
       (wallets || []).filter(
         w => w.address.toLowerCase() === tx.from.address.toLowerCase(),
       ).length > 0;
+    const isNft = tx.method.startsWith('NFT:');
     const isXfer = tx.value > 0;
     const actionName =
       isSender && isXfer
         ? t('activity.sent')
         : !isSender && isXfer
         ? t('activity.received')
+        : isNft
+        ? `${isSender ? t('activity.sent') : t('activity.received')} ${
+            tx.method
+          }`
         : !['unknown', 'transfer'].includes(tx.method.toLowerCase())
         ? tx.method
         : t('activity.appInteraction');
     const actionSubject =
-      isSender && isXfer
+      isSender && (isXfer || isNft)
         ? t('activity.to', {
             subject: tx.to.label || truncateEthAddress(tx.to.address),
           })
-        : !isSender && isXfer
-        ? t('activity.from', {
-            subject: tx.from.label || truncateEthAddress(tx.from.address),
-          })
+        : !isSender && (isXfer || isNft)
+        ? tx.from.address
+          ? t('activity.from', {
+              subject: tx.from.label || truncateEthAddress(tx.from.address),
+            })
+          : ''
         : isSender
         ? tx.to.label || truncateEthAddress(tx.to.address)
         : tx.from.label || truncateEthAddress(tx.from.address);

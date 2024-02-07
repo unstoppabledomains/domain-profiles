@@ -391,7 +391,10 @@ export type SerializedTx = {
 
 export type SerializedTxns = {
   txns: SerializedTx[];
-  cursor?: string;
+  cursors?: {
+    transactions?: string;
+    transfers?: string;
+  };
 };
 
 export type SerializedUserDomainProfileData =

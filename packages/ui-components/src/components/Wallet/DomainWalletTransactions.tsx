@@ -195,7 +195,11 @@ export const DomainWalletTransactions: React.FC<
     setTxns([...txns!, ...newTxns]);
   };
 
-  const renderActivity = (tx: SerializedTx, prev?: SerializedTx) => {
+  const renderActivity = (
+    tx: SerializedTx,
+    prev?: SerializedTx,
+    next?: SerializedTx,
+  ) => {
     const isSender =
       (wallets || []).filter(
         w => w.address.toLowerCase() === tx.from.address.toLowerCase(),
@@ -238,12 +242,17 @@ export const DomainWalletTransactions: React.FC<
         : tx.from.link;
     const currDate = moment(tx.timestamp).format('LL');
     const prevDate = prev ? moment(prev.timestamp).format('LL') : '';
+    const nextDate = next ? moment(next.timestamp).format('LL') : '';
 
     return (
       <React.Fragment key={tx.hash}>
         {currDate !== prevDate && (
           <Grid item xs={12}>
-            <Typography variant="body2" className={classes.txTime}>
+            <Typography
+              mt={prev ? 2 : undefined}
+              variant="body2"
+              className={classes.txTime}
+            >
               {currDate}
             </Typography>
           </Grid>
@@ -308,9 +317,11 @@ export const DomainWalletTransactions: React.FC<
             )}
           </Box>
         </Grid>
-        <Grid item xs={12}>
-          <Divider />
-        </Grid>
+        {currDate === nextDate && (
+          <Grid item xs={12}>
+            <Divider />
+          </Grid>
+        )}
       </React.Fragment>
     );
   };
@@ -365,7 +376,11 @@ export const DomainWalletTransactions: React.FC<
             >
               <Grid container spacing={1}>
                 {sortedTxns?.map((tx, i) =>
-                  renderActivity(tx, i > 0 ? sortedTxns[i - 1] : undefined),
+                  renderActivity(
+                    tx,
+                    i > 0 ? sortedTxns[i - 1] : undefined,
+                    i + 1 < sortedTxns.length ? sortedTxns[i + 1] : undefined,
+                  ),
                 )}
               </Grid>
             </InfiniteScroll>

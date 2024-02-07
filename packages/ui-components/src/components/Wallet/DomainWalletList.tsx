@@ -187,7 +187,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
           >
             <>
               {wallets
-                .sort(
+                ?.sort(
                   (a, b) =>
                     (b.totalValueUsdAmt || 0) - (a.totalValueUsdAmt || 0),
                 )
@@ -203,7 +203,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
           </Swiper>
         </Box>
       ) : (
-        <Grid mt={0.5} mb={1.5} container spacing={2}>
+        <Grid mt="0px" mb={1.5} container spacing={2}>
           <Grid item xs={12}>
             <Skeleton
               variant="rectangular"

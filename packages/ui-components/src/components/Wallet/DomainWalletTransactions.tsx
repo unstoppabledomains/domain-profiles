@@ -29,6 +29,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
   },
+  walletPlaceholder: {
+    height: '210px',
+    width: '100%',
+    borderRadius: theme.shape.borderRadius,
+  },
   sectionHeaderContainer: {
     display: 'flex',
     alignItems: 'center',
@@ -78,6 +83,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   currencyIcon: {
     width: 30,
     height: 30,
+  },
+  noActivity: {
+    color: theme.palette.neutralShades[bgNeutralShade - 600],
   },
   txTitle: {
     fontWeight: 'bold',
@@ -296,58 +304,52 @@ export const DomainWalletTransactions: React.FC<
           )}
         </Box>
       </Box>
-      <Box
-        mt={'15px'}
-        mb={2}
-        id={`scrollableTxDiv`}
-        className={classes.scrollableContainer}
-      >
-        {txns ? (
-          <InfiniteScroll
-            scrollableTarget={`scrollableTxDiv`}
-            hasMore={hasMore}
-            loader={
-              <Box className={classes.infiniteScrollLoading}>
-                <CircularProgress className={classes.loadingSpinner} />
-              </Box>
-            }
-            next={handleNext}
-            dataLength={txns.length}
-            scrollThreshold={0.7}
-          >
-            <Grid container spacing={1}>
-              {txns
-                .sort(
-                  (a, b) =>
-                    new Date(b.timestamp).getTime() -
-                    new Date(a.timestamp).getTime(),
-                )
-                .map(tx => renderActivity(tx))}
-            </Grid>
-          </InfiniteScroll>
-        ) : (
-          <Grid container spacing={1}>
-            <Grid item xs={12}>
-              <Skeleton variant="text" width="100%" />
-            </Grid>
-            <Grid item xs={12}>
-              <Skeleton variant="text" width="50%" />
-            </Grid>
-            <Grid item xs={12}>
-              <Skeleton variant="text" width="100%" />
-            </Grid>
-            <Grid item xs={12}>
-              <Skeleton variant="text" width="50%" />
-            </Grid>
-            <Grid item xs={12}>
-              <Skeleton variant="text" width="100%" />
-            </Grid>
-            <Grid item xs={12}>
-              <Skeleton variant="text" width="50%" />
-            </Grid>
+      {txns && wallets ? (
+        <Box
+          mt={'15px'}
+          mb={2}
+          id={`scrollableTxDiv`}
+          className={classes.scrollableContainer}
+        >
+          {(txns || []).length > 0 ? (
+            <InfiniteScroll
+              scrollableTarget={`scrollableTxDiv`}
+              hasMore={hasMore}
+              loader={
+                <Box className={classes.infiniteScrollLoading}>
+                  <CircularProgress className={classes.loadingSpinner} />
+                </Box>
+              }
+              next={handleNext}
+              dataLength={(txns || []).length}
+              scrollThreshold={0.7}
+            >
+              <Grid container spacing={1}>
+                {txns
+                  ?.sort(
+                    (a, b) =>
+                      new Date(b.timestamp).getTime() -
+                      new Date(a.timestamp).getTime(),
+                  )
+                  .map(tx => renderActivity(tx))}
+              </Grid>
+            </InfiniteScroll>
+          ) : (
+            <Typography className={classes.noActivity}>
+              {t('activity.noActivity')}
+            </Typography>
+          )}
+        </Box>
+      ) : (
+        <Grid mt="0px" mb={1.5} container spacing={2}>
+          <Grid item xs={12}>
+            <Skeleton
+              variant="rectangular"
+              className={classes.walletPlaceholder}
+            />
           </Grid>
-        )}
-      </Box>
+        </Grid>
+      )}
     </Box>
   );
 };

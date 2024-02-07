@@ -3,6 +3,7 @@
     "appInteraction": "App interaction",
     "from": "From {{subject}}",
     "gas": "Tx Fee",
+    "noActivity": "No wallet activity",
     "received": "Received",
     "sent": "Sent",
     "title": "Activity",

@@ -5,7 +5,9 @@
     "gas": "Tx Fee",
     "noActivity": "No wallet activity",
     "received": "Received",
+    "receivedNft": "Received NFT",
     "sent": "Sent",
+    "sentNft": "Sent NFT",
     "title": "Activity",
     "to": "To {{subject}}"
   },

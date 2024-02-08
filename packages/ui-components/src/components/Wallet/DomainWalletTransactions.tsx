@@ -1,4 +1,8 @@
 import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
+import SendIcon from '@mui/icons-material/Send';
+import SouthOutlinedIcon from '@mui/icons-material/SouthOutlined';
+import SyncAltIcon from '@mui/icons-material/SyncAlt';
+import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
@@ -81,8 +85,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     color: 'inherit',
   },
   currencyIcon: {
-    width: 30,
-    height: 30,
+    width: 35,
+    height: 35,
   },
   noActivity: {
     color: theme.palette.neutralShades[bgNeutralShade - 600],
@@ -125,12 +129,30 @@ const useStyles = makeStyles()((theme: Theme) => ({
     height: '50px',
     borderRadius: theme.shape.borderRadius,
   },
+  txIcon: {
+    color: theme.palette.common.black,
+    borderRadius: '50%',
+    padding: '2px',
+    border: `1px solid black`,
+    width: '17px',
+    height: '17px',
+  },
+  txIconReceive: {
+    backgroundColor: theme.palette.success.main,
+  },
+  txIconSend: {
+    backgroundColor: theme.palette.primary.main,
+    transform: 'rotate(-45deg)',
+  },
+  txIconInteract: {
+    backgroundColor: theme.palette.secondary.main,
+  },
 }));
 
 export const DomainWalletTransactions: React.FC<
   DomainWalletTransactionsProps
 > = ({domain, wallets}) => {
-  const {classes} = useStyles();
+  const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
   const [cursors, setCursors] = useState<Record<string, string>>({});
   const [txns, setTxns] = useState<SerializedTx[]>();
@@ -196,6 +218,7 @@ export const DomainWalletTransactions: React.FC<
   };
 
   const renderActivity = (
+    index: number,
     tx: SerializedTx,
     prev?: SerializedTx,
     next?: SerializedTx,
@@ -212,40 +235,43 @@ export const DomainWalletTransactions: React.FC<
         : !isSender && isXfer
         ? t('activity.received')
         : isNft
-        ? `${isSender ? t('activity.sent') : t('activity.received')} NFT ${
-            tx.method
-          }`
+        ? isSender
+          ? t('activity.sentNft')
+          : t('activity.receivedNft')
         : !['unknown', 'transfer'].includes(tx.method.toLowerCase())
         ? tx.method
         : t('activity.appInteraction');
     const actionSubject =
-      isSender && (isXfer || isNft)
+      isSender && isXfer
         ? t('activity.to', {
             subject: tx.to.label || truncateEthAddress(tx.to.address),
           })
-        : !isSender && (isXfer || isNft)
+        : !isSender && isXfer
         ? tx.from.address
           ? t('activity.from', {
               subject: tx.from.label || truncateEthAddress(tx.from.address),
             })
           : ''
+        : isNft
+        ? tx.method
         : isSender
         ? tx.to.label || truncateEthAddress(tx.to.address)
         : tx.from.label || truncateEthAddress(tx.from.address);
-    const actionSubjectLink =
-      isSender && isXfer
-        ? tx.to.link
-        : !isSender && isXfer
-        ? tx.from.link
-        : isSender
-        ? tx.to.link
-        : tx.from.link;
+    const actionSubjectLink = isNft
+      ? tx.link
+      : isSender && isXfer
+      ? tx.to.link
+      : !isSender && isXfer
+      ? tx.from.link
+      : isSender
+      ? tx.to.link
+      : tx.from.link;
     const currDate = moment(tx.timestamp).format('LL');
     const prevDate = prev ? moment(prev.timestamp).format('LL') : '';
     const nextDate = next ? moment(next.timestamp).format('LL') : '';
 
     return (
-      <React.Fragment key={tx.hash}>
+      <React.Fragment key={`${tx.hash}-${index}`}>
         {currDate !== prevDate && (
           <Grid item xs={12}>
             <Typography
@@ -264,16 +290,38 @@ export const DomainWalletTransactions: React.FC<
           onClick={() => handleClick(tx.link)}
         >
           <Box display="flex" justifyContent="center" textAlign="center">
-            <CryptoIcon
-              currency={tx.symbol as CurrenciesType}
-              className={classes.currencyIcon}
-            />
+            <Badge
+              overlap="circular"
+              anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+              badgeContent={
+                isXfer || isNft ? (
+                  isSender ? (
+                    <SendIcon
+                      className={cx(classes.txIcon, classes.txIconSend)}
+                    />
+                  ) : (
+                    <SouthOutlinedIcon
+                      className={cx(classes.txIcon, classes.txIconReceive)}
+                    />
+                  )
+                ) : (
+                  <SyncAltIcon
+                    className={cx(classes.txIcon, classes.txIconInteract)}
+                  />
+                )
+              }
+            >
+              <CryptoIcon
+                currency={tx.symbol as CurrenciesType}
+                className={classes.currencyIcon}
+              />
+            </Badge>
           </Box>
         </Grid>
         <Grid item xs={isNft ? 8 : 6}>
           <Box display="flex" flexDirection="column">
             <Typography
-              variant="body2"
+              variant="caption"
               onClick={() => handleClick(tx.link)}
               className={classes.txTitle}
             >
@@ -298,7 +346,7 @@ export const DomainWalletTransactions: React.FC<
           >
             {!isNft && tx.value > 0 && (
               <Typography
-                variant="body2"
+                variant="caption"
                 className={isSender ? classes.txSent : classes.txReceived}
               >
                 {isSender ? '-' : '+'}
@@ -377,6 +425,7 @@ export const DomainWalletTransactions: React.FC<
               <Grid container spacing={1}>
                 {sortedTxns?.map((tx, i) =>
                   renderActivity(
+                    i,
                     tx,
                     i > 0 ? sortedTxns[i - 1] : undefined,
                     i + 1 < sortedTxns.length ? sortedTxns[i + 1] : undefined,

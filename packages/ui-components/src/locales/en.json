@@ -689,9 +689,9 @@
   "verifiedWallets": {
     "addWallet": "Add wallet",
     "copyWalletAddress": "Copy wallet address",
-    "first": "Since",
+    "first": "First seen",
     "firstTxDate": "First transaction {{date}}",
-    "last": "Last",
+    "last": "Last seen",
     "lastTxDate": "Last transaction {{date}}",
     "nft": "NFT",
     "nfts": "NFTs",

@@ -27,6 +27,7 @@ import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
 import type {Theme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import moment from 'moment';
 import numeral from 'numeral';
 import React, {useState} from 'react';
 import type {MouseEvent} from 'react';
@@ -341,7 +342,7 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
                       variant="caption"
                     >
                       {t('verifiedWallets.first')}{' '}
-                      {new Date(wallet.firstTx).getFullYear()}
+                      {moment(wallet.firstTx).fromNow()}
                     </Typography>
                   </Box>
                 </Box>
@@ -366,7 +367,7 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
                         variant="caption"
                       >
                         {t('verifiedWallets.last')}{' '}
-                        {new Date(wallet.lastTx).getFullYear()}
+                        {moment(wallet.lastTx).fromNow()}
                       </Typography>
                     </Box>
                   </Box>

@@ -1,4 +1,16 @@
 {
+  "activity": {
+    "appInteraction": "App interaction",
+    "from": "From {{subject}}",
+    "gas": "Tx Fee",
+    "noActivity": "No wallet activity",
+    "received": "Received",
+    "receivedNft": "Received NFT",
+    "sent": "Sent",
+    "sentNft": "Sent NFT",
+    "title": "Activity",
+    "to": "To {{subject}}"
+  },
   "apps": {
     "clearAll": "Clear all",
     "featured": "Featured"
@@ -677,9 +689,9 @@
   "verifiedWallets": {
     "addWallet": "Add wallet",
     "copyWalletAddress": "Copy wallet address",
-    "first": "Since",
+    "first": "First seen",
     "firstTxDate": "First transaction {{date}}",
-    "last": "Last",
+    "last": "Last seen",
     "lastTxDate": "Last transaction {{date}}",
     "nft": "NFT",
     "nfts": "NFTs",

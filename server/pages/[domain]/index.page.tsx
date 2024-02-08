@@ -68,6 +68,7 @@ import {
   DomainProfileModal,
   DomainProfileTabType,
   DomainWalletList,
+  DomainWalletTransactions,
   FollowButton,
   ForSaleOnOpenSea,
   Link,
@@ -1186,11 +1187,23 @@ const DomainProfile = ({
         </Grid>
         {isLoaded ? (
           <Grid item xs={12} sm={12} md={8} className={classes.item}>
-            <DomainWalletList
-              wallets={walletBalances}
-              domain={domain}
-              isOwner={isOwner}
-            />
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <DomainWalletList
+                  wallets={walletBalances}
+                  domain={domain}
+                  isOwner={isOwner}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <DomainWalletTransactions
+                  wallets={walletBalances}
+                  domain={domain}
+                  isOwner={isOwner}
+                />
+              </Grid>
+            </Grid>
+
             {profileData?.cryptoVerifications &&
               profileData.cryptoVerifications.length > 0 && (
                 <TokenGallery

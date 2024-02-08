@@ -10,14 +10,14 @@ import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import numeral from 'numeral';
-import React from 'react';
+import React, {useState} from 'react';
 import SwiperCore, {Autoplay, Navigation} from 'swiper';
 import {Swiper, SwiperSlide} from 'swiper/react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useDomainConfig} from '../../hooks';
-import {useTranslationContext} from '../../lib';
+import {WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
 import {DomainProfileTabType} from '../Manage';
 import {DomainWallet} from './DomainWallet';
@@ -31,7 +31,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
   },
   walletPlaceholder: {
-    height: '210px',
+    height: `${WALLET_CARD_HEIGHT}px`,
     width: '100%',
     borderRadius: theme.shape.borderRadius,
   },
@@ -40,6 +40,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
     justifyContent: 'space-between',
     margin: theme.spacing(6, 0, 0),
+    minHeight: '42px',
   },
   sectionHeader: {
     display: 'flex',
@@ -90,12 +91,13 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
   domain,
   isOwner,
   wallets,
-  minCount = 2,
-  maxCount = 3,
+  minCount = 1,
+  maxCount = 1,
 }) => {
   const theme = useTheme();
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const [showWalletNav, setShowWalletNav] = useState(false);
   const {setConfigTab, setIsOpen: setConfigOpen} = useDomainConfig();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const showCount = wallets
@@ -153,14 +155,18 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
         )}
       </Box>
       {wallets ? (
-        <Box className={classes.swiperContainer}>
+        <Box
+          className={classes.swiperContainer}
+          onMouseEnter={() => setShowWalletNav(true)}
+          onMouseLeave={() => setShowWalletNav(false)}
+        >
           <Swiper
-            data-testid={'nft-gallery-carousel'}
+            data-testid={'wallet-carousel'}
             slidesPerGroup={1}
-            loop={false}
+            loop={true}
             loopFillGroupWithBlank={false}
             pagination={false}
-            navigation={false}
+            navigation={showWalletNav}
             className={classes.swiper}
             autoplay={false}
             breakpoints={{
@@ -186,7 +192,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
           >
             <>
               {wallets
-                .sort(
+                ?.sort(
                   (a, b) =>
                     (b.totalValueUsdAmt || 0) - (a.totalValueUsdAmt || 0),
                 )
@@ -202,14 +208,8 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
           </Swiper>
         </Box>
       ) : (
-        <Grid mt={0.5} mb={1.5} container spacing={2}>
-          <Grid item xs={6}>
-            <Skeleton
-              variant="rectangular"
-              className={classes.walletPlaceholder}
-            />
-          </Grid>
-          <Grid item xs={6}>
+        <Grid mt="0px" mb={1.5} container spacing={2}>
+          <Grid item xs={12}>
             <Skeleton
               variant="rectangular"
               className={classes.walletPlaceholder}

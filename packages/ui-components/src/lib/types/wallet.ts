@@ -3,15 +3,17 @@ export interface LoginResult {
   domain: string;
 }
 
+export const WALLET_CARD_HEIGHT = 275;
+
+interface walletProps {
+  connectorType: WagmiConnectorType;
+}
+
 export type WagmiConnectorType =
   | 'injected'
   | 'metaMask'
   | 'walletConnect'
   | 'coinbaseWallet';
-
-interface walletProps {
-  connectorType: WagmiConnectorType;
-}
 
 export enum WalletName {
   MetaMask = 'MetaMask',

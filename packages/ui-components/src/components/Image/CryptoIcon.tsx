@@ -230,8 +230,10 @@ const Arweave = dynamic(
 const Nimiq = dynamic(
   () => import('@unstoppabledomains/ui-kit/icons/crypto/Nimiq'),
 );
-const Polygon = dynamic(
-  () => import('@unstoppabledomains/ui-kit/icons/Polygon'),
+const Polygon = dynamic(() =>
+  import('@unstoppabledomains/ui-kit/icons/Polygon').then(
+    mod => mod.Polygon36x36,
+  ),
 );
 const Solana = dynamic(
   () => import('@unstoppabledomains/ui-kit/icons/crypto/Solana'),

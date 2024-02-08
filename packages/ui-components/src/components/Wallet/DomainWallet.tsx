@@ -27,6 +27,7 @@ import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
 import type {Theme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import moment from 'moment';
 import numeral from 'numeral';
 import React, {useState} from 'react';
 import type {MouseEvent} from 'react';
@@ -36,7 +37,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import CopyToClipboard from '../../components/CopyToClipboard';
 import type {CurrenciesType} from '../../lib';
-import {useTranslationContext} from '../../lib';
+import {WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
 import {displayShortCryptoAddress} from '../../lib/displayCryptoAddress';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
 import {CryptoIcon} from '../Image';
@@ -48,6 +49,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
   walletContainer: {
     display: 'flex',
     flexDirection: 'column',
+  },
+  qrContainer: {
+    cursor: 'pointer',
+    position: 'absolute',
+    marginRight: theme.spacing(2),
+    marginTop: theme.spacing(11),
+    top: 0,
+    right: 0,
   },
   actionIcon: {
     width: '16px',
@@ -101,7 +110,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
       theme.palette.neutralShades[bgNeutralShade - 200]
     }, ${theme.palette.neutralShades[bgNeutralShade]})`,
     height: '100%',
-    minHeight: '210px',
+    minHeight: `${WALLET_CARD_HEIGHT}px`,
   },
   detailsContainer: {
     display: 'flex',
@@ -307,6 +316,19 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
       />
       <CardContent>
         <Box className={classes.walletContainer}>
+          <Box className={classes.qrContainer} onClick={handleQrClick}>
+            <QRCode
+              value={`${wallet.name.toLowerCase()}:${wallet.address}`}
+              size={80}
+              logoOpacity={0.5}
+              logoHeight={60}
+              logoWidth={60}
+              qrStyle={'dots'}
+              ecLevel={'H'}
+              eyeRadius={5}
+              style={{innerHeight: 80, innerWidth: 30}}
+            />
+          </Box>
           <Box className={classes.detailsContainer}>
             <Divider className={classes.divider} />
             {wallet.stats?.transactions && (
@@ -341,7 +363,7 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
                       variant="caption"
                     >
                       {t('verifiedWallets.first')}{' '}
-                      {new Date(wallet.firstTx).getFullYear()}
+                      {moment(wallet.firstTx).fromNow()}
                     </Typography>
                   </Box>
                 </Box>
@@ -366,7 +388,7 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
                         variant="caption"
                       >
                         {t('verifiedWallets.last')}{' '}
-                        {new Date(wallet.lastTx).getFullYear()}
+                        {moment(wallet.lastTx).fromNow()}
                       </Typography>
                     </Box>
                   </Box>

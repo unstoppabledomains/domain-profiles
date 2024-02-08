@@ -37,7 +37,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import CopyToClipboard from '../../components/CopyToClipboard';
 import type {CurrenciesType} from '../../lib';
-import {useTranslationContext} from '../../lib';
+import {WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
 import {displayShortCryptoAddress} from '../../lib/displayCryptoAddress';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
 import {CryptoIcon} from '../Image';
@@ -102,7 +102,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
       theme.palette.neutralShades[bgNeutralShade - 200]
     }, ${theme.palette.neutralShades[bgNeutralShade]})`,
     height: '100%',
-    minHeight: '210px',
+    minHeight: `${WALLET_CARD_HEIGHT}px`,
   },
   detailsContainer: {
     display: 'flex',

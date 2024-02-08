@@ -21,7 +21,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getDomainTransactions} from '../../actions';
 import type {CurrenciesType, SerializedTx} from '../../lib';
-import {useTranslationContext} from '../../lib';
+import {WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
 import {CryptoIcon} from '../Image';
@@ -34,7 +34,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
   },
   walletPlaceholder: {
-    height: '210px',
+    height: `${WALLET_CARD_HEIGHT}px`,
     width: '100%',
     borderRadius: theme.shape.borderRadius,
   },
@@ -64,7 +64,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     overflowY: 'auto',
     overflowX: 'hidden',
     overscrollBehavior: 'contain',
-    height: '212px',
+    height: `${WALLET_CARD_HEIGHT + 2}px`,
     width: '100%',
     backgroundImage: `linear-gradient(${
       theme.palette.neutralShades[bgNeutralShade - 200]

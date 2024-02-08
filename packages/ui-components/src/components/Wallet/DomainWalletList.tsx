@@ -10,14 +10,14 @@ import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import numeral from 'numeral';
-import React from 'react';
+import React, {useState} from 'react';
 import SwiperCore, {Autoplay, Navigation} from 'swiper';
 import {Swiper, SwiperSlide} from 'swiper/react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useDomainConfig} from '../../hooks';
-import {useTranslationContext} from '../../lib';
+import {WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
 import {DomainProfileTabType} from '../Manage';
 import {DomainWallet} from './DomainWallet';
@@ -31,7 +31,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
   },
   walletPlaceholder: {
-    height: '210px',
+    height: `${WALLET_CARD_HEIGHT}px`,
     width: '100%',
     borderRadius: theme.shape.borderRadius,
   },
@@ -97,6 +97,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
   const theme = useTheme();
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const [showWalletNav, setShowWalletNav] = useState(false);
   const {setConfigTab, setIsOpen: setConfigOpen} = useDomainConfig();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const showCount = wallets
@@ -154,14 +155,18 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
         )}
       </Box>
       {wallets ? (
-        <Box className={classes.swiperContainer}>
+        <Box
+          className={classes.swiperContainer}
+          onMouseEnter={() => setShowWalletNav(true)}
+          onMouseLeave={() => setShowWalletNav(false)}
+        >
           <Swiper
-            data-testid={'nft-gallery-carousel'}
+            data-testid={'wallet-carousel'}
             slidesPerGroup={1}
-            loop={false}
+            loop={true}
             loopFillGroupWithBlank={false}
             pagination={false}
-            navigation={false}
+            navigation={showWalletNav}
             className={classes.swiper}
             autoplay={false}
             breakpoints={{

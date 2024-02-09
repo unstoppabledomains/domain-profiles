@@ -50,14 +50,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
   },
-  qrContainer: {
-    cursor: 'pointer',
-    position: 'absolute',
-    marginRight: theme.spacing(2),
-    marginTop: theme.spacing(11),
-    top: 0,
-    right: 0,
-  },
   actionIcon: {
     width: '16px',
     height: '16px',
@@ -316,19 +308,6 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
       />
       <CardContent>
         <Box className={classes.walletContainer}>
-          <Box className={classes.qrContainer} onClick={handleQrClick}>
-            <QRCode
-              value={`${wallet.name.toLowerCase()}:${wallet.address}`}
-              size={80}
-              logoOpacity={0.5}
-              logoHeight={60}
-              logoWidth={60}
-              qrStyle={'dots'}
-              ecLevel={'H'}
-              eyeRadius={5}
-              style={{innerHeight: 80, innerWidth: 30}}
-            />
-          </Box>
           <Box className={classes.detailsContainer}>
             <Divider className={classes.divider} />
             {wallet.stats?.transactions && (

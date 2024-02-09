@@ -380,7 +380,7 @@ export type SerializedTx = {
     link: string;
     label?: string;
   };
-  type: 'nft' | 'native';
+  type: 'nft' | 'native' | 'erc20';
   imageUrl?: string;
   value: number;
   gas: number;
@@ -388,7 +388,7 @@ export type SerializedTx = {
   timestamp: Date;
   link: string;
   success: boolean;
-  symbol: string;
+  symbol?: string;
 };
 
 export type SerializedTxns = {

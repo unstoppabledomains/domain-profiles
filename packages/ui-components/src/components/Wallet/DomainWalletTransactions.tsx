@@ -13,6 +13,7 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import Bluebird from 'bluebird';
 import moment from 'moment';
+import numeral from 'numeral';
 import React, {useEffect, useState} from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import truncateEthAddress from 'truncate-eth-address';
@@ -169,9 +170,11 @@ export const DomainWalletTransactions: React.FC<
         setHasMore(true);
         initialCursors[w.symbol] = w.txns.cursor;
       }
-      w.txns?.data.map(tx => {
-        tx.symbol = w.symbol;
-      });
+      w.txns?.data
+        .filter(tx => !tx.symbol)
+        .map(tx => {
+          tx.symbol = w.symbol;
+        });
     });
     setTxns(initialTxns);
     setCursors(initialCursors);
@@ -201,9 +204,11 @@ export const DomainWalletTransactions: React.FC<
             isNewCursor = true;
             newCursors[symbol] = v.cursor;
           }
-          v?.data.map(tx => {
-            tx.symbol = symbol;
-          });
+          v?.data
+            .filter(tx => !tx.symbol)
+            .map(tx => {
+              tx.symbol = symbol;
+            });
         } catch (e) {
           notifyEvent(e, 'warning', 'WALLET', 'Fetch', {
             msg: 'unable to retrieve transactions',
@@ -228,6 +233,7 @@ export const DomainWalletTransactions: React.FC<
         w => w.address.toLowerCase() === tx.from.address.toLowerCase(),
       ).length > 0;
     const isNft = tx.type === 'nft';
+    const isErc20 = tx.type === 'erc20';
     const isXfer = tx.value > 0;
     const actionName =
       isSender && isXfer
@@ -350,12 +356,13 @@ export const DomainWalletTransactions: React.FC<
                 className={isSender ? classes.txSent : classes.txReceived}
               >
                 {isSender ? '-' : '+'}
-                {tx.value.toFixed(3)} {tx.symbol}
+                {numeral(tx.value).format('0,0.[0000]')}{' '}
+                {isErc20 ? tx.method.toUpperCase() : tx.symbol}
               </Typography>
             )}
             {!isNft && tx.gas > 0 && (
               <Typography variant="caption" className={classes.txFee}>
-                -{tx.gas.toFixed(3)} {t('activity.gas')}
+                -{numeral(tx.gas).format('0,0.[0000]')} {t('activity.gas')}
               </Typography>
             )}
             {isNft && tx.imageUrl && (

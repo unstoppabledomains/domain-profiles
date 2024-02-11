@@ -11,6 +11,10 @@
     "title": "Activity",
     "to": "To {{subject}}"
   },
+  "tokensPortfolio": {
+    "title": "Token Portfolio",
+    "noTokens": "No tokens"
+  },
   "apps": {
     "clearAll": "Clear all",
     "featured": "Featured"

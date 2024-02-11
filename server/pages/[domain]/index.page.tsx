@@ -67,7 +67,6 @@ import {
   DomainProfileKeys,
   DomainProfileModal,
   DomainProfileTabType,
-  DomainWalletList,
   DomainWalletTransactions,
   FollowButton,
   ForSaleOnOpenSea,
@@ -83,6 +82,7 @@ import {
   ShowHideButton,
   SocialAccountCard,
   TokenGallery,
+  TokensPortfolio,
   UD_BLUE_BADGE_CODE,
   UnstoppableMessaging,
   formOpenSeaLink,
@@ -1189,7 +1189,7 @@ const DomainProfile = ({
           <Grid item xs={12} sm={12} md={8} className={classes.item}>
             <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
-                <DomainWalletList
+                <TokensPortfolio
                   wallets={walletBalances}
                   domain={domain}
                   isOwner={isOwner}

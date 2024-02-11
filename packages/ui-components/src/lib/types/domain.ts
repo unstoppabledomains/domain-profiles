@@ -424,6 +424,7 @@ export type SerializedWalletBalance = SerializedWalletToken & {
 export type SerializedWalletNftCollection = {
   category?: string;
   contractAddresses: string[];
+  collectionImageUrl?: string;
   description?: string;
   floorPrice?: SerializedFloorPrice[];
   latestAcquiredDate: Date;
@@ -443,6 +444,7 @@ export type SerializedWalletToken = {
   name: string;
   logoUrl?: string;
   balance?: string;
+  balanceAmt?: number;
   value?: {
     marketUsd?: string;
     marketUsdAmt?: number;

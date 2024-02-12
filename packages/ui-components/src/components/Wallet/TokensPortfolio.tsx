@@ -8,7 +8,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import numeral from 'numeral';
-import React from 'react';
+import React, {useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -20,11 +20,50 @@ import {CryptoIcon} from '../Image';
 const bgNeutralShade = 800;
 
 const useStyles = makeStyles()((theme: Theme) => ({
-  walletContainer: {
+  portfolioContainer: {
     display: 'flex',
     flexDirection: 'column',
   },
-  walletPlaceholder: {
+  walletListContainer: {
+    display: 'flex',
+    overflowX: 'auto',
+  },
+  walletContainer: {
+    color: theme.palette.neutralShades[bgNeutralShade - 600],
+    cursor: 'pointer',
+    display: 'flex',
+    background: `repeating-linear-gradient(
+      -45deg,
+      ${theme.palette.neutralShades[bgNeutralShade]},
+      ${theme.palette.neutralShades[bgNeutralShade]} 5px,
+      ${theme.palette.neutralShades[bgNeutralShade - 100]} 5px,
+      ${theme.palette.neutralShades[bgNeutralShade - 100]} 6px
+    )`,
+    alignItems: 'center',
+    border: `2px solid ${theme.palette.neutralShades[bgNeutralShade]}`,
+    borderRadius: theme.shape.borderRadius,
+    paddingRight: theme.spacing(0.5),
+    marginRight: theme.spacing(1),
+    height: '100%',
+  },
+  walletContainerSelected: {
+    background: theme.palette.white,
+    border: `2px solid ${theme.palette.white}`,
+    color: theme.palette.neutralShades[bgNeutralShade],
+  },
+  walletIcon: {
+    marginRight: theme.spacing(0.5),
+    color: theme.palette.common.black,
+    backgroundColor: theme.palette.neutralShades[bgNeutralShade],
+    borderRadius: '50%',
+    width: '25px',
+    height: '25px',
+  },
+  walletAddress: {
+    color: 'inherit',
+    whiteSpace: 'nowrap',
+  },
+  portfolioPlaceholder: {
     height: `${WALLET_CARD_HEIGHT}px`,
     width: '100%',
     borderRadius: theme.shape.borderRadius,
@@ -63,6 +102,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     borderRadius: theme.shape.borderRadius,
     border: `1px solid ${theme.palette.neutralShades[bgNeutralShade - 600]}`,
     padding: theme.spacing(2),
+    scrollbarWidth: 'thin',
   },
   noActivity: {
     color: theme.palette.neutralShades[bgNeutralShade - 600],
@@ -109,6 +149,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   wallets,
 }) => {
   const {classes, cx} = useStyles();
+  const [filterAddress, setFilterAddress] = useState<SerializedWalletBalance>();
   const [t] = useTranslationContext();
 
   // list of all monetized tokens, sorted by most valuable
@@ -120,7 +161,9 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
       balance: wallet.balanceAmt || 0,
       symbol: wallet.symbol,
       ticker: wallet.symbol,
+      walletAddress: wallet.address,
       walletBlockChainLink: wallet.blockchainScanUrl,
+      walletName: wallet.name,
       imageUrl: wallet.logoUrl,
     })),
     ...(wallets || []).flatMap(wallet =>
@@ -131,7 +174,9 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
         balance: walletNft.ownedCount,
         symbol: wallet.symbol,
         ticker: wallet.symbol,
+        walletAddress: wallet.address,
         walletBlockChainLink: wallet.blockchainScanUrl,
+        walletName: wallet.name,
         imageUrl: walletNft.collectionImageUrl,
       })),
     ),
@@ -143,13 +188,22 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
         balance: walletToken.balanceAmt || 0,
         ticker: walletToken.symbol,
         symbol: wallet.symbol,
+        walletAddress: wallet.address,
         walletBlockChainLink: wallet.blockchainScanUrl,
+        walletName: wallet.name,
         imageUrl: walletToken.logoUrl,
       })),
     ),
   ]
     .filter(item => item?.value > 0.01)
-    .sort((a, b) => b.value - a.value);
+    .sort((a, b) => b.value - a.value)
+    .filter(
+      item =>
+        !filterAddress ||
+        (filterAddress.address.toLowerCase() ===
+          item.walletAddress.toLowerCase() &&
+          filterAddress.symbol.toLowerCase() === item.symbol.toLowerCase()),
+    );
 
   // total value of the portfolio
   const totalValue = allTokens
@@ -158,6 +212,48 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
 
   const handleClick = (link: string) => {
     window.open(link, '_blank');
+  };
+
+  const formatWalletAddress = (address: string) => {
+    if (address.length > 10) {
+      return `${address.slice(0, 6)}...${address.slice(address.length - 4)}`;
+    }
+    return address;
+  };
+
+  const renderWallet = (wallet?: SerializedWalletBalance) => {
+    return (
+      <Box
+        className={cx(classes.walletContainer, {
+          [classes.walletContainerSelected]: filterAddress === wallet,
+        })}
+        onClick={() => setFilterAddress(wallet)}
+      >
+        {wallet ? (
+          <>
+            <CryptoIcon
+              className={classes.walletIcon}
+              currency={wallet.symbol as CurrenciesType}
+            />
+            <Typography className={classes.walletAddress} variant="caption">
+              {formatWalletAddress(wallet.address)}
+            </Typography>
+          </>
+        ) : (
+          <Box>
+            <Typography
+              pl={0.5}
+              ml={0.5}
+              mr={0.5}
+              className={classes.walletAddress}
+              variant="caption"
+            >
+              {t('tokensPortfolio.all')}
+            </Typography>
+          </Box>
+        )}
+      </Box>
+    );
   };
 
   const renderToken = (index: number, token: tokenEntry) => {
@@ -171,7 +267,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
         className={classes.txLink}
       >
         <Grid item xs={2}>
-          <Box display="flex" justifyContent="center" textAlign="center">
+          <Box display="flex" justifyContent="left" textAlign="left">
             <Badge
               overlap="circular"
               anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
@@ -242,7 +338,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
 
   // render the wallet list
   return (
-    <Box className={classes.walletContainer}>
+    <Box className={classes.portfolioContainer}>
       <Box className={classes.sectionHeaderContainer}>
         <Box className={classes.sectionHeader}>
           <Tooltip title={t('verifiedWallets.verifiedOnly', {domain})}>
@@ -265,25 +361,33 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
         <Box
           mt={'15px'}
           mb={2}
-          id={`scrollableTxDiv`}
+          id={`scrollablePortfolioDiv`}
           className={classes.scrollableContainer}
         >
-          {allTokens.length > 0 ? (
-            <Grid container spacing={2}>
-              {allTokens.map((token, i) => renderToken(i, token))}
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Box className={classes.walletListContainer}>
+                {wallets.length > 1 && renderWallet()}
+                {wallets.map(wallet => renderWallet(wallet))}
+              </Box>
             </Grid>
-          ) : (
-            <Typography className={classes.noActivity}>
-              {t('tokensPortfolio.noTokens')}
-            </Typography>
-          )}
+            {allTokens.length > 0 ? (
+              allTokens.map((token, i) => renderToken(i, token))
+            ) : (
+              <Grid item xs={12}>
+                <Typography className={classes.noActivity}>
+                  {t('tokensPortfolio.noTokens')}
+                </Typography>
+              </Grid>
+            )}
+          </Grid>
         </Box>
       ) : (
         <Grid mt="0px" mb={1.5} container spacing={2}>
           <Grid item xs={12}>
             <Skeleton
               variant="rectangular"
-              className={classes.walletPlaceholder}
+              className={classes.portfolioPlaceholder}
             />
           </Grid>
         </Grid>
@@ -300,7 +404,9 @@ type tokenEntry = {
   value: number;
   balance: number;
   imageUrl?: string;
+  walletAddress: string;
   walletBlockChainLink: string;
+  walletName: string;
 };
 
 export type TokensPortfolioProps = {

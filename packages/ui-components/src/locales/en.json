@@ -11,10 +11,6 @@
     "title": "Activity",
     "to": "To {{subject}}"
   },
-  "tokensPortfolio": {
-    "title": "Token Portfolio",
-    "noTokens": "No tokens"
-  },
   "apps": {
     "clearAll": "Clear all",
     "featured": "Featured"
@@ -677,6 +673,11 @@
     "searchProfiles": "Enter a name or address",
     "searchResultsFor": "Profiles matching \"{{searchTerm}}\"",
     "tryAnotherSearch": "Try another domain or wallet address"
+  },
+  "tokensPortfolio": {
+    "all": "All",
+    "noTokens": "No tokens",
+    "title": "Token Portfolio"
   },
   "upsell": {
     "udBlueSubscription": {

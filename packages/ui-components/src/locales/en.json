@@ -674,6 +674,11 @@
     "searchResultsFor": "Profiles matching \"{{searchTerm}}\"",
     "tryAnotherSearch": "Try another domain or wallet address"
   },
+  "tokensPortfolio": {
+    "all": "All",
+    "noTokens": "No tokens",
+    "title": "Token Portfolio"
+  },
   "upsell": {
     "udBlueSubscription": {
       "addToCart": "Add to cart · {{price}}/year",

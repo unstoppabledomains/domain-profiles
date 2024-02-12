@@ -288,7 +288,11 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
               ) : token.imageUrl ? (
                 <img
                   src={token.imageUrl}
-                  className={classes.nftCollectionIcon}
+                  className={
+                    token.type === 'NFT'
+                      ? classes.nftCollectionIcon
+                      : classes.tokenIcon
+                  }
                 />
               ) : token.type === 'NFT' ? (
                 <PhotoLibraryOutlinedIcon

@@ -5,20 +5,16 @@ import {getEncryptedSecret} from '@pushprotocol/restapi/src/lib/chat/helpers/get
 import * as PGP from '@pushprotocol/restapi/src/lib/chat/helpers/pgp';
 import {sign} from '@pushprotocol/restapi/src/lib/chat/helpers/pgp';
 import {ENV} from '@pushprotocol/restapi/src/lib/constants';
-import * as Web3Signer from '@ucanto/principal/ed25519';
-import * as Web3UpClient from '@web3-storage/w3up-client';
 import {ethers} from 'ethers';
 
 import config from '@unstoppabledomains/config';
 
 import {notifyEvent} from '../../../lib/error';
-import {sleep} from '../../../lib/sleep';
 import {getLocalKey, setLocalKey} from '../storage';
 import {fromCaip10Address} from '../types';
 import {registerClientTopics} from './registration';
 import {isEthAddress} from './resolution';
-import type {W3UpKey} from './types';
-import {Upload, parseW3UpProof} from './upload';
+import {uploadAttachment} from './upload';
 import {formatFileSize} from './xmtp';
 
 export enum MessageType {
@@ -312,7 +308,7 @@ export const sendRemoteAttachment = async (
   chatId: string,
   address: string,
   pushKey: string,
-  token: string,
+  authDomain: string,
   uploadFile: File,
 ) => {
   // check max file size in bytes
@@ -324,29 +320,14 @@ export const sendRemoteAttachment = async (
     );
   }
 
-  // parse and verify the w3-up token format
-  const w3upToken: W3UpKey = JSON.parse(token);
-  if (!w3upToken.key || !w3upToken.proof) {
-    throw new Error('invalid w3-up token');
-  }
-
-  // prepare to upload the file using w3-up service
-  const principal = Web3Signer.parse(w3upToken.key);
-  const client = await Web3UpClient.create({principal});
-  const proof = await parseW3UpProof(w3upToken.proof);
-  const space = await client.addSpace(proof);
-  await client.setCurrentSpace(space.did());
-
-  // prepare the uploaded file
-  const upload = new Upload(
-    `${address}-${chatId}-${uploadFile.name}`,
+  const uploadUrl = await uploadAttachment(
+    authDomain,
     new Uint8Array(await uploadFile.arrayBuffer()),
+    uploadFile.type,
   );
-
-  // upload the file and retrieve the UUID
-  const cid = await client.uploadFile(upload);
-  const cidToString = cid.toString();
-  const url = `https://w3s.link/ipfs/${cidToString}`;
+  if (!uploadUrl) {
+    throw new Error('upload failed');
+  }
 
   // send the message as embedded media
   const sentMessage = await PushAPI.chat.send({
@@ -354,18 +335,12 @@ export const sendRemoteAttachment = async (
     pgpPrivateKey: pushKey,
     env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
     message: {
-      content: url,
+      content: uploadUrl,
       type: MessageType.Media,
     },
     to: chatId,
   });
 
-  // wait a moment, as there seems to be a bug on the w3s IPFS gateway that results
-  // in the wrong URL format (https://<cid>.ipfs.dweb.link/) to be requested if the
-  // expected URL is retrieved too quickly after upload. The provided URL format is
-  // correct (https://w3s.link/ipfs/<cid>), but results in a redirect on the client
-  // side if used immediately in the client UX and causes a broken image link.
-  await sleep(3000);
   return sentMessage;
 };
 

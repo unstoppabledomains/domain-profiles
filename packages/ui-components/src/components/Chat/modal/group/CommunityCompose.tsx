@@ -205,7 +205,7 @@ export const CommunityCompose: React.FC<CommunityComposeProps> = ({
       return;
     }
 
-    if (uploadFile && storageApiKey) {
+    if (uploadFile && storageApiKey && authDomain) {
       try {
         // retrieve the attachment from device
         setIsSending(true);
@@ -215,7 +215,7 @@ export const CommunityCompose: React.FC<CommunityComposeProps> = ({
           chatId,
           address,
           pushKey,
-          storageApiKey,
+          authDomain,
           uploadFile,
         );
         sendCallback(sentMessage);

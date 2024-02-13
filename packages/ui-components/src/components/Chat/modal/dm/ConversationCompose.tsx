@@ -197,7 +197,7 @@ export const Compose: React.FC<ComposeProps> = ({
 
   // handleUploadFile transmits the selected file to remote storage
   const handleUploadFile = async () => {
-    if (conversation && uploadFile && storageApiKey) {
+    if (conversation && uploadFile && storageApiKey && authDomain) {
       try {
         // retrieve the attachment from device
         setIsSending(true);
@@ -206,7 +206,7 @@ export const Compose: React.FC<ComposeProps> = ({
         const sentMessage = await sendRemoteAttachment(
           conversation,
           uploadFile,
-          storageApiKey,
+          authDomain,
         );
         sendCallback(sentMessage);
         setErrorMessage('');
@@ -245,10 +245,13 @@ export const Compose: React.FC<ComposeProps> = ({
       <IconButton
         disableRipple={true}
         component="label"
+        disabled={!authDomain}
         onClick={() => setSignatureClicked(true)}
       >
         <input hidden type="file" onChange={handleUploadClicked} />
-        <AddCircleOutlineOutlinedIcon className={classes.attachIcon} />
+        <Tooltip title={!authDomain ? t('push.domainRequiredUpload') : ''}>
+          <AddCircleOutlineOutlinedIcon className={classes.attachIcon} />
+        </Tooltip>
       </IconButton>
       <InputBase
         id="textbox-input"

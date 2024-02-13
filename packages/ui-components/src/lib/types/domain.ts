@@ -183,6 +183,10 @@ export type RedditUserInfo = {
   totalKarma: number;
 } | null;
 
+export type SerializedAttachmentResponse = {
+  url: string;
+};
+
 export type SerializedBulkDomainResponse = {
   success: boolean;
   domains: string[];

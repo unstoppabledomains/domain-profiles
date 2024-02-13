@@ -1,5 +1,3 @@
-import * as Web3Signer from '@ucanto/principal/ed25519';
-import * as Web3UpClient from '@web3-storage/w3up-client';
 import type {
   Attachment,
   RemoteAttachment,
@@ -36,8 +34,7 @@ import {notifyEvent} from '../../../lib/error';
 import {sleep} from '../../../lib/sleep';
 import {getXmtpLocalKey, setXmtpLocalKey} from '../storage';
 import {registerClientTopics} from './registration';
-import type {W3UpKey} from './types';
-import {Upload, parseW3UpProof} from './upload';
+import {uploadAttachment} from './upload';
 
 export interface ConversationMeta {
   conversation: Conversation;
@@ -282,7 +279,7 @@ export const loadConversationPreview = async (
 export const sendRemoteAttachment = async (
   conversation: Conversation,
   file: File,
-  token: string,
+  authDomain: string,
 ): Promise<DecodedMessage> => {
   // check max file size in bytes
   if (file.size > config.XMTP.MAX_ATTACHMENT_BYTES) {
@@ -306,29 +303,15 @@ export const sendRemoteAttachment = async (
     new AttachmentCodec(),
   );
 
-  // parse and verify the w3-up token format
-  const w3upToken: W3UpKey = JSON.parse(token);
-  if (!w3upToken.key || !w3upToken.proof) {
-    throw new Error('invalid w3-up token');
-  }
-
-  // prepare to upload the file using w3-up service
-  const principal = Web3Signer.parse(w3upToken.key);
-  const client = await Web3UpClient.create({principal});
-  const proof = await parseW3UpProof(w3upToken.proof);
-  const space = await client.addSpace(proof);
-  await client.setCurrentSpace(space.did());
-
-  // encrypt the uploaded file
-  const upload = new Upload(
-    'XMTPEncryptedContent',
+  // upload the attachment
+  const url = await uploadAttachment(
+    authDomain,
     encryptedAttachment.payload,
+    file.type,
   );
-
-  // upload the file and retrieve the UUID
-  const cid = await client.uploadFile(upload);
-  const cidToString = cid.toString();
-  const url = `https://w3s.link/ipfs/${cidToString}`;
+  if (!url) {
+    throw new Error('error uploading attachment');
+  }
 
   // create the remote attachment
   const remoteAttachment: RemoteAttachment = {

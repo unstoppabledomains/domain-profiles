@@ -564,6 +564,7 @@
     "communitiesRequireADomain": "To start discovering groups you need to add a Web3 domain to this wallet.",
     "configure": "Enable Unstoppable Messaging on this device for {{domain}}",
     "decrypting": "Loading message...",
+    "domainRequiredUpload": "A domain is required to upload attachments",
     "dropToUpload": "Drop file to upload...",
     "emptyNotifications": "No App Notifications",
     "emptyNotificationsDescription": "Subscribe to an app channel to receive notifications like security alerts, crypto news and more.",

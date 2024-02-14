@@ -177,6 +177,14 @@ export type MessagingAttributes = {
   thirdPartyMessagingConfigType: string;
 };
 
+export type PublicDomainPrimarySale = {
+  domainName: string;
+  price: number;
+  purchasedAt: string;
+};
+
+export type PublicDomainPrimarySalesByLabelResponse = PublicDomainPrimarySale[];
+
 export type RedditUserInfo = {
   kind: DomainProfileSocialMedia.Reddit;
   name: string;

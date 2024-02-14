@@ -10,6 +10,7 @@ import type {
 import type {
   DomainCryptoVerificationBodyPOST,
   EnsDomainStatusResponse,
+  PublicDomainPrimarySalesByLabelResponse,
   SerializedDomainRank,
   SerializedTxns,
 } from '../lib/types/domain';
@@ -103,6 +104,12 @@ export const getEnsDomainStatus = async (
     method: 'GET',
   });
 };
+
+export const getPublicDomainPrimarySalesByLabel = async (label: string) =>
+  await fetchApi<PublicDomainPrimarySalesByLabelResponse>(
+    `/domain/primary-sales/labels/${label}`,
+    {headers: {'Content-Type': 'application/json'}},
+  );
 
 export const getStrictReverseResolution = async (
   address: string,

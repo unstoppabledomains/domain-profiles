@@ -94,6 +94,7 @@ import {
   getSeoTags,
   isExternalDomain,
   parseRecords,
+  splitDomain,
   useDomainConfig,
   useEnsDomainStatus,
   useFeatureFlags,
@@ -102,7 +103,9 @@ import {
   useUnstoppableMessaging,
   useWeb3Context,
 } from '@unstoppabledomains/ui-components';
+import {getPublicDomainPrimarySalesByLabel} from '@unstoppabledomains/ui-components/src/actions';
 import {getOwnerDomains} from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
+import type {PublicDomainPrimarySale} from '@unstoppabledomains/ui-components/src/lib';
 import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
 import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
@@ -116,12 +119,14 @@ export type DomainProfilePageProps = {
   domain: string;
   profileData?: SerializedPublicDomainProfileData | null;
   identity?: PersonaIdentity;
+  primarySale: PublicDomainPrimarySale | null;
 };
 
 const DomainProfile = ({
   domain,
   profileData: initialProfileData,
   identity,
+  primarySale,
 }: DomainProfilePageProps) => {
   // hooks
   const [t] = useTranslationContext();
@@ -919,35 +924,29 @@ const DomainProfile = ({
                     }
                   />
                 )}
-                {(profileData?.market?.primary?.cost || 0) > 0 &&
-                  profileData?.market?.primary?.date && (
-                    <LeftBarContentCollapse
-                      icon={<ManageHistoryOutlinedIcon />}
-                      header={
-                        <Typography>
-                          {t(
-                            profileData.market.primary.cost
-                              ? 'profile.purchasePrice'
-                              : 'profile.registrationPrice',
+                {primarySale && (
+                  <LeftBarContentCollapse
+                    icon={<ManageHistoryOutlinedIcon />}
+                    header={
+                      <Typography>
+                        {t('profile.purchasePrice', {
+                          date: format(
+                            new Date(primarySale.purchasedAt),
+                            'MMM d, yyyy',
+                          ),
+                          cost: (primarySale.price / 100).toLocaleString(
+                            'en-US',
                             {
-                              date: format(
-                                new Date(profileData.market.primary.date),
-                                'MMM d, yyyy',
-                              ),
-                              cost: profileData!.market!.primary!.cost!.toLocaleString(
-                                'en-US',
-                                {
-                                  style: 'currency',
-                                  currency: 'USD',
-                                },
-                              ),
+                              style: 'currency',
+                              currency: 'USD',
                             },
-                          )}
-                        </Typography>
-                      }
-                      id="marketPrice"
-                    />
-                  )}
+                          ),
+                        })}
+                      </Typography>
+                    }
+                    id="marketPrice"
+                  />
+                )}
                 {profileData?.webacy && (
                   <Box
                     mb={-0.5}
@@ -1477,7 +1476,6 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         DomainFieldTypes.Profile,
         DomainFieldTypes.SocialAccounts,
         DomainFieldTypes.Records,
-        DomainFieldTypes.Market,
         DomainFieldTypes.Portfolio,
       ]),
       getIdentity({name: domain}),
@@ -1497,6 +1495,15 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
     return redirectToSearch;
   }
 
+  // Pull UD.com sale data for the purchased domain
+  let primarySale: PublicDomainPrimarySale | null = null;
+  try {
+    const {label, sld} = splitDomain(domain);
+    const domainLabel = sld ? `${label}.${sld}` : label;
+    const primarySales = await getPublicDomainPrimarySalesByLabel(domainLabel);
+    primarySale = primarySales.find(ps => ps.domainName === domain) ?? null;
+  } catch (_e) {}
+
   // set display name to domain if not already set
   if (profileData?.profile && !profileData.profile?.displayName) {
     profileData.profile.displayName = domain;
@@ -1508,6 +1515,7 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
       domain,
       profileData,
       identity,
+      primarySale,
     },
   };
 }

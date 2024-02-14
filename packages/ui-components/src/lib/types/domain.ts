@@ -287,6 +287,9 @@ export type SerializedDomainSocialAccount = {
 
 export type SerializedFloorPrice = {
   marketPlaceName: string;
+  marketPctChange24Hr?: number;
+  history?: SerializedPriceHistory[];
+  value: number;
   valueUsd: string;
   valueUsdAmt: number;
 };
@@ -322,6 +325,11 @@ export type SerializedPortfolioSummary = {
     value?: string;
     valueAmt?: number;
   };
+};
+
+export type SerializedPriceHistory = {
+  timestamp: Date;
+  value: number;
 };
 
 export type SerializedProfileSearch = {
@@ -452,6 +460,8 @@ export type SerializedWalletToken = {
   value?: {
     marketUsd?: string;
     marketUsdAmt?: number;
+    marketPctChange24Hr?: number;
+    history?: SerializedPriceHistory[];
     walletUsd?: string;
     walletUsdAmt?: number;
   };

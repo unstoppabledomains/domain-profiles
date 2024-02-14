@@ -382,13 +382,7 @@ export const DomainWalletTransactions: React.FC<
   };
 
   // calculate total balance
-  const txCount = (wallets || [])
-    .map(
-      w =>
-        parseInt(w.stats?.transactions || '0', 10) +
-        parseInt(w.stats?.transfers || '0', 10),
-    )
-    .reduce((p, c) => p + c, 0);
+  const txCount = (txns || []).length;
   const sortedTxns = txns?.sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
   );

@@ -7,15 +7,24 @@ import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
+import {CategoryScale} from 'chart.js';
+import Chart from 'chart.js/auto';
 import numeral from 'numeral';
 import React, {useState} from 'react';
+import {Line} from 'react-chartjs-2';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {CurrenciesType} from '../../lib';
 import {WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
-import type {SerializedWalletBalance} from '../../lib/types/domain';
+import type {
+  SerializedPriceHistory,
+  SerializedWalletBalance,
+} from '../../lib/types/domain';
 import {CryptoIcon} from '../Image';
+
+Chart.register(CategoryScale);
 
 const bgNeutralShade = 800;
 
@@ -50,6 +59,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     background: theme.palette.white,
     border: `2px solid ${theme.palette.white}`,
     color: theme.palette.neutralShades[bgNeutralShade],
+  },
+  chartContainer: {
+    height: '40px',
+    display: 'flex',
+    justifyContent: 'center',
   },
   walletIcon: {
     marginRight: theme.spacing(0.5),
@@ -117,6 +131,15 @@ const useStyles = makeStyles()((theme: Theme) => ({
   txLink: {
     cursor: 'pointer',
   },
+  txPctChangeDown: {
+    color: theme.palette.neutralShades[bgNeutralShade - 400],
+  },
+  txPctChangeNeutral: {
+    color: theme.palette.neutralShades[bgNeutralShade - 400],
+  },
+  txPctChangeUp: {
+    color: theme.palette.success.main,
+  },
   nftCollectionIcon: {
     borderRadius: theme.shape.borderRadius,
     width: '40px',
@@ -148,51 +171,102 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   domain,
   wallets,
 }) => {
+  const theme = useTheme();
   const {classes, cx} = useStyles();
   const [filterAddress, setFilterAddress] = useState<SerializedWalletBalance>();
   const [t] = useTranslationContext();
 
   // list of all monetized tokens, sorted by most valuable
   const allTokens: tokenEntry[] = [
-    ...(wallets || []).flatMap(wallet => ({
-      type: 'Native' as never,
-      name: wallet.name,
-      value: wallet.value?.walletUsdAmt || 0,
-      balance: wallet.balanceAmt || 0,
-      symbol: wallet.symbol,
-      ticker: wallet.symbol,
-      walletAddress: wallet.address,
-      walletBlockChainLink: wallet.blockchainScanUrl,
-      walletName: wallet.name,
-      imageUrl: wallet.logoUrl,
-    })),
-    ...(wallets || []).flatMap(wallet =>
-      (wallet?.nfts || []).map(walletNft => ({
-        type: 'NFT' as never,
-        name: walletNft.name,
-        value: walletNft.totalValueUsdAmt || 0,
-        balance: walletNft.ownedCount,
+    ...(wallets || []).flatMap(wallet => {
+      if (
+        wallet.value?.history &&
+        wallet.value.history.length > 0 &&
+        wallet.value.history[wallet.value.history.length - 1].value !==
+          wallet.value.marketUsdAmt
+      ) {
+        wallet.value.history.push({
+          timestamp: new Date(),
+          value: wallet.value.marketUsdAmt || 0,
+        });
+      }
+      return {
+        type: 'Native' as never,
+        name: wallet.name,
+        value: wallet.value?.walletUsdAmt || 0,
+        balance: wallet.balanceAmt || 0,
+        pctChange: wallet.value?.marketPctChange24Hr,
+        history: wallet.value?.history?.sort(
+          (a, b) =>
+            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+        ),
         symbol: wallet.symbol,
         ticker: wallet.symbol,
         walletAddress: wallet.address,
         walletBlockChainLink: wallet.blockchainScanUrl,
         walletName: wallet.name,
-        imageUrl: walletNft.collectionImageUrl,
-      })),
+        imageUrl: wallet.logoUrl,
+      };
+    }),
+    ...(wallets || []).flatMap(wallet =>
+      (wallet?.nfts || []).map(walletNft => {
+        const fpEntry =
+          walletNft.floorPrice?.filter(
+            fp => fp.marketPctChange24Hr !== undefined,
+          ) || [];
+        const pctChangeValue =
+          fpEntry.length > 0 ? fpEntry[0].marketPctChange24Hr : undefined;
+        if (
+          fpEntry.length > 0 &&
+          fpEntry[0].history &&
+          fpEntry[0].history.length > 0 &&
+          fpEntry[0].history[fpEntry[0].history.length - 1].value !==
+            fpEntry[0].value
+        ) {
+          fpEntry[0].history.push({
+            timestamp: new Date(),
+            value: fpEntry[0].value || 0,
+          });
+        }
+        return {
+          type: 'NFT' as never,
+          name: walletNft.name,
+          value: walletNft.totalValueUsdAmt || 0,
+          balance: walletNft.ownedCount,
+          pctChange: pctChangeValue,
+          history:
+            fpEntry.length > 0
+              ? fpEntry[0].history?.sort(
+                  (a, b) =>
+                    new Date(a.timestamp).getTime() -
+                    new Date(b.timestamp).getTime(),
+                )
+              : undefined,
+          symbol: wallet.symbol,
+          ticker: wallet.symbol,
+          walletAddress: wallet.address,
+          walletBlockChainLink: wallet.blockchainScanUrl,
+          walletName: wallet.name,
+          imageUrl: walletNft.collectionImageUrl,
+        };
+      }),
     ),
     ...(wallets || []).flatMap(wallet =>
-      (wallet?.tokens || []).map(walletToken => ({
-        type: 'Token' as never,
-        name: walletToken.name,
-        value: walletToken.value?.walletUsdAmt || 0,
-        balance: walletToken.balanceAmt || 0,
-        ticker: walletToken.symbol,
-        symbol: wallet.symbol,
-        walletAddress: wallet.address,
-        walletBlockChainLink: wallet.blockchainScanUrl,
-        walletName: wallet.name,
-        imageUrl: walletToken.logoUrl,
-      })),
+      (wallet?.tokens || []).map(walletToken => {
+        return {
+          type: 'Token' as never,
+          name: walletToken.name,
+          value: walletToken.value?.walletUsdAmt || 0,
+          balance: walletToken.balanceAmt || 0,
+          pctChange: walletToken.value?.marketPctChange24Hr,
+          ticker: walletToken.symbol,
+          symbol: wallet.symbol,
+          walletAddress: wallet.address,
+          walletBlockChainLink: wallet.blockchainScanUrl,
+          walletName: wallet.name,
+          imageUrl: walletToken.logoUrl,
+        };
+      }),
     ),
   ]
     .filter(item => item?.value > 0.01)
@@ -307,7 +381,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
             </Badge>
           </Box>
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={4}>
           <Box display="flex" flexDirection="column">
             <Typography variant="caption" className={classes.txTitle}>
               {token.name}
@@ -321,6 +395,53 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
           </Box>
         </Grid>
         <Grid item xs={4}>
+          {token.history && (
+            <Box className={classes.chartContainer}>
+              <Line
+                data={{
+                  labels: token.history?.map((_h, i) => i) || [],
+                  datasets: [
+                    {
+                      label: token.name,
+                      data: token.history?.map(h => h.value) || [],
+                      pointBackgroundColor: 'rgba(0, 0, 0, 0)',
+                      pointBorderColor: 'rgba(0, 0, 0, 0)',
+                      backgroundColor:
+                        (token.pctChange || 0) > 0
+                          ? theme.palette.success.main
+                          : theme.palette.neutralShades[bgNeutralShade - 400],
+                      borderColor:
+                        (token.pctChange || 0) > 0
+                          ? theme.palette.success.main
+                          : theme.palette.neutralShades[bgNeutralShade - 400],
+                      fill: false,
+                    },
+                  ],
+                }}
+                options={{
+                  events: [],
+                  scales: {
+                    x: {
+                      display: false,
+                    },
+                    y: {
+                      display: false,
+                    },
+                  },
+                  plugins: {
+                    title: {
+                      display: false,
+                    },
+                    legend: {
+                      display: false,
+                    },
+                  },
+                }}
+              />
+            </Box>
+          )}
+        </Grid>
+        <Grid item xs={2}>
           <Box
             display="flex"
             flexDirection="column"
@@ -333,6 +454,22 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
                 style: 'currency',
                 currency: 'USD',
               })}
+            </Typography>
+            <Typography
+              variant="caption"
+              className={
+                !token.pctChange
+                  ? classes.txPctChangeNeutral
+                  : token.pctChange < 0
+                  ? classes.txPctChangeDown
+                  : classes.txPctChangeUp
+              }
+            >
+              {token.pctChange
+                ? `${token.pctChange > 0 ? '+' : ''}${numeral(
+                    token.pctChange,
+                  ).format('0.[00]')}%`
+                : `---`}
             </Typography>
           </Box>
         </Grid>
@@ -407,7 +544,9 @@ type tokenEntry = {
   ticker: string;
   value: number;
   balance: number;
+  pctChange?: number;
   imageUrl?: string;
+  history?: SerializedPriceHistory[];
   walletAddress: string;
   walletBlockChainLink: string;
   walletName: string;

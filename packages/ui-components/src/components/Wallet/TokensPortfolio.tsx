@@ -125,6 +125,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     fontWeight: 'bold',
     color: theme.palette.white,
   },
+  txBalance: {
+    fontWeight: 'bold',
+    color: theme.palette.white,
+    whiteSpace: 'nowrap',
+  },
   txSubTitle: {
     color: theme.palette.neutralShades[bgNeutralShade - 600],
   },
@@ -449,7 +454,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
             justifyContent="right"
             justifyItems="right"
           >
-            <Typography variant="caption" className={classes.txTitle}>
+            <Typography variant="caption" className={classes.txBalance}>
               {token.value.toLocaleString('en-US', {
                 style: 'currency',
                 currency: 'USD',

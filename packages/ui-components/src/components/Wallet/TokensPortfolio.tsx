@@ -179,7 +179,12 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   // list of all monetized tokens, sorted by most valuable
   const allTokens: tokenEntry[] = [
     ...(wallets || []).flatMap(wallet => {
-      if (wallet.value?.history) {
+      if (
+        wallet.value?.history &&
+        wallet.value.history.length > 0 &&
+        wallet.value.history[wallet.value.history.length - 1].value !==
+          wallet.value.marketUsdAmt
+      ) {
         wallet.value.history.push({
           timestamp: new Date(),
           value: wallet.value.marketUsdAmt || 0,
@@ -211,7 +216,13 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
           ) || [];
         const pctChangeValue =
           fpEntry.length > 0 ? fpEntry[0].marketPctChange24Hr : undefined;
-        if (fpEntry.length > 0 && fpEntry[0].history) {
+        if (
+          fpEntry.length > 0 &&
+          fpEntry[0].history &&
+          fpEntry[0].history.length > 0 &&
+          fpEntry[0].history[fpEntry[0].history.length - 1].value !==
+            fpEntry[0].value
+        ) {
           fpEntry[0].history.push({
             timestamp: new Date(),
             value: fpEntry[0].value || 0,

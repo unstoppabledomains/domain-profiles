@@ -11,7 +11,7 @@ import {useTheme} from '@mui/material/styles';
 import {CategoryScale} from 'chart.js';
 import Chart from 'chart.js/auto';
 import numeral from 'numeral';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Line} from 'react-chartjs-2';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -179,6 +179,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   const theme = useTheme();
   const {classes, cx} = useStyles();
   const [filterAddress, setFilterAddress] = useState<SerializedWalletBalance>();
+  const [groupedTokens, setGroupedTokens] = useState<tokenEntry[]>([]);
   const [t] = useTranslationContext();
 
   // list of all monetized tokens, sorted by most valuable
@@ -283,6 +284,44 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
           item.walletAddress.toLowerCase() &&
           filterAddress.symbol.toLowerCase() === item.symbol.toLowerCase()),
     );
+
+  useEffect(() => {
+    if (allTokens.length === 0) {
+      return;
+    }
+    const tokens: tokenEntry[] = [];
+    allTokens.map(currentToken => {
+      // skip if this token has already been added to the list
+      const existingTokens = tokens.filter(
+        existingToken =>
+          existingToken.symbol === currentToken.symbol &&
+          existingToken.type === currentToken.type &&
+          existingToken.name === currentToken.name,
+      );
+      if (existingTokens.length > 0) {
+        return;
+      }
+
+      // aggregate balances from all matching tokens
+      const matchingTokens = allTokens.filter(
+        matchingToken =>
+          matchingToken.symbol === currentToken.symbol &&
+          matchingToken.type === currentToken.type &&
+          matchingToken.name === currentToken.name,
+      );
+      const token = {
+        ...currentToken,
+        balance: matchingTokens
+          .map(matchingToken => matchingToken.balance)
+          .reduce((p, c) => p + c, 0),
+        value: matchingTokens
+          .map(matchingToken => matchingToken.value)
+          .reduce((p, c) => p + c, 0),
+      };
+      tokens.push(token);
+    });
+    setGroupedTokens(tokens);
+  }, [allTokens]);
 
   // total value of the portfolio
   const totalValue = allTokens
@@ -517,8 +556,8 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
                 {wallets.map(wallet => renderWallet(wallet))}
               </Box>
             </Grid>
-            {allTokens.length > 0 ? (
-              allTokens.map((token, i) => renderToken(i, token))
+            {groupedTokens.length > 0 ? (
+              groupedTokens.map((token, i) => renderToken(i, token))
             ) : (
               <Grid item xs={12}>
                 <Typography className={classes.noActivity}>

@@ -182,113 +182,116 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   const [groupedTokens, setGroupedTokens] = useState<tokenEntry[]>([]);
   const [t] = useTranslationContext();
 
-  // list of all monetized tokens, sorted by most valuable
-  const allTokens: tokenEntry[] = [
-    ...(wallets || []).flatMap(wallet => {
-      if (
-        wallet.value?.history &&
-        wallet.value.history.length > 0 &&
-        wallet.value.history[wallet.value.history.length - 1].value !==
-          wallet.value.marketUsdAmt
-      ) {
-        wallet.value.history.push({
-          timestamp: new Date(),
-          value: wallet.value.marketUsdAmt || 0,
-        });
-      }
-      return {
-        type: 'Native' as never,
-        name: wallet.name,
-        value: wallet.value?.walletUsdAmt || 0,
-        balance: wallet.balanceAmt || 0,
-        pctChange: wallet.value?.marketPctChange24Hr,
-        history: wallet.value?.history?.sort(
-          (a, b) =>
-            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-        ),
-        symbol: wallet.symbol,
-        ticker: wallet.symbol,
-        walletAddress: wallet.address,
-        walletBlockChainLink: wallet.blockchainScanUrl,
-        walletName: wallet.name,
-        imageUrl: wallet.logoUrl,
-      };
-    }),
-    ...(wallets || []).flatMap(wallet =>
-      (wallet?.nfts || []).map(walletNft => {
-        const fpEntry =
-          walletNft.floorPrice?.filter(
-            fp => fp.marketPctChange24Hr !== undefined,
-          ) || [];
-        const pctChangeValue =
-          fpEntry.length > 0 ? fpEntry[0].marketPctChange24Hr : undefined;
+  useEffect(() => {
+    // return early if no wallets available
+    if (!wallets || wallets.length === 0) {
+      return;
+    }
+
+    // list of all monetized tokens, sorted by most valuable
+    const allTokens: tokenEntry[] = [
+      ...(wallets || []).flatMap(wallet => {
         if (
-          fpEntry.length > 0 &&
-          fpEntry[0].history &&
-          fpEntry[0].history.length > 0 &&
-          fpEntry[0].history[fpEntry[0].history.length - 1].value !==
-            fpEntry[0].value
+          wallet.value?.history &&
+          wallet.value.history.length > 0 &&
+          wallet.value.history[wallet.value.history.length - 1].value !==
+            wallet.value.marketUsdAmt
         ) {
-          fpEntry[0].history.push({
+          wallet.value.history.push({
             timestamp: new Date(),
-            value: fpEntry[0].value || 0,
+            value: wallet.value.marketUsdAmt || 0,
           });
         }
         return {
-          type: 'NFT' as never,
-          name: walletNft.name,
-          value: walletNft.totalValueUsdAmt || 0,
-          balance: walletNft.ownedCount,
-          pctChange: pctChangeValue,
-          history:
-            fpEntry.length > 0
-              ? fpEntry[0].history?.sort(
-                  (a, b) =>
-                    new Date(a.timestamp).getTime() -
-                    new Date(b.timestamp).getTime(),
-                )
-              : undefined,
+          type: 'Native' as never,
+          name: wallet.name,
+          value: wallet.value?.walletUsdAmt || 0,
+          balance: wallet.balanceAmt || 0,
+          pctChange: wallet.value?.marketPctChange24Hr,
+          history: wallet.value?.history?.sort(
+            (a, b) =>
+              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+          ),
           symbol: wallet.symbol,
           ticker: wallet.symbol,
           walletAddress: wallet.address,
           walletBlockChainLink: wallet.blockchainScanUrl,
           walletName: wallet.name,
-          imageUrl: walletNft.collectionImageUrl,
+          imageUrl: wallet.logoUrl,
         };
       }),
-    ),
-    ...(wallets || []).flatMap(wallet =>
-      (wallet?.tokens || []).map(walletToken => {
-        return {
-          type: 'Token' as never,
-          name: walletToken.name,
-          value: walletToken.value?.walletUsdAmt || 0,
-          balance: walletToken.balanceAmt || 0,
-          pctChange: walletToken.value?.marketPctChange24Hr,
-          ticker: walletToken.symbol,
-          symbol: wallet.symbol,
-          walletAddress: wallet.address,
-          walletBlockChainLink: wallet.blockchainScanUrl,
-          walletName: wallet.name,
-          imageUrl: walletToken.logoUrl,
-        };
-      }),
-    ),
-  ]
-    .filter(item => item?.value > 0.01)
-    .sort((a, b) => b.value - a.value)
-    .filter(
-      item =>
-        !filterAddress ||
-        (filterAddress.address.toLowerCase() ===
-          item.walletAddress.toLowerCase() &&
-          filterAddress.symbol.toLowerCase() === item.symbol.toLowerCase()),
-    );
+      ...(wallets || []).flatMap(wallet =>
+        (wallet?.nfts || []).map(walletNft => {
+          const fpEntry =
+            walletNft.floorPrice?.filter(
+              fp => fp.marketPctChange24Hr !== undefined,
+            ) || [];
+          const pctChangeValue =
+            fpEntry.length > 0 ? fpEntry[0].marketPctChange24Hr : undefined;
+          if (
+            fpEntry.length > 0 &&
+            fpEntry[0].history &&
+            fpEntry[0].history.length > 0 &&
+            fpEntry[0].history[fpEntry[0].history.length - 1].value !==
+              fpEntry[0].value
+          ) {
+            fpEntry[0].history.push({
+              timestamp: new Date(),
+              value: fpEntry[0].value || 0,
+            });
+          }
+          return {
+            type: 'NFT' as never,
+            name: walletNft.name,
+            value: walletNft.totalValueUsdAmt || 0,
+            balance: walletNft.ownedCount,
+            pctChange: pctChangeValue,
+            history:
+              fpEntry.length > 0
+                ? fpEntry[0].history?.sort(
+                    (a, b) =>
+                      new Date(a.timestamp).getTime() -
+                      new Date(b.timestamp).getTime(),
+                  )
+                : undefined,
+            symbol: wallet.symbol,
+            ticker: wallet.symbol,
+            walletAddress: wallet.address,
+            walletBlockChainLink: wallet.blockchainScanUrl,
+            walletName: wallet.name,
+            imageUrl: walletNft.collectionImageUrl,
+          };
+        }),
+      ),
+      ...(wallets || []).flatMap(wallet =>
+        (wallet?.tokens || []).map(walletToken => {
+          return {
+            type: 'Token' as never,
+            name: walletToken.name,
+            value: walletToken.value?.walletUsdAmt || 0,
+            balance: walletToken.balanceAmt || 0,
+            pctChange: walletToken.value?.marketPctChange24Hr,
+            ticker: walletToken.symbol,
+            symbol: wallet.symbol,
+            walletAddress: wallet.address,
+            walletBlockChainLink: wallet.blockchainScanUrl,
+            walletName: wallet.name,
+            imageUrl: walletToken.logoUrl,
+          };
+        }),
+      ),
+    ]
+      .filter(item => item?.value > 0.01)
+      .sort((a, b) => b.value - a.value)
+      .filter(
+        item =>
+          !filterAddress ||
+          (filterAddress.address.toLowerCase() ===
+            item.walletAddress.toLowerCase() &&
+            filterAddress.symbol.toLowerCase() === item.symbol.toLowerCase()),
+      );
 
-  useEffect(() => {
-    if (allTokens.length === 0) {
-      return;
-    }
+    // aggregate like tokens entries from different wallets
     const tokens: tokenEntry[] = [];
     allTokens.map(currentToken => {
       // skip if this token has already been added to the list
@@ -321,10 +324,10 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
       tokens.push(token);
     });
     setGroupedTokens(tokens);
-  }, [allTokens]);
+  }, [wallets, filterAddress]);
 
   // total value of the portfolio
-  const totalValue = allTokens
+  const totalValue = groupedTokens
     .map(item => item.value)
     .reduce((p, c) => p + c, 0);
 

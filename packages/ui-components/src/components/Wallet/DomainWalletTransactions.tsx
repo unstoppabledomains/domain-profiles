@@ -168,7 +168,7 @@ export const DomainWalletTransactions: React.FC<
       }
       if (w.txns?.cursor) {
         setHasMore(true);
-        initialCursors[w.symbol] = w.txns.cursor;
+        initialCursors[`${w.symbol}-${w.address}`] = w.txns.cursor;
       }
       w.txns?.data
         .filter(tx => !tx.symbol)
@@ -190,19 +190,20 @@ export const DomainWalletTransactions: React.FC<
     const newCursors: Record<string, string> = {};
     await Bluebird.map(
       Object.keys(cursors),
-      async symbol => {
+      async cursorKey => {
         try {
+          const symbol = cursorKey.split('-')[0];
           const v = await getDomainTransactions(
             domain,
             symbol,
-            cursors[symbol],
+            cursors[cursorKey],
           );
           if (v?.data) {
             newTxns.push(...v.data);
           }
           if (v?.cursor) {
             isNewCursor = true;
-            newCursors[symbol] = v.cursor;
+            newCursors[cursorKey] = v.cursor;
           }
           v?.data
             .filter(tx => !tx.symbol)
@@ -383,9 +384,13 @@ export const DomainWalletTransactions: React.FC<
 
   // calculate total balance
   const txCount = (txns || []).length;
-  const sortedTxns = txns?.sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
-  );
+  const txHashes = (txns || []).map(tx => tx.hash);
+  const sortedTxns = txns
+    ?.filter((tx, index) => !txHashes.includes(tx.hash, index + 1))
+    .sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    );
 
   // render the wallet list
   return (
@@ -435,7 +440,7 @@ export const DomainWalletTransactions: React.FC<
               </Grid>
             </InfiniteScroll>
           ) : (
-            <Typography className={classes.noActivity}>
+            <Typography className={classes.noActivity} textAlign="center">
               {t('activity.noActivity')}
             </Typography>
           )}

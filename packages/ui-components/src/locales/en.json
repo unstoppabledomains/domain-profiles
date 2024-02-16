@@ -231,7 +231,7 @@
     "addAvatar": "Add avatar",
     "addCover": "Add cover",
     "addCurrency": "Add Currency",
-    "addressNotVerified": "Verify the ownership of this address. Wallets and NFTs associated with this address will not be displayed on your public profile.",
+    "addressNotVerified": "Your portfolio and collectibles associated with this address will not be displayed until it is verified.",
     "addressNotVerifiedNonOwner": "Ownership of this address has not been verified.",
     "addWebsite": "Add link to website",
     "allSet": "All set!",
@@ -281,6 +281,7 @@
     "enterValidUrl": "Enter a valid URL",
     "enterYourAddress": "Enter your {{currency}} address",
     "enterYoutubeChannel": "YouTube channel URL",
+    "learnHowToVerify": "Verify ownership of this address",
     "listForSale": "List for Sale",
     "listForSaleDescription": "Your domain will appear in search results and on your UD.me profile as listed for sale, with an option for others to contact you directly via email.",
     "listForSaleEmail": "Email",
@@ -316,6 +317,18 @@
     "updateError": "Error saving changes",
     "uploadAvatar": "Upload Avatar",
     "uploadPhoto": "Upload photo",
+    "verificationInfoModal": {
+      "address": "Address: {{walletAddress}}",
+      "goToDelegateXyz": "Copy Address & Open Delegate.xyz",
+      "infoDelegateXyz": "You can use delegate.xyz to confirm ownership without connecting {{walletAddress}} to Unstoppable Domains. Create a delegation to this domain ({{ownerAddress}}) and verification will be automatic after a few minutes.",
+      "infoSigning": "You can sign a gas-free message with your wallet to confirm ownership of your address. This option requires you to connect {{walletAddress}} to Unstoppable Domains.",
+      "introduction": "Wallet verification is an optional step to prove you control your wallet address. It unlocks features for your domain like portfolio tracking, a collectibles gallery, token gated group chat and more.",
+      "optionN": "Option {{number}}: ",
+      "signAndVerify": "Sign & Verify",
+      "title": "Verify Your Wallet",
+      "verifyWithDelegate": "Use delegate.xyz",
+      "verifyWithSignature": "Sign with your wallet"
+    },
     "verified": "Verified",
     "verify": "Verify",
     "verifyAfterConfirm": "You can verify this {{currency}} address after changes are confirmed on-chain.",
@@ -677,7 +690,7 @@
   },
   "tokensPortfolio": {
     "all": "All",
-    "noTokens": "No tokens",
+    "noTokens": "No tokens in portfolio",
     "title": "Portfolio"
   },
   "upsell": {

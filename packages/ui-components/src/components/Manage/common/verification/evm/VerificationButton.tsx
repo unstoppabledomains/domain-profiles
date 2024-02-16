@@ -10,10 +10,12 @@ import type {Web3Dependencies} from '../../../../../lib';
 import {useTranslationContext} from '../../../../../lib';
 import {Web3Context} from '../../../../../providers';
 import {AccessWalletModal} from '../../../../Wallet/AccessWallet';
+import VerificationInfoModal from '../VerificationInfoModal';
 import {getSignatureMessage} from '../message';
 import type {VerificationProps} from '../types';
 
 export const EvmVerificationButton: FC<VerificationProps> = ({
+  ownerAddress,
   address,
   currency,
   domain,
@@ -22,6 +24,7 @@ export const EvmVerificationButton: FC<VerificationProps> = ({
 }) => {
   // wallet model implementation and state management
   const web3Context = useContext(Web3Context);
+  const [infoModalOpen, setInfoModalOpen] = useState(false);
   const [accessWalletModalIsOpen, setAccessWalletModalIsOpen] = useState(false);
   const [signatureRequested, setSignatureRequested] = useState(false);
   const [t] = useTranslationContext();
@@ -35,8 +38,15 @@ export const EvmVerificationButton: FC<VerificationProps> = ({
     void handleSignature();
   }, [web3Context, signatureRequested]);
 
+  const handleOpenInfoModal = () => {
+    setInfoModalOpen(true);
+  };
+
   // open the wallet connection modal
   const handleVerifyClick = useCallback(async () => {
+    // close the info modal
+    setInfoModalOpen(false);
+
     // verify the wallet is connected
     if (!web3Context.web3Deps) {
       setAccessWalletModalIsOpen(true);
@@ -58,9 +68,8 @@ export const EvmVerificationButton: FC<VerificationProps> = ({
 
       // sign a message linking the domain and secondary wallet address
       const messageText = await getSignatureMessage(domain, currency, address);
-      const signature = await web3Context.web3Deps.signer.signMessage(
-        messageText,
-      );
+      const signature =
+        await web3Context.web3Deps.signer.signMessage(messageText);
 
       // verify the signature before saving
       const signer = recoverPersonalSignature({
@@ -104,11 +113,11 @@ export const EvmVerificationButton: FC<VerificationProps> = ({
   // render the button along with address-specific wallet connection modal
   return (
     <div>
-      <Tooltip title={t('manage.connectToVerify', {extension: currency})}>
+      <Tooltip title={t('manage.learnHowToVerify')}>
         <Button
           variant="text"
           data-testid={`verify-${currency}`}
-          onClick={handleVerifyClick}
+          onClick={handleOpenInfoModal}
         >
           {t('manage.verify')}
         </Button>
@@ -120,6 +129,17 @@ export const EvmVerificationButton: FC<VerificationProps> = ({
         open={accessWalletModalIsOpen}
         onClose={() => setAccessWalletModalIsOpen(false)}
       />
+      {infoModalOpen && (
+        <VerificationInfoModal
+          open={infoModalOpen}
+          ownerAddress={ownerAddress}
+          walletAddress={address}
+          symbol={currency}
+          onClose={() => setInfoModalOpen(false)}
+          onVerifyClick={handleVerifyClick}
+          showDelegateInfo={true}
+        />
+      )}
     </div>
   );
 };

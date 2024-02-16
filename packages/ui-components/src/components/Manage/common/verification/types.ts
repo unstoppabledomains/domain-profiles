@@ -1,6 +1,7 @@
 import type {Web3Dependencies} from '../../../../lib';
 
 export type VerificationProps = {
+  ownerAddress: string;
   address: string;
   currency: string;
   domain: string;

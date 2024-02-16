@@ -563,7 +563,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
               groupedTokens.map((token, i) => renderToken(i, token))
             ) : (
               <Grid item xs={12}>
-                <Typography className={classes.noActivity}>
+                <Typography className={classes.noActivity} textAlign="center">
                   {t('tokensPortfolio.noTokens')}
                 </Typography>
               </Grid>

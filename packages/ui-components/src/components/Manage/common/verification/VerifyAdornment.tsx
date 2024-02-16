@@ -118,6 +118,7 @@ const VerifyAdornment: React.FC<Props> = ({
         {addressCurrent &&
           (addressCurrent === addressOriginal && !uiDisabled ? (
             getVerificationProvider({
+              ownerAddress,
               address: addressCurrent,
               currency,
               domain,

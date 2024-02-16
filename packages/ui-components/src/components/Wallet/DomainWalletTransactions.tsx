@@ -440,7 +440,7 @@ export const DomainWalletTransactions: React.FC<
               </Grid>
             </InfiniteScroll>
           ) : (
-            <Typography className={classes.noActivity}>
+            <Typography className={classes.noActivity} textAlign="center">
               {t('activity.noActivity')}
             </Typography>
           )}

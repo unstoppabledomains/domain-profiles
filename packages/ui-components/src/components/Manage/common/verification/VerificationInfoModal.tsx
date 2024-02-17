@@ -1,11 +1,15 @@
 import CloseIcon from '@mui/icons-material/Close';
+import TabContext from '@mui/lab/TabContext';
+import TabList from '@mui/lab/TabList';
+import TabPanel from '@mui/lab/TabPanel';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
+import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import React from 'react';
+import React, {useState} from 'react';
 import truncateEthAddress from 'truncate-eth-address';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -13,6 +17,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {useTranslationContext} from '../../../../lib';
 import CopyToClipboard from '../../../CopyToClipboard';
 import Link from '../../../Link';
+import {getBlockchainName} from './types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   dialogRoot: {
@@ -35,12 +40,23 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
   },
+  tabListContainer: {
+    marginTop: theme.spacing(2),
+  },
+  tabContentContainer: {
+    display: 'flex',
+    width: '100%',
+  },
   infoText: {
     color: theme.palette.neutralShades[600],
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(2),
+    marginBottom: theme.spacing(3),
   },
 }));
+
+enum tabType {
+  Sign = 'sign',
+  DelegateXyz = 'delegate.xyz',
+}
 
 type Props = {
   open: boolean;
@@ -57,11 +73,13 @@ const VerificationInfoModal: React.FC<Props> = ({
   onClose,
   onVerifyClick,
   showDelegateInfo,
+  symbol,
   ownerAddress,
   walletAddress,
 }) => {
   const [t] = useTranslationContext();
   const {classes} = useStyles();
+  const [tabValue, setTabValue] = useState(tabType.Sign);
 
   const handleClickDelegate = async () => {
     window.open(
@@ -70,71 +88,94 @@ const VerificationInfoModal: React.FC<Props> = ({
     );
   };
 
+  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+    const tv = newValue as tabType;
+    setTabValue(tv);
+  };
+
   return (
     <Dialog open={open} onClose={onClose} classes={{paper: classes.dialogRoot}}>
-      <Box className={classes.modalHeader}>
-        <Box display="flex" flexDirection="column">
-          <Typography variant="h5" className={classes.modalTitle}>
-            {t('manage.verificationInfoModal.title')}
-          </Typography>
-          <Typography className={classes.modalSubTitle} variant="caption">
-            {t('manage.verificationInfoModal.address', {
-              walletAddress,
+      <TabContext value={tabValue as tabType}>
+        <Box className={classes.modalHeader}>
+          <Box display="flex" flexDirection="column">
+            <Typography variant="h5" className={classes.modalTitle}>
+              {t('manage.verificationInfoModal.title')}
+            </Typography>
+            <Typography className={classes.modalSubTitle} variant="caption">
+              {t('manage.verificationInfoModal.address', {
+                walletAddress,
+              })}
+            </Typography>
+          </Box>
+          <IconButton onClick={onClose} size="large">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <Box className={classes.contentContainer}>
+          <Typography variant="body1">
+            {t('manage.verificationInfoModal.introduction', {
+              ownerAddress: truncateEthAddress(ownerAddress),
+              walletAddress: truncateEthAddress(walletAddress),
             })}
           </Typography>
-        </Box>
-        <IconButton onClick={onClose} size="large">
-          <CloseIcon />
-        </IconButton>
-      </Box>
-      <Box className={classes.contentContainer}>
-        <Typography variant="body1">
-          {t('manage.verificationInfoModal.introduction', {
-            ownerAddress: truncateEthAddress(ownerAddress),
-            walletAddress: truncateEthAddress(walletAddress),
-          })}
-        </Typography>
-        <Typography mt={3} variant="h6">
-          {showDelegateInfo &&
-            t('manage.verificationInfoModal.optionN', {number: 1})}{' '}
-          {t('manage.verificationInfoModal.verifyWithSignature')}
-        </Typography>
-        <Typography className={classes.infoText} variant="body2">
-          {t('manage.verificationInfoModal.infoSigning', {
-            ownerAddress: truncateEthAddress(ownerAddress),
-            walletAddress: truncateEthAddress(walletAddress),
-          })}
-        </Typography>
-        <Button fullWidth onClick={onVerifyClick} variant="contained">
-          {t('manage.verificationInfoModal.signAndVerify')}
-        </Button>
-        {showDelegateInfo && (
-          <>
-            <Typography mt={3} variant="h6">
-              {showDelegateInfo &&
-                t('manage.verificationInfoModal.optionN', {number: 2})}{' '}
-              {t('manage.verificationInfoModal.verifyWithDelegate')}
-            </Typography>
-            <Typography className={classes.infoText} variant="body2">
-              {t('manage.verificationInfoModal.infoDelegateXyz', {
-                ownerAddress: truncateEthAddress(ownerAddress),
-                walletAddress: truncateEthAddress(walletAddress),
-              })}{' '}
-              <Link href="https://docs.delegate.xyz/delegate/" target="_blank">
-                {t('common.learnMore')}
-              </Link>
-            </Typography>
-            <CopyToClipboard
-              stringToCopy={ownerAddress}
-              onCopy={handleClickDelegate}
-            >
-              <Button fullWidth variant="contained">
-                {t('manage.verificationInfoModal.goToDelegateXyz')}
+          <Box className={classes.tabListContainer}>
+            <TabList onChange={handleTabChange} variant="standard">
+              <Tab
+                label={t('manage.verificationInfoModal.verifyWithSignature')}
+                value={tabType.Sign}
+              />
+              {showDelegateInfo && (
+                <Tab
+                  label={t('manage.verificationInfoModal.verifyWithDelegate')}
+                  value={tabType.DelegateXyz}
+                />
+              )}
+            </TabList>
+          </Box>
+          <Box className={classes.tabContentContainer}>
+            <TabPanel value={tabType.Sign}>
+              <Typography className={classes.infoText} variant="body2">
+                {t('manage.verificationInfoModal.infoSigning', {
+                  ownerAddress: truncateEthAddress(ownerAddress),
+                  walletAddress: truncateEthAddress(walletAddress),
+                })}
+              </Typography>
+              <Button fullWidth onClick={onVerifyClick} variant="contained">
+                {t('manage.verificationInfoModal.signAndVerify')}
               </Button>
-            </CopyToClipboard>
-          </>
-        )}
-      </Box>
+            </TabPanel>
+            <TabPanel value={tabType.DelegateXyz}>
+              <Typography className={classes.infoText} variant="body2">
+                {t('manage.verificationInfoModal.infoDelegateXyz1', {
+                  ownerAddress: truncateEthAddress(ownerAddress),
+                  walletAddress: truncateEthAddress(walletAddress),
+                })}
+              </Typography>
+              <Typography className={classes.infoText} variant="body2">
+                {t('manage.verificationInfoModal.infoDelegateXyz2', {
+                  ownerAddress: truncateEthAddress(ownerAddress),
+                  walletAddress: truncateEthAddress(walletAddress),
+                  blockchain: getBlockchainName(symbol),
+                })}{' '}
+                <Link
+                  href="https://docs.delegate.xyz/delegate/"
+                  target="_blank"
+                >
+                  {t('common.learnMore')}
+                </Link>
+              </Typography>
+              <CopyToClipboard
+                stringToCopy={ownerAddress}
+                onCopy={handleClickDelegate}
+              >
+                <Button fullWidth variant="contained">
+                  {t('manage.verificationInfoModal.goToDelegateXyz')}
+                </Button>
+              </CopyToClipboard>
+            </TabPanel>
+          </Box>
+        </Box>
+      </TabContext>
     </Dialog>
   );
 };

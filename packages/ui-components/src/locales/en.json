@@ -320,8 +320,9 @@
     "verificationInfoModal": {
       "address": "Address: {{walletAddress}}",
       "goToDelegateXyz": "Copy Address & Open Delegate.xyz",
-      "infoDelegateXyz": "You can use delegate.xyz to confirm ownership without connecting {{walletAddress}} to Unstoppable Domains. Create a delegation to this domain ({{ownerAddress}}) and verification will be automatic after a few minutes.",
-      "infoSigning": "You can sign a gas-free message with your wallet to confirm ownership of your address. This option requires you to connect {{walletAddress}} to Unstoppable Domains.",
+      "infoDelegateXyz1": "You can use the delegate.xyz service to confirm ownership of your address. A small gas fee is required to register with the trusted third party smart contract. This is a good option if you do not want to connect {{walletAddress}} to Unstoppable Domains.",
+      "infoDelegateXyz2": "After opening the delegate.xyz dashboard, create delegation on {{blockchain}} to this domain ({{ownerAddress}}) and the verification process will be completed automatically after a few minutes.",
+      "infoSigning": "You can sign a gas-free message with your wallet to confirm ownership of your address. This is a good option if you feel comfortable connecting {{walletAddress}} to Unstoppable Domains.",
       "introduction": "Wallet verification is an optional step to prove you control your wallet address. It unlocks features for your domain like portfolio tracking, a collectibles gallery, token gated group chat and more.",
       "optionN": "Option {{number}}: ",
       "signAndVerify": "Sign & Verify",

@@ -3,12 +3,12 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import {useSnackbar} from 'notistack';
 import type {FC} from 'react';
-import React, {useCallback, useContext, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 
 import {postCryptoVerification} from '../../../../../actions';
+import {useWeb3Context} from '../../../../../hooks';
 import type {Web3Dependencies} from '../../../../../lib';
 import {useTranslationContext} from '../../../../../lib';
-import {Web3Context} from '../../../../../providers';
 import {AccessWalletModal} from '../../../../Wallet/AccessWallet';
 import VerificationInfoModal from '../VerificationInfoModal';
 import {getSignatureMessage} from '../message';
@@ -23,20 +23,20 @@ export const EvmVerificationButton: FC<VerificationProps> = ({
   setWeb3Deps,
 }) => {
   // wallet model implementation and state management
-  const web3Context = useContext(Web3Context);
   const [infoModalOpen, setInfoModalOpen] = useState(false);
   const [accessWalletModalIsOpen, setAccessWalletModalIsOpen] = useState(false);
   const [signatureRequested, setSignatureRequested] = useState(false);
   const [t] = useTranslationContext();
   const {enqueueSnackbar} = useSnackbar();
+  const {web3Deps} = useWeb3Context();
 
   // wait for connection state and initiate signature dialog
   useEffect(() => {
-    if (!web3Context.web3Deps || !signatureRequested) {
+    if (!web3Deps || !signatureRequested) {
       return;
     }
     void handleSignature();
-  }, [web3Context, signatureRequested]);
+  }, [web3Deps, signatureRequested]);
 
   const handleOpenInfoModal = () => {
     setInfoModalOpen(true);
@@ -44,14 +44,17 @@ export const EvmVerificationButton: FC<VerificationProps> = ({
 
   // open the wallet connection modal
   const handleVerifyClick = useCallback(async () => {
-    // close the info modal
-    setInfoModalOpen(false);
+    // always disconnect wallet when loading the verification modal, because
+    // the user needs the ability to change their connected wallet to match
+    // the crypto address record.
+    setWeb3Deps(undefined);
 
-    // verify the wallet is connected
-    if (!web3Context.web3Deps) {
-      setAccessWalletModalIsOpen(true);
-    }
+    // open access wallet modal
+    setAccessWalletModalIsOpen(true);
+
+    // request signature and close verification info modal
     setSignatureRequested(true);
+    setInfoModalOpen(false);
   }, [address]);
 
   // open the wallet modal to prompt for the signature
@@ -59,7 +62,7 @@ export const EvmVerificationButton: FC<VerificationProps> = ({
     try {
       // ensure web3 service was connected and that a signature has been
       // requested by this component
-      if (!address || !web3Context.web3Deps || !signatureRequested) {
+      if (!address || !web3Deps || !signatureRequested) {
         return;
       }
 
@@ -68,8 +71,7 @@ export const EvmVerificationButton: FC<VerificationProps> = ({
 
       // sign a message linking the domain and secondary wallet address
       const messageText = await getSignatureMessage(domain, currency, address);
-      const signature =
-        await web3Context.web3Deps.signer.signMessage(messageText);
+      const signature = await web3Deps.signer.signMessage(messageText);
 
       // verify the signature before saving
       const signer = recoverPersonalSignature({

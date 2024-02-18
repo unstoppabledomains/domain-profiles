@@ -97,6 +97,11 @@ const VerificationInfoModal: React.FC<Props> = ({
     }
   }, [setWeb3Deps]);
 
+  const handleClickVerify = async () => {
+    setWeb3Deps(undefined);
+    onVerifyClick();
+  };
+
   const handleClickDelegate = async () => {
     window.open(
       `https://delegate.xyz/profile/${walletAddress}/registry?r`,
@@ -156,7 +161,7 @@ const VerificationInfoModal: React.FC<Props> = ({
                   walletAddress: truncateEthAddress(walletAddress),
                 })}
               </Typography>
-              <Button fullWidth onClick={onVerifyClick} variant="contained">
+              <Button fullWidth onClick={handleClickVerify} variant="contained">
                 {t('manage.verificationInfoModal.signAndVerify')}
               </Button>
             </TabPanel>

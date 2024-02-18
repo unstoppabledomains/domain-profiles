@@ -32,6 +32,7 @@ type Props = {
   profileData?: SerializedPublicDomainProfileData;
   uiDisabled: boolean;
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;
+  saveClicked: boolean;
 };
 
 const MultiChainInput: React.FC<Props> = ({
@@ -44,6 +45,7 @@ const MultiChainInput: React.FC<Props> = ({
   profileData,
   uiDisabled,
   setWeb3Deps,
+  saveClicked,
 }) => {
   const [t] = useTranslationContext();
   const {classes} = useStyles();
@@ -155,7 +157,8 @@ const MultiChainInput: React.FC<Props> = ({
                           profileData={profileData}
                           currency={currency}
                           setWeb3Deps={setWeb3Deps}
-                          uiDisabled={uiDisabled}
+                          uiDisabled={false}
+                          saveClicked={saveClicked}
                         />
                       }
                     />

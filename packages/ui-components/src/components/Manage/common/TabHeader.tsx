@@ -17,7 +17,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     minHeight: AVATAR_PLACEHOLDER_SIZE,
   },
   headerContainer: {
-    backgroundColor: '#192B55',
+    backgroundImage: `linear-gradient(to left, #192b55c0, #192B55)`,
     borderTopRightRadius: theme.shape.borderRadius,
     borderTopLeftRadius: theme.shape.borderRadius,
     color: theme.palette.white,

@@ -47,6 +47,7 @@ export type Props = {
   uiDisabled: boolean;
   profileData?: SerializedPublicDomainProfileData;
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;
+  saveClicked: boolean;
 };
 
 const VerifyAdornment: React.FC<Props> = ({
@@ -55,6 +56,7 @@ const VerifyAdornment: React.FC<Props> = ({
   domain,
   ownerAddress,
   profileData,
+  saveClicked,
   uiDisabled,
   setWeb3Deps,
 }) => {
@@ -116,7 +118,8 @@ const VerifyAdornment: React.FC<Props> = ({
     return (
       <div className={classes.unverifiedBlock}>
         {addressCurrent &&
-          (addressCurrent === addressOriginal && !uiDisabled ? (
+          ((addressCurrent === addressOriginal || saveClicked) &&
+          !uiDisabled ? (
             getVerificationProvider({
               ownerAddress,
               address: addressCurrent,

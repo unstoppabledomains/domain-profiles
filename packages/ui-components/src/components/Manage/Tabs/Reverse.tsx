@@ -68,8 +68,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     marginTop: theme.spacing(1),
     padding: theme.spacing(1),
-    backgroundColor: theme.palette.primary.main,
+    backgroundImage: `linear-gradient(to left, ${theme.palette.primaryShades[400]}, ${theme.palette.primaryShades[600]})`,
     justifyContent: 'center',
+    borderRadius: theme.shape.borderRadius,
   },
   pendingTxText: {
     color: theme.palette.white,

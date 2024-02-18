@@ -349,6 +349,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
           [classes.walletContainerSelected]: filterAddress === wallet,
         })}
         onClick={() => setFilterAddress(wallet)}
+        key={`wallet-${wallet?.symbol}-${wallet?.address}`}
       >
         {wallet ? (
           <>

@@ -10,7 +10,7 @@ import type {SerializedUserDomainProfileData} from '../../lib';
 import type {DomainProfileTabType} from './DomainProfile';
 import {DomainProfile} from './DomainProfile';
 
-const MODAL_WIDTH = '515px';
+const MODAL_WIDTH = '550px';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {

@@ -9,12 +9,14 @@ import IconButton from '@mui/material/IconButton';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import truncateEthAddress from 'truncate-eth-address';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {useWeb3Context} from '../../../../hooks';
 import {useTranslationContext} from '../../../../lib';
+import {notifyEvent} from '../../../../lib/error';
 import CopyToClipboard from '../../../CopyToClipboard';
 import Link from '../../../Link';
 import {getBlockchainName} from './types';
@@ -80,6 +82,20 @@ const VerificationInfoModal: React.FC<Props> = ({
   const [t] = useTranslationContext();
   const {classes} = useStyles();
   const [tabValue, setTabValue] = useState(tabType.Sign);
+  const {setWeb3Deps} = useWeb3Context();
+
+  useEffect(() => {
+    try {
+      // always disconnect wallet when loading the verification modal, because
+      // the user needs the ability to change their connected wallet to match
+      // the crypto address record.
+      if (setWeb3Deps) {
+        setWeb3Deps(undefined);
+      }
+    } catch (e) {
+      notifyEvent(e, 'warning', 'WALLET', 'Signature');
+    }
+  }, [setWeb3Deps]);
 
   const handleClickDelegate = async () => {
     window.open(

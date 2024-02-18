@@ -33,6 +33,7 @@ export interface Props {
   uiDisabled: boolean;
   profileData?: SerializedPublicDomainProfileData;
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;
+  saveClicked: boolean;
 }
 
 export const useStyles = makeStyles()((theme: Theme) => ({
@@ -229,6 +230,7 @@ const CurrencyInput: React.FC<Props> = ({
   uiDisabled,
   profileData,
   setWeb3Deps,
+  saveClicked,
 }) => {
   const [t] = useTranslationContext();
   const {classes} = useStyles();
@@ -318,7 +320,8 @@ const CurrencyInput: React.FC<Props> = ({
           profileData={profileData}
           currency={currency}
           setWeb3Deps={setWeb3Deps}
-          uiDisabled={uiDisabled}
+          uiDisabled={false}
+          saveClicked={saveClicked}
         />
       }
     />

@@ -332,7 +332,7 @@
     },
     "verified": "Verified",
     "verify": "Verify",
-    "verifyAfterConfirm": "You can verify this {{currency}} address after changes are confirmed on-chain.",
+    "verifyAfterConfirm": "You can verify this {{currency}} address after changes are saved.",
     "visibleToEveryone": "Visible to everyone",
     "walletAddressIncorrect": "Cannot verify address {{address}} with connected wallet {{connectedAddress}}. Switch the wallet account and try again.",
     "walletNotConnected": "Unable to connect with {{extension}} wallet. Ensure the browser extension is installed and try again.",

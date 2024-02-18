@@ -53,8 +53,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     marginTop: theme.spacing(1),
     padding: theme.spacing(1),
-    backgroundColor: theme.palette.primary.main,
+    backgroundImage: `linear-gradient(to left, ${theme.palette.primaryShades[400]}, ${theme.palette.primaryShades[600]})`,
     justifyContent: 'center',
+    borderRadius: theme.shape.borderRadius,
   },
   pendingTxText: {
     color: theme.palette.white,
@@ -86,6 +87,7 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
   const {unsResolverKeys: resolverKeys, loading: resolverKeysLoading} =
     useResolverKeys();
   const [saveClicked, setSaveClicked] = useState(false);
+  const [isSignatureSuccess, setIsSignatureSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isPendingTx, setIsPendingTx] = useState<boolean>();
@@ -158,6 +160,7 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
             // record updates successful
             setIsSaving(false);
             setIsPendingTx(true);
+            setIsSignatureSuccess(true);
             return;
           }
         }
@@ -285,6 +288,7 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
         profileData={profileData}
         uiDisabled={!!isPendingTx}
         setWeb3Deps={setWeb3Deps}
+        saveClicked={isSignatureSuccess}
       />
     ));
   };
@@ -306,6 +310,7 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
           uiDisabled={!!isPendingTx}
           profileData={profileData}
           setWeb3Deps={setWeb3Deps}
+          saveClicked={isSignatureSuccess}
         />
       );
     });

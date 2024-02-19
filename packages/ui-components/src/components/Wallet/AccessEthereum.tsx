@@ -21,6 +21,7 @@ import {WalletClientSigner} from '../../lib/wallet/signer';
 export interface AccessEthereumProps {
   onComplete: (web3Deps?: Web3Dependencies) => void;
   onError?: (message: string) => void;
+  onReconnect?: () => void;
 }
 
 export const useStyles = makeStyles()((theme: Theme) => ({
@@ -158,7 +159,7 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
                 <WalletButton
                   key={`walletButton-${connector.id}-${i}`}
                   name={k as WalletName}
-                  disabled={!connector.ready}
+                  disabled={selectedConnector !== undefined || !connector.ready}
                   loading={isLoading && selectedWallet === (k as WalletName)}
                   onClick={() => handleClick(k as WalletName, connector)}
                 />

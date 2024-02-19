@@ -9,6 +9,7 @@ import {postCryptoVerification} from '../../../../../actions';
 import {useWeb3Context} from '../../../../../hooks';
 import type {Web3Dependencies} from '../../../../../lib';
 import {useTranslationContext} from '../../../../../lib';
+import {sleep} from '../../../../../lib/sleep';
 import {AccessWalletModal} from '../../../../Wallet/AccessWallet';
 import VerificationInfoModal from '../VerificationInfoModal';
 import {getSignatureMessage} from '../message';
@@ -26,6 +27,7 @@ export const EvmVerificationButton: FC<VerificationProps> = ({
   const [infoModalOpen, setInfoModalOpen] = useState(false);
   const [accessWalletModalIsOpen, setAccessWalletModalIsOpen] = useState(false);
   const [signatureRequested, setSignatureRequested] = useState(false);
+  const [clickedReconnect, setClickedReconnect] = useState(false);
   const [t] = useTranslationContext();
   const {enqueueSnackbar} = useSnackbar();
   const {web3Deps} = useWeb3Context();
@@ -37,6 +39,25 @@ export const EvmVerificationButton: FC<VerificationProps> = ({
     }
     void handleSignature();
   }, [web3Deps, signatureRequested]);
+
+  useEffect(() => {
+    // ignore when reconnect flag is not set
+    if (!clickedReconnect) {
+      return;
+    }
+    const reload = async () => {
+      if (accessWalletModalIsOpen) {
+        // close the access wallet modal
+        setAccessWalletModalIsOpen(false);
+      } else {
+        // open the access wallet modal
+        await sleep(250);
+        setClickedReconnect(false);
+        setAccessWalletModalIsOpen(true);
+      }
+    };
+    void reload();
+  }, [clickedReconnect, accessWalletModalIsOpen]);
 
   const handleOpenInfoModal = () => {
     setInfoModalOpen(true);
@@ -107,6 +128,10 @@ export const EvmVerificationButton: FC<VerificationProps> = ({
     setAccessWalletModalIsOpen(false);
   };
 
+  const handleReconnect = () => {
+    setClickedReconnect(true);
+  };
+
   // verify address is populated
   if (!address) {
     return <div></div>;
@@ -130,6 +155,7 @@ export const EvmVerificationButton: FC<VerificationProps> = ({
         onComplete={deps => handleAccessWalletComplete(deps)}
         open={accessWalletModalIsOpen}
         onClose={() => setAccessWalletModalIsOpen(false)}
+        onReconnect={handleReconnect}
       />
       {infoModalOpen && (
         <VerificationInfoModal

@@ -1,11 +1,14 @@
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/lab/Alert';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import React, {useState} from 'react';
+import truncateEthAddress from 'truncate-eth-address';
 import {WagmiConfig, configureChains, createConfig, mainnet} from 'wagmi';
 import {CoinbaseWalletConnector} from 'wagmi/connectors/coinbaseWallet';
 import {InjectedConnector} from 'wagmi/connectors/injected';
@@ -25,6 +28,7 @@ type Props = {
   message?: React.ReactNode;
   prompt?: boolean;
   onComplete?: (web3Deps?: Web3Dependencies) => void;
+  onReconnect?: () => void;
 };
 
 const AccessWallet = (props: Props) => {
@@ -95,8 +99,10 @@ const AccessWallet = (props: Props) => {
       const expectedAddress = props.address;
       setError(
         t('auth.walletAddressIncorrect', {
-          actual: web3Deps?.address.toLowerCase() || t('common.address'),
-          expected: expectedAddress,
+          actual: truncateEthAddress(
+            web3Deps?.address.toLowerCase() || t('common.address'),
+          ),
+          expected: truncateEthAddress(expectedAddress),
         }),
       );
     }
@@ -107,7 +113,26 @@ const AccessWallet = (props: Props) => {
     <WagmiConfig config={wagmiConfig}>
       <div className={classes.root}>
         <div className={classes.column}>
-          {error && <Alert severity="error">{error}</Alert>}
+          {error && (
+            <Box display="flex" flexDirection="column" justifyContent="center">
+              <Alert
+                action={
+                  props.onReconnect ? (
+                    <Button
+                      onClick={props.onReconnect}
+                      color="inherit"
+                      size="small"
+                    >
+                      {t('auth.retry')}
+                    </Button>
+                  ) : undefined
+                }
+                severity="error"
+              >
+                {error}
+              </Alert>
+            </Box>
+          )}
           {props.message && (
             <Typography align="center" variant="h5">
               {props.message}
@@ -124,7 +149,10 @@ const AccessWallet = (props: Props) => {
             </Typography>
           )}
           <div className={classes.column}>
-            <AccessEthereum onComplete={handleWalletConnected} />
+            <AccessEthereum
+              onComplete={handleWalletConnected}
+              onReconnect={props.onReconnect}
+            />
           </div>
         </div>
       </div>
@@ -177,6 +205,7 @@ export const AccessWalletModal = (props: ModalProps) => {
         <AccessWallet
           address={props.address}
           onComplete={props.onComplete}
+          onReconnect={props.onReconnect}
           prompt={props.prompt}
           message={props.message}
         />

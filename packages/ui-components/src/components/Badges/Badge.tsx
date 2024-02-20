@@ -284,33 +284,35 @@ const Badge: React.FC<Props> = ({
           </Grid>
         </BadgeCount>
       </WithTooltip>
-      <BadgePopupModal
-        small={small}
-        isOpenModal={isOpenModal}
-        handleShowModal={handleShowModal}
-        logo={logo}
-        linkUrl={linkUrl}
-        description={description}
-        name={name}
-        badgeCode={code}
-        holdersFeatured={holdersFeatured}
-        holdersRemaining={holdersRemaining}
-        holders={holders}
-        profile={profile}
-        domain={domain}
-        primarySponsor={primarySponsor}
-        allSponsors={allSponsors}
-        sponsorshipAvailable={sponsorshipAvailable}
-        groupChatAvailable={
-          featureFlags.variations?.ecommerceServiceUsersEnableChatCommunity &&
-          !filteredBadgeCodes.includes(code)
-        }
-        rank={rank}
-        setWeb3Deps={setWeb3Deps}
-        authWallet={authWallet}
-        authorizedAddresses={authorizedAddresses}
-        authDomain={authDomain}
-      />
+      {isOpenModal && (
+        <BadgePopupModal
+          small={small}
+          isOpenModal={isOpenModal}
+          handleShowModal={handleShowModal}
+          logo={logo}
+          linkUrl={linkUrl}
+          description={description}
+          name={name}
+          badgeCode={code}
+          holdersFeatured={holdersFeatured}
+          holdersRemaining={holdersRemaining}
+          holders={holders}
+          profile={profile}
+          domain={domain}
+          primarySponsor={primarySponsor}
+          allSponsors={allSponsors}
+          sponsorshipAvailable={sponsorshipAvailable}
+          groupChatAvailable={
+            featureFlags.variations?.ecommerceServiceUsersEnableChatCommunity &&
+            !filteredBadgeCodes.includes(code)
+          }
+          rank={rank}
+          setWeb3Deps={setWeb3Deps}
+          authWallet={authWallet}
+          authorizedAddresses={authorizedAddresses}
+          authDomain={authDomain}
+        />
+      )}
     </div>
   );
 };

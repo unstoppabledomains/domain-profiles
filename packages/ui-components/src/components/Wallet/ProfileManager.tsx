@@ -7,6 +7,7 @@ import config from '@unstoppabledomains/config';
 
 import {AccessWalletModal} from '../../components/Wallet/AccessWallet';
 import {fetchApi} from '../../lib';
+import {sleep} from '../../lib/sleep';
 import {DomainProfileKeys} from '../../lib/types/domain';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import {Web3Context} from '../../providers/Web3ContextProvider';
@@ -46,6 +47,7 @@ export const ProfileManager: React.FC<ManagerProps> = ({
   const [signature, setSignature] = useState<string>();
   const [expiry, setExpiry] = useState<string>();
   const [accessWalletModalIsOpen, setAccessWalletModalIsOpen] = useState(false);
+  const [clickedReconnect, setClickedReconnect] = useState(false);
 
   useEffect(() => {
     if (saveClicked) {
@@ -55,6 +57,25 @@ export const ProfileManager: React.FC<ManagerProps> = ({
       void handlePrepareSignature();
     }
   }, [saveClicked]);
+
+  useEffect(() => {
+    // ignore when reconnect flag is not set
+    if (!clickedReconnect) {
+      return;
+    }
+    const reload = async () => {
+      if (accessWalletModalIsOpen) {
+        // close the access wallet modal
+        setAccessWalletModalIsOpen(false);
+      } else {
+        // open the access wallet modal
+        await sleep(250);
+        setClickedReconnect(false);
+        setAccessWalletModalIsOpen(true);
+      }
+    };
+    void reload();
+  }, [clickedReconnect, accessWalletModalIsOpen]);
 
   useEffect(() => {
     if (!web3Context.web3Deps || !messageResponse) {
@@ -180,6 +201,10 @@ export const ProfileManager: React.FC<ManagerProps> = ({
     setAccessWalletModalIsOpen(false);
   };
 
+  const handleReconnect = () => {
+    setClickedReconnect(true);
+  };
+
   return (
     <div>
       <AccessWalletModal
@@ -188,6 +213,7 @@ export const ProfileManager: React.FC<ManagerProps> = ({
         onComplete={deps => handleAccessWalletComplete(deps)}
         open={accessWalletModalIsOpen}
         onClose={() => setAccessWalletModalIsOpen(false)}
+        onReconnect={handleReconnect}
       />
     </div>
   );

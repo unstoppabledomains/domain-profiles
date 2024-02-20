@@ -29,6 +29,7 @@ import useWeb3Context from '../../hooks/useWeb3Context';
 import {isDomainValidForManagement} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import useTranslationContext from '../../lib/i18n';
+import {sleep} from '../../lib/sleep';
 import type {SerializedCryptoWalletBadge} from '../../lib/types/badge';
 import {DomainNotificationSettingsKey} from '../../lib/types/message';
 import type {Web3Dependencies} from '../../lib/types/web3';
@@ -139,6 +140,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     useState<MessagingSignatureType>();
   const [initChatOptions, setInitChatOptions] = useState<InitChatOptions>();
   const [walletModalIsOpen, setWalletModalIsOpen] = useState(false);
+  const [clickedReconnect, setClickedReconnect] = useState(false);
   const [messagingInitialized, setMessagingInitialized] = useState<boolean>();
   const [pushUser, setPushUser] = useState<PushAPI.IUser>();
   const [blockedTopics, setBlockedTopics] = useState<string[]>([]);
@@ -341,6 +343,26 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       setChatSnackbar(undefined);
     }
   }, [chatWindowOpen, chatSnackbar]);
+
+  // reconnect wallet access modal
+  useEffect(() => {
+    // ignore when reconnect flag is not set
+    if (!clickedReconnect) {
+      return;
+    }
+    const reload = async () => {
+      if (walletModalIsOpen) {
+        // close the access wallet modal
+        setWalletModalIsOpen(false);
+      } else {
+        // open the access wallet modal
+        await sleep(250);
+        setClickedReconnect(false);
+        setWalletModalIsOpen(true);
+      }
+    };
+    void reload();
+  }, [clickedReconnect, walletModalIsOpen]);
 
   // message icons
   const messageReadyIcon = (
@@ -895,6 +917,10 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     }
   };
 
+  const handleReconnect = () => {
+    setClickedReconnect(true);
+  };
+
   return (
     <>
       {label ? (
@@ -975,6 +1001,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         onComplete={deps => handleAccessWalletComplete(deps)}
         open={walletModalIsOpen}
         onClose={() => setWalletModalIsOpen(false)}
+        onReconnect={handleReconnect}
       />
       <SetupModal
         disabled={

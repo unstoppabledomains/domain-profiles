@@ -5140,6 +5140,7 @@ __metadata:
     js-base64: ^3.7.5
     lodash: ^4.17.21
     lodash.merge: ^4.6.2
+    markdown-to-jsx: ^7.4.1
     moment: ^2.29.4
     next: ^12.3.4
     next-secure-headers: ^2.2.0
@@ -14614,6 +14615,15 @@ __metadata:
   version: 4.3.0
   resolution: "map-obj@npm:4.3.0"
   checksum: fbc554934d1a27a1910e842bc87b177b1a556609dd803747c85ece420692380827c6ae94a95cce4407c054fa0964be3bf8226f7f2cb2e9eeee432c7c1985684e
+  languageName: node
+  linkType: hard
+
+"markdown-to-jsx@npm:^7.4.1":
+  version: 7.4.1
+  resolution: "markdown-to-jsx@npm:7.4.1"
+  peerDependencies:
+    react: ">= 0.14.0"
+  checksum: 2888cb2389cb810ab35454a59d0623474a60a78e28f281ae0081f87053f6c59b033232a2cd269cc383a5edcaa1eab8ca4b3cf639fe4e1aa3fb418648d14bcc7d
   languageName: node
   linkType: hard
 

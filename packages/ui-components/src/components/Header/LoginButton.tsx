@@ -12,6 +12,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {AccessWalletModal} from '../../components/Wallet/AccessWallet';
 import useWeb3Context from '../../hooks/useWeb3Context';
 import useTranslationContext from '../../lib/i18n';
+import {sleep} from '../../lib/sleep';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import {loginWithAddress} from '../../lib/wallet/login';
 import UnstoppableAnimated from '../Image/UnstoppableAnimated';
@@ -82,6 +83,7 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
   const {setWeb3Deps} = useWeb3Context();
   const [hovering, setHovering] = useState(false);
   const [accessWalletOpen, setAccessWalletOpen] = useState(false);
+  const [clickedReconnect, setClickedReconnect] = useState(false);
   const isUauth = method === LoginMethod.Uauth;
   const isWallet = method === LoginMethod.Wallet;
 
@@ -90,6 +92,25 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
       void handleClick();
     }
   }, [props.clicked]);
+
+  useEffect(() => {
+    // ignore when reconnect flag is not set
+    if (!clickedReconnect) {
+      return;
+    }
+    const reload = async () => {
+      if (accessWalletOpen) {
+        // close the access wallet modal
+        setAccessWalletOpen(false);
+      } else {
+        // open the access wallet modal
+        await sleep(250);
+        setClickedReconnect(false);
+        setAccessWalletOpen(true);
+      }
+    };
+    void reload();
+  }, [clickedReconnect, accessWalletOpen]);
 
   if (loading) {
     return <ButtonSkeleton big={big} />;
@@ -119,6 +140,10 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
       onLoginComplete(address, domain);
       setAccessWalletOpen(false);
     }
+  };
+
+  const handleReconnect = () => {
+    setClickedReconnect(true);
   };
 
   return (
@@ -157,6 +182,7 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
         open={accessWalletOpen}
         message={t('auth.connectToLogin')}
         onClose={() => setAccessWalletOpen(false)}
+        onReconnect={handleReconnect}
       />
     </>
   );

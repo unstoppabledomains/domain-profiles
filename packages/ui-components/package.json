@@ -73,6 +73,7 @@
     "js-base64": "^3.7.5",
     "lodash": "^4.17.21",
     "lodash.merge": "^4.6.2",
+    "markdown-to-jsx": "^7.4.1",
     "moment": "^2.29.4",
     "next": "^12.3.4",
     "next-secure-headers": "^2.2.0",

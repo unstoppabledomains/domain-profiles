@@ -7,6 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import Markdown from 'markdown-to-jsx';
 import React, {useState} from 'react';
 import truncateEthAddress from 'truncate-eth-address';
 import {WagmiConfig, configureChains, createConfig, mainnet} from 'wagmi';
@@ -129,7 +130,7 @@ const AccessWallet = (props: Props) => {
                 }
                 severity="error"
               >
-                {error}
+                <Markdown>{error}</Markdown>
               </Alert>
             </Box>
           )}

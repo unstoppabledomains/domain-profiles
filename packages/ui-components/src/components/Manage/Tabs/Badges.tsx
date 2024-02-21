@@ -5,6 +5,7 @@ import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -12,7 +13,11 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getDomainBadges, refreshUserBadges} from '../../../actions';
+import {
+  getDomainBadges,
+  refreshUserBadges,
+  updateUserBadges,
+} from '../../../actions';
 import {useWeb3Context} from '../../../hooks';
 import type {
   SerializedCryptoWalletBadge,
@@ -50,9 +55,11 @@ export const Badges: React.FC<BadgesProps> = ({address, domain, onUpdate}) => {
   const [t] = useTranslationContext();
   const [fireRequest, setFireRequest] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshStatus, setRefreshStatus] = useState<string>();
   const [badges, setBadges] = useState<SerializedCryptoWalletBadge[]>([]);
+  const [badgeToUpdate, setBadgeToUpdate] =
+    useState<SerializedCryptoWalletBadge>();
   const [updateErrorMessage, setUpdateErrorMessage] = useState<string>();
 
   useEffect(() => {
@@ -65,7 +72,9 @@ export const Badges: React.FC<BadgesProps> = ({address, domain, onUpdate}) => {
 
     // retrieve initial set of badges
     try {
-      const badgeResponse = await getDomainBadges(domain);
+      const badgeResponse = await getDomainBadges(domain, {
+        withoutPartners: true,
+      });
       setBadges(badgeResponse?.list || []);
     } catch (e) {
       notifyEvent(e, 'warning', 'BADGES', 'Fetch', {
@@ -77,39 +86,51 @@ export const Badges: React.FC<BadgesProps> = ({address, domain, onUpdate}) => {
     setIsLoaded(true);
   };
 
-  // handleRefreshBadges request badge refresh
-  const handleRefreshBadges = async (signature: string, expires: string) => {
+  // handleUpdateBadges make a request to update badges
+  const handleUpdateBadges = async (signature: string, expires: string) => {
     try {
       // only proceed if signature available
       if (domain && signature && expires) {
         // make authenticated request to refresh badges
-        const updatedBadges = await refreshUserBadges(address, domain, {
-          expires,
-          signature,
-        });
+        if (isRefreshing) {
+          const updatedBadges = await refreshUserBadges(address, domain, {
+            expires,
+            signature,
+          });
 
-        // compare new and old badges
-        const newBadges: SerializedCryptoWalletBadge[] = [];
-        updatedBadges.map(newBadge => {
-          if (
-            badges.filter(existingBadge => existingBadge.code === newBadge.code)
-              .length === 0
-          ) {
-            newBadges.push(newBadge);
-          }
-        });
+          // compare new and old badges
+          const newBadges: SerializedCryptoWalletBadge[] = [];
+          updatedBadges.map(newBadge => {
+            if (
+              badges.filter(
+                existingBadge => existingBadge.code === newBadge.code,
+              ).length === 0
+            ) {
+              newBadges.push(newBadge);
+            }
+          });
 
-        // notify of changes
-        setBadges([...newBadges, ...badges]);
-        setRefreshStatus(
-          newBadges.length > 0
-            ? t('manage.badgesSuccess', {
-                count: newBadges.length,
-                s: newBadges.length === 1 ? '' : 's',
-              })
-            : t('manage.badgesNoNew'),
-        );
-        onUpdate(DomainProfileTabType.Badges);
+          // notify of changes
+          setBadges([...newBadges, ...badges]);
+          setRefreshStatus(
+            newBadges.length > 0
+              ? t('manage.badgesSuccess', {
+                  count: newBadges.length,
+                  s: newBadges.length === 1 ? '' : 's',
+                })
+              : t('manage.badgesNoNew'),
+          );
+          onUpdate(DomainProfileTabType.Badges);
+        }
+
+        // update the requested badge
+        if (badgeToUpdate) {
+          await updateUserBadges(address, domain, [badgeToUpdate], {
+            expires,
+            signature,
+          });
+          setBadgeToUpdate(undefined);
+        }
       }
     } catch (e) {
       setUpdateErrorMessage(t('manage.badgeErrorMessage'));
@@ -117,12 +138,19 @@ export const Badges: React.FC<BadgesProps> = ({address, domain, onUpdate}) => {
         msg: 'unable to manage user profile',
       });
     } finally {
-      setIsSaving(false);
+      setIsRefreshing(false);
     }
   };
 
-  const handleSave = () => {
-    setIsSaving(true);
+  const handleShowHide = async (b: SerializedCryptoWalletBadge) => {
+    b.active = !b.active;
+    setBadgeToUpdate(b);
+    setBadges([...badges]);
+    setFireRequest(true);
+  };
+
+  const handleRefreshClick = () => {
+    setIsRefreshing(true);
     setFireRequest(true);
   };
 
@@ -135,13 +163,15 @@ export const Badges: React.FC<BadgesProps> = ({address, domain, onUpdate}) => {
       />
       {isLoaded ? (
         <>
-          <Box mt={1} mb={5} display="flex">
+          <Box mt={1} mb={3} display="flex">
             <LoadingButton
               variant="contained"
-              onClick={handleSave}
-              loading={isSaving}
+              onClick={handleRefreshClick}
+              loading={isRefreshing}
               fullWidth
-              disabled={refreshStatus !== undefined}
+              disabled={
+                updateErrorMessage !== undefined || refreshStatus !== undefined
+              }
               startIcon={
                 updateErrorMessage ? (
                   <ErrorOutlineOutlinedIcon />
@@ -157,35 +187,75 @@ export const Badges: React.FC<BadgesProps> = ({address, domain, onUpdate}) => {
                 t('profile.refreshBadges')}
             </LoadingButton>
           </Box>
-          {badges.length === 0 && (
-            <Box display="flex" textAlign="center">
-              <Typography variant="body1" className={classes.description}>
-                {t('manage.badgesEmpty')}
-              </Typography>
-            </Box>
-          )}
+          <Box display="flex" textAlign="center" justifyContent="center" mb={3}>
+            <Typography variant="body2" className={classes.description}>
+              {badges.length === 0
+                ? t('manage.badgesEmpty')
+                : t('manage.clickToChangeVisibility')}
+            </Typography>
+          </Box>
           <Grid container spacing={2}>
-            {badges.map((badge, i) => (
-              <Grid
-                item
-                xs={4}
-                sm={3}
-                key={`badge-manage-${badge.configId}-${i}`}
-                className={classes.badgeContainer}
-              >
-                <Badge
-                  domain={domain}
-                  {...badge}
-                  usageEnabled={false}
-                  tooltipPlacement="top"
-                  profile={true}
-                  iconOnly={true}
-                  setWeb3Deps={setWeb3Deps}
-                  authWallet={address}
-                  authDomain={domain}
-                />
-              </Grid>
-            ))}
+            {badges
+              .filter(badge => badge.active)
+              .map((badge, i) => (
+                <Grid
+                  item
+                  xs={3}
+                  sm={2}
+                  key={`badge-manage-${badge.configId}-${i}`}
+                  className={classes.badgeContainer}
+                  onClick={() => handleShowHide(badge)}
+                >
+                  <Badge
+                    domain={domain}
+                    {...badge}
+                    small
+                    usageEnabled={false}
+                    tooltipPlacement="top"
+                    profile={true}
+                    iconOnly={true}
+                    disablePopup={true}
+                    hidden={!badge.active}
+                    setWeb3Deps={setWeb3Deps}
+                    authWallet={address}
+                    authDomain={domain}
+                  />
+                </Grid>
+              ))}
+            {badges.filter(badge => !badge.active).length > 0 && (
+              <>
+                <Grid item xs={12}>
+                  <Divider>{t('profile.hidden')}</Divider>
+                </Grid>
+                {badges
+                  .filter(badge => !badge.active)
+                  .map((badge, i) => (
+                    <Grid
+                      item
+                      xs={3}
+                      sm={2}
+                      key={`badge-manage-${badge.configId}-${i}`}
+                      className={classes.badgeContainer}
+                      onClick={() => handleShowHide(badge)}
+                    >
+                      <Badge
+                        domain={domain}
+                        {...badge}
+                        small
+                        usageEnabled={false}
+                        tooltipPlacement="top"
+                        profile={true}
+                        iconOnly={true}
+                        disablePopup={true}
+                        hidden={!badge.active}
+                        setWeb3Deps={setWeb3Deps}
+                        authWallet={address}
+                        authDomain={domain}
+                      />
+                    </Grid>
+                  ))}
+              </>
+            )}
           </Grid>
         </>
       ) : (
@@ -199,7 +269,7 @@ export const Badges: React.FC<BadgesProps> = ({address, domain, onUpdate}) => {
         setWeb3Deps={setWeb3Deps}
         saveClicked={fireRequest}
         setSaveClicked={setFireRequest}
-        onSignature={handleRefreshBadges}
+        onSignature={handleUpdateBadges}
       />
     </Box>
   );

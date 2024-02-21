@@ -249,6 +249,7 @@
     "badgesSuccess": "Success! We found {{count}} new badge{{s}} for you",
     "btcAddressUnsupported": "BTC address verification requires a SegWit or Taproot address",
     "btcWalletUnsupported": "A BTC browser extension wallet that supports BIP-322 signatures is required (e.g. Hiro or Leather)",
+    "clickToChangeVisibility": "Click a badge to show / hide on your public profile",
     "comingSoon": "Coming soon",
     "configure": "Configure",
     "connectToVerify": "Connect your {{extension}} wallet to verify ownership of this address.",

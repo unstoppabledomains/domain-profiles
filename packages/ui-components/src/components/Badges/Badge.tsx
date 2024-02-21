@@ -110,6 +110,10 @@ const useStyles = makeStyles<StyleProps>()(
     hiddenTitle: {
       color: theme.palette.neutralShades[400],
     },
+    hiddenIcon: {
+      filter: 'grayscale(100%)',
+      boxShadow: theme.shadows[1],
+    },
     infoIcon: {
       fontSize: theme.typography.h6.fontSize,
       color: theme.palette.neutralShades[600],
@@ -132,6 +136,7 @@ type Props = SerializedCryptoWalletBadge & {
   setWeb3Deps?: (value: Web3Dependencies | undefined) => void;
   authWallet?: string;
   authDomain?: string;
+  disablePopup?: boolean;
 };
 
 const Badge: React.FC<Props> = ({
@@ -152,6 +157,7 @@ const Badge: React.FC<Props> = ({
   setWeb3Deps,
   authWallet,
   authDomain,
+  disablePopup,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -264,6 +270,7 @@ const Badge: React.FC<Props> = ({
                   {
                     [classes.badgeTierFeatured2]: gallery?.tier === 2,
                     [classes.badgeTierFeatured3]: gallery?.tier === 3,
+                    [classes.hiddenIcon]: hidden,
                   },
                 )}
                 src={logo}
@@ -284,7 +291,7 @@ const Badge: React.FC<Props> = ({
           </Grid>
         </BadgeCount>
       </WithTooltip>
-      {isOpenModal && (
+      {isOpenModal && !disablePopup && (
         <BadgePopupModal
           small={small}
           isOpenModal={isOpenModal}

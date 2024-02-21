@@ -29,7 +29,6 @@ export const getDomainBadges = async (
     data?.badges?.map((badge: SerializedCryptoWalletBadge) => {
       return {
         ...badge,
-        active: true,
         expired: false,
       };
     }) || [];

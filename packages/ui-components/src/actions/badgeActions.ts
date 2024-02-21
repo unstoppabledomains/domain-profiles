@@ -3,7 +3,10 @@ import QueryString from 'qs';
 import config from '@unstoppabledomains/config';
 
 import {fetchApi} from '../lib/fetchApi';
-import type {SerializedBadgeInfo} from '../lib/types/badge';
+import type {
+  SerializedBadgeInfo,
+  SerializedCryptoWalletBadge,
+} from '../lib/types/badge';
 import type {SerializedDomainRank} from '../lib/types/domain';
 
 export const getBadge = async (
@@ -41,4 +44,56 @@ export const getSponsorRankings = async (
       host: config.PROFILE.HOST_URL,
     },
   );
+};
+
+export const refreshUserBadges = async (
+  address: string,
+  domain: string,
+  auth: {
+    expires: string;
+    signature: string;
+  },
+): Promise<SerializedCryptoWalletBadge[]> => {
+  return await fetchApi(`/user/${address}/badges`, {
+    method: 'POST',
+    mode: 'cors',
+    host: config.PROFILE.HOST_URL,
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'x-auth-domain': domain,
+      'x-auth-expires': auth.expires,
+      'x-auth-signature': auth.signature,
+    },
+    body: JSON.stringify([]),
+  });
+};
+
+export const updateUserBadges = async (
+  address: string,
+  domain: string,
+  badges: SerializedCryptoWalletBadge[],
+  auth: {
+    expires: string;
+    signature: string;
+  },
+): Promise<SerializedCryptoWalletBadge[]> => {
+  return await fetchApi(`/user/${address}/badges`, {
+    method: 'POST',
+    mode: 'cors',
+    host: config.PROFILE.HOST_URL,
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'x-auth-domain': domain,
+      'x-auth-expires': auth.expires,
+      'x-auth-signature': auth.signature,
+    },
+    body: JSON.stringify(
+      badges.map(b => ({
+        code: b.code,
+        active: b.active,
+      })),
+    ),
+  });
 };

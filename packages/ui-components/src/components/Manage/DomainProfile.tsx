@@ -18,6 +18,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {useDomainConfig} from '../../hooks';
 import type {SerializedUserDomainProfileData} from '../../lib';
 import {isExternalDomain, useTranslationContext} from '../../lib';
+import {Badges as BadgesTab} from './Tabs/Badges';
 import {Crypto as CryptoTab} from './Tabs/Crypto';
 import {Email as EmailTab} from './Tabs/Email';
 import {ListForSale as ListForSaleTab} from './Tabs/ListForSale';
@@ -93,6 +94,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
   const [tabUnreadDot, setTabUnreadDot] = useState<
     Record<DomainProfileTabType, boolean>
   >({
+    badges: false,
     profile: false,
     crypto: false,
     reverse: false,
@@ -177,12 +179,12 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   <StyledTabBadge
                     color="primary"
                     variant="dot"
-                    invisible={!tabUnreadDot[DomainProfileTabType.Email]}
+                    invisible={!tabUnreadDot[DomainProfileTabType.Badges]}
                   >
-                    <Box className={classes.tabLabel}>{t('manage.email')}</Box>
+                    <Box className={classes.tabLabel}>{t('manage.badges')}</Box>
                   </StyledTabBadge>
                 }
-                value={DomainProfileTabType.Email}
+                value={DomainProfileTabType.Badges}
               />
               <Tab
                 label={
@@ -197,6 +199,18 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   </StyledTabBadge>
                 }
                 value={DomainProfileTabType.TokenGallery}
+              />
+              <Tab
+                label={
+                  <StyledTabBadge
+                    color="primary"
+                    variant="dot"
+                    invisible={!tabUnreadDot[DomainProfileTabType.Email]}
+                  >
+                    <Box className={classes.tabLabel}>{t('manage.email')}</Box>
+                  </StyledTabBadge>
+                }
+                value={DomainProfileTabType.Email}
               />
               <Tab
                 label={
@@ -220,6 +234,12 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
           className={cx(classes.tabContentItem, classes.tabContainer)}
         >
           <ProfileTab address={address} domain={domain} onUpdate={onUpdate} />
+        </TabPanel>
+        <TabPanel
+          value={DomainProfileTabType.Badges}
+          className={cx(classes.tabContentItem, classes.tabContainer)}
+        >
+          <BadgesTab address={address} domain={domain} onUpdate={onUpdate} />
         </TabPanel>
         <TabPanel
           value={DomainProfileTabType.Email}
@@ -280,6 +300,7 @@ export type DomainProfileProps = {
 };
 
 export enum DomainProfileTabType {
+  Badges = 'badges',
   Crypto = 'crypto',
   Email = 'email',
   ListForSale = 'listForSale',

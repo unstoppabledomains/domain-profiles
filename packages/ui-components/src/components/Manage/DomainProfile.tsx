@@ -25,6 +25,7 @@ import {ListForSale as ListForSaleTab} from './Tabs/ListForSale';
 import {Profile as ProfileTab} from './Tabs/Profile';
 import {Reverse as ReverseTab} from './Tabs/Reverse';
 import {TokenGallery as TokenGalleryTab} from './Tabs/TokenGallery';
+import {Website as WebsiteTab} from './Tabs/Website';
 
 const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
   container: {
@@ -101,6 +102,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
     email: false,
     tokenGallery: false,
     listForSale: false,
+    website: false,
   });
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
@@ -173,6 +175,20 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                 }
                 disabled={isExternalDomain(domain)}
                 value={DomainProfileTabType.Reverse}
+              />
+              <Tab
+                label={
+                  <StyledTabBadge
+                    color="primary"
+                    variant="dot"
+                    invisible={!tabUnreadDot[DomainProfileTabType.Website]}
+                  >
+                    <Box className={classes.tabLabel}>
+                      {t('manage.web3Website')}
+                    </Box>
+                  </StyledTabBadge>
+                }
+                value={DomainProfileTabType.Website}
               />
               <Tab
                 label={
@@ -278,6 +294,12 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
           />
         </TabPanel>
         <TabPanel
+          value={DomainProfileTabType.Website}
+          className={cx(classes.tabContentItem, classes.tabContainer)}
+        >
+          <WebsiteTab domain={domain} address={address} />
+        </TabPanel>
+        <TabPanel
           value={DomainProfileTabType.Reverse}
           className={cx(classes.tabContentItem, classes.tabContainer)}
         >
@@ -307,4 +329,5 @@ export enum DomainProfileTabType {
   Profile = 'profile',
   Reverse = 'reverse',
   TokenGallery = 'tokenGallery',
+  Website = 'website',
 }

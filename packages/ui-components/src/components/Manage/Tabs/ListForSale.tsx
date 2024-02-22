@@ -20,6 +20,7 @@ import {DomainProfileTabType} from '../DomainProfile';
 import BulkUpdateLoadingButton from '../common/BulkUpdateLoadingButton';
 import ManageInput from '../common/ManageInput';
 import {TabHeader} from '../common/TabHeader';
+import type {ManageTabProps} from '../common/types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -40,9 +41,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   infoContainer: {
     marginBottom: theme.spacing(3),
   },
-  button: {
-    marginTop: theme.spacing(4),
-  },
   icon: {
     color: theme.palette.neutralShades[600],
     marginRight: theme.spacing(2),
@@ -57,10 +55,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const ListForSale: React.FC<ListForSale> = ({
+export const ListForSale: React.FC<ManageTabProps> = ({
   address,
   domain,
   onUpdate,
+  setButtonComponent,
 }) => {
   const {classes} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
@@ -78,8 +77,36 @@ export const ListForSale: React.FC<ListForSale> = ({
     useState<SerializedUserDomainProfileData>();
 
   useEffect(() => {
+    setButtonComponent(<></>);
     setFireRequest(true);
   }, []);
+
+  useEffect(() => {
+    if (!isLoaded) {
+      return;
+    }
+    setButtonComponent(
+      <BulkUpdateLoadingButton
+        address={address}
+        count={updatedCount}
+        isBulkUpdate={isBulkUpdate}
+        setIsBulkUpdate={setIsBulkUpdate}
+        variant="contained"
+        onClick={handleSave}
+        loading={isSaving}
+        disabled={!dirtyFlag}
+        errorMessage={updateErrorMessage}
+      />,
+    );
+  }, [
+    address,
+    updatedCount,
+    isBulkUpdate,
+    isSaving,
+    dirtyFlag,
+    updateErrorMessage,
+    isLoaded,
+  ]);
 
   // handleProfileData fired once the ProfileManager has obtained a primary domain
   // signature and expiration time from the user.
@@ -225,18 +252,6 @@ export const ListForSale: React.FC<ListForSale> = ({
               />
             </FormGroup>
           </Box>
-          <BulkUpdateLoadingButton
-            address={address}
-            count={updatedCount}
-            isBulkUpdate={isBulkUpdate}
-            setIsBulkUpdate={setIsBulkUpdate}
-            variant="contained"
-            onClick={handleSave}
-            loading={isSaving}
-            className={classes.button}
-            disabled={!dirtyFlag}
-            errorMessage={updateErrorMessage}
-          />
         </>
       ) : (
         <Box display="flex" justifyContent="center">
@@ -253,13 +268,4 @@ export const ListForSale: React.FC<ListForSale> = ({
       />
     </Box>
   );
-};
-
-export type ListForSale = {
-  address: string;
-  domain: string;
-  onUpdate(
-    tab: DomainProfileTabType,
-    data?: SerializedUserDomainProfileData,
-  ): void;
 };

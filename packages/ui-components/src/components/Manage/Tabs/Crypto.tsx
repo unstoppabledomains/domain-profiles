@@ -36,6 +36,7 @@ import {
   getMultichainAddressRecords,
   getSingleChainAddressRecords,
 } from '../common/currencyRecords';
+import type {ManageTabProps} from '../common/types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -62,12 +63,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   pendingTxIcon: {
     color: theme.palette.white,
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing(2),
     width: '50px',
     height: '50px',
   },
   button: {
-    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
   },
   icon: {
     color: theme.palette.neutralShades[600],
@@ -80,7 +81,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
+export const Crypto: React.FC<CryptoProps> = ({
+  address,
+  domain,
+  setButtonComponent,
+  filterFn,
+}) => {
   const {classes} = useStyles();
   const {web3Deps, setWeb3Deps} = useWeb3Context();
   const {data: featureFlags} = useFeatureFlags(false, domain);
@@ -106,6 +112,39 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
     // retrieve records and determine if there are pending transactions
     void loadRecords();
   }, [resolverKeysLoading]);
+
+  useEffect(() => {
+    setButtonComponent(<></>);
+  }, []);
+
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+    setButtonComponent(
+      <Box display="flex" flexDirection="column" width="100%">
+        <Button
+          variant="outlined"
+          onClick={handleOpenModal}
+          disabled={isPendingTx}
+          className={classes.button}
+          startIcon={<AddIcon />}
+          fullWidth
+        >
+          {t('manage.addCurrency')}
+        </Button>
+        <LoadingButton
+          variant="contained"
+          onClick={handleSave}
+          loading={isSaving}
+          disabled={isPendingTx}
+          fullWidth
+        >
+          {t('manage.startRecordUpdate')}
+        </LoadingButton>
+      </Box>,
+    );
+  }, [isPendingTx, isSaving, isLoading]);
 
   const loadRecords = async () => {
     const data = await getProfileData(domain, [
@@ -362,26 +401,7 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
             {renderSingleChainAddresses()}
             {renderMultiChainAddresses()}
           </Box>
-          <Button
-            variant="outlined"
-            onClick={handleOpenModal}
-            disabled={isPendingTx}
-            className={classes.button}
-            startIcon={<AddIcon />}
-            fullWidth
-          >
-            {t('manage.addCurrency')}
-          </Button>
-          <LoadingButton
-            variant="contained"
-            onClick={handleSave}
-            loading={isSaving}
-            disabled={isPendingTx}
-            className={classes.button}
-            fullWidth
-          >
-            {t('manage.startRecordUpdate')}
-          </LoadingButton>
+
           <ProfileManager
             domain={domain}
             ownerAddress={address}
@@ -405,8 +425,6 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
   );
 };
 
-export type CryptoProps = {
-  address: string;
-  domain: string;
+export type CryptoProps = ManageTabProps & {
   filterFn?: (k: string) => boolean;
 };

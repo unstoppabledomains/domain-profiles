@@ -28,6 +28,7 @@ import {DomainFieldTypes, useTranslationContext} from '../../../lib';
 import {notifyEvent} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import {TabHeader} from '../common/TabHeader';
+import type {ManageTabProps} from '../common/types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -77,16 +78,17 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   pendingTxIcon: {
     color: theme.palette.white,
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing(2),
     width: '50px',
     height: '50px',
   },
-  button: {
-    marginTop: theme.spacing(2),
-  },
 }));
 
-export const Reverse: React.FC<ReverseProps> = ({address, domain}) => {
+export const Reverse: React.FC<ManageTabProps> = ({
+  address,
+  domain,
+  setButtonComponent,
+}) => {
   const {classes} = useStyles();
   const {web3Deps, setWeb3Deps} = useWeb3Context();
   const {data: featureFlags} = useFeatureFlags(false, domain);
@@ -100,8 +102,30 @@ export const Reverse: React.FC<ReverseProps> = ({address, domain}) => {
 
   useEffect(() => {
     // retrieve records and determine if there are pending transactions
+    setButtonComponent(<></>);
     void loadRecords();
   }, []);
+
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+    setButtonComponent(
+      isReverse ? (
+        <></>
+      ) : (
+        <LoadingButton
+          variant="contained"
+          onClick={handleSave}
+          loading={isSaving}
+          disabled={isPendingTx || isReverse}
+          fullWidth
+        >
+          {t('manage.startRecordUpdate')}
+        </LoadingButton>
+      ),
+    );
+  }, [isSaving, isPendingTx, isReverse, isLoading]);
 
   const loadRecords = async () => {
     const [profileData, resolutionData] = await Promise.all([
@@ -298,18 +322,7 @@ export const Reverse: React.FC<ReverseProps> = ({address, domain}) => {
               </Box>
             )}
           </Box>
-          {!isReverse && (
-            <LoadingButton
-              variant="contained"
-              onClick={handleSave}
-              loading={isSaving}
-              disabled={isPendingTx || isReverse}
-              className={classes.button}
-              fullWidth
-            >
-              {t('manage.startRecordUpdate')}
-            </LoadingButton>
-          )}
+
           <ProfileManager
             domain={domain}
             ownerAddress={address}
@@ -323,9 +336,4 @@ export const Reverse: React.FC<ReverseProps> = ({address, domain}) => {
       )}
     </Box>
   );
-};
-
-export type ReverseProps = {
-  address: string;
-  domain: string;
 };

@@ -1,5 +1,6 @@
 import CloudDoneOutlinedIcon from '@mui/icons-material/CloudDoneOutlined';
 import CloudOffOutlinedIcon from '@mui/icons-material/CloudOffOutlined';
+import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import UpdateOutlinedIcon from '@mui/icons-material/UpdateOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -7,6 +8,7 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import * as isIPFS from 'is-ipfs';
 import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -24,6 +26,7 @@ import {notifyEvent} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import ManageInput from '../common/ManageInput';
 import {TabHeader} from '../common/TabHeader';
+import type {ManageTabProps} from '../common/types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -73,7 +76,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   pendingTxIcon: {
     color: theme.palette.white,
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing(2),
     width: '50px',
     height: '50px',
   },
@@ -85,12 +88,17 @@ const useStyles = makeStyles()((theme: Theme) => ({
 // the record key for an IPFS website
 const ipfsHashKey = 'ipfs.html.value';
 
-export const Website: React.FC<WebsiteProps> = ({address, domain}) => {
+export const Website: React.FC<ManageTabProps> = ({
+  address,
+  domain,
+  setButtonComponent,
+}) => {
   const {classes} = useStyles();
   const {web3Deps, setWeb3Deps} = useWeb3Context();
   const [ipfsHash, setIpfsHash] = useState<string>();
   const [saveClicked, setSaveClicked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isPendingTx, setIsPendingTx] = useState<boolean>();
   const [isInvalidHash, setIsInvalidHash] = useState(false);
@@ -99,8 +107,40 @@ export const Website: React.FC<WebsiteProps> = ({address, domain}) => {
 
   useEffect(() => {
     // retrieve records and determine if there are pending transactions
+    setButtonComponent(<></>);
     void loadRecords();
   }, []);
+
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+    setButtonComponent(
+      <LoadingButton
+        variant="contained"
+        onClick={handleSave}
+        loading={isSaving}
+        disabled={isPendingTx || isInvalidHash || !isDirty}
+        className={classes.button}
+        color={isLaunched && !ipfsHash ? 'error' : 'primary'}
+        fullWidth
+      >
+        {isLaunched
+          ? ipfsHash
+            ? t('manage.updateWebsite')
+            : t('manage.removeWebsite')
+          : t('manage.launchWebsite')}
+      </LoadingButton>,
+    );
+  }, [
+    isLoading,
+    isSaving,
+    isPendingTx,
+    isInvalidHash,
+    isDirty,
+    isLaunched,
+    ipfsHash,
+  ]);
 
   const loadRecords = async () => {
     const [profileData] = await Promise.all([
@@ -120,13 +160,22 @@ export const Website: React.FC<WebsiteProps> = ({address, domain}) => {
   };
 
   const handleSave = () => {
+    // submit changes
     setSaveClicked(true);
     setIsSaving(true);
   };
 
   const handleInputChange = (id: string, value: string) => {
+    setIsDirty(true);
     setIpfsHash(value);
-    setIsInvalidHash(false);
+
+    // validate the IPFS format
+    const isValid =
+      value.length === 0 ||
+      isIPFS.multihash(value) ||
+      isIPFS.cid(value) ||
+      isIPFS.base32cid(value);
+    setIsInvalidHash(!isValid);
   };
 
   const handleRecordUpdate = async (
@@ -261,7 +310,7 @@ export const Website: React.FC<WebsiteProps> = ({address, domain}) => {
             </Box>
           )}
           <Box className={classes.contentContainer}>
-            {ipfsHash ? (
+            {ipfsHash && isLaunched ? (
               <Box>
                 <CloudDoneOutlinedIcon className={classes.iconConfigured} />
                 <Typography variant="h5">
@@ -277,7 +326,13 @@ export const Website: React.FC<WebsiteProps> = ({address, domain}) => {
               </Box>
             ) : (
               <Box>
-                <CloudOffOutlinedIcon className={classes.iconNotConfigured} />
+                {isLaunched ? (
+                  <CloudOffOutlinedIcon className={classes.iconNotConfigured} />
+                ) : (
+                  <CloudUploadOutlinedIcon
+                    className={classes.iconNotConfigured}
+                  />
+                )}
                 <Typography variant="h5">
                   {isLaunched
                     ? t('manage.web3WebsiteRemove')
@@ -307,21 +362,6 @@ export const Website: React.FC<WebsiteProps> = ({address, domain}) => {
             stacked={false}
             disabled={isPendingTx}
           />
-          <LoadingButton
-            variant="contained"
-            onClick={handleSave}
-            loading={isSaving}
-            disabled={isPendingTx}
-            className={classes.button}
-            color={isLaunched && !ipfsHash ? 'error' : 'primary'}
-            fullWidth
-          >
-            {isLaunched
-              ? ipfsHash
-                ? t('manage.updateWebsite')
-                : t('manage.removeWebsite')
-              : t('manage.launchWebsite')}
-          </LoadingButton>
           <ProfileManager
             domain={domain}
             ownerAddress={address}
@@ -335,9 +375,4 @@ export const Website: React.FC<WebsiteProps> = ({address, domain}) => {
       )}
     </Box>
   );
-};
-
-export type WebsiteProps = {
-  address: string;
-  domain: string;
 };

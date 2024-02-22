@@ -6,6 +6,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
@@ -20,6 +21,7 @@ import {ProfileManager} from '../../Wallet/ProfileManager';
 import BulkUpdateLoadingButton from '../common/BulkUpdateLoadingButton';
 import ManageInput from '../common/ManageInput';
 import {TabHeader} from '../common/TabHeader';
+import type {ManageTabProps} from '../common/types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -40,9 +42,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   infoContainer: {
     marginBottom: theme.spacing(3),
   },
-  button: {
-    marginTop: theme.spacing(4),
-  },
   mailIcon: {
     color: theme.palette.neutralShades[600],
     marginRight: theme.spacing(2),
@@ -57,7 +56,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const Email: React.FC<EmailProps> = ({address, domain}) => {
+export const Email: React.FC<ManageTabProps> = ({
+  address,
+  domain,
+  setButtonComponent,
+}) => {
   const {classes} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
   const [t] = useTranslationContext();
@@ -74,8 +77,36 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
     useState<SerializedUserDomainProfileData>();
 
   useEffect(() => {
+    setButtonComponent(<></>);
     setFireRequest(true);
   }, []);
+
+  useEffect(() => {
+    if (!isLoaded) {
+      return;
+    }
+    setButtonComponent(
+      <BulkUpdateLoadingButton
+        address={address}
+        count={updatedCount}
+        isBulkUpdate={isBulkUpdate}
+        setIsBulkUpdate={setIsBulkUpdate}
+        variant="contained"
+        onClick={handleSave}
+        loading={isSaving}
+        disabled={!dirtyFlag}
+        errorMessage={updateErrorMessage}
+      />,
+    );
+  }, [
+    address,
+    updatedCount,
+    isBulkUpdate,
+    isSaving,
+    dirtyFlag,
+    updateErrorMessage,
+    isLoaded,
+  ]);
 
   // handleProfileData fired once the ProfileManager has obtained a primary domain
   // signature and expiration time from the user.
@@ -228,30 +259,20 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
                       variant="caption"
                       className={classes.enableDescription}
                     >
-                      {t('manage.enableEmailForAddressDescription', {
-                        privateAddress: userProfile?.profile?.privateEmail
-                          ? userProfile.profile.privateEmail
-                          : t('manage.yourPrivateEmail'),
-                        udMeAddress: `${domain}@${config.MESSAGING.EMAIL_DOMAIN}`,
-                      })}
+                      <Markdown>
+                        {t('manage.enableEmailForAddressDescription', {
+                          privateAddress: userProfile?.profile?.privateEmail
+                            ? userProfile.profile.privateEmail
+                            : t('manage.yourPrivateEmail'),
+                          udMeAddress: `${domain}@${config.MESSAGING.EMAIL_DOMAIN}`,
+                        })}
+                      </Markdown>
                     </Typography>
                   </Box>
                 }
               />
             </FormGroup>
           </Box>
-          <BulkUpdateLoadingButton
-            address={address}
-            count={updatedCount}
-            isBulkUpdate={isBulkUpdate}
-            setIsBulkUpdate={setIsBulkUpdate}
-            variant="contained"
-            onClick={handleSave}
-            loading={isSaving}
-            className={classes.button}
-            disabled={!dirtyFlag}
-            errorMessage={updateErrorMessage}
-          />
         </>
       ) : (
         <Box display="flex" justifyContent="center">
@@ -268,9 +289,4 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
       />
     </Box>
   );
-};
-
-export type EmailProps = {
-  address: string;
-  domain: string;
 };

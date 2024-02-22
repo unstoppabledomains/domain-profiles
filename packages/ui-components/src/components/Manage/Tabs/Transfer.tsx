@@ -16,7 +16,7 @@ import {getProfileData} from '../../../actions';
 import {
   confirmRecordUpdate,
   getRegistrationMessage,
-  initiatePrimaryDomain,
+  initiateTransferDomain,
   registerWallet,
 } from '../../../actions/pav3Actions';
 import {useWeb3Context} from '../../../hooks';
@@ -89,6 +89,7 @@ export const Transfer: React.FC<ManageTabProps> = ({
   const [recipientAddress, setRecipientAddress] = useState<string>();
   const [invalidAddress, setInvalidAddress] = useState(false);
   const [checkboxMap, setCheckboxMap] = useState<Record<string, boolean>>({});
+  const [errorMessage, setErrorMessage] = useState<string>();
   const [t] = useTranslationContext();
 
   useEffect(() => {
@@ -107,6 +108,7 @@ export const Transfer: React.FC<ManageTabProps> = ({
         onClick={handleSave}
         loading={isSaving}
         disabled={
+          errorMessage !== undefined ||
           invalidAddress ||
           isPendingTx ||
           !isDirty ||
@@ -116,10 +118,18 @@ export const Transfer: React.FC<ManageTabProps> = ({
         }
         fullWidth
       >
-        {t('manage.startTransfer')}
+        {errorMessage || t('manage.startTransfer')}
       </LoadingButton>,
     );
-  }, [isSaving, invalidAddress, isPendingTx, isDirty, isLoading, checkboxMap]);
+  }, [
+    isSaving,
+    invalidAddress,
+    isPendingTx,
+    isDirty,
+    isLoading,
+    checkboxMap,
+    errorMessage,
+  ]);
 
   const loadRecords = async () => {
     const [profileData] = await Promise.all([
@@ -160,11 +170,23 @@ export const Transfer: React.FC<ManageTabProps> = ({
     expiry: string,
   ): Promise<void> => {
     if (await validateWalletRegistration(signature, expiry)) {
+      // validate recipient address
+      if (!recipientAddress) {
+        setInvalidAddress(true);
+        return;
+      }
+
       // initiate a record update
-      const updateRequest = await initiatePrimaryDomain(address, domain, {
-        expires: expiry,
-        signature,
-      });
+      const updateRequest = await initiateTransferDomain(
+        address,
+        domain,
+        recipientAddress,
+        checkboxMap['4'] || false,
+        {
+          expires: expiry,
+          signature,
+        },
+      );
       if (updateRequest) {
         // retrieve confirmation signature
         const txSignature = await getSignature(updateRequest.message);
@@ -186,8 +208,12 @@ export const Transfer: React.FC<ManageTabProps> = ({
             setIsSaving(false);
             setIsPendingTx(true);
             return;
+          } else {
+            setErrorMessage('manage.recordSignatureError');
           }
         }
+      } else {
+        setErrorMessage(t('manage.transferRequestError'));
       }
     }
 

@@ -19,16 +19,14 @@ import {
   updateUserBadges,
 } from '../../../actions';
 import {useWeb3Context} from '../../../hooks';
-import type {
-  SerializedCryptoWalletBadge,
-  SerializedUserDomainProfileData,
-} from '../../../lib';
+import type {SerializedCryptoWalletBadge} from '../../../lib';
 import {useTranslationContext} from '../../../lib';
 import {notifyEvent} from '../../../lib/error';
 import {Badge} from '../../Badges';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import {DomainProfileTabType} from '../DomainProfile';
 import {TabHeader} from '../common/TabHeader';
+import type {ManageTabProps} from '../common/types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -40,6 +38,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   description: {
     color: theme.palette.neutralShades[600],
+    marginBottom: theme.spacing(1),
   },
   badgeContainer: {
     display: 'flex',
@@ -49,7 +48,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const Badges: React.FC<BadgesProps> = ({address, domain, onUpdate}) => {
+export const Badges: React.FC<ManageTabProps> = ({
+  address,
+  domain,
+  onUpdate,
+  setButtonComponent,
+}) => {
   const {classes} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
   const [t] = useTranslationContext();
@@ -63,8 +67,37 @@ export const Badges: React.FC<BadgesProps> = ({address, domain, onUpdate}) => {
   const [updateErrorMessage, setUpdateErrorMessage] = useState<string>();
 
   useEffect(() => {
+    setButtonComponent(<></>);
     void loadBadges();
   }, []);
+
+  useEffect(() => {
+    if (!isLoaded) {
+      return;
+    }
+    setButtonComponent(
+      <LoadingButton
+        variant="contained"
+        onClick={handleRefreshClick}
+        loading={isRefreshing}
+        fullWidth
+        disabled={
+          updateErrorMessage !== undefined || refreshStatus !== undefined
+        }
+        startIcon={
+          updateErrorMessage ? (
+            <ErrorOutlineOutlinedIcon />
+          ) : refreshStatus ? (
+            <CheckIcon />
+          ) : (
+            <RefreshOutlinedIcon />
+          )
+        }
+      >
+        {updateErrorMessage || refreshStatus || t('profile.refreshBadges')}
+      </LoadingButton>,
+    );
+  }, [isRefreshing, updateErrorMessage, refreshStatus, isLoaded]);
 
   const loadBadges = async () => {
     // set page to loading state
@@ -162,102 +195,78 @@ export const Badges: React.FC<BadgesProps> = ({address, domain, onUpdate}) => {
         learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001215751-badges"
       />
       {isLoaded ? (
-        <>
-          <Box mt={1} mb={3} display="flex">
-            <LoadingButton
-              variant="contained"
-              onClick={handleRefreshClick}
-              loading={isRefreshing}
-              fullWidth
-              disabled={
-                updateErrorMessage !== undefined || refreshStatus !== undefined
-              }
-              startIcon={
-                updateErrorMessage ? (
-                  <ErrorOutlineOutlinedIcon />
-                ) : refreshStatus ? (
-                  <CheckIcon />
-                ) : (
-                  <RefreshOutlinedIcon />
-                )
-              }
-            >
-              {updateErrorMessage ||
-                refreshStatus ||
-                t('profile.refreshBadges')}
-            </LoadingButton>
-          </Box>
-          <Box display="flex" textAlign="center" justifyContent="center" mb={3}>
-            <Typography variant="body2" className={classes.description}>
-              {badges.length === 0
-                ? t('manage.badgesEmpty')
-                : t('manage.clickToChangeVisibility')}
-            </Typography>
-          </Box>
-          <Grid container spacing={2}>
-            {badges
-              .filter(badge => badge.active)
-              .map((badge, i) => (
-                <Grid
-                  item
-                  xs={3}
-                  sm={2}
-                  key={`badge-manage-${badge.configId}-${i}`}
-                  className={classes.badgeContainer}
-                  onClick={() => handleShowHide(badge)}
-                >
-                  <Badge
-                    domain={domain}
-                    {...badge}
-                    small
-                    usageEnabled={false}
-                    tooltipPlacement="top"
-                    profile={true}
-                    iconOnly={true}
-                    disablePopup={true}
-                    hidden={!badge.active}
-                    setWeb3Deps={setWeb3Deps}
-                    authWallet={address}
-                    authDomain={domain}
-                  />
-                </Grid>
-              ))}
-            {badges.filter(badge => !badge.active).length > 0 && (
-              <>
-                <Grid item xs={12}>
-                  <Divider>{t('profile.hidden')}</Divider>
-                </Grid>
-                {badges
-                  .filter(badge => !badge.active)
-                  .map((badge, i) => (
-                    <Grid
-                      item
-                      xs={3}
-                      sm={2}
-                      key={`badge-manage-${badge.configId}-${i}`}
-                      className={classes.badgeContainer}
-                      onClick={() => handleShowHide(badge)}
-                    >
-                      <Badge
-                        domain={domain}
-                        {...badge}
-                        small
-                        usageEnabled={false}
-                        tooltipPlacement="top"
-                        profile={true}
-                        iconOnly={true}
-                        disablePopup={true}
-                        hidden={!badge.active}
-                        setWeb3Deps={setWeb3Deps}
-                        authWallet={address}
-                        authDomain={domain}
-                      />
-                    </Grid>
-                  ))}
-              </>
-            )}
+        <Grid container spacing={2} mt={2}>
+          <Grid item xs={12}>
+            <Box display="flex" textAlign="center" justifyContent="center">
+              <Typography variant="body2" className={classes.description}>
+                {badges.length === 0
+                  ? t('manage.badgesEmpty')
+                  : t('manage.clickToChangeVisibility')}
+              </Typography>
+            </Box>
           </Grid>
-        </>
+          {badges
+            .filter(badge => badge.active)
+            .map((badge, i) => (
+              <Grid
+                item
+                xs={3}
+                sm={2}
+                key={`badge-manage-${badge.configId}-${i}`}
+                className={classes.badgeContainer}
+                onClick={() => handleShowHide(badge)}
+              >
+                <Badge
+                  domain={domain}
+                  {...badge}
+                  small
+                  usageEnabled={false}
+                  tooltipPlacement="top"
+                  profile={true}
+                  iconOnly={true}
+                  disablePopup={true}
+                  hidden={!badge.active}
+                  setWeb3Deps={setWeb3Deps}
+                  authWallet={address}
+                  authDomain={domain}
+                />
+              </Grid>
+            ))}
+          {badges.filter(badge => !badge.active).length > 0 && (
+            <>
+              <Grid item xs={12}>
+                <Divider>{t('profile.hidden')}</Divider>
+              </Grid>
+              {badges
+                .filter(badge => !badge.active)
+                .map((badge, i) => (
+                  <Grid
+                    item
+                    xs={3}
+                    sm={2}
+                    key={`badge-manage-${badge.configId}-${i}`}
+                    className={classes.badgeContainer}
+                    onClick={() => handleShowHide(badge)}
+                  >
+                    <Badge
+                      domain={domain}
+                      {...badge}
+                      small
+                      usageEnabled={false}
+                      tooltipPlacement="top"
+                      profile={true}
+                      iconOnly={true}
+                      disablePopup={true}
+                      hidden={!badge.active}
+                      setWeb3Deps={setWeb3Deps}
+                      authWallet={address}
+                      authDomain={domain}
+                    />
+                  </Grid>
+                ))}
+            </>
+          )}
+        </Grid>
       ) : (
         <Box display="flex" justifyContent="center">
           <CircularProgress />
@@ -273,13 +282,4 @@ export const Badges: React.FC<BadgesProps> = ({address, domain, onUpdate}) => {
       />
     </Box>
   );
-};
-
-export type BadgesProps = {
-  address: string;
-  domain: string;
-  onUpdate(
-    tab: DomainProfileTabType,
-    data?: SerializedUserDomainProfileData,
-  ): void;
 };

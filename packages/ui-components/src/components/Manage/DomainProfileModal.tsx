@@ -15,7 +15,7 @@ const MODAL_WIDTH = '550px';
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
-    minHeight: '100vh',
+    minHeight: `calc(100vh - ${theme.spacing(8)})`,
     maxWidth: `calc(${MODAL_WIDTH} - ${theme.spacing(5)})`,
     marginLeft: theme.spacing(3),
     marginRight: theme.spacing(3),

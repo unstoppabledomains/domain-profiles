@@ -34,6 +34,7 @@ import {ProfileManager} from '../../../Wallet/ProfileManager';
 import {DomainProfileTabType} from '../../DomainProfile';
 import BulkUpdateLoadingButton from '../../common/BulkUpdateLoadingButton';
 import ManageInput from '../../common/ManageInput';
+import type {ManageTabProps} from '../../common/types';
 import {Header} from './Header';
 import ManagePublicVisibility from './ManagePublicVisibility';
 
@@ -47,9 +48,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   divider: {
     marginTop: theme.spacing(2),
-  },
-  button: {
-    marginTop: theme.spacing(3),
   },
   textLimit: {
     fontSize: '0.8125rem',
@@ -90,10 +88,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const Profile: React.FC<ProfileProps> = ({
+export const Profile: React.FC<ManageTabProps> = ({
   address,
   domain,
   onUpdate,
+  setButtonComponent,
 }) => {
   const {classes} = useStyles();
   const {enqueueSnackbar} = useSnackbar();
@@ -130,8 +129,36 @@ export const Profile: React.FC<ProfileProps> = ({
   }>({data: null, file: null});
 
   useEffect(() => {
+    setButtonComponent(<></>);
     setFireRequest(true);
   }, []);
+
+  useEffect(() => {
+    if (!isLoaded) {
+      return;
+    }
+    setButtonComponent(
+      <BulkUpdateLoadingButton
+        address={address}
+        count={updatedCount}
+        isBulkUpdate={isBulkUpdate}
+        setIsBulkUpdate={setIsBulkUpdate}
+        variant="contained"
+        loading={isSaving}
+        onClick={handleSave}
+        disabled={!dirtyFlag}
+        errorMessage={updateErrorMessage}
+      />,
+    );
+  }, [
+    address,
+    updatedCount,
+    isBulkUpdate,
+    isSaving,
+    dirtyFlag,
+    updateErrorMessage,
+    isLoaded,
+  ]);
 
   useEffect(() => {
     Object.keys(publicVisibilityValues).map(k => {
@@ -555,18 +582,6 @@ export const Profile: React.FC<ProfileProps> = ({
             disableTextTrimming
             stacked={false}
           />
-          <BulkUpdateLoadingButton
-            address={address}
-            count={updatedCount}
-            isBulkUpdate={isBulkUpdate}
-            setIsBulkUpdate={setIsBulkUpdate}
-            variant="contained"
-            loading={isSaving}
-            onClick={handleSave}
-            className={classes.button}
-            disabled={!dirtyFlag}
-            errorMessage={updateErrorMessage}
-          />
         </>
       ) : (
         <Box display="flex" justifyContent="center">
@@ -583,13 +598,4 @@ export const Profile: React.FC<ProfileProps> = ({
       />
     </Box>
   );
-};
-
-export type ProfileProps = {
-  address: string;
-  domain: string;
-  onUpdate(
-    tab: DomainProfileTabType,
-    data?: SerializedUserDomainProfileData,
-  ): void;
 };

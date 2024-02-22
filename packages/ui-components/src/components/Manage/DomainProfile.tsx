@@ -25,23 +25,30 @@ import {ListForSale as ListForSaleTab} from './Tabs/ListForSale';
 import {Profile as ProfileTab} from './Tabs/Profile';
 import {Reverse as ReverseTab} from './Tabs/Reverse';
 import {TokenGallery as TokenGalleryTab} from './Tabs/TokenGallery';
+import {Website as WebsiteTab} from './Tabs/Website';
 
 const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
+    justifyContent: 'space-between',
+  },
+  upperContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    overflowY: 'auto',
+    overflowX: 'hidden',
+  },
+  lowerContainer: {
+    display: 'flex',
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(3),
   },
   actionContainer: {
     position: 'absolute',
     top: theme.spacing(1),
     right: theme.spacing(-1),
     zIndex: 2000000,
-  },
-  tabContainer: {
-    width,
-    [theme.breakpoints.down('sm')]: {
-      width: `calc(100vw - ${theme.spacing(6)})`,
-    },
   },
   tabHeaderContainer: {
     backgroundColor: theme.palette.white,
@@ -51,6 +58,12 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
     paddingTop: theme.spacing(3),
     marginLeft: theme.spacing(-0.5),
     marginRight: theme.spacing(-0.5),
+  },
+  tabWidth: {
+    width,
+    [theme.breakpoints.down('sm')]: {
+      width: `calc(100vw - ${theme.spacing(6)})`,
+    },
   },
   tabList: {
     overflow: 'hidden',
@@ -90,6 +103,9 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
 }) => {
   const {classes, cx} = useStyles({width});
   const [t] = useTranslationContext();
+  const [buttonComponent, setButtonComponent] = useState<React.ReactNode>(
+    <></>,
+  );
   const {configTab: tabValue, setConfigTab: setTabValue} = useDomainConfig();
   const [tabUnreadDot, setTabUnreadDot] = useState<
     Record<DomainProfileTabType, boolean>
@@ -101,6 +117,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
     email: false,
     tokenGallery: false,
     listForSale: false,
+    website: false,
   });
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
@@ -115,174 +132,236 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
   return (
     <Box className={classes.container}>
       <TabContext value={tabValue as DomainProfileTabType}>
-        <Box className={classes.tabHeaderContainer}>
-          {onClose && (
-            <Box className={classes.actionContainer}>
-              <IconButton onClick={onClose}>
-                <CloseIcon fontSize="small" />
-              </IconButton>
+        <Box className={classes.upperContainer}>
+          <Box className={classes.tabHeaderContainer}>
+            {onClose && (
+              <Box className={classes.actionContainer}>
+                <IconButton onClick={onClose}>
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            )}
+            <Typography ml={1} variant="h4">
+              {domain}
+            </Typography>
+            <Typography ml={1} variant="body2" className={classes.ownerAddress}>
+              {t('manage.ownerAddress', {address: truncateEthAddress(address)})}
+            </Typography>
+            <Box className={cx(classes.tabList, classes.tabWidth)}>
+              <TabList onChange={handleTabChange} variant="scrollable">
+                <Tab
+                  label={
+                    <StyledTabBadge
+                      color="primary"
+                      variant="dot"
+                      invisible={!tabUnreadDot[DomainProfileTabType.Profile]}
+                    >
+                      <Box className={classes.tabLabel}>
+                        {t('manage.profile')}
+                      </Box>
+                    </StyledTabBadge>
+                  }
+                  value={DomainProfileTabType.Profile}
+                />
+                <Tab
+                  label={
+                    <StyledTabBadge
+                      color="primary"
+                      variant="dot"
+                      invisible={!tabUnreadDot[DomainProfileTabType.Crypto]}
+                    >
+                      <Box className={classes.tabLabel}>
+                        {' '}
+                        {t('manage.crypto')}
+                      </Box>
+                    </StyledTabBadge>
+                  }
+                  disabled={isExternalDomain(domain)}
+                  value={DomainProfileTabType.Crypto}
+                />
+                <Tab
+                  label={
+                    <StyledTabBadge
+                      color="primary"
+                      variant="dot"
+                      invisible={!tabUnreadDot[DomainProfileTabType.Reverse]}
+                    >
+                      <Box className={classes.tabLabel}>
+                        {t('manage.reverse')}
+                      </Box>
+                    </StyledTabBadge>
+                  }
+                  disabled={isExternalDomain(domain)}
+                  value={DomainProfileTabType.Reverse}
+                />
+                <Tab
+                  label={
+                    <StyledTabBadge
+                      color="primary"
+                      variant="dot"
+                      invisible={!tabUnreadDot[DomainProfileTabType.Website]}
+                    >
+                      <Box className={classes.tabLabel}>
+                        {t('manage.web3Website')}
+                      </Box>
+                    </StyledTabBadge>
+                  }
+                  value={DomainProfileTabType.Website}
+                />
+                <Tab
+                  label={
+                    <StyledTabBadge
+                      color="primary"
+                      variant="dot"
+                      invisible={!tabUnreadDot[DomainProfileTabType.Badges]}
+                    >
+                      <Box className={classes.tabLabel}>
+                        {t('manage.badges')}
+                      </Box>
+                    </StyledTabBadge>
+                  }
+                  value={DomainProfileTabType.Badges}
+                />
+                <Tab
+                  label={
+                    <StyledTabBadge
+                      color="primary"
+                      variant="dot"
+                      invisible={
+                        !tabUnreadDot[DomainProfileTabType.TokenGallery]
+                      }
+                    >
+                      <Box className={classes.tabLabel}>
+                        {t('manage.tokenGallery')}
+                      </Box>
+                    </StyledTabBadge>
+                  }
+                  value={DomainProfileTabType.TokenGallery}
+                />
+                <Tab
+                  label={
+                    <StyledTabBadge
+                      color="primary"
+                      variant="dot"
+                      invisible={!tabUnreadDot[DomainProfileTabType.Email]}
+                    >
+                      <Box className={classes.tabLabel}>
+                        {t('manage.email')}
+                      </Box>
+                    </StyledTabBadge>
+                  }
+                  value={DomainProfileTabType.Email}
+                />
+                <Tab
+                  label={
+                    <StyledTabBadge
+                      color="primary"
+                      variant="dot"
+                      invisible={
+                        !tabUnreadDot[DomainProfileTabType.ListForSale]
+                      }
+                    >
+                      <Box className={classes.tabLabel}>
+                        {t('manage.listForSale')}
+                      </Box>
+                    </StyledTabBadge>
+                  }
+                  value={DomainProfileTabType.ListForSale}
+                />
+              </TabList>
             </Box>
-          )}
-          <Typography variant="h4">{domain}</Typography>
-          <Typography variant="body2" className={classes.ownerAddress}>
-            {t('manage.ownerAddress', {address: truncateEthAddress(address)})}
-          </Typography>
-          <Box className={cx(classes.tabList, classes.tabContainer)}>
-            <TabList onChange={handleTabChange} variant="scrollable">
-              <Tab
-                label={
-                  <StyledTabBadge
-                    color="primary"
-                    variant="dot"
-                    invisible={!tabUnreadDot[DomainProfileTabType.Profile]}
-                  >
-                    <Box className={classes.tabLabel}>
-                      {t('manage.profile')}
-                    </Box>
-                  </StyledTabBadge>
-                }
-                value={DomainProfileTabType.Profile}
-              />
-              <Tab
-                label={
-                  <StyledTabBadge
-                    color="primary"
-                    variant="dot"
-                    invisible={!tabUnreadDot[DomainProfileTabType.Crypto]}
-                  >
-                    <Box className={classes.tabLabel}>
-                      {' '}
-                      {t('manage.crypto')}
-                    </Box>
-                  </StyledTabBadge>
-                }
-                disabled={isExternalDomain(domain)}
-                value={DomainProfileTabType.Crypto}
-              />
-              <Tab
-                label={
-                  <StyledTabBadge
-                    color="primary"
-                    variant="dot"
-                    invisible={!tabUnreadDot[DomainProfileTabType.Reverse]}
-                  >
-                    <Box className={classes.tabLabel}>
-                      {t('manage.reverse')}
-                    </Box>
-                  </StyledTabBadge>
-                }
-                disabled={isExternalDomain(domain)}
-                value={DomainProfileTabType.Reverse}
-              />
-              <Tab
-                label={
-                  <StyledTabBadge
-                    color="primary"
-                    variant="dot"
-                    invisible={!tabUnreadDot[DomainProfileTabType.Badges]}
-                  >
-                    <Box className={classes.tabLabel}>{t('manage.badges')}</Box>
-                  </StyledTabBadge>
-                }
-                value={DomainProfileTabType.Badges}
-              />
-              <Tab
-                label={
-                  <StyledTabBadge
-                    color="primary"
-                    variant="dot"
-                    invisible={!tabUnreadDot[DomainProfileTabType.TokenGallery]}
-                  >
-                    <Box className={classes.tabLabel}>
-                      {t('manage.tokenGallery')}
-                    </Box>
-                  </StyledTabBadge>
-                }
-                value={DomainProfileTabType.TokenGallery}
-              />
-              <Tab
-                label={
-                  <StyledTabBadge
-                    color="primary"
-                    variant="dot"
-                    invisible={!tabUnreadDot[DomainProfileTabType.Email]}
-                  >
-                    <Box className={classes.tabLabel}>{t('manage.email')}</Box>
-                  </StyledTabBadge>
-                }
-                value={DomainProfileTabType.Email}
-              />
-              <Tab
-                label={
-                  <StyledTabBadge
-                    color="primary"
-                    variant="dot"
-                    invisible={!tabUnreadDot[DomainProfileTabType.ListForSale]}
-                  >
-                    <Box className={classes.tabLabel}>
-                      {t('manage.listForSale')}
-                    </Box>
-                  </StyledTabBadge>
-                }
-                value={DomainProfileTabType.ListForSale}
-              />
-            </TabList>
           </Box>
+          <TabPanel
+            value={DomainProfileTabType.Profile}
+            className={cx(classes.tabContentItem, classes.tabWidth)}
+          >
+            <ProfileTab
+              address={address}
+              domain={domain}
+              onUpdate={onUpdate}
+              setButtonComponent={setButtonComponent}
+            />
+          </TabPanel>
+          <TabPanel
+            value={DomainProfileTabType.Badges}
+            className={cx(classes.tabContentItem, classes.tabWidth)}
+          >
+            <BadgesTab
+              address={address}
+              domain={domain}
+              onUpdate={onUpdate}
+              setButtonComponent={setButtonComponent}
+            />
+          </TabPanel>
+          <TabPanel
+            value={DomainProfileTabType.Email}
+            className={cx(classes.tabContentItem, classes.tabWidth)}
+          >
+            <EmailTab
+              address={address}
+              domain={domain}
+              onUpdate={onUpdate}
+              setButtonComponent={setButtonComponent}
+            />
+          </TabPanel>
+          <TabPanel
+            value={DomainProfileTabType.ListForSale}
+            className={cx(classes.tabContentItem, classes.tabWidth)}
+          >
+            <ListForSaleTab
+              address={address}
+              domain={domain}
+              onUpdate={onUpdate}
+              setButtonComponent={setButtonComponent}
+            />
+          </TabPanel>
+          <TabPanel
+            value={DomainProfileTabType.TokenGallery}
+            className={cx(classes.tabContentItem, classes.tabWidth)}
+          >
+            <TokenGalleryTab
+              address={address}
+              domain={domain}
+              onUpdate={onUpdate}
+              setButtonComponent={setButtonComponent}
+            />
+          </TabPanel>
+          <TabPanel
+            value={DomainProfileTabType.Crypto}
+            className={cx(classes.tabContentItem, classes.tabWidth)}
+          >
+            <CryptoTab
+              domain={domain}
+              address={address}
+              onUpdate={onUpdate}
+              setButtonComponent={setButtonComponent}
+              filterFn={(k: string) => k.startsWith('crypto.')}
+            />
+          </TabPanel>
+          <TabPanel
+            value={DomainProfileTabType.Website}
+            className={cx(classes.tabContentItem, classes.tabWidth)}
+          >
+            <WebsiteTab
+              domain={domain}
+              address={address}
+              onUpdate={onUpdate}
+              setButtonComponent={setButtonComponent}
+            />
+          </TabPanel>
+          <TabPanel
+            value={DomainProfileTabType.Reverse}
+            className={cx(classes.tabContentItem, classes.tabWidth)}
+          >
+            <ReverseTab
+              address={address}
+              domain={domain}
+              onUpdate={onUpdate}
+              setButtonComponent={setButtonComponent}
+            />
+          </TabPanel>
         </Box>
-        <TabPanel
-          value={DomainProfileTabType.Profile}
-          className={cx(classes.tabContentItem, classes.tabContainer)}
-        >
-          <ProfileTab address={address} domain={domain} onUpdate={onUpdate} />
-        </TabPanel>
-        <TabPanel
-          value={DomainProfileTabType.Badges}
-          className={cx(classes.tabContentItem, classes.tabContainer)}
-        >
-          <BadgesTab address={address} domain={domain} onUpdate={onUpdate} />
-        </TabPanel>
-        <TabPanel
-          value={DomainProfileTabType.Email}
-          className={cx(classes.tabContentItem, classes.tabContainer)}
-        >
-          <EmailTab address={address} domain={domain} />
-        </TabPanel>
-        <TabPanel
-          value={DomainProfileTabType.ListForSale}
-          className={cx(classes.tabContentItem, classes.tabContainer)}
-        >
-          <ListForSaleTab
-            address={address}
-            domain={domain}
-            onUpdate={onUpdate}
-          />
-        </TabPanel>
-        <TabPanel
-          value={DomainProfileTabType.TokenGallery}
-          className={cx(classes.tabContentItem, classes.tabContainer)}
-        >
-          <TokenGalleryTab
-            address={address}
-            domain={domain}
-            onUpdate={onUpdate}
-          />
-        </TabPanel>
-        <TabPanel
-          value={DomainProfileTabType.Crypto}
-          className={cx(classes.tabContentItem, classes.tabContainer)}
-        >
-          <CryptoTab
-            domain={domain}
-            address={address}
-            filterFn={(k: string) => k.startsWith('crypto.')}
-          />
-        </TabPanel>
-        <TabPanel
-          value={DomainProfileTabType.Reverse}
-          className={cx(classes.tabContentItem, classes.tabContainer)}
-        >
-          <ReverseTab address={address} domain={domain} />
-        </TabPanel>
+        <Box className={classes.lowerContainer}>{buttonComponent}</Box>
       </TabContext>
     </Box>
   );
@@ -307,4 +386,5 @@ export enum DomainProfileTabType {
   Profile = 'profile',
   Reverse = 'reverse',
   TokenGallery = 'tokenGallery',
+  Website = 'website',
 }

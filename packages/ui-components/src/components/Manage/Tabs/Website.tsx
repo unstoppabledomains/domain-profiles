@@ -1,32 +1,30 @@
-import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
-import FingerprintOutlinedIcon from '@mui/icons-material/FingerprintOutlined';
-import SwapHorizOutlinedIcon from '@mui/icons-material/SwapHorizOutlined';
+import CloudDoneOutlinedIcon from '@mui/icons-material/CloudDoneOutlined';
+import CloudOffOutlinedIcon from '@mui/icons-material/CloudOffOutlined';
+import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
+import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import UpdateOutlinedIcon from '@mui/icons-material/UpdateOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import * as isIPFS from 'is-ipfs';
 import React, {useEffect, useState} from 'react';
-import truncateEthAddress from 'truncate-eth-address';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {
-  getProfileData,
-  getStrictReverseResolution,
-  useFeatureFlags,
-} from '../../../actions';
+import {getProfileData} from '../../../actions';
 import {
   confirmRecordUpdate,
   getRegistrationMessage,
-  initiatePrimaryDomain,
+  initiateRecordUpdate,
   registerWallet,
 } from '../../../actions/pav3Actions';
 import {useWeb3Context} from '../../../hooks';
 import {DomainFieldTypes, useTranslationContext} from '../../../lib';
 import {notifyEvent} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
+import ManageInput from '../common/ManageInput';
 import {TabHeader} from '../common/TabHeader';
 import type {ManageTabProps} from '../common/types';
 
@@ -42,7 +40,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
       marginRight: theme.spacing(-3),
     },
   },
-  reverseContainer: {
+  contentContainer: {
     display: 'flex',
     flexDirection: 'column',
     textAlign: 'center',
@@ -82,22 +80,29 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '50px',
     height: '50px',
   },
+  button: {
+    marginTop: theme.spacing(2),
+  },
 }));
 
-export const Reverse: React.FC<ManageTabProps> = ({
+// the record key for an IPFS website
+const ipfsHashKey = 'ipfs.html.value';
+
+export const Website: React.FC<ManageTabProps> = ({
   address,
   domain,
   setButtonComponent,
 }) => {
   const {classes} = useStyles();
   const {web3Deps, setWeb3Deps} = useWeb3Context();
-  const {data: featureFlags} = useFeatureFlags(false, domain);
+  const [ipfsHash, setIpfsHash] = useState<string>();
   const [saveClicked, setSaveClicked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isPendingTx, setIsPendingTx] = useState<boolean>();
-  const [isReverse, setIsReverse] = useState(false);
-  const [existingReverse, setExistingReverse] = useState<string>();
+  const [isInvalidHash, setIsInvalidHash] = useState(false);
+  const [isLaunched, setIsLaunched] = useState(false);
   const [t] = useTranslationContext();
 
   useEffect(() => {
@@ -111,55 +116,89 @@ export const Reverse: React.FC<ManageTabProps> = ({
       return;
     }
     setButtonComponent(
-      isReverse ? (
-        <></>
-      ) : (
-        <LoadingButton
-          variant="contained"
-          onClick={handleSave}
-          loading={isSaving}
-          disabled={isPendingTx || isReverse}
-          fullWidth
-        >
-          {t('manage.startRecordUpdate')}
-        </LoadingButton>
-      ),
+      <LoadingButton
+        variant="contained"
+        onClick={handleSave}
+        loading={isSaving}
+        disabled={isPendingTx || isInvalidHash || !isDirty}
+        className={classes.button}
+        color={isLaunched && !ipfsHash ? 'error' : 'primary'}
+        fullWidth
+      >
+        {isLaunched
+          ? ipfsHash
+            ? t('manage.updateWebsite')
+            : t('manage.removeWebsite')
+          : t('manage.launchWebsite')}
+      </LoadingButton>,
     );
-  }, [isSaving, isPendingTx, isReverse, isLoading]);
+  }, [
+    isLoading,
+    isSaving,
+    isPendingTx,
+    isInvalidHash,
+    isDirty,
+    isLaunched,
+    ipfsHash,
+  ]);
 
   const loadRecords = async () => {
-    const [profileData, resolutionData] = await Promise.all([
+    const [profileData] = await Promise.all([
       getProfileData(domain, [
         DomainFieldTypes.Records,
         DomainFieldTypes.CryptoVerifications,
       ]),
-      getStrictReverseResolution(address),
     ]);
     if (profileData?.metadata) {
-      setIsReverse(!!profileData.metadata.reverse);
       setIsPendingTx(!!profileData.metadata.pending);
     }
-    if (resolutionData) {
-      setExistingReverse(resolutionData);
+    if (profileData?.records && profileData.records[ipfsHashKey]) {
+      setIpfsHash(profileData.records[ipfsHashKey]);
+      setIsLaunched(true);
     }
     setIsLoading(false);
   };
 
   const handleSave = () => {
+    // submit changes
     setSaveClicked(true);
     setIsSaving(true);
+  };
+
+  const handleInputChange = (id: string, value: string) => {
+    setIsDirty(true);
+    setIpfsHash(value);
+
+    // validate the IPFS format
+    const isValid =
+      value.length === 0 ||
+      isIPFS.multihash(value) ||
+      isIPFS.cid(value) ||
+      isIPFS.base32cid(value);
+    setIsInvalidHash(!isValid);
   };
 
   const handleRecordUpdate = async (
     signature: string,
     expiry: string,
   ): Promise<void> => {
+    // only proceed if IPFS hash is defined
+    if (ipfsHash === undefined) {
+      return;
+    }
+
+    // ensure wallet is registered for making the update
     if (await validateWalletRegistration(signature, expiry)) {
       // initiate a record update
-      const updateRequest = await initiatePrimaryDomain(address, domain, {
-        expires: expiry,
-        signature,
-      });
+      const updateRequest = await initiateRecordUpdate(
+        address,
+        domain,
+        {[ipfsHashKey]: ipfsHash},
+        {
+          expires: expiry,
+          signature,
+        },
+      );
       if (updateRequest) {
         // retrieve confirmation signature
         const txSignature = await getSignature(updateRequest.message);
@@ -180,7 +219,6 @@ export const Reverse: React.FC<ManageTabProps> = ({
             // record updates successful
             setIsSaving(false);
             setIsPendingTx(true);
-            setIsReverse(true);
             return;
           }
         }
@@ -245,28 +283,12 @@ export const Reverse: React.FC<ManageTabProps> = ({
     return undefined;
   };
 
-  // show coming soon if feature flag disabled
-  if (!featureFlags.variations?.udMeServiceDomainsEnableManagement) {
-    return (
-      <Box className={classes.container}>
-        <TabHeader
-          icon={<SwapHorizOutlinedIcon />}
-          description={t('manage.reverseResolutionDescription', {domain})}
-          learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001217257-what-is-and-how-to-setup-reverse-resolution"
-        />
-        <Typography variant="h5" className={classes.title}>
-          {t('manage.comingSoon')}
-        </Typography>
-      </Box>
-    );
-  }
-
   return (
     <Box className={classes.container}>
       <TabHeader
-        icon={<SwapHorizOutlinedIcon />}
-        description={t('manage.reverseResolutionDescription', {domain})}
-        learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001217257-what-is-and-how-to-setup-reverse-resolution"
+        icon={<LanguageOutlinedIcon />}
+        description={t('manage.web3WebsiteDescription', {domain})}
+        learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001181925-build-website"
       />
       {isLoading ? (
         <Box display="flex" justifyContent="center" mt={1}>
@@ -287,42 +309,59 @@ export const Reverse: React.FC<ManageTabProps> = ({
               </Box>
             </Box>
           )}
-          <Box className={classes.reverseContainer}>
-            {isReverse ? (
+          <Box className={classes.contentContainer}>
+            {ipfsHash && isLaunched ? (
               <Box>
-                <CheckCircleOutlinedIcon className={classes.iconConfigured} />
-                <Typography variant="h5">{t('manage.allSet')}</Typography>
+                <CloudDoneOutlinedIcon className={classes.iconConfigured} />
+                <Typography variant="h5">
+                  {t('manage.web3WebsiteLaunched')}
+                </Typography>
                 <Box>
                   <Typography variant="body1">
-                    {t('manage.reverseResolutionDomain', {
+                    {t('manage.web3WebsiteLaunchedDescription', {
                       domain,
-                      address: truncateEthAddress(address),
                     })}
                   </Typography>
                 </Box>
               </Box>
             ) : (
               <Box>
-                <FingerprintOutlinedIcon
-                  className={classes.iconNotConfigured}
-                />
+                {isLaunched ? (
+                  <CloudOffOutlinedIcon className={classes.iconNotConfigured} />
+                ) : (
+                  <CloudUploadOutlinedIcon
+                    className={classes.iconNotConfigured}
+                  />
+                )}
                 <Typography variant="h5">
-                  {t('manage.setupReverseResolution')}
+                  {isLaunched
+                    ? t('manage.web3WebsiteRemove')
+                    : t('manage.setupWeb3Website')}
                 </Typography>
                 <Typography variant="body1">
-                  {t('manage.setReverseResolutionDomain', {
-                    domain,
-                    address: truncateEthAddress(address),
-                  })}{' '}
-                  {existingReverse &&
-                    t('manage.overwriteExistingReverseResolution', {
-                      domain: existingReverse,
-                    })}
+                  {isLaunched
+                    ? t('manage.web3WebsiteRemoveDescription', {
+                        domain,
+                      })
+                    : t('manage.setupWeb3WebsiteDescription', {
+                        domain,
+                      })}
                 </Typography>
               </Box>
             )}
           </Box>
-
+          <ManageInput
+            id="ipfsHash"
+            value={ipfsHash}
+            label={t('manage.ipfsHash')}
+            placeholder={t('manage.enterIpfsHash')}
+            onChange={handleInputChange}
+            disableTextTrimming
+            error={isInvalidHash}
+            errorText={t('manage.enterValidIpfsHash')}
+            stacked={false}
+            disabled={isPendingTx}
+          />
           <ProfileManager
             domain={domain}
             ownerAddress={address}

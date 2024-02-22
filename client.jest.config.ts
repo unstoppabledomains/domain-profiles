@@ -37,6 +37,7 @@ const config: InitialOptionsTsJest = {
     ['@ucanto/(.*)']: '<rootDir>/tests/mocks/empty.js',
     'web3.storage': '<rootDir>/tests/mocks/empty.js',
     ['wagmi']: '<rootDir>/tests/mocks/empty.js',
+    ['is-ipfs']: '<rootDir>/tests/mocks/empty.js',
     'react-medium-image-zoom': '<rootDir>/tests/mocks/empty.js',
     'swiper/react': '<rootDir>/tests/mocks/swiper-react/index.tsx',
     ['swiper']: '<rootDir>/node_modules/swiper/swiper-bundle.js',

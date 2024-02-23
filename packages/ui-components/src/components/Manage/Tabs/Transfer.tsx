@@ -1,3 +1,4 @@
+import CheckOutlinedIcon from '@mui/icons-material/CheckOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import UpdateOutlinedIcon from '@mui/icons-material/UpdateOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -9,6 +10,7 @@ import FormGroup from '@mui/material/FormGroup';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
+import {useDebounce} from 'usehooks-ts';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -22,7 +24,7 @@ import {
 import {useWeb3Context} from '../../../hooks';
 import {DomainFieldTypes, useTranslationContext} from '../../../lib';
 import {notifyEvent} from '../../../lib/error';
-import {isEthAddress} from '../../Chat/protocol/resolution';
+import {getAddressMetadata, isEthAddress} from '../../Chat/protocol/resolution';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import ManageInput from '../common/ManageInput';
 import {TabHeader} from '../common/TabHeader';
@@ -55,6 +57,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginTop: theme.spacing(0),
     alignSelf: 'flex-start',
   },
+  icon: {
+    color: theme.palette.success.main,
+    marginRight: theme.spacing(1),
+    height: '15px',
+    width: '15px',
+  },
   pendingTxContainer: {
     display: 'flex',
     marginTop: theme.spacing(1),
@@ -86,6 +94,12 @@ export const Transfer: React.FC<ManageTabProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [isPendingTx, setIsPendingTx] = useState<boolean>();
+  const [recipientAddressInput, setRecipientAddressInput] =
+    useState<string>('');
+  const debouncedRecipientAddressInput = useDebounce<string>(
+    recipientAddressInput,
+    500,
+  );
   const [recipientAddress, setRecipientAddress] = useState<string>();
   const [invalidAddress, setInvalidAddress] = useState(false);
   const [checkboxMap, setCheckboxMap] = useState<Record<string, boolean>>({});
@@ -131,6 +145,10 @@ export const Transfer: React.FC<ManageTabProps> = ({
     errorMessage,
   ]);
 
+  useEffect(() => {
+    void validateRecipientAddress(debouncedRecipientAddressInput);
+  }, [debouncedRecipientAddressInput]);
+
   const loadRecords = async () => {
     const [profileData] = await Promise.all([
       getProfileData(domain, [
@@ -149,13 +167,29 @@ export const Transfer: React.FC<ManageTabProps> = ({
     setIsSaving(true);
   };
 
-  const handleInputChange = (id: string, value: string) => {
-    setIsDirty(true);
-    setRecipientAddress(value);
+  const validateRecipientAddress = async (v: string) => {
+    if (!v) {
+      return;
+    }
 
-    // validate the IPFS format
-    const isValid = value.length > 0 && isEthAddress(value);
+    // lookup address resolution
+    const resolutionData = await getAddressMetadata(v);
+    if (resolutionData?.address) {
+      setRecipientAddress(resolutionData.address);
+      setInvalidAddress(false);
+      return;
+    }
+
+    // validate the EVM address format
+    const isValid = v.length > 0 && isEthAddress(v);
+    setRecipientAddress(isValid ? v : undefined);
     setInvalidAddress(!isValid);
+  };
+
+  const handleInputChange = async (_id: string, value: string) => {
+    setIsDirty(true);
+    setRecipientAddress('');
+    setRecipientAddressInput(value);
   };
 
   const handleEnabledChange = (k: string, checked: boolean) => {
@@ -307,7 +341,7 @@ export const Transfer: React.FC<ManageTabProps> = ({
             </Typography>
             <ManageInput
               id="recipientAddress"
-              value={recipientAddress}
+              value={recipientAddressInput}
               label={t('manage.recipientAddress')}
               placeholder={t('manage.enterRecipientAddress')}
               onChange={handleInputChange}
@@ -317,11 +351,18 @@ export const Transfer: React.FC<ManageTabProps> = ({
               stacked={false}
               disabled={isPendingTx}
             />
+            {recipientAddress && !invalidAddress && (
+              <Box display="flex" alignItems="center" mt={1} ml={16}>
+                <CheckOutlinedIcon className={classes.icon} />
+                <Typography variant="caption">{recipientAddress}</Typography>
+              </Box>
+            )}
             <Box className={classes.checkboxContainer}>
               <FormGroup>
                 {['1', '2', '3', '4'].map(key => (
                   <FormControlLabel
                     key={`checkbox-${key}`}
+                    disabled={isPendingTx}
                     control={
                       <Checkbox
                         className={classes.checkbox}

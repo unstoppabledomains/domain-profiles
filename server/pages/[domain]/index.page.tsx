@@ -1439,10 +1439,11 @@ const DomainProfile = ({
           onClose={handleOtherDomainsModalClose}
         />
       )}
-      {showManageDomainModal && (
+      {showManageDomainModal && profileData?.metadata && (
         <DomainProfileModal
           domain={domain}
           address={ownerAddress}
+          metadata={profileData.metadata}
           open={showManageDomainModal}
           onClose={handleManageDomainModalClose}
           onUpdate={handleManageDomainModalUpdate}

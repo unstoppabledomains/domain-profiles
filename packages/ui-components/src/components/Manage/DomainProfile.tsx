@@ -98,6 +98,7 @@ const StyledTabBadge = styled(Badge)<BadgeProps>(() => ({
 export const DomainProfile: React.FC<DomainProfileProps> = ({
   address,
   domain,
+  metadata,
   width,
   onClose,
   onUpdate,
@@ -121,6 +122,9 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
     listForSale: false,
     website: false,
   });
+  const isOnchainSupported =
+    (metadata.type as string)?.toLowerCase() === 'uns' &&
+    (metadata.blockchain as string)?.toLowerCase() === 'matic';
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
     const tv = newValue as DomainProfileTabType;
@@ -165,51 +169,57 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   }
                   value={DomainProfileTabType.Profile}
                 />
-                <Tab
-                  label={
-                    <StyledTabBadge
-                      color="primary"
-                      variant="dot"
-                      invisible={!tabUnreadDot[DomainProfileTabType.Crypto]}
-                    >
-                      <Box className={classes.tabLabel}>
-                        {' '}
-                        {t('manage.crypto')}
-                      </Box>
-                    </StyledTabBadge>
-                  }
-                  disabled={isExternalDomain(domain)}
-                  value={DomainProfileTabType.Crypto}
-                />
-                <Tab
-                  label={
-                    <StyledTabBadge
-                      color="primary"
-                      variant="dot"
-                      invisible={!tabUnreadDot[DomainProfileTabType.Reverse]}
-                    >
-                      <Box className={classes.tabLabel}>
-                        {t('manage.reverse')}
-                      </Box>
-                    </StyledTabBadge>
-                  }
-                  disabled={isExternalDomain(domain)}
-                  value={DomainProfileTabType.Reverse}
-                />
-                <Tab
-                  label={
-                    <StyledTabBadge
-                      color="primary"
-                      variant="dot"
-                      invisible={!tabUnreadDot[DomainProfileTabType.Website]}
-                    >
-                      <Box className={classes.tabLabel}>
-                        {t('manage.web3Website')}
-                      </Box>
-                    </StyledTabBadge>
-                  }
-                  value={DomainProfileTabType.Website}
-                />
+                {isOnchainSupported && (
+                  <Tab
+                    label={
+                      <StyledTabBadge
+                        color="primary"
+                        variant="dot"
+                        invisible={!tabUnreadDot[DomainProfileTabType.Crypto]}
+                      >
+                        <Box className={classes.tabLabel}>
+                          {' '}
+                          {t('manage.crypto')}
+                        </Box>
+                      </StyledTabBadge>
+                    }
+                    disabled={isExternalDomain(domain)}
+                    value={DomainProfileTabType.Crypto}
+                  />
+                )}
+                {isOnchainSupported && (
+                  <Tab
+                    label={
+                      <StyledTabBadge
+                        color="primary"
+                        variant="dot"
+                        invisible={!tabUnreadDot[DomainProfileTabType.Reverse]}
+                      >
+                        <Box className={classes.tabLabel}>
+                          {t('manage.reverse')}
+                        </Box>
+                      </StyledTabBadge>
+                    }
+                    disabled={isExternalDomain(domain)}
+                    value={DomainProfileTabType.Reverse}
+                  />
+                )}
+                {isOnchainSupported && (
+                  <Tab
+                    label={
+                      <StyledTabBadge
+                        color="primary"
+                        variant="dot"
+                        invisible={!tabUnreadDot[DomainProfileTabType.Website]}
+                      >
+                        <Box className={classes.tabLabel}>
+                          {t('manage.web3Website')}
+                        </Box>
+                      </StyledTabBadge>
+                    }
+                    value={DomainProfileTabType.Website}
+                  />
+                )}
                 <Tab
                   label={
                     <StyledTabBadge
@@ -270,21 +280,23 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   }
                   value={DomainProfileTabType.ListForSale}
                 />
-                <Tab
-                  label={
-                    <StyledTabBadge
-                      color="primary"
-                      variant="dot"
-                      invisible={!tabUnreadDot[DomainProfileTabType.Transfer]}
-                    >
-                      <Box className={classes.tabLabel}>
-                        {t('manage.transfer')}
-                      </Box>
-                    </StyledTabBadge>
-                  }
-                  disabled={isExternalDomain(domain)}
-                  value={DomainProfileTabType.Transfer}
-                />
+                {isOnchainSupported && (
+                  <Tab
+                    label={
+                      <StyledTabBadge
+                        color="primary"
+                        variant="dot"
+                        invisible={!tabUnreadDot[DomainProfileTabType.Transfer]}
+                      >
+                        <Box className={classes.tabLabel}>
+                          {t('manage.transfer')}
+                        </Box>
+                      </StyledTabBadge>
+                    }
+                    disabled={isExternalDomain(domain)}
+                    value={DomainProfileTabType.Transfer}
+                  />
+                )}
               </TabList>
             </Box>
           </Box>
@@ -399,6 +411,7 @@ export type DomainProfileProps = {
   address: string;
   domain: string;
   width: string;
+  metadata: Record<string, string | boolean>;
   onClose?: () => void;
   onUpdate(
     tab: DomainProfileTabType,

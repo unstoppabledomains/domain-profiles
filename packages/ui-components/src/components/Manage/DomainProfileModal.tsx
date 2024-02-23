@@ -5,8 +5,9 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getProfileReverseResolution} from '../../actions';
+import {getProfileData, getProfileReverseResolution} from '../../actions';
 import type {SerializedUserDomainProfileData} from '../../lib';
+import {DomainFieldTypes} from '../../lib';
 import type {DomainProfileTabType} from './DomainProfile';
 import {DomainProfile} from './DomainProfile';
 
@@ -29,10 +30,12 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
   onUpdate,
   address,
   domain,
+  metadata,
   open,
 }) => {
   const {classes} = useStyles();
   const [resolvedAddress, setResolvedAddress] = useState(address);
+  const [resolvedMetadata, setResolvedMetadata] = useState(metadata);
 
   useEffect(() => {
     if (address) {
@@ -41,6 +44,24 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
     void loadResolvedAddress();
   }, [address]);
 
+  useEffect(() => {
+    if (metadata) {
+      return;
+    }
+    void loadMetadata();
+  }, [metadata]);
+
+  const loadMetadata = async () => {
+    const domainRecords = await getProfileData(domain, [
+      DomainFieldTypes.Records,
+    ]);
+    if (domainRecords?.metadata) {
+      setResolvedMetadata({
+        ...domainRecords.metadata,
+      });
+    }
+  };
+
   const loadResolvedAddress = async () => {
     const resolution = await getProfileReverseResolution(domain);
     if (resolution) {
@@ -48,12 +69,13 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
     }
   };
 
-  return resolvedAddress ? (
+  return resolvedAddress && resolvedMetadata ? (
     <Dialog maxWidth="sm" open={open} onClose={() => onClose()}>
       <Box className={classes.container}>
         <DomainProfile
           address={resolvedAddress}
           domain={domain}
+          metadata={resolvedMetadata}
           width={MODAL_WIDTH}
           onClose={onClose}
           onUpdate={onUpdate}
@@ -67,6 +89,7 @@ export type DomainProfileModalProps = {
   address?: string;
   domain: string;
   open: boolean;
+  metadata?: Record<string, string | boolean>;
   onClose(): void;
   onUpdate(
     tab: DomainProfileTabType,

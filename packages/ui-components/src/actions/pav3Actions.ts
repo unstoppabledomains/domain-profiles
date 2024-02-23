@@ -147,6 +147,51 @@ export const initiateRecordUpdate = async (
   return undefined;
 };
 
+// initiateTransferDomain submits an on-chain update for a given domain, and
+// receives a transaction hash that must be signed before the update is completed.
+export const initiateTransferDomain = async (
+  address: string,
+  domain: string,
+  recipientAddress: string,
+  clearRecords: boolean,
+  auth: {
+    expires: string;
+    signature: string;
+  },
+): Promise<RecordUpdateResponse | undefined> => {
+  const updateResponse = await fetchApi(`/user/${domain}/records/manage`, {
+    method: 'POST',
+    mode: 'cors',
+    host: config.PROFILE.HOST_URL,
+    body: JSON.stringify({
+      address,
+      transferToAddress: recipientAddress,
+      clearRecords,
+    }),
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'x-auth-domain': domain,
+      'x-auth-expires': auth.expires,
+      'x-auth-signature': auth.signature,
+    },
+  });
+  if (
+    updateResponse?.operation?.dependencies &&
+    updateResponse.operation.dependencies.length > 0
+  ) {
+    if (updateResponse.operation.dependencies[0].transaction?.messageToSign) {
+      return {
+        operationId: updateResponse.operation.id,
+        dependencyId: updateResponse.operation.dependencies[0].id,
+        message:
+          updateResponse.operation.dependencies[0].transaction.messageToSign,
+      };
+    }
+  }
+  return undefined;
+};
+
 // registerWallet authorizes a wallet to interact with the domain for on-chain
 // record management.
 export const registerWallet = async (

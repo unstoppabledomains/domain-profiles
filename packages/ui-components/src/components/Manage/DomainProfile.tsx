@@ -25,6 +25,7 @@ import {ListForSale as ListForSaleTab} from './Tabs/ListForSale';
 import {Profile as ProfileTab} from './Tabs/Profile';
 import {Reverse as ReverseTab} from './Tabs/Reverse';
 import {TokenGallery as TokenGalleryTab} from './Tabs/TokenGallery';
+import {Transfer as TransferTab} from './Tabs/Transfer';
 import {Website as WebsiteTab} from './Tabs/Website';
 
 const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
@@ -47,7 +48,7 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
   actionContainer: {
     position: 'absolute',
     top: theme.spacing(1),
-    right: theme.spacing(-1),
+    right: theme.spacing(1),
     zIndex: 2000000,
   },
   tabHeaderContainer: {
@@ -116,6 +117,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
     reverse: false,
     email: false,
     tokenGallery: false,
+    transfer: false,
     listForSale: false,
     website: false,
   });
@@ -133,14 +135,14 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
     <Box className={classes.container}>
       <TabContext value={tabValue as DomainProfileTabType}>
         <Box className={classes.upperContainer}>
+          {onClose && (
+            <Box className={classes.actionContainer}>
+              <IconButton onClick={onClose}>
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          )}
           <Box className={classes.tabHeaderContainer}>
-            {onClose && (
-              <Box className={classes.actionContainer}>
-                <IconButton onClick={onClose}>
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              </Box>
-            )}
             <Typography ml={1} variant="h4">
               {domain}
             </Typography>
@@ -268,6 +270,21 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   }
                   value={DomainProfileTabType.ListForSale}
                 />
+                <Tab
+                  label={
+                    <StyledTabBadge
+                      color="primary"
+                      variant="dot"
+                      invisible={!tabUnreadDot[DomainProfileTabType.Transfer]}
+                    >
+                      <Box className={classes.tabLabel}>
+                        {t('manage.transfer')}
+                      </Box>
+                    </StyledTabBadge>
+                  }
+                  disabled={isExternalDomain(domain)}
+                  value={DomainProfileTabType.Transfer}
+                />
               </TabList>
             </Box>
           </Box>
@@ -360,6 +377,17 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
               setButtonComponent={setButtonComponent}
             />
           </TabPanel>
+          <TabPanel
+            value={DomainProfileTabType.Transfer}
+            className={cx(classes.tabContentItem, classes.tabWidth)}
+          >
+            <TransferTab
+              address={address}
+              domain={domain}
+              onUpdate={onUpdate}
+              setButtonComponent={setButtonComponent}
+            />
+          </TabPanel>
         </Box>
         <Box className={classes.lowerContainer}>{buttonComponent}</Box>
       </TabContext>
@@ -386,5 +414,6 @@ export enum DomainProfileTabType {
   Profile = 'profile',
   Reverse = 'reverse',
   TokenGallery = 'tokenGallery',
+  Transfer = 'transfer',
   Website = 'website',
 }

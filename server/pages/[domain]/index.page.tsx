@@ -311,6 +311,14 @@ const DomainProfile = ({
     }
   };
 
+  const handleManageDomainModalOpen = async () => {
+    if (profileData?.metadata) {
+      setShowManageDomainModal(true);
+      return;
+    }
+    enqueueSnackbar(t('manage.manageDomainModalOpenError'), {variant: 'error'});
+  };
+
   const handleManageDomainModalClose = async () => {
     setShowManageDomainModal(false);
     if (isReloadRequested) {
@@ -710,7 +718,7 @@ const DomainProfile = ({
                 ) : (
                   <ChipControlButton
                     data-testid="edit-profile-button"
-                    onClick={() => setShowManageDomainModal(true)}
+                    onClick={handleManageDomainModalOpen}
                     icon={<EditOutlinedIcon />}
                     label={t('manage.manageProfile')}
                   />

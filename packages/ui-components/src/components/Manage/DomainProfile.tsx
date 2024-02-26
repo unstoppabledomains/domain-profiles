@@ -123,6 +123,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
     website: false,
   });
   const isOnchainSupported =
+    !isExternalDomain(domain) &&
     (metadata.type as string)?.toLowerCase() === 'uns' &&
     (metadata.blockchain as string)?.toLowerCase() === 'matic';
 
@@ -183,7 +184,6 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                         </Box>
                       </StyledTabBadge>
                     }
-                    disabled={isExternalDomain(domain)}
                     value={DomainProfileTabType.Crypto}
                   />
                 )}
@@ -200,7 +200,6 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                         </Box>
                       </StyledTabBadge>
                     }
-                    disabled={isExternalDomain(domain)}
                     value={DomainProfileTabType.Reverse}
                   />
                 )}
@@ -293,7 +292,6 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                         </Box>
                       </StyledTabBadge>
                     }
-                    disabled={isExternalDomain(domain)}
                     value={DomainProfileTabType.Transfer}
                   />
                 )}

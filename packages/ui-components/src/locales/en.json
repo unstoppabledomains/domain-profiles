@@ -300,6 +300,7 @@
     "listForSaleEmail": "Email",
     "location": "Location",
     "mainInfo": "Main Info",
+    "manageDomainModalOpenError": "Error opening domain management window",
     "manageProfile": "Manage",
     "onlyYouAndDapps": "Only you and allowed dApps",
     "overwriteExistingReverseResolution": "After the update, {{domain}} will no longer be your primary name for this wallet.",

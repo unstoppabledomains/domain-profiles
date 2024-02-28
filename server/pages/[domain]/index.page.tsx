@@ -668,13 +668,15 @@ const DomainProfile = ({
                   </Typography>
                 </Box>
                 <Box display="flex" className={classes.domainNameBox}>
-                  <Typography
-                    title={domain}
-                    className={classes.domainName}
-                    variant="h5"
-                  >
-                    {domain}
-                  </Typography>
+                  {domain !== profileData.profile.displayName && (
+                    <Typography
+                      title={domain}
+                      className={classes.domainName}
+                      variant="h5"
+                    >
+                      {domain}
+                    </Typography>
+                  )}
                   {humanityVerified && (
                     <Tooltip
                       title={

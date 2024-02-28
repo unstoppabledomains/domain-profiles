@@ -262,6 +262,15 @@ const DomainProfile = ({
     enqueueSnackbar(t('common.copied'), {variant: 'success'});
   };
 
+  const handleOwnerAddressClick = () => {
+    window.open(
+      `https://www.oklink.com/${
+        profileData?.metadata?.blockchain === 'ETH' ? 'eth' : 'polygon'
+      }/address/${ownerAddress}`,
+      '_blank',
+    );
+  };
+
   const handleViewFollowingClick = () => {
     setViewFollowerRelationship('following');
     setIsViewFollowModalOpen(true);
@@ -797,7 +806,10 @@ const DomainProfile = ({
                         )
                       }
                     >
-                      <Typography>
+                      <Typography
+                        onClick={handleOwnerAddressClick}
+                        className={classes.ownerAddressLabel}
+                      >
                         {t('profile.ownerAddress', {
                           address: truncateEthAddress(ownerAddress),
                         })}

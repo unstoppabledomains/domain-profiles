@@ -359,6 +359,9 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   otherDomainsLabel: {
     cursor: 'pointer',
   },
+  ownerAddressLabel: {
+    cursor: 'pointer',
+  },
   footer: {
     ...theme.containers.main,
     maxWidth: 1256,

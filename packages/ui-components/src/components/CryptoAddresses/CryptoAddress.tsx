@@ -292,7 +292,8 @@ const CryptoAddress: React.FC<Props> = ({
             />
           </Tooltip>
         </ClickAwayListener>
-      ) : Object.keys(filteredVersions || []).length > 1 ? (
+      ) : Object.keys(filteredVersions || []).length > 1 ||
+        !getBlockScanUrl(currency, address) ? (
         <CopyContentIcon
           titleAccess={t('profile.copyAddress')}
           className={classes.copyIcon}
@@ -343,8 +344,15 @@ const CryptoAddress: React.FC<Props> = ({
             ))}
           </Menu>
         </>
-      ) : (
+      ) : getBlockScanUrl(currency, address) ? (
         item
+      ) : (
+        <CopyToClipboard
+          onCopy={handleCryptoAddressCopied}
+          stringToCopy={address}
+        >
+          {item}
+        </CopyToClipboard>
       )}
     </div>
   );

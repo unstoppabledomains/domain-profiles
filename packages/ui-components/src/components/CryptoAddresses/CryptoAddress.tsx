@@ -134,7 +134,6 @@ const CryptoAddress: React.FC<Props> = ({
   ownerAddress,
   isOwner,
   showWarning = false,
-  domain,
   profileData,
   chain,
   onCryptoAddressCopied: handleCryptoAddressCopied,
@@ -183,8 +182,12 @@ const CryptoAddress: React.FC<Props> = ({
     });
   }, [currency, address, profileData, showWarning]);
 
-  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleMultiAddressClick = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
+  };
+
+  const handleSingleAddressClick = () => {
+    window.open(getBlockScanUrl(currency, address), '_blank');
   };
 
   const handleClose = () => {
@@ -204,12 +207,28 @@ const CryptoAddress: React.FC<Props> = ({
     setConfigOpen(true);
   };
 
+  const getBlockScanUrl = (symbol: CurrenciesType, addr: string) => {
+    switch (symbol) {
+      case 'ETH':
+      case 'FTM':
+      case 'AVAX':
+      case 'BTC':
+        return `https://www.oklink.com/${symbol.toLowerCase()}/address/${addr}`;
+      case 'MATIC':
+        return `https://www.oklink.com/polygon/address/${addr}`;
+      case 'SOL':
+        return `https://www.oklink.com/sol/account/${addr}`;
+      default:
+        return '';
+    }
+  };
+
   const showTooltip = showWarning && !isVerified && isSupported(currency);
   const item = (
     <div
       key={currency}
       className={classes.row}
-      onClick={filteredVersions ? handleClick : undefined}
+      onClick={filteredVersions ? handleMultiAddressClick : undefined}
     >
       <Tooltip
         title={`${currency}${filteredVersions ? versionName : ''}`}
@@ -222,7 +241,15 @@ const CryptoAddress: React.FC<Props> = ({
         />
       </Tooltip>
       {chain && <span className={classes.chain}>{chain}</span>}
-      <Typography className={classes.address}>
+      <Typography
+        className={classes.address}
+        onClick={
+          Object.keys(filteredVersions || []).length <= 1 &&
+          getBlockScanUrl(currency, address)
+            ? handleSingleAddressClick
+            : undefined
+        }
+      >
         {displayShortCryptoAddress(address, 4, 4)}
       </Typography>
       {showTooltip ? (
@@ -265,11 +292,21 @@ const CryptoAddress: React.FC<Props> = ({
             />
           </Tooltip>
         </ClickAwayListener>
-      ) : (
+      ) : Object.keys(filteredVersions || []).length > 1 ? (
         <CopyContentIcon
           titleAccess={t('profile.copyAddress')}
           className={classes.copyIcon}
         />
+      ) : (
+        <CopyToClipboard
+          onCopy={handleCryptoAddressCopied}
+          stringToCopy={address}
+        >
+          <CopyContentIcon
+            titleAccess={t('profile.copyAddress')}
+            className={classes.copyIcon}
+          />
+        </CopyToClipboard>
       )}
     </div>
   );
@@ -307,14 +344,7 @@ const CryptoAddress: React.FC<Props> = ({
           </Menu>
         </>
       ) : (
-        <CopyToClipboard
-          onCopy={
-            showTooltip && isOwner ? undefined : handleCryptoAddressCopied
-          }
-          stringToCopy={showTooltip && isOwner ? '' : address}
-        >
-          {item}
-        </CopyToClipboard>
+        item
       )}
     </div>
   );

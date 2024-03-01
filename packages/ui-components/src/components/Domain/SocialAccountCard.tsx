@@ -14,6 +14,7 @@ import CardContent from '@mui/material/CardContent';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {capitalize} from 'lodash';
 import React from 'react';
 
 import DiscordIcon from '@unstoppabledomains/ui-kit/icons/Discord';
@@ -305,10 +306,13 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
       case DomainProfileSocialMediaAutoPopulated.Lens: {
         return {
           Icon: LensIcon,
-          displayName: socialInfo.url.replace('https://hey.xyz/u/', ''),
+          displayName: socialInfo.url
+            .replace('https://hey.xyz/u/', '')
+            .replace('https://lenster.xyz/u/', '')
+            .replaceAll('.lens', ''),
           metricValue: '',
           metricName: '',
-          link: socialInfo.url,
+          link: socialInfo.url.replaceAll('.lens', ''),
         };
       }
       case DomainProfileSocialMediaAutoPopulated.Farcaster: {
@@ -340,6 +344,7 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
           className={i === 0 ? classes.tooltipTitle : classes.tooltipData}
           variant="caption"
         >
+          {socialInfo?.kind ? `${capitalize(socialInfo.kind)}: ` : ''}
           {v}
         </Typography>
       </div>

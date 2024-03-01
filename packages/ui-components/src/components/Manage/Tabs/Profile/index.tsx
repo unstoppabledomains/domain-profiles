@@ -342,6 +342,7 @@ export const Profile: React.FC<ManageTabProps> = ({
         github: {},
         linkedin: {},
         lens: {},
+        farcaster: {},
       };
     }
     updatedUserProfile.socialAccounts[id] = {

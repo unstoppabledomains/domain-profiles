@@ -28,6 +28,7 @@ import {
   DomainProfileSocialMedia,
   DomainProfileSocialMediaAutoPopulated,
 } from '../../lib/types/domain';
+import FarcasterIcon from '../Image/FarcasterIcon';
 
 const useStyles = makeStyles<void, 'actionIcon'>()(
   (theme: Theme, _params, classes) => ({
@@ -304,12 +305,19 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
       case DomainProfileSocialMediaAutoPopulated.Lens: {
         return {
           Icon: LensIcon,
-          displayName: socialInfo.url
-            .replace('https://lenster.xyz/u/', '@')
-            .replaceAll('.lens', ''),
+          displayName: socialInfo.url.replace('https://hey.xyz/u/', ''),
           metricValue: '',
           metricName: '',
-          link: socialInfo.url.replaceAll('.lens', ''),
+          link: socialInfo.url,
+        };
+      }
+      case DomainProfileSocialMediaAutoPopulated.Farcaster: {
+        return {
+          Icon: FarcasterIcon,
+          displayName: socialInfo.url.replaceAll('https://warpcast.com/', ''),
+          metricValue: '',
+          metricName: '',
+          link: socialInfo.url,
         };
       }
     }

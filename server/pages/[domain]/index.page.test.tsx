@@ -85,6 +85,11 @@ const defaultProps = (): DomainProfilePageProps => {
           verified: true,
           public: false,
         },
+        farcaster: {
+          location: 'foo',
+          verified: true,
+          public: false,
+        },
       },
     },
   };

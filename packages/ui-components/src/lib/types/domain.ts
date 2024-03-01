@@ -97,6 +97,7 @@ export enum DomainProfileSocialMedia {
 // social media not configured by user but is displayed if exists
 export enum DomainProfileSocialMediaAutoPopulated {
   Lens = 'lens',
+  Farcaster = 'farcaster',
 }
 
 export type DomainProfileVisibilityValues = {
@@ -142,6 +143,12 @@ export type EnsDomainStatusResponse = EnsDomainExpiryResponse & {
   rentPrice?: number;
   registrationFees?: number;
 };
+
+export type FarcasterUserInfo = {
+  kind: DomainProfileSocialMediaAutoPopulated.Farcaster;
+  userName: string;
+  url: string;
+} | null;
 
 export type GithubUserInfo = {
   kind: DomainProfileSocialMedia.Github;
@@ -271,6 +278,7 @@ export type SerializedDomainProfileSocialAccountsUserInfo = {
   [DomainProfileSocialMedia.Github]?: GithubUserInfo;
   [DomainProfileSocialMedia.Linkedin]?: LinkedinUserInfo;
   [DomainProfileSocialMediaAutoPopulated.Lens]?: LensUserInfo;
+  [DomainProfileSocialMediaAutoPopulated.Farcaster]?: FarcasterUserInfo;
 };
 
 export interface SerializedDomainRank {
@@ -475,7 +483,8 @@ export type SocialAccountUserInfo =
   | TelegramUserInfo
   | GithubUserInfo
   | LinkedinUserInfo
-  | LensUserInfo;
+  | LensUserInfo
+  | FarcasterUserInfo;
 
 export type SocialProfileVisibilityValues = {
   youtubePublic: boolean;

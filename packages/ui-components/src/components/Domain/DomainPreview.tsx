@@ -62,6 +62,8 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
     color: theme.palette.primary.main,
     backgroundColor: 'white',
     border: '2px solid white',
+    height: `${size}px`,
+    width: `${size}px`,
   },
   avatarCard: {
     marginRight: theme.spacing(1),
@@ -84,6 +86,8 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
   domain,
   size,
   chatUser,
+  avatarDescription,
+  secondaryDescription,
   setOpenChat,
   setWeb3Deps,
 }) => {
@@ -149,9 +153,11 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
   };
 
   return (
-    <div
+    <Box
       aria-owns={isMouseOver ? popoverId : undefined}
       aria-haspopup="true"
+      display="flex"
+      alignItems="center"
       onMouseEnter={handlePopoverOpen}
       onMouseLeave={handlePopoverClose}
     >
@@ -161,6 +167,7 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
         className={classes.avatarMain}
         data-testid="domain-preview-main-img"
       />
+      {avatarDescription}
       <Popover
         id={popoverId}
         open={isMouseOver}
@@ -207,6 +214,7 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
                   {profileData?.profile?.description}
                 </Typography>
               </div>
+              <div className={classes.contentItem}>{secondaryDescription}</div>
               <div className={classes.footerContainer}>
                 <div>
                   <Typography
@@ -255,7 +263,7 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
           </CardContent>
         </Card>
       </Popover>
-    </div>
+    </Box>
   );
 };
 
@@ -263,6 +271,8 @@ export type DomainPreviewProps = {
   domain: string;
   size: number;
   chatUser?: string;
+  avatarDescription?: React.ReactNode;
+  secondaryDescription?: React.ReactNode;
   setOpenChat?: (s?: string) => void;
   setWeb3Deps?: (value: Web3Dependencies | undefined) => void;
 };

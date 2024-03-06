@@ -4,6 +4,7 @@ export * from './ProfilePicture';
 export * from './ShareMenu';
 export * from './ShowHideButton';
 export * from './SocialAccountCard';
+export {default as Connections} from './Connections';
 export {default as DomainProfileList} from './DomainProfileList';
 export {default as FollowButton} from './FollowButton';
 export {default as ProfilePicture} from './ProfilePicture';

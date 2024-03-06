@@ -48,6 +48,7 @@ type LeftBarContentCollapseProps = {
   header: React.ReactNode;
   content?: React.ReactNode;
   persist?: boolean;
+  forceExpand?: boolean;
 };
 
 const LeftBarContentCollapse: React.FC<LeftBarContentCollapseProps> = ({
@@ -56,9 +57,10 @@ const LeftBarContentCollapse: React.FC<LeftBarContentCollapseProps> = ({
   icon,
   content,
   persist,
+  forceExpand,
 }) => {
   const {classes} = useStyles();
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(forceExpand || false);
 
   const handleToggleExpanded = () => {
     setExpanded(!expanded);

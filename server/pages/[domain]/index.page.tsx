@@ -13,6 +13,7 @@ import ManageHistoryOutlinedIcon from '@mui/icons-material/ManageHistoryOutlined
 import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import RestoreOutlinedIcon from '@mui/icons-material/RestoreOutlined';
+import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import Box from '@mui/material/Box';
@@ -51,6 +52,7 @@ import type {
   SerializedCryptoWalletBadge,
   SerializedDomainProfileSocialAccountsUserInfo,
   SerializedPublicDomainProfileData,
+  SerializedRecommendation,
   SerializedWalletBalance,
 } from '@unstoppabledomains/ui-components';
 import {
@@ -58,6 +60,7 @@ import {
   Badge,
   Badges,
   ChipControlButton,
+  Connections,
   CopyToClipboard,
   CrownIcon,
   CryptoAddresses,
@@ -88,7 +91,6 @@ import {
   formOpenSeaLink,
   getDomainBadges,
   getFollowers,
-  getIdentity,
   getImageUrl,
   getProfileData,
   getSeoTags,
@@ -102,7 +104,10 @@ import {
   useUnstoppableMessaging,
   useWeb3Context,
 } from '@unstoppabledomains/ui-components';
-import {getOwnerDomains} from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
+import {
+  getDomainConnections,
+  getOwnerDomains,
+} from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
 import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
 import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
@@ -152,6 +157,7 @@ const DomainProfile = ({
   const [badges, setBadges] = useState<DomainBadgesResponse>();
   const [badgesDisabled, setBadgesDisabled] = useState(true);
   const [records, setRecords] = useState<Record<string, string>>({});
+  const [connections, setConnections] = useState<SerializedRecommendation[]>();
   const [walletBalances, setWalletBalances] =
     useState<SerializedWalletBalance[]>();
   const [metadata, setMetadata] = useState<Record<string, string | boolean>>(
@@ -471,12 +477,19 @@ const DomainProfile = ({
   const loadWallets = async () => {
     if (profileData) {
       try {
+        // retrieve wallet balances
         const recordsData = await getProfileData(domain, [
           DomainFieldTypes.WalletBalances,
         ]);
         if (recordsData?.walletBalances) {
           profileData.walletBalances = recordsData.walletBalances;
           setWalletBalances(recordsData.walletBalances);
+        }
+
+        // retrieve social graph after wallet balances are complete
+        const connectionData = await getDomainConnections(domain);
+        if (connectionData) {
+          setConnections(connectionData);
         }
       } catch (e) {
         notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
@@ -1166,6 +1179,32 @@ const DomainProfile = ({
                     }
                   />
                 )}
+                {connections && (
+                  <LeftBarContentCollapse
+                    id="connections"
+                    icon={<ShareOutlinedIcon />}
+                    forceExpand={true}
+                    header={
+                      <Typography>
+                        {t('profile.connectionsTitle', {
+                          count:
+                            connections.length >= 10
+                              ? `${connections.length}+`
+                              : connections.length,
+                          s: connections.length === 1 ? '' : 's',
+                        })}
+                      </Typography>
+                    }
+                    content={
+                      <Box mt={1}>
+                        <Connections
+                          domain={domain}
+                          connections={connections}
+                        />
+                      </Box>
+                    }
+                  />
+                )}
                 {Boolean(verifiedSocials.length) && someSocialsPublic && (
                   <Box className={classes.socialContainer}>
                     <Divider
@@ -1492,9 +1531,9 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
   };
 
   let profileData: SerializedPublicDomainProfileData | undefined;
-  let identity = null;
+  const identity = null;
   try {
-    const [profileDataObj, identityObj] = await Promise.allSettled([
+    const [profileDataObj] = await Promise.allSettled([
       getProfileData(domain, [
         DomainFieldTypes.Messaging,
         DomainFieldTypes.Profile,
@@ -1503,14 +1542,16 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         DomainFieldTypes.Market,
         DomainFieldTypes.Portfolio,
       ]),
-      getIdentity({name: domain}),
+      //getIdentity({name: domain}),
     ]);
     profileData =
       profileDataObj.status === 'fulfilled' ? profileDataObj.value : undefined;
+    /*
     identity =
       identityObj.status === 'fulfilled' && identityObj.value
         ? identityObj.value
         : null;
+        */
   } catch (e) {
     console.error(`error loading domain profile for ${domain}`, String(e));
   }

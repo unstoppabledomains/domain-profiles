@@ -4677,6 +4677,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-tagcloud@npm:^2.3.2":
+  version: 2.3.2
+  resolution: "@types/react-tagcloud@npm:2.3.2"
+  dependencies:
+    "@types/react": "*"
+  checksum: a4bc7f2ec317725502a153c491058b1c5a16bf0e1eb16523b11adb464a1934d4839207532d37e3a0c01e89d51638b530caf6ac0e912e17b9d706b5c5f1480ca8
+  languageName: node
+  linkType: hard
+
 "@types/react-test-renderer@npm:>=16.9.0":
   version: 18.0.3
   resolution: "@types/react-test-renderer@npm:18.0.3"
@@ -5169,6 +5178,7 @@ __metadata:
     "@types/react-dom": ^17.0.0
     "@types/react-lazy-load-image-component": ^1.6.0
     "@types/react-linkify": ^1.0.1
+    "@types/react-tagcloud": ^2.3.2
     "@uauth/js": ^2.8.0
     "@unstoppabledomains/config": "workspace:^"
     "@unstoppabledomains/resolution": ^8.5.0
@@ -5218,6 +5228,7 @@ __metadata:
     react-linkify: ^1.0.0-alpha
     react-medium-image-zoom: ^5.1.6
     react-qrcode-logo: ^2.8.0
+    react-tagcloud: ^2.3.3
     react-visibility-sensor: ^5.1.1
     rooks: ^5.7.0
     styled-components: ^5.3.5
@@ -17687,6 +17698,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"randomcolor@npm:^0.6.2":
+  version: 0.6.2
+  resolution: "randomcolor@npm:0.6.2"
+  checksum: 539345c0289f7c52ffd8486e61231e19ccc40b1c4ab9c15594f20a2773b71a9317e0cc8b756160fc8a678ace9ed1e96a8ac90346b2c34c64dfd5acad91f9a73d
+  languageName: node
+  linkType: hard
+
 "range-parser@npm:~1.2.1":
   version: 1.2.1
   resolution: "range-parser@npm:1.2.1"
@@ -17936,6 +17954,20 @@ __metadata:
   peerDependencies:
     react: ">= 0.14.0"
   checksum: c082b48f30f8ba8d0c55ed1d761910630860077c7ff5793c4c912adcb5760df06436ed0ad62be0de28113aac9ad2af55eccd995f8eee98df53382e4ced2072fb
+  languageName: node
+  linkType: hard
+
+"react-tagcloud@npm:^2.3.3":
+  version: 2.3.3
+  resolution: "react-tagcloud@npm:2.3.3"
+  dependencies:
+    prop-types: ^15.6.2
+    randomcolor: ^0.6.2
+    seedrandom: ^3.0.5
+    shuffle-array: ^1.0.1
+  peerDependencies:
+    react: ">=16.8.0"
+  checksum: 28e836c0f2f8dbc50169f803dc4ba1cf3a31da67821f59b0bdebf0826ffcca4f8911310efb9bd47ac6f8b6e6d31f221c7aacba8f852751f5d548f6334ff18b38
   languageName: node
   linkType: hard
 
@@ -18651,6 +18683,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"seedrandom@npm:^3.0.5":
+  version: 3.0.5
+  resolution: "seedrandom@npm:3.0.5"
+  checksum: 728b56bc3bc1b9ddeabd381e449b51cb31bdc0aa86e27fcd0190cea8c44613d5bcb2f6bb63ed79f78180cbe791c20b8ec31a9627f7b7fc7f476fd2bdb7e2da9f
+  languageName: node
+  linkType: hard
+
 "semver-regex@npm:^4.0.5":
   version: 4.0.5
   resolution: "semver-regex@npm:4.0.5"
@@ -18923,6 +18962,13 @@ __metadata:
   version: 1.8.1
   resolution: "shell-quote@npm:1.8.1"
   checksum: 5f01201f4ef504d4c6a9d0d283fa17075f6770bfbe4c5850b074974c68062f37929ca61700d95ad2ac8822e14e8c4b990ca0e6e9272e64befd74ce5e19f0736b
+  languageName: node
+  linkType: hard
+
+"shuffle-array@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "shuffle-array@npm:1.0.1"
+  checksum: 9f299ad69622f0f8049bb02d287287f46d4d96299b20010ce072b1b00adbe0dbb5fb488dd136bcc2f1858f6bbbe9b939bdf35fc379c96a3e1000da77fd29e2eb
   languageName: node
   linkType: hard
 

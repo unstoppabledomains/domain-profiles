@@ -15,6 +15,7 @@ import type {
   SerializedFollowerListData,
   SerializedProfileSearch,
   SerializedPublicDomainProfileData,
+  SerializedRecommendation,
   SerializedUserDomainProfileData,
 } from '../lib/types/domain';
 import {DomainProfileSocialMedia} from '../lib/types/domain';
@@ -65,6 +66,13 @@ export const followDomainProfile = async (
     },
     body: JSON.stringify({domain: followerDomain}),
   });
+};
+
+export const getDomainConnections = async (
+  domain: string,
+): Promise<SerializedRecommendation[]> => {
+  const domainProfileUrl = `/public/${domain}/connections`;
+  return await fetchApi(domainProfileUrl, {host: config.PROFILE.HOST_URL});
 };
 
 export const getDomainNfts = async (

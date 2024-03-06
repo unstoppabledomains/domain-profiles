@@ -497,6 +497,8 @@
     "collectingYourBadges": "Collecting your badges...",
     "configured": "Configured",
     "configuredTokensFromGallery": "You have {{cryptoAddresses}} configured in your gallery.",
+    "connectionsTitle": "{{count}} On-chain connection{{s}}",
+    "connectReasonTitle": "On-chain connection(s)",
     "contactSeller": "Contact seller",
     "copyAddress": "Copy Address",
     "copyDomainName": "Copy domain name",

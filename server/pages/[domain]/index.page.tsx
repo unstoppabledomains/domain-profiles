@@ -1183,7 +1183,7 @@ const DomainProfile = ({
                   <LeftBarContentCollapse
                     id="connections"
                     icon={<ShareOutlinedIcon />}
-                    forceExpand={true}
+                    forceExpand={false}
                     header={
                       <Typography>
                         {t('profile.connectionsTitle', {

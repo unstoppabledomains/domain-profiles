@@ -498,7 +498,7 @@
     "configured": "Configured",
     "configuredTokensFromGallery": "You have {{cryptoAddresses}} configured in your gallery.",
     "connectionsTitle": "{{count}} On-chain connection{{s}}",
-    "connectReasonTitle": "On-chain connection(s)",
+    "connectionScore": "On-chain connection score",
     "contactSeller": "Contact seller",
     "copyAddress": "Copy Address",
     "copyDomainName": "Copy domain name",

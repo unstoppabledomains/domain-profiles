@@ -50,32 +50,34 @@ const Connections: React.FC<Props> = ({domain, connections}) => {
   const {chatUser, setOpenChat} = useUnstoppableMessaging();
   const theme = useTheme();
 
-  const renderTag = (tag: Tag, fontSize: number, _color: string) => {
+  const renderTag = (tag: Tag, fontSize: number, color: string) => {
+    const connectionNode = connections?.find(c => c.domain === tag.value);
+
     return (
-      <Box display="inline-block" mr={1} mb={0.5}>
+      <Box display="inline-flex" mr={1} mb={0.5}>
         <DomainPreview
           domain={tag.value}
           size={fontSize}
           chatUser={chatUser}
           setOpenChat={setOpenChat}
           setWeb3Deps={setWeb3Deps}
+          avatarPath={connectionNode?.imageUrl}
           avatarDescription={
             <Typography
               ml={1}
-              sx={{color: theme.palette.neutralShades[700], fontSize}}
+              sx={{color: color || theme.palette.neutralShades[700], fontSize}}
             >
               {tag.value}
             </Typography>
           }
           secondaryDescription={
-            <Box className={classes.connectionReasonContainer}>
-              <Typography variant="body2">
-                {t('profile.connectReasonTitle')}:
-              </Typography>
-              <List sx={{listStyleType: 'disc', pl: 4, mb: -1, mt: -1}}>
-                {connections
-                  ?.find(c => c.domain === tag.value)
-                  ?.reasons.map(r => (
+            connectionNode ? (
+              <Box className={classes.connectionReasonContainer}>
+                <Typography variant="body2">
+                  {t('profile.connectionScore')}: <b>{connectionNode.score}</b>
+                </Typography>
+                <List sx={{listStyleType: 'disc', pl: 4, mb: -1, mt: -1}}>
+                  {connectionNode.reasons.map(r => (
                     <ListItem
                       sx={{display: 'list-item'}}
                       key={`${tag.value}-${r}`}
@@ -83,8 +85,9 @@ const Connections: React.FC<Props> = ({domain, connections}) => {
                       <Typography variant="body2">{r}</Typography>
                     </ListItem>
                   ))}
-              </List>
-            </Box>
+                </List>
+              </Box>
+            ) : undefined
           }
         />
       </Box>
@@ -95,12 +98,15 @@ const Connections: React.FC<Props> = ({domain, connections}) => {
     <Box className={classes.container}>
       <TagCloud
         minSize={12}
-        maxSize={24}
+        maxSize={20}
         tags={(connections || []).map(c => ({
           value: c.domain || c.address,
           count: c.score,
         }))}
-        disableRandomColor={true}
+        colorOptions={{
+          hue: 'green',
+          luminosity: 'dark',
+        }}
         renderer={renderTag}
       >
         {connections

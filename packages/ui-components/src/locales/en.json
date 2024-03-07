@@ -6,6 +6,7 @@
     "noActivity": "No wallet activity",
     "received": "Received",
     "receivedNft": "Received NFT",
+    "retrieveError": "Error retrieving transaction details",
     "sent": "Sent",
     "sentNft": "Sent NFT",
     "title": "Activity",
@@ -497,8 +498,8 @@
     "collectingYourBadges": "Collecting your badges...",
     "configured": "Configured",
     "configuredTokensFromGallery": "You have {{cryptoAddresses}} configured in your gallery.",
-    "connectionsTitle": "{{count}} On-chain connection{{s}}",
     "connectionScore": "On-chain connection score",
+    "connectionsTitle": "{{count}} On-chain connection{{s}}",
     "contactSeller": "Contact seller",
     "copyAddress": "Copy Address",
     "copyDomainName": "Copy domain name",
@@ -729,6 +730,7 @@
   "tokensPortfolio": {
     "all": "All",
     "noTokens": "No tokens in portfolio",
+    "retrieveError": "Error retrieving portfolio details",
     "title": "Portfolio"
   },
   "upsell": {

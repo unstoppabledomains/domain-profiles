@@ -175,6 +175,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   domain,
   wallets,
+  isError,
 }) => {
   const theme = useTheme();
   const {classes, cx} = useStyles();
@@ -546,7 +547,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
           )}
         </Box>
       </Box>
-      {wallets ? (
+      {wallets || isError ? (
         <Box
           mt={'15px'}
           mb={2}
@@ -555,17 +556,21 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
         >
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <Box className={classes.walletListContainer}>
-                {wallets.length > 1 && renderWallet()}
-                {wallets.map(wallet => renderWallet(wallet))}
-              </Box>
+              {wallets && (
+                <Box className={classes.walletListContainer}>
+                  {wallets.length > 1 && renderWallet()}
+                  {wallets.map(wallet => renderWallet(wallet))}
+                </Box>
+              )}
             </Grid>
-            {groupedTokens.length > 0 ? (
+            {!isError && groupedTokens.length > 0 ? (
               groupedTokens.map((token, i) => renderToken(i, token))
             ) : (
               <Grid item xs={12}>
                 <Typography className={classes.noActivity} textAlign="center">
-                  {t('tokensPortfolio.noTokens')}
+                  {isError
+                    ? t('tokensPortfolio.retrieveError')
+                    : t('tokensPortfolio.noTokens')}
                 </Typography>
               </Grid>
             )}
@@ -606,4 +611,5 @@ export type TokensPortfolioProps = {
   wallets?: SerializedWalletBalance[];
   minCount?: number;
   maxCount?: number;
+  isError?: boolean;
 };

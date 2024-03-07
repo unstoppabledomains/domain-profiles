@@ -152,6 +152,7 @@ const DomainProfile = ({
   const [authDomain, setAuthDomain] = useState('');
   const [displayQrCode, setDisplayQrCode] = useState(false);
   const [isOwner, setIsOwner] = useState<boolean>();
+  const [isWalletBalanceError, setIsWalletBalanceError] = useState<boolean>();
   const [someSocialsPublic, setIsSomeSocialsPublic] = useState<boolean>(false);
   const [badgeTypes, setBadgeTypes] = useState<string[]>([]);
   const [badges, setBadges] = useState<DomainBadgesResponse>();
@@ -482,8 +483,12 @@ const DomainProfile = ({
           DomainFieldTypes.WalletBalances,
         ]);
         if (recordsData?.walletBalances) {
+          // set wallet balance state values
           profileData.walletBalances = recordsData.walletBalances;
           setWalletBalances(recordsData.walletBalances);
+        } else {
+          // an undefined value means an error was caught
+          setIsWalletBalanceError(true);
         }
 
         // retrieve social graph after wallet balances are complete
@@ -1254,6 +1259,7 @@ const DomainProfile = ({
                   wallets={walletBalances}
                   domain={domain}
                   isOwner={isOwner}
+                  isError={isWalletBalanceError}
                 />
               </Grid>
               <Grid item xs={12} md={6}>
@@ -1261,6 +1267,7 @@ const DomainProfile = ({
                   wallets={walletBalances}
                   domain={domain}
                   isOwner={isOwner}
+                  isError={isWalletBalanceError}
                 />
               </Grid>
             </Grid>

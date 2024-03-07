@@ -376,8 +376,13 @@ export type SerializedRecommendation = {
   domain?: string;
   imageUrl?: string;
   imageType?: string;
-  reasons: string[];
+  reasons: SerializedRecommendationReason[];
   score: number;
+};
+
+export type SerializedRecommendationReason = {
+  id: string;
+  description: string;
 };
 
 export type SerializedSecondarySale = {

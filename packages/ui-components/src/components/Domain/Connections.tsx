@@ -25,6 +25,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
     backgroundImage: `linear-gradient(${theme.palette.neutralShades[100]}, ${theme.palette.neutralShades[300]})`,
     borderRadius: theme.shape.borderRadius,
     boxShadow: theme.shadows[3],
@@ -82,7 +83,7 @@ const Connections: React.FC<Props> = ({domain, connections}) => {
                       sx={{display: 'list-item'}}
                       key={`${tag.value}-${r}`}
                     >
-                      <Typography variant="body2">{r}</Typography>
+                      <Typography variant="body2">{r.description}</Typography>
                     </ListItem>
                   ))}
                 </List>

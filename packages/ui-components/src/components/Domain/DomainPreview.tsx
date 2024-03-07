@@ -43,7 +43,7 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
     marginTop: theme.spacing(2),
   },
   contentContainer: {
-    width: '250px',
+    width: '280px',
     marginTop: theme.spacing(-2.5),
   },
   footerContainer: {
@@ -63,8 +63,8 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
     backgroundColor: 'white',
     border: '2px solid white',
     borderRadius: '50%',
-    height: `${size + 4}px`,
-    width: `${size + 4}px`,
+    height: `${size}px`,
+    width: `${size}px`,
   },
   avatarCard: {
     marginRight: theme.spacing(1),

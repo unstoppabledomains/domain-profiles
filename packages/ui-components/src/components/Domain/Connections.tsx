@@ -21,12 +21,21 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     width: '100%',
   },
+  connectionContainer: {
+    display: 'inline-block',
+    marginRight: theme.spacing(1),
+    marginBottom: theme.spacing(0.5),
+    padding: theme.spacing(0.5),
+    backgroundImage: `linear-gradient(${theme.palette.white}, ${theme.palette.neutralShades[100]})`,
+    borderRadius: theme.shape.borderRadius,
+    boxShadow: theme.shadows[1],
+  },
   connectionReasonContainer: {
     display: 'flex',
     flexDirection: 'column',
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
-    backgroundImage: `linear-gradient(${theme.palette.neutralShades[100]}, ${theme.palette.neutralShades[300]})`,
+    backgroundImage: `linear-gradient(${theme.palette.white}, ${theme.palette.neutralShades[100]})`,
     borderRadius: theme.shape.borderRadius,
     boxShadow: theme.shadows[3],
     padding: theme.spacing(1),
@@ -55,17 +64,17 @@ const Connections: React.FC<Props> = ({domain, connections}) => {
     const connectionNode = connections?.find(c => c.domain === tag.value);
 
     return (
-      <Box display="inline-flex" mr={1} mb={0.5}>
+      <Box className={classes.connectionContainer}>
         <DomainPreview
           domain={tag.value}
-          size={fontSize}
+          size={fontSize + 5}
           chatUser={chatUser}
           setOpenChat={setOpenChat}
           setWeb3Deps={setWeb3Deps}
           avatarPath={connectionNode?.imageUrl}
           avatarDescription={
             <Typography
-              ml={1}
+              ml={0.5}
               sx={{color: color || theme.palette.neutralShades[700], fontSize}}
             >
               {tag.value}
@@ -98,8 +107,8 @@ const Connections: React.FC<Props> = ({domain, connections}) => {
   return (
     <Box className={classes.container}>
       <TagCloud
-        minSize={12}
-        maxSize={20}
+        minSize={10}
+        maxSize={18}
         tags={(connections || []).map(c => ({
           value: c.domain || c.address,
           count: c.score,

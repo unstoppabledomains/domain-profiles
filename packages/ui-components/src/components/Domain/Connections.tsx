@@ -1,9 +1,9 @@
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {useTheme} from '@mui/material/styles';
 import React from 'react';
 import type {Tag} from 'react-tagcloud';
 import {TagCloud} from 'react-tagcloud';
@@ -24,11 +24,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   connectionContainer: {
     display: 'inline-block',
     marginRight: theme.spacing(1),
-    marginBottom: theme.spacing(0.5),
-    padding: theme.spacing(0.5),
-    backgroundImage: `linear-gradient(${theme.palette.white}, ${theme.palette.neutralShades[100]})`,
-    borderRadius: theme.shape.borderRadius,
-    boxShadow: theme.shadows[1],
+    marginBottom: theme.spacing(1),
   },
   connectionReasonContainer: {
     display: 'flex',
@@ -58,46 +54,57 @@ const Connections: React.FC<Props> = ({domain, connections}) => {
   const [t] = useTranslationContext();
   const {setWeb3Deps} = useWeb3Context();
   const {chatUser, setOpenChat} = useUnstoppableMessaging();
-  const theme = useTheme();
 
-  const renderTag = (tag: Tag, fontSize: number, color: string) => {
+  const renderTag = (tag: Tag, fontSize: number, _color: string) => {
     const connectionNode = connections?.find(c => c.domain === tag.value);
 
     return (
       <Box className={classes.connectionContainer}>
-        <DomainPreview
-          domain={tag.value}
-          size={fontSize + 5}
-          chatUser={chatUser}
-          setOpenChat={setOpenChat}
-          setWeb3Deps={setWeb3Deps}
-          avatarPath={connectionNode?.imageUrl}
-          avatarDescription={
-            <Typography
-              ml={0.5}
-              sx={{color: color || theme.palette.neutralShades[700], fontSize}}
-            >
-              {tag.value}
-            </Typography>
-          }
-          secondaryDescription={
-            connectionNode ? (
-              <Box className={classes.connectionReasonContainer}>
-                <Typography variant="body2">
-                  {t('profile.connectionScore')}: <b>{connectionNode.score}</b>
+        <Chip
+          size="medium"
+          color="default"
+          label={
+            <DomainPreview
+              domain={tag.value}
+              size={fontSize + 5}
+              chatUser={chatUser}
+              setOpenChat={setOpenChat}
+              setWeb3Deps={setWeb3Deps}
+              avatarPath={connectionNode?.imageUrl}
+              avatarDescription={
+                <Typography
+                  ml={1}
+                  sx={{
+                    fontSize,
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {tag.value}
                 </Typography>
-                <List sx={{listStyleType: 'disc', pl: 4, mb: -1, mt: -1}}>
-                  {connectionNode.reasons.map(r => (
-                    <ListItem
-                      sx={{display: 'list-item'}}
-                      key={`${tag.value}-${r}`}
-                    >
-                      <Typography variant="body2">{r.description}</Typography>
-                    </ListItem>
-                  ))}
-                </List>
-              </Box>
-            ) : undefined
+              }
+              secondaryDescription={
+                connectionNode ? (
+                  <Box className={classes.connectionReasonContainer}>
+                    <Typography variant="body2">
+                      {t('profile.connectionScore')}:{' '}
+                      <b>{connectionNode.score}</b>
+                    </Typography>
+                    <List sx={{listStyleType: 'disc', pl: 4, mb: -1, mt: -1}}>
+                      {connectionNode.reasons.map(r => (
+                        <ListItem
+                          sx={{display: 'list-item'}}
+                          key={`${tag.value}-${r}`}
+                        >
+                          <Typography variant="body2">
+                            {r.description}
+                          </Typography>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+                ) : undefined
+              }
+            />
           }
         />
       </Box>
@@ -118,9 +125,11 @@ const Connections: React.FC<Props> = ({domain, connections}) => {
           luminosity: 'dark',
         }}
         renderer={renderTag}
+        shuffle={false}
       >
         {connections
           ?.filter(c => c.domain)
+          .sort((a, b) => a.score - b.score)
           .map((c, i) => {
             return <div key={`tc-${c.domain}-${i}`}>{c.domain}</div>;
           })}

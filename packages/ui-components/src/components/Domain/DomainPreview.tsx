@@ -65,6 +65,7 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
     borderRadius: '50%',
     height: `${size}px`,
     width: `${size}px`,
+    cursor: 'pointer',
   },
   avatarCard: {
     marginRight: theme.spacing(1),

@@ -40,6 +40,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
     color: theme.palette.neutralShades[600],
   },
+  clickable: {
+    cursor: 'pointer',
+  },
 }));
 
 type LeftBarContentCollapseProps = {
@@ -49,6 +52,7 @@ type LeftBarContentCollapseProps = {
   content?: React.ReactNode;
   persist?: boolean;
   forceExpand?: boolean;
+  expandOnHeaderClick?: boolean;
 };
 
 const LeftBarContentCollapse: React.FC<LeftBarContentCollapseProps> = ({
@@ -58,8 +62,9 @@ const LeftBarContentCollapse: React.FC<LeftBarContentCollapseProps> = ({
   content,
   persist,
   forceExpand,
+  expandOnHeaderClick,
 }) => {
-  const {classes} = useStyles();
+  const {classes, cx} = useStyles();
   const [expanded, setExpanded] = useState(forceExpand || false);
 
   const handleToggleExpanded = () => {
@@ -73,7 +78,14 @@ const LeftBarContentCollapse: React.FC<LeftBarContentCollapseProps> = ({
           <Box mr={1} className={classes.text}>
             {icon}
           </Box>
-          <Box className={classes.text}>{header}</Box>
+          <Box
+            className={cx(classes.text, {
+              [classes.clickable]: expandOnHeaderClick,
+            })}
+            onClick={expandOnHeaderClick ? handleToggleExpanded : undefined}
+          >
+            {header}
+          </Box>
           {content && (
             <Box ml={1} className={classes.icon}>
               <ExpandMoreOutlinedIcon

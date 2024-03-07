@@ -236,12 +236,6 @@ const DomainProfile = ({
     networkId: null,
     owner: ownerAddress,
   });
-  const hasMoreInfo =
-    Boolean(profileData?.profile?.location) ||
-    ipfsHash ||
-    profileData?.profile?.web2Url ||
-    ensDomainStatus?.expiresAt;
-
   const hasAddresses = Boolean(
     Object.keys(addressRecords.addresses ?? {}).length ||
       Object.keys(addressRecords.multicoinAddresses ?? {}).length,
@@ -873,6 +867,7 @@ const DomainProfile = ({
                   <LeftBarContentCollapse
                     id="addresses"
                     icon={<WalletOutlinedIcon />}
+                    expandOnHeaderClick={true}
                     header={
                       <Typography>
                         {t('profile.addressCount', {
@@ -1100,88 +1095,70 @@ const DomainProfile = ({
                     />
                   </Box>
                 )}
-                {hasMoreInfo && (
+                {ipfsHash && (
                   <LeftBarContentCollapse
-                    id="moreInfo"
-                    icon={<InfoOutlinedIcon />}
+                    icon={<LaunchOutlinedIcon />}
                     header={
-                      <Typography>{t('profile.moreInformation')}</Typography>
+                      <Link
+                        external
+                        href={`${config.IPFS_BASE_URL}${normalizeIpfsHash(
+                          ipfsHash,
+                        )}`}
+                        className={classes.websiteLink}
+                      >
+                        {`${domain} (${ipfsHash.slice(
+                          0,
+                          10,
+                        )}...${ipfsHash.slice(-4)})`}
+                      </Link>
                     }
-                    persist={true}
-                    content={
-                      <Box>
-                        {ipfsHash && (
-                          <LeftBarContentCollapse
-                            icon={<LaunchOutlinedIcon />}
-                            header={
-                              <Link
-                                external
-                                href={`${
-                                  config.IPFS_BASE_URL
-                                }${normalizeIpfsHash(ipfsHash)}`}
-                                className={classes.websiteLink}
-                              >
-                                {`${domain} (${ipfsHash.slice(
-                                  0,
-                                  10,
-                                )}...${ipfsHash.slice(-4)})`}
-                              </Link>
-                            }
-                            id="ipfs"
-                          />
+                    id="ipfs"
+                  />
+                )}
+                {profileData?.profile?.web2Url && (
+                  <LeftBarContentCollapse
+                    icon={<LaunchOutlinedIcon />}
+                    header={
+                      <Link
+                        external
+                        href={profileData?.profile?.web2Url}
+                        className={classes.websiteLink}
+                      >
+                        {profileData?.profile?.web2Url.replace(
+                          /^https?:\/\/|\/$/g,
+                          '',
                         )}
-                        {profileData?.profile?.web2Url && (
-                          <LeftBarContentCollapse
-                            icon={<LaunchOutlinedIcon />}
-                            header={
-                              <Link
-                                external
-                                href={profileData?.profile?.web2Url}
-                                className={classes.websiteLink}
-                              >
-                                {profileData?.profile?.web2Url.replace(
-                                  /^https?:\/\/|\/$/g,
-                                  '',
-                                )}
-                              </Link>
-                            }
-                            id="web2Url"
-                          />
-                        )}
-                        {profileData?.profile?.location && (
-                          <LeftBarContentCollapse
-                            icon={<FmdGoodOutlinedIcon />}
-                            header={
-                              <Typography>
-                                {profileData?.profile?.location}
-                              </Typography>
-                            }
-                            id="location"
-                          />
-                        )}
-                        {isEnsDomain && ensDomainStatus?.expiresAt && (
-                          <LeftBarContentCollapse
-                            icon={<RestoreOutlinedIcon />}
-                            header={
-                              <Typography>
-                                {t('profile.thisDomainExpires', {
-                                  action: isPast(
-                                    new Date(ensDomainStatus.expiresAt),
-                                  )
-                                    ? t('profile.expired')
-                                    : t('profile.expires'),
-                                  date: format(
-                                    new Date(ensDomainStatus.expiresAt),
-                                    'MMM d, yyyy',
-                                  ),
-                                })}
-                              </Typography>
-                            }
-                            id="ensExpiration"
-                          />
-                        )}
-                      </Box>
+                      </Link>
                     }
+                    id="web2Url"
+                  />
+                )}
+                {profileData?.profile?.location && (
+                  <LeftBarContentCollapse
+                    icon={<FmdGoodOutlinedIcon />}
+                    header={
+                      <Typography>{profileData?.profile?.location}</Typography>
+                    }
+                    id="location"
+                  />
+                )}
+                {isEnsDomain && ensDomainStatus?.expiresAt && (
+                  <LeftBarContentCollapse
+                    icon={<RestoreOutlinedIcon />}
+                    header={
+                      <Typography>
+                        {t('profile.thisDomainExpires', {
+                          action: isPast(new Date(ensDomainStatus.expiresAt))
+                            ? t('profile.expired')
+                            : t('profile.expires'),
+                          date: format(
+                            new Date(ensDomainStatus.expiresAt),
+                            'MMM d, yyyy',
+                          ),
+                        })}
+                      </Typography>
+                    }
+                    id="ensExpiration"
                   />
                 )}
                 {connections && (
@@ -1189,13 +1166,10 @@ const DomainProfile = ({
                     id="connections"
                     icon={<ShareOutlinedIcon />}
                     forceExpand={false}
+                    expandOnHeaderClick={true}
                     header={
                       <Typography>
                         {t('profile.connectionsTitle', {
-                          count:
-                            connections.length >= 10
-                              ? `${connections.length}+`
-                              : connections.length,
                           s: connections.length === 1 ? '' : 's',
                         })}
                       </Typography>

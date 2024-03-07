@@ -499,7 +499,7 @@
     "configured": "Configured",
     "configuredTokensFromGallery": "You have {{cryptoAddresses}} configured in your gallery.",
     "connectionScore": "On-chain connection score",
-    "connectionsTitle": "{{count}} On-chain connection{{s}}",
+    "connectionsTitle": "Recommended profile{{s}}",
     "contactSeller": "Contact seller",
     "copyAddress": "Copy Address",
     "copyDomainName": "Copy domain name",

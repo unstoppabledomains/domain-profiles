@@ -812,7 +812,9 @@ const DomainProfile = ({
                                   }
                                   href={`${config.UD_ME_BASE_URL}/${profileData?.portfolio?.wallet?.primaryDomain}`}
                                 >
-                                  {t('profile.viewProfile')}
+                                  <Typography>
+                                    {t('profile.viewProfile')}
+                                  </Typography>
                                 </Link>
                               )}
                             </Box>
@@ -1107,10 +1109,12 @@ const DomainProfile = ({
                         )}`}
                         className={classes.websiteLink}
                       >
-                        {`${domain} (${ipfsHash.slice(
-                          0,
-                          10,
-                        )}...${ipfsHash.slice(-4)})`}
+                        <Typography>
+                          {`${domain} (${ipfsHash.slice(
+                            0,
+                            10,
+                          )}...${ipfsHash.slice(-4)})`}{' '}
+                        </Typography>
                       </Link>
                     }
                     id="ipfs"
@@ -1125,10 +1129,12 @@ const DomainProfile = ({
                         href={profileData?.profile?.web2Url}
                         className={classes.websiteLink}
                       >
-                        {profileData?.profile?.web2Url.replace(
-                          /^https?:\/\/|\/$/g,
-                          '',
-                        )}
+                        <Typography>
+                          {profileData?.profile?.web2Url.replace(
+                            /^https?:\/\/|\/$/g,
+                            '',
+                          )}
+                        </Typography>
                       </Link>
                     }
                     id="web2Url"

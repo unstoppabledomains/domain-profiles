@@ -232,7 +232,7 @@ export const DomainWalletTransactions: React.FC<
   ) => {
     const isSender =
       (wallets || []).filter(
-        w => w.address.toLowerCase() === tx.from.address.toLowerCase(),
+        w => w.address.toLowerCase() === tx.from?.address.toLowerCase(),
       ).length > 0;
     const isNft = tx.type === 'nft';
     const isErc20 = tx.type === 'erc20';
@@ -252,19 +252,20 @@ export const DomainWalletTransactions: React.FC<
     const actionSubject =
       isSender && isXfer
         ? t('activity.to', {
-            subject: tx.to.label || truncateEthAddress(tx.to.address),
+            subject: tx.to.label || truncateEthAddress(tx.to.address || ''),
           })
         : !isSender && isXfer
         ? tx.from.address
           ? t('activity.from', {
-              subject: tx.from.label || truncateEthAddress(tx.from.address),
+              subject:
+                tx.from.label || truncateEthAddress(tx.from.address || ''),
             })
           : ''
         : isNft
         ? tx.method
         : isSender
-        ? tx.to.label || truncateEthAddress(tx.to.address)
-        : tx.from.label || truncateEthAddress(tx.from.address);
+        ? tx.to.label || truncateEthAddress(tx.to.address || '')
+        : tx.from.label || truncateEthAddress(tx.from.address || '');
     const actionSubjectLink = isNft
       ? tx.link
       : isSender && isXfer

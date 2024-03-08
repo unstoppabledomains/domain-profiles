@@ -372,7 +372,8 @@ const DomainProfile = ({
     hasAddresses ||
     isForSale ||
     hasBadges ||
-    ensDomainStatus;
+    ensDomainStatus ||
+    walletBalances;
 
   useEffect(() => {
     // wait until mounted

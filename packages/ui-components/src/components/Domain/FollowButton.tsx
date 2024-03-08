@@ -151,6 +151,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
           onMouseEnter={handleMouseOver}
           onMouseLeave={handleMouseOver}
           onClick={handleClick}
+          sx={{width: '100px'}}
           icon={
             !isFollowing ? (
               <PersonAddAltOutlinedIcon />

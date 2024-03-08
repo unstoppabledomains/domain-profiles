@@ -302,6 +302,14 @@ const DomainProfile = ({
     setShowOtherDomainsModal(false);
   };
 
+  const handleConnectionsClicked = async () => {
+    // retrieve social graph after wallet balances are complete
+    const connectionData = await getDomainConnections(domain);
+    if (connectionData) {
+      setConnections(connectionData);
+    }
+  };
+
   const handleManageDomainModalUpdate = async (
     tab: DomainProfileTabType,
     updatedData?: SerializedPublicDomainProfileData,
@@ -484,12 +492,6 @@ const DomainProfile = ({
         } else {
           // an undefined value means an error was caught
           setIsWalletBalanceError(true);
-        }
-
-        // retrieve social graph after wallet balances are complete
-        const connectionData = await getDomainConnections(domain);
-        if (connectionData) {
-          setConnections(connectionData);
         }
       } catch (e) {
         notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
@@ -1173,6 +1175,7 @@ const DomainProfile = ({
                   icon={<ShareOutlinedIcon />}
                   forceExpand={false}
                   expandOnHeaderClick={true}
+                  onExpand={handleConnectionsClicked}
                   header={
                     <Typography>{t('profile.connectionsTitle')}</Typography>
                   }

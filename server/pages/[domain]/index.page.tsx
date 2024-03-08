@@ -13,6 +13,7 @@ import ManageHistoryOutlinedIcon from '@mui/icons-material/ManageHistoryOutlined
 import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import RestoreOutlinedIcon from '@mui/icons-material/RestoreOutlined';
+import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import Box from '@mui/material/Box';
@@ -51,6 +52,7 @@ import type {
   SerializedCryptoWalletBadge,
   SerializedDomainProfileSocialAccountsUserInfo,
   SerializedPublicDomainProfileData,
+  SerializedRecommendation,
   SerializedWalletBalance,
 } from '@unstoppabledomains/ui-components';
 import {
@@ -58,6 +60,7 @@ import {
   Badge,
   Badges,
   ChipControlButton,
+  Connections,
   CopyToClipboard,
   CrownIcon,
   CryptoAddresses,
@@ -88,7 +91,6 @@ import {
   formOpenSeaLink,
   getDomainBadges,
   getFollowers,
-  getIdentity,
   getImageUrl,
   getProfileData,
   getSeoTags,
@@ -102,7 +104,10 @@ import {
   useUnstoppableMessaging,
   useWeb3Context,
 } from '@unstoppabledomains/ui-components';
-import {getOwnerDomains} from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
+import {
+  getDomainConnections,
+  getOwnerDomains,
+} from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
 import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
 import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
@@ -147,11 +152,13 @@ const DomainProfile = ({
   const [authDomain, setAuthDomain] = useState('');
   const [displayQrCode, setDisplayQrCode] = useState(false);
   const [isOwner, setIsOwner] = useState<boolean>();
+  const [isWalletBalanceError, setIsWalletBalanceError] = useState<boolean>();
   const [someSocialsPublic, setIsSomeSocialsPublic] = useState<boolean>(false);
   const [badgeTypes, setBadgeTypes] = useState<string[]>([]);
   const [badges, setBadges] = useState<DomainBadgesResponse>();
   const [badgesDisabled, setBadgesDisabled] = useState(true);
   const [records, setRecords] = useState<Record<string, string>>({});
+  const [connections, setConnections] = useState<SerializedRecommendation[]>();
   const [walletBalances, setWalletBalances] =
     useState<SerializedWalletBalance[]>();
   const [metadata, setMetadata] = useState<Record<string, string | boolean>>(
@@ -229,12 +236,6 @@ const DomainProfile = ({
     networkId: null,
     owner: ownerAddress,
   });
-  const hasMoreInfo =
-    Boolean(profileData?.profile?.location) ||
-    ipfsHash ||
-    profileData?.profile?.web2Url ||
-    ensDomainStatus?.expiresAt;
-
   const hasAddresses = Boolean(
     Object.keys(addressRecords.addresses ?? {}).length ||
       Object.keys(addressRecords.multicoinAddresses ?? {}).length,
@@ -371,7 +372,8 @@ const DomainProfile = ({
     hasAddresses ||
     isForSale ||
     hasBadges ||
-    ensDomainStatus;
+    ensDomainStatus ||
+    walletBalances;
 
   useEffect(() => {
     // wait until mounted
@@ -471,12 +473,23 @@ const DomainProfile = ({
   const loadWallets = async () => {
     if (profileData) {
       try {
+        // retrieve wallet balances
         const recordsData = await getProfileData(domain, [
           DomainFieldTypes.WalletBalances,
         ]);
         if (recordsData?.walletBalances) {
+          // set wallet balance state values
           profileData.walletBalances = recordsData.walletBalances;
           setWalletBalances(recordsData.walletBalances);
+        } else {
+          // an undefined value means an error was caught
+          setIsWalletBalanceError(true);
+        }
+
+        // retrieve social graph after wallet balances are complete
+        const connectionData = await getDomainConnections(domain);
+        if (connectionData) {
+          setConnections(connectionData);
         }
       } catch (e) {
         notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
@@ -723,6 +736,7 @@ const DomainProfile = ({
                         icon={<ChatIcon />}
                         label={t('push.chat')}
                         sx={{marginLeft: 1}}
+                        variant="outlined"
                       />
                     )}
                   </>
@@ -855,6 +869,7 @@ const DomainProfile = ({
                   <LeftBarContentCollapse
                     id="addresses"
                     icon={<WalletOutlinedIcon />}
+                    expandOnHeaderClick={true}
                     header={
                       <Typography>
                         {t('profile.addressCount', {
@@ -970,25 +985,23 @@ const DomainProfile = ({
                       id="marketPrice"
                     />
                   )}
-                {profileData?.webacy && (
-                  <Box
-                    mb={-0.5}
-                    mt={-0.5}
-                    className={classes.otherDomainsLabel}
-                    onClick={() =>
-                      window.open(
-                        `https://dapp.webacy.com/unstoppable/${domain}`,
-                        '_blank',
-                      )
-                    }
-                  >
-                    <LeftBarContentCollapse
-                      icon={<HealthAndSafetyOutlinedIcon />}
-                      header={
-                        <Box display="flex" alignItems="center">
-                          <Typography mr={1}>
-                            {t('webacy.riskScore')}:
-                          </Typography>
+                <Box
+                  mb={-0.5}
+                  mt={-0.5}
+                  className={classes.otherDomainsLabel}
+                  onClick={() =>
+                    window.open(
+                      `https://dapp.webacy.com/unstoppable/${domain}`,
+                      '_blank',
+                    )
+                  }
+                >
+                  <LeftBarContentCollapse
+                    icon={<HealthAndSafetyOutlinedIcon />}
+                    header={
+                      <Box display="flex" alignItems="center">
+                        <Typography mr={1}>{t('webacy.riskScore')}</Typography>
+                        {profileData?.webacy && (
                           <Tooltip
                             arrow
                             title={
@@ -1055,117 +1068,114 @@ const DomainProfile = ({
                               }
                             />
                           </Tooltip>
-                          {isOwner &&
-                            !profileData.webacy.high &&
-                            !profileData.webacy.medium && (
-                              <Tooltip
-                                title={
-                                  <Typography variant="caption">
-                                    {t('webacy.share')}
-                                  </Typography>
-                                }
+                        )}
+                        {isOwner &&
+                          profileData?.webacy &&
+                          !profileData.webacy.high &&
+                          !profileData.webacy.medium && (
+                            <Tooltip
+                              title={
+                                <Typography variant="caption">
+                                  {t('webacy.share')}
+                                </Typography>
+                              }
+                            >
+                              <IconButton
+                                size="small"
+                                className={classes.riskScoreShareButton}
+                                onClick={handleShareRiskScore}
                               >
-                                <IconButton
-                                  size="small"
-                                  className={classes.riskScoreShareButton}
-                                  onClick={handleShareRiskScore}
-                                >
-                                  <IosShareIcon
-                                    className={classes.riskScoreShareIcon}
-                                  />
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                        </Box>
-                      }
-                      id="webacy"
-                    />
-                  </Box>
-                )}
-                {hasMoreInfo && (
-                  <LeftBarContentCollapse
-                    id="moreInfo"
-                    icon={<InfoOutlinedIcon />}
-                    header={
-                      <Typography>{t('profile.moreInformation')}</Typography>
-                    }
-                    persist={true}
-                    content={
-                      <Box>
-                        {ipfsHash && (
-                          <LeftBarContentCollapse
-                            icon={<LaunchOutlinedIcon />}
-                            header={
-                              <Link
-                                external
-                                href={`${
-                                  config.IPFS_BASE_URL
-                                }${normalizeIpfsHash(ipfsHash)}`}
-                                className={classes.websiteLink}
-                              >
-                                {`${domain} (${ipfsHash.slice(
-                                  0,
-                                  10,
-                                )}...${ipfsHash.slice(-4)})`}
-                              </Link>
-                            }
-                            id="ipfs"
-                          />
-                        )}
-                        {profileData?.profile?.web2Url && (
-                          <LeftBarContentCollapse
-                            icon={<LaunchOutlinedIcon />}
-                            header={
-                              <Link
-                                external
-                                href={profileData?.profile?.web2Url}
-                                className={classes.websiteLink}
-                              >
-                                {profileData?.profile?.web2Url.replace(
-                                  /^https?:\/\/|\/$/g,
-                                  '',
-                                )}
-                              </Link>
-                            }
-                            id="web2Url"
-                          />
-                        )}
-                        {profileData?.profile?.location && (
-                          <LeftBarContentCollapse
-                            icon={<FmdGoodOutlinedIcon />}
-                            header={
-                              <Typography>
-                                {profileData?.profile?.location}
-                              </Typography>
-                            }
-                            id="location"
-                          />
-                        )}
-                        {isEnsDomain && ensDomainStatus?.expiresAt && (
-                          <LeftBarContentCollapse
-                            icon={<RestoreOutlinedIcon />}
-                            header={
-                              <Typography>
-                                {t('profile.thisDomainExpires', {
-                                  action: isPast(
-                                    new Date(ensDomainStatus.expiresAt),
-                                  )
-                                    ? t('profile.expired')
-                                    : t('profile.expires'),
-                                  date: format(
-                                    new Date(ensDomainStatus.expiresAt),
-                                    'MMM d, yyyy',
-                                  ),
-                                })}
-                              </Typography>
-                            }
-                            id="ensExpiration"
-                          />
-                        )}
+                                <IosShareIcon
+                                  className={classes.riskScoreShareIcon}
+                                />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                       </Box>
                     }
+                    id="webacy"
+                  />
+                </Box>
+                {ipfsHash && (
+                  <LeftBarContentCollapse
+                    icon={<LaunchOutlinedIcon />}
+                    header={
+                      <Link
+                        external
+                        href={`${config.IPFS_BASE_URL}${normalizeIpfsHash(
+                          ipfsHash,
+                        )}`}
+                        className={classes.websiteLink}
+                      >
+                        {`${domain} (${ipfsHash.slice(
+                          0,
+                          10,
+                        )}...${ipfsHash.slice(-4)})`}
+                      </Link>
+                    }
+                    id="ipfs"
                   />
                 )}
+                {profileData?.profile?.web2Url && (
+                  <LeftBarContentCollapse
+                    icon={<LaunchOutlinedIcon />}
+                    header={
+                      <Link
+                        external
+                        href={profileData?.profile?.web2Url}
+                        className={classes.websiteLink}
+                      >
+                        {profileData?.profile?.web2Url.replace(
+                          /^https?:\/\/|\/$/g,
+                          '',
+                        )}
+                      </Link>
+                    }
+                    id="web2Url"
+                  />
+                )}
+                {profileData?.profile?.location && (
+                  <LeftBarContentCollapse
+                    icon={<FmdGoodOutlinedIcon />}
+                    header={
+                      <Typography>{profileData?.profile?.location}</Typography>
+                    }
+                    id="location"
+                  />
+                )}
+                {isEnsDomain && ensDomainStatus?.expiresAt && (
+                  <LeftBarContentCollapse
+                    icon={<RestoreOutlinedIcon />}
+                    header={
+                      <Typography>
+                        {t('profile.thisDomainExpires', {
+                          action: isPast(new Date(ensDomainStatus.expiresAt))
+                            ? t('profile.expired')
+                            : t('profile.expires'),
+                          date: format(
+                            new Date(ensDomainStatus.expiresAt),
+                            'MMM d, yyyy',
+                          ),
+                        })}
+                      </Typography>
+                    }
+                    id="ensExpiration"
+                  />
+                )}
+                <LeftBarContentCollapse
+                  id="connections"
+                  icon={<ShareOutlinedIcon />}
+                  forceExpand={false}
+                  expandOnHeaderClick={true}
+                  header={
+                    <Typography>{t('profile.connectionsTitle')}</Typography>
+                  }
+                  content={
+                    <Box mt={1}>
+                      <Connections domain={domain} connections={connections} />
+                    </Box>
+                  }
+                />
                 {Boolean(verifiedSocials.length) && someSocialsPublic && (
                   <Box className={classes.socialContainer}>
                     <Divider
@@ -1215,6 +1225,7 @@ const DomainProfile = ({
                   wallets={walletBalances}
                   domain={domain}
                   isOwner={isOwner}
+                  isError={isWalletBalanceError}
                 />
               </Grid>
               <Grid item xs={12} md={6}>
@@ -1222,6 +1233,7 @@ const DomainProfile = ({
                   wallets={walletBalances}
                   domain={domain}
                   isOwner={isOwner}
+                  isError={isWalletBalanceError}
                 />
               </Grid>
             </Grid>
@@ -1492,9 +1504,9 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
   };
 
   let profileData: SerializedPublicDomainProfileData | undefined;
-  let identity = null;
+  const identity = null;
   try {
-    const [profileDataObj, identityObj] = await Promise.allSettled([
+    const [profileDataObj] = await Promise.allSettled([
       getProfileData(domain, [
         DomainFieldTypes.Messaging,
         DomainFieldTypes.Profile,
@@ -1503,14 +1515,16 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         DomainFieldTypes.Market,
         DomainFieldTypes.Portfolio,
       ]),
-      getIdentity({name: domain}),
+      //getIdentity({name: domain}),
     ]);
     profileData =
       profileDataObj.status === 'fulfilled' ? profileDataObj.value : undefined;
+    /*
     identity =
       identityObj.status === 'fulfilled' && identityObj.value
         ? identityObj.value
         : null;
+        */
   } catch (e) {
     console.error(`error loading domain profile for ${domain}`, String(e));
   }

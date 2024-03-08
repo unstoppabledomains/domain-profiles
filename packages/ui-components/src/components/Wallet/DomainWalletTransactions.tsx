@@ -90,6 +90,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     height: 35,
   },
   noActivity: {
+    marginTop: theme.spacing(2),
     color: theme.palette.neutralShades[bgNeutralShade - 600],
   },
   txTitle: {
@@ -152,7 +153,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export const DomainWalletTransactions: React.FC<
   DomainWalletTransactionsProps
-> = ({domain, wallets}) => {
+> = ({domain, wallets, isError}) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
   const [cursors, setCursors] = useState<Record<string, string>>({});
@@ -408,14 +409,14 @@ export const DomainWalletTransactions: React.FC<
           )}
         </Box>
       </Box>
-      {txns && wallets ? (
+      {isError || (txns && wallets) ? (
         <Box
           mt={'15px'}
           mb={2}
           id={`scrollableTxDiv`}
           className={classes.scrollableContainer}
         >
-          {(txns || []).length > 0 ? (
+          {!isError && (txns || []).length > 0 ? (
             <InfiniteScroll
               scrollableTarget={`scrollableTxDiv`}
               hasMore={hasMore}
@@ -441,7 +442,7 @@ export const DomainWalletTransactions: React.FC<
             </InfiniteScroll>
           ) : (
             <Typography className={classes.noActivity} textAlign="center">
-              {t('activity.noActivity')}
+              {isError ? t('activity.retrieveError') : t('activity.noActivity')}
             </Typography>
           )}
         </Box>
@@ -462,6 +463,7 @@ export const DomainWalletTransactions: React.FC<
 export type DomainWalletTransactionsProps = {
   domain: string;
   isOwner?: boolean;
+  isError?: boolean;
   wallets?: SerializedWalletBalance[];
   minCount?: number;
   maxCount?: number;

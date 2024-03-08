@@ -15,6 +15,7 @@ import type {
   SerializedFollowerListData,
   SerializedProfileSearch,
   SerializedPublicDomainProfileData,
+  SerializedRecommendation,
   SerializedUserDomainProfileData,
 } from '../lib/types/domain';
 import {DomainProfileSocialMedia} from '../lib/types/domain';
@@ -22,7 +23,12 @@ import {DomainProfileSocialMedia} from '../lib/types/domain';
 export const DOMAIN_LIST_PAGE_SIZE = 8;
 
 const queryKey = {
-  followStatus: () => ['domainProfile', 'followingStatus'],
+  followStatus: (d1: string, d2: string) => [
+    'domainProfile',
+    'followingStatus',
+    d1,
+    d2,
+  ],
 };
 
 export const checkIfFollowingDomainProfile = async (
@@ -65,6 +71,13 @@ export const followDomainProfile = async (
     },
     body: JSON.stringify({domain: followerDomain}),
   });
+};
+
+export const getDomainConnections = async (
+  domain: string,
+): Promise<SerializedRecommendation[]> => {
+  const domainProfileUrl = `/public/${domain}/connections`;
+  return await fetchApi(domainProfileUrl, {host: config.PROFILE.HOST_URL});
 };
 
 export const getDomainNfts = async (
@@ -401,7 +414,7 @@ export const useDomainProfileFollowStatus = (
   followeeDomain: string,
 ) => {
   return useQuery(
-    queryKey.followStatus(),
+    queryKey.followStatus(followerDomain, followeeDomain),
     async (): Promise<{
       isFollowing: boolean;
       followerDomain: string;

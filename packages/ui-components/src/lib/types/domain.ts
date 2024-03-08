@@ -371,6 +371,20 @@ export type SerializedPublicDomainProfileData = {
   portfolio?: SerializedPortfolioSummary;
 };
 
+export type SerializedRecommendation = {
+  address: string;
+  domain?: string;
+  imageUrl?: string;
+  imageType?: string;
+  reasons: SerializedRecommendationReason[];
+  score: number;
+};
+
+export type SerializedRecommendationReason = {
+  id: string;
+  description: string;
+};
+
 export type SerializedSecondarySale = {
   date: Date;
   txHash?: string;

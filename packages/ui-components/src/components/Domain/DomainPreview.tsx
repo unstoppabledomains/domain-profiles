@@ -1,5 +1,5 @@
 import ChatIcon from '@mui/icons-material/ChatOutlined';
-import Avatar from '@mui/material/Avatar';
+import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -43,7 +43,7 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
     marginTop: theme.spacing(2),
   },
   contentContainer: {
-    width: '250px',
+    width: '280px',
     marginTop: theme.spacing(-2.5),
   },
   footerContainer: {
@@ -62,12 +62,17 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
     color: theme.palette.primary.main,
     backgroundColor: 'white',
     border: '2px solid white',
+    borderRadius: '50%',
+    height: `${size}px`,
+    width: `${size}px`,
+    cursor: 'pointer',
   },
   avatarCard: {
     marginRight: theme.spacing(1),
     color: theme.palette.primary.main,
     backgroundColor: 'white',
     border: '2px solid white',
+    borderRadius: '50%',
     cursor: 'pointer',
     width: '75px',
     height: '75px',
@@ -84,6 +89,9 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
   domain,
   size,
   chatUser,
+  avatarPath,
+  avatarDescription,
+  secondaryDescription,
   setOpenChat,
   setWeb3Deps,
 }) => {
@@ -96,12 +104,13 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
   const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
   const popoverId = `mouse-popover-${domain}`;
   const {extension} = splitDomain(domain);
-  const avatarPath =
-    extension === DomainSuffixes.Ens
+  const normalizedAvatarPath =
+    avatarPath ||
+    (extension === DomainSuffixes.Ens
       ? getImageUrl('/domains/ens-logo.svg')
       : Web2SuffixesList.includes(extension)
       ? getImageUrl('/domains/dns-logo.svg')
-      : `${config.UNSTOPPABLE_METADATA_ENDPOINT}/image-src/${domain}?withOverlay=false`;
+      : `${config.UNSTOPPABLE_METADATA_ENDPOINT}/image-src/${domain}?withOverlay=false`);
   const isMouseOver = Boolean(anchorEl);
 
   // read from local storage on page load
@@ -148,19 +157,32 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
     window.location.href = `${config.UD_ME_BASE_URL}/${domain}`;
   };
 
+  const handleImgError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.src =
+      extension === DomainSuffixes.Ens
+        ? getImageUrl('/domains/ens-logo.svg')
+        : Web2SuffixesList.includes(extension)
+        ? getImageUrl('/domains/dns-logo.svg')
+        : `${config.UNSTOPPABLE_METADATA_ENDPOINT}/image-src/${domain}?withOverlay=false`;
+  };
+
   return (
-    <div
+    <Box
       aria-owns={isMouseOver ? popoverId : undefined}
       aria-haspopup="true"
+      display="flex"
+      alignItems="center"
       onMouseEnter={handlePopoverOpen}
       onMouseLeave={handlePopoverClose}
     >
-      <Avatar
-        src={avatarPath}
+      <img
+        src={normalizedAvatarPath}
         onClick={handleViewProfile}
+        onError={handleImgError}
         className={classes.avatarMain}
         data-testid="domain-preview-main-img"
       />
+      {avatarDescription}
       <Popover
         id={popoverId}
         open={isMouseOver}
@@ -183,9 +205,10 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
         <Card>
           <CardHeader
             avatar={
-              <Avatar
+              <img
                 onClick={handleViewProfile}
-                src={avatarPath}
+                onError={handleImgError}
+                src={normalizedAvatarPath}
                 className={classes.avatarCard}
               />
             }
@@ -207,6 +230,7 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
                   {profileData?.profile?.description}
                 </Typography>
               </div>
+              <div className={classes.contentItem}>{secondaryDescription}</div>
               <div className={classes.footerContainer}>
                 <div>
                   <Typography
@@ -228,6 +252,12 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
             </div>
             {setWeb3Deps && (
               <Box className={classes.actionContainer}>
+                <ChipControlButton
+                  onClick={handleViewProfile}
+                  icon={<PermIdentityOutlinedIcon />}
+                  label={t('profile.viewProfile')}
+                  sx={{marginRight: 1}}
+                />
                 {authDomain &&
                   authAddress &&
                   authDomain.toLowerCase() !== domain.toLowerCase() && (
@@ -248,6 +278,7 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
                       icon={<ChatIcon />}
                       label={t('push.chat')}
                       sx={{marginLeft: 1}}
+                      variant="outlined"
                     />
                   )}
               </Box>
@@ -255,7 +286,7 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
           </CardContent>
         </Card>
       </Popover>
-    </div>
+    </Box>
   );
 };
 
@@ -263,6 +294,9 @@ export type DomainPreviewProps = {
   domain: string;
   size: number;
   chatUser?: string;
+  avatarPath?: string;
+  avatarDescription?: React.ReactNode;
+  secondaryDescription?: React.ReactNode;
   setOpenChat?: (s?: string) => void;
   setWeb3Deps?: (value: Web3Dependencies | undefined) => void;
 };

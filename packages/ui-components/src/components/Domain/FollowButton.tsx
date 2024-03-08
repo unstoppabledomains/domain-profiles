@@ -1,6 +1,6 @@
-import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
-import RemoveIcon from '@mui/icons-material/Remove';
+import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
+import PersonRemoveOutlinedIcon from '@mui/icons-material/PersonRemoveOutlined';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import type {Theme} from '@mui/material/styles';
@@ -57,6 +57,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     followStatus?.isFollowing ?? false,
   );
   const [followClicked, setFollowClicked] = useState(false);
+  const [isMouseOver, setIsMouseOver] = useState(false);
   const [t] = useTranslationContext();
 
   useEffect(() => {
@@ -70,6 +71,10 @@ const FollowButton: React.FC<FollowButtonProps> = ({
       setIsFollowing(followStatus.isFollowing);
     }
   }, [isLoading, followStatus]);
+
+  const handleMouseOver = () => {
+    setIsMouseOver(!isMouseOver);
+  };
 
   const handleClick = () => {
     if (!authDomain || !authAddress) {
@@ -108,17 +113,33 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         >
           <IconButton
             onClick={handleClick}
+            onMouseEnter={handleMouseOver}
+            onMouseLeave={handleMouseOver}
             data-testid="follow-button"
             className={classes.followButtonSmall}
+            disableRipple={true}
             size="small"
           >
             {isFollowing ? (
-              <RemoveIcon
-                fontSize="inherit"
-                sx={{'&&': {color: color || 'white'}}}
-              />
+              isMouseOver ? (
+                <PersonRemoveOutlinedIcon
+                  width="16px"
+                  height="16px"
+                  fontSize="inherit"
+                  sx={{'&&': {color: color || 'white'}}}
+                />
+              ) : (
+                <CheckIcon
+                  width="16px"
+                  height="16px"
+                  fontSize="inherit"
+                  sx={{'&&': {color: color || 'white'}}}
+                />
+              )
             ) : (
-              <AddIcon
+              <PersonAddAltOutlinedIcon
+                width="16px"
+                height="16px"
                 fontSize="inherit"
                 sx={{'&&': {color: color || 'white'}}}
               />
@@ -127,10 +148,28 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         </Tooltip>
       ) : (
         <ChipControlButton
+          onMouseEnter={handleMouseOver}
+          onMouseLeave={handleMouseOver}
           onClick={handleClick}
-          icon={!isFollowing ? <AddIcon /> : <CheckIcon />}
-          label={isFollowing ? t('profile.following') : t('profile.follow')}
+          sx={{width: '100px'}}
+          icon={
+            !isFollowing ? (
+              <PersonAddAltOutlinedIcon />
+            ) : isMouseOver ? (
+              <PersonRemoveOutlinedIcon />
+            ) : (
+              <CheckIcon />
+            )
+          }
+          label={
+            isFollowing
+              ? isMouseOver
+                ? t('profile.unfollow')
+                : t('profile.following')
+              : t('profile.follow')
+          }
           data-testid="follow-button"
+          variant="outlined"
         />
       )}
       <ProfileManager

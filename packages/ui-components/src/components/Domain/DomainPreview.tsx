@@ -278,6 +278,7 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
                       icon={<ChatIcon />}
                       label={t('push.chat')}
                       sx={{marginLeft: 1}}
+                      variant="outlined"
                     />
                   )}
               </Box>

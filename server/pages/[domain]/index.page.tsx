@@ -735,6 +735,7 @@ const DomainProfile = ({
                         icon={<ChatIcon />}
                         label={t('push.chat')}
                         sx={{marginLeft: 1}}
+                        variant="outlined"
                       />
                     )}
                   </>
@@ -983,25 +984,23 @@ const DomainProfile = ({
                       id="marketPrice"
                     />
                   )}
-                {profileData?.webacy && (
-                  <Box
-                    mb={-0.5}
-                    mt={-0.5}
-                    className={classes.otherDomainsLabel}
-                    onClick={() =>
-                      window.open(
-                        `https://dapp.webacy.com/unstoppable/${domain}`,
-                        '_blank',
-                      )
-                    }
-                  >
-                    <LeftBarContentCollapse
-                      icon={<HealthAndSafetyOutlinedIcon />}
-                      header={
-                        <Box display="flex" alignItems="center">
-                          <Typography mr={1}>
-                            {t('webacy.riskScore')}:
-                          </Typography>
+                <Box
+                  mb={-0.5}
+                  mt={-0.5}
+                  className={classes.otherDomainsLabel}
+                  onClick={() =>
+                    window.open(
+                      `https://dapp.webacy.com/unstoppable/${domain}`,
+                      '_blank',
+                    )
+                  }
+                >
+                  <LeftBarContentCollapse
+                    icon={<HealthAndSafetyOutlinedIcon />}
+                    header={
+                      <Box display="flex" alignItems="center">
+                        <Typography mr={1}>{t('webacy.riskScore')}</Typography>
+                        {profileData?.webacy && (
                           <Tooltip
                             arrow
                             title={
@@ -1068,33 +1067,34 @@ const DomainProfile = ({
                               }
                             />
                           </Tooltip>
-                          {isOwner &&
-                            !profileData.webacy.high &&
-                            !profileData.webacy.medium && (
-                              <Tooltip
-                                title={
-                                  <Typography variant="caption">
-                                    {t('webacy.share')}
-                                  </Typography>
-                                }
+                        )}
+                        {isOwner &&
+                          profileData?.webacy &&
+                          !profileData.webacy.high &&
+                          !profileData.webacy.medium && (
+                            <Tooltip
+                              title={
+                                <Typography variant="caption">
+                                  {t('webacy.share')}
+                                </Typography>
+                              }
+                            >
+                              <IconButton
+                                size="small"
+                                className={classes.riskScoreShareButton}
+                                onClick={handleShareRiskScore}
                               >
-                                <IconButton
-                                  size="small"
-                                  className={classes.riskScoreShareButton}
-                                  onClick={handleShareRiskScore}
-                                >
-                                  <IosShareIcon
-                                    className={classes.riskScoreShareIcon}
-                                  />
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                        </Box>
-                      }
-                      id="webacy"
-                    />
-                  </Box>
-                )}
+                                <IosShareIcon
+                                  className={classes.riskScoreShareIcon}
+                                />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                      </Box>
+                    }
+                    id="webacy"
+                  />
+                </Box>
                 {ipfsHash && (
                   <LeftBarContentCollapse
                     icon={<LaunchOutlinedIcon />}
@@ -1161,29 +1161,20 @@ const DomainProfile = ({
                     id="ensExpiration"
                   />
                 )}
-                {connections && (
-                  <LeftBarContentCollapse
-                    id="connections"
-                    icon={<ShareOutlinedIcon />}
-                    forceExpand={false}
-                    expandOnHeaderClick={true}
-                    header={
-                      <Typography>
-                        {t('profile.connectionsTitle', {
-                          s: connections.length === 1 ? '' : 's',
-                        })}
-                      </Typography>
-                    }
-                    content={
-                      <Box mt={1}>
-                        <Connections
-                          domain={domain}
-                          connections={connections}
-                        />
-                      </Box>
-                    }
-                  />
-                )}
+                <LeftBarContentCollapse
+                  id="connections"
+                  icon={<ShareOutlinedIcon />}
+                  forceExpand={false}
+                  expandOnHeaderClick={true}
+                  header={
+                    <Typography>{t('profile.connectionsTitle')}</Typography>
+                  }
+                  content={
+                    <Box mt={1}>
+                      <Connections domain={domain} connections={connections} />
+                    </Box>
+                  }
+                />
                 {Boolean(verifiedSocials.length) && someSocialsPublic && (
                   <Box className={classes.socialContainer}>
                     <Divider

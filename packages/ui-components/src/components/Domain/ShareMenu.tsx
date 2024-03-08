@@ -149,6 +149,7 @@ const ShareMenu: React.FC<ShareMenuProps> = ({
         onClick={handleChipClick}
         icon={<ShareIcon />}
         label={t('profile.share')}
+        variant="outlined"
       />
       <Menu
         id="simple-menu"

@@ -91,6 +91,7 @@ import {
   formOpenSeaLink,
   getDomainBadges,
   getFollowers,
+  getIdentity,
   getImageUrl,
   getProfileData,
   getSeoTags,
@@ -1513,9 +1514,9 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
   };
 
   let profileData: SerializedPublicDomainProfileData | undefined;
-  const identity = null;
+  let identity = null;
   try {
-    const [profileDataObj] = await Promise.allSettled([
+    const [profileDataObj, identityObj] = await Promise.allSettled([
       getProfileData(domain, [
         DomainFieldTypes.Messaging,
         DomainFieldTypes.Profile,
@@ -1524,16 +1525,14 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         DomainFieldTypes.Market,
         DomainFieldTypes.Portfolio,
       ]),
-      //getIdentity({name: domain}),
+      getIdentity({name: domain}),
     ]);
     profileData =
       profileDataObj.status === 'fulfilled' ? profileDataObj.value : undefined;
-    /*
     identity =
       identityObj.status === 'fulfilled' && identityObj.value
         ? identityObj.value
         : null;
-        */
   } catch (e) {
     console.error(`error loading domain profile for ${domain}`, String(e));
   }

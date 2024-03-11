@@ -238,7 +238,7 @@
     "addressNotVerifiedNonOwner": "Ownership of this address has not been verified.",
     "addWebsite": "Add link to website",
     "allSet": "All set!",
-    "applyToAllDomains": "Apply changes to all domains in wallet {{address}}",
+    "applyToAllDomains": "Apply to all domains in wallet {{address}}",
     "avatarJpgOrPngAndMaxSize": "Recommended: 1000x1000px, 5MB max size, JPG, PNG or GIF.",
     "avatarUrl": "Avatar URL",
     "avatarUrlRequirements": "Required URL must end with .jpg, .png, .gif or .glb",

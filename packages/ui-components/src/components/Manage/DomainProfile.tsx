@@ -167,6 +167,18 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
             </Grid>
             <Grid item xs={12} md={4}>
               <Box className={cx(classes.tabList, classes.tabWidth)}>
+                {isVerticalNav && (
+                  <Typography
+                    variant="h6"
+                    mb={1}
+                    mt={2}
+                    mr={3}
+                    display="flex"
+                    justifyContent="center"
+                  >
+                    {t('manage.manageProfile')}
+                  </Typography>
+                )}
                 <TabList
                   orientation={isVerticalNav ? 'vertical' : 'horizontal'}
                   onChange={handleTabChange}

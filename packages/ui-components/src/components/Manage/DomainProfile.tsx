@@ -12,6 +12,9 @@ import SwapHorizOutlinedIcon from '@mui/icons-material/SwapHorizOutlined';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
+// eslint-disable-next-line no-restricted-imports
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
@@ -20,7 +23,7 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import truncateEthAddress from 'truncate-eth-address';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -28,7 +31,12 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {getOwnerDomains} from '../../actions';
 import {useDomainConfig, useWeb3Context} from '../../hooks';
 import type {SerializedUserDomainProfileData} from '../../lib';
-import {isExternalDomain, useTranslationContext} from '../../lib';
+import {
+  DomainProfileKeys,
+  isExternalDomain,
+  loginWithAddress,
+  useTranslationContext,
+} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import {DomainListModal} from '../Domain';
 import {Badges as BadgesTab} from './Tabs/Badges';
@@ -86,8 +94,15 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
     },
   },
   domainTitle: {
-    marginLeft: theme.spacing(1),
+    display: 'inline',
+    paddingLeft: theme.spacing(1),
     cursor: 'pointer',
+    border: '1px solid white',
+    borderRadius: theme.shape.borderRadius,
+    '&:hover': {
+      border: `1px solid ${theme.palette.neutralShades[400]}`,
+      boxShadow: theme.shadows[2],
+    },
   },
   tabList: {
     overflow: 'hidden',
@@ -140,8 +155,22 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
   );
   const {configTab: tabValue, setConfigTab: setTabValue} = useDomainConfig();
   const [showOtherDomainsModal, setShowOtherDomainsModal] = useState(false);
+  const [authAddress, setAuthAddress] = useState<string>();
   const [domain, setDomain] = useState(initialDomain);
-  const {setWeb3Deps} = useWeb3Context();
+  const {web3Deps, setWeb3Deps} = useWeb3Context();
+
+  useEffect(() => {
+    setAuthAddress(
+      localStorage.getItem(DomainProfileKeys.AuthAddress) || undefined,
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!web3Deps?.address) {
+      return;
+    }
+    void loginWithAddress(web3Deps.address);
+  }, [web3Deps]);
 
   const isOnchainSupported =
     !isExternalDomain(domain) &&
@@ -198,7 +227,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
     <Box className={cx(classes.container, classes.containerWidth)}>
       <TabContext value={tabValue as DomainProfileTabType}>
         <Box className={classes.upperContainer}>
-          {onClose && (
+          {(web3Deps?.address || authAddress) && onClose && (
             <Box className={classes.actionContainer}>
               <IconButton onClick={onClose}>
                 <CloseIcon fontSize="small" />
@@ -207,15 +236,21 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
           )}
           <Grid container>
             <Grid item xs={12} className={classes.tabHeaderContainer}>
+              {!web3Deps?.address && !authAddress && (
+                <Alert severity="info">
+                  <AlertTitle>{t('manage.connectToManage')}</AlertTitle>
+                  {t('manage.connectToManageDescription', {
+                    address: truncateEthAddress(address),
+                  })}
+                </Alert>
+              )}
               <Typography
                 variant="h4"
                 className={classes.domainTitle}
                 onClick={handleOtherDomainsModalOpen}
               >
-                <Box display="flex" alignItems="center">
-                  {domain}
-                  <ExpandMoreIcon />
-                </Box>
+                {domain}
+                <ExpandMoreIcon />
               </Typography>
               <Typography
                 ml={1}
@@ -256,6 +291,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                       </Box>
                     }
                     value={DomainProfileTabType.Profile}
+                    disabled={!web3Deps?.address && !authAddress}
                   />
                   {isOnchainSupported && (
                     <Tab
@@ -267,6 +303,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                         </Box>
                       }
                       value={DomainProfileTabType.Crypto}
+                      disabled={!web3Deps?.address && !authAddress}
                     />
                   )}
                   {isOnchainSupported && (
@@ -279,6 +316,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                         </Box>
                       }
                       value={DomainProfileTabType.Reverse}
+                      disabled={!web3Deps?.address && !authAddress}
                     />
                   )}
                   {isOnchainSupported && (
@@ -291,6 +329,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                         </Box>
                       }
                       value={DomainProfileTabType.Website}
+                      disabled={!web3Deps?.address && !authAddress}
                     />
                   )}
                   <Tab
@@ -302,6 +341,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                       </Box>
                     }
                     value={DomainProfileTabType.Badges}
+                    disabled={!web3Deps?.address && !authAddress}
                   />
                   <Tab
                     icon={<CollectionsOutlinedIcon />}
@@ -312,6 +352,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                       </Box>
                     }
                     value={DomainProfileTabType.TokenGallery}
+                    disabled={!web3Deps?.address && !authAddress}
                   />
                   <Tab
                     icon={<MailLockOutlinedIcon />}
@@ -322,6 +363,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                       </Box>
                     }
                     value={DomainProfileTabType.Email}
+                    disabled={!web3Deps?.address && !authAddress}
                   />
                   <Tab
                     icon={<SellOutlinedIcon />}
@@ -332,6 +374,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                       </Box>
                     }
                     value={DomainProfileTabType.ListForSale}
+                    disabled={!web3Deps?.address && !authAddress}
                   />
                   {isOnchainSupported && (
                     <Tab
@@ -343,6 +386,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                         </Box>
                       }
                       value={DomainProfileTabType.Transfer}
+                      disabled={!web3Deps?.address && !authAddress}
                     />
                   )}
                 </TabList>
@@ -463,7 +507,9 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
           <DomainListModal
             id="domainList"
             title={t('manage.otherDomains')}
-            subtitle={t('manage.otherDomainsDescription')}
+            subtitle={t('manage.otherDomainsDescription', {
+              address: truncateEthAddress(address),
+            })}
             retrieveDomains={handleRetrieveOwnerDomains}
             open={showOtherDomainsModal}
             setWeb3Deps={setWeb3Deps}

@@ -721,7 +721,16 @@ const DomainProfile = ({
             )}
             {isOwner !== undefined && (
               <Box className={classes.menuButtonContainer}>
-                {!isOwner ? (
+                {(isOwner || !authAddress) && (
+                  <ChipControlButton
+                    data-testid="edit-profile-button"
+                    onClick={handleManageDomainModalOpen}
+                    icon={<EditOutlinedIcon />}
+                    label={t('manage.manageProfile')}
+                    sx={{marginRight: !authAddress ? 1 : undefined}}
+                  />
+                )}
+                {!isOwner && (
                   <>
                     <FollowButton
                       handleLogin={() => setLoginClicked(true)}
@@ -743,13 +752,6 @@ const DomainProfile = ({
                       />
                     )}
                   </>
-                ) : (
-                  <ChipControlButton
-                    data-testid="edit-profile-button"
-                    onClick={handleManageDomainModalOpen}
-                    icon={<EditOutlinedIcon />}
-                    label={t('manage.manageProfile')}
-                  />
                 )}
                 <Box ml={1}>
                   <ShareMenu

@@ -231,8 +231,6 @@
     "signOut": "Sign Out"
   },
   "manage": {
-    "otherDomains": "Other Domains",
-    "otherDomainsDescription": "Choose another domain to manage",
     "addAvatar": "Add avatar",
     "addCover": "Add cover",
     "addCurrency": "Add Currency",
@@ -255,6 +253,8 @@
     "clickToChangeVisibility": "Click a badge to show / hide on your public profile",
     "comingSoon": "Coming soon",
     "configure": "Configure",
+    "connectToManage": "Connect a wallet",
+    "connectToManageDescription": "Wallet {{address}} must be connected to manage this domain.",
     "connectToVerify": "Connect your {{extension}} wallet to verify ownership of this address.",
     "coverJpgOrPngAndMaxSize": "Recommended: 1440x200px, 5MB max size, JPG or PNG.",
     "crypto": "Crypto Addresses",
@@ -306,6 +306,8 @@
     "manageDomainModalOpenError": "Error opening domain management window",
     "manageProfile": "Manage",
     "onlyYouAndDapps": "Only you and allowed dApps",
+    "otherDomains": "Other Domains",
+    "otherDomainsDescription": "Choose another domain from {{address}} to manage",
     "overwriteExistingReverseResolution": "After the update, {{domain}} will no longer be your primary name for this wallet.",
     "ownerAddress": "Domain owner address: {{address}}",
     "pendingChanges": "Pending Changes",

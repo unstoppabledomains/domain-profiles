@@ -41,9 +41,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing(-3),
-    },
   },
   divider: {
     marginTop: theme.spacing(2),

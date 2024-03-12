@@ -43,6 +43,9 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
     flexDirection: 'column',
     justifyContent: 'space-between',
   },
+  containerWidth: {
+    maxWidth: `calc(${width} - ${theme.spacing(5)})`,
+  },
   upperContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -53,6 +56,9 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
     display: 'flex',
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(3),
+    [theme.breakpoints.down('md')]: {
+      marginRight: theme.spacing(3),
+    },
   },
   actionContainer: {
     position: 'absolute',
@@ -66,18 +72,13 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
     top: 0,
     zIndex: 1000000,
     paddingTop: theme.spacing(3),
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       marginLeft: theme.spacing(-0.5),
       marginRight: theme.spacing(-0.5),
     },
     [theme.breakpoints.up('md')]: {
       paddingBottom: theme.spacing(1),
       marginBottom: theme.spacing(-1),
-    },
-  },
-  tabWidth: {
-    [theme.breakpoints.down('sm')]: {
-      width: `calc(100vw - ${theme.spacing(6)})`,
     },
   },
   tabList: {
@@ -89,21 +90,23 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
       borderRadius: theme.shape.borderRadius,
       paddingLeft: theme.spacing(1),
     },
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
+      maxWidth: `calc(100vw - ${theme.spacing(6)})`,
       marginLeft: theme.spacing(0),
       marginRight: theme.spacing(0),
       marginTop: theme.spacing(1),
     },
   },
   tabLabel: {
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       maxWidth: '90px',
     },
   },
   tabContentItem: {
     marginLeft: theme.spacing(-3),
     marginRight: theme.spacing(-3),
-    [theme.breakpoints.down('sm')]: {
+    maxWidth: `calc(${width} + ${theme.spacing(5)})`,
+    [theme.breakpoints.down('md')]: {
       marginRight: theme.spacing(1),
     },
   },
@@ -140,7 +143,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
   };
 
   return (
-    <Box className={classes.container}>
+    <Box className={cx(classes.container, classes.containerWidth)}>
       <TabContext value={tabValue as DomainProfileTabType}>
         <Box className={classes.upperContainer}>
           {onClose && (
@@ -165,8 +168,8 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                 })}
               </Typography>
             </Grid>
-            <Grid item xs={12} md={4}>
-              <Box className={cx(classes.tabList, classes.tabWidth)}>
+            <Grid item xs={12} md={4} className={classes.containerWidth}>
+              <Box className={classes.tabList}>
                 {isVerticalNav && (
                   <Typography
                     variant="h6"
@@ -183,6 +186,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   orientation={isVerticalNav ? 'vertical' : 'horizontal'}
                   onChange={handleTabChange}
                   variant={isVerticalNav ? undefined : 'scrollable'}
+                  scrollButtons={false}
                 >
                   <Tab
                     icon={<AccountCircleOutlinedIcon />}
@@ -288,7 +292,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
             <Grid xs={12} md={8} item>
               <TabPanel
                 value={DomainProfileTabType.Profile}
-                className={cx(classes.tabContentItem, classes.tabWidth)}
+                className={cx(classes.tabContentItem)}
               >
                 <ProfileTab
                   address={address}
@@ -299,7 +303,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
               </TabPanel>
               <TabPanel
                 value={DomainProfileTabType.Badges}
-                className={cx(classes.tabContentItem, classes.tabWidth)}
+                className={cx(classes.tabContentItem)}
               >
                 <BadgesTab
                   address={address}
@@ -310,7 +314,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
               </TabPanel>
               <TabPanel
                 value={DomainProfileTabType.Email}
-                className={cx(classes.tabContentItem, classes.tabWidth)}
+                className={cx(classes.tabContentItem)}
               >
                 <EmailTab
                   address={address}
@@ -321,7 +325,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
               </TabPanel>
               <TabPanel
                 value={DomainProfileTabType.ListForSale}
-                className={cx(classes.tabContentItem, classes.tabWidth)}
+                className={cx(classes.tabContentItem)}
               >
                 <ListForSaleTab
                   address={address}
@@ -332,7 +336,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
               </TabPanel>
               <TabPanel
                 value={DomainProfileTabType.TokenGallery}
-                className={cx(classes.tabContentItem, classes.tabWidth)}
+                className={cx(classes.tabContentItem)}
               >
                 <TokenGalleryTab
                   address={address}
@@ -343,7 +347,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
               </TabPanel>
               <TabPanel
                 value={DomainProfileTabType.Crypto}
-                className={cx(classes.tabContentItem, classes.tabWidth)}
+                className={cx(classes.tabContentItem)}
               >
                 <CryptoTab
                   domain={domain}
@@ -355,7 +359,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
               </TabPanel>
               <TabPanel
                 value={DomainProfileTabType.Website}
-                className={cx(classes.tabContentItem, classes.tabWidth)}
+                className={cx(classes.tabContentItem)}
               >
                 <WebsiteTab
                   domain={domain}
@@ -366,7 +370,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
               </TabPanel>
               <TabPanel
                 value={DomainProfileTabType.Reverse}
-                className={cx(classes.tabContentItem, classes.tabWidth)}
+                className={cx(classes.tabContentItem)}
               >
                 <ReverseTab
                   address={address}
@@ -377,7 +381,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
               </TabPanel>
               <TabPanel
                 value={DomainProfileTabType.Transfer}
-                className={cx(classes.tabContentItem, classes.tabWidth)}
+                className={cx(classes.tabContentItem)}
               >
                 <TransferTab
                   address={address}
@@ -389,7 +393,13 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
             </Grid>
           </Grid>
         </Box>
-        <Box className={classes.lowerContainer}>{buttonComponent}</Box>
+        <Box className={cx(classes.lowerContainer)}>
+          <Grid container>
+            <Grid item xs={12} className={classes.containerWidth}>
+              {buttonComponent}
+            </Grid>
+          </Grid>
+        </Box>
       </TabContext>
     </Box>
   );

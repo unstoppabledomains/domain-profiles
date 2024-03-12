@@ -105,9 +105,10 @@ export const Transfer: React.FC<ManageTabProps> = ({
 
   useEffect(() => {
     // retrieve records and determine if there are pending transactions
+    setIsLoading(true);
     setButtonComponent(<></>);
     void loadRecords();
-  }, []);
+  }, [domain]);
 
   useEffect(() => {
     if (isLoading) {

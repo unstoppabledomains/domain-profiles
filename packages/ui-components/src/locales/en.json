@@ -231,6 +231,8 @@
     "signOut": "Sign Out"
   },
   "manage": {
+    "otherDomains": "Other Domains",
+    "otherDomainsDescription": "Choose another domain to manage",
     "addAvatar": "Add avatar",
     "addCover": "Add cover",
     "addCurrency": "Add Currency",
@@ -261,7 +263,7 @@
     "displayName": "Name",
     "domainProfileImage": "Domain profile image",
     "email": "Email Forwarding",
-    "emailDescription": "Your domain can help keep your identity secure. With email forwarding, use your domain to communicate and your private email address stays private.",
+    "emailDescription": "Your domain can help keep your identity secure. With email forwarding, use your domain to communicate and your email address stays private.",
     "enable": "Enable",
     "enableEmailForAddress": "Enable email forwarding",
     "enableEmailForAddressDescription": "Select this option to create an email account for **{{udMeAddress}}** and forward all messages to **{{privateAddress}}**",

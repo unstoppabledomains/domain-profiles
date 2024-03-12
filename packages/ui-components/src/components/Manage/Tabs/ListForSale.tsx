@@ -74,9 +74,10 @@ export const ListForSale: React.FC<ManageTabProps> = ({
     useState<SerializedUserDomainProfileData>();
 
   useEffect(() => {
+    setIsLoaded(false);
     setButtonComponent(<></>);
     setFireRequest(true);
-  }, []);
+  }, [domain]);
 
   useEffect(() => {
     if (!isLoaded) {

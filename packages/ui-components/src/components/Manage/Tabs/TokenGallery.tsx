@@ -53,9 +53,10 @@ export const TokenGallery: React.FC<ManageTabProps> = ({
     useState<Record<string, NftResponse>>();
 
   useEffect(() => {
+    setIsLoaded(false);
     setButtonComponent(<></>);
     void loadSettings();
-  }, []);
+  }, [domain]);
 
   useEffect(() => {
     if (!isLoaded) {

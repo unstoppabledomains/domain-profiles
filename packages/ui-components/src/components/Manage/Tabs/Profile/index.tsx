@@ -125,9 +125,10 @@ export const Profile: React.FC<ManageTabProps> = ({
   }>({data: null, file: null});
 
   useEffect(() => {
+    setIsLoaded(false);
     setButtonComponent(<></>);
     setFireRequest(true);
-  }, []);
+  }, [domain]);
 
   useEffect(() => {
     if (!isLoaded) {

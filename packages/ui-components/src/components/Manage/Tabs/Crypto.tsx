@@ -107,8 +107,9 @@ export const Crypto: React.FC<CryptoProps> = ({
     }
 
     // retrieve records and determine if there are pending transactions
+    setIsLoading(true);
     void loadRecords();
-  }, [resolverKeysLoading]);
+  }, [resolverKeysLoading, domain]);
 
   useEffect(() => {
     setButtonComponent(<></>);

@@ -2,6 +2,7 @@ import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined
 import CloseIcon from '@mui/icons-material/Close';
 import CollectionsOutlinedIcon from '@mui/icons-material/CollectionsOutlined';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import MailLockOutlinedIcon from '@mui/icons-material/MailLockOutlined';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
@@ -24,9 +25,12 @@ import truncateEthAddress from 'truncate-eth-address';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {useDomainConfig} from '../../hooks';
+import {getOwnerDomains} from '../../actions';
+import {useDomainConfig, useWeb3Context} from '../../hooks';
 import type {SerializedUserDomainProfileData} from '../../lib';
 import {isExternalDomain, useTranslationContext} from '../../lib';
+import {notifyEvent} from '../../lib/error';
+import {DomainListModal} from '../Domain';
 import {Badges as BadgesTab} from './Tabs/Badges';
 import {Crypto as CryptoTab} from './Tabs/Crypto';
 import {Email as EmailTab} from './Tabs/Email';
@@ -81,6 +85,10 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
       marginBottom: theme.spacing(-1),
     },
   },
+  domainTitle: {
+    marginLeft: theme.spacing(1),
+    cursor: 'pointer',
+  },
   tabList: {
     overflow: 'hidden',
     [theme.breakpoints.up('md')]: {
@@ -117,7 +125,7 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
 
 export const DomainProfile: React.FC<DomainProfileProps> = ({
   address,
-  domain,
+  domain: initialDomain,
   metadata,
   width,
   onClose,
@@ -131,15 +139,59 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
     <></>,
   );
   const {configTab: tabValue, setConfigTab: setTabValue} = useDomainConfig();
+  const [showOtherDomainsModal, setShowOtherDomainsModal] = useState(false);
+  const [domain, setDomain] = useState(initialDomain);
+  const {setWeb3Deps} = useWeb3Context();
 
   const isOnchainSupported =
     !isExternalDomain(domain) &&
     (metadata.type as string)?.toLowerCase() === 'uns' &&
     (metadata.blockchain as string)?.toLowerCase() === 'matic';
 
+  const onUpdateWrapper = (
+    tab: DomainProfileTabType,
+    data?: SerializedUserDomainProfileData,
+  ) => {
+    if (domain === initialDomain) {
+      onUpdate(tab, data);
+    }
+  };
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
     const tv = newValue as DomainProfileTabType;
     setTabValue(tv);
+  };
+
+  const handleOtherDomainsModalOpen = () => {
+    setShowOtherDomainsModal(true);
+  };
+
+  const handleOtherDomainsModalClose = () => {
+    setShowOtherDomainsModal(false);
+  };
+
+  const handleOtherDomainClick = (v: string) => {
+    setDomain(v);
+    handleOtherDomainsModalClose();
+  };
+
+  const handleRetrieveOwnerDomains = async (cursor?: number | string) => {
+    const retData: {domains: string[]; cursor?: string} = {
+      domains: [],
+      cursor: undefined,
+    };
+    try {
+      const domainData = await getOwnerDomains(address, cursor as string, true);
+      if (domainData) {
+        retData.domains = domainData.data.map(f => f.domain);
+        retData.cursor = domainData.meta.pagination.cursor;
+      }
+    } catch (e) {
+      notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+        msg: 'error retrieving owner domains',
+      });
+    }
+    return retData;
   };
 
   return (
@@ -155,8 +207,15 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
           )}
           <Grid container>
             <Grid item xs={12} className={classes.tabHeaderContainer}>
-              <Typography ml={1} variant="h4">
-                {domain}
+              <Typography
+                variant="h4"
+                className={classes.domainTitle}
+                onClick={handleOtherDomainsModalOpen}
+              >
+                <Box display="flex" alignItems="center">
+                  {domain}
+                  <ExpandMoreIcon />
+                </Box>
               </Typography>
               <Typography
                 ml={1}
@@ -297,7 +356,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                 <ProfileTab
                   address={address}
                   domain={domain}
-                  onUpdate={onUpdate}
+                  onUpdate={onUpdateWrapper}
                   setButtonComponent={setButtonComponent}
                 />
               </TabPanel>
@@ -308,7 +367,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                 <BadgesTab
                   address={address}
                   domain={domain}
-                  onUpdate={onUpdate}
+                  onUpdate={onUpdateWrapper}
                   setButtonComponent={setButtonComponent}
                 />
               </TabPanel>
@@ -319,7 +378,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                 <EmailTab
                   address={address}
                   domain={domain}
-                  onUpdate={onUpdate}
+                  onUpdate={onUpdateWrapper}
                   setButtonComponent={setButtonComponent}
                 />
               </TabPanel>
@@ -330,7 +389,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                 <ListForSaleTab
                   address={address}
                   domain={domain}
-                  onUpdate={onUpdate}
+                  onUpdate={onUpdateWrapper}
                   setButtonComponent={setButtonComponent}
                 />
               </TabPanel>
@@ -341,7 +400,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                 <TokenGalleryTab
                   address={address}
                   domain={domain}
-                  onUpdate={onUpdate}
+                  onUpdate={onUpdateWrapper}
                   setButtonComponent={setButtonComponent}
                 />
               </TabPanel>
@@ -352,7 +411,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                 <CryptoTab
                   domain={domain}
                   address={address}
-                  onUpdate={onUpdate}
+                  onUpdate={onUpdateWrapper}
                   setButtonComponent={setButtonComponent}
                   filterFn={(k: string) => k.startsWith('crypto.')}
                 />
@@ -364,7 +423,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                 <WebsiteTab
                   domain={domain}
                   address={address}
-                  onUpdate={onUpdate}
+                  onUpdate={onUpdateWrapper}
                   setButtonComponent={setButtonComponent}
                 />
               </TabPanel>
@@ -375,7 +434,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                 <ReverseTab
                   address={address}
                   domain={domain}
-                  onUpdate={onUpdate}
+                  onUpdate={onUpdateWrapper}
                   setButtonComponent={setButtonComponent}
                 />
               </TabPanel>
@@ -386,7 +445,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                 <TransferTab
                   address={address}
                   domain={domain}
-                  onUpdate={onUpdate}
+                  onUpdate={onUpdateWrapper}
                   setButtonComponent={setButtonComponent}
                 />
               </TabPanel>
@@ -400,6 +459,18 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
             </Grid>
           </Grid>
         </Box>
+        {showOtherDomainsModal && (
+          <DomainListModal
+            id="domainList"
+            title={t('manage.otherDomains')}
+            subtitle={t('manage.otherDomainsDescription')}
+            retrieveDomains={handleRetrieveOwnerDomains}
+            open={showOtherDomainsModal}
+            setWeb3Deps={setWeb3Deps}
+            onClose={handleOtherDomainsModalClose}
+            onClick={handleOtherDomainClick}
+          />
+        )}
       </TabContext>
     </Box>
   );

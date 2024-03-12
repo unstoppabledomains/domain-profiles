@@ -64,9 +64,10 @@ export const Badges: React.FC<ManageTabProps> = ({
   const [updateErrorMessage, setUpdateErrorMessage] = useState<string>();
 
   useEffect(() => {
+    setIsLoaded(false);
     setButtonComponent(<></>);
     void loadBadges();
-  }, []);
+  }, [domain]);
 
   useEffect(() => {
     if (!isLoaded) {

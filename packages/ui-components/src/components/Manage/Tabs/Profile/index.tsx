@@ -88,6 +88,7 @@ export const Profile: React.FC<ManageTabProps> = ({
   address,
   domain,
   onUpdate,
+  onLoaded,
   setButtonComponent,
 }) => {
   const {classes} = useStyles();
@@ -173,6 +174,11 @@ export const Profile: React.FC<ManageTabProps> = ({
     try {
       // only proceed if signature available
       if (domain && signature && expiry) {
+        // callback to indicate signature was collected
+        if (onLoaded) {
+          onLoaded(true);
+        }
+
         // retrieve user profile data from profile API
         const existingData = await getProfileUserData(
           domain,

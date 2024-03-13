@@ -9,4 +9,5 @@ export type ManageTabProps = {
     tab: DomainProfileTabType,
     data?: SerializedUserDomainProfileData,
   ) => void;
+  onLoaded?: (isSuccess: boolean) => void;
 };

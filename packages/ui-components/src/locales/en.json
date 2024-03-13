@@ -308,6 +308,7 @@
     "onlyYouAndDapps": "Only you and allowed dApps",
     "otherDomains": "Other Domains",
     "otherDomainsDescription": "Choose another domain from {{address}} to manage",
+    "otherDomainsTooltip": "Manage a different domain",
     "overwriteExistingReverseResolution": "After the update, {{domain}} will no longer be your primary name for this wallet.",
     "ownerAddress": "Domain owner address: {{address}}",
     "pendingChanges": "Pending Changes",

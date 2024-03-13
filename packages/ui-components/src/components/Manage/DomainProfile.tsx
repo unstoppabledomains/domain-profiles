@@ -19,6 +19,7 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import Tab from '@mui/material/Tab';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
@@ -155,13 +156,14 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
   );
   const {configTab: tabValue, setConfigTab: setTabValue} = useDomainConfig();
   const [showOtherDomainsModal, setShowOtherDomainsModal] = useState(false);
-  const [authAddress, setAuthAddress] = useState<string>();
+  const [isOwner, setIsOwner] = useState(false);
   const [domain, setDomain] = useState(initialDomain);
   const {web3Deps, setWeb3Deps} = useWeb3Context();
 
   useEffect(() => {
-    setAuthAddress(
-      localStorage.getItem(DomainProfileKeys.AuthAddress) || undefined,
+    setIsOwner(
+      localStorage.getItem(DomainProfileKeys.AuthAddress)?.toLowerCase() ===
+        address.toLowerCase(),
     );
   }, []);
 
@@ -204,6 +206,10 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
     handleOtherDomainsModalClose();
   };
 
+  const handleProfileLoaded = (isSuccess: boolean) => {
+    setIsOwner(isSuccess);
+  };
+
   const handleRetrieveOwnerDomains = async (cursor?: number | string) => {
     const retData: {domains: string[]; cursor?: string} = {
       domains: [],
@@ -227,7 +233,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
     <Box className={cx(classes.container, classes.containerWidth)}>
       <TabContext value={tabValue as DomainProfileTabType}>
         <Box className={classes.upperContainer}>
-          {(web3Deps?.address || authAddress) && onClose && (
+          {(web3Deps?.address || isOwner) && onClose && (
             <Box className={classes.actionContainer}>
               <IconButton onClick={onClose}>
                 <CloseIcon fontSize="small" />
@@ -236,7 +242,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
           )}
           <Grid container>
             <Grid item xs={12} className={classes.tabHeaderContainer}>
-              {!web3Deps?.address && !authAddress && (
+              {!web3Deps?.address && !isOwner && (
                 <Alert severity="info">
                   <AlertTitle>{t('manage.connectToManage')}</AlertTitle>
                   {t('manage.connectToManageDescription', {
@@ -244,14 +250,16 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   })}
                 </Alert>
               )}
-              <Typography
-                variant="h4"
-                className={classes.domainTitle}
-                onClick={handleOtherDomainsModalOpen}
-              >
-                {domain}
-                <ExpandMoreIcon />
-              </Typography>
+              <Tooltip title={t('manage.otherDomainsTooltip')}>
+                <Typography
+                  variant="h4"
+                  className={classes.domainTitle}
+                  onClick={handleOtherDomainsModalOpen}
+                >
+                  {domain}
+                  <ExpandMoreIcon />
+                </Typography>
+              </Tooltip>
               <Typography
                 ml={1}
                 variant="body2"
@@ -291,7 +299,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                       </Box>
                     }
                     value={DomainProfileTabType.Profile}
-                    disabled={!web3Deps?.address && !authAddress}
+                    disabled={!web3Deps?.address && !isOwner}
                   />
                   {isOnchainSupported && (
                     <Tab
@@ -303,7 +311,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                         </Box>
                       }
                       value={DomainProfileTabType.Crypto}
-                      disabled={!web3Deps?.address && !authAddress}
+                      disabled={!web3Deps?.address && !isOwner}
                     />
                   )}
                   {isOnchainSupported && (
@@ -316,7 +324,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                         </Box>
                       }
                       value={DomainProfileTabType.Reverse}
-                      disabled={!web3Deps?.address && !authAddress}
+                      disabled={!web3Deps?.address && !isOwner}
                     />
                   )}
                   {isOnchainSupported && (
@@ -329,7 +337,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                         </Box>
                       }
                       value={DomainProfileTabType.Website}
-                      disabled={!web3Deps?.address && !authAddress}
+                      disabled={!web3Deps?.address && !isOwner}
                     />
                   )}
                   <Tab
@@ -341,7 +349,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                       </Box>
                     }
                     value={DomainProfileTabType.Badges}
-                    disabled={!web3Deps?.address && !authAddress}
+                    disabled={!web3Deps?.address && !isOwner}
                   />
                   <Tab
                     icon={<CollectionsOutlinedIcon />}
@@ -352,7 +360,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                       </Box>
                     }
                     value={DomainProfileTabType.TokenGallery}
-                    disabled={!web3Deps?.address && !authAddress}
+                    disabled={!web3Deps?.address && !isOwner}
                   />
                   <Tab
                     icon={<MailLockOutlinedIcon />}
@@ -363,7 +371,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                       </Box>
                     }
                     value={DomainProfileTabType.Email}
-                    disabled={!web3Deps?.address && !authAddress}
+                    disabled={!web3Deps?.address && !isOwner}
                   />
                   <Tab
                     icon={<SellOutlinedIcon />}
@@ -374,7 +382,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                       </Box>
                     }
                     value={DomainProfileTabType.ListForSale}
-                    disabled={!web3Deps?.address && !authAddress}
+                    disabled={!web3Deps?.address && !isOwner}
                   />
                   {isOnchainSupported && (
                     <Tab
@@ -386,7 +394,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                         </Box>
                       }
                       value={DomainProfileTabType.Transfer}
-                      disabled={!web3Deps?.address && !authAddress}
+                      disabled={!web3Deps?.address && !isOwner}
                     />
                   )}
                 </TabList>
@@ -401,6 +409,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   address={address}
                   domain={domain}
                   onUpdate={onUpdateWrapper}
+                  onLoaded={handleProfileLoaded}
                   setButtonComponent={setButtonComponent}
                 />
               </TabPanel>

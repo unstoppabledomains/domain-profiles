@@ -36,9 +36,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
     justifyItems: 'center',
-    [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing(-3),
-    },
   },
   contentContainer: {
     display: 'flex',
@@ -107,9 +104,10 @@ export const Website: React.FC<ManageTabProps> = ({
 
   useEffect(() => {
     // retrieve records and determine if there are pending transactions
+    setIsLoading(true);
     setButtonComponent(<></>);
     void loadRecords();
-  }, []);
+  }, [domain]);
 
   useEffect(() => {
     if (isLoading) {

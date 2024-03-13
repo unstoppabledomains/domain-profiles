@@ -206,7 +206,7 @@ export const setProfileUserData = async (
   bulkUpdate?: boolean,
 ): Promise<SerializedBulkDomainResponse> => {
   const compareField = <T>(original?: T, updated?: T): T | undefined => {
-    if (original !== updated) {
+    if (bulkUpdate || original !== updated) {
       return updated;
     }
     return undefined;
@@ -255,7 +255,7 @@ export const setProfileUserData = async (
           updatedProfile.profile?.publicDomainSellerEmail,
         ),
 
-        // image fields
+        // image data fields
         data: {
           image: profileImage,
           cover: coverImage,

@@ -22,9 +22,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing(-3),
-    },
   },
   infoContainer: {
     marginBottom: theme.spacing(2),
@@ -56,9 +53,10 @@ export const TokenGallery: React.FC<ManageTabProps> = ({
     useState<Record<string, NftResponse>>();
 
   useEffect(() => {
+    setIsLoaded(false);
     setButtonComponent(<></>);
     void loadSettings();
-  }, []);
+  }, [domain]);
 
   useEffect(() => {
     if (!isLoaded) {

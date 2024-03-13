@@ -46,9 +46,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
     justifyItems: 'center',
-    [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing(-3),
-    },
   },
   pendingTxContainer: {
     display: 'flex',
@@ -110,8 +107,9 @@ export const Crypto: React.FC<CryptoProps> = ({
     }
 
     // retrieve records and determine if there are pending transactions
+    setIsLoading(true);
     void loadRecords();
-  }, [resolverKeysLoading]);
+  }, [resolverKeysLoading, domain]);
 
   useEffect(() => {
     setButtonComponent(<></>);

@@ -26,9 +26,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing(-3),
-    },
   },
   checkboxContainer: {
     marginTop: theme.spacing(2),
@@ -77,9 +74,10 @@ export const ListForSale: React.FC<ManageTabProps> = ({
     useState<SerializedUserDomainProfileData>();
 
   useEffect(() => {
+    setIsLoaded(false);
     setButtonComponent(<></>);
     setFireRequest(true);
-  }, []);
+  }, [domain]);
 
   useEffect(() => {
     if (!isLoaded) {

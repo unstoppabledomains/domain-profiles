@@ -32,9 +32,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing(-3),
-    },
   },
   description: {
     color: theme.palette.neutralShades[600],
@@ -67,9 +64,10 @@ export const Badges: React.FC<ManageTabProps> = ({
   const [updateErrorMessage, setUpdateErrorMessage] = useState<string>();
 
   useEffect(() => {
+    setIsLoaded(false);
     setButtonComponent(<></>);
     void loadBadges();
-  }, []);
+  }, [domain]);
 
   useEffect(() => {
     if (!isLoaded) {

@@ -220,10 +220,15 @@ describe('<DomainProfile />', () => {
     });
   });
 
-  it('renders a share menu button', async () => {
+  it('does not render share button buy default', async () => {
+    customRender(<DomainProfile {...defaultProps()} />);
+    expect(() => screen.getByRole('button', {name: 'Share'})).toThrow();
+  });
+
+  it('always renders the edit profile button', async () => {
     customRender(<DomainProfile {...defaultProps()} />);
     await waitFor(() => {
-      expect(screen.getByRole('button', {name: 'Share'})).toBeInTheDocument();
+      expect(screen.queryByTestId('edit-profile-button')).toBeInTheDocument();
     });
   });
 
@@ -1206,6 +1211,13 @@ describe('Owner operations', () => {
         }
         return null;
       });
+  });
+
+  it('renders a share menu button for the owner', async () => {
+    customRender(<DomainProfile {...tokenGalleryProps} />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', {name: 'Share'})).toBeInTheDocument();
+    });
   });
 
   it('should render the hidden tag in category menu', async () => {

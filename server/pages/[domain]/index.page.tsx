@@ -684,7 +684,7 @@ const DomainProfile = ({
                   </Typography>
                 </Box>
                 <Box display="flex" className={classes.domainNameBox}>
-                  {domain !== profileData.profile.displayName && (
+                  {domain !== profileData.profile.displayName ? (
                     <Typography
                       title={domain}
                       className={classes.domainName}
@@ -692,6 +692,8 @@ const DomainProfile = ({
                     >
                       {domain}
                     </Typography>
+                  ) : (
+                    <Box ml={-1} />
                   )}
                   {humanityVerified && (
                     <Tooltip
@@ -721,44 +723,45 @@ const DomainProfile = ({
             )}
             {isOwner !== undefined && (
               <Box className={classes.menuButtonContainer}>
+                <ChipControlButton
+                  data-testid="edit-profile-button"
+                  onClick={handleManageDomainModalOpen}
+                  icon={<EditOutlinedIcon />}
+                  label={t('manage.manageProfile')}
+                  sx={{marginRight: 1}}
+                />
                 {!isOwner ? (
                   <>
-                    <FollowButton
-                      handleLogin={() => setLoginClicked(true)}
-                      setWeb3Deps={setWeb3Deps}
-                      authDomain={authDomain}
-                      domain={domain}
-                      authAddress={authAddress}
-                      onFollowClick={handleFollowClick}
-                      onUnfollowClick={handleUnfollowClick}
-                    />
+                    <Box mr={1}>
+                      <FollowButton
+                        handleLogin={() => setLoginClicked(true)}
+                        setWeb3Deps={setWeb3Deps}
+                        authDomain={authDomain}
+                        domain={domain}
+                        authAddress={authAddress}
+                        onFollowClick={handleFollowClick}
+                        onUnfollowClick={handleUnfollowClick}
+                      />
+                    </Box>
                     {authDomain && (
                       <ChipControlButton
                         data-testid="chat-button"
                         onClick={() => setOpenChat(domain)}
                         icon={<ChatIcon />}
                         label={t('push.chat')}
-                        sx={{marginLeft: 1}}
+                        sx={{marginRight: 1}}
                         variant="outlined"
                       />
                     )}
                   </>
                 ) : (
-                  <ChipControlButton
-                    data-testid="edit-profile-button"
-                    onClick={handleManageDomainModalOpen}
-                    icon={<EditOutlinedIcon />}
-                    label={t('manage.manageProfile')}
-                  />
-                )}
-                <Box ml={1}>
                   <ShareMenu
                     toggleQrCode={toggleQrCode}
                     displayQrCode={displayQrCode}
                     domain={domain}
                     onProfileLinkCopied={handleClickToCopy}
                   />
-                </Box>
+                )}
               </Box>
             )}
             {isLoaded && (

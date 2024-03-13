@@ -11,7 +11,7 @@ import {DomainFieldTypes} from '../../lib';
 import type {DomainProfileTabType} from './DomainProfile';
 import {DomainProfile} from './DomainProfile';
 
-const MODAL_WIDTH = '550px';
+const MODAL_WIDTH = '750px';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -70,7 +70,7 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
   };
 
   return resolvedAddress && resolvedMetadata ? (
-    <Dialog maxWidth="sm" open={open} onClose={() => onClose()}>
+    <Dialog maxWidth="lg" open={open} onClose={() => onClose()}>
       <Box className={classes.container}>
         <DomainProfile
           address={resolvedAddress}

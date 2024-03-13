@@ -4,7 +4,6 @@ import RedditIcon from '@mui/icons-material/Reddit';
 import TelegramIcon from '@mui/icons-material/Telegram';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -42,9 +41,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing(-3),
-    },
   },
   divider: {
     marginTop: theme.spacing(2),
@@ -92,6 +88,7 @@ export const Profile: React.FC<ManageTabProps> = ({
   address,
   domain,
   onUpdate,
+  onLoaded,
   setButtonComponent,
 }) => {
   const {classes} = useStyles();
@@ -129,9 +126,10 @@ export const Profile: React.FC<ManageTabProps> = ({
   }>({data: null, file: null});
 
   useEffect(() => {
+    setIsLoaded(false);
     setButtonComponent(<></>);
     setFireRequest(true);
-  }, []);
+  }, [domain]);
 
   useEffect(() => {
     if (!isLoaded) {
@@ -176,6 +174,11 @@ export const Profile: React.FC<ManageTabProps> = ({
     try {
       // only proceed if signature available
       if (domain && signature && expiry) {
+        // callback to indicate signature was collected
+        if (onLoaded) {
+          onLoaded(true);
+        }
+
         // retrieve user profile data from profile API
         const existingData = await getProfileUserData(
           domain,
@@ -360,6 +363,7 @@ export const Profile: React.FC<ManageTabProps> = ({
       setDirtyFlag(true);
     }
     handleInputChange('imagePath', url);
+    handleInputChange('imageType', 'offChain');
     setProfileImage({data: url, file: null});
   };
 
@@ -410,185 +414,189 @@ export const Profile: React.FC<ManageTabProps> = ({
 
   return (
     <Box className={classes.container} onClick={handleDismissingCardsGlobally}>
-      {isLoaded ? (
-        <>
-          <Header
-            domain={domain}
-            src={
-              userProfile?.profile?.imageType !== 'default'
-                ? profileImage.data
-                : null
-            }
-            coverSrc={profileCover.data}
-            ownerAddress={address}
-            uiDisabled={false}
-            isExternalDomain={isExternalDomain(domain)}
-            handleAvatarUpload={handleAvatarUpload}
-            handleUrlEntry={handleUrlEntry}
-            handleCoverUpload={handleCoverUpload}
-            handleUploadError={handleUploadError}
-            handlePictureChange={handleNftAvatarChange}
-          />
-          <Box className={classes.sectionHeader}>
-            <Box display="flex">
-              <Typography variant="h6">{t('manage.mainInfo')}</Typography>
-            </Box>
-            <ManagePublicVisibility
-              id="globalVisibility"
-              publicVisibilityValues={publicVisibilityValues}
-              showCard={showMainInfoVizCard}
-              handleGlobalPublicPrivateVisibility={
-                handleGlobalPublicPrivateVisibility
-              }
-              setCardVisibility={setShowMainInfoVizCard}
-              setPrivateVisibilityFlagGlobal={() => {}}
-            />
-          </Box>
-          <ManageInput
-            id="displayName"
-            value={userProfile?.profile?.displayName}
-            label={t('manage.displayName')}
-            placeholder={t('manage.enterDisplayName')}
-            onChange={handleInputChange}
-            disableTextTrimming
-            stacked={false}
-            data-testid="displayNameInput"
-            publicVisibilityValues={publicVisibilityValues}
-            isCardOpen={isCardOpen}
-            setPublicVisibilityValues={setPublicVisibilityValues}
-            setIsCardOpen={setIsCardOpen}
-          />
-          <ManageInput
-            id="description"
-            value={userProfile?.profile?.description}
-            label={t('manage.description')}
-            placeholder={t('manage.enterDescription')}
-            multiline
-            rows={4}
-            maxLength={MAX_BIO_LENGTH}
-            onChange={handleInputChange}
-            disableTextTrimming
-            stacked={false}
-            publicVisibilityValues={publicVisibilityValues}
-            isCardOpen={isCardOpen}
-            setPublicVisibilityValues={setPublicVisibilityValues}
-            setIsCardOpen={setIsCardOpen}
-          />
-          <Box display="flex" justifyContent="end">
-            <Typography color="textSecondary" className={classes.textLimit}>
-              {userProfile?.profile?.description?.length || 0}/{MAX_BIO_LENGTH}
-            </Typography>
-          </Box>
-          <ManageInput
-            id="location"
-            value={userProfile?.profile?.location}
-            label={t('manage.location')}
-            placeholder={t('manage.enterLocation')}
-            onChange={handleInputChange}
-            disableTextTrimming
-            stacked={false}
-            publicVisibilityValues={publicVisibilityValues}
-            isCardOpen={isCardOpen}
-            setPublicVisibilityValues={setPublicVisibilityValues}
-            setIsCardOpen={setIsCardOpen}
-          />
-          <ManageInput
-            id="web2Url"
-            value={userProfile?.profile?.web2Url}
-            label={t('manage.website')}
-            placeholder={t('manage.addWebsite')}
-            onChange={handleInputChange}
-            disableTextTrimming
-            stacked={false}
-            error={isInvalidUrl}
-            errorText={t('manage.enterValidUrl')}
-            publicVisibilityValues={publicVisibilityValues}
-            isCardOpen={isCardOpen}
-            setPublicVisibilityValues={setPublicVisibilityValues}
-            setIsCardOpen={setIsCardOpen}
-          />
-          <Divider className={classes.divider} />
-          <Box className={classes.sectionHeader}>
-            <Box display="flex">
-              <Typography variant="h6">{t('profile.socials')}</Typography>
-            </Box>
-          </Box>
-          <ManageInput
-            id="twitter"
-            value={userProfile?.socialAccounts?.twitter.location}
-            label={'Twitter (X)'}
-            labelIcon={<TwitterXIcon className={classes.twitterIcon} />}
-            placeholder={t('manage.enterUsernameOrProfileURL')}
-            onChange={handleSocialInputChange}
-            disableTextTrimming
-            stacked={false}
-          />
-          <ManageInput
-            id="discord"
-            value={userProfile?.socialAccounts?.discord.location}
-            label={'Discord'}
-            labelIcon={<Discord className={classes.discordIcon} />}
-            placeholder={t('manage.enterUsername')}
-            onChange={handleSocialInputChange}
-            disableTextTrimming
-            stacked={false}
-          />
-          <ManageInput
-            id="youtube"
-            value={userProfile?.socialAccounts?.youtube.location}
-            label={'YouTube'}
-            labelIcon={<YouTubeIcon className={classes.youtubeIcon} />}
-            placeholder={t('manage.enterYoutubeChannel')}
-            onChange={handleSocialInputChange}
-            disableTextTrimming
-            stacked={false}
-          />
-          <ManageInput
-            id="reddit"
-            value={userProfile?.socialAccounts?.reddit.location}
-            label={'Reddit'}
-            labelIcon={<RedditIcon className={classes.redditIcon} />}
-            placeholder={t('manage.enterRedditUsernameOrProfileURL')}
-            onChange={handleSocialInputChange}
-            disableTextTrimming
-            stacked={false}
-          />
-          <ManageInput
-            id="telegram"
-            value={userProfile?.socialAccounts?.telegram.location}
-            label={'Telegram'}
-            labelIcon={<TelegramIcon className={classes.telegramIcon} />}
-            placeholder={t('manage.enterUsername')}
-            onChange={handleSocialInputChange}
-            disableTextTrimming
-            stacked={false}
-          />
-          <ManageInput
-            id="github"
-            value={userProfile?.socialAccounts?.github.location}
-            label={'Github'}
-            labelIcon={<GitHubIcon className={classes.githubIcon} />}
-            placeholder={t('manage.enterUsername')}
-            onChange={handleSocialInputChange}
-            disableTextTrimming
-            stacked={false}
-          />
-          <ManageInput
-            id="linkedin"
-            value={userProfile?.socialAccounts?.linkedin.location}
-            label={'Linkedin'}
-            labelIcon={<LinkedInIcon className={classes.linkedinIcon} />}
-            placeholder={t('manage.enterLinkedinUrl')}
-            onChange={handleSocialInputChange}
-            disableTextTrimming
-            stacked={false}
-          />
-        </>
-      ) : (
-        <Box display="flex" justifyContent="center">
-          <CircularProgress />
+      <Header
+        domain={domain}
+        src={
+          userProfile?.profile?.imageType !== 'default'
+            ? profileImage.data
+            : null
+        }
+        coverSrc={profileCover.data}
+        ownerAddress={address}
+        uiDisabled={!isLoaded}
+        isExternalDomain={isExternalDomain(domain)}
+        handleAvatarUpload={handleAvatarUpload}
+        handleUrlEntry={handleUrlEntry}
+        handleCoverUpload={handleCoverUpload}
+        handleUploadError={handleUploadError}
+        handlePictureChange={handleNftAvatarChange}
+      />
+
+      <Box className={classes.sectionHeader}>
+        <Box display="flex">
+          <Typography variant="h6">{t('manage.mainInfo')}</Typography>
         </Box>
-      )}
+        <ManagePublicVisibility
+          id="globalVisibility"
+          publicVisibilityValues={publicVisibilityValues}
+          showCard={showMainInfoVizCard}
+          handleGlobalPublicPrivateVisibility={
+            handleGlobalPublicPrivateVisibility
+          }
+          setCardVisibility={setShowMainInfoVizCard}
+          setPrivateVisibilityFlagGlobal={() => {}}
+        />
+      </Box>
+      <ManageInput
+        id="displayName"
+        value={userProfile?.profile?.displayName}
+        label={t('manage.displayName')}
+        placeholder={t('manage.enterDisplayName')}
+        onChange={handleInputChange}
+        disableTextTrimming
+        stacked={false}
+        data-testid="displayNameInput"
+        publicVisibilityValues={publicVisibilityValues}
+        isCardOpen={isCardOpen}
+        setPublicVisibilityValues={setPublicVisibilityValues}
+        setIsCardOpen={setIsCardOpen}
+        disabled={!isLoaded}
+      />
+      <ManageInput
+        id="description"
+        value={userProfile?.profile?.description}
+        label={t('manage.description')}
+        placeholder={t('manage.enterDescription')}
+        multiline
+        rows={4}
+        maxLength={MAX_BIO_LENGTH}
+        onChange={handleInputChange}
+        disableTextTrimming
+        stacked={false}
+        publicVisibilityValues={publicVisibilityValues}
+        isCardOpen={isCardOpen}
+        setPublicVisibilityValues={setPublicVisibilityValues}
+        setIsCardOpen={setIsCardOpen}
+        disabled={!isLoaded}
+      />
+      <Box display="flex" justifyContent="end">
+        <Typography color="textSecondary" className={classes.textLimit}>
+          {userProfile?.profile?.description?.length || 0}/{MAX_BIO_LENGTH}
+        </Typography>
+      </Box>
+      <ManageInput
+        id="location"
+        value={userProfile?.profile?.location}
+        label={t('manage.location')}
+        placeholder={t('manage.enterLocation')}
+        onChange={handleInputChange}
+        disableTextTrimming
+        stacked={false}
+        publicVisibilityValues={publicVisibilityValues}
+        isCardOpen={isCardOpen}
+        setPublicVisibilityValues={setPublicVisibilityValues}
+        setIsCardOpen={setIsCardOpen}
+        disabled={!isLoaded}
+      />
+      <ManageInput
+        id="web2Url"
+        value={userProfile?.profile?.web2Url}
+        label={t('manage.website')}
+        placeholder={t('manage.addWebsite')}
+        onChange={handleInputChange}
+        disableTextTrimming
+        stacked={false}
+        error={isInvalidUrl}
+        errorText={t('manage.enterValidUrl')}
+        publicVisibilityValues={publicVisibilityValues}
+        isCardOpen={isCardOpen}
+        setPublicVisibilityValues={setPublicVisibilityValues}
+        setIsCardOpen={setIsCardOpen}
+        disabled={!isLoaded}
+      />
+      <Divider className={classes.divider} />
+      <Box className={classes.sectionHeader}>
+        <Box display="flex">
+          <Typography variant="h6">{t('profile.socials')}</Typography>
+        </Box>
+      </Box>
+      <ManageInput
+        id="twitter"
+        value={userProfile?.socialAccounts?.twitter.location}
+        label={'Twitter (X)'}
+        labelIcon={<TwitterXIcon className={classes.twitterIcon} />}
+        placeholder={t('manage.enterUsernameOrProfileURL')}
+        onChange={handleSocialInputChange}
+        disableTextTrimming
+        stacked={false}
+        disabled={!isLoaded}
+      />
+      <ManageInput
+        id="discord"
+        value={userProfile?.socialAccounts?.discord.location}
+        label={'Discord'}
+        labelIcon={<Discord className={classes.discordIcon} />}
+        placeholder={t('manage.enterUsername')}
+        onChange={handleSocialInputChange}
+        disableTextTrimming
+        stacked={false}
+        disabled={!isLoaded}
+      />
+      <ManageInput
+        id="youtube"
+        value={userProfile?.socialAccounts?.youtube.location}
+        label={'YouTube'}
+        labelIcon={<YouTubeIcon className={classes.youtubeIcon} />}
+        placeholder={t('manage.enterYoutubeChannel')}
+        onChange={handleSocialInputChange}
+        disableTextTrimming
+        stacked={false}
+        disabled={!isLoaded}
+      />
+      <ManageInput
+        id="reddit"
+        value={userProfile?.socialAccounts?.reddit.location}
+        label={'Reddit'}
+        labelIcon={<RedditIcon className={classes.redditIcon} />}
+        placeholder={t('manage.enterRedditUsernameOrProfileURL')}
+        onChange={handleSocialInputChange}
+        disableTextTrimming
+        stacked={false}
+        disabled={!isLoaded}
+      />
+      <ManageInput
+        id="telegram"
+        value={userProfile?.socialAccounts?.telegram.location}
+        label={'Telegram'}
+        labelIcon={<TelegramIcon className={classes.telegramIcon} />}
+        placeholder={t('manage.enterUsername')}
+        onChange={handleSocialInputChange}
+        disableTextTrimming
+        stacked={false}
+        disabled={!isLoaded}
+      />
+      <ManageInput
+        id="github"
+        value={userProfile?.socialAccounts?.github.location}
+        label={'Github'}
+        labelIcon={<GitHubIcon className={classes.githubIcon} />}
+        placeholder={t('manage.enterUsername')}
+        onChange={handleSocialInputChange}
+        disableTextTrimming
+        stacked={false}
+        disabled={!isLoaded}
+      />
+      <ManageInput
+        id="linkedin"
+        value={userProfile?.socialAccounts?.linkedin.location}
+        label={'Linkedin'}
+        labelIcon={<LinkedInIcon className={classes.linkedinIcon} />}
+        placeholder={t('manage.enterLinkedinUrl')}
+        onChange={handleSocialInputChange}
+        disableTextTrimming
+        stacked={false}
+        disabled={!isLoaded}
+      />
       <ProfileManager
         domain={domain}
         ownerAddress={address}

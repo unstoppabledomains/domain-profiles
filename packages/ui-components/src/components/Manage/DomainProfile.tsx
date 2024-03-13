@@ -16,6 +16,7 @@ import TabPanel from '@mui/lab/TabPanel';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import Tab from '@mui/material/Tab';
@@ -39,6 +40,7 @@ import {
   useTranslationContext,
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
+import {getAddressMetadata} from '../Chat/protocol/resolution';
 import {DomainListModal} from '../Domain';
 import {Badges as BadgesTab} from './Tabs/Badges';
 import {Crypto as CryptoTab} from './Tabs/Crypto';
@@ -94,7 +96,7 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
       marginBottom: theme.spacing(-1),
     },
   },
-  domainTitle: {
+  clickableDomainTitle: {
     display: 'inline',
     paddingLeft: theme.spacing(1),
     cursor: 'pointer',
@@ -140,7 +142,7 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
 }));
 
 export const DomainProfile: React.FC<DomainProfileProps> = ({
-  address,
+  address: initialAddress,
   domain: initialDomain,
   metadata,
   width,
@@ -157,15 +159,50 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
   const {configTab: tabValue, setConfigTab: setTabValue} = useDomainConfig();
   const [showOtherDomainsModal, setShowOtherDomainsModal] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [isOtherDomains, setIsOtherDomains] = useState(false);
+  const [address, setAddress] = useState(initialAddress);
   const [domain, setDomain] = useState(initialDomain);
+  const [selectedDomain, setSelectedDomain] = useState<string>();
   const {web3Deps, setWeb3Deps} = useWeb3Context();
+
+  useEffect(() => {
+    if (!selectedDomain) {
+      return;
+    }
+    const resolveDomainOwner = async () => {
+      try {
+        const resolution = await getAddressMetadata(selectedDomain);
+        if (resolution?.address) {
+          // clear web3 deps if a different wallet is associated
+          if (address.toLowerCase() !== resolution.address.toLowerCase()) {
+            setWeb3Deps(undefined);
+          }
+
+          // set resolution data for newly selected domain
+          setAddress(resolution.address);
+          setDomain(selectedDomain);
+          setSelectedDomain(undefined);
+          return;
+        }
+      } catch (e) {
+        notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+          msg: 'error resolving domain',
+        });
+      }
+      setIsOwner(false);
+    };
+    void resolveDomainOwner();
+  }, [selectedDomain]);
 
   useEffect(() => {
     setIsOwner(
       localStorage.getItem(DomainProfileKeys.AuthAddress)?.toLowerCase() ===
         address.toLowerCase(),
     );
-  }, []);
+    if (!isOtherDomains) {
+      void handleRetrieveOwnerDomains();
+    }
+  }, [address]);
 
   useEffect(() => {
     if (!web3Deps?.address) {
@@ -194,6 +231,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
   };
 
   const handleOtherDomainsModalOpen = () => {
+    setTabValue(DomainProfileTabType.Profile);
     setShowOtherDomainsModal(true);
   };
 
@@ -202,7 +240,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
   };
 
   const handleOtherDomainClick = (v: string) => {
-    setDomain(v);
+    setSelectedDomain(v);
     handleOtherDomainsModalClose();
   };
 
@@ -216,10 +254,14 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
       cursor: undefined,
     };
     try {
-      const domainData = await getOwnerDomains(address, cursor as string, true);
+      const domainData = await getOwnerDomains(address, cursor as string);
       if (domainData) {
         retData.domains = domainData.data.map(f => f.domain);
         retData.cursor = domainData.meta.pagination.cursor;
+        if (retData.domains.length > 1) {
+          // set a flag that other domains exist in portfolio
+          setIsOtherDomains(true);
+        }
       }
     } catch (e) {
       notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
@@ -250,14 +292,18 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   })}
                 </Alert>
               )}
-              <Tooltip title={t('manage.otherDomainsTooltip')}>
+              <Tooltip
+                title={isOtherDomains ? t('manage.otherDomainsTooltip') : ''}
+              >
                 <Typography
                   variant="h4"
-                  className={classes.domainTitle}
+                  className={cx({
+                    [classes.clickableDomainTitle]: isOtherDomains,
+                  })}
                   onClick={handleOtherDomainsModalOpen}
                 >
                   {domain}
-                  <ExpandMoreIcon />
+                  {isOtherDomains && <ExpandMoreIcon />}
                 </Typography>
               </Tooltip>
               <Typography
@@ -405,13 +451,23 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                 value={DomainProfileTabType.Profile}
                 className={cx(classes.tabContentItem)}
               >
-                <ProfileTab
-                  address={address}
-                  domain={domain}
-                  onUpdate={onUpdateWrapper}
-                  onLoaded={handleProfileLoaded}
-                  setButtonComponent={setButtonComponent}
-                />
+                {selectedDomain ? (
+                  <Box
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <ProfileTab
+                    address={address}
+                    domain={domain}
+                    onUpdate={onUpdateWrapper}
+                    onLoaded={handleProfileLoaded}
+                    setButtonComponent={setButtonComponent}
+                  />
+                )}
               </TabPanel>
               <TabPanel
                 value={DomainProfileTabType.Badges}
@@ -516,9 +572,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
           <DomainListModal
             id="domainList"
             title={t('manage.otherDomains')}
-            subtitle={t('manage.otherDomainsDescription', {
-              address: truncateEthAddress(address),
-            })}
+            subtitle={t('manage.otherDomainsDescription')}
             retrieveDomains={handleRetrieveOwnerDomains}
             open={showOtherDomainsModal}
             setWeb3Deps={setWeb3Deps}

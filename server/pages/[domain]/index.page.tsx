@@ -684,7 +684,7 @@ const DomainProfile = ({
                   </Typography>
                 </Box>
                 <Box display="flex" className={classes.domainNameBox}>
-                  {domain !== profileData.profile.displayName && (
+                  {domain !== profileData.profile.displayName ? (
                     <Typography
                       title={domain}
                       className={classes.domainName}
@@ -692,6 +692,8 @@ const DomainProfile = ({
                     >
                       {domain}
                     </Typography>
+                  ) : (
+                    <Box ml={-1} />
                   )}
                   {humanityVerified && (
                     <Tooltip

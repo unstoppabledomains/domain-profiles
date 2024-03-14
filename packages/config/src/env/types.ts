@@ -73,6 +73,9 @@ export type Config = {
   PROFILE: {
     HOST_URL: string;
   };
+  WALLETS: {
+    HOST_URL: string;
+  };
   VERIFICATION_SUPPORTED: string[];
   PUSH: {
     CHANNELS: string[];

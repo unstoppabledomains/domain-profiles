@@ -783,7 +783,7 @@
     "completeSetup": "Access Wallet",
     "enterBootstrapCode": "Enter Unstoppable Guard setup code",
     "enterRecoveryPhrase": "Enter your password / recovery phrase",
-    "forgotBootstrapCode": "Send me a new code",
+    "forgotBootstrapCode": "Get a new code",
     "forgotBootstrapCodeDescription": "We can email you a new Unstoppable Guard setup code. Enter the address used to claim Unstoppable Guard and check your email for more instructions.",
     "recoveryPhrase": "Password",
     "recoveryPhraseDescription": "The recovery phrase you created for Unstoppable Guard is required to unlock your crypto wallet on this device. Do not share your recovery phrase with anyone, and do not enter your recovery phrase on a device you not trust.",

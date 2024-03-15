@@ -1,6 +1,5 @@
 import CheckIcon from '@mui/icons-material/Check';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
-import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -20,18 +19,17 @@ import {
   confirmAuthorizationTokenTx,
   getAuthorizationTokenTx,
   getBootstrapToken,
-} from '../../../actions/fireBlocksActions';
-import {useTranslationContext} from '../../../lib';
+} from '../../../../actions/fireBlocksActions';
+import {useTranslationContext} from '../../../../lib';
 import {
   getFireBlocksClient,
   initializeClient,
   signTransaction,
-} from '../../../lib/fireBlocks/client';
-import {BootstrapStateKey} from '../../../lib/types/fireBlocks';
-import {DomainProfileTabType} from '../DomainProfile';
-import ManageInput from '../common/ManageInput';
-import {TabHeader} from '../common/TabHeader';
-import type {ManageTabProps} from '../common/types';
+} from '../../../../lib/fireBlocks/client';
+import {BootstrapStateKey} from '../../../../lib/types/fireBlocks';
+import {DomainProfileTabType} from '../../DomainProfile';
+import ManageInput from '../../common/ManageInput';
+import type {ManageTabProps} from '../../common/types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -71,9 +69,7 @@ enum WalletConfigState {
 
 const STATE_KEY = 'fireblocks-state';
 
-export const Wallet: React.FC<ManageTabProps> = ({
-  address,
-  domain,
+export const Configuration: React.FC<ManageTabProps> = ({
   onUpdate,
   setButtonComponent,
 }) => {
@@ -108,7 +104,7 @@ export const Wallet: React.FC<ManageTabProps> = ({
     setIsLoaded(false);
     setButtonComponent(<></>);
     void loadFromState();
-  }, [domain]);
+  }, []);
 
   useEffect(() => {
     if (!isLoaded) {
@@ -134,14 +130,7 @@ export const Wallet: React.FC<ManageTabProps> = ({
           : t('wallet.success')}
       </LoadingButton>,
     );
-  }, [
-    address,
-    isSaving,
-    bootstrapCode,
-    recoveryPhrase,
-    errorMessage,
-    isLoaded,
-  ]);
+  }, [isSaving, bootstrapCode, recoveryPhrase, errorMessage, isLoaded]);
 
   const loadFromState = async () => {
     // retrieve existing state from session or local storage if available
@@ -282,11 +271,6 @@ export const Wallet: React.FC<ManageTabProps> = ({
 
   return (
     <Box className={classes.container}>
-      <TabHeader
-        icon={<WalletOutlinedIcon />}
-        description={t('manage.cryptoWalletDescription')}
-        learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001205861-list-domain-for-sale-on-our-website"
-      />
       {isLoaded ? (
         configState === WalletConfigState.BootstrapCode ? (
           <Box>
@@ -303,11 +287,15 @@ export const Wallet: React.FC<ManageTabProps> = ({
               disabled={isSaving}
             />
             <Box className={classes.forgotCodeContainer}>
-              <Tooltip title={t('wallet.forgotBootstrapCodeDescription')}>
+              <Tooltip
+                arrow
+                placement="top"
+                title={t('wallet.forgotBootstrapCodeDescription')}
+              >
                 <Button
                   variant="text"
-                  color="secondary"
                   size="small"
+                  color="secondary"
                   onClick={handleForgotCode}
                 >
                   {t('wallet.forgotBootstrapCode')}
@@ -332,7 +320,7 @@ export const Wallet: React.FC<ManageTabProps> = ({
                   label={
                     <Box display="flex" flexDirection="column">
                       <Typography variant="body1">
-                        {t('wallet.rememberOnThisDevice', {domain})}
+                        {t('wallet.rememberOnThisDevice')}
                       </Typography>
                       <Typography
                         variant="caption"
@@ -367,7 +355,7 @@ export const Wallet: React.FC<ManageTabProps> = ({
             <Box display="flex" flexDirection="column" alignItems="center">
               <CheckCircleOutlinedIcon className={classes.iconConfigured} />
               <Typography variant="h5">{t('manage.allSet')}</Typography>
-              <Box mb={1}>
+              <Box mb={2}>
                 <Typography variant="body1">
                   {t('wallet.successDescription')}
                 </Typography>

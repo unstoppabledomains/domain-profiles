@@ -2,11 +2,6 @@
 import {utils} from 'ethers';
 import type {WalletClient} from 'wagmi';
 
-interface signMessageProps {
-  account: string;
-  message: string;
-}
-
 // WalletClientSigner extends the Wagmi WalletClient to include the required
 // interface methods to be an Ethers signer
 export class WalletClientSigner {
@@ -43,4 +38,9 @@ export class WalletClientSigner {
     }
     return this.wallet.signMessage(message as any);
   }
+}
+
+export interface signMessageProps {
+  account: string;
+  message: string;
 }

@@ -8,7 +8,6 @@ import {FireblocksNCWFactory} from '@fireblocks/ncw-js-sdk';
 import {getAccessToken, sendJoinRequest} from '../../actions/fireBlocksActions';
 import {notifyEvent} from '../error';
 import {sleep} from '../sleep';
-import {BootstrapStateKey} from '../types/fireBlocks';
 import {LogEventHandler} from './events/logHandler';
 import {RpcMessageProvider} from './messages/rpcHandler';
 import {StorageFactoryProvider} from './storage/factory';
@@ -47,20 +46,17 @@ export const getFireBlocksClient = async (
   // if the provided token is a refresh token, use it to retrieve an access
   // token and store the new state
   if (opts?.isRefreshToken) {
-    // retrieve new tokens
-    const newTokens = await getAccessToken(jwt);
+    // retrieve new set of tokens
+    const newTokens = await getAccessToken(jwt, {
+      ...opts,
+      deviceId,
+    });
     if (!newTokens?.accessToken) {
       throw new Error('error retrieving access token');
     }
 
-    // store new token state
+    // replace the JWT value with new access token
     jwt = newTokens.accessToken;
-    opts.state[BootstrapStateKey] = {
-      bootstrapToken: newTokens.bootstrapToken,
-      refreshToken: newTokens.refreshToken,
-      deviceId,
-    };
-    opts.saveState({...opts.state});
   }
 
   // initialize message handler
@@ -98,8 +94,8 @@ export const initializeClient = async (
         if (!isJoinRequestSuccessful) {
           try {
             client.stopJoinWallet();
-          } catch (e) {
-            notifyEvent(e, 'warning', 'WALLET', 'Validation', {
+          } catch (stopJoinWalletErr) {
+            notifyEvent(stopJoinWalletErr, 'warning', 'WALLET', 'Validation', {
               msg: 'unable to cancel join request',
               meta: {requestId},
             });
@@ -113,16 +109,25 @@ export const initializeClient = async (
 
     // wait for the join request to be approved by the backend
     for (let i = 1; i <= MAX_RETRY; i++) {
-      const status = await client.getKeysStatus();
-      if (status.MPC_CMP_ECDSA_SECP256K1.keyStatus === 'READY') {
-        // key material is now available on the device
-        return true;
+      try {
+        notifyEvent('checking key status', 'info', 'WALLET', 'Validation');
+        const status = await client.getKeysStatus();
+        if (status.MPC_CMP_ECDSA_SECP256K1.keyStatus === 'READY') {
+          // key material is now available on the device
+          return true;
+        }
+      } catch (statusErr) {
+        notifyEvent(statusErr, 'error', 'WALLET', 'Validation', {
+          msg: 'error checking key status',
+        });
       }
       await sleep(WAIT_TIME_MS);
     }
     throw new Error('fireblocks key status is not ready');
-  } catch (e) {
-    notifyEvent(e, 'error', 'WALLET', 'Validation');
+  } catch (initError) {
+    notifyEvent(initError, 'error', 'WALLET', 'Validation', {
+      msg: 'unable to initialize client',
+    });
   }
 
   // the request to join was not successful

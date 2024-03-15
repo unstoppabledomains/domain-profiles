@@ -366,6 +366,10 @@ const WalletButton: React.FC<Props> = ({
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
   switch (name) {
+    case WalletName.UnstoppableWallet:
+      props.title = 'Unstoppable Guard';
+      props.iconUrl = '/wallet-button/unstoppable-domains.svg';
+      break;
     case WalletName.MetaMask:
       props.title = 'MetaMask';
       props.iconUrl = '/wallet-button/metamask.svg';

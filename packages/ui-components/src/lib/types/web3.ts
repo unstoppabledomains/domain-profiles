@@ -5,4 +5,7 @@ export interface Web3Dependencies {
   signer: Signer;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   provider?: any;
+  unstoppableWallet?: {
+    addresses: string[];
+  };
 }

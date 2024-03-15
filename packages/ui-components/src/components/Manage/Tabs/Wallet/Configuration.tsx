@@ -80,6 +80,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [savingMessage, setSavingMessage] = useState<string>();
   const [configState, setConfigState] = useState(
     WalletConfigState.BootstrapCode,
   );
@@ -107,6 +108,12 @@ export const Configuration: React.FC<ManageTabProps> = ({
   }, []);
 
   useEffect(() => {
+    if (configState === WalletConfigState.Complete) {
+      onUpdate(DomainProfileTabType.Wallet);
+    }
+  }, [configState]);
+
+  useEffect(() => {
     if (!isLoaded) {
       return;
     }
@@ -115,6 +122,14 @@ export const Configuration: React.FC<ManageTabProps> = ({
         variant="contained"
         onClick={handleSave}
         loading={isSaving}
+        loadingIndicator={
+          savingMessage ? (
+            <Box display="flex" alignItems="center">
+              <CircularProgress color="inherit" size={16} />
+              <Box ml={1}>{savingMessage}</Box>
+            </Box>
+          ) : undefined
+        }
         disabled={!isDirty}
         fullWidth
         startIcon={
@@ -130,7 +145,14 @@ export const Configuration: React.FC<ManageTabProps> = ({
           : t('wallet.success')}
       </LoadingButton>,
     );
-  }, [isSaving, bootstrapCode, recoveryPhrase, errorMessage, isLoaded]);
+  }, [
+    isSaving,
+    savingMessage,
+    bootstrapCode,
+    recoveryPhrase,
+    errorMessage,
+    isLoaded,
+  ]);
 
   const loadFromState = async () => {
     // retrieve existing state from session or local storage if available
@@ -156,8 +178,18 @@ export const Configuration: React.FC<ManageTabProps> = ({
   };
 
   const handleLogout = () => {
+    // clear input variables
+    setBootstrapJwt(undefined);
+    setBootstrapCode(undefined);
+    setDeviceId(undefined);
+    setPersistKeys(false);
+    setRecoveryPhrase(undefined);
+
+    // clear storage state
     setSessionKeyState({});
     setPersistentKeyState({});
+
+    // reset configuration state
     setConfigState(WalletConfigState.BootstrapCode);
   };
 
@@ -175,6 +207,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
     // saving complete
     setIsDirty(false);
     setIsSaving(false);
+    setSavingMessage(undefined);
   };
 
   const handlePersistChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -195,6 +228,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
 
     // retrieve a temporary JWT token using the code and validate the
     // response contains expected value format
+    setSavingMessage(t('wallet.validatingSetupCode'));
     const walletResponse = await getBootstrapToken(bootstrapCode);
     if (!walletResponse?.accessToken || !walletResponse.deviceId) {
       setErrorMessage('Invalid bootstrap code');
@@ -216,6 +250,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
     }
 
     // retrieve and initialize the Fireblocks client
+    setSavingMessage(t('wallet.validatingRecoveryPhrase'));
     const fbClient = await getFireBlocksClient(deviceId, bootstrapJwt, {
       state: persistKeys ? persistentKeyState : sessionKeyState,
       saveState: persistKeys ? setPersistentKeyState : setSessionKeyState,
@@ -230,6 +265,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
     }
 
     // retrieve a transaction ID from wallet service
+    setSavingMessage(t('wallet.configuringKeys'));
     const tx = await getAuthorizationTokenTx(bootstrapJwt);
     if (!tx) {
       setErrorMessage('Error retrieving auth Tx');
@@ -237,6 +273,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
     }
 
     // sign the transaction ID with Fireblocks client
+    setSavingMessage(t('wallet.validatingKeys'));
     const txSignature = await signTransaction(fbClient, tx.transactionId);
     if (!txSignature) {
       setErrorMessage('Error signing auth Tx');
@@ -244,6 +281,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
     }
 
     // retrieve the wallet service JWT tokens
+    setSavingMessage(t('wallet.finalizingKeys'));
     const walletServiceTokens = await confirmAuthorizationTokenTx(bootstrapJwt);
     if (!walletServiceTokens) {
       setErrorMessage('Error retrieving auth tokens');
@@ -266,7 +304,6 @@ export const Configuration: React.FC<ManageTabProps> = ({
 
     // set component state
     setConfigState(WalletConfigState.Complete);
-    onUpdate(DomainProfileTabType.Wallet);
   };
 
   return (
@@ -335,7 +372,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
             </Box>
           </Box>
         ) : configState === WalletConfigState.RecoveryPhrase ? (
-          <Box>
+          <Box mb={1}>
             <Typography variant="body1" className={classes.infoContainer}>
               {t('wallet.recoveryPhraseDescription')}
             </Typography>

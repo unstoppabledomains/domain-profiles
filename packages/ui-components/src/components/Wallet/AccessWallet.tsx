@@ -30,6 +30,7 @@ type Props = {
   prompt?: boolean;
   onComplete?: (web3Deps?: Web3Dependencies) => void;
   onReconnect?: () => void;
+  onClose?: () => void;
 };
 
 const AccessWallet = (props: Props) => {
@@ -92,7 +93,13 @@ const AccessWallet = (props: Props) => {
       }
       return;
     }
-    if (props.address.toLowerCase() === web3Deps?.address.toLowerCase()) {
+    const addresses = [
+      web3Deps?.address,
+      ...(web3Deps?.unstoppableWallet?.addresses || []),
+    ];
+    if (
+      addresses.map(a => a?.toLowerCase()).includes(props.address.toLowerCase())
+    ) {
       if (props.onComplete) {
         props.onComplete(web3Deps);
       }
@@ -153,6 +160,7 @@ const AccessWallet = (props: Props) => {
             <AccessEthereum
               onComplete={handleWalletConnected}
               onReconnect={props.onReconnect}
+              onClose={props.onClose}
             />
           </div>
         </div>
@@ -207,6 +215,7 @@ export const AccessWalletModal = (props: ModalProps) => {
           address={props.address}
           onComplete={props.onComplete}
           onReconnect={props.onReconnect}
+          onClose={props.onClose}
           prompt={props.prompt}
           message={props.message}
         />

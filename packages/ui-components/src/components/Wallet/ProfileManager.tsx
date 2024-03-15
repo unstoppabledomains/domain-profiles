@@ -198,6 +198,9 @@ export const ProfileManager: React.FC<ManagerProps> = ({
     web3Dependencies?: Web3Dependencies,
   ) => {
     setWeb3Deps(web3Dependencies);
+    if (web3Dependencies?.unstoppableWallet) {
+      return;
+    }
     setAccessWalletModalIsOpen(false);
   };
 

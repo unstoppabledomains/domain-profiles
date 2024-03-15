@@ -8,6 +8,7 @@ import type {
   GetBootstrapTokenResponse,
   GetTokenResponse,
 } from '../lib/types/fireBlocks';
+import {BootstrapStateKey} from '../lib/types/fireBlocks';
 
 export const confirmAuthorizationTokenTx = async (
   bootstrapJwt: string,
@@ -34,10 +35,15 @@ export const confirmAuthorizationTokenTx = async (
 
 export const getAccessToken = async (
   refreshToken: string,
+  opts?: {
+    deviceId: string;
+    state: Record<string, Record<string, string>>;
+    saveState: (state: Record<string, Record<string, string>>) => void;
+  },
 ): Promise<GetTokenResponse | undefined> => {
   try {
     // retrieve a new set of tokens using the refresh token
-    return await fetchApi<GetTokenResponse>('/auth/tokens/refresh', {
+    const newTokens = await fetchApi<GetTokenResponse>('/auth/tokens/refresh', {
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -49,6 +55,16 @@ export const getAccessToken = async (
         refreshToken,
       }),
     });
+
+    if (opts) {
+      opts.state[BootstrapStateKey] = {
+        bootstrapToken: newTokens.bootstrapToken,
+        refreshToken: newTokens.refreshToken,
+        deviceId: opts.deviceId,
+      };
+      opts.saveState({...opts.state});
+    }
+    return newTokens;
   } catch (e) {
     notifyEvent(e, 'error', 'WALLET', 'Fetch', {
       msg: 'error refreshing tokens',

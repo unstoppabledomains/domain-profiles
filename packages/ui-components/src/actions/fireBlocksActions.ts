@@ -4,6 +4,8 @@ import {fetchApi} from '../lib';
 import {notifyEvent} from '../lib/error';
 import {sleep} from '../lib/sleep';
 import type {
+  GetAccountAssetsResponse,
+  GetAccountsResponse,
   GetAuthorizationTxResponse,
   GetBootstrapTokenResponse,
   GetTokenResponse,
@@ -68,6 +70,54 @@ export const getAccessToken = async (
   } catch (e) {
     notifyEvent(e, 'error', 'WALLET', 'Fetch', {
       msg: 'error refreshing tokens',
+    });
+  }
+  return undefined;
+};
+
+export const getAccountAssets = async (
+  accessToken: string,
+  accountId: string,
+): Promise<GetAccountAssetsResponse | undefined> => {
+  try {
+    // retrieve a new set of tokens using the refresh token
+    return await fetchApi<GetAccountAssetsResponse>(
+      `/accounts/${accountId}/assets`,
+      {
+        mode: 'cors',
+        headers: {
+          'Access-Control-Allow-Credentials': 'true',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        host: config.WALLETS.HOST_URL,
+      },
+    );
+  } catch (e) {
+    notifyEvent(e, 'error', 'WALLET', 'Fetch', {
+      msg: 'error retrieving account assets',
+    });
+  }
+  return undefined;
+};
+
+export const getAccounts = async (
+  accessToken: string,
+): Promise<GetAccountsResponse | undefined> => {
+  try {
+    // retrieve a new set of tokens using the refresh token
+    return await fetchApi<GetAccountsResponse>('/accounts', {
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+    });
+  } catch (e) {
+    notifyEvent(e, 'error', 'WALLET', 'Fetch', {
+      msg: 'error retrieving accounts',
     });
   }
   return undefined;

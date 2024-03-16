@@ -3,6 +3,7 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import type {GetWalletClientResult} from '@wagmi/core';
+import Bluebird from 'bluebird';
 import type {Signer} from 'ethers';
 import React, {useEffect, useState} from 'react';
 import {useConnect, useDisconnect, useWalletClient} from 'wagmi';
@@ -11,6 +12,7 @@ import type {Connector} from 'wagmi';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useFeatureFlags} from '../../actions';
+import {getAccountAssets, getAccounts} from '../../actions/fireBlocksActions';
 import WalletButton from '../../components/Wallet/WalletButton';
 import {
   ReactSigner,
@@ -22,6 +24,8 @@ import type {WagmiConnectorType} from '../../lib/types/wallet';
 import {WalletName, WalletOptions} from '../../lib/types/wallet';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import {WalletClientSigner} from '../../lib/wallet/signer';
+import {isEthAddress} from '../Chat/protocol/resolution';
+import type {DomainProfileTabType} from '../Manage';
 import {Wallet as UnstoppableWalletConfig} from '../Manage/Tabs/Wallet';
 import {Signer as UnstoppableWalletSigner} from '../Manage/Tabs/Wallet/Signer';
 
@@ -34,6 +38,8 @@ export interface AccessEthereumProps {
 
 export const useStyles = makeStyles()((theme: Theme) => ({
   listContainer: {
+    display: 'flex',
+    justifyContent: 'center',
     outline: `2px solid ${theme.palette.white}`,
     outlineOffset: -1,
   },
@@ -151,27 +157,55 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
     });
   };
 
-  const handleUdWalletConnected = async () => {
-    // TODO - query addresses belonging to the UD wallet
-    const addresses = ['0xcd0dadab45baf9a06ce1279d1342ecc3f44845af'];
+  const handleUdWalletConnected = async (
+    _type: DomainProfileTabType,
+    data?: {accessToken: string},
+  ) => {
+    // ensure an access token was provided
+    setUdConfigSuccess(true);
+    if (!data?.accessToken) {
+      if (onError) {
+        onError('no access token provided for account');
+      }
+      return;
+    }
+
+    // query accounts belonging to the UD wallet
+    const allAddresses: string[] = [
+      '0xCD0DAdAb45bAF9a06ce1279D1342EcC3F44845af', // TODO - remove me
+    ];
+    const accounts = await getAccounts(data.accessToken);
+    if (!accounts) {
+      if (onError) {
+        onError('no accounts found for access token');
+      }
+      return;
+    }
+
+    // query addresses belonging to accounts
+    await Bluebird.map(accounts.items, async account => {
+      const assets = await getAccountAssets(data.accessToken, account.id);
+      return (assets?.items || []).map(asset => {
+        allAddresses.push(asset.address);
+      });
+    });
+
+    // validate addresses located
+    const addresses = [...new Set(allAddresses.filter(a => isEthAddress(a)))];
     if (addresses.length === 0) {
       if (onError) {
-        onError('no wallet addresses found in account');
+        onError('no EVM wallet addresses found for account');
       }
       return;
     }
 
     // initialize a react based signature component
-    const reactSigner = new ReactSigner(
-      addresses[0],
-      setUdConfigMessage,
-      onClose,
-    );
+    const address = addresses[0];
+    const reactSigner = new ReactSigner(address, setUdConfigMessage, onClose);
 
     // raise success events
-    setUdConfigSuccess(true);
     onComplete({
-      address: '',
+      address,
       signer: reactSigner as unknown as Signer,
       unstoppableWallet: {
         addresses,
@@ -254,9 +288,9 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
                 );
               })
           ) : (
-            <Grid item xs={12}>
+            <Grid item xs={12} display="flex" justifyContent="center">
               <Box className={classes.udConfigContainer}>
-                {!udConfigSuccess ? (
+                {!udConfigMessage || !udConfigSuccess ? (
                   <>
                     <UnstoppableWalletConfig
                       address={''}
@@ -264,9 +298,11 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
                       onUpdate={handleUdWalletConnected}
                       setButtonComponent={setUdConfigButton}
                     />
-                    <Box width="100%" mt={2}>
-                      {udConfigButton}
-                    </Box>
+                    {!udConfigSuccess && (
+                      <Box width="100%" mt={2}>
+                        {udConfigButton}
+                      </Box>
+                    )}
                   </>
                 ) : (
                   udConfigMessage && (

@@ -17,6 +17,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {
   confirmAuthorizationTokenTx,
+  getAccessToken,
   getAuthorizationTokenTx,
   getBootstrapToken,
 } from '../../../../actions/fireBlocksActions';
@@ -97,6 +98,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
 
   // wallet recovery state variables
   const [deviceId, setDeviceId] = useState<string>();
+  const [accessJwt, setAccessJwt] = useState<string>();
   const [bootstrapJwt, setBootstrapJwt] = useState<string>();
   const [bootstrapCode, setBootstrapCode] = useState<string>();
   const [recoveryPhrase, setRecoveryPhrase] = useState<string>();
@@ -108,10 +110,10 @@ export const Configuration: React.FC<ManageTabProps> = ({
   }, []);
 
   useEffect(() => {
-    if (configState === WalletConfigState.Complete) {
-      onUpdate(DomainProfileTabType.Wallet);
+    if (configState === WalletConfigState.Complete && accessJwt) {
+      onUpdate(DomainProfileTabType.Wallet, {accessToken: accessJwt});
     }
-  }, [configState]);
+  }, [configState, accessJwt]);
 
   useEffect(() => {
     if (!isLoaded) {
@@ -162,9 +164,16 @@ export const Configuration: React.FC<ManageTabProps> = ({
 
     // check state for device ID and refresh token
     if (existingState?.deviceId && existingState?.refreshToken) {
+      const tokens = await getAccessToken(existingState.refreshToken, {
+        deviceId: existingState.deviceId,
+        state: persistKeys ? persistentKeyState : sessionKeyState,
+        saveState: persistKeys ? setPersistentKeyState : setSessionKeyState,
+      });
+      setAccessJwt(tokens?.accessToken);
       setConfigState(WalletConfigState.Complete);
     }
 
+    // set loaded state
     setIsLoaded(true);
   };
 
@@ -303,6 +312,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
     });
 
     // set component state
+    setAccessJwt(walletServiceTokens.accessToken);
     setConfigState(WalletConfigState.Complete);
   };
 

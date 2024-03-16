@@ -1,8 +1,28 @@
+export interface Account {
+  '@type': string;
+  id: string;
+}
+
+export interface AccountAsset {
+  '@type': string;
+  address: string;
+  assetType: string;
+  blockchain: string;
+}
+
 export type BootstrapState = GetTokenResponse & {
   deviceId: string;
 };
 
 export const BootstrapStateKey = 'fireblocks-bootstrap-state';
+
+export interface GetAccountAssetsResponse {
+  items: AccountAsset[];
+}
+
+export interface GetAccountsResponse {
+  items: Account[];
+}
 
 export interface GetAuthorizationTxResponse {
   status: string;

@@ -54,7 +54,12 @@ export const fetchApi = async <T = any>(
         return undefined;
       }
       try {
-        return await res.json();
+        const contentType =
+          res.headers.get('Content-Type') || res.headers.get('content-type');
+        return typeof contentType === 'string' &&
+          contentType.toLowerCase().includes('application/json')
+          ? await res.json()
+          : await res.text();
       } catch (e) {
         return undefined;
       }

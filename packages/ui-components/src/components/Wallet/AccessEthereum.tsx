@@ -47,8 +47,8 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
     maxWidth: '500px',
+    minHeight: '450px',
   },
   button: {
     marginTop: theme.spacing(2),
@@ -171,9 +171,7 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
     }
 
     // query accounts belonging to the UD wallet
-    const allAddresses: string[] = [
-      '0xCD0DAdAb45bAF9a06ce1279D1342EcC3F44845af', // TODO - remove me
-    ];
+    const allAddresses: string[] = [];
     const accounts = await getAccounts(data.accessToken);
     if (!accounts) {
       if (onError) {
@@ -199,7 +197,8 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
       return;
     }
 
-    // initialize a react based signature component
+    // initialize a react signature UX component that can be called back
+    // by a signature request hook
     const address = addresses[0];
     const reactSigner = new ReactSigner(address, setUdConfigMessage, onClose);
 
@@ -291,19 +290,22 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
             <Grid item xs={12} display="flex" justifyContent="center">
               <Box className={classes.udConfigContainer}>
                 {!udConfigMessage || !udConfigSuccess ? (
-                  <>
+                  <Box
+                    display="flex"
+                    flexDirection="column"
+                    justifyContent="space-between"
+                    height="100%"
+                  >
                     <UnstoppableWalletConfig
                       address={''}
                       domain={''}
                       onUpdate={handleUdWalletConnected}
                       setButtonComponent={setUdConfigButton}
                     />
-                    {!udConfigSuccess && (
-                      <Box width="100%" mt={2}>
-                        {udConfigButton}
-                      </Box>
-                    )}
-                  </>
+                    <Box width="100%" mt={2}>
+                      {udConfigButton}
+                    </Box>
+                  </Box>
                 ) : (
                   udConfigMessage && (
                     <>

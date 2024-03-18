@@ -10,11 +10,15 @@ export interface AccountAsset {
   blockchain: string;
 }
 
-export type BootstrapState = GetTokenResponse & {
+export interface BootstrapState {
+  bootstrapToken: string;
+  refreshToken: string;
   deviceId: string;
-};
+}
 
-export const BootstrapStateKey = 'fireblocks-bootstrap-state';
+export const BootstrapStateCurrentKey = 'current';
+export const BootstrapStatePrefix = 'wallet-service-state';
+export const FireblocksStateKey = 'fireblocks-state';
 
 export interface GetAccountAssetsResponse {
   items: AccountAsset[];

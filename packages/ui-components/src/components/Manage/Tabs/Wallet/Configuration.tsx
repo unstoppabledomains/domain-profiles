@@ -1,4 +1,3 @@
-import CheckIcon from '@mui/icons-material/Check';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
@@ -27,7 +26,8 @@ import {
   initializeClient,
   signTransaction,
 } from '../../../../lib/fireBlocks/client';
-import {BootstrapStateKey} from '../../../../lib/types/fireBlocks';
+import {getState, saveState} from '../../../../lib/fireBlocks/storage/state';
+import {FireblocksStateKey} from '../../../../lib/types/fireBlocks';
 import {DomainProfileTabType} from '../../DomainProfile';
 import ManageInput from '../../common/ManageInput';
 import type {ManageTabProps} from '../../common/types';
@@ -68,8 +68,6 @@ enum WalletConfigState {
   Complete = 'complete',
 }
 
-const STATE_KEY = 'fireblocks-state';
-
 export const Configuration: React.FC<ManageTabProps> = ({
   onUpdate,
   setButtonComponent,
@@ -91,10 +89,10 @@ export const Configuration: React.FC<ManageTabProps> = ({
   const [persistKeys, setPersistKeys] = useState(false);
   const [sessionKeyState, setSessionKeyState] = useSessionStorage<
     Record<string, Record<string, string>>
-  >(STATE_KEY, {});
+  >(FireblocksStateKey, {});
   const [persistentKeyState, setPersistentKeyState] = useLocalStorage<
     Record<string, Record<string, string>>
-  >(STATE_KEY, {});
+  >(FireblocksStateKey, {});
 
   // wallet recovery state variables
   const [deviceId, setDeviceId] = useState<string>();
@@ -119,6 +117,10 @@ export const Configuration: React.FC<ManageTabProps> = ({
     if (!isLoaded) {
       return;
     }
+    if (configState === WalletConfigState.Complete) {
+      setButtonComponent(<></>);
+      return;
+    }
     setButtonComponent(
       <LoadingButton
         variant="contained"
@@ -134,21 +136,18 @@ export const Configuration: React.FC<ManageTabProps> = ({
         }
         disabled={!isDirty}
         fullWidth
-        startIcon={
-          configState === WalletConfigState.Complete ? <CheckIcon /> : undefined
-        }
       >
         {errorMessage
           ? errorMessage
           : configState === WalletConfigState.BootstrapCode
           ? t('wallet.beginSetup')
-          : configState === WalletConfigState.RecoveryPhrase
-          ? t('wallet.completeSetup')
-          : t('wallet.success')}
+          : configState === WalletConfigState.RecoveryPhrase &&
+            t('wallet.completeSetup')}
       </LoadingButton>,
     );
   }, [
     isSaving,
+    configState,
     savingMessage,
     bootstrapCode,
     recoveryPhrase,
@@ -159,8 +158,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
   const loadFromState = async () => {
     // retrieve existing state from session or local storage if available
     const existingState =
-      sessionKeyState[BootstrapStateKey] ||
-      persistentKeyState[BootstrapStateKey];
+      getState(sessionKeyState) || getState(persistentKeyState);
 
     // check state for device ID and refresh token
     if (existingState?.deviceId && existingState?.refreshToken) {
@@ -179,6 +177,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
 
   const handleInputChange = (id: string, value: string) => {
     setIsDirty(true);
+    setErrorMessage(undefined);
     if (id === 'recoveryPhrase') {
       setRecoveryPhrase(value);
     } else if (id === 'bootstrapCode') {
@@ -200,6 +199,12 @@ export const Configuration: React.FC<ManageTabProps> = ({
 
     // reset configuration state
     setConfigState(WalletConfigState.BootstrapCode);
+  };
+
+  const handleKeyDown: React.KeyboardEventHandler = event => {
+    if (event.key === 'Enter') {
+      void handleSave();
+    }
   };
 
   const handleSave = async () => {
@@ -302,14 +307,15 @@ export const Configuration: React.FC<ManageTabProps> = ({
     const setKeyState = persistKeys
       ? setPersistentKeyState
       : setSessionKeyState;
-    keyState[BootstrapStateKey] = {
-      bootstrapToken: walletServiceTokens.bootstrapToken,
-      refreshToken: walletServiceTokens.refreshToken,
-      deviceId,
-    };
-    setKeyState({
-      ...keyState,
-    });
+    saveState(
+      {
+        bootstrapToken: walletServiceTokens.bootstrapToken,
+        refreshToken: walletServiceTokens.refreshToken,
+        deviceId,
+      },
+      keyState,
+      setKeyState,
+    );
 
     // set component state
     setAccessJwt(walletServiceTokens.accessToken);
@@ -330,6 +336,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
               label={t('wallet.bootstrapCode')}
               placeholder={t('wallet.enterBootstrapCode')}
               onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
               stacked={false}
               disabled={isSaving}
             />
@@ -392,6 +399,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
               label={t('wallet.recoveryPhrase')}
               placeholder={t('wallet.enterRecoveryPhrase')}
               onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
               stacked={false}
               disabled={isSaving}
               password={true}

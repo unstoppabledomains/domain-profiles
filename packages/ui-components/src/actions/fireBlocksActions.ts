@@ -2,6 +2,7 @@ import config from '@unstoppabledomains/config';
 
 import {fetchApi} from '../lib';
 import {notifyEvent} from '../lib/error';
+import {saveState} from '../lib/fireBlocks/storage/state';
 import {sleep} from '../lib/sleep';
 import type {
   GetAccountAssetsResponse,
@@ -10,7 +11,6 @@ import type {
   GetBootstrapTokenResponse,
   GetTokenResponse,
 } from '../lib/types/fireBlocks';
-import {BootstrapStateKey} from '../lib/types/fireBlocks';
 
 export const confirmAuthorizationTokenTx = async (
   bootstrapJwt: string,
@@ -59,12 +59,15 @@ export const getAccessToken = async (
     });
 
     if (opts) {
-      opts.state[BootstrapStateKey] = {
-        bootstrapToken: newTokens.bootstrapToken,
-        refreshToken: newTokens.refreshToken,
-        deviceId: opts.deviceId,
-      };
-      opts.saveState({...opts.state});
+      saveState(
+        {
+          bootstrapToken: newTokens.bootstrapToken,
+          refreshToken: newTokens.refreshToken,
+          deviceId: opts.deviceId,
+        },
+        opts.state,
+        opts.saveState,
+      );
     }
     return newTokens;
   } catch (e) {
@@ -211,7 +214,7 @@ export const sendJoinRequest = async (
   recoveryPassphrase: string,
 ): Promise<boolean> => {
   try {
-    await fetchApi('/auth/devices/bootstrap', {
+    const joinResult = await fetchApi('/auth/devices/bootstrap', {
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -225,6 +228,9 @@ export const sendJoinRequest = async (
         recoveryPassphrase,
       }),
     });
+    if (!joinResult) {
+      return false;
+    }
     return true;
   } catch (e) {
     notifyEvent(e, 'error', 'WALLET', 'Fetch', {

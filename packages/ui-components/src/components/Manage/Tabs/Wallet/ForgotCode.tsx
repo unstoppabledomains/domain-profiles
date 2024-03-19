@@ -6,8 +6,8 @@ import React, {useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {sendBootstrapCode} from '../../../../actions/fireBlocksActions';
 import {useTranslationContext} from '../../../../lib';
-import {sleep} from '../../../../lib/sleep';
 import Modal from '../../../Modal';
 import ManageInput from '../../common/ManageInput';
 
@@ -58,16 +58,21 @@ export const ForgotCode: React.FC<ForgotCodeProps> = ({open, onClose}) => {
 
   const handleSave = async () => {
     // validate no errors
-    if (errorMessage) {
+    if (errorMessage || !emailAddress) {
       return;
     }
 
-    // TODO - send something
+    // send the error code to provided email address
+    setIsDirty(false);
     setIsSaving(true);
-    await sleep(2000);
+    const sendResult = await sendBootstrapCode(emailAddress);
+    if (sendResult) {
+      onClose();
+    } else {
+      setErrorMessage(t('wallet.forgotBootstrapCodeError'));
+    }
 
     // saving complete
-    setIsDirty(false);
     setIsSaving(false);
     onClose();
   };

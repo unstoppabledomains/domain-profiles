@@ -208,6 +208,30 @@ export const getBootstrapToken = async (
   return undefined;
 };
 
+export const sendBootstrapCode = async (
+  emailAddress: string,
+): Promise<boolean> => {
+  try {
+    await fetchApi('/auth/bootstrap/email', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        email: emailAddress,
+      }),
+    });
+    return true;
+  } catch (e) {
+    notifyEvent(e, 'error', 'WALLET', 'Fetch', {
+      msg: 'error sending bootstrap code',
+    });
+  }
+  return false;
+};
+
 export const sendJoinRequest = async (
   walletJoinRequestId: string,
   bootstrapJwt: string,

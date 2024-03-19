@@ -792,6 +792,7 @@
     "recoveryPhraseDescription": "The recovery phrase you created for Unstoppable Guard is required to unlock your crypto wallet on this device. Do not share your recovery phrase with anyone, and do not enter your recovery phrase on a device you not trust.",
     "rememberOnThisDevice": "Remember on this device",
     "rememberOnThisDeviceDescription": "Your Unstoppable Guard keys will be stored securely saved in within this web browser.",
+    "sendBootstrapCode": "Send code",
     "signMessage": "Signature request",
     "signMessageDescription": "Only sign this message if you fully understand the content and trust the requesting site.",
     "signMessageSubtitle": "You are signing",

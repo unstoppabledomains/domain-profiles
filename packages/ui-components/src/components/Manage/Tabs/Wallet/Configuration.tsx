@@ -6,7 +6,6 @@ import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
@@ -31,6 +30,7 @@ import {FireblocksStateKey} from '../../../../lib/types/fireBlocks';
 import {DomainProfileTabType} from '../../DomainProfile';
 import ManageInput from '../../common/ManageInput';
 import type {ManageTabProps} from '../../common/types';
+import {ForgotCode} from './ForgotCode';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -79,6 +79,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [savingMessage, setSavingMessage] = useState<string>();
   const [configState, setConfigState] = useState(
     WalletConfigState.BootstrapCode,
@@ -230,8 +231,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
   };
 
   const handleForgotCode = () => {
-    // TODO - need to implement handler, but need support from the
-    // wallet service for email as prerequisite
+    setIsEmailModalOpen(true);
   };
 
   const processBootstrapCode = async () => {
@@ -341,20 +341,14 @@ export const Configuration: React.FC<ManageTabProps> = ({
               disabled={isSaving}
             />
             <Box className={classes.forgotCodeContainer}>
-              <Tooltip
-                arrow
-                placement="top"
-                title={t('wallet.forgotBootstrapCodeDescription')}
+              <Button
+                variant="text"
+                size="small"
+                color="secondary"
+                onClick={handleForgotCode}
               >
-                <Button
-                  variant="text"
-                  size="small"
-                  color="secondary"
-                  onClick={handleForgotCode}
-                >
-                  {t('wallet.forgotBootstrapCode')}
-                </Button>
-              </Tooltip>
+                {t('wallet.forgotBootstrapCode')}
+              </Button>
             </Box>
             <Box className={classes.checkboxContainer}>
               <FormGroup>
@@ -387,6 +381,12 @@ export const Configuration: React.FC<ManageTabProps> = ({
                 />
               </FormGroup>
             </Box>
+            {isEmailModalOpen && (
+              <ForgotCode
+                open={isEmailModalOpen}
+                onClose={() => setIsEmailModalOpen(false)}
+              />
+            )}
           </Box>
         ) : configState === WalletConfigState.RecoveryPhrase ? (
           <Box mb={1}>

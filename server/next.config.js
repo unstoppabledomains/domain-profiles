@@ -92,7 +92,12 @@ const nextConfig = {
       ...config.resolve.fallback,
       fs: false,
     };
-    return config;
+    return {
+      ...config,
+      optimization: {
+        minimize: false
+      }
+    }
   },
   i18n: {
     locales: locales.locales.map(({code}) => code),

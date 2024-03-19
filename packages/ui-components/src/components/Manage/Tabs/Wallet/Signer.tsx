@@ -31,6 +31,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     fontSize: '12px',
     wordWrap: 'break-word',
     maxWidth: '500px',
+    textAlign: 'left',
   },
   button: {
     marginTop: theme.spacing(1),

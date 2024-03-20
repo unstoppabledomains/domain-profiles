@@ -41,10 +41,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginBottom: theme.spacing(3),
   },
   forgotCodeContainer: {
-    marginLeft: theme.spacing(15),
+    display: 'flex',
   },
   checkboxContainer: {
-    marginLeft: theme.spacing(15),
     marginTop: theme.spacing(2),
   },
   checkbox: {
@@ -337,7 +336,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
               placeholder={t('wallet.enterBootstrapCode')}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              stacked={false}
+              stacked={true}
               disabled={isSaving}
             />
             <Box className={classes.forgotCodeContainer}>
@@ -400,9 +399,9 @@ export const Configuration: React.FC<ManageTabProps> = ({
               placeholder={t('wallet.enterRecoveryPhrase')}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              stacked={false}
               disabled={isSaving}
               password={true}
+              stacked={true}
             />
           </Box>
         ) : (

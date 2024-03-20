@@ -142,7 +142,7 @@ const AccessWallet = (props: Props) => {
             </Box>
           )}
           {props.message && (
-            <Typography align="center" variant="h5">
+            <Typography align="center" variant="h5" mb={2}>
               {props.message}
             </Typography>
           )}

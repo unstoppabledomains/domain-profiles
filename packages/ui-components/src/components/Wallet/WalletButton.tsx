@@ -367,7 +367,7 @@ const WalletButton: React.FC<Props> = ({
 
   switch (name) {
     case WalletName.UnstoppableWallet:
-      props.title = 'Unstoppable Guard';
+      props.title = t('wallet.title');
       props.iconUrl = '/wallet-button/unstoppable-domains.svg';
       break;
     case WalletName.MetaMask:

@@ -220,9 +220,9 @@ describe('<DomainProfile />', () => {
     });
   });
 
-  it('does not render share button buy default', async () => {
+  it('does not render by crypto button by default', async () => {
     customRender(<DomainProfile {...defaultProps()} />);
-    expect(() => screen.getByRole('button', {name: 'Share'})).toThrow();
+    expect(screen.queryByTestId('buy-crypto-button')).not.toBeInTheDocument();
   });
 
   it('always renders the edit profile button', async () => {
@@ -1213,10 +1213,10 @@ describe('Owner operations', () => {
       });
   });
 
-  it('renders a share menu button for the owner', async () => {
+  it('renders a buy crypto button for the owner', async () => {
     customRender(<DomainProfile {...tokenGalleryProps} />);
     await waitFor(() => {
-      expect(screen.getByRole('button', {name: 'Share'})).toBeInTheDocument();
+      expect(screen.getByTestId('buy-crypto-button')).toBeInTheDocument();
     });
   });
 
@@ -1340,9 +1340,9 @@ describe('Owner operations', () => {
   it('does not render the chat or follow buttons on own domain', async () => {
     customRender(<DomainProfile {...tokenGalleryProps} />);
 
-    // validate only the share button is present
+    // validate only the buy crypto button is present
     await waitFor(() => {
-      expect(screen.queryByTestId('share-button')).toBeInTheDocument();
+      expect(screen.queryByTestId('buy-crypto-button')).toBeInTheDocument();
       expect(screen.queryByTestId('edit-profile-button')).toBeInTheDocument();
       expect(screen.queryByTestId('chat-button')).not.toBeInTheDocument();
       expect(screen.queryByTestId('follow-button')).not.toBeInTheDocument();

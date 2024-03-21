@@ -9,16 +9,17 @@ import type {IDeviceStore} from '../../types/fireBlocks';
 const KEY_PREFIX = 'SECURE_';
 
 export class SecureKeyStorageProvider implements ISecureStorageProvider {
-  private readonly PASSWORD: string = 'fakePassword';
   private encKey: string | null = null;
 
   constructor(
     private readonly deviceId: string,
     private readonly storageProvider: IDeviceStore,
-  ) {}
+    private readonly pin?: string,
+  ) {
+    this.encKey = this.pin || deviceId;
+  }
 
   async getAccess(): Promise<TReleaseSecureStorageCallback> {
-    this.encKey = await this.generateFakeEncryptionKey();
     return async () => {
       await this.release();
     };
@@ -63,10 +64,6 @@ export class SecureKeyStorageProvider implements ISecureStorageProvider {
     key = this.getKey(key);
 
     await this.storageProvider.clear(this.deviceId, key);
-  }
-
-  private async generateFakeEncryptionKey(): Promise<string> {
-    return this.PASSWORD;
   }
 
   private async release(): Promise<void> {

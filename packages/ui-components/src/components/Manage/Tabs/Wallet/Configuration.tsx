@@ -271,11 +271,11 @@ export const Configuration: React.FC<ManageTabProps> = ({
 
     // retrieve and initialize the Fireblocks client
     setSavingMessage(t('wallet.validatingRecoveryPhrase'));
-    const fbClient = await getFireBlocksClient(deviceId, bootstrapJwt, {
+    const fbClientForInit = await getFireBlocksClient(deviceId, bootstrapJwt, {
       state: persistKeys ? persistentKeyState : sessionKeyState,
       saveState: persistKeys ? setPersistentKeyState : setSessionKeyState,
     });
-    const isInitialized = await initializeClient(fbClient, {
+    const isInitialized = await initializeClient(fbClientForInit, {
       bootstrapJwt,
       recoveryPhrase,
     });
@@ -306,7 +306,11 @@ export const Configuration: React.FC<ManageTabProps> = ({
 
     // sign the transaction ID with Fireblocks client
     setSavingMessage(t('wallet.validatingKeys'));
-    const txSignature = await signTransaction(fbClient, tx.transactionId);
+    const fbClientForTx = await getFireBlocksClient(deviceId, bootstrapJwt, {
+      state: persistKeys ? persistentKeyState : sessionKeyState,
+      saveState: persistKeys ? setPersistentKeyState : setSessionKeyState,
+    });
+    const txSignature = await signTransaction(fbClientForTx, tx.transactionId);
     if (!txSignature) {
       notifyEvent(
         new Error('error signing auth tx'),

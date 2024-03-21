@@ -24,6 +24,7 @@ export const getFireBlocksClient = async (
   jwt: string,
   opts?: {
     isRefreshToken?: boolean;
+    pin?: string;
     state: Record<string, Record<string, string>>;
     saveState: (state: Record<string, Record<string, string>>) => void;
   },
@@ -37,6 +38,7 @@ export const getFireBlocksClient = async (
   const secureKeyStorageProvider = new SecureKeyStorageProvider(
     deviceId,
     storageProvider,
+    opts?.pin,
   );
   const unsecureStorageProvider = new UnsecureKeyStorageProvider(
     deviceId,

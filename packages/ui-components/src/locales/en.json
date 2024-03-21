@@ -786,7 +786,7 @@
     "configuringKeys": "Configuring wallet keys",
     "downloadingKeys": "Retrieving wallet keys",
     "enterBootstrapCode": "Enter Unstoppable Wallet setup code",
-    "enterRecoveryPhrase": "Enter your recovery phrase",
+    "enterRecoveryPhrase": "Enter your password",
     "finalizingKeys": "Finalizing wallet keys",
     "forgotBootstrapCode": "Need setup code?",
     "forgotBootstrapCodeDescription": "Enter the email address used to claim your Unstoppable Wallet. We'll send you a new setup code with more instructions.",
@@ -794,8 +794,8 @@
     "getBootstrapCode": "Get setup code",
     "invalidSetupCode": "Invalid setup code",
     "recoveryError": "Unable to configure wallet",
-    "recoveryPhrase": "Recovery phrase",
-    "recoveryPhraseDescription": "The recovery phrase you created for Unstoppable Wallet is required to unlock access on this device. Do not share your recovery phrase with anyone, including Unstoppable Domains staff.",
+    "recoveryPhrase": "Password",
+    "recoveryPhraseDescription": "The password you created for Unstoppable Wallet is required to unlock access on this device. Do not share your password with anyone, including Unstoppable Domains staff.",
     "reject": "Reject",
     "rememberOnThisDevice": "Remember on this device",
     "rememberOnThisDeviceDescription": "Your Unstoppable Wallet access will be stored securely in this web browser",
@@ -806,7 +806,7 @@
     "successDescription": "Unstoppable Wallet is ready to be used on this browser",
     "title": "Unstoppable Wallet",
     "validatingKeys": "Validating wallet keys",
-    "validatingRecoveryPhrase": "Validating recovery phrase",
+    "validatingRecoveryPhrase": "Validating password",
     "validatingSetupCode": "Validating setup code"
   },
   "webacy": {

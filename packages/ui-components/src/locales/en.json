@@ -777,6 +777,7 @@
     "viewExplorer": "Blockchain explorer"
   },
   "wallet": {
+    "approve": "Approve",
     "beginSetup": "Submit Setup Code",
     "bootstrapCode": "Setup Code",
     "bootstrapCodeDescription": "The setup code you received after claiming your Unstoppable Wallet is required to configure access on this device. You can always request a new code if it has expired.",
@@ -794,11 +795,12 @@
     "recoveryError": "Unable to configure wallet",
     "recoveryPhrase": "Recovery phrase",
     "recoveryPhraseDescription": "The recovery phrase you created for Unstoppable Wallet is required to unlock access on this device. Do not share your recovery phrase with anyone, including Unstoppable Domains staff.",
+    "reject": "Reject",
     "rememberOnThisDevice": "Remember on this device",
     "rememberOnThisDeviceDescription": "Your Unstoppable Wallet access will be stored securely in this web browser",
     "sendBootstrapCode": "Send",
     "signMessage": "Signature request",
-    "signMessageDescription": "Only sign this message if you fully understand the content and trust the requesting site.",
+    "signMessageDescription": "Only approve this signature if you fully understand the content and trust the requesting site.",
     "signMessageSubtitle": "You are signing",
     "successDescription": "Unstoppable Wallet is ready to be used on this browser",
     "title": "Unstoppable Wallet",

@@ -85,7 +85,7 @@ export const Signer: React.FC<SignerProps> = ({message, onSuccess}) => {
           variant="contained"
           onClick={handleSignature}
         >
-          Sign
+          {t('wallet.approve')}
         </Button>
         <Button
           className={classes.button}
@@ -93,7 +93,7 @@ export const Signer: React.FC<SignerProps> = ({message, onSuccess}) => {
           variant="outlined"
           onClick={handleReject}
         >
-          Reject
+          {t('wallet.reject')}
         </Button>
       </Box>
     </Box>

@@ -220,7 +220,7 @@ describe('<DomainProfile />', () => {
     });
   });
 
-  it('does not render by crypto button by default', async () => {
+  it('does not render the buy crypto button by default', async () => {
     customRender(<DomainProfile {...defaultProps()} />);
     expect(screen.queryByTestId('buy-crypto-button')).not.toBeInTheDocument();
   });

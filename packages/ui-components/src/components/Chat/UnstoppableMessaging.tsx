@@ -805,7 +805,9 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     if (web3Dependencies?.address) {
       setWeb3Deps(web3Dependencies);
       setChatAddress(web3Dependencies.address);
-      setWalletModalIsOpen(false);
+      if (!web3Dependencies?.unstoppableWallet) {
+        setWalletModalIsOpen(false);
+      }
       if (signatureInProgress) {
         setConfigState(ConfigurationState.RegisterXmtp);
       }

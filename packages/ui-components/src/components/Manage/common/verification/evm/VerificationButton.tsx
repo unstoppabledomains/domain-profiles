@@ -125,7 +125,9 @@ export const EvmVerificationButton: FC<VerificationProps> = ({
     web3Dependencies?: Web3Dependencies,
   ) => {
     setWeb3Deps(web3Dependencies);
-    setAccessWalletModalIsOpen(false);
+    if (!web3Dependencies?.unstoppableWallet) {
+      setAccessWalletModalIsOpen(false);
+    }
   };
 
   const handleReconnect = () => {

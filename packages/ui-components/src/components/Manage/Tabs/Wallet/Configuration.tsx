@@ -20,6 +20,7 @@ import {
   getBootstrapToken,
 } from '../../../../actions/fireBlocksActions';
 import {useTranslationContext} from '../../../../lib';
+import {notifyEvent} from '../../../../lib/error';
 import {
   getFireBlocksClient,
   initializeClient,
@@ -44,7 +45,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
   },
   checkboxContainer: {
-    marginTop: theme.spacing(2),
+    marginTop: theme.spacing(3),
   },
   checkbox: {
     marginRight: theme.spacing(0),
@@ -244,7 +245,13 @@ export const Configuration: React.FC<ManageTabProps> = ({
     setSavingMessage(t('wallet.validatingSetupCode'));
     const walletResponse = await getBootstrapToken(bootstrapCode);
     if (!walletResponse?.accessToken || !walletResponse.deviceId) {
-      setErrorMessage('Invalid bootstrap code');
+      notifyEvent(
+        new Error('invalid setup code'),
+        'error',
+        'WALLET',
+        'Authorization',
+      );
+      setErrorMessage(t('wallet.invalidSetupCode'));
       return;
     }
 
@@ -273,7 +280,13 @@ export const Configuration: React.FC<ManageTabProps> = ({
       recoveryPhrase,
     });
     if (!isInitialized) {
-      setErrorMessage('Error initializing wallet');
+      notifyEvent(
+        new Error('error validating recovery phrase'),
+        'error',
+        'WALLET',
+        'Authorization',
+      );
+      setErrorMessage(t('wallet.recoveryError'));
       return;
     }
 
@@ -281,7 +294,13 @@ export const Configuration: React.FC<ManageTabProps> = ({
     setSavingMessage(t('wallet.configuringKeys'));
     const tx = await getAuthorizationTokenTx(bootstrapJwt);
     if (!tx) {
-      setErrorMessage('Error retrieving auth Tx');
+      notifyEvent(
+        new Error('error retrieving auth tx'),
+        'error',
+        'WALLET',
+        'Authorization',
+      );
+      setErrorMessage(t('wallet.recoveryError'));
       return;
     }
 
@@ -289,7 +308,13 @@ export const Configuration: React.FC<ManageTabProps> = ({
     setSavingMessage(t('wallet.validatingKeys'));
     const txSignature = await signTransaction(fbClient, tx.transactionId);
     if (!txSignature) {
-      setErrorMessage('Error signing auth Tx');
+      notifyEvent(
+        new Error('error signing auth tx'),
+        'error',
+        'WALLET',
+        'Authorization',
+      );
+      setErrorMessage(t('wallet.recoveryError'));
       return;
     }
 
@@ -297,7 +322,13 @@ export const Configuration: React.FC<ManageTabProps> = ({
     setSavingMessage(t('wallet.finalizingKeys'));
     const walletServiceTokens = await confirmAuthorizationTokenTx(bootstrapJwt);
     if (!walletServiceTokens) {
-      setErrorMessage('Error retrieving auth tokens');
+      notifyEvent(
+        new Error('error retrieving auth tokens'),
+        'error',
+        'WALLET',
+        'Authorization',
+      );
+      setErrorMessage(t('wallet.recoveryError'));
       return;
     }
 
@@ -343,42 +374,11 @@ export const Configuration: React.FC<ManageTabProps> = ({
               <Button
                 variant="text"
                 size="small"
-                color="secondary"
+                color="primary"
                 onClick={handleForgotCode}
               >
                 {t('wallet.forgotBootstrapCode')}
               </Button>
-            </Box>
-            <Box className={classes.checkboxContainer}>
-              <FormGroup>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      onChange={handlePersistChange}
-                      className={classes.checkbox}
-                      checked={persistKeys}
-                      disabled={
-                        isSaving ||
-                        !bootstrapCode ||
-                        bootstrapCode.trim().length === 0
-                      }
-                    />
-                  }
-                  label={
-                    <Box display="flex" flexDirection="column">
-                      <Typography variant="body1">
-                        {t('wallet.rememberOnThisDevice')}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        className={classes.enableDescription}
-                      >
-                        {t('wallet.rememberOnThisDeviceDescription')}
-                      </Typography>
-                    </Box>
-                  }
-                />
-              </FormGroup>
             </Box>
             {isEmailModalOpen && (
               <ForgotCode
@@ -403,6 +403,41 @@ export const Configuration: React.FC<ManageTabProps> = ({
               password={true}
               stacked={true}
             />
+            <Box className={classes.checkboxContainer}>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      onChange={handlePersistChange}
+                      className={classes.checkbox}
+                      checked={persistKeys}
+                      disabled={
+                        isSaving ||
+                        !bootstrapCode ||
+                        bootstrapCode.trim().length === 0
+                      }
+                    />
+                  }
+                  label={
+                    <Box display="flex" flexDirection="column">
+                      <Typography variant="body1">
+                        {t('wallet.rememberOnThisDevice')}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        className={
+                          bootstrapCode && bootstrapCode.length > 0 && !isSaving
+                            ? classes.enableDescription
+                            : undefined
+                        }
+                      >
+                        {t('wallet.rememberOnThisDeviceDescription')}
+                      </Typography>
+                    </Box>
+                  }
+                />
+              </FormGroup>
+            </Box>
           </Box>
         ) : (
           configState === WalletConfigState.Complete && (

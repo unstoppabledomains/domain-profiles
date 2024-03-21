@@ -16,14 +16,16 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
-    marginTop: theme.spacing(2),
+    marginTop: theme.spacing(3),
+    minHeight: '110px',
+    justifyContent: 'space-between',
   },
   titleStyle: {
     color: 'inherit',
     alignSelf: 'center',
   },
   button: {
-    marginTop: theme.spacing(2),
+    marginTop: theme.spacing(3),
     width: '100%',
   },
 }));
@@ -79,7 +81,7 @@ export const ForgotCode: React.FC<ForgotCodeProps> = ({open, onClose}) => {
 
   return (
     <Modal
-      title={t('wallet.forgotBootstrapCode')}
+      title={t('wallet.getBootstrapCode')}
       open={open}
       onClose={onClose}
       titleStyle={classes.titleStyle}
@@ -101,7 +103,6 @@ export const ForgotCode: React.FC<ForgotCodeProps> = ({open, onClose}) => {
           stacked={false}
           disabled={isSaving}
           error={errorMessage !== undefined}
-          errorText={errorMessage}
         />
         <LoadingButton
           disabled={!isDirty || errorMessage !== undefined}

@@ -1,3 +1,4 @@
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import ChatIcon from '@mui/icons-material/Chat';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
@@ -81,7 +82,6 @@ import {
   ProfilePicture,
   ProfileSearchBar,
   Registry,
-  ShareMenu,
   ShowHideButton,
   SocialAccountCard,
   TokenGallery,
@@ -256,12 +256,15 @@ const DomainProfile = ({
     domainAvatar: uploadedImagePath,
   });
 
-  const toggleQrCode = () => {
-    setDisplayQrCode(!displayQrCode);
-  };
-
   const handleClickToCopy = () => {
     enqueueSnackbar(t('common.copied'), {variant: 'success'});
+  };
+
+  const handleBuyCrypto = () => {
+    window.open(
+      `${config.UNSTOPPABLE_WEBSITE_URL}/fiat-ramps?domain=${domain}&utm_source=ud_me`,
+      '_blank',
+    );
   };
 
   const handleOwnerAddressClick = () => {
@@ -755,11 +758,12 @@ const DomainProfile = ({
                     )}
                   </>
                 ) : (
-                  <ShareMenu
-                    toggleQrCode={toggleQrCode}
-                    displayQrCode={displayQrCode}
-                    domain={domain}
-                    onProfileLinkCopied={handleClickToCopy}
+                  <ChipControlButton
+                    data-testid="buy-crypto-button"
+                    onClick={handleBuyCrypto}
+                    icon={<AttachMoneyIcon />}
+                    label={t('profile.buyCrypto')}
+                    variant="outlined"
                   />
                 )}
               </Box>

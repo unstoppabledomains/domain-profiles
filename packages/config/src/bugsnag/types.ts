@@ -23,7 +23,6 @@ export enum BugsnagErrorClasses {
   Configuration = 'Configuration',
   Fetch = 'Fetch',
   Fireblocks = 'Fireblocks',
-  Info = 'Information',
   PushProtocol = 'Push Protocol',
   Resolution = 'Resolution',
   Signature = 'Signature',

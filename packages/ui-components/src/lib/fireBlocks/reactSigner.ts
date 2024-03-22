@@ -1,3 +1,4 @@
+import {notifyEvent} from '../error';
 import {sleep} from '../sleep';
 import type {signMessageProps} from '../wallet';
 
@@ -17,7 +18,6 @@ export class ReactSigner {
     this.address = address;
     this.setMessage = setMessage;
     this.onClose = onClose;
-    UD_COMPLETED_SIGNATURE.length = 0;
   }
 
   // getAddress retrieves the address that will be creating the signature
@@ -26,13 +26,16 @@ export class ReactSigner {
   }
 
   async waitForSignature(): Promise<string> {
-    for (let i = 0; i < 120; i++) {
+    while (true) {
       if (UD_COMPLETED_SIGNATURE.length > 0) {
-        return UD_COMPLETED_SIGNATURE[0];
+        const signature = UD_COMPLETED_SIGNATURE.pop();
+        if (!signature) {
+          throw new Error('message not signed');
+        }
+        return signature;
       }
       await sleep(500);
     }
-    throw new Error('timed out waiting for signature');
   }
 
   // signMessage supports a string arg or an account containing the message
@@ -45,6 +48,9 @@ export class ReactSigner {
         this.setMessage(message.message);
       }
       return await this.waitForSignature();
+    } catch (e) {
+      notifyEvent(e, 'warning', 'Wallet', 'Signature');
+      throw e;
     } finally {
       if (this.onClose) {
         this.onClose();
@@ -54,4 +60,4 @@ export class ReactSigner {
 }
 
 // UD_COMPLETED_SIGNATURE is a constant to track the signed value of a message
-export const UD_COMPLETED_SIGNATURE: string[] = [];
+export const UD_COMPLETED_SIGNATURE: (string | undefined)[] = [];

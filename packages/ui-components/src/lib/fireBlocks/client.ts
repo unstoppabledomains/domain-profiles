@@ -97,7 +97,7 @@ export const initializeClient = async (
           try {
             client.stopJoinWallet();
           } catch (stopJoinWalletErr) {
-            notifyEvent(stopJoinWalletErr, 'warning', 'Wallet', 'Validation', {
+            notifyEvent(stopJoinWalletErr, 'warning', 'Wallet', 'Fireblocks', {
               msg: 'unable to cancel join request',
               meta: {requestId},
             });
@@ -112,14 +112,13 @@ export const initializeClient = async (
     // wait for the join request to be approved by the backend
     for (let i = 1; i <= MAX_RETRY; i++) {
       try {
-        notifyEvent('checking key status', 'info', 'Wallet', 'Validation');
         const status = await client.getKeysStatus();
         if (status.MPC_CMP_ECDSA_SECP256K1.keyStatus === 'READY') {
           // key material is now available on the device
           return true;
         }
       } catch (statusErr) {
-        notifyEvent(statusErr, 'error', 'Wallet', 'Validation', {
+        notifyEvent(statusErr, 'error', 'Wallet', 'Configuration', {
           msg: 'error checking key status',
         });
       }
@@ -127,7 +126,7 @@ export const initializeClient = async (
     }
     throw new Error('fireblocks key status is not ready');
   } catch (initError) {
-    notifyEvent(initError, 'error', 'Wallet', 'Validation', {
+    notifyEvent(initError, 'error', 'Wallet', 'Configuration', {
       msg: 'unable to initialize client',
     });
   }

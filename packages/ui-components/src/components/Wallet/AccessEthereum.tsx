@@ -213,9 +213,6 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
   };
 
   const handleUdWalletSignature = (signedMessage?: string) => {
-    if (!signedMessage) {
-      throw new Error('message not signed');
-    }
     UD_COMPLETED_SIGNATURE.push(signedMessage);
   };
 

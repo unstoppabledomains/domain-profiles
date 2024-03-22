@@ -422,7 +422,7 @@ const DomainProfile = ({
       'loading profile page',
       'info',
       'Profile',
-      'Info',
+      'Configuration',
       undefined,
       true,
     );

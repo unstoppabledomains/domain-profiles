@@ -1,11 +1,14 @@
 import type {IEventsHandler, TEvent} from '@fireblocks/ncw-js-sdk';
 
+import {notifyEvent} from '../../error';
+
 export class LogEventHandler implements IEventsHandler {
   async handleEvent(event: TEvent) {
-    // eslint-disable-next-line no-console
-    console.log(
-      `Fireblocks event`,
-      JSON.stringify({timestamp: new Date().toString(), event}),
-    );
+    notifyEvent('fireblocks event', 'info', 'Wallet', 'Fireblocks', {
+      meta: {
+        timestamp: new Date().toString(),
+        event,
+      },
+    });
   }
 }

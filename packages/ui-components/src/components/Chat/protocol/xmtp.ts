@@ -157,7 +157,7 @@ export const getRemoteAttachment = async (
     );
     return attachment;
   } catch (e) {
-    notifyEvent(e, 'error', 'MESSAGING', 'XMTP', {
+    notifyEvent(e, 'error', 'Messaging', 'XMTP', {
       msg: 'error loading remote attachment',
     });
   }
@@ -208,7 +208,7 @@ export const initXmtpAccount = async (address: string, signer: Signer) => {
     // create a client for the first time using the wallet signer reference
     await getXmtpClient(address, signer);
   } catch (e) {
-    notifyEvent(e, 'warning', 'MESSAGING', 'XMTP');
+    notifyEvent(e, 'warning', 'Messaging', 'XMTP');
     throw e;
   }
 };

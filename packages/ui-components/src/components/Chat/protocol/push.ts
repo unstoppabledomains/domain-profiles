@@ -52,7 +52,7 @@ export const acceptGroupInvite = async (
       });
     }
   } catch (e) {
-    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
       msg: 'error accepting group invitation',
     });
   }
@@ -87,7 +87,7 @@ export const decryptMessage = async (
       return decryptedMessage;
     }
   } catch (e) {
-    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
       msg: 'error decrypting message',
     });
   }
@@ -130,7 +130,7 @@ export const decryptMessageWithPGP = async (
       }
     }
   } catch (err) {
-    notifyEvent(err, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(err, 'error', 'Messaging', 'PushProtocol', {
       msg: 'error decrypting message',
     });
     return undefined;
@@ -152,7 +152,7 @@ export const getGroupInfo = async (chatId?: string) => {
       chatId,
     });
   } catch (e) {
-    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
       msg: 'error getting group',
     });
     return;
@@ -187,7 +187,7 @@ export const getLatestMessage = async (
       return await decryptMessage(address, pushKey, encryptedMsg[0]);
     }
   } catch (e) {
-    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
       msg: 'error retrieving latest message',
     });
   }
@@ -220,7 +220,7 @@ export const getMessages = async (
       limit: PUSH_PAGE_SIZE,
     });
   } catch (e) {
-    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
       msg: 'error retrieving chat history',
     });
   }
@@ -248,7 +248,7 @@ export const getPushUser = async (
       return pushUser;
     }
   } catch (e) {
-    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
       msg: 'error getting push user',
     });
   }
@@ -431,7 +431,7 @@ export const updateBlockedList = async (
     ]);
   } catch (e) {
     // graceful failure
-    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
       msg: 'unable to update block list registration',
     });
   }

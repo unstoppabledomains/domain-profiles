@@ -18,7 +18,7 @@ export class RpcMessageProvider implements IMessagesHandler {
     try {
       return await sendRpcMessage(message, this.jwt);
     } catch (e) {
-      notifyEvent(e, 'error', 'WALLET', 'Fetch', {
+      notifyEvent(e, 'error', 'Wallet', 'Fetch', {
         msg: 'error sending RPC message',
       });
       return {

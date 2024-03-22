@@ -248,7 +248,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
       notifyEvent(
         new Error('invalid setup code'),
         'error',
-        'WALLET',
+        'Wallet',
         'Authorization',
       );
       setErrorMessage(t('wallet.invalidSetupCode'));
@@ -283,7 +283,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
       notifyEvent(
         new Error('error validating recovery phrase'),
         'error',
-        'WALLET',
+        'Wallet',
         'Authorization',
       );
       setErrorMessage(t('wallet.recoveryError'));
@@ -297,7 +297,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
       notifyEvent(
         new Error('error retrieving auth tx'),
         'error',
-        'WALLET',
+        'Wallet',
         'Authorization',
       );
       setErrorMessage(t('wallet.recoveryError'));
@@ -315,7 +315,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
       notifyEvent(
         new Error('error signing auth tx'),
         'error',
-        'WALLET',
+        'Wallet',
         'Authorization',
       );
       setErrorMessage(t('wallet.recoveryError'));
@@ -329,7 +329,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
       notifyEvent(
         new Error('error retrieving auth tokens'),
         'error',
-        'WALLET',
+        'Wallet',
         'Authorization',
       );
       setErrorMessage(t('wallet.recoveryError'));

@@ -97,7 +97,7 @@ export const initializeClient = async (
           try {
             client.stopJoinWallet();
           } catch (stopJoinWalletErr) {
-            notifyEvent(stopJoinWalletErr, 'warning', 'WALLET', 'Validation', {
+            notifyEvent(stopJoinWalletErr, 'warning', 'Wallet', 'Validation', {
               msg: 'unable to cancel join request',
               meta: {requestId},
             });
@@ -112,14 +112,14 @@ export const initializeClient = async (
     // wait for the join request to be approved by the backend
     for (let i = 1; i <= MAX_RETRY; i++) {
       try {
-        notifyEvent('checking key status', 'info', 'WALLET', 'Validation');
+        notifyEvent('checking key status', 'info', 'Wallet', 'Validation');
         const status = await client.getKeysStatus();
         if (status.MPC_CMP_ECDSA_SECP256K1.keyStatus === 'READY') {
           // key material is now available on the device
           return true;
         }
       } catch (statusErr) {
-        notifyEvent(statusErr, 'error', 'WALLET', 'Validation', {
+        notifyEvent(statusErr, 'error', 'Wallet', 'Validation', {
           msg: 'error checking key status',
         });
       }
@@ -127,7 +127,7 @@ export const initializeClient = async (
     }
     throw new Error('fireblocks key status is not ready');
   } catch (initError) {
-    notifyEvent(initError, 'error', 'WALLET', 'Validation', {
+    notifyEvent(initError, 'error', 'Wallet', 'Validation', {
       msg: 'unable to initialize client',
     });
   }
@@ -144,12 +144,12 @@ export const signTransaction = async (
     try {
       return await client.signTransaction(txId);
     } catch (e) {
-      notifyEvent(e, 'warning', 'WALLET', 'Signature', {
+      notifyEvent(e, 'warning', 'Wallet', 'Signature', {
         msg: 'retrying failed tx signature',
       });
     }
     await sleep(WAIT_TIME_MS);
   }
-  notifyEvent(new Error('tx signature failed'), 'error', 'WALLET', 'Signature');
+  notifyEvent(new Error('tx signature failed'), 'error', 'Wallet', 'Signature');
   return undefined;
 };

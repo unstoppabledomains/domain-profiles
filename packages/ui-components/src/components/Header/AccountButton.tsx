@@ -108,7 +108,7 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
     // set state
     setIsOwner(domainOwner.toLowerCase() === authAddress.toLowerCase());
     fetchData(authDomain).catch(e =>
-      notifyEvent(e, 'error', 'PROFILE', 'Resolution'),
+      notifyEvent(e, 'error', 'Profile', 'Resolution'),
     );
   }, [authAddress, authDomain, domainOwner]);
 

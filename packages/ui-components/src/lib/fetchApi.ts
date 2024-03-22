@@ -44,7 +44,7 @@ export const fetchApi = async <T = any>(
         notifyEvent(
           new Error(`unexpected response code`),
           severity,
-          'REQUEST',
+          'Request',
           'Fetch',
           {
             msg: 'unexpected response code',
@@ -65,7 +65,7 @@ export const fetchApi = async <T = any>(
       }
     })
     .catch(e => {
-      notifyEvent(e, 'error', 'REQUEST', 'Fetch', {
+      notifyEvent(e, 'error', 'Request', 'Fetch', {
         msg: 'fetch error',
         meta: {url},
       });

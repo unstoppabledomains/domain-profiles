@@ -188,7 +188,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
           return;
         }
       } catch (e) {
-        notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+        notifyEvent(e, 'error', 'Profile', 'Fetch', {
           msg: 'error resolving domain',
         });
       }
@@ -268,7 +268,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
         }
       }
     } catch (e) {
-      notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+      notifyEvent(e, 'error', 'Profile', 'Fetch', {
         msg: 'error retrieving owner domains',
       });
     }

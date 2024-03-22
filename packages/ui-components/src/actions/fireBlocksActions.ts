@@ -28,7 +28,7 @@ export const confirmAuthorizationTokenTx = async (
       host: config.WALLETS.HOST_URL,
     });
   } catch (e) {
-    notifyEvent(e, 'error', 'WALLET', 'Fetch', {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error confirming authorization token tx',
     });
   }
@@ -71,7 +71,7 @@ export const getAccessToken = async (
     }
     return newTokens;
   } catch (e) {
-    notifyEvent(e, 'error', 'WALLET', 'Fetch', {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error refreshing tokens',
     });
   }
@@ -97,7 +97,7 @@ export const getAccountAssets = async (
       },
     );
   } catch (e) {
-    notifyEvent(e, 'error', 'WALLET', 'Fetch', {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error retrieving account assets',
     });
   }
@@ -119,7 +119,7 @@ export const getAccounts = async (
       host: config.WALLETS.HOST_URL,
     });
   } catch (e) {
-    notifyEvent(e, 'error', 'WALLET', 'Fetch', {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error retrieving accounts',
     });
   }
@@ -156,7 +156,7 @@ export const getAuthorizationTokenTx = async (
     }
     return tx;
   } catch (e) {
-    notifyEvent(e, 'error', 'WALLET', 'Fetch', {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error initializing authorization token tx',
     });
   }
@@ -178,7 +178,7 @@ export const getAuthorizationTokenTxStatus = async (
       host: config.WALLETS.HOST_URL,
     });
   } catch (e) {
-    notifyEvent(e, 'error', 'WALLET', 'Fetch', {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error retrieving authorization token tx status',
     });
   }
@@ -201,7 +201,7 @@ export const getBootstrapToken = async (
       body: JSON.stringify({code: bootstrapCode, device: deviceId || null}),
     });
   } catch (e) {
-    notifyEvent(e, 'error', 'WALLET', 'Fetch', {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error retrieving bootstrap token',
     });
   }
@@ -225,7 +225,7 @@ export const sendBootstrapCode = async (
     });
     return true;
   } catch (e) {
-    notifyEvent(e, 'error', 'WALLET', 'Fetch', {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error sending bootstrap code',
     });
   }
@@ -257,7 +257,7 @@ export const sendJoinRequest = async (
     }
     return true;
   } catch (e) {
-    notifyEvent(e, 'error', 'WALLET', 'Fetch', {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error retrieving bootstrap token',
     });
   }
@@ -282,7 +282,7 @@ export const sendRpcMessage = async <T>(
       body: JSON.stringify({message}),
     });
   } catch (e) {
-    notifyEvent(e, 'error', 'WALLET', 'Fetch', {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error retrieving bootstrap token',
     });
     throw e;

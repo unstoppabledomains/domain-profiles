@@ -212,7 +212,7 @@ export const DomainWalletTransactions: React.FC<
               tx.symbol = symbol;
             });
         } catch (e) {
-          notifyEvent(e, 'warning', 'WALLET', 'Fetch', {
+          notifyEvent(e, 'warning', 'Wallet', 'Fetch', {
             msg: 'unable to retrieve transactions',
           });
         }

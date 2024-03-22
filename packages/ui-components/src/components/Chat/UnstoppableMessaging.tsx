@@ -503,7 +503,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
               }
             } catch (profileErr) {
               // fail gracefully, as this API fails from time to time
-              notifyEvent(profileErr, 'warning', 'MESSAGING', 'PushProtocol', {
+              notifyEvent(profileErr, 'warning', 'Messaging', 'PushProtocol', {
                 msg: 'error updating profile',
               });
             }
@@ -536,7 +536,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
                   userAddress: getCaip10Address(pushUserAccount.wallets),
                   env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
                   onError: (e: unknown) =>
-                    notifyEvent(e, 'warning', 'MESSAGING', 'PushProtocol', {
+                    notifyEvent(e, 'warning', 'Messaging', 'PushProtocol', {
                       msg: 'subscription error',
                     }),
                 });
@@ -547,7 +547,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
             notifyEvent(
               subscriptionErr,
               'warning',
-              'MESSAGING',
+              'Messaging',
               'PushProtocol',
               {msg: 'error subscribing to channels'},
             );
@@ -567,7 +567,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         return;
       }
     } catch (e) {
-      notifyEvent(e, 'error', 'MESSAGING', 'Authorization', {
+      notifyEvent(e, 'error', 'Messaging', 'Authorization', {
         msg: 'error configuring messaging',
         meta: {
           address: chatAddress,
@@ -588,7 +588,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       notifyEvent(
         new Error('Required messaging accounts not defined'),
         'error',
-        'MESSAGING',
+        'Messaging',
         'Fetch',
         {msg: 'accounts not defined'},
       );
@@ -910,7 +910,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
           setActiveCommunity(groupChatInfo);
         }
       } catch (e) {
-        notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+        notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
           msg: 'error joining group',
         });
       } finally {

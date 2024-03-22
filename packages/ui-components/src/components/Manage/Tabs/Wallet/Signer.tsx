@@ -98,13 +98,18 @@ export const Signer: React.FC<SignerProps> = ({message, onComplete}) => {
     if (!client) {
       return;
     }
-    notifyEvent(undefined, 'info', 'WALLET', 'Signature', {
-      msg: 'signing message with fireblocks client',
-      meta: {
-        deviceId: client.getPhysicalDeviceId(),
-        message,
+    notifyEvent(
+      'signing message with fireblocks client',
+      'info',
+      'Wallet',
+      'Signature',
+      {
+        meta: {
+          deviceId: client.getPhysicalDeviceId(),
+          message,
+        },
       },
-    });
+    );
 
     // TODO - Create signature using Fireblocks client once functionality becomes
     // available on the backend wallet service

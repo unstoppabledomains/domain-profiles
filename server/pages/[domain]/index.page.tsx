@@ -421,7 +421,7 @@ const DomainProfile = ({
     notifyEvent(
       'loading profile page',
       'info',
-      'PROFILE',
+      'Profile',
       'Info',
       undefined,
       true,
@@ -475,7 +475,7 @@ const DomainProfile = ({
           setRecords(recordsData.records);
         }
       } catch (e) {
-        notifyEvent(e, 'error', 'PROFILE', 'Resolution', {
+        notifyEvent(e, 'error', 'Profile', 'Resolution', {
           msg: 'error retrieving records',
         });
       }
@@ -498,7 +498,7 @@ const DomainProfile = ({
           setIsWalletBalanceError(true);
         }
       } catch (e) {
-        notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+        notifyEvent(e, 'error', 'Profile', 'Fetch', {
           msg: 'error retrieving wallets',
         });
       }
@@ -516,7 +516,7 @@ const DomainProfile = ({
           profileData.webacy = webacyData.webacy;
         }
       } catch (e) {
-        notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+        notifyEvent(e, 'error', 'Profile', 'Fetch', {
           msg: 'error retrieving webacy score',
         });
       }
@@ -543,7 +543,7 @@ const DomainProfile = ({
         setFeaturedPartner(shuffle(featuredPartners)[0]);
       }
     } catch (e) {
-      notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+      notifyEvent(e, 'error', 'Profile', 'Fetch', {
         msg: 'error retrieving badges',
       });
     }

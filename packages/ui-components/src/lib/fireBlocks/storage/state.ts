@@ -23,6 +23,6 @@ export const saveState = (
   state[`${BootstrapStatePrefix}-${values.deviceId}`] =
     values as unknown as Record<string, string>;
   state[`${BootstrapStatePrefix}-${BootstrapStateCurrentKey}`] =
-    state[`${BootstrapStatePrefix}-${values.deviceId}`];
+    values as unknown as Record<string, string>;
   setState({...state});
 };

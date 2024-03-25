@@ -5,6 +5,7 @@ import React from 'react';
 import type {CurrenciesType} from '../../lib/types/blockchain';
 import {Currencies} from '../../lib/types/blockchain';
 
+const Base = dynamic(() => import('./BaseIcon'));
 const Bitcoin = dynamic(
   () => import('@unstoppabledomains/ui-kit/icons/crypto/Bitcoin'),
 );
@@ -428,6 +429,8 @@ type Props = {
 export const CryptoIcon = React.forwardRef<SVGSVGElement, Props>(
   ({currency, ...rest}, ref) => {
     switch (currency) {
+      case Currencies.BASE:
+        return <Base {...rest} fr={undefined} iconRef={ref} />;
       case Currencies.BTC:
         return <Bitcoin {...rest} fr={undefined} iconRef={ref} />;
       case Currencies.ETH:

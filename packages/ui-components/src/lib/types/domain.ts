@@ -475,6 +475,7 @@ export type SerializedWalletToken = {
   type: 'native' | 'erc20';
   address: string;
   symbol: string;
+  gasCurrency: string;
   name: string;
   logoUrl?: string;
   balance?: string;

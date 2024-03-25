@@ -146,6 +146,7 @@ export enum AdditionalCurrenciesEnum {
   VERSE = 'VERSE',
   ADA = 'ADA',
   HBAR = 'HBAR',
+  BASE = 'BASE',
 }
 
 export enum AllInitialCurrenciesEnum {

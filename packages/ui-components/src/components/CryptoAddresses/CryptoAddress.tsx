@@ -1,4 +1,7 @@
+import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
 import InfoIcon from '@mui/icons-material/Info';
+import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
 import Menu from '@mui/material/Menu';
@@ -20,6 +23,7 @@ import useTranslationContext from '../../lib/i18n';
 import type {CurrenciesType} from '../../lib/types/blockchain';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import type {MulticoinVersions} from '../../lib/types/records';
+import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileTabType} from '../Manage';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -93,7 +97,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     fontSize: '13px',
     padding: 0,
   },
-  copyIcon: {
+  actionIcon: {
     width: 16,
     height: 16,
     display: 'flex',
@@ -109,7 +113,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     fontWeight: theme.typography.fontWeightMedium,
     transition: theme.transitions.create('background-color'),
   },
-  menuCopyIcon: {
+  menuActionIcon: {
     marginRight: theme.spacing(1),
   },
 }));
@@ -186,8 +190,8 @@ const CryptoAddress: React.FC<Props> = ({
     setAnchorEl(event.currentTarget);
   };
 
-  const handleSingleAddressClick = () => {
-    window.open(getBlockScanUrl(currency, address), '_blank');
+  const handleSingleAddressClick = (addr: string) => {
+    window.open(getBlockScanUrl(currency, addr), '_blank');
   };
 
   const handleClose = () => {
@@ -212,10 +216,15 @@ const CryptoAddress: React.FC<Props> = ({
       case 'ETH':
       case 'FTM':
       case 'AVAX':
+        return isEthAddress(addr)
+          ? `https://www.oklink.com/${symbol.toLowerCase()}/address/${addr}`
+          : '';
+      case 'MATIC':
+        return isEthAddress(addr)
+          ? `https://www.oklink.com/polygon/address/${addr}`
+          : '';
       case 'BTC':
         return `https://www.oklink.com/${symbol.toLowerCase()}/address/${addr}`;
-      case 'MATIC':
-        return `https://www.oklink.com/polygon/address/${addr}`;
       case 'SOL':
         return `https://www.oklink.com/sol/account/${addr}`;
       default:
@@ -224,11 +233,21 @@ const CryptoAddress: React.FC<Props> = ({
   };
 
   const showTooltip = showWarning && !isVerified && isSupported(currency);
+  const isSingleAddress = Object.keys(filteredVersions || []).length <= 1;
+  const isSingleAddressWithLink =
+    isSingleAddress && getBlockScanUrl(currency, address);
+
   const item = (
     <div
       key={currency}
       className={classes.row}
-      onClick={filteredVersions ? handleMultiAddressClick : undefined}
+      onClick={
+        isSingleAddressWithLink
+          ? () => handleSingleAddressClick(address)
+          : isSingleAddress
+          ? undefined
+          : handleMultiAddressClick
+      }
     >
       <Tooltip
         title={`${currency}${filteredVersions ? versionName : ''}`}
@@ -241,15 +260,7 @@ const CryptoAddress: React.FC<Props> = ({
         />
       </Tooltip>
       {chain && <span className={classes.chain}>{chain}</span>}
-      <Typography
-        className={classes.address}
-        onClick={
-          Object.keys(filteredVersions || []).length <= 1 &&
-          getBlockScanUrl(currency, address)
-            ? handleSingleAddressClick
-            : undefined
-        }
-      >
+      <Typography className={classes.address}>
         {displayShortCryptoAddress(address, 4, 4)}
       </Typography>
       {showTooltip ? (
@@ -292,22 +303,21 @@ const CryptoAddress: React.FC<Props> = ({
             />
           </Tooltip>
         </ClickAwayListener>
-      ) : Object.keys(filteredVersions || []).length > 1 ||
-        !getBlockScanUrl(currency, address) ? (
+      ) : isSingleAddressWithLink ? (
+        <LaunchOutlinedIcon
+          titleAccess={t('profile.openAddress')}
+          className={classes.actionIcon}
+        />
+      ) : isSingleAddress ? (
         <CopyContentIcon
           titleAccess={t('profile.copyAddress')}
-          className={classes.copyIcon}
+          className={classes.actionIcon}
         />
       ) : (
-        <CopyToClipboard
-          onCopy={handleCryptoAddressCopied}
-          stringToCopy={address}
-        >
-          <CopyContentIcon
-            titleAccess={t('profile.copyAddress')}
-            className={classes.copyIcon}
-          />
-        </CopyToClipboard>
+        <ExpandMoreOutlinedIcon
+          titleAccess={t('profile.viewAddress')}
+          className={classes.actionIcon}
+        />
       )}
     </div>
   );
@@ -324,27 +334,46 @@ const CryptoAddress: React.FC<Props> = ({
             classes={{list: classes.menuList}}
           >
             {Object.keys(filteredVersions).map(version => (
-              <CopyToClipboard
-                key={`${currency}_${version}`}
-                onCopy={
-                  showTooltip && isOwner ? undefined : handleCryptoAddressCopied
-                }
-                stringToCopy={
-                  showTooltip && isOwner ? '' : filteredVersions[version]
-                }
-              >
-                <MenuItem className={classes.menuItem} onClick={handleClose}>
-                  <CopyContentIcon
-                    titleAccess={t('profile.copyAddress')}
-                    className={classes.menuCopyIcon}
-                  />
-                  {version}
-                </MenuItem>
-              </CopyToClipboard>
+              <MenuItem className={classes.menuItem} onClick={handleClose}>
+                {getBlockScanUrl(currency, filteredVersions[version]) ? (
+                  <Box
+                    display="flex"
+                    onClick={() =>
+                      handleSingleAddressClick(filteredVersions[version])
+                    }
+                  >
+                    <LaunchOutlinedIcon
+                      titleAccess={t('profile.openAddress')}
+                      className={classes.menuActionIcon}
+                    />
+                    <Typography>{version}</Typography>
+                  </Box>
+                ) : (
+                  <CopyToClipboard
+                    key={`${currency}_${version}`}
+                    onCopy={
+                      showTooltip && isOwner
+                        ? undefined
+                        : handleCryptoAddressCopied
+                    }
+                    stringToCopy={
+                      showTooltip && isOwner ? '' : filteredVersions[version]
+                    }
+                  >
+                    <Box display="flex">
+                      <CopyContentIcon
+                        titleAccess={t('profile.copyAddress')}
+                        className={classes.menuActionIcon}
+                      />
+                      <Typography>{version}</Typography>
+                    </Box>
+                  </CopyToClipboard>
+                )}
+              </MenuItem>
             ))}
           </Menu>
         </>
-      ) : getBlockScanUrl(currency, address) ? (
+      ) : isSingleAddressWithLink ? (
         item
       ) : (
         <CopyToClipboard

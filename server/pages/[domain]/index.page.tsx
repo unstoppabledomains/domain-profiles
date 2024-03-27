@@ -1239,7 +1239,16 @@ const DomainProfile = ({
             <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
                 <TokensPortfolio
-                  wallets={walletBalances}
+                  wallets={walletBalances
+                    ?.filter(
+                      w =>
+                        (w.totalValueUsdAmt && w.totalValueUsdAmt > 0) ||
+                        (w.txns?.data && w.txns.data.length > 0),
+                    )
+                    .sort(
+                      (a, b) =>
+                        (b.totalValueUsdAmt || 0) - (a.totalValueUsdAmt || 0),
+                    )}
                   domain={domain}
                   isOwner={isOwner}
                   isError={isWalletBalanceError}

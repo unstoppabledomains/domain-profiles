@@ -491,7 +491,6 @@
     "yourNftGalleryIsReadyToLaunch": "Your NFT gallery is ready to launch"
   },
   "profile": {
-    "buyCrypto": "Buy & sell crypto",
     "addressCount": "{{count}} Crypto addresses",
     "addressNotVerifiedMessageOwner": "Your {{symbol}} NFTs are not currently visible to other users. Verify your {{symbol}} address to unlock the NFT gallery.",
     "addressNotVerifiedMessagePublic": "NFTs displayed in the {{symbol}} gallery may not belong to the owner of this domain. Proceed with caution.",
@@ -499,6 +498,7 @@
     "badge": "badge",
     "badges": "Badges",
     "badgesAreSyncedFromDomainOwnerWallet": "Badges are synced from domain owner wallet: {{address}}",
+    "buyCrypto": "Buy & sell crypto",
     "clickToViewPortfolio": "Browse portfolio",
     "collapse": "Collapse",
     "collectingYourBadges": "Collecting your badges...",
@@ -555,6 +555,7 @@
       "to": "To"
     },
     "moreInformation": "More",
+    "openAddress": "Open in OKLink",
     "openSea": "OpenSea",
     "otherDomains": "{{count}} Other domains",
     "ownerAddress": "Owned by {{address}}",
@@ -590,6 +591,7 @@
     "verifiedWithUd": "Verified with UD",
     "verifyAddress": "Verify {{symbol}} address",
     "verifyWalletAddress": "Verify your wallet address",
+    "viewAddress": "View all addresses",
     "viewMyProfile": "My profile",
     "viewProfile": "View Profile",
     "website": "Website"

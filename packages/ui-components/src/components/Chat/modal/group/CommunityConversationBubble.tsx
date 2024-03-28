@@ -299,7 +299,7 @@ export const CommunityConversationBubble: React.FC<
         );
       }
     } catch (e) {
-      notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+      notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
         msg: 'error loading message',
       });
     } finally {

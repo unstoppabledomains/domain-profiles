@@ -58,6 +58,7 @@ const DropDownMenu: React.FC<Props> = ({authDomain}) => {
   const handleLogout = () => {
     setLoggingOut(prev => !prev);
     localStorage.clear();
+    sessionStorage.clear();
     window.location.reload();
   };
 

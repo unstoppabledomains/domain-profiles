@@ -93,7 +93,7 @@ const VerificationInfoModal: React.FC<Props> = ({
         setWeb3Deps(undefined);
       }
     } catch (e) {
-      notifyEvent(e, 'warning', 'WALLET', 'Signature');
+      notifyEvent(e, 'warning', 'Wallet', 'Signature');
     }
   }, [setWeb3Deps]);
 

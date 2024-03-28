@@ -129,7 +129,7 @@ export const Compose: React.FC<ComposeProps> = ({
         setTextboxTerm('');
         setErrorMessage('');
       } catch (e) {
-        notifyEvent(e, 'error', 'MESSAGING', 'XMTP', {
+        notifyEvent(e, 'error', 'Messaging', 'XMTP', {
           msg: 'error sending message',
         });
         setErrorMessage(t('push.errorSendingMessage'));
@@ -189,7 +189,7 @@ export const Compose: React.FC<ComposeProps> = ({
         }
       }
     } catch (e) {
-      notifyEvent(e, 'error', 'MESSAGING', 'Fetch', {
+      notifyEvent(e, 'error', 'Messaging', 'Fetch', {
         msg: 'unable to load user profile',
       });
     }
@@ -211,7 +211,7 @@ export const Compose: React.FC<ComposeProps> = ({
         sendCallback(sentMessage);
         setErrorMessage('');
       } catch (e) {
-        notifyEvent(e, 'error', 'MESSAGING', 'XMTP', {
+        notifyEvent(e, 'error', 'Messaging', 'XMTP', {
           msg: 'error uploading file',
         });
         setErrorMessage(t('push.errorSendingAttachment'));

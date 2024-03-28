@@ -172,7 +172,10 @@ export const ProfileManager: React.FC<ManagerProps> = ({
 
     // request wallet signature
     setMessageResponse(responseBody);
-    setAccessWalletModalIsOpen(!web3Context.web3Deps);
+    setAccessWalletModalIsOpen(
+      !web3Context.web3Deps ||
+        web3Context.web3Deps?.unstoppableWallet !== undefined,
+    );
   };
 
   // handlePromptSignature prompts the user to sign a message to authorize management of
@@ -198,6 +201,9 @@ export const ProfileManager: React.FC<ManagerProps> = ({
     web3Dependencies?: Web3Dependencies,
   ) => {
     setWeb3Deps(web3Dependencies);
+    if (web3Dependencies?.unstoppableWallet) {
+      return;
+    }
     setAccessWalletModalIsOpen(false);
   };
 

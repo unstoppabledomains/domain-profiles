@@ -39,7 +39,7 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
     try {
       void renderContent();
     } catch (e) {
-      notifyEvent(e, 'error', 'MESSAGING', 'XMTP', {
+      notifyEvent(e, 'error', 'Messaging', 'XMTP', {
         msg: 'error loading message',
       });
       setRenderedContent(<Box>{t('push.errorLoadingMessage')}</Box>);

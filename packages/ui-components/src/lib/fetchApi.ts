@@ -44,7 +44,7 @@ export const fetchApi = async <T = any>(
         notifyEvent(
           new Error(`unexpected response code`),
           severity,
-          'REQUEST',
+          'Request',
           'Fetch',
           {
             msg: 'unexpected response code',
@@ -54,13 +54,18 @@ export const fetchApi = async <T = any>(
         return undefined;
       }
       try {
-        return await res.json();
+        const contentType =
+          res.headers.get('Content-Type') || res.headers.get('content-type');
+        return typeof contentType === 'string' &&
+          contentType.toLowerCase().includes('application/json')
+          ? await res.json()
+          : await res.text();
       } catch (e) {
         return undefined;
       }
     })
     .catch(e => {
-      notifyEvent(e, 'error', 'REQUEST', 'Fetch', {
+      notifyEvent(e, 'error', 'Request', 'Fetch', {
         msg: 'fetch error',
         meta: {url},
       });

@@ -144,7 +144,7 @@ export const Community: React.FC<CommunityProps> = ({
         setPushMessages([...pushMessages, ...previousMessages.slice(1)]);
       }
     } catch (e) {
-      notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+      notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
         msg: 'error fetching previous conversations',
       });
     }
@@ -181,7 +181,7 @@ export const Community: React.FC<CommunityProps> = ({
       setHasMoreMessages(initialMessages.length >= PUSH_PAGE_SIZE);
       setPushMessages(initialMessages);
     } catch (e) {
-      notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+      notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
         msg: 'error loading conversation',
       });
     } finally {

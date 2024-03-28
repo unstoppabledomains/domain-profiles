@@ -71,6 +71,9 @@ export default function getDefaultConfig(): Config {
     PROFILE: {
       HOST_URL: 'https://api.ud-staging.com/profile',
     },
+    WALLETS: {
+      HOST_URL: 'https://api.ud-staging.com/wallet/v1',
+    },
     PUSH: {
       CHANNELS: ['eip155:5:0x0389246fB9191Dc41722e1f0D558dC8f82Be3C7A'],
       APP_URL: 'https://staging.push.org',

@@ -108,7 +108,7 @@ export const Badges: React.FC<ManageTabProps> = ({
       });
       setBadges(badgeResponse?.list || []);
     } catch (e) {
-      notifyEvent(e, 'warning', 'BADGES', 'Fetch', {
+      notifyEvent(e, 'warning', 'Badges', 'Fetch', {
         msg: 'error retrieving badges',
       });
     }
@@ -165,7 +165,7 @@ export const Badges: React.FC<ManageTabProps> = ({
       }
     } catch (e) {
       setUpdateErrorMessage(t('manage.badgeErrorMessage'));
-      notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+      notifyEvent(e, 'error', 'Profile', 'Fetch', {
         msg: 'unable to manage user profile',
       });
     } finally {

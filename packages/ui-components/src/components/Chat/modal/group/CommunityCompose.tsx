@@ -130,7 +130,7 @@ export const CommunityCompose: React.FC<CommunityComposeProps> = ({
       setTextboxTerm('');
       setErrorMessage('');
     } catch (e) {
-      notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+      notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
         msg: 'error sending message',
       });
       setErrorMessage(t('push.errorSendingMessage'));
@@ -189,7 +189,7 @@ export const CommunityCompose: React.FC<CommunityComposeProps> = ({
         }
       }
     } catch (e) {
-      notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+      notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
         msg: 'unable to load user profile',
       });
     }
@@ -221,7 +221,7 @@ export const CommunityCompose: React.FC<CommunityComposeProps> = ({
         sendCallback(sentMessage);
         setErrorMessage('');
       } catch (e) {
-        notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+        notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
           msg: 'error uploading file',
         });
         setErrorMessage(t('push.errorSendingAttachment'));

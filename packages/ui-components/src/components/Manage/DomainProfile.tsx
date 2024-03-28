@@ -9,6 +9,7 @@ import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlin
 import SellOutlinedIcon from '@mui/icons-material/SellOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import SwapHorizOutlinedIcon from '@mui/icons-material/SwapHorizOutlined';
+import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
@@ -30,7 +31,7 @@ import truncateEthAddress from 'truncate-eth-address';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getOwnerDomains} from '../../actions';
+import {getOwnerDomains, useFeatureFlags} from '../../actions';
 import {useDomainConfig, useWeb3Context} from '../../hooks';
 import type {SerializedUserDomainProfileData} from '../../lib';
 import {
@@ -50,6 +51,7 @@ import {Profile as ProfileTab} from './Tabs/Profile';
 import {Reverse as ReverseTab} from './Tabs/Reverse';
 import {TokenGallery as TokenGalleryTab} from './Tabs/TokenGallery';
 import {Transfer as TransferTab} from './Tabs/Transfer';
+import {Wallet as WalletTab} from './Tabs/Wallet';
 import {Website as WebsiteTab} from './Tabs/Website';
 
 const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
@@ -151,6 +153,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
 }) => {
   const {classes, cx} = useStyles({width});
   const [t] = useTranslationContext();
+  const {data: featureFlags} = useFeatureFlags(false, initialDomain);
   const theme = useTheme();
   const isVerticalNav = useMediaQuery(theme.breakpoints.up('md'));
   const [buttonComponent, setButtonComponent] = useState<React.ReactNode>(
@@ -185,7 +188,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
           return;
         }
       } catch (e) {
-        notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+        notifyEvent(e, 'error', 'Profile', 'Fetch', {
           msg: 'error resolving domain',
         });
       }
@@ -195,6 +198,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
   }, [selectedDomain]);
 
   useEffect(() => {
+    setTabValue(DomainProfileTabType.Profile);
     setIsOwner(
       localStorage.getItem(DomainProfileKeys.AuthAddress)?.toLowerCase() ===
         address.toLowerCase(),
@@ -264,7 +268,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
         }
       }
     } catch (e) {
-      notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+      notifyEvent(e, 'error', 'Profile', 'Fetch', {
         msg: 'error retrieving owner domains',
       });
     }
@@ -347,6 +351,20 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                     value={DomainProfileTabType.Profile}
                     disabled={!web3Deps?.address && !isOwner}
                   />
+                  {featureFlags.variations
+                    ?.udMeServiceDomainsEnableFireblocks && (
+                    <Tab
+                      icon={<WalletOutlinedIcon />}
+                      iconPosition="top"
+                      label={
+                        <Box className={classes.tabLabel}>
+                          {t('wallet.title')}
+                        </Box>
+                      }
+                      value={DomainProfileTabType.Wallet}
+                      disabled={!web3Deps?.address && !isOwner}
+                    />
+                  )}
                   {isOnchainSupported && (
                     <Tab
                       icon={<MonetizationOnOutlinedIcon />}
@@ -526,6 +544,17 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                 />
               </TabPanel>
               <TabPanel
+                value={DomainProfileTabType.Wallet}
+                className={cx(classes.tabContentItem)}
+              >
+                <WalletTab
+                  domain={domain}
+                  address={address}
+                  onUpdate={onUpdateWrapper}
+                  setButtonComponent={setButtonComponent}
+                />
+              </TabPanel>
+              <TabPanel
                 value={DomainProfileTabType.Website}
                 className={cx(classes.tabContentItem)}
               >
@@ -606,5 +635,6 @@ export enum DomainProfileTabType {
   Reverse = 'reverse',
   TokenGallery = 'tokenGallery',
   Transfer = 'transfer',
+  Wallet = 'wallet',
   Website = 'website',
 }

@@ -104,6 +104,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'column',
+    maxWidth: '500px',
     width: '100%',
   },
   prompt: {

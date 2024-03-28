@@ -24,7 +24,7 @@ export const getAddressMetadata = async (
       return resolution;
     }
   } catch (e) {
-    notifyEvent(e, 'error', 'MESSAGING', 'Resolution', {
+    notifyEvent(e, 'error', 'Messaging', 'Resolution', {
       msg: 'error looking up reverse resolution',
     });
   }

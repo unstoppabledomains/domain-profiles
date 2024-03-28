@@ -267,7 +267,7 @@ export const Crypto: React.FC<CryptoProps> = ({
       // sign a message linking the domain and secondary wallet address
       return await web3Deps.signer.signMessage(msg);
     } catch (signError) {
-      notifyEvent(signError, 'warning', 'PROFILE', 'Signature', {
+      notifyEvent(signError, 'warning', 'Profile', 'Signature', {
         msg: 'signature error',
       });
     }
@@ -303,7 +303,7 @@ export const Crypto: React.FC<CryptoProps> = ({
       }
       return true;
     } catch (e) {
-      notifyEvent(e, 'warning', 'PROFILE', 'Signature', {
+      notifyEvent(e, 'warning', 'Profile', 'Signature', {
         msg: 'error validating wallet',
       });
     }

@@ -368,7 +368,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         });
         return localConversations;
       } catch (e) {
-        notifyEvent(e, 'warning', 'MESSAGING', 'XMTP', {
+        notifyEvent(e, 'warning', 'Messaging', 'XMTP', {
           msg: 'error loading conversations',
         });
       } finally {
@@ -446,7 +446,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         }
       }
     } catch (e) {
-      notifyEvent(e, 'warning', 'MESSAGING', 'Fetch', {
+      notifyEvent(e, 'warning', 'Messaging', 'Fetch', {
         msg: 'unable to load user profile',
       });
     }
@@ -623,7 +623,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         return await handleOpenChatFromAddress(peer);
       }
     } catch (e) {
-      notifyEvent(e, 'warning', 'MESSAGING', 'Resolution', {
+      notifyEvent(e, 'warning', 'Messaging', 'Resolution', {
         msg: 'error opening chat for user',
       });
     } finally {
@@ -669,7 +669,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         }
       }
     } catch (e) {
-      notifyEvent(e, 'warning', 'MESSAGING', 'XMTP', {
+      notifyEvent(e, 'warning', 'Messaging', 'XMTP', {
         msg: 'error opening chat from address',
       });
     } finally {

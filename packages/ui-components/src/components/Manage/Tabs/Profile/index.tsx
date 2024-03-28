@@ -260,7 +260,7 @@ export const Profile: React.FC<ManageTabProps> = ({
       }
     } catch (e) {
       setUpdateErrorMessage(t('manage.updateError'));
-      notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+      notifyEvent(e, 'error', 'Profile', 'Fetch', {
         msg: 'unable to manage user profile',
       });
     }

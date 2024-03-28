@@ -30,6 +30,7 @@ interface ManageInputProps {
   disabled?: boolean;
   deprecated?: boolean;
   onChange: (id: string, value: string) => void;
+  onKeyDown?: React.KeyboardEventHandler;
   // if true, the input will allow adding multiple lines of text. Else, one line
   // only.  Defaults to false.
   multiline?: boolean;
@@ -55,6 +56,7 @@ interface ManageInputProps {
     cardOpen: boolean;
     id: string | null;
   };
+  password?: boolean;
   setPublicVisibilityValues?: React.Dispatch<
     React.SetStateAction<DomainProfileVisibilityValues>
   > | null;
@@ -76,6 +78,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
   disabled = false,
   deprecated = false,
   onChange,
+  onKeyDown,
   multiline = false,
   helperText,
   labelIcon = null,
@@ -83,6 +86,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
   stacked = true,
   maxLength,
   rows,
+  password = false,
   startAdornment = null,
   endAdornment = null,
   classes: classesOverride,
@@ -215,6 +219,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
             minRows={rows}
             maxRows={rows}
             value={value || ''}
+            type={password ? 'password' : undefined}
             inputProps={{
               'data-testid': `input-${id}`,
               className: !endAdornment && error ? classes.error : '',
@@ -223,6 +228,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
             multiline={multiline}
             placeholder={placeholder}
             onChange={handleChange}
+            onKeyDown={onKeyDown}
             classes={{
               root: cx(classes.inputRoot, classesOverride?.root),
               input: cx(classes.input, classesOverride?.input),

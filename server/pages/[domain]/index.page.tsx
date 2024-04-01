@@ -36,6 +36,7 @@ import {normalizeIpfsHash} from 'lib/ipfs';
 import {shuffle} from 'lodash';
 import type {GetServerSideProps} from 'next';
 import {NextSeo} from 'next-seo';
+import {useRouter} from 'next/router';
 import {useSnackbar} from 'notistack';
 import numeral from 'numeral';
 import QueryString from 'qs';
@@ -78,6 +79,7 @@ import {
   LoginButton,
   LoginMethod,
   Logo,
+  MANAGE_DOMAIN_PARAM,
   NFTGalleryCarousel,
   ProfilePicture,
   ProfileSearchBar,
@@ -134,6 +136,7 @@ const DomainProfile = ({
   const {classes, cx} = useStyles();
   const isMounted = useIsMounted();
   const theme = useTheme();
+  const {query} = useRouter();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [imagePath, setImagePath] = useState<string>();
   const {enqueueSnackbar} = useSnackbar();
@@ -333,7 +336,7 @@ const DomainProfile = ({
     }
   };
 
-  const handleManageDomainModalOpen = async () => {
+  const handleManageDomainModalOpen = () => {
     if (profileData?.metadata) {
       setShowManageDomainModal(true);
       return;
@@ -388,6 +391,15 @@ const DomainProfile = ({
     walletBalances;
 
   useEffect(() => {
+    if (!query || !profileData) {
+      return;
+    }
+    if (query[MANAGE_DOMAIN_PARAM] !== undefined) {
+      handleManageDomainModalOpen();
+    }
+  }, [query, profileData]);
+
+  useEffect(() => {
     // wait until mounted
     if (!isMounted() || !isFeatureFlagSuccess || !ownerAddress) {
       return;
@@ -417,16 +429,6 @@ const DomainProfile = ({
   }, [isMounted, isFeatureFlagSuccess, featureFlags, ownerAddress]);
 
   useEffect(() => {
-    // report the initial page load
-    notifyEvent(
-      'loading profile page',
-      'info',
-      'PROFILE',
-      'Info',
-      undefined,
-      true,
-    );
-
     // determine social account status
     if (profileData?.socialAccounts) {
       setIsSomeSocialsPublic(

@@ -158,12 +158,23 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
   };
 
   const handleImgError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    e.currentTarget.src =
+    // determine what fallback image should be used if the requested image fails
+    // to load, which depends on the type of domain.
+    const fallbackImgUrl =
       extension === DomainSuffixes.Ens
         ? getImageUrl('/domains/ens-logo.svg')
         : Web2SuffixesList.includes(extension)
         ? getImageUrl('/domains/dns-logo.svg')
         : `${config.UNSTOPPABLE_METADATA_ENDPOINT}/image-src/${domain}?withOverlay=false`;
+
+    // ensure the fallback image is different from the image that already failed
+    if (fallbackImgUrl.toLowerCase() === e.currentTarget.src.toLowerCase()) {
+      e.currentTarget.src = '';
+      return;
+    }
+
+    // set the fallback image
+    e.currentTarget.src = fallbackImgUrl;
   };
 
   return (

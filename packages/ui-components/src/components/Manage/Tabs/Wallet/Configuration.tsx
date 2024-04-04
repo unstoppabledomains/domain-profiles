@@ -18,6 +18,7 @@ import {
   getAccessToken,
   getAuthorizationTokenTx,
   getBootstrapToken,
+  sendBootstrapCode,
 } from '../../../../actions/fireBlocksActions';
 import {useTranslationContext} from '../../../../lib';
 import {notifyEvent} from '../../../../lib/error';
@@ -63,8 +64,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 enum WalletConfigState {
-  BootstrapCode = 'bootstrap',
-  RecoveryPhrase = 'recoveryPhrase',
+  OtpEntry = 'otpEntry',
+  PasswordEntry = 'passwordEntry',
   Complete = 'complete',
 }
 
@@ -82,7 +83,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [savingMessage, setSavingMessage] = useState<string>();
   const [configState, setConfigState] = useState(
-    WalletConfigState.BootstrapCode,
+    WalletConfigState.PasswordEntry,
   );
   const [errorMessage, setErrorMessage] = useState<string>();
 
@@ -96,11 +97,10 @@ export const Configuration: React.FC<ManageTabProps> = ({
   >(FireblocksStateKey, {});
 
   // wallet recovery state variables
-  const [deviceId, setDeviceId] = useState<string>();
   const [accessJwt, setAccessJwt] = useState<string>();
-  const [bootstrapJwt, setBootstrapJwt] = useState<string>();
   const [bootstrapCode, setBootstrapCode] = useState<string>();
   const [recoveryPhrase, setRecoveryPhrase] = useState<string>();
+  const [emailAddress, setEmailAddress] = useState<string>();
 
   useEffect(() => {
     setIsLoaded(false);
@@ -123,34 +123,49 @@ export const Configuration: React.FC<ManageTabProps> = ({
       return;
     }
     setButtonComponent(
-      <LoadingButton
-        variant="contained"
-        onClick={handleSave}
-        loading={isSaving}
-        loadingIndicator={
-          savingMessage ? (
-            <Box display="flex" alignItems="center">
-              <CircularProgress color="inherit" size={16} />
-              <Box ml={1}>{savingMessage}</Box>
-            </Box>
-          ) : undefined
-        }
-        disabled={!isDirty}
-        fullWidth
-      >
-        {errorMessage
-          ? errorMessage
-          : configState === WalletConfigState.BootstrapCode
-          ? t('wallet.beginSetup')
-          : configState === WalletConfigState.RecoveryPhrase &&
-            t('wallet.completeSetup')}
-      </LoadingButton>,
+      <>
+        <LoadingButton
+          variant="contained"
+          onClick={handleSave}
+          loading={isSaving}
+          loadingIndicator={
+            savingMessage ? (
+              <Box display="flex" alignItems="center">
+                <CircularProgress color="inherit" size={16} />
+                <Box ml={1}>{savingMessage}</Box>
+              </Box>
+            ) : undefined
+          }
+          disabled={!isDirty || errorMessage !== undefined}
+          fullWidth
+        >
+          {errorMessage
+            ? errorMessage
+            : configState === WalletConfigState.PasswordEntry
+            ? t('wallet.beginSetup')
+            : configState === WalletConfigState.OtpEntry &&
+              t('wallet.completeSetup')}
+        </LoadingButton>
+        {configState === WalletConfigState.OtpEntry && (
+          <Box mt={1}>
+            <Button
+              onClick={handleLogout}
+              variant="outlined"
+              disabled={isSaving}
+              fullWidth
+            >
+              {t('common.back')}
+            </Button>
+          </Box>
+        )}
+      </>,
     );
   }, [
     isSaving,
     configState,
     savingMessage,
     bootstrapCode,
+    emailAddress,
     recoveryPhrase,
     errorMessage,
     isLoaded,
@@ -183,15 +198,16 @@ export const Configuration: React.FC<ManageTabProps> = ({
       setRecoveryPhrase(value);
     } else if (id === 'bootstrapCode') {
       setBootstrapCode(value);
+    } else if (id === 'emailAddress') {
+      setEmailAddress(value);
     }
   };
 
   const handleLogout = () => {
     // clear input variables
-    setBootstrapJwt(undefined);
     setBootstrapCode(undefined);
-    setDeviceId(undefined);
     setPersistKeys(false);
+    setEmailAddress(undefined);
     setRecoveryPhrase(undefined);
 
     // clear storage state
@@ -199,7 +215,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
     setPersistentKeyState({});
 
     // reset configuration state
-    setConfigState(WalletConfigState.BootstrapCode);
+    setConfigState(WalletConfigState.PasswordEntry);
   };
 
   const handleKeyDown: React.KeyboardEventHandler = event => {
@@ -211,12 +227,12 @@ export const Configuration: React.FC<ManageTabProps> = ({
   const handleSave = async () => {
     setIsSaving(true);
 
-    if (configState === WalletConfigState.BootstrapCode) {
+    if (configState === WalletConfigState.OtpEntry) {
       // submit the bootstrap code
       await processBootstrapCode();
-    } else if (configState === WalletConfigState.RecoveryPhrase) {
+    } else if (configState === WalletConfigState.PasswordEntry) {
       // submit the recovery phrase
-      await processRecoveryPhrase();
+      await processPasswordEntry();
     }
 
     // saving complete
@@ -234,9 +250,36 @@ export const Configuration: React.FC<ManageTabProps> = ({
     setIsEmailModalOpen(true);
   };
 
+  const processPasswordEntry = async () => {
+    // validate recovery phrase
+    if (!recoveryPhrase) {
+      setErrorMessage(t('common.enterValidPassword'));
+      return;
+    }
+
+    // validate the email address
+    if (
+      !emailAddress?.match(
+        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+      )
+    ) {
+      setErrorMessage(t('common.enterValidEmail'));
+      return;
+    }
+
+    // send the OTP
+    setSavingMessage(t('wallet.sendingBootstrapCode'));
+    const sendResult = await sendBootstrapCode(emailAddress);
+    if (sendResult) {
+      setConfigState(WalletConfigState.OtpEntry);
+    } else {
+      setErrorMessage(t('wallet.forgotBootstrapCodeError'));
+    }
+  };
+
   const processBootstrapCode = async () => {
-    // bootstrap code is required
-    if (!bootstrapCode) {
+    // bootstrap and recovery phrase code is required
+    if (!bootstrapCode || !recoveryPhrase) {
       return;
     }
 
@@ -255,19 +298,9 @@ export const Configuration: React.FC<ManageTabProps> = ({
       return;
     }
 
-    // set recovery state
-    setBootstrapJwt(walletResponse?.accessToken);
-    setDeviceId(walletResponse?.deviceId);
-
-    // set page state
-    setConfigState(WalletConfigState.RecoveryPhrase);
-  };
-
-  const processRecoveryPhrase = async () => {
-    // device ID and bootstrap JWT are required
-    if (!deviceId || !bootstrapJwt || !recoveryPhrase) {
-      return;
-    }
+    // store the JWT token and device ID in memory
+    const bootstrapJwt = walletResponse?.accessToken;
+    const deviceId = walletResponse?.deviceId;
 
     // retrieve and initialize the Fireblocks client
     setSavingMessage(t('wallet.validatingRecoveryPhrase'));
@@ -286,7 +319,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
         'Wallet',
         'Authorization',
       );
-      setErrorMessage(t('wallet.recoveryError'));
+      setErrorMessage(t('wallet.invalidRecoveryAccount'));
       return;
     }
 
@@ -359,7 +392,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
   return (
     <Box className={classes.container}>
       {isLoaded ? (
-        configState === WalletConfigState.BootstrapCode ? (
+        configState === WalletConfigState.OtpEntry ? (
           <Box>
             <Typography variant="body1" className={classes.infoContainer}>
               {t('wallet.bootstrapCodeDescription')}
@@ -379,34 +412,12 @@ export const Configuration: React.FC<ManageTabProps> = ({
                 variant="text"
                 size="small"
                 color="primary"
+                disabled={isSaving}
                 onClick={handleForgotCode}
               >
                 {t('wallet.forgotBootstrapCode')}
               </Button>
             </Box>
-            {isEmailModalOpen && (
-              <ForgotCode
-                open={isEmailModalOpen}
-                onClose={() => setIsEmailModalOpen(false)}
-              />
-            )}
-          </Box>
-        ) : configState === WalletConfigState.RecoveryPhrase ? (
-          <Box mb={1}>
-            <Typography variant="body1" className={classes.infoContainer}>
-              {t('wallet.recoveryPhraseDescription')}
-            </Typography>
-            <ManageInput
-              id="recoveryPhrase"
-              value={recoveryPhrase}
-              label={t('wallet.recoveryPhrase')}
-              placeholder={t('wallet.enterRecoveryPhrase')}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              disabled={isSaving}
-              password={true}
-              stacked={true}
-            />
             <Box className={classes.checkboxContainer}>
               <FormGroup>
                 <FormControlLabel
@@ -415,11 +426,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
                       onChange={handlePersistChange}
                       className={classes.checkbox}
                       checked={persistKeys}
-                      disabled={
-                        isSaving ||
-                        !bootstrapCode ||
-                        bootstrapCode.trim().length === 0
-                      }
+                      disabled={isSaving}
                     />
                   }
                   label={
@@ -441,6 +448,41 @@ export const Configuration: React.FC<ManageTabProps> = ({
                   }
                 />
               </FormGroup>
+            </Box>
+            {isEmailModalOpen && (
+              <ForgotCode
+                open={isEmailModalOpen}
+                onClose={() => setIsEmailModalOpen(false)}
+              />
+            )}
+          </Box>
+        ) : configState === WalletConfigState.PasswordEntry ? (
+          <Box>
+            <Typography variant="body1" className={classes.infoContainer}>
+              {t('wallet.recoveryPhraseDescription')}
+            </Typography>
+            <Box mt={5}>
+              <ManageInput
+                id="emailAddress"
+                value={emailAddress}
+                label={t('wallet.emailAddress')}
+                placeholder={t('common.enterYourEmail')}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                stacked={false}
+                disabled={isSaving}
+              />
+              <ManageInput
+                id="recoveryPhrase"
+                value={recoveryPhrase}
+                label={t('wallet.recoveryPhrase')}
+                placeholder={t('wallet.enterRecoveryPhrase')}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                disabled={isSaving}
+                password={true}
+                stacked={false}
+              />
             </Box>
           </Box>
         ) : (

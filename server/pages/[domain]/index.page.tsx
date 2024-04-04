@@ -36,6 +36,7 @@ import {normalizeIpfsHash} from 'lib/ipfs';
 import {shuffle} from 'lodash';
 import type {GetServerSideProps} from 'next';
 import {NextSeo} from 'next-seo';
+import {useRouter} from 'next/router';
 import {useSnackbar} from 'notistack';
 import numeral from 'numeral';
 import QueryString from 'qs';
@@ -78,6 +79,7 @@ import {
   LoginButton,
   LoginMethod,
   Logo,
+  MANAGE_DOMAIN_PARAM,
   NFTGalleryCarousel,
   ProfilePicture,
   ProfileSearchBar,
@@ -134,6 +136,7 @@ const DomainProfile = ({
   const {classes, cx} = useStyles();
   const isMounted = useIsMounted();
   const theme = useTheme();
+  const {query} = useRouter();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [imagePath, setImagePath] = useState<string>();
   const {enqueueSnackbar} = useSnackbar();
@@ -333,7 +336,7 @@ const DomainProfile = ({
     }
   };
 
-  const handleManageDomainModalOpen = async () => {
+  const handleManageDomainModalOpen = () => {
     if (profileData?.metadata) {
       setShowManageDomainModal(true);
       return;
@@ -388,6 +391,15 @@ const DomainProfile = ({
     walletBalances;
 
   useEffect(() => {
+    if (!query || !profileData) {
+      return;
+    }
+    if (query[MANAGE_DOMAIN_PARAM] !== undefined) {
+      handleManageDomainModalOpen();
+    }
+  }, [query, profileData]);
+
+  useEffect(() => {
     // wait until mounted
     if (!isMounted() || !isFeatureFlagSuccess || !ownerAddress) {
       return;
@@ -417,16 +429,6 @@ const DomainProfile = ({
   }, [isMounted, isFeatureFlagSuccess, featureFlags, ownerAddress]);
 
   useEffect(() => {
-    // report the initial page load
-    notifyEvent(
-      'loading profile page',
-      'info',
-      'Profile',
-      'Configuration',
-      undefined,
-      true,
-    );
-
     // determine social account status
     if (profileData?.socialAccounts) {
       setIsSomeSocialsPublic(
@@ -475,7 +477,7 @@ const DomainProfile = ({
           setRecords(recordsData.records);
         }
       } catch (e) {
-        notifyEvent(e, 'error', 'Profile', 'Resolution', {
+        notifyEvent(e, 'error', 'PROFILE', 'Resolution', {
           msg: 'error retrieving records',
         });
       }
@@ -498,7 +500,7 @@ const DomainProfile = ({
           setIsWalletBalanceError(true);
         }
       } catch (e) {
-        notifyEvent(e, 'error', 'Profile', 'Fetch', {
+        notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
           msg: 'error retrieving wallets',
         });
       }
@@ -516,7 +518,7 @@ const DomainProfile = ({
           profileData.webacy = webacyData.webacy;
         }
       } catch (e) {
-        notifyEvent(e, 'error', 'Profile', 'Fetch', {
+        notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
           msg: 'error retrieving webacy score',
         });
       }
@@ -543,7 +545,7 @@ const DomainProfile = ({
         setFeaturedPartner(shuffle(featuredPartners)[0]);
       }
     } catch (e) {
-      notifyEvent(e, 'error', 'Profile', 'Fetch', {
+      notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
         msg: 'error retrieving badges',
       });
     }
@@ -1239,7 +1241,16 @@ const DomainProfile = ({
             <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
                 <TokensPortfolio
-                  wallets={walletBalances}
+                  wallets={walletBalances
+                    ?.filter(
+                      w =>
+                        (w.totalValueUsdAmt && w.totalValueUsdAmt > 0) ||
+                        (w.txns?.data && w.txns.data.length > 0),
+                    )
+                    .sort(
+                      (a, b) =>
+                        (b.totalValueUsdAmt || 0) - (a.totalValueUsdAmt || 0),
+                    )}
                   domain={domain}
                   isOwner={isOwner}
                   isError={isWalletBalanceError}

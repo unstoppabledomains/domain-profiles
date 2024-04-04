@@ -173,6 +173,8 @@ export type LinkedinUserInfo = {
 
 export const MANAGEABLE_DOMAIN_LABEL = /^[a-z\d-]{1,253}$/;
 
+export const MANAGE_DOMAIN_PARAM = 'manage';
+
 export const MAX_BIO_LENGTH = 200;
 
 export const MAX_UPLOAD_FILE_SIZE = 5 * 1000 * 1024;
@@ -475,6 +477,7 @@ export type SerializedWalletToken = {
   type: 'native' | 'erc20';
   address: string;
   symbol: string;
+  gasCurrency: string;
   name: string;
   logoUrl?: string;
   balance?: string;
@@ -523,7 +526,6 @@ export type TwitterUserInfo = {
   listedCount: number;
   tweetsCount: number;
 } | null;
-
 export const UD_BLUE_BADGE_CODE = 'UdBlue';
 
 export enum Web2Suffixes {

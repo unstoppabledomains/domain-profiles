@@ -214,7 +214,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
               new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
           ),
           symbol: wallet.symbol,
-          ticker: wallet.symbol,
+          ticker: wallet.gasCurrency,
           walletAddress: wallet.address,
           walletBlockChainLink: wallet.blockchainScanUrl,
           walletName: wallet.name,
@@ -272,6 +272,11 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
             value: walletToken.value?.walletUsdAmt || 0,
             balance: walletToken.balanceAmt || 0,
             pctChange: walletToken.value?.marketPctChange24Hr,
+            history: walletToken.value?.history?.sort(
+              (a, b) =>
+                new Date(a.timestamp).getTime() -
+                new Date(b.timestamp).getTime(),
+            ),
             ticker: walletToken.symbol,
             symbol: wallet.symbol,
             walletAddress: wallet.address,

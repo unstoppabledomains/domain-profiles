@@ -1273,7 +1273,7 @@ const DomainProfile = ({
                   enabled={isFeatureFlagFetched}
                   isOwner={isOwner}
                   ownerAddress={ownerAddress}
-                  profileServiceUrl={config.Profile.HOST_URL}
+                  profileServiceUrl={config.PROFILE.HOST_URL}
                   hideConfigureButton={true}
                 />
               )}
@@ -1517,7 +1517,7 @@ const DomainProfile = ({
 
 export async function getServerSideProps(props: DomainProfileServerSideProps) {
   const {params} = props;
-  const profileServiceUrl = config.Profile.HOST_URL;
+  const profileServiceUrl = config.PROFILE.HOST_URL;
   const domain = params.domain.toLowerCase();
   const redirectToSearch = {
     redirect: {

@@ -84,6 +84,7 @@ export const initializeClient = async (
   opts: {
     bootstrapJwt: string;
     recoveryPhrase: string;
+    onRequestIdCallback?: () => void;
     onJoinSuccessCallback?: () => void;
   },
 ): Promise<boolean> => {
@@ -92,17 +93,27 @@ export const initializeClient = async (
     let isJoinRequestSuccessful = false;
     const joinResult = await client.requestJoinExistingWallet({
       onRequestId: async requestId => {
+        // execute callback if specified
+        if (opts.onRequestIdCallback) {
+          opts.onRequestIdCallback();
+        }
+
+        // send the join request
         isJoinRequestSuccessful = await sendJoinRequest(
           requestId,
           opts.bootstrapJwt,
           opts.recoveryPhrase,
         );
+
+        // determine if join request was successful
         if (isJoinRequestSuccessful) {
+          // execute callback if specified
           if (opts.onJoinSuccessCallback) {
             opts.onJoinSuccessCallback();
           }
         } else {
           try {
+            // request to stop the join transaction
             client.stopJoinWallet();
           } catch (stopJoinWalletErr) {
             notifyEvent(stopJoinWalletErr, 'warning', 'Wallet', 'Fireblocks', {

@@ -6,6 +6,7 @@ import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
+import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
@@ -44,6 +45,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   checkboxContainer: {
     marginTop: theme.spacing(3),
+  },
+  continueActionContainer: {
+    width: '100%',
   },
   checkbox: {
     marginRight: theme.spacing(0),
@@ -91,6 +95,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
   const [persistentKeyState, setPersistentKeyState] = useLocalStorage<
     Record<string, Record<string, string>>
   >(FireblocksStateKey, {});
+  const [progressPct, setProgressPct] = useState(0);
 
   // wallet recovery state variables
   const [accessJwt, setAccessJwt] = useState<string>();
@@ -122,43 +127,63 @@ export const Configuration: React.FC<ManageTabProps> = ({
       configState === WalletConfigState.PasswordEntry
         ? isDirty && emailAddress && recoveryPhrase && !errorMessage
         : isDirty && !errorMessage;
+
     setButtonComponent(
-      <>
-        <LoadingButton
-          variant="contained"
-          onClick={handleSave}
-          loading={isSaving}
-          loadingIndicator={
-            savingMessage ? (
-              <Box display="flex" alignItems="center">
-                <CircularProgress color="inherit" size={16} />
-                <Box ml={1}>{savingMessage}</Box>
-              </Box>
-            ) : undefined
-          }
-          disabled={!isSaveEnabled}
-          fullWidth
-        >
-          {errorMessage
-            ? errorMessage
-            : configState === WalletConfigState.PasswordEntry
-            ? t('wallet.beginSetup')
-            : configState === WalletConfigState.OtpEntry &&
-              t('wallet.completeSetup')}
-        </LoadingButton>
-        {configState === WalletConfigState.OtpEntry && (
-          <Box mt={1}>
-            <Button
-              onClick={handleBack}
-              variant="outlined"
-              disabled={isSaving}
+      <Box className={classes.continueActionContainer}>
+        {configState !== WalletConfigState.OtpEntry || !isSaving ? (
+          <>
+            <LoadingButton
+              variant="contained"
+              onClick={handleSave}
+              loading={isSaving}
+              loadingIndicator={
+                savingMessage ? (
+                  <Box display="flex" alignItems="center">
+                    <CircularProgress color="inherit" size={16} />
+                    <Box ml={1}>{savingMessage}</Box>
+                  </Box>
+                ) : undefined
+              }
+              disabled={!isSaveEnabled}
               fullWidth
             >
-              {t('common.back')}
-            </Button>
+              {errorMessage
+                ? errorMessage
+                : configState === WalletConfigState.PasswordEntry
+                ? t('wallet.beginSetup')
+                : configState === WalletConfigState.OtpEntry &&
+                  t('wallet.completeSetup')}
+            </LoadingButton>
+            {configState === WalletConfigState.OtpEntry && (
+              <Box mt={1}>
+                <Button
+                  onClick={handleBack}
+                  variant="outlined"
+                  disabled={isSaving}
+                  fullWidth
+                >
+                  {t('common.back')}
+                </Button>
+              </Box>
+            )}
+          </>
+        ) : (
+          <Box
+            display="flex"
+            flexDirection="column"
+            justifyItems="center"
+            width="100%"
+          >
+            <Box display="flex" alignItems="center" mb={3}>
+              <CircularProgress color="inherit" size={20} />
+              <Typography variant="body2" ml={1}>
+                {savingMessage}
+              </Typography>
+            </Box>
+            <LinearProgress variant="determinate" value={progressPct} />
           </Box>
         )}
-      </>,
+      </Box>,
     );
   }, [
     isSaving,
@@ -168,6 +193,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
     emailAddress,
     recoveryPhrase,
     errorMessage,
+    progressPct,
     isLoaded,
   ]);
 
@@ -272,7 +298,6 @@ export const Configuration: React.FC<ManageTabProps> = ({
     }
 
     // send the OTP
-    setSavingMessage(t('wallet.sendingBootstrapCode'));
     const sendResult = await sendBootstrapCode(emailAddress);
     if (sendResult) {
       setConfigState(WalletConfigState.OtpEntry);
@@ -289,7 +314,8 @@ export const Configuration: React.FC<ManageTabProps> = ({
 
     // retrieve a temporary JWT token using the code and validate the
     // response contains expected value format
-    setSavingMessage(t('wallet.validatingSetupCode'));
+    setProgressPct(0);
+    setSavingMessage(t('wallet.configuringWallet'));
     const walletResponse = await getBootstrapToken(bootstrapCode);
     if (!walletResponse?.accessToken || !walletResponse.deviceId) {
       notifyEvent(
@@ -307,7 +333,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
     const deviceId = walletResponse?.deviceId;
 
     // retrieve and initialize the Fireblocks client
-    setSavingMessage(t('wallet.validatingRecoveryPhrase'));
+    setProgressPct(3);
     const fbClientForInit = await getFireBlocksClient(deviceId, bootstrapJwt, {
       state: persistKeys ? persistentKeyState : sessionKeyState,
       saveState: persistKeys ? setPersistentKeyState : setSessionKeyState,
@@ -315,8 +341,11 @@ export const Configuration: React.FC<ManageTabProps> = ({
     const isInitialized = await initializeClient(fbClientForInit, {
       bootstrapJwt,
       recoveryPhrase,
+      onRequestIdCallback: () => {
+        setProgressPct(16);
+      },
       onJoinSuccessCallback: () => {
-        setSavingMessage(t('wallet.downloadingKeys'));
+        setProgressPct(32);
       },
     });
     if (!isInitialized) {
@@ -331,7 +360,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
     }
 
     // retrieve a transaction ID from wallet service
-    setSavingMessage(t('wallet.configuringKeys'));
+    setProgressPct(61);
     const tx = await getAuthorizationTokenTx(bootstrapJwt);
     if (!tx) {
       notifyEvent(
@@ -345,7 +374,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
     }
 
     // sign the transaction ID with Fireblocks client
-    setSavingMessage(t('wallet.validatingKeys'));
+    setProgressPct(71);
     const fbClientForTx = await getFireBlocksClient(deviceId, bootstrapJwt, {
       state: persistKeys ? persistentKeyState : sessionKeyState,
       saveState: persistKeys ? setPersistentKeyState : setSessionKeyState,
@@ -363,7 +392,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
     }
 
     // retrieve the wallet service JWT tokens
-    setSavingMessage(t('wallet.finalizingKeys'));
+    setProgressPct(94);
     const walletServiceTokens = await confirmAuthorizationTokenTx(bootstrapJwt);
     if (!walletServiceTokens) {
       notifyEvent(
@@ -377,6 +406,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
     }
 
     // store the wallet service JWT tokens at desired persistence level
+    setProgressPct(100);
     const keyState = persistKeys ? persistentKeyState : sessionKeyState;
     const setKeyState = persistKeys
       ? setPersistentKeyState

@@ -81,7 +81,11 @@ export const getFireBlocksClient = async (
 
 export const initializeClient = async (
   client: IFireblocksNCW,
-  opts: {bootstrapJwt: string; recoveryPhrase: string},
+  opts: {
+    bootstrapJwt: string;
+    recoveryPhrase: string;
+    onJoinSuccessCallback?: () => void;
+  },
 ): Promise<boolean> => {
   try {
     // create a join request for this device
@@ -93,7 +97,11 @@ export const initializeClient = async (
           opts.bootstrapJwt,
           opts.recoveryPhrase,
         );
-        if (!isJoinRequestSuccessful) {
+        if (isJoinRequestSuccessful) {
+          if (opts.onJoinSuccessCallback) {
+            opts.onJoinSuccessCallback();
+          }
+        } else {
           try {
             client.stopJoinWallet();
           } catch (stopJoinWalletErr) {

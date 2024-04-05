@@ -48,7 +48,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     maxWidth: '505px',
-    minHeight: '505px',
+    minHeight: '485px',
   },
   button: {
     marginTop: theme.spacing(2),

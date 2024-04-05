@@ -8,6 +8,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useState} from 'react';
 import {useLocalStorage, useSessionStorage} from 'usehooks-ts';
 
@@ -32,7 +33,6 @@ import {FireblocksStateKey} from '../../../../lib/types/fireBlocks';
 import {DomainProfileTabType} from '../../DomainProfile';
 import ManageInput from '../../common/ManageInput';
 import type {ManageTabProps} from '../../common/types';
-import {ForgotCode} from './ForgotCode';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -41,9 +41,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   infoContainer: {
     marginBottom: theme.spacing(3),
-  },
-  forgotCodeContainer: {
-    display: 'flex',
   },
   checkboxContainer: {
     marginTop: theme.spacing(3),
@@ -80,7 +77,6 @@ export const Configuration: React.FC<ManageTabProps> = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [savingMessage, setSavingMessage] = useState<string>();
   const [configState, setConfigState] = useState(
     WalletConfigState.PasswordEntry,
@@ -122,6 +118,10 @@ export const Configuration: React.FC<ManageTabProps> = ({
       setButtonComponent(<></>);
       return;
     }
+    const isSaveEnabled =
+      configState === WalletConfigState.PasswordEntry
+        ? isDirty && emailAddress && recoveryPhrase && !errorMessage
+        : isDirty && !errorMessage;
     setButtonComponent(
       <>
         <LoadingButton
@@ -136,7 +136,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
               </Box>
             ) : undefined
           }
-          disabled={!isDirty || errorMessage !== undefined}
+          disabled={!isSaveEnabled}
           fullWidth
         >
           {errorMessage
@@ -149,7 +149,7 @@ export const Configuration: React.FC<ManageTabProps> = ({
         {configState === WalletConfigState.OtpEntry && (
           <Box mt={1}>
             <Button
-              onClick={handleLogout}
+              onClick={handleBack}
               variant="outlined"
               disabled={isSaving}
               fullWidth
@@ -203,6 +203,14 @@ export const Configuration: React.FC<ManageTabProps> = ({
     }
   };
 
+  const handleBack = () => {
+    // clear input variables
+    setBootstrapCode(undefined);
+    setIsDirty(true);
+    setErrorMessage(undefined);
+    setConfigState(WalletConfigState.PasswordEntry);
+  };
+
   const handleLogout = () => {
     // clear input variables
     setBootstrapCode(undefined);
@@ -244,10 +252,6 @@ export const Configuration: React.FC<ManageTabProps> = ({
   const handlePersistChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPersistKeys(event.target.checked);
     setIsDirty(true);
-  };
-
-  const handleForgotCode = () => {
-    setIsEmailModalOpen(true);
   };
 
   const processPasswordEntry = async () => {
@@ -311,6 +315,9 @@ export const Configuration: React.FC<ManageTabProps> = ({
     const isInitialized = await initializeClient(fbClientForInit, {
       bootstrapJwt,
       recoveryPhrase,
+      onJoinSuccessCallback: () => {
+        setSavingMessage(t('wallet.downloadingKeys'));
+      },
     });
     if (!isInitialized) {
       notifyEvent(
@@ -392,10 +399,12 @@ export const Configuration: React.FC<ManageTabProps> = ({
   return (
     <Box className={classes.container}>
       {isLoaded ? (
-        configState === WalletConfigState.OtpEntry ? (
+        configState === WalletConfigState.OtpEntry && emailAddress ? (
           <Box>
             <Typography variant="body1" className={classes.infoContainer}>
-              {t('wallet.bootstrapCodeDescription')}
+              <Markdown>
+                {t('wallet.bootstrapCodeDescription', {emailAddress})}
+              </Markdown>
             </Typography>
             <ManageInput
               id="bootstrapCode"
@@ -407,17 +416,6 @@ export const Configuration: React.FC<ManageTabProps> = ({
               stacked={true}
               disabled={isSaving}
             />
-            <Box className={classes.forgotCodeContainer}>
-              <Button
-                variant="text"
-                size="small"
-                color="primary"
-                disabled={isSaving}
-                onClick={handleForgotCode}
-              >
-                {t('wallet.forgotBootstrapCode')}
-              </Button>
-            </Box>
             <Box className={classes.checkboxContainer}>
               <FormGroup>
                 <FormControlLabel
@@ -449,17 +447,11 @@ export const Configuration: React.FC<ManageTabProps> = ({
                 />
               </FormGroup>
             </Box>
-            {isEmailModalOpen && (
-              <ForgotCode
-                open={isEmailModalOpen}
-                onClose={() => setIsEmailModalOpen(false)}
-              />
-            )}
           </Box>
         ) : configState === WalletConfigState.PasswordEntry ? (
           <Box>
             <Typography variant="body1" className={classes.infoContainer}>
-              {t('wallet.recoveryPhraseDescription')}
+              <Markdown>{t('wallet.recoveryPhraseDescription')}</Markdown>
             </Typography>
             <Box mt={5}>
               <ManageInput

@@ -217,16 +217,16 @@ const CryptoAddress: React.FC<Props> = ({
       case 'FTM':
       case 'AVAX':
         return isEthAddress(addr)
-          ? `https://www.oklink.com/${symbol.toLowerCase()}/address/${addr}`
+          ? `https://www.oklink.com/${symbol.toLowerCase()}/address/${addr}?channelId=uns001`
           : '';
       case 'MATIC':
         return isEthAddress(addr)
-          ? `https://www.oklink.com/polygon/address/${addr}`
+          ? `https://www.oklink.com/polygon/address/${addr}?channelId=uns001`
           : '';
       case 'BTC':
-        return `https://www.oklink.com/${symbol.toLowerCase()}/address/${addr}`;
+        return `https://www.oklink.com/${symbol.toLowerCase()}/address/${addr}?channelId=uns001`;
       case 'SOL':
-        return `https://www.oklink.com/sol/account/${addr}`;
+        return `https://www.oklink.com/sol/account/${addr}?channelId=uns001`;
       default:
         return '';
     }

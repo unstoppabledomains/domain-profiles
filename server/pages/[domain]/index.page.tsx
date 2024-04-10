@@ -274,7 +274,7 @@ const DomainProfile = ({
     window.open(
       `https://www.oklink.com/${
         profileData?.metadata?.blockchain === 'ETH' ? 'eth' : 'polygon'
-      }/address/${ownerAddress}`,
+      }/address/${ownerAddress}?channelId=uns001`,
       '_blank',
     );
   };

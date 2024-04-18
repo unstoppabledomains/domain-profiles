@@ -565,7 +565,6 @@
     "portfolioValue": "Total value {{value}} based on purchase price",
     "portfolioValueVerbose": "{{domain}} belongs to a portfolio of {{count}} domains valued at {{value}} by purchase price.",
     "primaryDomain": "Address {{address}} resolves to primary domain {{domain}}",
-    "privacySettings": "Privacy settings",
     "purchaseBreakdown": "Cash: {{cash}}, Promo credit: {{promoCredit}}",
     "purchasePrice": "Purchased for {{cost}} on {{date}}",
     "refreshBadges": "Refresh badges",

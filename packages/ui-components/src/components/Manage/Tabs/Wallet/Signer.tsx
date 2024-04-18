@@ -11,6 +11,10 @@ import {useLocalStorage, useSessionStorage} from 'usehooks-ts';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {
+  getAccessToken,
+  getMessageSignature,
+} from '../../../../actions/fireBlocksActions';
 import {useTranslationContext} from '../../../../lib';
 import {notifyEvent} from '../../../../lib/error';
 import {getFireBlocksClient} from '../../../../lib/fireBlocks/client';
@@ -45,10 +49,15 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const Signer: React.FC<SignerProps> = ({message, onComplete}) => {
+export const Signer: React.FC<SignerProps> = ({
+  address,
+  message,
+  onComplete,
+}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
   const [isSigning, setIsSigning] = useState(false);
+  const [accessToken, setAccessToken] = useState<string>();
   const [client, setClient] = useState<IFireblocksNCW>();
   const [sessionKeyState, setSessionKeyState] = useSessionStorage<
     Record<string, Record<string, string>>
@@ -84,10 +93,20 @@ export const Signer: React.FC<SignerProps> = ({message, onComplete}) => {
       throw new Error('invalid configuration');
     }
 
+    // retrieve an access token
+    const jwtToken = await getAccessToken(state.refreshToken, {
+      deviceId: state.deviceId,
+      state: sessionState ? sessionKeyState : persistentKeyState,
+      saveState: sessionState ? setSessionKeyState : setPersistentKeyState,
+    });
+    if (!jwtToken) {
+      throw new Error('error retrieving access token');
+    }
+    setAccessToken(jwtToken.accessToken);
+
     // initialize and set the client
     setClient(
-      await getFireBlocksClient(state.deviceId, state.refreshToken, {
-        isRefreshToken: true,
+      await getFireBlocksClient(state.deviceId, jwtToken.accessToken, {
         state: sessionState ? sessionKeyState : persistentKeyState,
         saveState: sessionState ? setSessionKeyState : setPersistentKeyState,
       }),
@@ -95,7 +114,7 @@ export const Signer: React.FC<SignerProps> = ({message, onComplete}) => {
   };
 
   const handleSignature = async () => {
-    if (!client) {
+    if (!client || !accessToken) {
       return;
     }
     notifyEvent(
@@ -111,9 +130,20 @@ export const Signer: React.FC<SignerProps> = ({message, onComplete}) => {
       },
     );
 
-    // TODO - Create signature using Fireblocks client once functionality becomes
-    // available on the backend wallet service
-    const signatureResult = client.getPhysicalDeviceId();
+    // request an MPC signature of the desired message string
+    const signatureResult = await getMessageSignature(
+      accessToken,
+      message,
+      async (txId: string) => {
+        await client.signTransaction(txId);
+      },
+      {
+        address,
+        onStatusChange: (m: string) => {
+          notifyEvent(m, 'info', 'Wallet', 'Signature');
+        },
+      },
+    );
 
     // indicate complete with successful signature result
     onComplete(signatureResult);
@@ -181,6 +211,7 @@ export const Signer: React.FC<SignerProps> = ({message, onComplete}) => {
 };
 
 export interface SignerProps {
+  address?: string;
   message: string;
   onComplete: (signedMessage?: string) => void;
 }

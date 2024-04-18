@@ -70,10 +70,11 @@ enum WalletConfigState {
   Complete = 'complete',
 }
 
-export const Configuration: React.FC<ManageTabProps> = ({
-  onUpdate,
-  setButtonComponent,
-}) => {
+export const Configuration: React.FC<
+  ManageTabProps & {
+    mode?: 'basic' | 'portfolio';
+  }
+> = ({onUpdate, setButtonComponent, mode = 'basic'}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
 
@@ -510,16 +511,25 @@ export const Configuration: React.FC<ManageTabProps> = ({
         ) : (
           configState === WalletConfigState.Complete && (
             <Box display="flex" flexDirection="column" alignItems="center">
-              <CheckCircleOutlinedIcon className={classes.iconConfigured} />
-              <Typography variant="h5">{t('manage.allSet')}</Typography>
-              <Box mb={2}>
-                <Typography variant="body1">
-                  {t('wallet.successDescription')}
-                </Typography>
-              </Box>
-              <Button variant="outlined" onClick={handleLogout}>
-                {t('header.signOut')}
-              </Button>
+              {mode === 'basic' ? (
+                <>
+                  <CheckCircleOutlinedIcon className={classes.iconConfigured} />
+                  <Typography variant="h5">{t('manage.allSet')}</Typography>
+                  <Box mb={2}>
+                    <Typography variant="body1">
+                      {t('wallet.successDescription')}
+                    </Typography>
+                  </Box>
+                  <Button variant="outlined" onClick={handleLogout}>
+                    {t('header.signOut')}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Typography variant="h5">Coming soon</Typography>
+                  <Typography variant="body1">Manage this wallet</Typography>
+                </>
+              )}
             </Box>
           )
         )

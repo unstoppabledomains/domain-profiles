@@ -30,6 +30,7 @@ import {Wallet as UnstoppableWalletConfig} from '../Manage/Tabs/Wallet';
 import {Signer as UnstoppableWalletSigner} from '../Manage/Tabs/Wallet/Signer';
 
 export interface AccessEthereumProps {
+  address?: string;
   onComplete: (web3Deps?: Web3Dependencies) => void;
   onError?: (message: string) => void;
   onReconnect?: () => void;
@@ -65,6 +66,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 const AccessEthereum: React.FC<AccessEthereumProps> = ({
+  address: requestedAddress,
   onComplete,
   onError,
   onClose,
@@ -310,6 +312,7 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
                   udConfigMessage && (
                     <>
                       <UnstoppableWalletSigner
+                        address={requestedAddress}
                         message={udConfigMessage}
                         onComplete={handleUdWalletSignature}
                       />

@@ -5,9 +5,9 @@ export interface Account {
 
 export interface AccountAsset {
   '@type': string;
+  id: string;
   address: string;
   assetType: string;
-  blockchain: string;
 }
 
 export interface BootstrapState {
@@ -38,6 +38,31 @@ export interface GetBootstrapTokenResponse {
   accessToken: string;
 }
 
+export interface GetOperationResponse {
+  '@type': string;
+  operation: Operation;
+}
+
+export interface GetOperationStatusResponse {
+  '@type': string;
+  id: string;
+  lastUpdatedTimestamp: number;
+  status:
+    | 'QUEUED'
+    | 'PROCESSING'
+    | 'COMPLETED'
+    | 'FAILED'
+    | 'CANCELLED'
+    | 'SIGNATURE_REQUIRED'
+    | 'AWAITING_UPDATES';
+  type: string;
+  parameters: Parameters;
+  result?: Result;
+  transaction?: {
+    externalVendorTransactionId: string;
+  };
+}
+
 export interface GetTokenResponse {
   accessToken: string;
   refreshToken: string;
@@ -49,4 +74,20 @@ export interface IDeviceStore {
   set(deviceId: string, key: string, value: string): Promise<void>;
   clear(deviceId: string, key: string): Promise<void>;
   getAllKeys(deviceId: string): Promise<string[]>;
+}
+
+export interface Operation {
+  '@type': string;
+  id: string;
+  lastUpdatedTimestamp: number;
+  status: string;
+  type: string;
+}
+
+export interface Parameters {
+  message: string;
+}
+
+export interface Result {
+  signature: string;
 }

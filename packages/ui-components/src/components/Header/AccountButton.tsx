@@ -1,4 +1,5 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
@@ -6,12 +7,16 @@ import React, {useEffect, useState} from 'react';
 import ProfilePlaceholder from '@unstoppabledomains/ui-kit/icons/ProfilePlaceholder';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import type {DomainProfileTabType} from '..';
 import {getProfileData} from '../../actions/domainProfileActions';
 import DropDownMenu from '../../components/DropDownMenu';
+import {useTranslationContext} from '../../lib';
 import getImageUrl from '../../lib/domain/getImageUrl';
 import {notifyEvent} from '../../lib/error';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import {DomainFieldTypes} from '../../lib/types/domain';
+import {Wallet} from '../Manage/Tabs/Wallet';
+import Modal from '../Modal';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   profileButtonContainer: {
@@ -75,6 +80,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
       marginLeft: 0,
     },
   },
+  modalContainer: {
+    marginTop: theme.spacing(1),
+    maxWidth: '500px',
+    minHeight: '400px',
+  },
+  modalTitle: {
+    color: theme.palette.common.black,
+  },
 }));
 
 export const AccountButton: React.FC<AccountButtonProps> = ({
@@ -84,9 +97,11 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
   authDomain,
 }) => {
   const {classes, cx} = useStyles();
+  const [t] = useTranslationContext();
   const [isOwner, setIsOwner] = useState(false);
   const [isDropDownShown, setDropDownShown] = useState(false);
   const [authDomainAvatar, setAuthDomainAvatar] = useState<string>('');
+  const [isMpcWalletOpen, setIsMpcWalletOpen] = useState(false);
 
   useEffect(() => {
     if (!authAddress || !authDomain || !domainOwner) {
@@ -113,7 +128,7 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
   }, [authAddress, authDomain, domainOwner]);
 
   const showDropDown = () => {
-    setDropDownShown(prev => !prev);
+    setDropDownShown(prev => !prev && !isMpcWalletOpen);
   };
 
   const getDomainAvatarFromProfileAndMetadata = (
@@ -162,8 +177,30 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
           isOwner={isOwner}
           domain={domain}
           authDomain={authDomain}
+          onWalletClicked={() => setIsMpcWalletOpen(true)}
         />
       )}
+      <Modal
+        open={isMpcWalletOpen}
+        title={t('wallet.title')}
+        titleStyle={classes.modalTitle}
+        onClose={() => setIsMpcWalletOpen(false)}
+        noContentPadding
+      >
+        <Box className={classes.modalContainer}>
+          <Wallet
+            mode="portfolio"
+            address={authAddress}
+            domain={authDomain}
+            onUpdate={(_t: DomainProfileTabType) => {
+              return;
+            }}
+            setButtonComponent={(_v: React.ReactFragment) => {
+              return;
+            }}
+          />
+        </Box>
+      </Modal>
     </Button>
   );
 };

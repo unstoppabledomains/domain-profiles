@@ -17,12 +17,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const Wallet: React.FC<ManageTabProps> = ({
-  address,
-  domain,
-  onUpdate,
-  setButtonComponent,
-}) => {
+export const Wallet: React.FC<
+  ManageTabProps & {
+    mode?: 'basic' | 'portfolio';
+  }
+> = ({address, domain, mode = 'basic', onUpdate, setButtonComponent}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
 
@@ -34,6 +33,7 @@ export const Wallet: React.FC<ManageTabProps> = ({
         learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001205861-list-domain-for-sale-on-our-website"
       />
       <Configuration
+        mode={mode}
         address={address}
         domain={domain}
         onUpdate={onUpdate}

@@ -158,6 +158,7 @@ const AccessWallet = (props: Props) => {
           )}
           <div className={classes.column}>
             <AccessEthereum
+              address={props.address}
               onComplete={handleWalletConnected}
               onReconnect={props.onReconnect}
               onClose={props.onClose}

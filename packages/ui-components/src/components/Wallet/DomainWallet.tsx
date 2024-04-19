@@ -155,7 +155,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
+export const DomainWallet: React.FC<DomainWalletProps> = ({wallet}) => {
   const {classes} = useStyles();
   const theme = useTheme();
   const [t] = useTranslationContext();
@@ -560,6 +560,5 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({domain, wallet}) => {
 };
 
 export type DomainWalletProps = {
-  domain: string;
   wallet: SerializedWalletBalance;
 };

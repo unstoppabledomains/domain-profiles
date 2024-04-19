@@ -37,10 +37,10 @@ import {
 import {getState, saveState} from '../../../../lib/fireBlocks/storage/state';
 import type {AccountAsset} from '../../../../lib/types/fireBlocks';
 import {FireblocksStateKey} from '../../../../lib/types/fireBlocks';
-import {TokensPortfolio} from '../../../Wallet/TokensPortfolio';
 import {DomainProfileTabType} from '../../DomainProfile';
 import ManageInput from '../../common/ManageInput';
 import type {ManageTabProps} from '../../common/types';
+import {Client} from './Client';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -586,13 +586,9 @@ export const Configuration: React.FC<
                   </Button>
                 </>
               ) : (
-                mode === 'portfolio' && (
-                  <Box display="flex" mt={-6} mb={-2} width="100%">
-                    <TokensPortfolio
-                      wallets={mpcPortfolios}
-                      isMpcOwner={true}
-                    />
-                  </Box>
+                mode === 'portfolio' &&
+                accessJwt && (
+                  <Client wallets={mpcPortfolios} accessToken={accessJwt} />
                 )
               )}
             </Box>

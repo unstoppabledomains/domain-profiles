@@ -177,6 +177,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   domain,
   wallets,
   isError,
+  isOwner,
 }) => {
   const theme = useTheme();
   const {classes, cx} = useStyles();
@@ -535,26 +536,28 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   // render the wallet list
   return (
     <Box className={classes.portfolioContainer}>
-      <Box className={classes.sectionHeaderContainer}>
-        <Box className={classes.sectionHeader}>
-          {domain && (
-            <Tooltip title={t('verifiedWallets.verifiedOnly', {domain})}>
-              <MonetizationOnOutlinedIcon className={classes.headerIcon} />
-            </Tooltip>
-          )}
-          <Typography variant="h6">{t('tokensPortfolio.title')}</Typography>
-          {totalValue > 0 && (
-            <Typography variant="body2" className={classes.totalValue}>
-              (
-              {totalValue.toLocaleString('en-US', {
-                style: 'currency',
-                currency: 'USD',
-              })}
-              )
-            </Typography>
-          )}
+      {!isOwner && (
+        <Box className={classes.sectionHeaderContainer}>
+          <Box className={classes.sectionHeader}>
+            {domain && (
+              <Tooltip title={t('verifiedWallets.verifiedOnly', {domain})}>
+                <MonetizationOnOutlinedIcon className={classes.headerIcon} />
+              </Tooltip>
+            )}
+            <Typography variant="h6">{t('tokensPortfolio.title')}</Typography>
+            {totalValue > 0 && (
+              <Typography variant="body2" className={classes.totalValue}>
+                (
+                {totalValue.toLocaleString('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                })}
+                )
+              </Typography>
+            )}
+          </Box>
         </Box>
-      </Box>
+      )}
       {wallets || isError ? (
         <Box
           mt={'15px'}
@@ -615,10 +618,9 @@ type tokenEntry = {
 
 export type TokensPortfolioProps = {
   domain?: string;
-  isOwner?: boolean;
   wallets?: SerializedWalletBalance[];
   minCount?: number;
   maxCount?: number;
   isError?: boolean;
-  isMpcOwner?: boolean;
+  isOwner?: boolean;
 };

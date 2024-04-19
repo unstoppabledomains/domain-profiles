@@ -72,7 +72,8 @@ export interface GetOperationStatusResponse {
   parameters: Parameters;
   result?: Result;
   transaction?: {
-    externalVendorTransactionId: string;
+    id?: string;
+    externalVendorTransactionId?: string;
   };
 }
 

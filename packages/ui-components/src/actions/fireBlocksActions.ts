@@ -385,6 +385,147 @@ export const sendBootstrapCode = async (
   return false;
 };
 
+export const sendCrypto = async (
+  accessToken: string,
+  sourceAddress: string,
+  sourceSymbol: string,
+  destinationAddress: string,
+  crypto: {
+    type: 'native' | 'token' | 'nft';
+    amount: number;
+    id?: string;
+  },
+  onSignTx: (txId: string) => Promise<void>,
+  opts?: {
+    onStatusChange?: (status: string) => void;
+  },
+): Promise<string> => {
+  try {
+    // retrieve the accounts associated with the access token
+    if (opts?.onStatusChange) {
+      opts.onStatusChange('retrieving account');
+    }
+    const accounts = await getAccounts(accessToken);
+    if (!accounts) {
+      throw new Error('invalid access token');
+    }
+
+    // query addresses belonging to accounts
+    if (opts?.onStatusChange) {
+      opts.onStatusChange('retrieving addresses');
+    }
+    const addressAssets: Record<
+      string,
+      {accountId: string; data: AccountAsset}
+    > = {};
+    await Bluebird.map(accounts.items, async account => {
+      const assets = await getAccountAssets(accessToken, account.id);
+      return (assets?.items || []).map(asset => {
+        addressAssets[
+          `${asset.blockchainAsset.symbol.toLowerCase()}-${asset.address.toLowerCase()}`
+        ] = {
+          accountId: account.id,
+          data: asset,
+        };
+      });
+    });
+
+    // retrieve the asset associated with the optionally requested address,
+    // otherwise just retrieve the first first asset.
+    const asset =
+      addressAssets[
+        `${sourceSymbol.toLowerCase()}-${sourceAddress.toLowerCase()}`
+      ];
+    if (!asset) {
+      throw new Error('address not found in account');
+    }
+
+    // initialize a transaction to retrieve auth tokens
+    if (opts?.onStatusChange) {
+      opts.onStatusChange('starting MPC transaction');
+    }
+    const operationResponse = await fetchApi<GetOperationResponse>(
+      `/accounts/${asset.accountId}/assets/${asset.data.id}/transfers`,
+      {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Access-Control-Allow-Credentials': 'true',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        host: config.WALLETS.HOST_URL,
+        body: JSON.stringify({
+          destinationAddress,
+          amount: String(crypto.amount),
+        }),
+      },
+    );
+    if (!operationResponse) {
+      throw new Error('error starting transaction');
+    }
+
+    // wait up to 30 seconds for the TX to pass to the client
+    if (opts?.onStatusChange) {
+      opts.onStatusChange('waiting to sign with local key');
+    }
+    for (let i = 0; i < 60; i++) {
+      const operationStatus = await getOperationStatus(
+        accessToken,
+        operationResponse.operation.id,
+      );
+      if (!operationStatus) {
+        throw new Error('error requesting transaction operation status');
+      }
+      if (
+        operationStatus.status === 'SIGNATURE_REQUIRED' &&
+        operationStatus.transaction?.externalVendorTransactionId
+      ) {
+        // request for the client to sign the Tx string
+        if (opts?.onStatusChange) {
+          opts.onStatusChange('signing transaction with local key');
+        }
+        await onSignTx(operationStatus.transaction.externalVendorTransactionId);
+        break;
+      }
+      await sleep(500);
+    }
+
+    // wait up to 30 seconds for the TX to be completed
+    if (opts?.onStatusChange) {
+      opts.onStatusChange('waiting for MPC transaction');
+    }
+    for (let i = 0; i < 60; i++) {
+      const operationStatus = await getOperationStatus(
+        accessToken,
+        operationResponse.operation.id,
+      );
+      if (!operationStatus) {
+        throw new Error('error requesting transaction operation status');
+      }
+      if (operationStatus.transaction?.id) {
+        if (opts?.onStatusChange) {
+          opts.onStatusChange('transaction completed');
+        }
+        return operationStatus.transaction.id;
+      }
+      await sleep(500);
+    }
+
+    // reaching this point means the Tx was not successful
+    throw new Error('failed to complete transaction');
+  } catch (e) {
+    if (opts?.onStatusChange) {
+      opts.onStatusChange('transaction failed');
+    }
+    notifyEvent(e, 'error', 'Wallet', 'Signature', {
+      msg: 'error sending crypto',
+      meta: crypto,
+    });
+    throw e;
+  }
+};
+
 export const sendJoinRequest = async (
   walletJoinRequestId: string,
   bootstrapJwt: string,

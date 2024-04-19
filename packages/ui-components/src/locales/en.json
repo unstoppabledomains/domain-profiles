@@ -202,6 +202,7 @@
     "somethingWentWrong": "Something went wrong",
     "status": "Status",
     "subscribe": "Subscribe",
+    "success": "Success",
     "tab": "tab",
     "text": "Text",
     "them": "them",
@@ -782,6 +783,7 @@
     "viewExplorer": "Blockchain explorer"
   },
   "wallet": {
+    "transactionId": "Transaction ID {{id}}",
     "approve": "Confirm",
     "beginSetup": "Continue",
     "bootstrapCode": "One-time code",

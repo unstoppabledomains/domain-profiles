@@ -72,17 +72,19 @@ export const Client: React.FC<ClientProps> = ({accessToken, wallets}) => {
 
   const handleClickedSend = () => {
     // TODO
-    alert('send');
+    alert('switch view to send crypto selector');
   };
 
   const handleClickedReceive = () => {
     // TODO
-    alert('receive');
+    alert('switch view to QR code list for available addresses');
   };
 
   const handleClickedBuy = () => {
     // TODO
-    alert('buy');
+    alert(
+      'select wallet, then redirect to e-commerce buy/sell crypto page with this wallet preselected',
+    );
   };
 
   return (

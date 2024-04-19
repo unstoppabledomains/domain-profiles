@@ -145,7 +145,7 @@ export const Send: React.FC<Props> = ({
             alignItems: 'center',
           }}
         >
-          {[...nativeTokens, ...nativeTokens].map(token => {
+          {nativeTokens.map(token => {
             const handleClick = () => {
               setAsset(token);
             };

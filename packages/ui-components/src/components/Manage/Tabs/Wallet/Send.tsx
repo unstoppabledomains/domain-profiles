@@ -3,7 +3,10 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
+import type {Theme} from '@mui/material/styles';
 import React, {useState} from 'react';
+
+import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {sendCrypto} from '../../../../actions/fireBlocksActions';
 import type {SerializedWalletBalance} from '../../../../lib';
@@ -11,6 +14,33 @@ import {TokenType, useTranslationContext} from '../../../../lib';
 import type {TokenEntry} from '../../../Wallet/Token';
 import Token from '../../../Wallet/Token';
 import ManageInput from '../../common/ManageInput';
+
+const useStyles = makeStyles()((theme: Theme) => ({
+  fullWidth: {
+    width: '100%',
+  },
+  selectAssetContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    minHeight: '250px',
+    justifyContent: 'space-between',
+  },
+  assetsContainer: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 5,
+    alignItems: 'center',
+  },
+  asset: {
+    backgroundImage: 'linear-gradient(#62626A, #323234)',
+    borderRadius: 9,
+    padding: 12,
+    maxWidth: '350px',
+    width: '100%',
+  },
+}));
 
 type Props = {
   onCancelClick: () => void;
@@ -31,6 +61,7 @@ export const Send: React.FC<Props> = ({
   const [amount, setAmount] = useState('');
   const [successfulTxId, setSuccessfulTxId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const {classes} = useStyles();
 
   const handleSendCrypto = async () => {
     setIsLoading(true);
@@ -124,41 +155,17 @@ export const Send: React.FC<Props> = ({
 
   if (!asset) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          minHeight: '250px',
-          justifyContent: 'space-between',
-        }}
-      >
-        <div style={{width: '100%'}}>
-          <Typography variant="h5">Select asset to send</Typography>
+      <div className={classes.selectAssetContainer}>
+        <div className={classes.fullWidth}>
+          <Typography variant="h5">{t('wallet.selectAsset')}</Typography>
         </div>
-        <div
-          style={{
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 5,
-            alignItems: 'center',
-          }}
-        >
+        <div className={classes.assetsContainer}>
           {nativeTokens.map(token => {
             const handleClick = () => {
               setAsset(token);
             };
             return (
-              <div
-                style={{
-                  backgroundImage: 'linear-gradient(#62626A, #323234)',
-                  borderRadius: 9,
-                  padding: 12,
-                  maxWidth: '350px',
-                  width: '100%',
-                }}
-              >
+              <div className={classes.asset}>
                 <Token primaryShade token={token} onClick={handleClick} />
               </div>
             );

@@ -37,7 +37,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import CopyToClipboard from '../../components/CopyToClipboard';
 import type {CurrenciesType} from '../../lib';
-import {WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
+import {TokenType, WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
 import {displayShortCryptoAddress} from '../../lib/displayCryptoAddress';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
 import {CryptoIcon} from '../Image';
@@ -210,7 +210,7 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({wallet}) => {
     (wallet.tokens ? wallet.tokens?.length : 0);
   const allTokens = [
     ...(wallet?.nfts?.map(walletNft => ({
-      type: 'NFT',
+      type: TokenType.Nft,
       name: walletNft.name,
       value: walletNft.totalValueUsdAmt || 0,
     })) || []),
@@ -382,7 +382,7 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({wallet}) => {
                     allTokens.length > 0 ? (
                       <Box display="flex" flexDirection="column">
                         {allTokens.filter(
-                          walletToken => walletToken.type === 'NFT',
+                          walletToken => walletToken.type === TokenType.Nft,
                         ).length > 0 && (
                           <>
                             <Typography variant="body2" fontWeight="bold">
@@ -396,7 +396,10 @@ export const DomainWallet: React.FC<DomainWalletProps> = ({wallet}) => {
                         <Box ml={2}>
                           <List sx={{listStyleType: 'disc'}}>
                             {allTokens
-                              .filter(walletToken => walletToken.type === 'NFT')
+                              .filter(
+                                walletToken =>
+                                  walletToken.type === TokenType.Nft,
+                              )
                               .sort((a, b) => b.value - a.value)
                               .map(walletToken => (
                                 <ListItem

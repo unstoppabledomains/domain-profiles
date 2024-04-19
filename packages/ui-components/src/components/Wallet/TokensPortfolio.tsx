@@ -381,6 +381,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
                   primaryShade={!!isOwner}
                   token={token}
                   onClick={() => handleClick(token.walletBlockChainLink)}
+                  showGraph
                 />
               ))
             ) : (

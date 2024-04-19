@@ -101,11 +101,12 @@ type Props = {
   token: TokenEntry;
   onClick: () => void;
   primaryShade: boolean;
+  showGraph?: boolean;
 };
 
 const bgNeutralShade = 800;
 
-const Token: React.FC<Props> = ({token, onClick, primaryShade}) => {
+const Token: React.FC<Props> = ({token, onClick, primaryShade, showGraph}) => {
   const theme = useTheme();
 
   const {classes, cx} = useStyles({
@@ -170,7 +171,7 @@ const Token: React.FC<Props> = ({token, onClick, primaryShade}) => {
         </Box>
       </Grid>
       <Grid item xs={4}>
-        {token.history && (
+        {showGraph && token.history && (
           <Box className={classes.chartContainer}>
             <Line
               data={{

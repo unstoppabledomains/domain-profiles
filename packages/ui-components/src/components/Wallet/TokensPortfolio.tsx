@@ -28,7 +28,10 @@ Chart.register(CategoryScale);
 
 const bgNeutralShade = 800;
 
-const useStyles = makeStyles()((theme: Theme) => ({
+type StyleProps = {
+  palletteShade: Record<number, string>;
+};
+const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
   portfolioContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -39,18 +42,18 @@ const useStyles = makeStyles()((theme: Theme) => ({
     overflowX: 'auto',
   },
   walletContainer: {
-    color: theme.palette.neutralShades[bgNeutralShade - 600],
+    color: palletteShade[bgNeutralShade - 600],
     cursor: 'pointer',
     display: 'flex',
     background: `repeating-linear-gradient(
       -45deg,
-      ${theme.palette.neutralShades[bgNeutralShade]},
-      ${theme.palette.neutralShades[bgNeutralShade]} 5px,
-      ${theme.palette.neutralShades[bgNeutralShade - 100]} 5px,
-      ${theme.palette.neutralShades[bgNeutralShade - 100]} 6px
+      ${palletteShade[bgNeutralShade]},
+      ${palletteShade[bgNeutralShade]} 5px,
+      ${palletteShade[bgNeutralShade - 100]} 5px,
+      ${palletteShade[bgNeutralShade - 100]} 6px
     )`,
     alignItems: 'center',
-    border: `2px solid ${theme.palette.neutralShades[bgNeutralShade]}`,
+    border: `2px solid ${palletteShade[bgNeutralShade]}`,
     borderRadius: theme.shape.borderRadius,
     paddingRight: theme.spacing(0.5),
     marginRight: theme.spacing(1),
@@ -59,7 +62,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   walletContainerSelected: {
     background: theme.palette.white,
     border: `2px solid ${theme.palette.white}`,
-    color: theme.palette.neutralShades[bgNeutralShade],
+    color: palletteShade[bgNeutralShade],
   },
   chartContainer: {
     height: '40px',
@@ -69,7 +72,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   walletIcon: {
     marginRight: theme.spacing(0.5),
     color: theme.palette.common.black,
-    backgroundColor: theme.palette.neutralShades[bgNeutralShade],
+    backgroundColor: palletteShade[bgNeutralShade],
     borderRadius: '50%',
     width: '25px',
     height: '25px',
@@ -98,11 +101,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     lineHeight: 1.4,
   },
   totalValue: {
-    color: theme.palette.neutralShades[600],
+    color: palletteShade[600],
     marginLeft: theme.spacing(1),
   },
   headerIcon: {
-    color: theme.palette.neutralShades[600],
+    color: palletteShade[600],
     marginRight: theme.spacing(1),
   },
   scrollableContainer: {
@@ -111,16 +114,16 @@ const useStyles = makeStyles()((theme: Theme) => ({
     overscrollBehavior: 'contain',
     height: `${WALLET_CARD_HEIGHT + 2}px`,
     width: '100%',
-    backgroundImage: `linear-gradient(${
-      theme.palette.neutralShades[bgNeutralShade - 200]
-    }, ${theme.palette.neutralShades[bgNeutralShade]})`,
+    backgroundImage: `linear-gradient(${palletteShade[bgNeutralShade - 200]}, ${
+      palletteShade[bgNeutralShade]
+    })`,
     borderRadius: theme.shape.borderRadius,
-    border: `1px solid ${theme.palette.neutralShades[bgNeutralShade - 600]}`,
+    border: `1px solid ${palletteShade[bgNeutralShade - 600]}`,
     padding: theme.spacing(2),
     scrollbarWidth: 'thin',
   },
   noActivity: {
-    color: theme.palette.neutralShades[bgNeutralShade - 600],
+    color: palletteShade[bgNeutralShade - 600],
   },
   txTitle: {
     fontWeight: 'bold',
@@ -132,16 +135,16 @@ const useStyles = makeStyles()((theme: Theme) => ({
     whiteSpace: 'nowrap',
   },
   txSubTitle: {
-    color: theme.palette.neutralShades[bgNeutralShade - 600],
+    color: palletteShade[bgNeutralShade - 600],
   },
   txLink: {
     cursor: 'pointer',
   },
   txPctChangeDown: {
-    color: theme.palette.neutralShades[bgNeutralShade - 400],
+    color: palletteShade[bgNeutralShade - 400],
   },
   txPctChangeNeutral: {
-    color: theme.palette.neutralShades[bgNeutralShade - 400],
+    color: palletteShade[bgNeutralShade - 400],
   },
   txPctChangeUp: {
     color: theme.palette.success.main,
@@ -165,7 +168,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   chainIcon: {
     color: theme.palette.common.black,
-    backgroundColor: theme.palette.neutralShades[bgNeutralShade],
+    backgroundColor: palletteShade[bgNeutralShade],
     border: `1px solid black`,
     borderRadius: '50%',
     width: '17px',
@@ -180,7 +183,11 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   isOwner,
 }) => {
   const theme = useTheme();
-  const {classes, cx} = useStyles();
+  const {classes, cx} = useStyles({
+    palletteShade: isOwner
+      ? theme.palette.primaryShades
+      : theme.palette.neutralShades,
+  });
   const [filterAddress, setFilterAddress] = useState<SerializedWalletBalance>();
   const [groupedTokens, setGroupedTokens] = useState<tokenEntry[]>([]);
   const [t] = useTranslationContext();

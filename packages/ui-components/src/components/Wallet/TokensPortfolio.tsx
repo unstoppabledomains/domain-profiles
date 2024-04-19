@@ -1,6 +1,4 @@
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
-import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined';
-import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
@@ -10,19 +8,16 @@ import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import {CategoryScale} from 'chart.js';
 import Chart from 'chart.js/auto';
-import numeral from 'numeral';
 import React, {useEffect, useState} from 'react';
-import {Line} from 'react-chartjs-2';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {CurrenciesType} from '../../lib';
-import {WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
-import type {
-  SerializedPriceHistory,
-  SerializedWalletBalance,
-} from '../../lib/types/domain';
+import {TokenType, WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
+import type {SerializedWalletBalance} from '../../lib/types/domain';
 import {CryptoIcon} from '../Image';
+import type {TokenEntry} from './Token';
+import Token from './Token';
 
 Chart.register(CategoryScale);
 
@@ -63,11 +58,6 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
     background: theme.palette.white,
     border: `2px solid ${theme.palette.white}`,
     color: palletteShade[bgNeutralShade],
-  },
-  chartContainer: {
-    height: '40px',
-    display: 'flex',
-    justifyContent: 'center',
   },
   walletIcon: {
     marginRight: theme.spacing(0.5),
@@ -125,55 +115,6 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
   noActivity: {
     color: palletteShade[bgNeutralShade - 600],
   },
-  txTitle: {
-    fontWeight: 'bold',
-    color: theme.palette.white,
-  },
-  txBalance: {
-    fontWeight: 'bold',
-    color: theme.palette.white,
-    whiteSpace: 'nowrap',
-  },
-  txSubTitle: {
-    color: palletteShade[bgNeutralShade - 600],
-  },
-  txLink: {
-    cursor: 'pointer',
-  },
-  txPctChangeDown: {
-    color: palletteShade[bgNeutralShade - 400],
-  },
-  txPctChangeNeutral: {
-    color: palletteShade[bgNeutralShade - 400],
-  },
-  txPctChangeUp: {
-    color: theme.palette.success.main,
-  },
-  nftCollectionIcon: {
-    borderRadius: theme.shape.borderRadius,
-    width: '40px',
-    height: '40px',
-  },
-  tokenIcon: {
-    borderRadius: '50%',
-    width: '40px',
-    height: '40px',
-  },
-  tokenIconDefault: {
-    borderRadius: '50%',
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.white,
-    width: '40px',
-    height: '40px',
-  },
-  chainIcon: {
-    color: theme.palette.common.black,
-    backgroundColor: palletteShade[bgNeutralShade],
-    border: `1px solid black`,
-    borderRadius: '50%',
-    width: '17px',
-    height: '17px',
-  },
 }));
 
 export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
@@ -189,7 +130,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
       : theme.palette.neutralShades,
   });
   const [filterAddress, setFilterAddress] = useState<SerializedWalletBalance>();
-  const [groupedTokens, setGroupedTokens] = useState<tokenEntry[]>([]);
+  const [groupedTokens, setGroupedTokens] = useState<TokenEntry[]>([]);
   const [t] = useTranslationContext();
 
   useEffect(() => {
@@ -199,7 +140,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
     }
 
     // list of all monetized tokens, sorted by most valuable
-    const allTokens: tokenEntry[] = [
+    const allTokens: TokenEntry[] = [
       ...(wallets || []).flatMap(wallet => {
         if (
           wallet.value?.history &&
@@ -213,7 +154,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
           });
         }
         return {
-          type: 'Native' as never,
+          type: TokenType.Native,
           name: wallet.name,
           value: wallet.value?.walletUsdAmt || 0,
           balance: wallet.balanceAmt || 0,
@@ -251,7 +192,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
             });
           }
           return {
-            type: 'NFT' as never,
+            type: TokenType.Nft,
             name: walletNft.name,
             value: walletNft.totalValueUsdAmt || 0,
             balance: walletNft.ownedCount,
@@ -307,7 +248,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
       );
 
     // aggregate like tokens entries from different wallets
-    const tokens: tokenEntry[] = [];
+    const tokens: TokenEntry[] = [];
     allTokens.map(currentToken => {
       // skip if this token has already been added to the list
       const existingTokens = tokens.filter(
@@ -393,153 +334,6 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
     );
   };
 
-  const renderToken = (index: number, token: tokenEntry) => {
-    return (
-      <Grid
-        container
-        item
-        xs={12}
-        key={`token-${index}`}
-        onClick={() => handleClick(token.walletBlockChainLink)}
-        className={classes.txLink}
-      >
-        <Grid item xs={2}>
-          <Box display="flex" justifyContent="left" textAlign="left">
-            <Badge
-              overlap="circular"
-              anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
-              badgeContent={
-                token.type === 'Native' ? null : (
-                  <CryptoIcon
-                    currency={token.symbol as CurrenciesType}
-                    className={cx(classes.chainIcon)}
-                  />
-                )
-              }
-            >
-              {token.type === 'Native' ? (
-                <CryptoIcon
-                  currency={token.symbol as CurrenciesType}
-                  className={cx(classes.tokenIcon)}
-                />
-              ) : token.imageUrl ? (
-                <img
-                  src={token.imageUrl}
-                  className={
-                    token.type === 'NFT'
-                      ? classes.nftCollectionIcon
-                      : classes.tokenIcon
-                  }
-                />
-              ) : token.type === 'NFT' ? (
-                <PhotoLibraryOutlinedIcon
-                  sx={{padding: 0.5}}
-                  className={classes.tokenIconDefault}
-                />
-              ) : (
-                <MonetizationOnOutlinedIcon
-                  className={classes.tokenIconDefault}
-                />
-              )}
-            </Badge>
-          </Box>
-        </Grid>
-        <Grid item xs={4}>
-          <Box display="flex" flexDirection="column">
-            <Typography variant="caption" className={classes.txTitle}>
-              {token.name}
-            </Typography>
-            <Typography variant="caption" className={classes.txSubTitle}>
-              {numeral(token.balance).format('0.[000000]')}{' '}
-              {token.type === 'NFT'
-                ? `NFT${token.balance === 1 ? '' : 's'}`
-                : token.ticker}
-            </Typography>
-          </Box>
-        </Grid>
-        <Grid item xs={4}>
-          {token.history && (
-            <Box className={classes.chartContainer}>
-              <Line
-                data={{
-                  labels: token.history?.map((_h, i) => i) || [],
-                  datasets: [
-                    {
-                      label: token.name,
-                      data: token.history?.map(h => h.value) || [],
-                      pointBackgroundColor: 'rgba(0, 0, 0, 0)',
-                      pointBorderColor: 'rgba(0, 0, 0, 0)',
-                      backgroundColor:
-                        (token.pctChange || 0) > 0
-                          ? theme.palette.success.main
-                          : theme.palette.neutralShades[bgNeutralShade - 400],
-                      borderColor:
-                        (token.pctChange || 0) > 0
-                          ? theme.palette.success.main
-                          : theme.palette.neutralShades[bgNeutralShade - 400],
-                      fill: false,
-                    },
-                  ],
-                }}
-                options={{
-                  events: [],
-                  scales: {
-                    x: {
-                      display: false,
-                    },
-                    y: {
-                      display: false,
-                    },
-                  },
-                  plugins: {
-                    title: {
-                      display: false,
-                    },
-                    legend: {
-                      display: false,
-                    },
-                  },
-                }}
-              />
-            </Box>
-          )}
-        </Grid>
-        <Grid item xs={2}>
-          <Box
-            display="flex"
-            flexDirection="column"
-            textAlign="right"
-            justifyContent="right"
-            justifyItems="right"
-          >
-            <Typography variant="caption" className={classes.txBalance}>
-              {token.value.toLocaleString('en-US', {
-                style: 'currency',
-                currency: 'USD',
-              })}
-            </Typography>
-            <Typography
-              variant="caption"
-              className={
-                !token.pctChange
-                  ? classes.txPctChangeNeutral
-                  : token.pctChange < 0
-                  ? classes.txPctChangeDown
-                  : classes.txPctChangeUp
-              }
-            >
-              {token.pctChange
-                ? `${token.pctChange > 0 ? '+' : ''}${numeral(
-                    token.pctChange,
-                  ).format('0.[00]')}%`
-                : `---`}
-            </Typography>
-          </Box>
-        </Grid>
-      </Grid>
-    );
-  };
-
   // render the wallet list
   return (
     <Box className={classes.portfolioContainer}>
@@ -582,7 +376,13 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
               )}
             </Grid>
             {!isError && groupedTokens.length > 0 ? (
-              groupedTokens.map((token, i) => renderToken(i, token))
+              groupedTokens.map(token => (
+                <Token
+                  primaryShade={!!isOwner}
+                  token={token}
+                  onClick={() => handleClick(token.walletBlockChainLink)}
+                />
+              ))
             ) : (
               <Grid item xs={12}>
                 <Typography className={classes.noActivity} textAlign="center">
@@ -606,21 +406,6 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
       )}
     </Box>
   );
-};
-
-type tokenEntry = {
-  type: 'Native' | 'NFT' | 'Token';
-  symbol: string;
-  name: string;
-  ticker: string;
-  value: number;
-  balance: number;
-  pctChange?: number;
-  imageUrl?: string;
-  history?: SerializedPriceHistory[];
-  walletAddress: string;
-  walletBlockChainLink: string;
-  walletName: string;
 };
 
 export type TokensPortfolioProps = {

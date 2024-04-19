@@ -577,6 +577,8 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       });
       setConfigState(ConfigurationState.Error);
       return;
+    } finally {
+      setWalletModalIsOpen(false);
     }
 
     // remove the modal from view
@@ -849,7 +851,9 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       setSignatureInProgress(MessagingSignatureType.NewUser);
     } else if (!xmtpKey || initChatOptions) {
       // start account setup for XMTP
-      void initChatAccounts(initChatOptions || {skipPush: true});
+      if (!signatureInProgress) {
+        void initChatAccounts(initChatOptions || {skipPush: true});
+      }
     } else {
       // clear new message flag and set last read timestamp
       setIsNewMessage(false);
@@ -1045,12 +1049,12 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
             setBlockedTopics={setBlockedTopics}
             setWeb3Deps={setWeb3Deps}
             onClose={handleClosePush}
-            onInitPushAccount={() =>
-              initChatAccounts({
+            onInitPushAccount={() => {
+              return initChatAccounts({
                 skipXmtp: true,
                 skipPush: false,
-              })
-            }
+              });
+            }}
           />
           {!disableSupportBubble && (
             <SupportBubble

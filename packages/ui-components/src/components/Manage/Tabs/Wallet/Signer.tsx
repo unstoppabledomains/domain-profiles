@@ -1,4 +1,3 @@
-import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
@@ -57,8 +56,8 @@ export const Signer: React.FC<SignerProps> = ({
   const {classes} = useStyles();
   const [t] = useTranslationContext();
   const [isSigning, setIsSigning] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [accessToken, setAccessToken] = useState<string>();
-  const [client, setClient] = useState<IFireblocksNCW>();
   const [sessionKeyState, setSessionKeyState] = useSessionStorage<
     Record<string, Record<string, string>>
   >(FireblocksStateKey, {});
@@ -78,11 +77,16 @@ export const Signer: React.FC<SignerProps> = ({
   // sign requested message when button is clicked and the Fireblocks
   // client has been properly initialized
   useEffect(() => {
-    if (!isSigning || !client) {
+    if (!isSigning || !accessToken) {
       return;
     }
     void handleSignature();
-  }, [isSigning, client]);
+  }, [isSigning, accessToken]);
+
+  // clear the success flag for new message
+  useEffect(() => {
+    setIsSuccess(false);
+  }, [message]);
 
   const handleLoadClient = async () => {
     // retrieve and validate key state
@@ -103,20 +107,27 @@ export const Signer: React.FC<SignerProps> = ({
       throw new Error('error retrieving access token');
     }
     setAccessToken(jwtToken.accessToken);
-
-    // initialize and set the client
-    setClient(
-      await getFireBlocksClient(state.deviceId, jwtToken.accessToken, {
-        state: sessionState ? sessionKeyState : persistentKeyState,
-        saveState: sessionState ? setSessionKeyState : setPersistentKeyState,
-      }),
-    );
   };
 
   const handleSignature = async () => {
-    if (!client || !accessToken) {
+    if (!accessToken) {
       return;
     }
+
+    // retrieve and validate key state
+    const sessionState = getState(sessionKeyState);
+    const persistentState = getState(persistentKeyState);
+    const state = sessionState || persistentState;
+    if (!state) {
+      throw new Error('invalid configuration');
+    }
+
+    // retrieve a new client instance
+    const client = await getFireBlocksClient(state.deviceId, accessToken, {
+      state: sessionState ? sessionKeyState : persistentKeyState,
+      saveState: sessionState ? setSessionKeyState : setPersistentKeyState,
+    });
+
     notifyEvent(
       'signing message with fireblocks client',
       'info',
@@ -146,7 +157,16 @@ export const Signer: React.FC<SignerProps> = ({
     );
 
     // indicate complete with successful signature result
+    notifyEvent('signature successful', 'info', 'Wallet', 'Signature', {
+      meta: {
+        address,
+        message,
+        signature: signatureResult,
+      },
+    });
     onComplete(signatureResult);
+    setIsSuccess(true);
+    setIsSigning(false);
   };
 
   const handleClickApprove = () => {
@@ -192,10 +212,11 @@ export const Signer: React.FC<SignerProps> = ({
           className={classes.button}
           fullWidth
           loading={isSigning}
+          disabled={isSuccess}
           variant="contained"
           onClick={handleClickApprove}
         >
-          {t('wallet.approve')}
+          {isSuccess ? t('common.success') : t('wallet.approve')}
         </LoadingButton>
         <Button
           className={classes.button}

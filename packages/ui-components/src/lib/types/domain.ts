@@ -474,7 +474,7 @@ export type SerializedWalletNftCollection = {
 };
 
 export type SerializedWalletToken = {
-  type: Omit<TokenType, TokenType.Nft>;
+  type: TokenType.Erc20 | TokenType.Native;
   address: string;
   symbol: string;
   gasCurrency: string;

@@ -180,27 +180,29 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
           onWalletClicked={() => setIsMpcWalletOpen(true)}
         />
       )}
-      <Modal
-        open={isMpcWalletOpen}
-        title={t('wallet.title')}
-        titleStyle={classes.modalTitle}
-        onClose={() => setIsMpcWalletOpen(false)}
-        noContentPadding
-      >
-        <Box className={classes.modalContainer}>
-          <Wallet
-            mode="portfolio"
-            address={authAddress}
-            domain={authDomain}
-            onUpdate={(_t: DomainProfileTabType) => {
-              return;
-            }}
-            setButtonComponent={(_v: React.ReactFragment) => {
-              return;
-            }}
-          />
-        </Box>
-      </Modal>
+      {isMpcWalletOpen && (
+        <Modal
+          open={isMpcWalletOpen}
+          title={t('wallet.title')}
+          titleStyle={classes.modalTitle}
+          onClose={() => setIsMpcWalletOpen(false)}
+          noContentPadding
+        >
+          <Box className={classes.modalContainer}>
+            <Wallet
+              mode="portfolio"
+              address={authAddress}
+              domain={authDomain}
+              onUpdate={(_t: DomainProfileTabType) => {
+                return;
+              }}
+              setButtonComponent={(_v: React.ReactFragment) => {
+                return;
+              }}
+            />
+          </Box>
+        </Modal>
+      )}
     </Button>
   );
 };

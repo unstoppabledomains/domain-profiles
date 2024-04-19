@@ -7,7 +7,20 @@ export interface AccountAsset {
   '@type': string;
   id: string;
   address: string;
-  assetType: string;
+  blockchainAsset: BlockchainAsset;
+}
+
+export interface Blockchain {
+  id: string;
+  name: string;
+}
+
+export interface BlockchainAsset {
+  '@type': string;
+  id: string;
+  name: string;
+  symbol: string;
+  blockchain: Blockchain;
 }
 
 export interface BootstrapState {

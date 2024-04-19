@@ -9,6 +9,7 @@ import FormGroup from '@mui/material/FormGroup';
 import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import Bluebird from 'bluebird';
 import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useState} from 'react';
 import {useLocalStorage, useSessionStorage} from 'usehooks-ts';
@@ -18,10 +19,14 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {
   confirmAuthorizationTokenTx,
   getAccessToken,
+  getAccountAssets,
+  getAccounts,
   getAuthorizationTokenTx,
   getBootstrapToken,
   sendBootstrapCode,
 } from '../../../../actions/fireBlocksActions';
+import {getWalletPortfolio} from '../../../../actions/walletActions';
+import type {SerializedWalletBalance} from '../../../../lib';
 import {useTranslationContext} from '../../../../lib';
 import {notifyEvent} from '../../../../lib/error';
 import {
@@ -30,7 +35,9 @@ import {
   signTransaction,
 } from '../../../../lib/fireBlocks/client';
 import {getState, saveState} from '../../../../lib/fireBlocks/storage/state';
+import type {AccountAsset} from '../../../../lib/types/fireBlocks';
 import {FireblocksStateKey} from '../../../../lib/types/fireBlocks';
+import {TokensPortfolio} from '../../../Wallet/TokensPortfolio';
 import {DomainProfileTabType} from '../../DomainProfile';
 import ManageInput from '../../common/ManageInput';
 import type {ManageTabProps} from '../../common/types';
@@ -103,6 +110,9 @@ export const Configuration: React.FC<
   const [bootstrapCode, setBootstrapCode] = useState<string>();
   const [recoveryPhrase, setRecoveryPhrase] = useState<string>();
   const [emailAddress, setEmailAddress] = useState<string>();
+  const [mpcPortfolios, setMpcPortfolios] = useState<SerializedWalletBalance[]>(
+    [],
+  );
 
   useEffect(() => {
     setIsLoaded(false);
@@ -113,6 +123,7 @@ export const Configuration: React.FC<
   useEffect(() => {
     if (configState === WalletConfigState.Complete && accessJwt) {
       onUpdate(DomainProfileTabType.Wallet, {accessToken: accessJwt});
+      void loadMpcPortfolios();
     }
   }, [configState, accessJwt]);
 
@@ -197,6 +208,56 @@ export const Configuration: React.FC<
     progressPct,
     isLoaded,
   ]);
+
+  const loadMpcPortfolios = async () => {
+    if (!accessJwt) {
+      return;
+    }
+
+    // set progress
+    setIsLoaded(false);
+
+    // retrieve the accounts associated with the access token
+    const accounts = await getAccounts(accessJwt);
+    if (!accounts) {
+      return;
+    }
+
+    // query addresses belonging to accounts
+    const accountAssets: AccountAsset[] = [];
+    await Bluebird.map(accounts.items, async account => {
+      const assets = await getAccountAssets(accessJwt, account.id);
+      return (assets?.items || []).map(asset => {
+        accountAssets.push(asset);
+      });
+    });
+    const accountChains = accountAssets.map(a =>
+      a.blockchainAsset.symbol.toLowerCase(),
+    );
+
+    // retrieve portfolio data for each asset
+    const accountAddresses = [...new Set(accountAssets.map(a => a.address))];
+    const wallets: SerializedWalletBalance[] = [];
+    await Bluebird.map(accountAddresses, async address => {
+      const addressPortfolio = await getWalletPortfolio(
+        address,
+        accessJwt,
+        undefined,
+        true,
+      );
+      if (addressPortfolio) {
+        wallets.push(
+          ...addressPortfolio.filter(p =>
+            accountChains.includes(p.symbol.toLowerCase()),
+          ),
+        );
+      }
+    });
+
+    // display rendered wallets
+    setMpcPortfolios(wallets);
+    setIsLoaded(true);
+  };
 
   const loadFromState = async () => {
     // retrieve existing state from session or local storage if available
@@ -525,10 +586,14 @@ export const Configuration: React.FC<
                   </Button>
                 </>
               ) : (
-                <>
-                  <Typography variant="h5">Coming soon</Typography>
-                  <Typography variant="body1">Manage this wallet</Typography>
-                </>
+                mode === 'portfolio' && (
+                  <Box display="flex" mt={-6} mb={-2} width="100%">
+                    <TokensPortfolio
+                      wallets={mpcPortfolios}
+                      isMpcOwner={true}
+                    />
+                  </Box>
+                )
               )}
             </Box>
           )

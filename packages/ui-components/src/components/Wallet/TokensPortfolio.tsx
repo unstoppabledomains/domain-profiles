@@ -32,6 +32,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   portfolioContainer: {
     display: 'flex',
     flexDirection: 'column',
+    width: '100%',
   },
   walletListContainer: {
     display: 'flex',
@@ -536,9 +537,11 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
     <Box className={classes.portfolioContainer}>
       <Box className={classes.sectionHeaderContainer}>
         <Box className={classes.sectionHeader}>
-          <Tooltip title={t('verifiedWallets.verifiedOnly', {domain})}>
-            <MonetizationOnOutlinedIcon className={classes.headerIcon} />
-          </Tooltip>
+          {domain && (
+            <Tooltip title={t('verifiedWallets.verifiedOnly', {domain})}>
+              <MonetizationOnOutlinedIcon className={classes.headerIcon} />
+            </Tooltip>
+          )}
           <Typography variant="h6">{t('tokensPortfolio.title')}</Typography>
           {totalValue > 0 && (
             <Typography variant="body2" className={classes.totalValue}>
@@ -611,10 +614,11 @@ type tokenEntry = {
 };
 
 export type TokensPortfolioProps = {
-  domain: string;
+  domain?: string;
   isOwner?: boolean;
   wallets?: SerializedWalletBalance[];
   minCount?: number;
   maxCount?: number;
   isError?: boolean;
+  isMpcOwner?: boolean;
 };

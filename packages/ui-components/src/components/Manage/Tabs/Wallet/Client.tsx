@@ -3,7 +3,6 @@ import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import SendIcon from '@mui/icons-material/Send';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -12,23 +11,24 @@ import {useLocalStorage, useSessionStorage} from 'usehooks-ts';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {sendCrypto} from '../../../../actions/fireBlocksActions';
 import type {SerializedWalletBalance} from '../../../../lib';
 import {useTranslationContext} from '../../../../lib';
 import {getFireBlocksClient} from '../../../../lib/fireBlocks/client';
 import {getState} from '../../../../lib/fireBlocks/storage/state';
 import {FireblocksStateKey} from '../../../../lib/types/fireBlocks';
 import {TokensPortfolio} from '../../../Wallet/TokensPortfolio';
-import ManageInput from '../../common/ManageInput';
+import {Send} from './Send';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
+    width: '100%',
   },
   walletContainer: {
     display: 'flex',
     flexDirection: 'column',
+    width: '100%',
   },
   mainActionsContainer: {
     display: 'flex',
@@ -83,14 +83,6 @@ export const Client: React.FC<ClientProps> = ({accessToken, wallets}) => {
   // component state variables
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSend, setIsSend] = useState(false);
-  const [isDirty, setIsDirty] = useState(false);
-
-  // crypto send variables
-  const [sourceAddress, setSourceAddress] = useState<string>();
-  const [sourceSymbol, setSourceSymbol] = useState<string>();
-  const [destinationAddress, setDestinationAddress] = useState<string>();
-  const [amount, setAmount] = useState<string>();
-  const [successfulTxId, setSuccessfulTxId] = useState<string>();
 
   useEffect(() => {
     void handleLoadClient();
@@ -117,52 +109,6 @@ export const Client: React.FC<ClientProps> = ({accessToken, wallets}) => {
     setIsLoaded(true);
   };
 
-  const handleSendCrypto = async () => {
-    if (
-      !client ||
-      !amount ||
-      !sourceAddress ||
-      !sourceSymbol ||
-      !destinationAddress
-    ) {
-      return;
-    }
-
-    // turn on the spinning and submit the tx
-    setIsLoaded(false);
-    setSuccessfulTxId(
-      await sendCrypto(
-        accessToken,
-        sourceAddress,
-        sourceSymbol,
-        destinationAddress,
-        {
-          type: 'native',
-          amount: parseFloat(amount),
-        },
-        async (internalTxId: string) => {
-          await client.signTransaction(internalTxId);
-        },
-      ),
-    );
-
-    // turn off the spinner
-    setIsLoaded(true);
-  };
-
-  const handleInputChange = (id: string, value: string) => {
-    setIsDirty(true);
-    if (id === 'sourceAddress') {
-      setSourceAddress(value);
-    } else if (id === 'sourceSymbol') {
-      setSourceSymbol(value);
-    } else if (id === 'destinationAddress') {
-      setDestinationAddress(value);
-    } else if (id === 'amount') {
-      setAmount(value);
-    }
-  };
-
   const handleClickedSend = () => {
     setIsSend(true);
   };
@@ -179,73 +125,21 @@ export const Client: React.FC<ClientProps> = ({accessToken, wallets}) => {
     );
   };
 
+  const handleCancelSend = () => {
+    setIsSend(false);
+  };
+
   return (
     <Box className={classes.container}>
       {isLoaded ? (
         <Box className={classes.walletContainer}>
           {isSend ? (
-            successfulTxId ? (
-              <>
-                <Typography variant="h3">{t('common.success')}</Typography>
-                <Typography variant="body1">
-                  {t('wallet.transactionId', {id: successfulTxId})}
-                </Typography>
-              </>
-            ) : (
-              <>
-                <ManageInput
-                  id="sourceAddress"
-                  value={sourceAddress}
-                  label={'Source address'}
-                  placeholder={'Enter source address'}
-                  onChange={handleInputChange}
-                  stacked={true}
-                />
-                <ManageInput
-                  id="sourceSymbol"
-                  value={sourceSymbol}
-                  label={'Source blockchain symbol'}
-                  placeholder={'Enter source blockchain symbol'}
-                  onChange={handleInputChange}
-                  stacked={true}
-                />
-                <ManageInput
-                  id="destinationAddress"
-                  value={destinationAddress}
-                  label={'Destination address'}
-                  placeholder={'Enter destination address'}
-                  onChange={handleInputChange}
-                  stacked={true}
-                />
-                <ManageInput
-                  id="amount"
-                  value={amount}
-                  label={'Amount'}
-                  placeholder={'Enter amount'}
-                  onChange={handleInputChange}
-                  stacked={true}
-                />
-                <Box display="flex" mt={1}>
-                  <Button
-                    fullWidth
-                    onClick={handleSendCrypto}
-                    disabled={!isDirty}
-                    variant="contained"
-                  >
-                    {t('common.send')}
-                  </Button>
-                </Box>
-                <Box display="flex" mt={1}>
-                  <Button
-                    fullWidth
-                    onClick={() => setIsSend(false)}
-                    variant="outlined"
-                  >
-                    {t('common.cancel')}
-                  </Button>
-                </Box>
-              </>
-            )
+            <Send
+              onCancelClick={handleCancelSend}
+              client={client!}
+              accessToken={accessToken}
+              wallets={wallets}
+            />
           ) : (
             <>
               <Box className={classes.balanceContainer}>

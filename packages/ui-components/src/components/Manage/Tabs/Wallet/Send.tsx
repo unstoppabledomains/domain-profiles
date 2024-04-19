@@ -34,7 +34,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
   },
   asset: {
-    backgroundImage: 'linear-gradient(#62626A, #323234)',
+    backgroundImage: 'linear-gradient(#0655DD, #043893)',
     borderRadius: 9,
     padding: 12,
     maxWidth: '350px',

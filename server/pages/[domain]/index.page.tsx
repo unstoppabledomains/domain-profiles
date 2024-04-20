@@ -1252,7 +1252,6 @@ const DomainProfile = ({
                         (b.totalValueUsdAmt || 0) - (a.totalValueUsdAmt || 0),
                     )}
                   domain={domain}
-                  isOwner={isOwner}
                   isError={isWalletBalanceError}
                 />
               </Grid>
@@ -1260,7 +1259,6 @@ const DomainProfile = ({
                 <DomainWalletTransactions
                   wallets={walletBalances}
                   domain={domain}
-                  isOwner={isOwner}
                   isError={isWalletBalanceError}
                 />
               </Grid>

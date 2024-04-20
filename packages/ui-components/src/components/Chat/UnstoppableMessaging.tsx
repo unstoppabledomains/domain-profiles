@@ -449,6 +449,16 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         if (!web3Context?.web3Deps?.signer) {
           return;
         }
+
+        // if Unstoppable Wallet and the wallet modal isn't yet open, then ensure
+        // that it is opened so that signature can be collected
+        if (web3Context.web3Deps.unstoppableWallet && !walletModalIsOpen) {
+          setWeb3Deps(undefined);
+          setClickedReconnect(true);
+          return;
+        }
+
+        // set flag for connected wallet
         setChatWalletConnected(true);
 
         // perform XMTP setup if required

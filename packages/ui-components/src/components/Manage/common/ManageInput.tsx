@@ -56,7 +56,7 @@ interface ManageInputProps {
     cardOpen: boolean;
     id: string | null;
   };
-  password?: boolean;
+  type?: string;
   setPublicVisibilityValues?: React.Dispatch<
     React.SetStateAction<DomainProfileVisibilityValues>
   > | null;
@@ -86,7 +86,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
   stacked = true,
   maxLength,
   rows,
-  password = false,
+  type = 'text',
   startAdornment = null,
   endAdornment = null,
   classes: classesOverride,
@@ -219,7 +219,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
             minRows={rows}
             maxRows={rows}
             value={value || ''}
-            type={password ? 'password' : undefined}
+            type={type}
             inputProps={{
               'data-testid': `input-${id}`,
               className: !endAdornment && error ? classes.error : '',

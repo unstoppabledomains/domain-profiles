@@ -40,6 +40,33 @@ const useStyles = makeStyles()((theme: Theme) => ({
     maxWidth: '350px',
     width: '100%',
   },
+  assetLogo: {
+    height: '80px',
+    width: '80px',
+    marginTop: '10px',
+  },
+  sendAssetContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  sendAmountContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    height: '113px',
+  },
+  amountInputWrapper: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+  },
+  availableBalance: {
+    textAlign: 'right',
+    fontSize: '13px',
+    marginTop: '2px',
+  },
+  maxButton: {},
 }));
 
 type Props = {
@@ -56,7 +83,7 @@ export const Send: React.FC<Props> = ({
   wallets,
 }) => {
   const [t] = useTranslationContext();
-  const [destinationAddress, setDestinationAddress] = useState('');
+  const [recipientDomainOrAddress, setRecipientDomainOrAddress] = useState('');
   const [asset, setAsset] = useState<TokenEntry>();
   const [amount, setAmount] = useState('');
   const [successfulTxId, setSuccessfulTxId] = useState('');
@@ -75,7 +102,7 @@ export const Send: React.FC<Props> = ({
       accessToken,
       sourceAddress,
       sourceSymbol,
-      destinationAddress,
+      recipientDomainOrAddress,
       {
         type: TokenType.Native,
         amount: parseFloat(amount),
@@ -88,17 +115,28 @@ export const Send: React.FC<Props> = ({
     setIsLoading(false);
   };
 
-  const handleDestinationAddressChange = (id: string, value: string) => {
-    setDestinationAddress(value);
+  const handleMaxClick = () => {
+    handleAmountChange('amount', asset?.balance.toString() || '');
+  };
+
+  const handleRecipientChange = (id: string, value: string) => {
+    setRecipientDomainOrAddress(value);
   };
 
   const handleAmountChange = (id: string, value: string) => {
+    const numberValue = Number(value);
+    if ((isNaN(numberValue) || numberValue < 0) && value !== '.') {
+      return;
+    }
     setAmount(value);
   };
 
   const canSend = () => {
     return (
-      destinationAddress && amount && asset?.walletAddress && asset?.symbol
+      recipientDomainOrAddress &&
+      amount &&
+      asset?.walletAddress &&
+      asset?.symbol
     );
   };
 
@@ -177,24 +215,45 @@ export const Send: React.FC<Props> = ({
       </div>
     );
   }
+  const insufficientBalanceError = parseFloat(amount) > asset.balance;
   return (
     <>
+      <Box className={classes.sendAssetContainer}>
+        <Typography variant="h5">Send {asset.symbol}</Typography>
+        <img src={asset.imageUrl} className={classes.assetLogo} />
+      </Box>
       <ManageInput
-        id="destinationAddress"
-        value={destinationAddress}
-        label={'Destination address'}
-        placeholder={'Enter destination address'}
-        onChange={handleDestinationAddressChange}
+        id="recipientDomainOrAddress"
+        value={recipientDomainOrAddress}
+        label={'Recipient'}
+        placeholder={'Recipient domain or address'}
+        onChange={handleRecipientChange}
         stacked={true}
       />
-      <ManageInput
-        id="amount"
-        value={amount}
-        label={'Amount'}
-        placeholder={'Enter amount'}
-        onChange={handleAmountChange}
-        stacked={true}
-      />
+      <Box className={classes.sendAmountContainer}>
+        <div className={classes.amountInputWrapper}>
+          <ManageInput
+            id="amount"
+            value={amount}
+            label={'Amount'}
+            placeholder={`Amount in ${asset.symbol}`}
+            onChange={handleAmountChange}
+            stacked={true}
+            error={insufficientBalanceError}
+            errorText={insufficientBalanceError ? 'Insufficient balance' : ''}
+            endAdornment={
+              <Button onClick={handleMaxClick} className={classes.maxButton}>
+                Max
+              </Button>
+            }
+          />
+        </div>
+        {insufficientBalanceError ? null : (
+          <Typography variant="subtitle1" className={classes.availableBalance}>
+            Available: {asset.balance.toFixed(5)} {asset.symbol}
+          </Typography>
+        )}
+      </Box>
       <Box display="flex" mt={1}>
         <Button
           fullWidth

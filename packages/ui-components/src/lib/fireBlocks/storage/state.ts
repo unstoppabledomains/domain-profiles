@@ -4,7 +4,7 @@ import {
   BootstrapStatePrefix,
 } from '../../types/fireBlocks';
 
-export const getState = (
+export const getBootstrapState = (
   state: Record<string, Record<string, string>>,
   deviceId = BootstrapStateCurrentKey,
 ): BootstrapState | undefined => {
@@ -15,7 +15,7 @@ export const getState = (
   return undefined;
 };
 
-export const saveState = (
+export const saveBootstrapState = (
   values: BootstrapState,
   state: Record<string, Record<string, string>>,
   setState: (state: Record<string, Record<string, string>>) => void,

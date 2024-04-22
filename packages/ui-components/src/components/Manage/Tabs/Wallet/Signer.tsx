@@ -6,7 +6,6 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useState} from 'react';
-import {useLocalStorage, useSessionStorage} from 'usehooks-ts';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -14,11 +13,11 @@ import {
   getAccessToken,
   getMessageSignature,
 } from '../../../../actions/fireBlocksActions';
+import useFireblocksState from '../../../../hooks/useFireblocksState';
 import {useTranslationContext} from '../../../../lib';
 import {notifyEvent} from '../../../../lib/error';
 import {getFireBlocksClient} from '../../../../lib/fireBlocks/client';
-import {getState} from '../../../../lib/fireBlocks/storage/state';
-import {FireblocksStateKey} from '../../../../lib/types/fireBlocks';
+import {getBootstrapState} from '../../../../lib/fireBlocks/storage/state';
 import {TabHeader} from '../../common/TabHeader';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -58,19 +57,10 @@ export const Signer: React.FC<SignerProps> = ({
   const [isSigning, setIsSigning] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [accessToken, setAccessToken] = useState<string>();
-  const [sessionKeyState, setSessionKeyState] = useSessionStorage<
-    Record<string, Record<string, string>>
-  >(FireblocksStateKey, {});
-  const [persistentKeyState, setPersistentKeyState] = useLocalStorage<
-    Record<string, Record<string, string>>
-  >(FireblocksStateKey, {});
+  const [state, saveState] = useFireblocksState();
 
   // load Fireblocks state on component load
   useEffect(() => {
-    // wait for key state to be available
-    if (!sessionKeyState || !persistentKeyState) {
-      return;
-    }
     void handleLoadClient();
   }, []);
 
@@ -90,18 +80,16 @@ export const Signer: React.FC<SignerProps> = ({
 
   const handleLoadClient = async () => {
     // retrieve and validate key state
-    const sessionState = getState(sessionKeyState);
-    const persistentState = getState(persistentKeyState);
-    const state = sessionState || persistentState;
-    if (!state) {
+    const clientState = getBootstrapState(state);
+    if (!clientState) {
       throw new Error('invalid configuration');
     }
 
     // retrieve an access token
-    const jwtToken = await getAccessToken(state.refreshToken, {
-      deviceId: state.deviceId,
-      state: sessionState ? sessionKeyState : persistentKeyState,
-      saveState: sessionState ? setSessionKeyState : setPersistentKeyState,
+    const jwtToken = await getAccessToken(clientState.refreshToken, {
+      deviceId: clientState.deviceId,
+      state,
+      saveState,
     });
     if (!jwtToken) {
       throw new Error('error retrieving access token');
@@ -115,18 +103,20 @@ export const Signer: React.FC<SignerProps> = ({
     }
 
     // retrieve and validate key state
-    const sessionState = getState(sessionKeyState);
-    const persistentState = getState(persistentKeyState);
-    const state = sessionState || persistentState;
-    if (!state) {
+    const clientState = getBootstrapState(state);
+    if (!clientState) {
       throw new Error('invalid configuration');
     }
 
     // retrieve a new client instance
-    const client = await getFireBlocksClient(state.deviceId, accessToken, {
-      state: sessionState ? sessionKeyState : persistentKeyState,
-      saveState: sessionState ? setSessionKeyState : setPersistentKeyState,
-    });
+    const client = await getFireBlocksClient(
+      clientState.deviceId,
+      accessToken,
+      {
+        state,
+        saveState,
+      },
+    );
 
     notifyEvent(
       'signing message with fireblocks client',

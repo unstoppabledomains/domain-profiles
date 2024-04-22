@@ -4,15 +4,13 @@ import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import {Card, Typography} from '@mui/material/';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
-import {useLocalStorage, useSessionStorage} from 'usehooks-ts';
 
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import useFireblocksState from '../hooks/useFireblocksState';
 import {isDomainValidForManagement} from '../lib';
-import {getState} from '../lib/fireBlocks/storage/state';
 import useTranslationContext from '../lib/i18n';
-import {FireblocksStateKey} from '../lib/types/fireBlocks';
 
 interface Props {
   classes?: {
@@ -58,29 +56,16 @@ const DropDownMenu: React.FC<Props> = ({authDomain, onWalletClicked}) => {
 
   // MPC wallet state
   const [isMpcWallet, setIsMpcWallet] = useState(false);
-
-  const [sessionKeyState] = useSessionStorage<
-    Record<string, Record<string, string>>
-  >(FireblocksStateKey, {});
-  const [persistentKeyState] = useLocalStorage<
-    Record<string, Record<string, string>>
-  >(FireblocksStateKey, {});
+  const [state] = useFireblocksState();
 
   // load Fireblocks state on component load
   useEffect(() => {
-    // wait for key state to be available
-    if (!sessionKeyState || !persistentKeyState) {
-      return;
-    }
     void handleLoadWallet();
   }, []);
 
   const handleLoadWallet = async () => {
     // retrieve and validate key state
-    const sessionState = getState(sessionKeyState);
-    const persistentState = getState(persistentKeyState);
-    const state = sessionState || persistentState;
-    if (state) {
+    if (Object.keys(state).length > 0) {
       setIsMpcWallet(true);
     }
   };

@@ -8,16 +8,15 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
-import {useLocalStorage, useSessionStorage} from 'usehooks-ts';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {sendCrypto} from '../../../../actions/fireBlocksActions';
+import useFireblocksState from '../../../../hooks/useFireblocksState';
 import type {SerializedWalletBalance} from '../../../../lib';
 import {useTranslationContext} from '../../../../lib';
 import {getFireBlocksClient} from '../../../../lib/fireBlocks/client';
-import {getState} from '../../../../lib/fireBlocks/storage/state';
-import {FireblocksStateKey} from '../../../../lib/types/fireBlocks';
+import {getBootstrapState} from '../../../../lib/fireBlocks/storage/state';
 import {TokensPortfolio} from '../../../Wallet/TokensPortfolio';
 import ManageInput from '../../common/ManageInput';
 
@@ -73,12 +72,7 @@ export const Client: React.FC<ClientProps> = ({accessToken, wallets}) => {
 
   // wallet state variables
   const [client, setClient] = useState<IFireblocksNCW>();
-  const [sessionKeyState, setSessionKeyState] = useSessionStorage<
-    Record<string, Record<string, string>>
-  >(FireblocksStateKey, {});
-  const [persistentKeyState, setPersistentKeyState] = useLocalStorage<
-    Record<string, Record<string, string>>
-  >(FireblocksStateKey, {});
+  const [state, saveState] = useFireblocksState();
 
   // component state variables
   const [isLoaded, setIsLoaded] = useState(false);
@@ -97,19 +91,17 @@ export const Client: React.FC<ClientProps> = ({accessToken, wallets}) => {
   }, []);
 
   const handleLoadClient = async () => {
-    // retrieve and validate key state
-    const sessionState = getState(sessionKeyState);
-    const persistentState = getState(persistentKeyState);
-    const state = sessionState || persistentState;
-    if (!state) {
+    // retrieve client state
+    const clientState = getBootstrapState(state);
+    if (!clientState) {
       throw new Error('invalid configuration');
     }
 
     // initialize and set the client
     setClient(
-      await getFireBlocksClient(state.deviceId, accessToken, {
-        state: sessionState ? sessionKeyState : persistentKeyState,
-        saveState: sessionState ? setSessionKeyState : setPersistentKeyState,
+      await getFireBlocksClient(clientState.deviceId, accessToken, {
+        state,
+        saveState,
       }),
     );
 

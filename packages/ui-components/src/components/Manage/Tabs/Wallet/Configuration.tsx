@@ -12,7 +12,6 @@ import type {Theme} from '@mui/material/styles';
 import Bluebird from 'bluebird';
 import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useState} from 'react';
-import {useLocalStorage, useSessionStorage} from 'usehooks-ts';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -26,6 +25,7 @@ import {
   sendBootstrapCode,
 } from '../../../../actions/fireBlocksActions';
 import {getWalletPortfolio} from '../../../../actions/walletActions';
+import useFireblocksState from '../../../../hooks/useFireblocksState';
 import type {SerializedWalletBalance} from '../../../../lib';
 import {useTranslationContext} from '../../../../lib';
 import {notifyEvent} from '../../../../lib/error';
@@ -34,9 +34,11 @@ import {
   initializeClient,
   signTransaction,
 } from '../../../../lib/fireBlocks/client';
-import {getState, saveState} from '../../../../lib/fireBlocks/storage/state';
+import {
+  getBootstrapState,
+  saveBootstrapState,
+} from '../../../../lib/fireBlocks/storage/state';
 import type {AccountAsset} from '../../../../lib/types/fireBlocks';
-import {FireblocksStateKey} from '../../../../lib/types/fireBlocks';
 import {DomainProfileTabType} from '../../DomainProfile';
 import ManageInput from '../../common/ManageInput';
 import type {ManageTabProps} from '../../common/types';
@@ -97,12 +99,7 @@ export const Configuration: React.FC<
 
   // wallet key management state
   const [persistKeys, setPersistKeys] = useState(false);
-  const [sessionKeyState, setSessionKeyState] = useSessionStorage<
-    Record<string, Record<string, string>>
-  >(FireblocksStateKey, {});
-  const [persistentKeyState, setPersistentKeyState] = useLocalStorage<
-    Record<string, Record<string, string>>
-  >(FireblocksStateKey, {});
+  const [state, saveState] = useFireblocksState(persistKeys);
   const [progressPct, setProgressPct] = useState(0);
 
   // wallet recovery state variables
@@ -207,6 +204,7 @@ export const Configuration: React.FC<
     errorMessage,
     progressPct,
     isLoaded,
+    persistKeys,
   ]);
 
   const loadMpcPortfolios = async () => {
@@ -261,15 +259,14 @@ export const Configuration: React.FC<
 
   const loadFromState = async () => {
     // retrieve existing state from session or local storage if available
-    const existingState =
-      getState(sessionKeyState) || getState(persistentKeyState);
+    const existingState = getBootstrapState(state);
 
     // check state for device ID and refresh token
     if (existingState?.deviceId && existingState?.refreshToken) {
       const tokens = await getAccessToken(existingState.refreshToken, {
         deviceId: existingState.deviceId,
-        state: persistKeys ? persistentKeyState : sessionKeyState,
-        saveState: persistKeys ? setPersistentKeyState : setSessionKeyState,
+        state,
+        saveState,
       });
       setAccessJwt(tokens?.accessToken);
       setConfigState(WalletConfigState.Complete);
@@ -306,9 +303,8 @@ export const Configuration: React.FC<
     setEmailAddress(undefined);
     setRecoveryPhrase(undefined);
 
-    // clear storage state
-    setSessionKeyState({});
-    setPersistentKeyState({});
+    // clear all storage state
+    saveState({});
 
     // reset configuration state
     setConfigState(WalletConfigState.PasswordEntry);
@@ -397,8 +393,8 @@ export const Configuration: React.FC<
     // retrieve and initialize the Fireblocks client
     setProgressPct(3);
     const fbClientForInit = await getFireBlocksClient(deviceId, bootstrapJwt, {
-      state: persistKeys ? persistentKeyState : sessionKeyState,
-      saveState: persistKeys ? setPersistentKeyState : setSessionKeyState,
+      state,
+      saveState,
     });
     const isInitialized = await initializeClient(fbClientForInit, {
       bootstrapJwt,
@@ -438,8 +434,8 @@ export const Configuration: React.FC<
     // sign the transaction ID with Fireblocks client
     setProgressPct(71);
     const fbClientForTx = await getFireBlocksClient(deviceId, bootstrapJwt, {
-      state: persistKeys ? persistentKeyState : sessionKeyState,
-      saveState: persistKeys ? setPersistentKeyState : setSessionKeyState,
+      state,
+      saveState,
     });
     const txSignature = await signTransaction(fbClientForTx, tx.transactionId);
     if (!txSignature) {
@@ -469,18 +465,14 @@ export const Configuration: React.FC<
 
     // store the wallet service JWT tokens at desired persistence level
     setProgressPct(100);
-    const keyState = persistKeys ? persistentKeyState : sessionKeyState;
-    const setKeyState = persistKeys
-      ? setPersistentKeyState
-      : setSessionKeyState;
-    saveState(
+    saveBootstrapState(
       {
         bootstrapToken: walletServiceTokens.bootstrapToken,
         refreshToken: walletServiceTokens.refreshToken,
         deviceId,
       },
-      keyState,
-      setKeyState,
+      state,
+      saveState,
     );
 
     // set component state

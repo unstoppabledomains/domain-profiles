@@ -61,6 +61,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   portfolioContainer: {
     display: 'flex',
+    marginTop: theme.spacing(-2),
     marginBottom: theme.spacing(-2),
   },
   actionIcon: {
@@ -70,6 +71,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   actionText: {
     color: theme.palette.primary.main,
+  },
+  tabList: {
+    marginTop: theme.spacing(-3),
+    marginRight: theme.spacing(-4),
   },
   tabContentItem: {
     marginLeft: theme.spacing(-3),
@@ -214,6 +219,7 @@ export const Client: React.FC<ClientProps> = ({accessToken, wallets}) => {
                 orientation="horizontal"
                 onChange={handleTabChange}
                 variant="fullWidth"
+                className={classes.tabList}
               >
                 <Tab
                   icon={<PaidOutlinedIcon />}

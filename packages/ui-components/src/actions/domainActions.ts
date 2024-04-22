@@ -105,6 +105,7 @@ export const getTransactionsByAddress = async (
     `/user/${address}/transactions?${QueryString.stringify({
       cursor,
       symbols: symbol,
+      forceRefresh: Date.now(),
     })}`,
     {
       host: config.PROFILE.HOST_URL,

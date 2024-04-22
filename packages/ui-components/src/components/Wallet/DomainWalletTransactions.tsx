@@ -255,7 +255,7 @@ export const DomainWalletTransactions: React.FC<
       ).length > 0;
     const isNft = tx.type === TokenType.Nft;
     const isErc20 = tx.type === TokenType.Erc20;
-    const isXfer = tx.value > 0;
+    const isXfer = Math.abs(tx.value) > 0;
     const actionName =
       isSender && isXfer
         ? t('activity.sent')
@@ -372,13 +372,13 @@ export const DomainWalletTransactions: React.FC<
             justifyContent="right"
             justifyItems="right"
           >
-            {!isNft && tx.value > 0 && (
+            {!isNft && Math.abs(tx.value) > 0 && (
               <Typography
                 variant="caption"
                 className={isSender ? classes.txSent : classes.txReceived}
               >
                 {isSender ? '-' : '+'}
-                {numeral(tx.value).format('0,0.[0000]')}{' '}
+                {numeral(Math.abs(tx.value)).format('0,0.[0000]')}{' '}
                 {isErc20 ? tx.method.toUpperCase() : tx.symbol}
               </Typography>
             )}

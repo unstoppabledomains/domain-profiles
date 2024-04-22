@@ -74,27 +74,6 @@ export const getDomainRankings = async (
   );
 };
 
-export const getDomainTransactions = async (
-  domain: string,
-  symbol: string,
-  cursor?: string,
-): Promise<SerializedTxns | undefined> => {
-  // retrieve badge data from profile API
-  const data = await fetchApi(
-    `/public/${domain}/transactions?${QueryString.stringify({
-      symbols: symbol,
-      cursor,
-    })}`,
-    {
-      host: config.PROFILE.HOST_URL,
-    },
-  );
-  if (!data || !data[symbol.toUpperCase()]) {
-    return;
-  }
-  return data[symbol.toUpperCase()];
-};
-
 export const getEnsDomainStatus = async (
   domain: string,
 ): Promise<EnsDomainStatusResponse> => {
@@ -113,6 +92,52 @@ export const getStrictReverseResolution = async (
     },
   );
   return resolutionResponse?.name;
+};
+
+export const getTransactionsByAddress = async (
+  address: string,
+  accessToken: string,
+  symbol: string,
+  cursor?: string,
+): Promise<SerializedTxns | undefined> => {
+  // retrieve transaction data for this address
+  const data = await fetchApi(
+    `/user/${address}/transactions?${QueryString.stringify({
+      cursor,
+      symbols: symbol,
+    })}`,
+    {
+      host: config.PROFILE.HOST_URL,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+  if (!data || !data[symbol.toUpperCase()]) {
+    return;
+  }
+  return data[symbol.toUpperCase()];
+};
+
+export const getTransactionsByDomain = async (
+  domain: string,
+  symbol: string,
+  cursor?: string,
+): Promise<SerializedTxns | undefined> => {
+  // retrieve transaction data for this domain
+  const data = await fetchApi(
+    `/public/${domain}/transactions?${QueryString.stringify({
+      symbols: symbol,
+      cursor,
+    })}`,
+    {
+      host: config.PROFILE.HOST_URL,
+    },
+  );
+  if (!data || !data[symbol.toUpperCase()]) {
+    return;
+  }
+  return data[symbol.toUpperCase()];
 };
 
 export const getVerificationMessage = async (

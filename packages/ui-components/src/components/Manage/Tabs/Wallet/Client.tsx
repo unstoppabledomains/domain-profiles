@@ -1,9 +1,15 @@
 import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import HistoryIcon from '@mui/icons-material/History';
+import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import SendIcon from '@mui/icons-material/Send';
+import TabContext from '@mui/lab/TabContext';
+import TabList from '@mui/lab/TabList';
+import TabPanel from '@mui/lab/TabPanel';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
@@ -15,6 +21,7 @@ import type {SerializedWalletBalance} from '../../../../lib';
 import {useTranslationContext} from '../../../../lib';
 import {getFireBlocksClient} from '../../../../lib/fireBlocks/client';
 import {getBootstrapState} from '../../../../lib/fireBlocks/storage/state';
+import {DomainWalletTransactions} from '../../../Wallet';
 import {TokensPortfolio} from '../../../Wallet/TokensPortfolio';
 import {Send} from './Send';
 
@@ -64,6 +71,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
   actionText: {
     color: theme.palette.primary.main,
   },
+  tabContentItem: {
+    marginLeft: theme.spacing(-3),
+    marginRight: theme.spacing(-3),
+  },
 }));
 
 export const Client: React.FC<ClientProps> = ({accessToken, wallets}) => {
@@ -77,6 +88,7 @@ export const Client: React.FC<ClientProps> = ({accessToken, wallets}) => {
   // component state variables
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSend, setIsSend] = useState(false);
+  const [tabValue, setTabValue] = useState(ClientTabType.Portfolio);
 
   useEffect(() => {
     void handleLoadClient();
@@ -99,6 +111,11 @@ export const Client: React.FC<ClientProps> = ({accessToken, wallets}) => {
 
     // loading complete
     setIsLoaded(true);
+  };
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+    const tv = newValue as ClientTabType;
+    setTabValue(tv);
   };
 
   const handleClickedSend = () => {
@@ -133,7 +150,7 @@ export const Client: React.FC<ClientProps> = ({accessToken, wallets}) => {
               wallets={wallets}
             />
           ) : (
-            <>
+            <TabContext value={tabValue as ClientTabType}>
               <Box className={classes.balanceContainer}>
                 <Typography variant="h3">
                   {wallets
@@ -175,9 +192,43 @@ export const Client: React.FC<ClientProps> = ({accessToken, wallets}) => {
                 </Box>
               </Box>
               <Box className={classes.portfolioContainer}>
-                <TokensPortfolio wallets={wallets} isOwner={true} />
+                <TabPanel
+                  value={ClientTabType.Portfolio}
+                  className={classes.tabContentItem}
+                >
+                  <TokensPortfolio wallets={wallets} isOwner={true} />
+                </TabPanel>
+                <TabPanel
+                  value={ClientTabType.Transactions}
+                  className={classes.tabContentItem}
+                >
+                  <DomainWalletTransactions
+                    id="unstoppable-wallet"
+                    wallets={wallets}
+                    isOwner={true}
+                    accessToken={accessToken}
+                  />
+                </TabPanel>
               </Box>
-            </>
+              <TabList
+                orientation="horizontal"
+                onChange={handleTabChange}
+                variant="fullWidth"
+              >
+                <Tab
+                  icon={<PaidOutlinedIcon />}
+                  value={ClientTabType.Portfolio}
+                  label={t('tokensPortfolio.title')}
+                  iconPosition="start"
+                />
+                <Tab
+                  icon={<HistoryIcon />}
+                  value={ClientTabType.Transactions}
+                  label={t('activity.title')}
+                  iconPosition="start"
+                />
+              </TabList>
+            </TabContext>
           )}
         </Box>
       ) : (
@@ -193,3 +244,8 @@ export type ClientProps = {
   accessToken: string;
   wallets: SerializedWalletBalance[];
 };
+
+export enum ClientTabType {
+  Portfolio = 'portfolio',
+  Transactions = 'txns',
+}

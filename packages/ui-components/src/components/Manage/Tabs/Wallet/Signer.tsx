@@ -211,6 +211,7 @@ export const Signer: React.FC<SignerProps> = ({
         <Button
           className={classes.button}
           fullWidth
+          disabled={isSigning}
           variant="outlined"
           onClick={handleClickReject}
         >

@@ -5,7 +5,7 @@ import config from '@unstoppabledomains/config';
 import type {TokenType} from '../lib';
 import {fetchApi} from '../lib';
 import {notifyEvent} from '../lib/error';
-import {saveState} from '../lib/fireBlocks/storage/state';
+import {saveBootstrapState} from '../lib/fireBlocks/storage/state';
 import {sleep} from '../lib/sleep';
 import type {
   AccountAsset,
@@ -65,7 +65,7 @@ export const getAccessToken = async (
     });
 
     if (opts) {
-      saveState(
+      saveBootstrapState(
         {
           bootstrapToken: newTokens.bootstrapToken,
           refreshToken: newTokens.refreshToken,

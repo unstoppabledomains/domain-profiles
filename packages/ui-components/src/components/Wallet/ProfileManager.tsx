@@ -19,6 +19,7 @@ export type ManagerProps = {
   domain: string;
   ownerAddress: string;
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;
+  saveComplete?: boolean;
   saveClicked: boolean;
   setSaveClicked: (value: boolean) => void;
   onSignature: (signature: string, expiry: string) => void;
@@ -26,6 +27,7 @@ export type ManagerProps = {
   useLocalPushKey?: boolean;
   useLocalXmtpKey?: boolean;
   forceWalletConnected?: boolean;
+  closeAfterSignature?: boolean;
 };
 
 export const ONE_WEEK = 60 * 60 * 24 * 7 * 1000;
@@ -34,11 +36,13 @@ export const ProfileManager: React.FC<ManagerProps> = ({
   domain,
   ownerAddress,
   setWeb3Deps,
+  saveComplete,
   saveClicked,
   setSaveClicked,
   onSignature,
   onFailed,
   forceWalletConnected,
+  closeAfterSignature,
   useLocalXmtpKey = true,
   useLocalPushKey = false,
 }) => {
@@ -85,6 +89,12 @@ export const ProfileManager: React.FC<ManagerProps> = ({
   }, [web3Context, messageResponse]);
 
   useEffect(() => {
+    if (saveComplete) {
+      setAccessWalletModalIsOpen(false);
+    }
+  }, [saveComplete]);
+
+  useEffect(() => {
     // always require signature and expiry
     if (!signature || !expiry) {
       return;
@@ -102,6 +112,11 @@ export const ProfileManager: React.FC<ManagerProps> = ({
     setSaveClicked(false);
     setSignature(undefined);
     setExpiry(undefined);
+
+    // optionally close window after signature
+    if (closeAfterSignature) {
+      setAccessWalletModalIsOpen(false);
+    }
 
     // store signature value on local device
     localStorage.setItem(getDomainSignatureValueKey(domain), signature);

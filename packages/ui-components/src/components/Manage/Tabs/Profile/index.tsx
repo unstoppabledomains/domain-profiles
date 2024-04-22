@@ -604,6 +604,7 @@ export const Profile: React.FC<ManageTabProps> = ({
         saveClicked={fireRequest}
         setSaveClicked={setFireRequest}
         onSignature={handleProfileData}
+        closeAfterSignature={true}
       />
     </Box>
   );

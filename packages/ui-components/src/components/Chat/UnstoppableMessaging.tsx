@@ -449,6 +449,16 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         if (!web3Context?.web3Deps?.signer) {
           return;
         }
+
+        // if Unstoppable Wallet and the wallet modal isn't yet open, then ensure
+        // that it is opened so that signature can be collected
+        if (web3Context.web3Deps.unstoppableWallet && !walletModalIsOpen) {
+          setWeb3Deps(undefined);
+          setClickedReconnect(true);
+          return;
+        }
+
+        // set flag for connected wallet
         setChatWalletConnected(true);
 
         // perform XMTP setup if required
@@ -577,6 +587,8 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       });
       setConfigState(ConfigurationState.Error);
       return;
+    } finally {
+      setWalletModalIsOpen(false);
     }
 
     // remove the modal from view
@@ -849,7 +861,9 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       setSignatureInProgress(MessagingSignatureType.NewUser);
     } else if (!xmtpKey || initChatOptions) {
       // start account setup for XMTP
-      void initChatAccounts(initChatOptions || {skipPush: true});
+      if (!signatureInProgress) {
+        void initChatAccounts(initChatOptions || {skipPush: true});
+      }
     } else {
       // clear new message flag and set last read timestamp
       setIsNewMessage(false);
@@ -1045,12 +1059,12 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
             setBlockedTopics={setBlockedTopics}
             setWeb3Deps={setWeb3Deps}
             onClose={handleClosePush}
-            onInitPushAccount={() =>
-              initChatAccounts({
+            onInitPushAccount={() => {
+              return initChatAccounts({
                 skipXmtp: true,
                 skipPush: false,
-              })
-            }
+              });
+            }}
           />
           {!disableSupportBubble && (
             <SupportBubble

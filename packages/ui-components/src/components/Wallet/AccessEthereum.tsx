@@ -202,7 +202,7 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
     // initialize a react signature UX component that can be called back
     // by a signature request hook
     const address = addresses[0];
-    const reactSigner = new ReactSigner(address, setUdConfigMessage, onClose);
+    const reactSigner = new ReactSigner(address, setUdConfigMessage);
 
     // raise success events
     onComplete({

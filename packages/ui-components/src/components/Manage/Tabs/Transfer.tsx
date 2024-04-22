@@ -383,6 +383,7 @@ export const Transfer: React.FC<ManageTabProps> = ({
               domain={domain}
               ownerAddress={address}
               setWeb3Deps={setWeb3Deps}
+              saveComplete={!isSaving}
               saveClicked={saveClicked}
               setSaveClicked={setSaveClicked}
               onSignature={handleRecordUpdate}

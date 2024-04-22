@@ -416,7 +416,7 @@ export type SerializedTx = {
     link: string;
     label?: string;
   };
-  type: 'nft' | 'native' | 'erc20';
+  type: TokenType;
   imageUrl?: string;
   value: number;
   gas: number;
@@ -474,7 +474,7 @@ export type SerializedWalletNftCollection = {
 };
 
 export type SerializedWalletToken = {
-  type: 'native' | 'erc20';
+  type: TokenType.Erc20 | TokenType.Native;
   address: string;
   symbol: string;
   gasCurrency: string;
@@ -517,6 +517,12 @@ export type TelegramUserInfo = {
   kind: DomainProfileSocialMedia.Telegram;
   userName: string;
 } | null;
+
+export enum TokenType {
+  Native = 'native',
+  Erc20 = 'erc20',
+  Nft = 'nft',
+}
 
 export type TwitterUserInfo = {
   kind: DomainProfileSocialMedia.Twitter;

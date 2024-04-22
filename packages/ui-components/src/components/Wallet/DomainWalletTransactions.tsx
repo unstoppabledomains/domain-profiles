@@ -22,7 +22,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getDomainTransactions} from '../../actions';
 import type {CurrenciesType, SerializedTx} from '../../lib';
-import {WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
+import {TokenType, WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
 import {CryptoIcon} from '../Image';
@@ -234,8 +234,8 @@ export const DomainWalletTransactions: React.FC<
       (wallets || []).filter(
         w => w.address.toLowerCase() === tx.from?.address.toLowerCase(),
       ).length > 0;
-    const isNft = tx.type === 'nft';
-    const isErc20 = tx.type === 'erc20';
+    const isNft = tx.type === TokenType.Nft;
+    const isErc20 = tx.type === TokenType.Erc20;
     const isXfer = tx.value > 0;
     const actionName =
       isSender && isXfer

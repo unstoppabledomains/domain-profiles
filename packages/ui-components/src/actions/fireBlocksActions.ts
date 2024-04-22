@@ -2,6 +2,7 @@ import Bluebird from 'bluebird';
 
 import config from '@unstoppabledomains/config';
 
+import type {TokenType} from '../lib';
 import {fetchApi} from '../lib';
 import {notifyEvent} from '../lib/error';
 import {saveBootstrapState} from '../lib/fireBlocks/storage/state';
@@ -391,7 +392,7 @@ export const sendCrypto = async (
   sourceSymbol: string,
   destinationAddress: string,
   crypto: {
-    type: 'native' | 'token' | 'nft';
+    type: TokenType;
     amount: number;
     id?: string;
   },

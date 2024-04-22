@@ -556,7 +556,7 @@ export const Configuration: React.FC<
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 disabled={isSaving}
-                password={true}
+                type="password"
                 stacked={false}
               />
             </Box>

@@ -27,15 +27,15 @@ export default function getDefaultConfig(): Config {
         ENS_CONTRACT_ADDRESS: '0x114d4603199df73e7d157787f8778e21fcd13066',
       },
       MATIC: {
-        CHAIN_ID: 80001,
-        NETWORK_NAME: 'mumbai', // testnet
+        CHAIN_ID: 80002,
+        NETWORK_NAME: 'amoy', // testnet
         JSON_RPC_API_URL:
-          'https://polygon-mumbai.infura.io/v3/a58ebb0c76a64c149e35145f85f82382',
+          'https://polygon-amoy.infura.io/v3/a58ebb0c76a64c149e35145f85f82382',
         BLOCK_EXPLORER_NAME: 'polygonscan',
-        BLOCK_EXPLORER_BASE_URL: 'https://mumbai.polygonscan.com',
+        BLOCK_EXPLORER_BASE_URL: 'https://amoy.polygonscan.com',
         DISABLE_CONTRACTS_CACHE: true,
         PROXY_READER_ADDRESS: '0x332A8191905fA8E6eeA7350B5799F225B8ed30a9',
-        OPEN_SEA_BASE_URL: 'https://testnets.opensea.io/assets/mumbai/',
+        OPEN_SEA_BASE_URL: 'https://testnets.opensea.io/assets/amoy/',
       },
     },
     UD_LOGO_URL:

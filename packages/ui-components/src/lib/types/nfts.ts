@@ -4,7 +4,7 @@ export enum Network {
   Mainnet = '1',
   Goerli = '5',
   Polygon = '137',
-  Mumbai = '80001',
+  Amoy = '80002',
   Binance = '56',
   Avalanche = '43114',
   Fantom = '250',

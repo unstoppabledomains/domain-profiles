@@ -28,12 +28,12 @@ export type EthereumBlockchainConfig = BaseBlockchainConfig & {
 };
 
 export type MaticBlockchainConfig = BaseBlockchainConfig & {
-  CHAIN_ID: 80001 | 137 | 1337;
-  NETWORK_NAME: 'mumbai' | 'polygon-mainnet' | 'local';
+  CHAIN_ID: 80002 | 137 | 1337;
+  NETWORK_NAME: 'amoy' | 'polygon-mainnet' | 'local';
   PROXY_READER_ADDRESS: string;
   OPEN_SEA_BASE_URL:
     | 'https://opensea.io/assets/matic/'
-    | 'https://testnets.opensea.io/assets/mumbai/';
+    | 'https://testnets.opensea.io/assets/amoy/';
 };
 
 export type Config = {

@@ -107,9 +107,7 @@ export const Configuration: React.FC<
   const [bootstrapCode, setBootstrapCode] = useState<string>();
   const [recoveryPhrase, setRecoveryPhrase] = useState<string>();
   const [emailAddress, setEmailAddress] = useState<string>();
-  const [mpcPortfolios, setMpcPortfolios] = useState<SerializedWalletBalance[]>(
-    [],
-  );
+  const [mpcWallets, setMpcWallets] = useState<SerializedWalletBalance[]>([]);
 
   useEffect(() => {
     setIsLoaded(false);
@@ -119,8 +117,12 @@ export const Configuration: React.FC<
 
   useEffect(() => {
     if (configState === WalletConfigState.Complete && accessJwt) {
+      // update state
       onUpdate(DomainProfileTabType.Wallet, {accessToken: accessJwt});
-      void loadMpcPortfolios();
+      setIsLoaded(false);
+
+      // retrieve the MPC wallets on page load
+      void loadMpcWallets();
     }
   }, [configState, accessJwt]);
 
@@ -207,13 +209,10 @@ export const Configuration: React.FC<
     persistKeys,
   ]);
 
-  const loadMpcPortfolios = async () => {
+  const loadMpcWallets = async () => {
     if (!accessJwt) {
       return;
     }
-
-    // set progress
-    setIsLoaded(false);
 
     // retrieve the accounts associated with the access token
     const accounts = await getAccounts(accessJwt);
@@ -253,7 +252,7 @@ export const Configuration: React.FC<
     });
 
     // display rendered wallets
-    setMpcPortfolios(wallets);
+    setMpcWallets(wallets);
     setIsLoaded(true);
   };
 
@@ -580,7 +579,11 @@ export const Configuration: React.FC<
               ) : (
                 mode === 'portfolio' &&
                 accessJwt && (
-                  <Client wallets={mpcPortfolios} accessToken={accessJwt} />
+                  <Client
+                    wallets={mpcWallets}
+                    accessToken={accessJwt}
+                    onRefresh={loadMpcWallets}
+                  />
                 )
               )}
             </Box>

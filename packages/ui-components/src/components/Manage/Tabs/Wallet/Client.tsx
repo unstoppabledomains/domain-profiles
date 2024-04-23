@@ -82,7 +82,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const Client: React.FC<ClientProps> = ({accessToken, wallets}) => {
+export const Client: React.FC<ClientProps> = ({
+  accessToken,
+  wallets,
+  onRefresh,
+}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
 
@@ -118,9 +122,13 @@ export const Client: React.FC<ClientProps> = ({accessToken, wallets}) => {
     setIsLoaded(true);
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+  const handleTabChange = async (
+    _event: React.SyntheticEvent,
+    newValue: string,
+  ) => {
     const tv = newValue as ClientTabType;
     setTabValue(tv);
+    await onRefresh();
   };
 
   const handleClickedSend = () => {
@@ -249,6 +257,7 @@ export const Client: React.FC<ClientProps> = ({accessToken, wallets}) => {
 export type ClientProps = {
   accessToken: string;
   wallets: SerializedWalletBalance[];
+  onRefresh: () => Promise<void>;
 };
 
 export enum ClientTabType {

@@ -9,15 +9,9 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {
-  getAccessToken,
-  getMessageSignature,
-} from '../../../../actions/fireBlocksActions';
-import useFireblocksState from '../../../../hooks/useFireblocksState';
+import useFireblocksSigner from '../../../../hooks/useFireblocksSigner';
 import {useTranslationContext} from '../../../../lib';
 import {notifyEvent} from '../../../../lib/error';
-import {getFireBlocksClient} from '../../../../lib/fireBlocks/client';
-import {getBootstrapState} from '../../../../lib/fireBlocks/storage/state';
 import {TabHeader} from '../../common/TabHeader';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -56,104 +50,37 @@ export const Signer: React.FC<SignerProps> = ({
   const [t] = useTranslationContext();
   const [isSigning, setIsSigning] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [accessToken, setAccessToken] = useState<string>();
-  const [state, saveState] = useFireblocksState();
-
-  // load Fireblocks state on component load
-  useEffect(() => {
-    void handleLoadClient();
-  }, []);
+  const [fireblocksSigner, signerReady] = useFireblocksSigner();
 
   // sign requested message when button is clicked and the Fireblocks
   // client has been properly initialized
   useEffect(() => {
-    if (!isSigning || !accessToken) {
+    if (!isSigning || !signerReady) {
       return;
     }
     void handleSignature();
-  }, [isSigning, accessToken]);
+  }, [isSigning, signerReady]);
 
   // clear the success flag for new message
   useEffect(() => {
     setIsSuccess(false);
   }, [message]);
 
-  const handleLoadClient = async () => {
-    // retrieve and validate key state
-    const clientState = getBootstrapState(state);
-    if (!clientState) {
-      throw new Error('invalid configuration');
-    }
-
-    // retrieve an access token
-    const jwtToken = await getAccessToken(clientState.refreshToken, {
-      deviceId: clientState.deviceId,
-      state,
-      saveState,
-    });
-    if (!jwtToken) {
-      throw new Error('error retrieving access token');
-    }
-    setAccessToken(jwtToken.accessToken);
-  };
-
   const handleSignature = async () => {
-    if (!accessToken) {
+    if (!fireblocksSigner) {
       return;
     }
 
-    // retrieve and validate key state
-    const clientState = getBootstrapState(state);
-    if (!clientState) {
-      throw new Error('invalid configuration');
+    // sign with fireblocks client
+    let signatureResult: string | undefined;
+    try {
+      signatureResult = await fireblocksSigner(message, address);
+    } catch (e) {
+      notifyEvent(e, 'error', 'Wallet', 'Signature', {
+        msg: 'error signing message',
+      });
     }
 
-    // retrieve a new client instance
-    const client = await getFireBlocksClient(
-      clientState.deviceId,
-      accessToken,
-      {
-        state,
-        saveState,
-      },
-    );
-
-    notifyEvent(
-      'signing message with fireblocks client',
-      'info',
-      'Wallet',
-      'Signature',
-      {
-        meta: {
-          deviceId: client.getPhysicalDeviceId(),
-          message,
-        },
-      },
-    );
-
-    // request an MPC signature of the desired message string
-    const signatureResult = await getMessageSignature(
-      accessToken,
-      message,
-      async (txId: string) => {
-        await client.signTransaction(txId);
-      },
-      {
-        address,
-        onStatusChange: (m: string) => {
-          notifyEvent(m, 'info', 'Wallet', 'Signature');
-        },
-      },
-    );
-
-    // indicate complete with successful signature result
-    notifyEvent('signature successful', 'info', 'Wallet', 'Signature', {
-      meta: {
-        address,
-        message,
-        signature: signatureResult,
-      },
-    });
     onComplete(signatureResult);
     setIsSuccess(true);
     setIsSigning(false);

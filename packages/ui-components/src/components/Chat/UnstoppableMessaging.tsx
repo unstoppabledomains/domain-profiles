@@ -452,7 +452,10 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
 
         // if Unstoppable Wallet and the wallet modal isn't yet open, then ensure
         // that it is opened so that signature can be collected
-        if (web3Context.web3Deps.unstoppableWallet && !walletModalIsOpen) {
+        if (
+          web3Context.web3Deps.unstoppableWallet?.promptForSignatures &&
+          !walletModalIsOpen
+        ) {
           setWeb3Deps(undefined);
           setClickedReconnect(true);
           return;
@@ -817,7 +820,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     if (web3Dependencies?.address) {
       setWeb3Deps(web3Dependencies);
       setChatAddress(web3Dependencies.address);
-      if (!web3Dependencies?.unstoppableWallet) {
+      if (!web3Dependencies?.unstoppableWallet?.promptForSignatures) {
         setWalletModalIsOpen(false);
       }
       if (signatureInProgress) {

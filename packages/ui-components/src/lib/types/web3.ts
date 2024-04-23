@@ -7,5 +7,6 @@ export interface Web3Dependencies {
   provider?: any;
   unstoppableWallet?: {
     addresses: string[];
+    promptForSignatures: boolean;
   };
 }

@@ -189,7 +189,7 @@ export const ProfileManager: React.FC<ManagerProps> = ({
     setMessageResponse(responseBody);
     setAccessWalletModalIsOpen(
       !web3Context.web3Deps ||
-        web3Context.web3Deps?.unstoppableWallet !== undefined,
+        web3Context.web3Deps?.unstoppableWallet?.promptForSignatures === true,
     );
   };
 
@@ -216,7 +216,7 @@ export const ProfileManager: React.FC<ManagerProps> = ({
     web3Dependencies?: Web3Dependencies,
   ) => {
     setWeb3Deps(web3Dependencies);
-    if (web3Dependencies?.unstoppableWallet) {
+    if (web3Dependencies?.unstoppableWallet?.promptForSignatures) {
       return;
     }
     setAccessWalletModalIsOpen(false);

@@ -74,6 +74,7 @@ export const getFireBlocksClient = async (
     eventsHandler,
     secureStorageProvider: secureKeyStorageProvider,
     storageProvider: unsecureStorageProvider,
+    env: 'production',
   };
 
   return await FireblocksNCWFactory(fbOptions);

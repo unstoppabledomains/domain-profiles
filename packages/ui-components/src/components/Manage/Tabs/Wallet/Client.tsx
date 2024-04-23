@@ -9,6 +9,7 @@ import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import Grid from '@mui/material/Grid';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -63,6 +64,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     marginTop: theme.spacing(-2),
     marginBottom: theme.spacing(-2),
+    width: '100%',
   },
   actionIcon: {
     color: theme.palette.primary.main,
@@ -204,25 +206,27 @@ export const Client: React.FC<ClientProps> = ({
                   </Typography>
                 </Box>
               </Box>
-              <Box className={classes.portfolioContainer}>
-                <TabPanel
-                  value={ClientTabType.Portfolio}
-                  className={classes.tabContentItem}
-                >
-                  <TokensPortfolio wallets={wallets} isOwner={true} />
-                </TabPanel>
-                <TabPanel
-                  value={ClientTabType.Transactions}
-                  className={classes.tabContentItem}
-                >
-                  <DomainWalletTransactions
-                    id="unstoppable-wallet"
-                    wallets={wallets}
-                    isOwner={true}
-                    accessToken={accessToken}
-                  />
-                </TabPanel>
-              </Box>
+              <Grid container className={classes.portfolioContainer}>
+                <Grid item xs={12}>
+                  <TabPanel
+                    value={ClientTabType.Portfolio}
+                    className={classes.tabContentItem}
+                  >
+                    <TokensPortfolio wallets={wallets} isOwner={true} />
+                  </TabPanel>
+                  <TabPanel
+                    value={ClientTabType.Transactions}
+                    className={classes.tabContentItem}
+                  >
+                    <DomainWalletTransactions
+                      id="unstoppable-wallet"
+                      wallets={wallets}
+                      isOwner={true}
+                      accessToken={accessToken}
+                    />
+                  </TabPanel>
+                </Grid>
+              </Grid>
               <TabList
                 orientation="horizontal"
                 onChange={handleTabChange}

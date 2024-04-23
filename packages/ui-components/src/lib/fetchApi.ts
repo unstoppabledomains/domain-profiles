@@ -5,6 +5,7 @@ import {notifyEvent} from './error';
 export interface FetchOptions extends RequestInit {
   host?: string;
   forceRefresh?: boolean;
+  acceptStatusCodes?: number[];
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,7 +40,7 @@ export const fetchApi = async <T = any>(
   // make the request
   return fetch(url, options)
     .then(async (res: Response) => {
-      if (!res.ok) {
+      if (!res.ok && !options.acceptStatusCodes?.includes(res.status)) {
         const severity = res.status >= 429 ? 'error' : 'warning';
         notifyEvent(
           new Error(`unexpected response code`),

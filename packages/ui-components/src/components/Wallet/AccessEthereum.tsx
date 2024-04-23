@@ -14,6 +14,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {useFeatureFlags} from '../../actions';
 import {getAccountAssets, getAccounts} from '../../actions/fireBlocksActions';
 import WalletButton from '../../components/Wallet/WalletButton';
+import useFireblocksSigner from '../../hooks/useFireblocksSigner';
 import {
   ReactSigner,
   UD_COMPLETED_SIGNATURE,
@@ -73,6 +74,7 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const [fireblocksSigner] = useFireblocksSigner();
   const {data: featureFlags} = useFeatureFlags();
   const [selectedWallet, setSelectedWallet] = useState<WalletName>();
   const [selectedConnector, setSelectedConnector] = useState<Connector>();
@@ -202,14 +204,29 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
     // initialize a react signature UX component that can be called back
     // by a signature request hook
     const address = addresses[0];
-    const reactSigner = new ReactSigner(address, setUdConfigMessage);
+
+    // TODO - create an account or feature flag for this value
+    const promptForSignatures = true;
+
+    // construct the UD wallet signer
+    const udWalletSigner = new ReactSigner(
+      address,
+      promptForSignatures
+        ? {
+            setMessage: setUdConfigMessage,
+          }
+        : {
+            signWithFireblocks: fireblocksSigner,
+          },
+    );
 
     // raise success events
     onComplete({
       address,
-      signer: reactSigner as unknown as Signer,
+      signer: udWalletSigner as unknown as Signer,
       unstoppableWallet: {
         addresses,
+        promptForSignatures,
       },
     });
   };

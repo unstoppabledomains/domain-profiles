@@ -78,6 +78,7 @@ export interface GetOperationStatusResponse {
 }
 
 export interface GetTokenResponse {
+  code?: 'SUCCESS' | 'PROCESSING';
   accessToken: string;
   refreshToken: string;
   bootstrapToken: string;

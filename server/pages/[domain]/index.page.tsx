@@ -1257,6 +1257,7 @@ const DomainProfile = ({
               </Grid>
               <Grid item xs={12} md={6}>
                 <DomainWalletTransactions
+                  id="profile"
                   wallets={walletBalances}
                   domain={domain}
                   isError={isWalletBalanceError}

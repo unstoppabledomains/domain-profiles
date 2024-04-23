@@ -23,16 +23,31 @@ export const confirmAuthorizationTokenTx = async (
 ): Promise<GetTokenResponse | undefined> => {
   try {
     // confirm the transaction to retrieve auth tokens
-    return await fetchApi<GetTokenResponse>('/auth/tokens/confirm', {
-      method: 'POST',
-      mode: 'cors',
-      headers: {
-        'Access-Control-Allow-Credentials': 'true',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${bootstrapJwt}`,
+    const getTokenResponse = await fetchApi<GetTokenResponse>(
+      '/auth/tokens/confirm',
+      {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Access-Control-Allow-Credentials': 'true',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${bootstrapJwt}`,
+        },
+        host: config.WALLETS.HOST_URL,
+        acceptStatusCodes: [400],
       },
-      host: config.WALLETS.HOST_URL,
-    });
+    );
+
+    // return the successfully retrieved tokens
+    if (getTokenResponse?.accessToken) {
+      return getTokenResponse;
+    }
+
+    // retry if the state is reported as processing
+    if (getTokenResponse?.code === 'PROCESSING') {
+      await sleep(250);
+      return await confirmAuthorizationTokenTx(bootstrapJwt);
+    }
   } catch (e) {
     notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error confirming authorization token tx',

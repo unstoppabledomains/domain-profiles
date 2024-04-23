@@ -10,13 +10,24 @@ const signingMutex = new Mutex();
 // to display and collect the required message signature
 export class ReactSigner {
   address: string;
-  setMessage: (v: string) => void;
+  signWithFireblocks?: (message: string, address?: string) => Promise<string>;
+  setMessage?: (v: string) => void;
   signatures: Record<string, string | undefined> = {};
 
   // build an object that wraps a Wagmi WalletClient and a given address
-  constructor(address: string, setMessage: (v: string) => void) {
+  constructor(
+    address: string,
+    opts: {
+      signWithFireblocks?: (
+        message: string,
+        address?: string,
+      ) => Promise<string>;
+      setMessage?: (v: string) => void;
+    },
+  ) {
     this.address = address;
-    this.setMessage = setMessage;
+    this.signWithFireblocks = opts?.signWithFireblocks;
+    this.setMessage = opts?.setMessage;
   }
 
   // getAddress retrieves the address that will be creating the signature
@@ -24,7 +35,38 @@ export class ReactSigner {
     return this.address;
   }
 
-  async waitForSignature(message: string): Promise<string> {
+  // signMessage supports a string arg or an account containing the message
+  // that needs to be signed
+  async signMessage(message: string | signMessageProps): Promise<string> {
+    const signingMutexUnlock = await signingMutex.acquire();
+
+    try {
+      // extract the message that should be sign
+      const messageToSign =
+        typeof message === 'string' ? message : message.message;
+
+      // use the requested signing approach
+      return this.setMessage
+        ? await this.promptAndWaitForSignature(messageToSign)
+        : await this.submitForSignature(messageToSign);
+    } catch (e) {
+      notifyEvent(e, 'warning', 'Wallet', 'Signature');
+      throw e;
+    } finally {
+      signingMutexUnlock();
+    }
+  }
+
+  async promptAndWaitForSignature(message: string): Promise<string> {
+    // validate prerequisites
+    if (!this.setMessage) {
+      throw new Error('invalid react signer configuration');
+    }
+
+    // callback to initiate the signature prompt
+    this.setMessage(message);
+
+    // wait for the signature to be completed
     while (!this.signatures[message]) {
       if (UD_COMPLETED_SIGNATURE.length > 0) {
         const signature = UD_COMPLETED_SIGNATURE.pop();
@@ -42,24 +84,12 @@ export class ReactSigner {
     throw new Error('failed to sign message');
   }
 
-  // signMessage supports a string arg or an account containing the message
-  // that needs to be signed
-  async signMessage(message: string | signMessageProps): Promise<string> {
-    const signingMutexUnlock = await signingMutex.acquire();
-    try {
-      if (typeof message === 'string') {
-        this.setMessage(message);
-        return await this.waitForSignature(message);
-      } else {
-        this.setMessage(message.message);
-        return await this.waitForSignature(message.message);
-      }
-    } catch (e) {
-      notifyEvent(e, 'warning', 'Wallet', 'Signature');
-      throw e;
-    } finally {
-      signingMutexUnlock();
+  async submitForSignature(message: string): Promise<string> {
+    // validate prerequisites
+    if (!this.signWithFireblocks) {
+      throw new Error('invalid fireblocks signer configuration');
     }
+    return await this.signWithFireblocks(message, this.address);
   }
 }
 

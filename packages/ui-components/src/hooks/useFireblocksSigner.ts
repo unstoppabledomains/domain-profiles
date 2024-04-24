@@ -1,78 +1,49 @@
-import {useEffect, useState} from 'react';
-
 import {
   getAccessToken,
-  getAccounts,
   getMessageSignature,
 } from '../actions/fireBlocksActions';
 import {notifyEvent} from '../lib/error';
 import {getFireBlocksClient} from '../lib/fireBlocks/client';
 import {getBootstrapState} from '../lib/fireBlocks/storage/state';
 import useFireblocksState from './useFireblocksState';
+import useWeb3Context from './useWeb3Context';
 
 export type FireblocksSigner = (
   message: string,
   address?: string,
 ) => Promise<string>;
 
-const useFireblocksSigner = (): [FireblocksSigner | undefined, boolean] => {
-  const [accessToken, setAccessToken] = useState<string>();
+const useFireblocksSigner = (): FireblocksSigner => {
   const [state, saveState] = useFireblocksState();
-
-  // load Fireblocks state on component load
-  useEffect(() => {
-    void handleLoadAccessToken();
-  }, []);
-
-  const handleLoadAccessToken = async (): Promise<string | undefined> => {
-    // retrieve and validate key state
-    const clientState = getBootstrapState(state);
-    if (!clientState) {
-      return;
-    }
-
-    // retrieve an access token
-    const jwtToken = await getAccessToken(clientState.refreshToken, {
-      deviceId: clientState.deviceId,
-      state,
-      saveState,
-    });
-    if (!jwtToken) {
-      throw new Error('error retrieving access token');
-    }
-    setAccessToken(jwtToken.accessToken);
-    return jwtToken.accessToken;
-  };
-
-  // only return a signer if access token is available
-  if (!accessToken) {
-    return [undefined, false];
-  }
+  const {accessToken: existingAccessToken, setAccessToken} = useWeb3Context();
 
   // return the fireblocks client signer
-  const signer = async (message: string, address?: string): Promise<string> => {
+  return async (message: string, address?: string): Promise<string> => {
     // retrieve and validate key state
     const clientState = getBootstrapState(state);
     if (!clientState) {
       throw new Error('invalid configuration');
     }
 
-    // validate the access token and attempt to refresh the token if it
-    // has become stale
-    let signingToken = accessToken;
-    let accounts = await getAccounts(signingToken);
-    if (!accounts) {
-      signingToken = (await handleLoadAccessToken()) || '';
-      accounts = await getAccounts(signingToken);
-      if (!accounts) {
-        throw new Error('invalid wallet token');
+    // retrieve an access token if required
+    let accessToken = existingAccessToken;
+    if (!accessToken) {
+      const jwtData = await getAccessToken(clientState.refreshToken, {
+        deviceId: clientState.deviceId,
+        state,
+        saveState,
+        setAccessToken,
+      });
+      if (!jwtData) {
+        throw new Error('error retrieving access token');
       }
+      accessToken = jwtData.accessToken;
     }
 
     // retrieve a new client instance
     const client = await getFireBlocksClient(
       clientState.deviceId,
-      signingToken,
+      accessToken,
       {
         state,
         saveState,
@@ -94,7 +65,7 @@ const useFireblocksSigner = (): [FireblocksSigner | undefined, boolean] => {
 
     // request an MPC signature of the desired message string
     const signatureResult = await getMessageSignature(
-      signingToken,
+      accessToken,
       message,
       async (txId: string) => {
         await client.signTransaction(txId);
@@ -122,9 +93,6 @@ const useFireblocksSigner = (): [FireblocksSigner | undefined, boolean] => {
     }
     return signatureResult;
   };
-
-  // return the signer in ready state
-  return [signer, true];
 };
 
 export default useFireblocksSigner;

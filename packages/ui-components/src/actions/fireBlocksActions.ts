@@ -5,7 +5,10 @@ import config from '@unstoppabledomains/config';
 import type {TokenType} from '../lib';
 import {fetchApi} from '../lib';
 import {notifyEvent} from '../lib/error';
-import {saveBootstrapState} from '../lib/fireBlocks/storage/state';
+import {
+  getBootstrapState,
+  saveBootstrapState,
+} from '../lib/fireBlocks/storage/state';
 import {sleep} from '../lib/sleep';
 import type {
   AccountAsset,
@@ -62,6 +65,7 @@ export const getAccessToken = async (
     deviceId: string;
     state: Record<string, Record<string, string>>;
     saveState: (state: Record<string, Record<string, string>>) => void;
+    setAccessToken: (v: string) => void;
   },
 ): Promise<GetTokenResponse | undefined> => {
   try {
@@ -80,15 +84,24 @@ export const getAccessToken = async (
     });
 
     if (opts) {
-      saveBootstrapState(
+      // retrieve existing state
+      const existingState = getBootstrapState(opts.state);
+
+      // save new state
+      await saveBootstrapState(
         {
+          assets: existingState?.assets || [],
           bootstrapToken: newTokens.bootstrapToken,
           refreshToken: newTokens.refreshToken,
           deviceId: opts.deviceId,
         },
         opts.state,
         opts.saveState,
+        newTokens.accessToken,
       );
+
+      // store access token in memory
+      opts.setAccessToken(newTokens.accessToken);
     }
     return newTokens;
   } catch (e) {
@@ -101,22 +114,26 @@ export const getAccessToken = async (
 
 export const getAccountAssets = async (
   accessToken: string,
-  accountId: string,
-): Promise<GetAccountAssetsResponse | undefined> => {
+): Promise<AccountAsset[] | undefined> => {
   try {
-    // retrieve a new set of tokens using the refresh token
-    return await fetchApi<GetAccountAssetsResponse>(
-      `/accounts/${accountId}/assets`,
-      {
-        mode: 'cors',
-        headers: {
-          'Access-Control-Allow-Credentials': 'true',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        host: config.WALLETS.HOST_URL,
-      },
-    );
+    // retrieve the accounts associated with the access token
+    const accounts = await getAccounts(accessToken);
+    if (!accounts) {
+      throw new Error('invalid access token');
+    }
+
+    // query addresses belonging to accounts
+    const accountAssets: AccountAsset[] = [];
+    await Bluebird.map(accounts.items, async account => {
+      const assets = await getAssets(accessToken, account.id);
+      return (assets?.items || []).map(asset => {
+        asset.accountId = account.id;
+        accountAssets.push(asset);
+      });
+    });
+
+    // return all aggregated assets
+    return accountAssets;
   } catch (e) {
     notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error retrieving account assets',
@@ -142,6 +159,32 @@ export const getAccounts = async (
   } catch (e) {
     notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error retrieving accounts',
+    });
+  }
+  return undefined;
+};
+
+export const getAssets = async (
+  accessToken: string,
+  accountId: string,
+): Promise<GetAccountAssetsResponse | undefined> => {
+  try {
+    // retrieve a new set of tokens using the refresh token
+    return await fetchApi<GetAccountAssetsResponse>(
+      `/accounts/${accountId}/assets`,
+      {
+        mode: 'cors',
+        headers: {
+          'Access-Control-Allow-Credentials': 'true',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        host: config.WALLETS.HOST_URL,
+      },
+    );
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
+      msg: 'error retrieving account assets',
     });
   }
   return undefined;
@@ -243,35 +286,17 @@ export const getMessageSignature = async (
     if (opts?.onStatusChange) {
       opts.onStatusChange('retrieving account');
     }
-    const accounts = await getAccounts(accessToken);
-    if (!accounts) {
-      throw new Error('invalid access token');
+    const assets = await getAccountAssets(accessToken);
+    if (!assets) {
+      throw new Error('account assets not found');
     }
-
-    // query addresses belonging to accounts
-    if (opts?.onStatusChange) {
-      opts.onStatusChange('retrieving addresses');
-    }
-    const addressAssets: Record<
-      string,
-      {accountId: string; data: AccountAsset}
-    > = {};
-    await Bluebird.map(accounts.items, async account => {
-      const assets = await getAccountAssets(accessToken, account.id);
-      return (assets?.items || []).map(asset => {
-        addressAssets[asset.address.toLowerCase()] = {
-          accountId: account.id,
-          data: asset,
-        };
-      });
-    });
 
     // retrieve the asset associated with the optionally requested address,
     // otherwise just retrieve the first first asset.
     const asset =
-      addressAssets[
-        opts?.address?.toLowerCase() || Object.keys(addressAssets)[0]
-      ];
+      assets.find(
+        a => a.address.toLowerCase() === opts?.address?.toLowerCase(),
+      ) || assets[0];
     if (!asset) {
       throw new Error('address not found in account');
     }
@@ -281,7 +306,7 @@ export const getMessageSignature = async (
       opts.onStatusChange('starting MPC signature');
     }
     const operationResponse = await fetchApi<GetOperationResponse>(
-      `/accounts/${asset.accountId}/assets/${asset.data.id}/signatures`,
+      `/accounts/${asset.accountId}/assets/${asset.id}/signatures`,
       {
         method: 'POST',
         mode: 'cors',
@@ -421,37 +446,18 @@ export const sendCrypto = async (
     if (opts?.onStatusChange) {
       opts.onStatusChange('retrieving account');
     }
-    const accounts = await getAccounts(accessToken);
-    if (!accounts) {
-      throw new Error('invalid access token');
+    const assets = await getAccountAssets(accessToken);
+    if (!assets) {
+      throw new Error('account assets not found');
     }
-
-    // query addresses belonging to accounts
-    if (opts?.onStatusChange) {
-      opts.onStatusChange('retrieving addresses');
-    }
-    const addressAssets: Record<
-      string,
-      {accountId: string; data: AccountAsset}
-    > = {};
-    await Bluebird.map(accounts.items, async account => {
-      const assets = await getAccountAssets(accessToken, account.id);
-      return (assets?.items || []).map(asset => {
-        addressAssets[
-          `${asset.blockchainAsset.symbol.toLowerCase()}-${asset.address.toLowerCase()}`
-        ] = {
-          accountId: account.id,
-          data: asset,
-        };
-      });
-    });
 
     // retrieve the asset associated with the optionally requested address,
     // otherwise just retrieve the first first asset.
-    const asset =
-      addressAssets[
-        `${sourceSymbol.toLowerCase()}-${sourceAddress.toLowerCase()}`
-      ];
+    const asset = assets.find(
+      a =>
+        a.blockchainAsset.symbol.toLowerCase() === sourceSymbol.toLowerCase() &&
+        a.address.toLowerCase() === sourceAddress.toLowerCase(),
+    );
     if (!asset) {
       throw new Error('address not found in account');
     }
@@ -461,7 +467,7 @@ export const sendCrypto = async (
       opts.onStatusChange('starting MPC transaction');
     }
     const operationResponse = await fetchApi<GetOperationResponse>(
-      `/accounts/${asset.accountId}/assets/${asset.data.id}/transfers`,
+      `/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
       {
         method: 'POST',
         mode: 'cors',

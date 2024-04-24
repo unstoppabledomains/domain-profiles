@@ -50,16 +50,16 @@ export const Signer: React.FC<SignerProps> = ({
   const [t] = useTranslationContext();
   const [isSigning, setIsSigning] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [fireblocksSigner, signerReady] = useFireblocksSigner();
+  const fireblocksSigner = useFireblocksSigner();
 
   // sign requested message when button is clicked and the Fireblocks
   // client has been properly initialized
   useEffect(() => {
-    if (!isSigning || !signerReady) {
+    if (!isSigning) {
       return;
     }
     void handleSignature();
-  }, [isSigning, signerReady]);
+  }, [isSigning]);
 
   // clear the success flag for new message
   useEffect(() => {

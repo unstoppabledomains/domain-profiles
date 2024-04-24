@@ -1,6 +1,4 @@
-import {useLocalStorage, useSessionStorage} from 'usehooks-ts';
-
-import {FireblocksStateKey} from '../lib/types/fireBlocks';
+import useWeb3Context from './useWeb3Context';
 
 const useFireblocksState = (
   initWithPersistence?: boolean,
@@ -8,13 +6,25 @@ const useFireblocksState = (
   Record<string, Record<string, string>>,
   (state: Record<string, Record<string, string>>) => void,
 ] => {
-  // define the available stores
-  const [sessionKeyState, setSessionKeyState] = useSessionStorage<
-    Record<string, Record<string, string>>
-  >(FireblocksStateKey, {});
-  const [persistentKeyState, setPersistentKeyState] = useLocalStorage<
-    Record<string, Record<string, string>>
-  >(FireblocksStateKey, {});
+  // retrieve state from web3 context
+  const {
+    sessionKeyState,
+    setSessionKeyState,
+    persistentKeyState,
+    setPersistentKeyState,
+  } = useWeb3Context();
+
+  // validate state initialization
+  if (
+    !sessionKeyState ||
+    !setSessionKeyState ||
+    !persistentKeyState ||
+    !setPersistentKeyState
+  ) {
+    throw new Error(
+      'Expected useFireblocksState to be called within <Web3ContextProvider />',
+    );
+  }
 
   // if a session state is already established, return the existing state
   // values to maintain the session

@@ -8,6 +8,7 @@ export interface AccountAsset {
   id: string;
   address: string;
   blockchainAsset: BlockchainAsset;
+  accountId?: string;
 }
 
 export interface Blockchain {
@@ -27,6 +28,7 @@ export interface BootstrapState {
   bootstrapToken: string;
   refreshToken: string;
   deviceId: string;
+  assets: AccountAsset[];
 }
 
 export const BootstrapStateCurrentKey = 'current';

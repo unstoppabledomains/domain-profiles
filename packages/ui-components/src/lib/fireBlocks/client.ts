@@ -5,7 +5,7 @@ import type {
 } from '@fireblocks/ncw-js-sdk';
 import {FireblocksNCWFactory} from '@fireblocks/ncw-js-sdk';
 
-import {getAccessToken, sendJoinRequest} from '../../actions/fireBlocksActions';
+import {sendJoinRequest} from '../../actions/fireBlocksActions';
 import {notifyEvent} from '../error';
 import {sleep} from '../sleep';
 import {LogEventHandler} from './events/logHandler';
@@ -23,7 +23,6 @@ export const getFireBlocksClient = async (
   deviceId: string,
   jwt: string,
   opts?: {
-    isRefreshToken?: boolean;
     pin?: string;
     state: Record<string, Record<string, string>>;
     saveState: (state: Record<string, Record<string, string>>) => void;
@@ -44,22 +43,6 @@ export const getFireBlocksClient = async (
     deviceId,
     storageProvider,
   );
-
-  // if the provided token is a refresh token, use it to retrieve an access
-  // token and store the new state
-  if (opts?.isRefreshToken) {
-    // retrieve new set of tokens
-    const newTokens = await getAccessToken(jwt, {
-      ...opts,
-      deviceId,
-    });
-    if (!newTokens?.accessToken) {
-      throw new Error('error retrieving access token');
-    }
-
-    // replace the JWT value with new access token
-    jwt = newTokens.accessToken;
-  }
 
   // initialize message handler
   const messagesHandler = new RpcMessageProvider(jwt);

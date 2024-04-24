@@ -18,13 +18,12 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {
   confirmAuthorizationTokenTx,
   getAccessToken,
-  getAccountAssets,
-  getAccounts,
   getAuthorizationTokenTx,
   getBootstrapToken,
   sendBootstrapCode,
 } from '../../../../actions/fireBlocksActions';
 import {getWalletPortfolio} from '../../../../actions/walletActions';
+import {useWeb3Context} from '../../../../hooks';
 import useFireblocksState from '../../../../hooks/useFireblocksState';
 import type {SerializedWalletBalance} from '../../../../lib';
 import {useTranslationContext} from '../../../../lib';
@@ -38,7 +37,6 @@ import {
   getBootstrapState,
   saveBootstrapState,
 } from '../../../../lib/fireBlocks/storage/state';
-import type {AccountAsset} from '../../../../lib/types/fireBlocks';
 import {DomainProfileTabType} from '../../DomainProfile';
 import ManageInput from '../../common/ManageInput';
 import type {ManageTabProps} from '../../common/types';
@@ -103,7 +101,7 @@ export const Configuration: React.FC<
   const [progressPct, setProgressPct] = useState(0);
 
   // wallet recovery state variables
-  const [accessJwt, setAccessJwt] = useState<string>();
+  const {accessToken, setAccessToken} = useWeb3Context();
   const [bootstrapCode, setBootstrapCode] = useState<string>();
   const [recoveryPhrase, setRecoveryPhrase] = useState<string>();
   const [emailAddress, setEmailAddress] = useState<string>();
@@ -116,15 +114,15 @@ export const Configuration: React.FC<
   }, []);
 
   useEffect(() => {
-    if (configState === WalletConfigState.Complete && accessJwt) {
+    if (configState === WalletConfigState.Complete && accessToken) {
       // update state
-      onUpdate(DomainProfileTabType.Wallet, {accessToken: accessJwt});
+      onUpdate(DomainProfileTabType.Wallet, {accessToken});
       setIsLoaded(false);
 
       // retrieve the MPC wallets on page load
       void loadMpcWallets();
     }
-  }, [configState, accessJwt]);
+  }, [configState, accessToken]);
 
   useEffect(() => {
     if (!isLoaded) {
@@ -210,35 +208,30 @@ export const Configuration: React.FC<
   ]);
 
   const loadMpcWallets = async () => {
-    if (!accessJwt) {
+    if (!accessToken) {
       return;
     }
 
     // retrieve the accounts associated with the access token
-    const accounts = await getAccounts(accessJwt);
-    if (!accounts) {
+    const bootstrapState = getBootstrapState(state);
+    if (!bootstrapState) {
       return;
     }
 
     // query addresses belonging to accounts
-    const accountAssets: AccountAsset[] = [];
-    await Bluebird.map(accounts.items, async account => {
-      const assets = await getAccountAssets(accessJwt, account.id);
-      return (assets?.items || []).map(asset => {
-        accountAssets.push(asset);
-      });
-    });
-    const accountChains = accountAssets.map(a =>
+    const accountChains = bootstrapState.assets?.map(a =>
       a.blockchainAsset.symbol.toLowerCase(),
     );
 
     // retrieve portfolio data for each asset
-    const accountAddresses = [...new Set(accountAssets.map(a => a.address))];
+    const accountAddresses = [
+      ...new Set(bootstrapState.assets?.map(a => a.address)),
+    ];
     const wallets: SerializedWalletBalance[] = [];
     await Bluebird.map(accountAddresses, async address => {
       const addressPortfolio = await getWalletPortfolio(
         address,
-        accessJwt,
+        accessToken,
         undefined,
         true,
       );
@@ -261,14 +254,20 @@ export const Configuration: React.FC<
     const existingState = getBootstrapState(state);
 
     // check state for device ID and refresh token
-    if (existingState?.deviceId && existingState?.refreshToken) {
+    if (accessToken) {
+      // wallet state is complete
+      setConfigState(WalletConfigState.Complete);
+    } else if (existingState?.deviceId && existingState?.refreshToken) {
       const tokens = await getAccessToken(existingState.refreshToken, {
         deviceId: existingState.deviceId,
         state,
         saveState,
+        setAccessToken,
       });
-      setAccessJwt(tokens?.accessToken);
-      setConfigState(WalletConfigState.Complete);
+      if (tokens) {
+        setAccessToken(tokens.accessToken);
+        setConfigState(WalletConfigState.Complete);
+      }
     }
 
     // set loaded state
@@ -464,18 +463,20 @@ export const Configuration: React.FC<
 
     // store the wallet service JWT tokens at desired persistence level
     setProgressPct(100);
-    saveBootstrapState(
+    await saveBootstrapState(
       {
+        assets: [],
         bootstrapToken: walletServiceTokens.bootstrapToken,
         refreshToken: walletServiceTokens.refreshToken,
         deviceId,
       },
       state,
       saveState,
+      walletServiceTokens.accessToken,
     );
 
     // set component state
-    setAccessJwt(walletServiceTokens.accessToken);
+    setAccessToken(walletServiceTokens.accessToken);
     setConfigState(WalletConfigState.Complete);
   };
 
@@ -578,10 +579,10 @@ export const Configuration: React.FC<
                 </>
               ) : (
                 mode === 'portfolio' &&
-                accessJwt && (
+                accessToken && (
                   <Client
                     wallets={mpcWallets}
-                    accessToken={accessJwt}
+                    accessToken={accessToken}
                     onRefresh={loadMpcWallets}
                   />
                 )

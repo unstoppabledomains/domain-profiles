@@ -3,8 +3,22 @@ import {useContext} from 'react';
 import {Web3Context} from '../providers/Web3ContextProvider';
 
 const useWeb3Context = () => {
-  const {web3Deps, setWeb3Deps} = useContext(Web3Context);
-  if (!setWeb3Deps) {
+  const {
+    web3Deps,
+    setWeb3Deps,
+    accessToken,
+    setAccessToken,
+    sessionKeyState,
+    setSessionKeyState,
+    persistentKeyState,
+    setPersistentKeyState,
+  } = useContext(Web3Context);
+  if (
+    !setWeb3Deps ||
+    !setAccessToken ||
+    !setSessionKeyState ||
+    !setPersistentKeyState
+  ) {
     throw new Error(
       'Expected useWeb3Context to be called within <Web3ContextProvider />',
     );
@@ -12,6 +26,12 @@ const useWeb3Context = () => {
   return {
     web3Deps,
     setWeb3Deps,
+    accessToken,
+    setAccessToken,
+    sessionKeyState,
+    setSessionKeyState,
+    persistentKeyState,
+    setPersistentKeyState,
   };
 };
 

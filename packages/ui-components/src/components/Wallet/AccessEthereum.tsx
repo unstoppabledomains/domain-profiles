@@ -3,7 +3,6 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import type {GetWalletClientResult} from '@wagmi/core';
-import Bluebird from 'bluebird';
 import type {Signer} from 'ethers';
 import React, {useEffect, useState} from 'react';
 import {useConnect, useDisconnect, useWalletClient} from 'wagmi';
@@ -12,13 +11,14 @@ import type {Connector} from 'wagmi';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useFeatureFlags} from '../../actions';
-import {getAccountAssets, getAccounts} from '../../actions/fireBlocksActions';
 import WalletButton from '../../components/Wallet/WalletButton';
 import useFireblocksSigner from '../../hooks/useFireblocksSigner';
+import useFireblocksState from '../../hooks/useFireblocksState';
 import {
   ReactSigner,
   UD_COMPLETED_SIGNATURE,
 } from '../../lib/fireBlocks/reactSigner';
+import {getBootstrapState} from '../../lib/fireBlocks/storage/state';
 import useTranslationContext from '../../lib/i18n';
 import {sleep} from '../../lib/sleep';
 import type {WagmiConnectorType} from '../../lib/types/wallet';
@@ -26,7 +26,7 @@ import {WalletName, WalletOptions} from '../../lib/types/wallet';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import {WalletClientSigner} from '../../lib/wallet/signer';
 import {isEthAddress} from '../Chat/protocol/resolution';
-import type {DomainProfileTabType} from '../Manage';
+import {DomainProfileTabType} from '../Manage/DomainProfile';
 import {Wallet as UnstoppableWalletConfig} from '../Manage/Tabs/Wallet';
 import {Signer as UnstoppableWalletSigner} from '../Manage/Tabs/Wallet/Signer';
 
@@ -70,11 +70,11 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
   address: requestedAddress,
   onComplete,
   onError,
-  onClose,
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
-  const [fireblocksSigner] = useFireblocksSigner();
+  const fireblocksSigner = useFireblocksSigner();
+  const [state] = useFireblocksState();
   const {data: featureFlags} = useFeatureFlags();
   const [selectedWallet, setSelectedWallet] = useState<WalletName>();
   const [selectedConnector, setSelectedConnector] = useState<Connector>();
@@ -109,6 +109,22 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
       connectedSigner,
     );
   }, [connectedSigner]);
+
+  useEffect(() => {
+    // automatically select a connected Unstoppable Wallet if one of the managed
+    // addresses matches the requested address
+    if (state && Object.keys(state).length > 0 && requestedAddress) {
+      const bootstrapState = getBootstrapState(state);
+      if (
+        bootstrapState?.assets?.find(
+          a => a.address.toLowerCase() === requestedAddress.toLowerCase(),
+        )
+      ) {
+        setSelectedWallet(WalletName.UnstoppableWallet);
+        void handleUdWalletConnected(DomainProfileTabType.Wallet);
+      }
+    }
+  }, [state, requestedAddress]);
 
   useEffect(() => {
     if (!connectError) {
@@ -161,56 +177,32 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
     });
   };
 
-  const handleUdWalletConnected = async (
-    _type: DomainProfileTabType,
-    data?: {accessToken: string},
-  ) => {
-    // ensure an access token was provided
+  const handleUdWalletConnected = async (_type: DomainProfileTabType) => {
+    // retrieve an access token if one was not provided
     setUdConfigSuccess(true);
-    if (!data?.accessToken) {
-      if (onError) {
-        onError('no access token provided for account');
-      }
-      return;
-    }
 
     // query accounts belonging to the UD wallet
-    const allAddresses: string[] = [];
-    const accounts = await getAccounts(data.accessToken);
-    if (!accounts) {
-      if (onError) {
-        onError('no accounts found for access token');
-      }
-      return;
-    }
-
-    // query addresses belonging to accounts
-    await Bluebird.map(accounts.items, async account => {
-      const assets = await getAccountAssets(data.accessToken, account.id);
-      return (assets?.items || []).map(asset => {
-        allAddresses.push(asset.address);
-      });
-    });
+    const bootstrapState = getBootstrapState(state);
+    const allAddresses = bootstrapState?.assets?.map(a => a.address) || [];
 
     // validate addresses located
-    const addresses = [...new Set(allAddresses.filter(a => isEthAddress(a)))];
-    if (addresses.length === 0) {
+    const ethAddresses = [
+      ...new Set(allAddresses.filter(a => isEthAddress(a))),
+    ];
+    if (ethAddresses.length === 0) {
       if (onError) {
         onError('no EVM wallet addresses found for account');
       }
       return;
     }
 
-    // initialize a react signature UX component that can be called back
-    // by a signature request hook
-    const address = addresses[0];
-
     // TODO - create an account or feature flag for this value
     const promptForSignatures = true;
 
-    // construct the UD wallet signer
+    // initialize a react signature UX component that can be called back
+    // by a signature request hook
     const udWalletSigner = new ReactSigner(
-      address,
+      ethAddresses[0],
       promptForSignatures
         ? {
             setMessage: setUdConfigMessage,
@@ -222,10 +214,10 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
 
     // raise success events
     onComplete({
-      address,
+      address: ethAddresses[0],
       signer: udWalletSigner as unknown as Signer,
       unstoppableWallet: {
-        addresses,
+        addresses: ethAddresses,
         promptForSignatures,
       },
     });

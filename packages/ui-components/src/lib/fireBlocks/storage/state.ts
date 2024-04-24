@@ -1,3 +1,4 @@
+import {getAccountAssets} from '../../../actions/fireBlocksActions';
 import type {BootstrapState} from '../../types/fireBlocks';
 import {
   BootstrapStateCurrentKey,
@@ -15,11 +16,18 @@ export const getBootstrapState = (
   return undefined;
 };
 
-export const saveBootstrapState = (
+export const saveBootstrapState = async (
   values: BootstrapState,
   state: Record<string, Record<string, string>>,
   setState: (state: Record<string, Record<string, string>>) => void,
-): void => {
+  accessToken: string,
+): Promise<void> => {
+  // saturate values if required
+  if (!values.assets || values.assets.length === 0) {
+    values.assets = (await getAccountAssets(accessToken)) || [];
+  }
+
+  // save the state values
   state[`${BootstrapStatePrefix}-${values.deviceId}`] =
     values as unknown as Record<string, string>;
   state[`${BootstrapStatePrefix}-${BootstrapStateCurrentKey}`] =

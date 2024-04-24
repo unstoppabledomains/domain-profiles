@@ -9,16 +9,18 @@ import {
   getBootstrapState,
   saveBootstrapState,
 } from '../lib/fireBlocks/storage/state';
+import {pollUntilSuccess} from '../lib/poll';
 import {sleep} from '../lib/sleep';
-import type {
-  AccountAsset,
-  GetAccountAssetsResponse,
-  GetAccountsResponse,
-  GetAuthorizationTxResponse,
-  GetBootstrapTokenResponse,
-  GetOperationResponse,
-  GetOperationStatusResponse,
-  GetTokenResponse,
+import {
+  OperationStatus,
+  type AccountAsset,
+  type GetAccountAssetsResponse,
+  type GetAccountsResponse,
+  type GetAuthorizationTxResponse,
+  type GetBootstrapTokenResponse,
+  type GetOperationResponse,
+  type GetOperationStatusResponse,
+  type GetTokenResponse,
 } from '../lib/types/fireBlocks';
 
 export const confirmAuthorizationTokenTx = async (
@@ -439,8 +441,9 @@ export const sendCrypto = async (
   onSignTx: (txId: string) => Promise<void>,
   opts?: {
     onStatusChange?: (status: string) => void;
+    onTxId?: (txId: string) => void;
   },
-): Promise<string> => {
+): Promise<void> => {
   try {
     // retrieve the accounts associated with the access token
     if (opts?.onStatusChange) {
@@ -491,54 +494,69 @@ export const sendCrypto = async (
     if (opts?.onStatusChange) {
       opts.onStatusChange('waiting to sign with local key');
     }
-    for (let i = 0; i < 60; i++) {
-      const operationStatus = await getOperationStatus(
-        accessToken,
-        operationResponse.operation.id,
-      );
-      if (!operationStatus) {
-        throw new Error('error requesting transaction operation status');
-      }
-      if (
-        operationStatus.status === 'SIGNATURE_REQUIRED' &&
-        operationStatus.transaction?.externalVendorTransactionId
-      ) {
-        // request for the client to sign the Tx string
-        if (opts?.onStatusChange) {
-          opts.onStatusChange('signing transaction with local key');
+    await pollUntilSuccess({
+      fn: async () => {
+        const operationStatus = await getOperationStatus(
+          accessToken,
+          operationResponse.operation.id,
+        );
+        if (!operationStatus) {
+          throw new Error('error requesting transaction operation status');
         }
-        await onSignTx(operationStatus.transaction.externalVendorTransactionId);
-        break;
-      }
-      await sleep(500);
-    }
+        if (
+          operationStatus.status === OperationStatus.SIGNATURE_REQUIRED &&
+          operationStatus.transaction?.externalVendorTransactionId
+        ) {
+          // request for the client to sign the Tx string
+          if (opts?.onStatusChange) {
+            opts.onStatusChange('signing transaction with local key');
+          }
+          await onSignTx(
+            operationStatus.transaction.externalVendorTransactionId,
+          );
+          return {success: true};
+        }
+        return {success: false};
+      },
+      attempts: 60,
+      interval: 1500,
+    });
 
-    // wait up to 30 seconds for the TX to be completed
     if (opts?.onStatusChange) {
       opts.onStatusChange('waiting for MPC transaction');
     }
-    for (let i = 0; i < 60; i++) {
-      const operationStatus = await getOperationStatus(
-        accessToken,
-        operationResponse.operation.id,
-      );
-      if (!operationStatus) {
-        throw new Error('error requesting transaction operation status');
-      }
-      if (operationStatus.transaction?.id) {
-        if (opts?.onStatusChange) {
-          opts.onStatusChange('transaction completed');
+    const {success} = await pollUntilSuccess({
+      fn: async () => {
+        const operationStatus = await getOperationStatus(
+          accessToken,
+          operationResponse.operation.id,
+        );
+        if (!operationStatus) {
+          throw new Error('error requesting transaction operation status');
         }
-        return operationStatus.transaction.id;
-      }
-      await sleep(500);
+        if (operationStatus.transaction?.id && opts?.onTxId) {
+          opts.onTxId(operationStatus.transaction.id);
+        }
+        if (operationStatus.status === OperationStatus.COMPLETED) {
+          if (opts?.onStatusChange) {
+            opts.onStatusChange('transaction completed');
+          }
+          return {success: true};
+        }
+        if (operationStatus.status === OperationStatus.FAILED) {
+          throw new Error("Failed transaction")
+        }
+        return {success: false};
+      },
+      attempts: 300,
+      interval: 1500,
+    });
+    if (!success) {
+      throw new Error('failed to complete transaction');
     }
-
-    // reaching this point means the Tx was not successful
-    throw new Error('failed to complete transaction');
   } catch (e) {
     if (opts?.onStatusChange) {
-      opts.onStatusChange('transaction failed');
+      opts.onStatusChange('Transaction failed');
     }
     notifyEvent(e, 'error', 'Wallet', 'Signature', {
       msg: 'error sending crypto',

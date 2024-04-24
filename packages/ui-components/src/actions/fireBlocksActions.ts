@@ -335,6 +335,8 @@ export const getMessageSignature = async (
       if (!operationStatus) {
         throw new Error('error requesting signature operation status');
       }
+
+      // sign the message if requested
       if (
         operationStatus.status === 'SIGNATURE_REQUIRED' &&
         operationStatus.transaction?.externalVendorTransactionId
@@ -346,6 +348,21 @@ export const getMessageSignature = async (
         await onSignTx(operationStatus.transaction.externalVendorTransactionId);
         break;
       }
+
+      // break on these states
+      if (operationStatus.status === 'COMPLETED') {
+        break;
+      }
+
+      // abandon on these states
+      if (
+        operationStatus.status === 'CANCELLED' ||
+        operationStatus.status === 'FAILED'
+      ) {
+        throw new Error('signature failed');
+      }
+
+      // wait for next interval
       await sleep(500);
     }
 
@@ -361,6 +378,8 @@ export const getMessageSignature = async (
       if (!operationStatus) {
         throw new Error('error requesting signature operation status');
       }
+
+      // signature is completed
       if (
         operationStatus.status === 'COMPLETED' &&
         operationStatus.result?.signature
@@ -369,6 +388,14 @@ export const getMessageSignature = async (
           opts.onStatusChange('signature completed');
         }
         return operationStatus.result.signature;
+      }
+
+      // abandon on these states
+      if (
+        operationStatus.status === 'CANCELLED' ||
+        operationStatus.status === 'FAILED'
+      ) {
+        throw new Error('signature failed');
       }
       await sleep(500);
     }

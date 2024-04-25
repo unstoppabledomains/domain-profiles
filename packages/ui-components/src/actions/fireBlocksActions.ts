@@ -9,7 +9,7 @@ import {
   getBootstrapState,
   saveBootstrapState,
 } from '../lib/fireBlocks/storage/state';
-import {pollUntilSuccess} from '../lib/poll';
+import {pollForSuccess} from '../lib/poll';
 import {sleep} from '../lib/sleep';
 import {
   OperationStatus,
@@ -531,7 +531,7 @@ export const sendCrypto = async (
     if (opts?.onStatusChange) {
       opts.onStatusChange(SendCryptoStatus.GETTING_TRANSACTION_TO_SIGN);
     }
-    await pollUntilSuccess({
+    await pollForSuccess({
       fn: async () => {
         const operationStatus = await getOperationStatus(
           accessToken,
@@ -563,7 +563,7 @@ export const sendCrypto = async (
       opts.onStatusChange(SendCryptoStatus.SUBMITTING_TRANSACTION);
     }
  
-    const {success} = await pollUntilSuccess({
+    const {success} = await pollForSuccess({
       fn: async () => {
         const operationStatus = await getOperationStatus(
           accessToken,

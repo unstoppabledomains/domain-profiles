@@ -1,6 +1,6 @@
 import {sleep} from './sleep';
 
-export const pollUntilSuccess = async <T>({
+export const pollForSuccess = async <T>({
   fn,
   attempts,
   interval,

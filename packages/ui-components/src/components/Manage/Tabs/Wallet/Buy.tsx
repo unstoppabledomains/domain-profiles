@@ -51,7 +51,7 @@ export const Buy: React.FC<Props> = ({onCancelClick, wallets}) => {
 
   const handleBuyRedirect = (tokenName: string, address: string) => {
     const queryParams = stringify({
-      blockchain: tokenName,
+      blockchain: tokenName.toLowerCase(),
       address,
       utm_source: 'ud_me',
     });

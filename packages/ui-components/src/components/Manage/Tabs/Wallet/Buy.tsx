@@ -44,13 +44,6 @@ type Props = {
   wallets: SerializedWalletBalance[];
 };
 
-export enum BlockchainNetwork {
-  Bitcoin = 'bitcoin',
-  Ethereum = 'ethereum',
-  Polygon = 'polygon',
-  Solana = 'solana',
-}
-
 export const Buy: React.FC<Props> = ({onCancelClick, wallets}) => {
   const [t] = useTranslationContext();
   const {classes} = useStyles();

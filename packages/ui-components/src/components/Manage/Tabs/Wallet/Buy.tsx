@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {stringify} from 'querystring';
 import React from 'react';
 
 import config from '@unstoppabledomains/config';
@@ -48,6 +49,16 @@ export const Buy: React.FC<Props> = ({onCancelClick, wallets}) => {
   const [t] = useTranslationContext();
   const {classes} = useStyles();
 
+  const handleBuyRedirect = (tokenName: string, address: string) => {
+    const queryParams = stringify({
+      blockchain: tokenName,
+      address,
+      utm_source: 'ud_me',
+    });
+    const url = `${config.UNSTOPPABLE_WEBSITE_URL}/fiat-ramps?${queryParams}`;
+    window.open(url, '_blank');
+  };
+
   // serialize native tokens
   const nativeTokens: TokenEntry[] = [
     ...(wallets || []).flatMap(wallet => ({
@@ -72,19 +83,12 @@ export const Buy: React.FC<Props> = ({onCancelClick, wallets}) => {
       </Box>
       <Box className={classes.assetsContainer} mt={2}>
         {nativeTokens.map(token => {
-          const handleClick = () => {
-            window.open(
-              `${
-                config.UNSTOPPABLE_WEBSITE_URL
-              }/fiat-ramps?blockchain=${token.name.toLowerCase()}&address=${
-                token.walletAddress
-              }&utm_source=ud_me`,
-              '_blank',
-            );
+          const onClick = () => {
+            handleBuyRedirect(token.name, token.walletAddress);
           };
           return (
             <div className={classes.asset}>
-              <Token primaryShade token={token} onClick={handleClick} />
+              <Token primaryShade token={token} onClick={onClick} />
             </div>
           );
         })}

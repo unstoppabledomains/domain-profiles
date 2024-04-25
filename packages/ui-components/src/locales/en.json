@@ -804,6 +804,7 @@
     "rememberOnThisDeviceDescription": "Your Unstoppable Wallet access will be stored securely in this web browser",
     "selectAssetToSend": "Select asset to send",
     "selectAssetToReceive": "Select asset to receive",
+    "selectAssetToBuy": "Select asset to buy",
     "signMessage": "Confirmation",
     "signMessageDescription": "Only confirm if you fully understand the content and trust the requesting site.",
     "signMessageSubtitle": "You are confirming",

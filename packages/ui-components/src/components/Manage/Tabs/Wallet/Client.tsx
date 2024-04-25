@@ -24,8 +24,9 @@ import {getFireBlocksClient} from '../../../../lib/fireBlocks/client';
 import {getBootstrapState} from '../../../../lib/fireBlocks/storage/state';
 import {DomainWalletTransactions} from '../../../Wallet';
 import {TokensPortfolio} from '../../../Wallet/TokensPortfolio';
+import {Buy} from './Buy';
+import {Receive} from './Receive';
 import {Send} from './Send';
-import { Receive } from './Receive';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -101,6 +102,7 @@ export const Client: React.FC<ClientProps> = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSend, setIsSend] = useState(false);
   const [isReceive, setIsReceive] = useState(false);
+  const [isBuy, setIsBuy] = useState(false);
   const [tabValue, setTabValue] = useState(ClientTabType.Portfolio);
 
   useEffect(() => {
@@ -139,15 +141,12 @@ export const Client: React.FC<ClientProps> = ({
     setIsSend(true);
   };
 
-  const handleClickedReceive = () => {
-    setIsReceive(true);
+  const handleClickedBuy = () => {
+    setIsBuy(true);
   };
 
-  const handleClickedBuy = () => {
-    // TODO
-    alert(
-      'select wallet, then redirect to e-commerce buy/sell crypto page with this wallet preselected',
-    );
+  const handleClickedReceive = () => {
+    setIsReceive(true);
   };
 
   const handleCancel = () => {
@@ -168,6 +167,8 @@ export const Client: React.FC<ClientProps> = ({
             />
           ) : isReceive ? (
             <Receive onCancelClick={handleCancel} wallets={wallets} />
+          ) : isBuy ? (
+            <Buy onCancelClick={handleCancel} wallets={wallets} />
           ) : (
             <TabContext value={tabValue as ClientTabType}>
               <Box className={classes.balanceContainer}>

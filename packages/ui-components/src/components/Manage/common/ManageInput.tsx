@@ -23,7 +23,7 @@ import FormError from './FormError';
 interface ManageInputProps {
   id: string;
   value?: string;
-  label: string | JSX.Element;
+  label?: string | JSX.Element;
   placeholder: string;
   error?: boolean;
   errorText?: string;
@@ -200,16 +200,20 @@ const ManageInput: React.FC<ManageInputProps> = ({
           xs={12}
           sm={stacked ? 12 : 3}
         >
-          <div className={classes.labelAndIconDiv}>
-            {labelIcon && <div className={classes.labelIcon}>{labelIcon}</div>}
-            <InputLabel
-              focused={false}
-              htmlFor={id}
-              className={cx(classes.formLabel, classes.formControlInputLabel)}
-            >
-              {label}
-            </InputLabel>
-          </div>
+          {label && (
+            <div className={classes.labelAndIconDiv}>
+              {labelIcon && (
+                <div className={classes.labelIcon}>{labelIcon}</div>
+              )}
+              <InputLabel
+                focused={false}
+                htmlFor={id}
+                className={cx(classes.formLabel, classes.formControlInputLabel)}
+              >
+                {label}
+              </InputLabel>
+            </div>
+          )}
         </Grid>
         <Grid item xs={12} sm={stacked ? 12 : 9}>
           <OutlinedInput

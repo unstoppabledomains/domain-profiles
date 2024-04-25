@@ -23,6 +23,17 @@ import {
   type GetTokenResponse,
 } from '../lib/types/fireBlocks';
 
+export enum SendCryptoStatus  {
+  RETRIEVING_ACCOUNT='Retrieving account...',
+  STARTING_TRANSACTION='Starting transaction...',
+  GETTING_TRANSACTION_TO_SIGN='Getting signature to sign...',
+  SIGNING='Signing...',
+  SUBMITTING_TRANSACTION='Submitting transaction...',
+  WAITING_FOR_TRANSACTION='Waiting for transaction to complete...',
+  TRANSACTION_COMPLETED='Transaction completed!',
+  TRANSACTION_FAILED='Transaction failed',
+}
+
 export const confirmAuthorizationTokenTx = async (
   bootstrapJwt: string,
 ): Promise<GetTokenResponse | undefined> => {
@@ -467,14 +478,14 @@ export const sendCrypto = async (
   },
   onSignTx: (txId: string) => Promise<void>,
   opts?: {
-    onStatusChange?: (status: string) => void;
+    onStatusChange?: (status: SendCryptoStatus) => void;
     onTxId?: (txId: string) => void;
   },
 ): Promise<void> => {
   try {
     // retrieve the accounts associated with the access token
     if (opts?.onStatusChange) {
-      opts.onStatusChange('retrieving account');
+      opts.onStatusChange(SendCryptoStatus.RETRIEVING_ACCOUNT);
     }
     const assets = await getAccountAssets(accessToken);
     if (!assets) {
@@ -494,7 +505,7 @@ export const sendCrypto = async (
 
     // initialize a transaction to retrieve auth tokens
     if (opts?.onStatusChange) {
-      opts.onStatusChange('starting MPC transaction');
+      opts.onStatusChange(SendCryptoStatus.STARTING_TRANSACTION);
     }
     const operationResponse = await fetchApi<GetOperationResponse>(
       `/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
@@ -517,9 +528,8 @@ export const sendCrypto = async (
       throw new Error('error starting transaction');
     }
 
-    // wait up to 30 seconds for the TX to pass to the client
     if (opts?.onStatusChange) {
-      opts.onStatusChange('waiting to sign with local key');
+      opts.onStatusChange(SendCryptoStatus.GETTING_TRANSACTION_TO_SIGN);
     }
     await pollUntilSuccess({
       fn: async () => {
@@ -536,7 +546,7 @@ export const sendCrypto = async (
         ) {
           // request for the client to sign the Tx string
           if (opts?.onStatusChange) {
-            opts.onStatusChange('signing transaction with local key');
+            opts.onStatusChange(SendCryptoStatus.SIGNING);
           }
           await onSignTx(
             operationStatus.transaction.externalVendorTransactionId,
@@ -550,8 +560,9 @@ export const sendCrypto = async (
     });
 
     if (opts?.onStatusChange) {
-      opts.onStatusChange('waiting for MPC transaction');
+      opts.onStatusChange(SendCryptoStatus.SUBMITTING_TRANSACTION);
     }
+ 
     const {success} = await pollUntilSuccess({
       fn: async () => {
         const operationStatus = await getOperationStatus(
@@ -563,10 +574,13 @@ export const sendCrypto = async (
         }
         if (operationStatus.transaction?.id && opts?.onTxId) {
           opts.onTxId(operationStatus.transaction.id);
+          if (opts?.onStatusChange) {
+            opts.onStatusChange(SendCryptoStatus.WAITING_FOR_TRANSACTION);
+          }
         }
         if (operationStatus.status === OperationStatus.COMPLETED) {
           if (opts?.onStatusChange) {
-            opts.onStatusChange('transaction completed');
+            opts.onStatusChange(SendCryptoStatus.TRANSACTION_COMPLETED);
           }
           return {success: true};
         }
@@ -583,7 +597,7 @@ export const sendCrypto = async (
     }
   } catch (e) {
     if (opts?.onStatusChange) {
-      opts.onStatusChange('Transaction failed');
+      opts.onStatusChange(SendCryptoStatus.TRANSACTION_FAILED);
     }
     notifyEvent(e, 'error', 'Wallet', 'Signature', {
       msg: 'error sending crypto',

@@ -25,6 +25,7 @@ import {getBootstrapState} from '../../../../lib/fireBlocks/storage/state';
 import {DomainWalletTransactions} from '../../../Wallet';
 import {TokensPortfolio} from '../../../Wallet/TokensPortfolio';
 import {Send} from './Send';
+import { Receive } from './Receive';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -99,6 +100,7 @@ export const Client: React.FC<ClientProps> = ({
   // component state variables
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSend, setIsSend] = useState(false);
+  const [isReceive, setIsReceive] = useState(false);
   const [tabValue, setTabValue] = useState(ClientTabType.Portfolio);
 
   useEffect(() => {
@@ -138,8 +140,7 @@ export const Client: React.FC<ClientProps> = ({
   };
 
   const handleClickedReceive = () => {
-    // TODO
-    alert('switch view to QR code list for available addresses');
+    setIsReceive(true);
   };
 
   const handleClickedBuy = () => {
@@ -149,8 +150,9 @@ export const Client: React.FC<ClientProps> = ({
     );
   };
 
-  const handleCancelSend = () => {
+  const handleCancel = () => {
     setIsSend(false);
+    setIsReceive(false);
   };
 
   return (
@@ -159,11 +161,13 @@ export const Client: React.FC<ClientProps> = ({
         <Box className={classes.walletContainer}>
           {isSend ? (
             <Send
-              onCancelClick={handleCancelSend}
               client={client!}
               accessToken={accessToken}
+              onCancelClick={handleCancel}
               wallets={wallets}
             />
+          ) : isReceive ? (
+            <Receive onCancelClick={handleCancel} wallets={wallets} />
           ) : (
             <TabContext value={tabValue as ClientTabType}>
               <Box className={classes.balanceContainer}>

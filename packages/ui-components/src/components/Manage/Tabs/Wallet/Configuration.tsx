@@ -213,6 +213,7 @@ export const Configuration: React.FC<
     notifyEvent('setup elapsed time', 'info', 'Wallet', 'Configuration', {
       meta: {
         elapsedSeconds: (Date.now() - startTime) / 1000,
+        progressPct: progressValue,
       },
     });
     setProgressPct(progressValue);

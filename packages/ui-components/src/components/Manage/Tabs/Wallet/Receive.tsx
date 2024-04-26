@@ -51,17 +51,22 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '40px',
     marginTop: '5px',
   },
+  contentWrapper: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    minHeight: '250px',
+    width: '400px',
+  },
   receiveAssetContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    width: '400px',
   },
   receiveContentContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    width: '100%',
   },
   copyButton: {},
   addressWrapper: {
@@ -121,53 +126,60 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
   };
 
   return (
-    <Box>
-      <Box>
+    <Box className={classes.flexColCenterAligned}>
+      <Box className={classes.fullWidth}>
         <Button onClick={handleBackClick}>
           <ArrowBackOutlinedIcon />
         </Button>
       </Box>
-      <Box className={classes.receiveAssetContainer}>
-        <Typography variant="h5">Receive {asset.symbol}</Typography>
-        {/* <img src={asset.imageUrl} className={classes.assetLogo} /> */}
-      </Box>
-      <Box className={classes.receiveContentContainer}>
-        <QRCode
-          value={`${asset.name}:${asset.walletAddress}`}
-          size={110}
-          logoOpacity={0.5}
-          logoHeight={60}
-          logoWidth={60}
-          qrStyle={'dots'}
-          ecLevel={'H'}
-          eyeRadius={5}
-          style={{innerHeight: 80, innerWidth: 30}}
-        />
-        <Box className={classes.addressWrapper} mt={2}>
-          <ManageInput
-            placeholder=""
-            onChange={() => null}
-            id="amount"
-            value={asset.walletAddress}
-            stacked={true}
-            disabled
-            endAdornment={
-              <Button onClick={handleCopyClick} className={classes.copyButton}>
-                {copied ? <CheckIcon color="success" /> : <CopyIcon />}
-              </Button>
-            }
-          />
-          <Box mt={1} className={classes.captionContainer}>
-            <Typography variant="caption">
-              This address can only be used to receive compatible tokens
+      <Box className={classes.contentWrapper}>
+        <Box className={classes.receiveContentContainer}>
+          <Box className={classes.receiveAssetContainer} mb={2}>
+            <Typography variant="h5" className={classes.fullWidth}>
+              Receive {asset.symbol}
             </Typography>
+            {/* <img src={asset.imageUrl} className={classes.assetLogo} /> */}
+          </Box>
+          <QRCode
+            value={`${asset.name}:${asset.walletAddress}`}
+            size={110}
+            logoOpacity={0.5}
+            logoHeight={60}
+            logoWidth={60}
+            qrStyle={'dots'}
+            ecLevel={'H'}
+            eyeRadius={5}
+            style={{innerHeight: 80, innerWidth: 30}}
+          />
+          <Box className={classes.addressWrapper} mt={2}>
+            <ManageInput
+              placeholder=""
+              onChange={() => null}
+              id="amount"
+              value={asset.walletAddress}
+              stacked={true}
+              disabled
+              endAdornment={
+                <Button
+                  onClick={handleCopyClick}
+                  className={classes.copyButton}
+                >
+                  {copied ? <CheckIcon color="success" /> : <CopyIcon />}
+                </Button>
+              }
+            />
+            <Box mt={1} className={classes.captionContainer}>
+              <Typography variant="caption">
+                This address can only be used to receive compatible tokens
+              </Typography>
+            </Box>
+          </Box>
+          <Box display="flex" mt={2} className={classes.fullWidth}>
+            <Button fullWidth onClick={onCancelClick} variant="outlined">
+              {t('common.cancel')}
+            </Button>
           </Box>
         </Box>
-      </Box>
-      <Box display="flex" mt={2} className={classes.fullWidth}>
-        <Button fullWidth onClick={onCancelClick} variant="outlined">
-          {t('common.cancel')}
-        </Button>
       </Box>
     </Box>
   );

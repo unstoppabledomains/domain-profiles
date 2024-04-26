@@ -145,6 +145,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
     padding: theme.spacing(3),
     paddingTop: 0,
   },
+  udConfigContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    maxWidth: '505px',
+    minHeight: '485px',
+  },
 }));
 
 export default useStyles;

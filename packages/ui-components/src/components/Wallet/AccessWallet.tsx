@@ -3,26 +3,32 @@ import Alert from '@mui/lab/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
+import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import type {Signer} from 'ethers';
 import Markdown from 'markdown-to-jsx';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import truncateEthAddress from 'truncate-eth-address';
-import {WagmiConfig, configureChains, createConfig, mainnet} from 'wagmi';
-import {CoinbaseWalletConnector} from 'wagmi/connectors/coinbaseWallet';
-import {InjectedConnector} from 'wagmi/connectors/injected';
-import {MetaMaskConnector} from 'wagmi/connectors/metaMask';
-import {WalletConnectConnector} from 'wagmi/connectors/walletConnect';
-import {publicProvider} from 'wagmi/providers/public';
-
-import config from '@unstoppabledomains/config';
 
 import AccessEthereum from '../../components/Wallet/AccessEthereum';
+import useFireblocksSigner from '../../hooks/useFireblocksSigner';
+import useFireblocksState from '../../hooks/useFireblocksState';
+import {WalletName} from '../../lib';
+import {
+  ReactSigner,
+  UD_COMPLETED_SIGNATURE,
+} from '../../lib/fireBlocks/reactSigner';
+import {getBootstrapState} from '../../lib/fireBlocks/storage/state';
 import useTranslationContext from '../../lib/i18n';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import useAccessWalletStyles from '../../styles/components/accessWallet.styles';
+import {isEthAddress} from '../Chat/protocol/resolution';
+import {DomainProfileTabType} from '../Manage/DomainProfile';
+import {Wallet as UnstoppableWalletConfig} from '../Manage/Tabs/Wallet';
+import {Signer as UnstoppableWalletSigner} from '../Manage/Tabs/Wallet/Signer';
 
 type Props = {
   address?: string;
@@ -38,52 +44,31 @@ const AccessWallet = (props: Props) => {
   const [error, setError] = useState('');
   const [t] = useTranslationContext();
 
-  // theming variables for the QR modal
-  const themeVariables = {
-    '--wcm-z-index': '100000',
-  };
+  // selected wallet state
+  const [selectedWallet, setSelectedWallet] = useState<WalletName>();
 
-  // Set up wagmi config
-  const {chains, publicClient, webSocketPublicClient} = configureChains(
-    [mainnet],
-    [publicProvider()],
-  );
-  const wagmiConfig = createConfig({
-    autoConnect: false,
-    connectors: [
-      new MetaMaskConnector({chains}),
-      new WalletConnectConnector({
-        chains,
-        options: {
-          projectId: config.WALLETCONNECT_PROJECT_ID,
-          qrModalOptions: {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            themeVariables: themeVariables as any,
-          },
-          metadata: {
-            name: t('nftCollection.unstoppableDomains'),
-            description: t('nftCollection.unstoppableDomainsDescription'),
-            url: config.UD_ME_BASE_URL,
-            icons: [config.UD_LOGO_URL],
-          },
-        },
-      }),
-      new CoinbaseWalletConnector({
-        chains,
-        options: {
-          appName: 'wagmi',
-        },
-      }),
-      new InjectedConnector({
-        chains,
-        options: {
-          shimDisconnect: true,
-        },
-      }),
-    ],
-    publicClient,
-    webSocketPublicClient,
-  });
+  // Unstoppable wallet signature state variables
+  const [state] = useFireblocksState();
+  const fireblocksSigner = useFireblocksSigner();
+  const [udConfigButton, setUdConfigButton] = useState<React.ReactNode>(<></>);
+  const [udConfigSuccess, setUdConfigSuccess] = useState(false);
+  const [udConfigMessage, setUdConfigMessage] = useState('');
+
+  useEffect(() => {
+    // automatically select a connected Unstoppable Wallet if one of the managed
+    // addresses matches the requested address
+    if (state && Object.keys(state).length > 0 && props.address) {
+      const bootstrapState = getBootstrapState(state);
+      if (
+        bootstrapState?.assets?.find(
+          a => a.address.toLowerCase() === props.address?.toLowerCase(),
+        )
+      ) {
+        setSelectedWallet(WalletName.UnstoppableWallet);
+        void handleUdWalletConnected(DomainProfileTabType.Wallet);
+      }
+    }
+  }, [state, props.address]);
 
   const handleWalletConnected = (web3Deps?: Web3Dependencies) => {
     setError('');
@@ -116,57 +101,135 @@ const AccessWallet = (props: Props) => {
     }
   };
 
+  const handleUdWalletConnected = async (_type: DomainProfileTabType) => {
+    // retrieve an access token if one was not provided
+    setUdConfigSuccess(true);
+
+    // query accounts belonging to the UD wallet
+    const bootstrapState = getBootstrapState(state);
+    const allAddresses = bootstrapState?.assets?.map(a => a.address) || [];
+
+    // validate addresses located
+    const ethAddresses = [
+      ...new Set(allAddresses.filter(a => isEthAddress(a))),
+    ];
+    if (ethAddresses.length === 0) {
+      return;
+    }
+
+    // TODO - create an account or feature flag for this value
+    const promptForSignatures = true;
+
+    // initialize a react signature UX component that can be called back
+    // by a signature request hook
+    const udWalletSigner = new ReactSigner(
+      ethAddresses[0],
+      promptForSignatures
+        ? {
+            setMessage: setUdConfigMessage,
+          }
+        : {
+            signWithFireblocks: fireblocksSigner,
+          },
+    );
+
+    // raise success events
+    handleWalletConnected({
+      address: ethAddresses[0],
+      signer: udWalletSigner as unknown as Signer,
+      unstoppableWallet: {
+        addresses: ethAddresses,
+        promptForSignatures,
+      },
+    });
+  };
+
+  const handleUdWalletSignature = (signedMessage?: string) => {
+    UD_COMPLETED_SIGNATURE.push(signedMessage);
+  };
+
   return (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    <WagmiConfig config={wagmiConfig}>
-      <div className={classes.root}>
-        <div className={classes.column}>
-          {error && (
-            <Box display="flex" flexDirection="column" justifyContent="center">
-              <Alert
-                action={
-                  props.onReconnect ? (
-                    <Button
-                      onClick={props.onReconnect}
-                      color="inherit"
-                      size="small"
-                    >
-                      {t('auth.retry')}
-                    </Button>
-                  ) : undefined
-                }
-                severity="error"
-              >
-                <Markdown>{error}</Markdown>
-              </Alert>
-            </Box>
-          )}
-          {props.message && (
-            <Typography align="center" variant="h5" mb={2}>
-              {props.message}
-            </Typography>
-          )}
-          {props.prompt && props.address && (
-            <Typography
-              align="center"
-              className={classes.prompt}
-              component="div"
+    <div className={classes.root}>
+      <div className={classes.column}>
+        {error && (
+          <Box display="flex" flexDirection="column" justifyContent="center">
+            <Alert
+              action={
+                props.onReconnect ? (
+                  <Button
+                    onClick={props.onReconnect}
+                    color="inherit"
+                    size="small"
+                  >
+                    {t('auth.retry')}
+                  </Button>
+                ) : undefined
+              }
+              severity="error"
             >
-              {t('auth.walletAddress')}:
-              <div className={classes.ethWalletAddress}>{props.address}</div>
-            </Typography>
-          )}
-          <div className={classes.column}>
+              <Markdown>{error}</Markdown>
+            </Alert>
+          </Box>
+        )}
+        {props.message && (
+          <Typography align="center" variant="h5" mb={2}>
+            {props.message}
+          </Typography>
+        )}
+        {props.prompt && props.address && (
+          <Typography align="center" className={classes.prompt} component="div">
+            {t('auth.walletAddress')}:
+            <div className={classes.ethWalletAddress}>{props.address}</div>
+          </Typography>
+        )}
+        <div className={classes.column}>
+          {selectedWallet !== WalletName.UnstoppableWallet ? (
             <AccessEthereum
               address={props.address}
               onComplete={handleWalletConnected}
               onReconnect={props.onReconnect}
               onClose={props.onClose}
+              selectedWallet={selectedWallet}
+              setSelectedWallet={setSelectedWallet}
             />
-          </div>
+          ) : (
+            <Grid item xs={12} display="flex" justifyContent="center">
+              <Box className={classes.udConfigContainer}>
+                {!udConfigMessage || !udConfigSuccess ? (
+                  <Box
+                    display="flex"
+                    flexDirection="column"
+                    justifyContent="space-between"
+                    height="100%"
+                  >
+                    <UnstoppableWalletConfig
+                      address={''}
+                      domain={''}
+                      onUpdate={handleUdWalletConnected}
+                      setButtonComponent={setUdConfigButton}
+                    />
+                    <Box width="100%" mt={2}>
+                      {udConfigButton}
+                    </Box>
+                  </Box>
+                ) : (
+                  udConfigMessage && (
+                    <>
+                      <UnstoppableWalletSigner
+                        address={props.address}
+                        message={udConfigMessage}
+                        onComplete={handleUdWalletSignature}
+                      />
+                    </>
+                  )
+                )}
+              </Box>
+            </Grid>
+          )}
         </div>
       </div>
-    </WagmiConfig>
+    </div>
   );
 };
 

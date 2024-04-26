@@ -5,30 +5,33 @@ import type {Theme} from '@mui/material/styles';
 import type {GetWalletClientResult} from '@wagmi/core';
 import type {Signer} from 'ethers';
 import React, {useEffect, useState} from 'react';
-import {useConnect, useDisconnect, useWalletClient} from 'wagmi';
+import {
+  WagmiConfig,
+  configureChains,
+  createConfig,
+  mainnet,
+  useConnect,
+  useDisconnect,
+  useWalletClient,
+} from 'wagmi';
 import type {Connector} from 'wagmi';
+import {CoinbaseWalletConnector} from 'wagmi/connectors/coinbaseWallet';
+import {InjectedConnector} from 'wagmi/connectors/injected';
+import {MetaMaskConnector} from 'wagmi/connectors/metaMask';
+import {WalletConnectConnector} from 'wagmi/connectors/walletConnect';
+import {publicProvider} from 'wagmi/providers/public';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useFeatureFlags} from '../../actions';
 import WalletButton from '../../components/Wallet/WalletButton';
-import useFireblocksSigner from '../../hooks/useFireblocksSigner';
-import useFireblocksState from '../../hooks/useFireblocksState';
-import {
-  ReactSigner,
-  UD_COMPLETED_SIGNATURE,
-} from '../../lib/fireBlocks/reactSigner';
-import {getBootstrapState} from '../../lib/fireBlocks/storage/state';
 import useTranslationContext from '../../lib/i18n';
 import {sleep} from '../../lib/sleep';
 import type {WagmiConnectorType} from '../../lib/types/wallet';
 import {WalletName, WalletOptions} from '../../lib/types/wallet';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import {WalletClientSigner} from '../../lib/wallet/signer';
-import {isEthAddress} from '../Chat/protocol/resolution';
-import {DomainProfileTabType} from '../Manage/DomainProfile';
-import {Wallet as UnstoppableWalletConfig} from '../Manage/Tabs/Wallet';
-import {Signer as UnstoppableWalletSigner} from '../Manage/Tabs/Wallet/Signer';
 
 export interface AccessEthereumProps {
   address?: string;
@@ -36,6 +39,8 @@ export interface AccessEthereumProps {
   onError?: (message: string) => void;
   onReconnect?: () => void;
   onClose?: () => void;
+  selectedWallet?: WalletName;
+  setSelectedWallet: (w: WalletName) => void;
 }
 
 export const useStyles = makeStyles()((theme: Theme) => ({
@@ -44,13 +49,6 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'center',
     outline: `2px solid ${theme.palette.white}`,
     outlineOffset: -1,
-  },
-  udConfigContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    maxWidth: '505px',
-    minHeight: '485px',
   },
   button: {
     marginTop: theme.spacing(2),
@@ -67,22 +65,83 @@ export const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 const AccessEthereum: React.FC<AccessEthereumProps> = ({
-  address: requestedAddress,
+  address,
   onComplete,
   onError,
+  selectedWallet,
+  setSelectedWallet,
+}) => {
+  // theming variables for the QR modal
+  const themeVariables = {
+    '--wcm-z-index': '100000',
+  };
+
+  // Set up wagmi config
+  const [t] = useTranslationContext();
+  const {chains, publicClient, webSocketPublicClient} = configureChains(
+    [mainnet],
+    [publicProvider()],
+  );
+  const wagmiConfig = createConfig({
+    autoConnect: false,
+    connectors: [
+      new MetaMaskConnector({chains}),
+      new WalletConnectConnector({
+        chains,
+        options: {
+          projectId: config.WALLETCONNECT_PROJECT_ID,
+          qrModalOptions: {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            themeVariables: themeVariables as any,
+          },
+          metadata: {
+            name: t('nftCollection.unstoppableDomains'),
+            description: t('nftCollection.unstoppableDomainsDescription'),
+            url: config.UD_ME_BASE_URL,
+            icons: [config.UD_LOGO_URL],
+          },
+        },
+      }),
+      new CoinbaseWalletConnector({
+        chains,
+        options: {
+          appName: 'wagmi',
+        },
+      }),
+      new InjectedConnector({
+        chains,
+        options: {
+          shimDisconnect: true,
+        },
+      }),
+    ],
+    publicClient,
+    webSocketPublicClient,
+  });
+
+  return (
+    <WagmiConfig config={wagmiConfig}>
+      <AccessEthereumConnectors
+        address={address}
+        onComplete={onComplete}
+        onError={onError}
+        selectedWallet={selectedWallet}
+        setSelectedWallet={setSelectedWallet}
+      />
+    </WagmiConfig>
+  );
+};
+
+const AccessEthereumConnectors: React.FC<AccessEthereumProps> = ({
+  onComplete,
+  onError,
+  selectedWallet,
+  setSelectedWallet,
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
-  const fireblocksSigner = useFireblocksSigner();
-  const [state] = useFireblocksState();
   const {data: featureFlags} = useFeatureFlags();
-  const [selectedWallet, setSelectedWallet] = useState<WalletName>();
   const [selectedConnector, setSelectedConnector] = useState<Connector>();
-
-  // Unstoppable wallet signature state variables
-  const [udConfigButton, setUdConfigButton] = useState<React.ReactNode>(<></>);
-  const [udConfigSuccess, setUdConfigSuccess] = useState(false);
-  const [udConfigMessage, setUdConfigMessage] = useState('');
 
   // wagmi hooks
   const {disconnect} = useDisconnect();
@@ -109,22 +168,6 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
       connectedSigner,
     );
   }, [connectedSigner]);
-
-  useEffect(() => {
-    // automatically select a connected Unstoppable Wallet if one of the managed
-    // addresses matches the requested address
-    if (state && Object.keys(state).length > 0 && requestedAddress) {
-      const bootstrapState = getBootstrapState(state);
-      if (
-        bootstrapState?.assets?.find(
-          a => a.address.toLowerCase() === requestedAddress.toLowerCase(),
-        )
-      ) {
-        setSelectedWallet(WalletName.UnstoppableWallet);
-        void handleUdWalletConnected(DomainProfileTabType.Wallet);
-      }
-    }
-  }, [state, requestedAddress]);
 
   useEffect(() => {
     if (!connectError) {
@@ -177,160 +220,66 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
     });
   };
 
-  const handleUdWalletConnected = async (_type: DomainProfileTabType) => {
-    // retrieve an access token if one was not provided
-    setUdConfigSuccess(true);
-
-    // query accounts belonging to the UD wallet
-    const bootstrapState = getBootstrapState(state);
-    const allAddresses = bootstrapState?.assets?.map(a => a.address) || [];
-
-    // validate addresses located
-    const ethAddresses = [
-      ...new Set(allAddresses.filter(a => isEthAddress(a))),
-    ];
-    if (ethAddresses.length === 0) {
-      if (onError) {
-        onError('no EVM wallet addresses found for account');
-      }
-      return;
-    }
-
-    // TODO - create an account or feature flag for this value
-    const promptForSignatures = true;
-
-    // initialize a react signature UX component that can be called back
-    // by a signature request hook
-    const udWalletSigner = new ReactSigner(
-      ethAddresses[0],
-      promptForSignatures
-        ? {
-            setMessage: setUdConfigMessage,
-          }
-        : {
-            signWithFireblocks: fireblocksSigner,
-          },
-    );
-
-    // raise success events
-    onComplete({
-      address: ethAddresses[0],
-      signer: udWalletSigner as unknown as Signer,
-      unstoppableWallet: {
-        addresses: ethAddresses,
-        promptForSignatures,
-      },
-    });
-  };
-
-  const handleUdWalletSignature = (signedMessage?: string) => {
-    UD_COMPLETED_SIGNATURE.push(signedMessage);
-  };
-
   const getConnector = (id: WagmiConnectorType) => {
     return connectors.find(c => c.id === id);
   };
 
   return (
     <>
-      {selectedWallet !== WalletName.UnstoppableWallet && (
-        <Box
-          mb={2}
-          display="flex"
-          flexDirection="column"
-          justifyContent="center"
-        >
-          <Typography gutterBottom align="center">
-            {t('auth.accessWalletDescription')}
-          </Typography>
-          <Typography variant="caption" align="center">
-            {t('auth.moreInfo')}{' '}
-            <a
-              target="_blank"
-              href="https://unstoppabledomains.com/learn/web3-terms-101"
-              rel="noreferrer"
-              className={classes.link}
-            >
-              {t('common.guide')}
-            </a>
-            .
-          </Typography>
-        </Box>
-      )}
+      <Box mb={2} display="flex" flexDirection="column" justifyContent="center">
+        <Typography gutterBottom align="center">
+          {t('auth.accessWalletDescription')}
+        </Typography>
+        <Typography variant="caption" align="center">
+          {t('auth.moreInfo')}{' '}
+          <a
+            target="_blank"
+            href="https://unstoppabledomains.com/learn/web3-terms-101"
+            rel="noreferrer"
+            className={classes.link}
+          >
+            {t('common.guide')}
+          </a>
+          .
+        </Typography>
+      </Box>
       <>
         <Grid container className={classes.listContainer}>
-          {selectedWallet !== WalletName.UnstoppableWallet ? (
-            Object.keys(WalletOptions)
-              .filter(k => {
-                const isUdWalletEnabled =
-                  featureFlags.variations?.udMeServiceDomainsEnableFireblocks;
-                if (k === WalletName.UnstoppableWallet && !isUdWalletEnabled) {
-                  return false;
-                }
-                return true;
-              })
-              .slice(0, 9)
-              .map((k, i) => {
-                const connector = getConnector(
-                  WalletOptions[k as WalletName].connectorType,
-                );
-                if (!connector) {
-                  return null;
-                }
-                return (
-                  <Grid
-                    item
-                    xs={4}
-                    key={`walletButton-container-${connector.id}-${i}`}
-                  >
-                    <WalletButton
-                      key={`walletButton-${connector.id}-${i}`}
-                      name={k as WalletName}
-                      disabled={
-                        selectedConnector !== undefined || !connector.ready
-                      }
-                      loading={
-                        isLoading && selectedWallet === (k as WalletName)
-                      }
-                      onClick={() => handleClick(k as WalletName, connector)}
-                    />
-                  </Grid>
-                );
-              })
-          ) : (
-            <Grid item xs={12} display="flex" justifyContent="center">
-              <Box className={classes.udConfigContainer}>
-                {!udConfigMessage || !udConfigSuccess ? (
-                  <Box
-                    display="flex"
-                    flexDirection="column"
-                    justifyContent="space-between"
-                    height="100%"
-                  >
-                    <UnstoppableWalletConfig
-                      address={''}
-                      domain={''}
-                      onUpdate={handleUdWalletConnected}
-                      setButtonComponent={setUdConfigButton}
-                    />
-                    <Box width="100%" mt={2}>
-                      {udConfigButton}
-                    </Box>
-                  </Box>
-                ) : (
-                  udConfigMessage && (
-                    <>
-                      <UnstoppableWalletSigner
-                        address={requestedAddress}
-                        message={udConfigMessage}
-                        onComplete={handleUdWalletSignature}
-                      />
-                    </>
-                  )
-                )}
-              </Box>
-            </Grid>
-          )}
+          {Object.keys(WalletOptions)
+            .filter(k => {
+              const isUdWalletEnabled =
+                featureFlags.variations?.udMeServiceDomainsEnableFireblocks;
+              if (k === WalletName.UnstoppableWallet && !isUdWalletEnabled) {
+                return false;
+              }
+              return true;
+            })
+            .slice(0, 9)
+            .map((k, i) => {
+              const connector = getConnector(
+                WalletOptions[k as WalletName].connectorType,
+              );
+              if (!connector) {
+                return null;
+              }
+              return (
+                <Grid
+                  item
+                  xs={4}
+                  key={`walletButton-container-${connector.id}-${i}`}
+                >
+                  <WalletButton
+                    key={`walletButton-${connector.id}-${i}`}
+                    name={k as WalletName}
+                    disabled={
+                      selectedConnector !== undefined || !connector.ready
+                    }
+                    loading={isLoading && selectedWallet === (k as WalletName)}
+                    onClick={() => handleClick(k as WalletName, connector)}
+                  />
+                </Grid>
+              );
+            })}
         </Grid>
       </>
     </>

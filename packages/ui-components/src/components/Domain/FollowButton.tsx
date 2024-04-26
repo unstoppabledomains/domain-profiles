@@ -56,6 +56,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
   const [isFollowing, setIsFollowing] = useState(
     followStatus?.isFollowing ?? false,
   );
+  const [isError, setIsError] = useState(false);
   const [followClicked, setFollowClicked] = useState(false);
   const [isMouseOver, setIsMouseOver] = useState(false);
   const [t] = useTranslationContext();
@@ -103,6 +104,10 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     }
   };
 
+  const handleError = () => {
+    setIsError(true);
+  };
+
   return (
     <>
       {small ? (
@@ -115,6 +120,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
             onClick={handleClick}
             onMouseEnter={handleMouseOver}
             onMouseLeave={handleMouseOver}
+            disabled={isError}
             data-testid="follow-button"
             className={classes.followButtonSmall}
             disableRipple={true}
@@ -152,6 +158,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
           onMouseLeave={handleMouseOver}
           onClick={handleClick}
           sx={{width: '100px'}}
+          disabled={isError}
           icon={
             !isFollowing ? (
               <PersonAddAltOutlinedIcon />
@@ -179,6 +186,8 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         saveClicked={followClicked}
         setSaveClicked={setFollowClicked}
         onSignature={handleCallback}
+        onFailed={handleError}
+        closeAfterSignature={true}
       />
     </>
   );

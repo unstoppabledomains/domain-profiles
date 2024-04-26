@@ -231,9 +231,14 @@ export const Configuration: React.FC<
     }
 
     // query addresses belonging to accounts
-    const accountChains = bootstrapState.assets?.map(a =>
-      a.blockchainAsset.symbol.toLowerCase(),
-    );
+    const accountChains = [
+      ...bootstrapState.assets?.map(a =>
+        a.blockchainAsset.symbol.toLowerCase(),
+      ),
+      ...bootstrapState.assets?.map(a =>
+        a.blockchainAsset.blockchain.id.toLowerCase(),
+      ),
+    ];
 
     // retrieve portfolio data for each asset
     const accountAddresses = [
@@ -257,7 +262,7 @@ export const Configuration: React.FC<
     });
 
     // display rendered wallets
-    setMpcWallets(wallets);
+    setMpcWallets(wallets.sort((a, b) => a.name.localeCompare(b.name)));
     setIsLoaded(true);
   };
 
@@ -380,9 +385,11 @@ export const Configuration: React.FC<
       return;
     }
 
+    // indicates start time for progress tracking
+    const startTime = Date.now();
+
     // retrieve a temporary JWT token using the code and validate the
     // response contains expected value format
-    const startTime = Date.now();
     trackProgress(startTime, 0);
     setSavingMessage(t('wallet.configuringWallet'));
     const walletResponse = await getBootstrapToken(bootstrapCode);

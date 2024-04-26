@@ -340,6 +340,7 @@
     "setupWeb3WebsiteDescription": "Bring a decentralized website online for your domain {{domain}} by specifying an IPFS hash.",
     "sign": "Sign",
     "signatureError": "Error signing with wallet {{connectedAddress}}",
+    "signing": "Signing",
     "startRecordUpdate": "Start Record Update",
     "startTransfer": "Start Transfer",
     "tokenGallery": "Collectibles Gallery",
@@ -783,7 +784,6 @@
     "viewExplorer": "Blockchain explorer"
   },
   "wallet": {
-    "transactionId": "Transaction ID {{id}}",
     "approve": "Confirm",
     "beginSetup": "Continue",
     "bootstrapCode": "One-time code",
@@ -806,7 +806,8 @@
     "signMessageDescription": "Only confirm if you fully understand the content and trust the requesting site.",
     "signMessageSubtitle": "You are confirming",
     "successDescription": "Unstoppable Wallet is ready to be used on this browser",
-    "title": "Unstoppable Wallet"
+    "title": "Unstoppable Wallet",
+    "transactionId": "Transaction ID {{id}}"
   },
   "webacy": {
     "high": "Unsafe",

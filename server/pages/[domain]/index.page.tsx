@@ -97,6 +97,7 @@ import {
   getImageUrl,
   getProfileData,
   getSeoTags,
+  isDomainValidForManagement,
   isExternalDomain,
   parseRecords,
   useDomainConfig,
@@ -737,17 +738,20 @@ const DomainProfile = ({
                 />
                 {!isOwner ? (
                   <>
-                    <Box mr={1}>
-                      <FollowButton
-                        handleLogin={() => setLoginClicked(true)}
-                        setWeb3Deps={setWeb3Deps}
-                        authDomain={authDomain}
-                        domain={domain}
-                        authAddress={authAddress}
-                        onFollowClick={handleFollowClick}
-                        onUnfollowClick={handleUnfollowClick}
-                      />
-                    </Box>
+                    {(!authDomain ||
+                      isDomainValidForManagement(authDomain)) && (
+                      <Box mr={1}>
+                        <FollowButton
+                          handleLogin={() => setLoginClicked(true)}
+                          setWeb3Deps={setWeb3Deps}
+                          authDomain={authDomain}
+                          domain={domain}
+                          authAddress={authAddress}
+                          onFollowClick={handleFollowClick}
+                          onUnfollowClick={handleUnfollowClick}
+                        />
+                      </Box>
+                    )}
                     {authDomain && (
                       <ChipControlButton
                         data-testid="chat-button"

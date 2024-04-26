@@ -23,7 +23,7 @@ export type ManagerProps = {
   saveClicked: boolean;
   setSaveClicked: (value: boolean) => void;
   onSignature: (signature: string, expiry: string) => void;
-  onFailed?: () => void;
+  onFailed?: (reason?: string) => void;
   useLocalPushKey?: boolean;
   useLocalXmtpKey?: boolean;
   forceWalletConnected?: boolean;
@@ -156,6 +156,12 @@ export const ProfileManager: React.FC<ManagerProps> = ({
         },
       },
     );
+    if (!responseBody) {
+      if (onFailed) {
+        onFailed(`Authentication error for ${domain}`);
+      }
+      return;
+    }
 
     // sign with locally stored XMTP key if available
     const localXmtpKey = getXmtpLocalKey(ownerAddress);

@@ -60,21 +60,36 @@ export const SelectAsset: React.FC<Props> = ({
   const [t] = useTranslationContext();
   const {classes} = useStyles();
 
-  const serializeNativeTokens = (wallet: SerializedWalletBalance) => ({
-    type: TokenType.Native,
-    name: wallet.name,
-    value: wallet.value?.walletUsdAmt || 0,
-    balance: wallet.balanceAmt || 0,
-    pctChange: wallet.value?.marketPctChange24Hr,
-    history: [],
-    symbol: wallet.symbol,
-    ticker: wallet.gasCurrency,
-    walletAddress: wallet.address,
-    walletBlockChainLink: wallet.blockchainScanUrl,
-    walletName: wallet.name,
-    imageUrl: wallet.logoUrl,
-  });
-
+  const serializeNativeTokens = (wallet: SerializedWalletBalance) => {
+    if (
+      wallet.value?.history &&
+      wallet.value.history.length > 0 &&
+      wallet.value.history[wallet.value.history.length - 1].value !==
+        wallet.value.marketUsdAmt
+    ) {
+      wallet.value.history.push({
+        timestamp: new Date(),
+        value: wallet.value.marketUsdAmt || 0,
+      });
+    }
+    return {
+      type: TokenType.Native,
+      name: wallet.name,
+      value: wallet.value?.walletUsdAmt || 0,
+      balance: wallet.balanceAmt || 0,
+      pctChange: wallet.value?.marketPctChange24Hr,
+      history: wallet.value?.history?.sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      ),
+      symbol: wallet.symbol,
+      ticker: wallet.gasCurrency,
+      walletAddress: wallet.address,
+      walletBlockChainLink: wallet.blockchainScanUrl,
+      walletName: wallet.name,
+      imageUrl: wallet.logoUrl,
+    };
+  };
   const nativeTokens: TokenEntry[] = wallets
     .flatMap(serializeNativeTokens)
     .sort((a, b) => b.value - a.value);

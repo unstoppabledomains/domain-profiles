@@ -1,3 +1,4 @@
+import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import CheckIcon from '@mui/icons-material/CheckCircle';
 import CopyIcon from '@mui/icons-material/ContentCopy';
 import Box from '@mui/material/Box';
@@ -10,12 +11,17 @@ import {QRCode} from 'react-qrcode-logo';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance} from '../../../../lib';
-import {TokenType, useTranslationContext} from '../../../../lib';
+import {useTranslationContext} from '../../../../lib';
 import type {TokenEntry} from '../../../Wallet/Token';
-import Token from '../../../Wallet/Token';
 import ManageInput from '../../common/ManageInput';
+import {SelectAsset} from './SelectAsset';
 
 const useStyles = makeStyles()((theme: Theme) => ({
+  flexColCenterAligned: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
   fullWidth: {
     width: '100%',
   },
@@ -24,6 +30,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     minHeight: '250px',
+    width: '400px',
     justifyContent: 'space-between',
   },
   assetsContainer: {
@@ -48,6 +55,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    width: '400px',
   },
   receiveContentContainer: {
     display: 'flex',
@@ -72,58 +80,38 @@ type Props = {
   wallets: SerializedWalletBalance[];
 };
 
-export const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
+const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
   const [t] = useTranslationContext();
   const [asset, setAsset] = useState<TokenEntry>();
   const [copied, setCopied] = useState<boolean>(false);
   const {classes} = useStyles();
 
-  // serialize native tokens
-  const nativeTokens: TokenEntry[] = [
-    ...(wallets || []).flatMap(wallet => ({
-      type: TokenType.Native,
-      name: wallet.name,
-      value: wallet.value?.walletUsdAmt || 0,
-      balance: wallet.balanceAmt || 0,
-      pctChange: wallet.value?.marketPctChange24Hr,
-      history: [],
-      symbol: wallet.symbol,
-      ticker: wallet.gasCurrency,
-      walletAddress: wallet.address,
-      walletBlockChainLink: wallet.blockchainScanUrl,
-      walletName: wallet.name,
-      imageUrl: wallet.logoUrl,
-    })),
-  ].sort((a, b) => b.value - a.value);
+  const handleBackClick = () => {
+    if (asset) {
+      setAsset(undefined);
+    } else {
+      onCancelClick();
+    }
+  };
 
   if (!asset) {
     return (
-      <Box className={classes.selectAssetContainer}>
+      <Box className={classes.flexColCenterAligned}>
         <Box className={classes.fullWidth}>
-          <Typography variant="h5">
-            {t('wallet.selectAssetToReceive')}
-          </Typography>
-        </Box>
-        <Box className={classes.assetsContainer} mt={2}>
-          {nativeTokens.map(token => {
-            const handleClick = () => {
-              setAsset(token);
-            };
-            return (
-              <div className={classes.asset}>
-                <Token primaryShade token={token} onClick={handleClick} />
-              </div>
-            );
-          })}
-        </Box>
-        <Box className={classes.fullWidth} mt={2}>
-          <Button fullWidth onClick={onCancelClick} variant="outlined">
-            {t('common.cancel')}
+          <Button onClick={handleBackClick} data-testid={'back-button'}>
+            <ArrowBackOutlinedIcon />
           </Button>
         </Box>
+        <SelectAsset
+          onSelectAsset={setAsset}
+          wallets={wallets}
+          onCancelClick={handleBackClick}
+          label={t('wallet.selectAssetToReceive')}
+        />
       </Box>
     );
   }
+
   const handleCopyClick = () => {
     void navigator.clipboard.writeText(asset.walletAddress);
     setCopied(true);
@@ -133,7 +121,12 @@ export const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
   };
 
   return (
-    <>
+    <Box>
+      <Box>
+        <Button onClick={handleBackClick}>
+          <ArrowBackOutlinedIcon />
+        </Button>
+      </Box>
       <Box className={classes.receiveAssetContainer}>
         <Typography variant="h5">Receive {asset.symbol}</Typography>
         {/* <img src={asset.imageUrl} className={classes.assetLogo} /> */}
@@ -176,6 +169,8 @@ export const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
           {t('common.cancel')}
         </Button>
       </Box>
-    </>
+    </Box>
   );
 };
+
+export default Receive;

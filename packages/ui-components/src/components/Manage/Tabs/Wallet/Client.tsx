@@ -24,9 +24,9 @@ import {getFireBlocksClient} from '../../../../lib/fireBlocks/client';
 import {getBootstrapState} from '../../../../lib/fireBlocks/storage/state';
 import {DomainWalletTransactions} from '../../../Wallet';
 import {TokensPortfolio} from '../../../Wallet/TokensPortfolio';
-import {Buy} from './Buy';
-import {Receive} from './Receive';
-import {Send} from './Send';
+import Buy from './Buy';
+import Receive from './Receive';
+import Send from './Send';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {

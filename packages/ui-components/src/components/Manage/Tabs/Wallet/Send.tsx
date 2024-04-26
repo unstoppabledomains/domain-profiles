@@ -42,7 +42,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     backgroundImage: 'linear-gradient(#0655DD, #043893)',
     borderRadius: 9,
     padding: 12,
-    maxWidth: '350px',
     width: '100%',
   },
   assetLogo: {
@@ -60,6 +59,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     width: '100%',
     height: '113px',
+  },
+  recipientWrapper: {
+    height: '109px',
   },
   amountInputWrapper: {
     display: 'flex',
@@ -108,7 +110,7 @@ export const Send: React.FC<Props> = ({
   const [t] = useTranslationContext();
   const [recipientAddress, setRecipientAddress] = useState('');
   const [asset, setAsset] = useState<TokenEntry>();
-  const [amount, setAmount] = useState('.00001');
+  const [amount, setAmount] = useState('');
   const [transactionSubmitted, setTransactionSubmitted] = useState(false);
   const [resolvedDomain, setResolvedDomain] = useState('');
   const [transactionId, setTransactionId] = useState('');
@@ -271,13 +273,15 @@ export const Send: React.FC<Props> = ({
         <Typography variant="h5">Send {asset.symbol}</Typography>
         <img src={asset.imageUrl} className={classes.assetLogo} />
       </Box>
-      <AddressInput
-        label={'Recipient'}
-        placeholder={'Recipient domain or address'}
-        onAddressChange={handleRecipientChange}
-        onResolvedDomainChange={handleResolvedDomainChange}
-        assetSymbol={asset.symbol}
-      />
+      <Box className={classes.recipientWrapper}>
+        <AddressInput
+          label={'Recipient'}
+          placeholder={'Recipient domain or address'}
+          onAddressChange={handleRecipientChange}
+          onResolvedDomainChange={handleResolvedDomainChange}
+          assetSymbol={asset.symbol}
+        />
+      </Box>
       <Box className={classes.sendAmountContainer}>
         <div className={classes.amountInputWrapper}>
           <ManageInput
@@ -302,7 +306,7 @@ export const Send: React.FC<Props> = ({
         <Button
           fullWidth
           onClick={handleSendCrypto}
-          disabled={!canSend() && !insufficientBalance}
+          disabled={!canSend() || insufficientBalance}
           variant="contained"
         >
           {t('common.send')}

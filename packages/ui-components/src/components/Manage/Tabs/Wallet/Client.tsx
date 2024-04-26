@@ -152,6 +152,7 @@ export const Client: React.FC<ClientProps> = ({
   const handleCancel = () => {
     setIsSend(false);
     setIsReceive(false);
+    setIsBuy(false);
   };
 
   return (

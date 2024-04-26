@@ -35,7 +35,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     backgroundImage: 'linear-gradient(#0655DD, #043893)',
     borderRadius: 9,
     padding: 12,
-    maxWidth: '350px',
     width: '100%',
   },
 }));
@@ -88,7 +87,7 @@ export const Buy: React.FC<Props> = ({onCancelClick, wallets}) => {
           };
           return (
             <div className={classes.asset}>
-              <Token primaryShade token={token} onClick={onClick} />
+              <Token primaryShade token={token} onClick={onClick} hideBalance />
             </div>
           );
         })}

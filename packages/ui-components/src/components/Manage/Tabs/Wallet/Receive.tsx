@@ -1,3 +1,5 @@
+import CheckIcon from '@mui/icons-material/CheckCircle';
+import CopyIcon from '@mui/icons-material/ContentCopy';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -35,7 +37,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     backgroundImage: 'linear-gradient(#0655DD, #043893)',
     borderRadius: 9,
     padding: 12,
-    maxWidth: '350px',
     width: '100%',
   },
   assetLogo: {
@@ -54,9 +55,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
     width: '100%',
   },
-  copyButton: {
-    width: '64px',
-  },
+  copyButton: {},
   addressWrapper: {
     display: 'flex',
     flexDirection: 'column',
@@ -128,6 +127,9 @@ export const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
   const handleCopyClick = () => {
     void navigator.clipboard.writeText(asset.walletAddress);
     setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+    }, 3000);
   };
 
   return (
@@ -158,7 +160,7 @@ export const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
             disabled
             endAdornment={
               <Button onClick={handleCopyClick} className={classes.copyButton}>
-                {copied ? 'Copied' : 'Copy'}
+                {copied ? <CheckIcon color="success" /> : <CopyIcon />}
               </Button>
             }
           />

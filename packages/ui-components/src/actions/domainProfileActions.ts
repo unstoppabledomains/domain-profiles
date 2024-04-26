@@ -5,7 +5,7 @@ import config from '@unstoppabledomains/config';
 
 import type {AddressResolution} from '../components/Chat/types';
 import type {NftResponse} from '../lib';
-import {NftPageSize} from '../lib';
+import {NftPageSize, isDomainValidForManagement} from '../lib';
 import {fetchApi} from '../lib/fetchApi';
 import type {
   DomainFieldTypes,
@@ -35,6 +35,15 @@ export const checkIfFollowingDomainProfile = async (
   followerDomain: string,
   followeeDomain: string,
 ): Promise<boolean> => {
+  // validate domain formats
+  if (
+    !isDomainValidForManagement(followerDomain) ||
+    !isDomainValidForManagement(followeeDomain)
+  ) {
+    return false;
+  }
+
+  // make the request
   const respJson = await fetchApi(
     `/followers/${followeeDomain}/follow-status/${followerDomain}`,
     {

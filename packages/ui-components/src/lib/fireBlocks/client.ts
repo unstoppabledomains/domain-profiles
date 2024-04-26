@@ -2,6 +2,7 @@ import type {
   IFireblocksNCW,
   IFireblocksNCWOptions,
   ITransactionSignature,
+  TEvent,
 } from '@fireblocks/ncw-js-sdk';
 import {FireblocksNCWFactory} from '@fireblocks/ncw-js-sdk';
 
@@ -26,6 +27,7 @@ export const getFireBlocksClient = async (
     pin?: string;
     state: Record<string, Record<string, string>>;
     saveState: (state: Record<string, Record<string, string>>) => void;
+    onEventCallback?: (event: TEvent) => void;
   },
 ): Promise<IFireblocksNCW> => {
   // initialize storage
@@ -48,7 +50,7 @@ export const getFireBlocksClient = async (
   const messagesHandler = new RpcMessageProvider(jwt);
 
   // initialize event handler
-  const eventsHandler = new LogEventHandler();
+  const eventsHandler = new LogEventHandler(opts?.onEventCallback);
 
   // Initialize the Fireblocks NCW SDK
   const fbOptions: IFireblocksNCWOptions = {
@@ -68,8 +70,6 @@ export const initializeClient = async (
   opts: {
     bootstrapJwt: string;
     recoveryPhrase: string;
-    onRequestIdCallback?: () => void;
-    onJoinSuccessCallback?: () => void;
   },
 ): Promise<boolean> => {
   try {
@@ -77,11 +77,6 @@ export const initializeClient = async (
     let isJoinRequestSuccessful = false;
     const joinResult = await client.requestJoinExistingWallet({
       onRequestId: async requestId => {
-        // execute callback if specified
-        if (opts.onRequestIdCallback) {
-          opts.onRequestIdCallback();
-        }
-
         // send the join request
         isJoinRequestSuccessful = await sendJoinRequest(
           requestId,
@@ -90,12 +85,7 @@ export const initializeClient = async (
         );
 
         // determine if join request was successful
-        if (isJoinRequestSuccessful) {
-          // execute callback if specified
-          if (opts.onJoinSuccessCallback) {
-            opts.onJoinSuccessCallback();
-          }
-        } else {
+        if (!isJoinRequestSuccessful) {
           try {
             // request to stop the join transaction
             client.stopJoinWallet();

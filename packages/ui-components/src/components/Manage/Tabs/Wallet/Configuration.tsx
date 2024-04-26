@@ -1,3 +1,4 @@
+import type {TEvent} from '@fireblocks/ncw-js-sdk';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
@@ -207,6 +208,17 @@ export const Configuration: React.FC<
     persistKeys,
   ]);
 
+  // trackProgress updates the progress bar and logs events for wallet setup
+  const trackProgress = (startTime: number, progressValue: number) => {
+    notifyEvent('setup elapsed time', 'info', 'Wallet', 'Configuration', {
+      meta: {
+        elapsedSeconds: (Date.now() - startTime) / 1000,
+        progressPct: progressValue,
+      },
+    });
+    setProgressPct(progressValue);
+  };
+
   const loadMpcWallets = async () => {
     if (!accessToken) {
       return;
@@ -219,9 +231,14 @@ export const Configuration: React.FC<
     }
 
     // query addresses belonging to accounts
-    const accountChains = bootstrapState.assets?.map(a =>
-      a.blockchainAsset.symbol.toLowerCase(),
-    );
+    const accountChains = [
+      ...bootstrapState.assets?.map(a =>
+        a.blockchainAsset.symbol.toLowerCase(),
+      ),
+      ...bootstrapState.assets?.map(a =>
+        a.blockchainAsset.blockchain.id.toLowerCase(),
+      ),
+    ];
 
     // retrieve portfolio data for each asset
     const accountAddresses = [
@@ -245,7 +262,7 @@ export const Configuration: React.FC<
     });
 
     // display rendered wallets
-    setMpcWallets(wallets);
+    setMpcWallets(wallets.sort((a, b) => a.name.localeCompare(b.name)));
     setIsLoaded(true);
   };
 
@@ -368,9 +385,12 @@ export const Configuration: React.FC<
       return;
     }
 
+    // indicates start time for progress tracking
+    const startTime = Date.now();
+
     // retrieve a temporary JWT token using the code and validate the
     // response contains expected value format
-    setProgressPct(0);
+    trackProgress(startTime, 0);
     setSavingMessage(t('wallet.configuringWallet'));
     const walletResponse = await getBootstrapToken(bootstrapCode);
     if (!walletResponse?.accessToken || !walletResponse.deviceId) {
@@ -389,20 +409,42 @@ export const Configuration: React.FC<
     const deviceId = walletResponse?.deviceId;
 
     // retrieve and initialize the Fireblocks client
-    setProgressPct(3);
+    trackProgress(startTime, 3);
     const fbClientForInit = await getFireBlocksClient(deviceId, bootstrapJwt, {
       state,
       saveState,
+      onEventCallback: (e: TEvent) => {
+        if (e.type === 'join_wallet_descriptor') {
+          switch (e.joinWalletDescriptor.status) {
+            case 'JOIN_INITIATED':
+              trackProgress(startTime, 5);
+              break;
+            case 'ADD_DEVICE_SETUP_REQUESTED':
+              trackProgress(startTime, 11);
+              break;
+          }
+        }
+        if (e.type === 'key_descriptor_changed') {
+          switch (e.keyDescriptor.keyStatus) {
+            case 'INITIATED':
+              trackProgress(startTime, 24);
+              break;
+            case 'SETUP':
+              trackProgress(startTime, 30);
+              break;
+            case 'SETUP_COMPLETE':
+              trackProgress(startTime, 60);
+              break;
+            case 'READY':
+              trackProgress(startTime, 65);
+              break;
+          }
+        }
+      },
     });
     const isInitialized = await initializeClient(fbClientForInit, {
       bootstrapJwt,
       recoveryPhrase,
-      onRequestIdCallback: () => {
-        setProgressPct(16);
-      },
-      onJoinSuccessCallback: () => {
-        setProgressPct(32);
-      },
     });
     if (!isInitialized) {
       notifyEvent(
@@ -415,9 +457,28 @@ export const Configuration: React.FC<
       return;
     }
 
-    // retrieve a transaction ID from wallet service
-    setProgressPct(61);
-    const tx = await getAuthorizationTokenTx(bootstrapJwt);
+    // retrieve a transaction ID from wallet service, and initialize a new client
+    // instance with which to sign the transaction ID
+    trackProgress(startTime, 70);
+    const [tx, fbClientForTx] = await Promise.all([
+      getAuthorizationTokenTx(bootstrapJwt),
+      getFireBlocksClient(deviceId, bootstrapJwt, {
+        state,
+        saveState,
+        onEventCallback: (e: TEvent) => {
+          if (e.type === 'transaction_signature_changed') {
+            switch (e.transactionSignature.transactionSignatureStatus) {
+              case 'PENDING':
+                trackProgress(startTime, 80);
+                break;
+              case 'STARTED':
+                trackProgress(startTime, 85);
+                break;
+            }
+          }
+        },
+      }),
+    ]);
     if (!tx) {
       notifyEvent(
         new Error('error retrieving auth tx'),
@@ -430,11 +491,7 @@ export const Configuration: React.FC<
     }
 
     // sign the transaction ID with Fireblocks client
-    setProgressPct(71);
-    const fbClientForTx = await getFireBlocksClient(deviceId, bootstrapJwt, {
-      state,
-      saveState,
-    });
+    trackProgress(startTime, 79);
     const txSignature = await signTransaction(fbClientForTx, tx.transactionId);
     if (!txSignature) {
       notifyEvent(
@@ -448,7 +505,7 @@ export const Configuration: React.FC<
     }
 
     // retrieve the wallet service JWT tokens
-    setProgressPct(94);
+    trackProgress(startTime, 95);
     const walletServiceTokens = await confirmAuthorizationTokenTx(bootstrapJwt);
     if (!walletServiceTokens) {
       notifyEvent(
@@ -462,7 +519,7 @@ export const Configuration: React.FC<
     }
 
     // store the wallet service JWT tokens at desired persistence level
-    setProgressPct(100);
+    trackProgress(startTime, 100);
     await saveBootstrapState(
       {
         assets: [],

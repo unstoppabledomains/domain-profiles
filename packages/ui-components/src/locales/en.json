@@ -340,6 +340,7 @@
     "setupWeb3WebsiteDescription": "Bring a decentralized website online for your domain {{domain}} by specifying an IPFS hash.",
     "sign": "Sign",
     "signatureError": "Error signing with wallet {{connectedAddress}}",
+    "signing": "Signing",
     "startRecordUpdate": "Start Record Update",
     "startTransfer": "Start Transfer",
     "tokenGallery": "Collectibles Gallery",
@@ -784,7 +785,6 @@
   },
   "wallet": {
     "viewTransaction": "View transaction",
-    "transactionId": "Transaction ID {{id}}",
     "approve": "Confirm",
     "beginSetup": "Continue",
     "bootstrapCode": "One-time code",

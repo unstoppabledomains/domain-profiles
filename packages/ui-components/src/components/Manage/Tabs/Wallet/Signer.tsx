@@ -1,7 +1,9 @@
+import CheckIcon from '@mui/icons-material/Check';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
@@ -129,9 +131,16 @@ export const Signer: React.FC<SignerProps> = ({
           className={classes.button}
           fullWidth
           loading={isSigning}
+          loadingIndicator={
+            <Box display="flex" alignItems="center">
+              <CircularProgress color="inherit" size={16} />
+              <Box ml={1}>{t('manage.signing')}...</Box>
+            </Box>
+          }
           disabled={isSuccess}
           variant="contained"
           onClick={handleClickApprove}
+          startIcon={isSuccess ? <CheckIcon /> : undefined}
         >
           {isSuccess ? t('common.success') : t('wallet.approve')}
         </LoadingButton>

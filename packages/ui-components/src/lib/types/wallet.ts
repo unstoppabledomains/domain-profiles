@@ -33,7 +33,7 @@ export const WalletOptions: Record<WalletName, walletProps> = {
     connectorType: 'metaMask',
   },
   [WalletName.UnstoppableWallet]: {
-    connectorType: 'walletConnect',
+    connectorType: 'metaMask',
   },
   [WalletName.WalletConnect]: {
     connectorType: 'walletConnect',

@@ -17,8 +17,8 @@ import {ReactDeviceStoreProvider} from './storage/provider/reactDeviceStore';
 import {SecureKeyStorageProvider} from './storage/secureStorage';
 import {UnsecureKeyStorageProvider} from './storage/unsecureStorage';
 
-const MAX_RETRY = 50;
-const WAIT_TIME_MS = 500;
+export const FB_MAX_RETRY = 100;
+export const FB_WAIT_TIME_MS = 500;
 
 export const getFireBlocksClient = async (
   deviceId: string,
@@ -103,7 +103,7 @@ export const initializeClient = async (
     }
 
     // wait for the join request to be approved by the backend
-    for (let i = 1; i <= MAX_RETRY; i++) {
+    for (let i = 1; i <= FB_MAX_RETRY; i++) {
       try {
         const status = await client.getKeysStatus();
         if (status.MPC_CMP_ECDSA_SECP256K1.keyStatus === 'READY') {
@@ -115,7 +115,7 @@ export const initializeClient = async (
           msg: 'error checking key status',
         });
       }
-      await sleep(WAIT_TIME_MS);
+      await sleep(FB_WAIT_TIME_MS);
     }
     throw new Error('fireblocks key status is not ready');
   } catch (initError) {
@@ -132,7 +132,7 @@ export const signTransaction = async (
   client: IFireblocksNCW,
   txId: string,
 ): Promise<ITransactionSignature | undefined> => {
-  for (let i = 1; i <= MAX_RETRY; i++) {
+  for (let i = 1; i <= FB_MAX_RETRY; i++) {
     try {
       return await client.signTransaction(txId);
     } catch (e) {
@@ -140,7 +140,7 @@ export const signTransaction = async (
         msg: 'retrying failed tx signature',
       });
     }
-    await sleep(WAIT_TIME_MS);
+    await sleep(FB_WAIT_TIME_MS);
   }
   notifyEvent(new Error('tx signature failed'), 'error', 'Wallet', 'Signature');
   return undefined;

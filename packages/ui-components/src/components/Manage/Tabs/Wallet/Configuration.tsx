@@ -41,36 +41,51 @@ import {
 import {DomainProfileTabType} from '../../DomainProfile';
 import ManageInput from '../../common/ManageInput';
 import type {ManageTabProps} from '../../common/types';
-import {Client} from './Client';
+import {Client, MIN_CLIENT_HEIGHT} from './Client';
 
-const useStyles = makeStyles()((theme: Theme) => ({
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  infoContainer: {
-    marginBottom: theme.spacing(3),
-  },
-  checkboxContainer: {
-    marginTop: theme.spacing(3),
-  },
-  continueActionContainer: {
-    width: '100%',
-  },
-  checkbox: {
-    marginRight: theme.spacing(0),
-    marginTop: theme.spacing(-1),
-    alignSelf: 'flex-start',
-  },
-  iconConfigured: {
-    color: theme.palette.success.main,
-    width: '75px',
-    height: '75px',
-  },
-  enableDescription: {
-    color: theme.palette.neutralShades[600],
-  },
-}));
+const useStyles = makeStyles<{configState: WalletConfigState}>()(
+  (theme: Theme, {configState}) => ({
+    container: {
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight:
+        configState === WalletConfigState.Complete
+          ? `${MIN_CLIENT_HEIGHT}px`
+          : undefined,
+    },
+    loadingContainer: {
+      display: 'flex',
+      justifyContent: 'center',
+      height:
+        configState === WalletConfigState.Complete
+          ? `${MIN_CLIENT_HEIGHT - 125}px`
+          : undefined,
+      alignItems: 'center',
+    },
+    infoContainer: {
+      marginBottom: theme.spacing(3),
+    },
+    checkboxContainer: {
+      marginTop: theme.spacing(3),
+    },
+    continueActionContainer: {
+      width: '100%',
+    },
+    checkbox: {
+      marginRight: theme.spacing(0),
+      marginTop: theme.spacing(-1),
+      alignSelf: 'flex-start',
+    },
+    iconConfigured: {
+      color: theme.palette.success.main,
+      width: '75px',
+      height: '75px',
+    },
+    enableDescription: {
+      color: theme.palette.neutralShades[600],
+    },
+  }),
+);
 
 enum WalletConfigState {
   OtpEntry = 'otpEntry',
@@ -83,9 +98,6 @@ export const Configuration: React.FC<
     mode?: 'basic' | 'portfolio';
   }
 > = ({onUpdate, setButtonComponent, mode = 'basic'}) => {
-  const {classes} = useStyles();
-  const [t] = useTranslationContext();
-
   // component state variables
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -107,6 +119,10 @@ export const Configuration: React.FC<
   const [recoveryPhrase, setRecoveryPhrase] = useState<string>();
   const [emailAddress, setEmailAddress] = useState<string>();
   const [mpcWallets, setMpcWallets] = useState<SerializedWalletBalance[]>([]);
+
+  // style and translation
+  const {classes} = useStyles({configState});
+  const [t] = useTranslationContext();
 
   useEffect(() => {
     setIsLoaded(false);
@@ -269,12 +285,21 @@ export const Configuration: React.FC<
   const loadFromState = async () => {
     // retrieve existing state from session or local storage if available
     const existingState = getBootstrapState(state);
+    if (!existingState) {
+      setIsLoaded(true);
+      return;
+    }
+
+    // after retrieving the unverified state, assume that configuration
+    // will complete successfully
+    setConfigState(WalletConfigState.Complete);
 
     // check state for device ID and refresh token
-    if (accessToken) {
-      // wallet state is complete
-      setConfigState(WalletConfigState.Complete);
-    } else if (existingState?.deviceId && existingState?.refreshToken) {
+    if (
+      !accessToken &&
+      existingState?.deviceId &&
+      existingState?.refreshToken
+    ) {
       const tokens = await getAccessToken(existingState.refreshToken, {
         deviceId: existingState.deviceId,
         state,
@@ -282,8 +307,12 @@ export const Configuration: React.FC<
         setAccessToken,
       });
       if (tokens) {
+        // successfully retrieved access token
         setAccessToken(tokens.accessToken);
-        setConfigState(WalletConfigState.Complete);
+      } else {
+        // unable to retrieve access token, so revert back to configuration
+        // state before returning
+        setConfigState(WalletConfigState.PasswordEntry);
       }
     }
 
@@ -648,7 +677,7 @@ export const Configuration: React.FC<
           )
         )
       ) : (
-        <Box display="flex" justifyContent="center">
+        <Box className={classes.loadingContainer}>
           <CircularProgress />
         </Box>
       )}

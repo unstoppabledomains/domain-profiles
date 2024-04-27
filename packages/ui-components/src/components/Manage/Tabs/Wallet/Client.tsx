@@ -31,6 +31,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
+    height: `${MIN_CLIENT_HEIGHT}px`,
+  },
+  loadingContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    height: `${MIN_CLIENT_HEIGHT - 125}px`,
+    alignItems: 'center',
   },
   walletContainer: {
     display: 'flex',
@@ -250,7 +257,7 @@ export const Client: React.FC<ClientProps> = ({
           )}
         </Box>
       ) : (
-        <Box display="flex" justifyContent="center">
+        <Box className={classes.loadingContainer}>
           <CircularProgress />
         </Box>
       )}
@@ -268,3 +275,5 @@ export enum ClientTabType {
   Portfolio = 'portfolio',
   Transactions = 'txns',
 }
+
+export const MIN_CLIENT_HEIGHT = 550;

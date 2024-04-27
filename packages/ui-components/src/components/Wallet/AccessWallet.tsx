@@ -14,6 +14,7 @@ import React, {useEffect, useState} from 'react';
 import truncateEthAddress from 'truncate-eth-address';
 
 import AccessEthereum from '../../components/Wallet/AccessEthereum';
+import {useWeb3Context} from '../../hooks';
 import useFireblocksSigner from '../../hooks/useFireblocksSigner';
 import useFireblocksState from '../../hooks/useFireblocksState';
 import {WalletName} from '../../lib';
@@ -36,7 +37,7 @@ type Props = {
   prompt?: boolean;
   onComplete?: (web3Deps?: Web3Dependencies) => void;
   onReconnect?: () => void;
-  onClose?: () => void;
+  onClose: () => void;
 };
 
 const AccessWallet = (props: Props) => {
@@ -52,7 +53,7 @@ const AccessWallet = (props: Props) => {
   const fireblocksSigner = useFireblocksSigner();
   const [udConfigButton, setUdConfigButton] = useState<React.ReactNode>(<></>);
   const [udConfigSuccess, setUdConfigSuccess] = useState(false);
-  const [udConfigMessage, setUdConfigMessage] = useState('');
+  const {messageToSign, setMessageToSign} = useWeb3Context();
 
   useEffect(() => {
     // automatically select a connected Unstoppable Wallet if one of the managed
@@ -126,7 +127,7 @@ const AccessWallet = (props: Props) => {
       ethAddresses[0],
       promptForSignatures
         ? {
-            setMessage: setUdConfigMessage,
+            setMessage: setMessageToSign,
           }
         : {
             signWithFireblocks: fireblocksSigner,
@@ -145,6 +146,13 @@ const AccessWallet = (props: Props) => {
   };
 
   const handleUdWalletSignature = (signedMessage?: string) => {
+    if (!signedMessage) {
+      UD_COMPLETED_SIGNATURE.push('');
+      if (props.onComplete) {
+        props.onComplete();
+      }
+      return;
+    }
     UD_COMPLETED_SIGNATURE.push(signedMessage);
   };
 
@@ -196,7 +204,7 @@ const AccessWallet = (props: Props) => {
           ) : (
             <Grid item xs={12} display="flex" justifyContent="center">
               <Box className={classes.udConfigContainer}>
-                {!udConfigMessage || !udConfigSuccess ? (
+                {!messageToSign || !udConfigSuccess ? (
                   <Box
                     display="flex"
                     flexDirection="column"
@@ -214,11 +222,11 @@ const AccessWallet = (props: Props) => {
                     </Box>
                   </Box>
                 ) : (
-                  udConfigMessage && (
+                  messageToSign && (
                     <>
                       <UnstoppableWalletSigner
                         address={props.address}
-                        message={udConfigMessage}
+                        message={messageToSign}
                         onComplete={handleUdWalletSignature}
                       />
                     </>
@@ -243,14 +251,22 @@ type ModalProps = Props & {
 
 export const AccessWalletModal = (props: ModalProps) => {
   const {classes, theme} = useAccessWalletStyles();
+  const {web3Deps} = useWeb3Context();
   const [t] = useTranslationContext();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const ConnectWalletWrapper = isMobile ? Popover : Dialog;
 
+  const onCloseWrapper = () => {
+    if (web3Deps?.unstoppableWallet) {
+      UD_COMPLETED_SIGNATURE.push('');
+    }
+    props.onClose();
+  };
+
   return (
     <ConnectWalletWrapper
       open={props.open}
-      onClose={props.onClose}
+      onClose={onCloseWrapper}
       classes={{paper: classes.modalRoot}}
       {...(isMobile
         ? {
@@ -270,7 +286,7 @@ export const AccessWalletModal = (props: ModalProps) => {
         <Typography className={classes.modalTitle}>
           {t('auth.accessWallet')}
         </Typography>
-        <IconButton onClick={props.onClose} size="medium">
+        <IconButton onClick={onCloseWrapper} size="medium">
           <CloseIcon />
         </IconButton>
       </div>
@@ -279,7 +295,7 @@ export const AccessWalletModal = (props: ModalProps) => {
           address={props.address}
           onComplete={props.onComplete}
           onReconnect={props.onReconnect}
-          onClose={props.onClose}
+          onClose={onCloseWrapper}
           prompt={props.prompt}
           message={props.message}
         />

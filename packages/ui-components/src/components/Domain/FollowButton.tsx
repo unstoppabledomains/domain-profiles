@@ -4,6 +4,7 @@ import PersonRemoveOutlinedIcon from '@mui/icons-material/PersonRemoveOutlined';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import type {Theme} from '@mui/material/styles';
+import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -49,6 +50,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
   small,
 }) => {
   const {classes} = useStyles({color});
+  const {enqueueSnackbar} = useSnackbar();
   const {data: followStatus, isLoading} = useDomainProfileFollowStatus(
     authDomain,
     domain,
@@ -56,7 +58,6 @@ const FollowButton: React.FC<FollowButtonProps> = ({
   const [isFollowing, setIsFollowing] = useState(
     followStatus?.isFollowing ?? false,
   );
-  const [isError, setIsError] = useState(false);
   const [followClicked, setFollowClicked] = useState(false);
   const [isMouseOver, setIsMouseOver] = useState(false);
   const [t] = useTranslationContext();
@@ -105,7 +106,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
   };
 
   const handleError = () => {
-    setIsError(true);
+    enqueueSnackbar(t('profile.followError', {domain}), {variant: 'error'});
   };
 
   return (
@@ -120,7 +121,6 @@ const FollowButton: React.FC<FollowButtonProps> = ({
             onClick={handleClick}
             onMouseEnter={handleMouseOver}
             onMouseLeave={handleMouseOver}
-            disabled={isError}
             data-testid="follow-button"
             className={classes.followButtonSmall}
             disableRipple={true}
@@ -158,7 +158,6 @@ const FollowButton: React.FC<FollowButtonProps> = ({
           onMouseLeave={handleMouseOver}
           onClick={handleClick}
           sx={{width: '100px'}}
-          disabled={isError}
           icon={
             !isFollowing ? (
               <PersonAddAltOutlinedIcon />

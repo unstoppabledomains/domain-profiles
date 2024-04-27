@@ -530,6 +530,7 @@
     "expires": "Expires",
     "follow": "Follow",
     "followedBy": "Followed by {{followers}} and {{othersCount}} others",
+    "followError": "Error updating follow status for {{domain}}",
     "followers": "Followers",
     "following": "Following",
     "gallery": "Collectibles",

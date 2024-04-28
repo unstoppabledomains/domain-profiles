@@ -42,50 +42,52 @@ import {DomainProfileTabType} from '../../DomainProfile';
 import ManageInput from '../../common/ManageInput';
 import type {ManageTabProps} from '../../common/types';
 import {Client, MIN_CLIENT_HEIGHT} from './Client';
+import type {WalletMode} from './index';
 
-const useStyles = makeStyles<{configState: WalletConfigState}>()(
-  (theme: Theme, {configState}) => ({
-    container: {
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight:
-        configState === WalletConfigState.Complete
-          ? `${MIN_CLIENT_HEIGHT}px`
-          : undefined,
-    },
-    loadingContainer: {
-      display: 'flex',
-      justifyContent: 'center',
-      height:
-        configState === WalletConfigState.Complete
-          ? `${MIN_CLIENT_HEIGHT - 125}px`
-          : undefined,
-      alignItems: 'center',
-    },
-    infoContainer: {
-      marginBottom: theme.spacing(3),
-    },
-    checkboxContainer: {
-      marginTop: theme.spacing(3),
-    },
-    continueActionContainer: {
-      width: '100%',
-    },
-    checkbox: {
-      marginRight: theme.spacing(0),
-      marginTop: theme.spacing(-1),
-      alignSelf: 'flex-start',
-    },
-    iconConfigured: {
-      color: theme.palette.success.main,
-      width: '75px',
-      height: '75px',
-    },
-    enableDescription: {
-      color: theme.palette.neutralShades[600],
-    },
-  }),
-);
+const useStyles = makeStyles<{
+  configState: WalletConfigState;
+  mode: WalletMode;
+}>()((theme: Theme, {configState, mode}) => ({
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight:
+      configState === WalletConfigState.Complete && mode === 'portfolio'
+        ? `${MIN_CLIENT_HEIGHT}px`
+        : undefined,
+  },
+  loadingContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    height:
+      configState === WalletConfigState.Complete && mode === 'portfolio'
+        ? `${MIN_CLIENT_HEIGHT - 125}px`
+        : undefined,
+    alignItems: 'center',
+  },
+  infoContainer: {
+    marginBottom: theme.spacing(3),
+  },
+  checkboxContainer: {
+    marginTop: theme.spacing(3),
+  },
+  continueActionContainer: {
+    width: '100%',
+  },
+  checkbox: {
+    marginRight: theme.spacing(0),
+    marginTop: theme.spacing(-1),
+    alignSelf: 'flex-start',
+  },
+  iconConfigured: {
+    color: theme.palette.success.main,
+    width: '75px',
+    height: '75px',
+  },
+  enableDescription: {
+    color: theme.palette.neutralShades[600],
+  },
+}));
 
 enum WalletConfigState {
   OtpEntry = 'otpEntry',
@@ -95,7 +97,7 @@ enum WalletConfigState {
 
 export const Configuration: React.FC<
   ManageTabProps & {
-    mode?: 'basic' | 'portfolio';
+    mode?: WalletMode;
   }
 > = ({onUpdate, setButtonComponent, mode = 'basic'}) => {
   // component state variables
@@ -121,7 +123,7 @@ export const Configuration: React.FC<
   const [mpcWallets, setMpcWallets] = useState<SerializedWalletBalance[]>([]);
 
   // style and translation
-  const {classes} = useStyles({configState});
+  const {classes} = useStyles({configState, mode});
   const [t] = useTranslationContext();
 
   useEffect(() => {

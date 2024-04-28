@@ -19,7 +19,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export const Wallet: React.FC<
   ManageTabProps & {
-    mode?: 'basic' | 'portfolio';
+    mode?: WalletMode;
   }
 > = ({address, domain, mode = 'basic', onUpdate, setButtonComponent}) => {
   const {classes} = useStyles();
@@ -42,3 +42,5 @@ export const Wallet: React.FC<
     </Box>
   );
 };
+
+export type WalletMode = 'basic' | 'portfolio';

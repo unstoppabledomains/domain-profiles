@@ -10,7 +10,6 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import type {DomainProfileTabType} from '..';
 import {getProfileData} from '../../actions/domainProfileActions';
 import DropDownMenu from '../../components/DropDownMenu';
-import {useTranslationContext} from '../../lib';
 import getImageUrl from '../../lib/domain/getImageUrl';
 import {notifyEvent} from '../../lib/error';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
@@ -85,9 +84,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     maxWidth: '500px',
     minHeight: '400px',
   },
-  modalTitle: {
-    color: theme.palette.common.black,
-  },
 }));
 
 export const AccountButton: React.FC<AccountButtonProps> = ({
@@ -97,11 +93,12 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
   authDomain,
 }) => {
   const {classes, cx} = useStyles();
-  const [t] = useTranslationContext();
   const [isOwner, setIsOwner] = useState(false);
   const [isDropDownShown, setDropDownShown] = useState(false);
   const [authDomainAvatar, setAuthDomainAvatar] = useState<string>('');
   const [isMpcWalletOpen, setIsMpcWalletOpen] = useState(false);
+  const [domainProfileData, setDomainProfileData] =
+    useState<SerializedPublicDomainProfileData>();
 
   useEffect(() => {
     if (!authAddress || !authDomain || !domainOwner) {
@@ -114,6 +111,7 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
         profileData = await getProfileData(domainName, [
           DomainFieldTypes.Profile,
         ]);
+        setDomainProfileData(profileData);
       } catch {}
       setAuthDomainAvatar(
         getDomainAvatarFromProfileAndMetadata(domainName, profileData),
@@ -183,9 +181,8 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
       {isMpcWalletOpen && (
         <Modal
           open={isMpcWalletOpen}
-          title={t('wallet.title')}
-          titleStyle={classes.modalTitle}
           onClose={() => setIsMpcWalletOpen(false)}
+          noModalHeader
           noContentPadding
         >
           <Box className={classes.modalContainer}>
@@ -193,6 +190,11 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
               mode="portfolio"
               address={authAddress}
               domain={authDomain}
+              avatarUrl={
+                domainProfileData?.profile?.imageType !== 'default'
+                  ? authDomainAvatar
+                  : undefined
+              }
               onUpdate={(_t: DomainProfileTabType) => {
                 return;
               }}

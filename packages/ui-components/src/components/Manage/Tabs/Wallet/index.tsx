@@ -1,14 +1,13 @@
-import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import Box from '@mui/material/Box';
 import type {Theme} from '@mui/material/styles';
 import React from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {useTranslationContext} from '../../../../lib';
-import {TabHeader} from '../../common/TabHeader';
+import {isDomainValidForManagement} from '../../../../lib';
 import type {ManageTabProps} from '../../common/types';
 import {Configuration} from './Configuration';
+import {Header} from './Header';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -19,18 +18,25 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export const Wallet: React.FC<
   ManageTabProps & {
+    avatarUrl?: string;
     mode?: WalletMode;
   }
-> = ({address, domain, mode = 'basic', onUpdate, setButtonComponent}) => {
+> = ({
+  address,
+  domain,
+  avatarUrl,
+  mode = 'basic',
+  onUpdate,
+  setButtonComponent,
+}) => {
   const {classes} = useStyles();
-  const [t] = useTranslationContext();
 
   return (
     <Box className={classes.container}>
-      <TabHeader
-        icon={<WalletOutlinedIcon />}
-        description={t('manage.cryptoWalletDescription')}
-        learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001205861-list-domain-for-sale-on-our-website"
+      <Header
+        mode={mode}
+        avatarUrl={avatarUrl}
+        domain={isDomainValidForManagement(domain) ? domain : undefined}
       />
       <Configuration
         mode={mode}

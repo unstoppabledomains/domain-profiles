@@ -296,6 +296,12 @@ export const Configuration: React.FC<
     // will complete successfully
     setConfigState(WalletConfigState.Complete);
 
+    // no more work to do if access token available
+    if (accessToken) {
+      setIsLoaded(true);
+      return;
+    }
+
     // check state for device ID and refresh token
     if (
       !accessToken &&
@@ -311,14 +317,13 @@ export const Configuration: React.FC<
       if (tokens) {
         // successfully retrieved access token
         setAccessToken(tokens.accessToken);
-      } else {
-        // unable to retrieve access token, so revert back to configuration
-        // state before returning
-        setConfigState(WalletConfigState.PasswordEntry);
+        return;
       }
     }
 
-    // set loaded state
+    // unable to retrieve access token, so revert back to configuration
+    // state before returning
+    setConfigState(WalletConfigState.PasswordEntry);
     setIsLoaded(true);
   };
 

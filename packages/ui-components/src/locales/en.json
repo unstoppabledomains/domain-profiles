@@ -785,6 +785,8 @@
     "viewExplorer": "Blockchain explorer"
   },
   "wallet": {
+    "sendTransactionSuccess": "{{amount}} {{sourceSymbol}} was successfully sent to{{recipientDomain}} ({{recipientAddress}})",
+    "sendTransactionFailed": "{{amount}} {{sourceSymbol}} failed to send to{{recipientDomain}} ({{recipientAddress}})",
     "viewTransaction": "View transaction",
     "approve": "Confirm",
     "beginSetup": "Continue",

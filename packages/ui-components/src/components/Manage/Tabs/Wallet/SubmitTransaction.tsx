@@ -178,13 +178,23 @@ export const SubmitTransaction: React.FC<Props> = ({
         <Box className={classes.transactionStatusContainer} mt={2}>
           <Typography variant="h5">{statusMessage}</Typography>
           <Typography variant="caption">
-            {amount} {sourceSymbol}{' '}
             {status === Status.Success
-              ? 'was successfully sent '
+              ? t('wallet.sendTransactionSuccess', {
+                  amount,
+                  sourceSymbol,
+                  status,
+                  recipientDomain: recipientDomain ? ` ${recipientDomain}` : '',
+                  recipientAddress: truncateAddress(recipientAddress),
+                })
               : status === Status.Failed
-              ? 'failed to send '
+              ? t('wallet.sendTransactionFailed', {
+                  amount,
+                  sourceSymbol,
+                  status,
+                  recipientDomain: recipientDomain ? ` ${recipientDomain}` : '',
+                  recipientAddress: truncateAddress(recipientAddress),
+                })
               : ''}
-            to {recipientDomain ? recipientDomain : null} (
             {truncateAddress(recipientAddress)})
           </Typography>
           {transactionId && (

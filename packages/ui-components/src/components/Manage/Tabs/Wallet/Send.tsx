@@ -62,6 +62,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    width: '100%',
   },
   sendAmountContainer: {
     display: 'flex',
@@ -212,7 +213,9 @@ const Send: React.FC<Props> = ({
       <Box className={classes.contentWrapper}>
         <Box className={classes.selectAssetContainer}>
           <Box className={classes.sendAssetContainer}>
-            <Typography variant="h5">Send {asset.symbol}</Typography>
+            <Box className={classes.fullWidth}>
+              <Typography variant="h5">Send {asset.symbol}</Typography>
+            </Box>
             <img src={asset.imageUrl} className={classes.assetLogo} />
           </Box>
           <Box className={classes.recipientWrapper}>
@@ -238,7 +241,7 @@ const Send: React.FC<Props> = ({
                 endAdornment={<Button onClick={handleMaxClick}>Max</Button>}
               />
             </div>
-            {insufficientBalance ? null : (
+            {!insufficientBalance && (
               <Typography
                 variant="subtitle1"
                 className={classes.availableBalance}

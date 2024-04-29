@@ -1,6 +1,8 @@
 import React, {useState} from 'react';
 
 import {DomainProfileTabType} from '../components';
+import {AccessWalletModal} from '../components/Wallet/AccessWallet';
+import {useWeb3Context} from '../hooks';
 
 type Props = {
   children: React.ReactNode;
@@ -18,6 +20,7 @@ export const DomainConfigContext = React.createContext<{
 
 const DomainConfigProvider: React.FC<Props> = ({children}) => {
   const [isOpen, setIsOpen] = useState<boolean>();
+  const {web3Deps, messageToSign, setMessageToSign} = useWeb3Context();
   const [configTab, setConfigTab] = useState<DomainProfileTabType>(
     DomainProfileTabType.Profile,
   );
@@ -32,6 +35,14 @@ const DomainConfigProvider: React.FC<Props> = ({children}) => {
   return (
     <DomainConfigContext.Provider value={value}>
       {children}
+      {web3Deps?.unstoppableWallet?.promptForSignatures && messageToSign && (
+        <AccessWalletModal
+          prompt={true}
+          address={web3Deps.address}
+          open={true}
+          onClose={() => setMessageToSign('')}
+        />
+      )}
     </DomainConfigContext.Provider>
   );
 };

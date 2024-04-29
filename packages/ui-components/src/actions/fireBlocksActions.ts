@@ -12,27 +12,27 @@ import {
 } from '../lib/fireBlocks/storage/state';
 import {pollForSuccess} from '../lib/poll';
 import {sleep} from '../lib/sleep';
-import {
-  OperationStatus,
-  type AccountAsset,
-  type GetAccountAssetsResponse,
-  type GetAccountsResponse,
-  type GetAuthorizationTxResponse,
-  type GetBootstrapTokenResponse,
-  type GetOperationResponse,
-  type GetOperationStatusResponse,
-  type GetTokenResponse,
+import type {
+  AccountAsset,
+  GetAccountAssetsResponse,
+  GetAccountsResponse,
+  GetAuthorizationTxResponse,
+  GetBootstrapTokenResponse,
+  GetOperationResponse,
+  GetOperationStatusResponse,
+  GetTokenResponse,
 } from '../lib/types/fireBlocks';
+import {OperationStatus} from '../lib/types/fireBlocks';
 
-export enum SendCryptoStatus  {
-  RETRIEVING_ACCOUNT='Retrieving account...',
-  STARTING_TRANSACTION='Starting transaction...',
-  GETTING_TRANSACTION_TO_SIGN='Getting signature to sign...',
-  SIGNING='Signing...',
-  SUBMITTING_TRANSACTION='Submitting transaction...',
-  WAITING_FOR_TRANSACTION='Waiting for transaction to complete...',
-  TRANSACTION_COMPLETED='Transaction completed!',
-  TRANSACTION_FAILED='Transaction failed',
+export enum SendCryptoStatus {
+  RETRIEVING_ACCOUNT = 'Retrieving account...',
+  STARTING_TRANSACTION = 'Starting transaction...',
+  GETTING_TRANSACTION_TO_SIGN = 'Getting signature to sign...',
+  SIGNING = 'Signing...',
+  SUBMITTING_TRANSACTION = 'Submitting transaction...',
+  WAITING_FOR_TRANSACTION = 'Waiting for transaction to complete...',
+  TRANSACTION_COMPLETED = 'Transaction completed!',
+  TRANSACTION_FAILED = 'Transaction failed',
 }
 
 export const confirmAuthorizationTokenTx = async (
@@ -345,6 +345,7 @@ export const getMessageSignature = async (
     if (opts?.onStatusChange) {
       opts.onStatusChange('waiting to sign with local key');
     }
+    let signedWithClient = false;
     for (let i = 0; i < FB_MAX_RETRY; i++) {
       const operationStatus = await getOperationStatus(
         accessToken,
@@ -356,6 +357,7 @@ export const getMessageSignature = async (
 
       // sign the message if requested
       if (
+        !signedWithClient &&
         operationStatus.status === 'SIGNATURE_REQUIRED' &&
         operationStatus.transaction?.externalVendorTransactionId
       ) {
@@ -364,6 +366,7 @@ export const getMessageSignature = async (
           opts.onStatusChange('signing with local key');
         }
         await onSignTx(operationStatus.transaction.externalVendorTransactionId);
+        signedWithClient = true;
 
         // indicate status change
         if (opts?.onStatusChange) {
@@ -512,6 +515,8 @@ export const sendCrypto = async (
     if (opts?.onStatusChange) {
       opts.onStatusChange(SendCryptoStatus.GETTING_TRANSACTION_TO_SIGN);
     }
+    let signedWithClient = false;
+
     await pollForSuccess({
       fn: async () => {
         const operationStatus = await getOperationStatus(
@@ -522,6 +527,7 @@ export const sendCrypto = async (
           throw new Error('error requesting transaction operation status');
         }
         if (
+          !signedWithClient &&
           operationStatus.status === OperationStatus.SIGNATURE_REQUIRED &&
           operationStatus.transaction?.externalVendorTransactionId
         ) {
@@ -532,6 +538,7 @@ export const sendCrypto = async (
           await onSignTx(
             operationStatus.transaction.externalVendorTransactionId,
           );
+          signedWithClient = true;
           return {success: true};
         }
         return {success: false};
@@ -543,7 +550,7 @@ export const sendCrypto = async (
     if (opts?.onStatusChange) {
       opts.onStatusChange(SendCryptoStatus.SUBMITTING_TRANSACTION);
     }
- 
+
     const {success} = await pollForSuccess({
       fn: async () => {
         const operationStatus = await getOperationStatus(
@@ -565,8 +572,13 @@ export const sendCrypto = async (
           }
           return {success: true};
         }
-        if (operationStatus.status === OperationStatus.FAILED|| operationStatus.status === OperationStatus.CANCELLED) {
-          throw new Error(`Transferred failed ${operationStatus.status.toLowerCase()}`)
+        if (
+          operationStatus.status === OperationStatus.FAILED ||
+          operationStatus.status === OperationStatus.CANCELLED
+        ) {
+          throw new Error(
+            `Transferred failed ${operationStatus.status.toLowerCase()}`,
+          );
         }
         return {success: false};
       },

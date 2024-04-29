@@ -74,7 +74,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginBottom: theme.spacing(-2),
     maxWidth: '375px',
     [theme.breakpoints.down('sm')]: {
-      maxWidth: '275px',
+      maxWidth: '330px',
     },
   },
   actionIcon: {
@@ -95,10 +95,17 @@ const useStyles = makeStyles()((theme: Theme) => ({
   tabList: {
     marginTop: theme.spacing(-3),
     marginRight: theme.spacing(-4),
+    [theme.breakpoints.down('sm')]: {
+      marginRight: theme.spacing(-1),
+    },
   },
   tabContentItem: {
     marginLeft: theme.spacing(-3),
     marginRight: theme.spacing(-3),
+    [theme.breakpoints.down('sm')]: {
+      marginLeft: theme.spacing(-1),
+      marginRight: theme.spacing(-1),
+    },
   },
 }));
 

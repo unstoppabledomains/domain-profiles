@@ -797,6 +797,7 @@
     "enterRecoveryPhrase": "Enter your password",
     "invalidRecoveryAccount": "Invalid email address or password",
     "invalidSetupCode": "Invalid one-time code",
+    "noTokensAvailableForSend": "No crypto available to send. The following options can be used to fund your wallet.",
     "recoveryError": "Unable to access wallet",
     "recoveryPhrase": "Password",
     "recoveryPhraseDescription": "Your Unstoppable Wallet credentials are required to unlock access on this device. **Do not share your password with anyone**, including Unstoppable Domains staff.",

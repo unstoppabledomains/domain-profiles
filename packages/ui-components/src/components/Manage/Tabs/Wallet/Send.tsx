@@ -103,6 +103,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 type Props = {
   onCancelClick: () => void;
+  onClickReceive?: () => void;
+  onClickBuy?: () => void;
   client: IFireblocksNCW;
   accessToken: string;
   wallets: SerializedWalletBalance[];
@@ -110,6 +112,8 @@ type Props = {
 
 const Send: React.FC<Props> = ({
   onCancelClick,
+  onClickBuy,
+  onClickReceive,
   client,
   accessToken,
   wallets,
@@ -167,7 +171,10 @@ const Send: React.FC<Props> = ({
           onSelectAsset={setAsset}
           wallets={wallets}
           onCancelClick={handleBackClick}
+          onClickBuy={onClickBuy}
+          onClickReceive={onClickReceive}
           label={t('wallet.selectAssetToSend')}
+          requireBalance={true}
         />
       </Box>
     );

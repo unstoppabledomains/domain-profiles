@@ -426,6 +426,31 @@ export const getOperationStatus = async (
   });
 };
 
+export const getTransferOperationResponse = (
+  asset: AccountAsset,
+  accessToken: string,
+  destinationAddress: string,
+  amount: number,
+) => {
+  return fetchApi<GetOperationResponse>(
+    `/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
+    {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        destinationAddress,
+        amount: String(amount),
+      }),
+    },
+  );
+};
+
 export const sendBootstrapCode = async (
   emailAddress: string,
 ): Promise<boolean> => {

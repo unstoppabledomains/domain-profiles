@@ -6,13 +6,22 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {sendCrypto} from '../../../../actions/fireBlocksActions';
-import {TokenType, useTranslationContext} from '../../../../lib';
+import {
+  SendCryptoStatus,
+  getAccountAssets,
+  getOperationStatus,
+  getTransferOperationResponse,
+} from '../../../../actions/fireBlocksActions';
+import {useTranslationContext} from '../../../../lib';
+import {notifyEvent} from '../../../../lib/error';
+import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../../../../lib/fireBlocks/client';
+import {pollForSuccess} from '../../../../lib/poll';
+import {OperationStatus} from '../../../../lib/types/fireBlocks';
 import Link from '../../../Link';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -135,30 +144,123 @@ export const SubmitTransaction: React.FC<Props> = ({
   const [status, setStatus] = useState<Status>(Status.Pending);
   const [statusMessage, setStatusMessage] = useState<string>();
   const {classes} = useStyles();
+  const isMounted = useRef(false);
 
   useEffect(() => {
+    isMounted.current = true;
     void submitTransaction();
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   const submitTransaction = async () => {
     try {
-      await sendCrypto(
-        accessToken,
-        sourceAddress,
-        sourceSymbol,
-        recipientAddress,
-        {
-          type: TokenType.Native,
-          amount: parseFloat(amount),
-        },
-        async (internalTxId: string) => {
-          await client.signTransaction(internalTxId);
-        },
-        {
-          onTxId: setTransactionId,
-          onStatusChange: setStatusMessage,
-        },
-      );
+      try {
+        // retrieve the accounts associated with the access token
+        setStatusMessage(SendCryptoStatus.RETRIEVING_ACCOUNT);
+        const assets = await getAccountAssets(accessToken);
+        if (!assets) {
+          throw new Error('account assets not found');
+        }
+        // retrieve the asset associated with the optionally requested address,
+        // otherwise just retrieve the first first asset.
+        const asset = assets.find(
+          a =>
+            a.blockchainAsset.symbol.toLowerCase() ===
+              sourceSymbol.toLowerCase() &&
+            a.address.toLowerCase() === sourceAddress.toLowerCase(),
+        );
+        if (!asset) {
+          throw new Error('address not found in account');
+        }
+        if (!isMounted.current) {
+          return;
+        }
+        // initialize a transaction to retrieve auth tokens
+        setStatusMessage(SendCryptoStatus.STARTING_TRANSACTION);
+        const operationResponse = await getTransferOperationResponse(
+          asset,
+          accessToken,
+          recipientAddress,
+          parseFloat(amount),
+        );
+        if (!operationResponse) {
+          throw new Error('error starting transaction');
+        }
+        setStatusMessage(SendCryptoStatus.GETTING_TRANSACTION_TO_SIGN);
+        await pollForSuccess({
+          fn: async () => {
+            if (!isMounted.current) {
+              throw new Error('transaction cancelled by user');
+            }
+            const operationStatus = await getOperationStatus(
+              accessToken,
+              operationResponse.operation.id,
+            );
+            if (!operationStatus) {
+              throw new Error('error requesting transaction operation status');
+            }
+            if (
+              operationStatus.status === OperationStatus.SIGNATURE_REQUIRED &&
+              operationStatus.transaction?.externalVendorTransactionId
+            ) {
+              // request for the client to sign the Tx string
+              setStatusMessage(SendCryptoStatus.SIGNING);
+              await client.signTransaction(
+                operationStatus.transaction.externalVendorTransactionId,
+              );
+              return {success: true};
+            }
+            return {success: false};
+          },
+          attempts: FB_MAX_RETRY,
+          interval: FB_WAIT_TIME_MS,
+        });
+
+        setStatusMessage(SendCryptoStatus.SUBMITTING_TRANSACTION);
+
+        const {success} = await pollForSuccess({
+          fn: async () => {
+            const operationStatus = await getOperationStatus(
+              accessToken,
+              operationResponse.operation.id,
+            );
+            if (!operationStatus) {
+              throw new Error('error requesting transaction operation status');
+            }
+            if (operationStatus.transaction?.id) {
+              setTransactionId(operationStatus.transaction.id);
+              setStatusMessage(SendCryptoStatus.WAITING_FOR_TRANSACTION);
+            }
+            if (operationStatus.status === OperationStatus.COMPLETED) {
+              setStatusMessage(SendCryptoStatus.TRANSACTION_COMPLETED);
+              return {success: true};
+            }
+            if (
+              operationStatus.status === OperationStatus.FAILED ||
+              operationStatus.status === OperationStatus.CANCELLED
+            ) {
+              throw new Error(
+                `Transferred failed ${operationStatus.status.toLowerCase()}`,
+              );
+            }
+            return {success: false};
+          },
+          attempts: FB_MAX_RETRY,
+          interval: FB_WAIT_TIME_MS,
+        });
+        if (!success) {
+          throw new Error('failed to complete transaction');
+        }
+      } catch (e) {
+        setStatusMessage(SendCryptoStatus.TRANSACTION_FAILED);
+        notifyEvent(e, 'error', 'Wallet', 'Signature', {
+          msg: 'error sending crypto',
+          meta: crypto,
+        });
+        throw e;
+      }
       setStatus(Status.Success);
     } catch (e) {
       setStatus(Status.Failed);
@@ -195,7 +297,6 @@ export const SubmitTransaction: React.FC<Props> = ({
                   recipientAddress: truncateAddress(recipientAddress),
                 })
               : ''}
-            {truncateAddress(recipientAddress)})
           </Typography>
           {transactionId && (
             <Link

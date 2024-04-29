@@ -2,6 +2,7 @@ import Bluebird from 'bluebird';
 
 import config from '@unstoppabledomains/config';
 
+import type {TokenEntry} from '../components/Wallet/Token';
 import type {TokenType} from '../lib';
 import {fetchApi} from '../lib';
 import {notifyEvent} from '../lib/error';
@@ -477,8 +478,7 @@ export const sendBootstrapCode = async (
 
 export const sendCrypto = async (
   accessToken: string,
-  sourceAddress: string,
-  sourceSymbol: string,
+  sourceAsset: TokenEntry,
   destinationAddress: string,
   crypto: {
     type: TokenType;
@@ -505,8 +505,9 @@ export const sendCrypto = async (
     // otherwise just retrieve the first first asset.
     const asset = assets.find(
       a =>
-        a.blockchainAsset.symbol.toLowerCase() === sourceSymbol.toLowerCase() &&
-        a.address.toLowerCase() === sourceAddress.toLowerCase(),
+        a.blockchainAsset.blockchain.name.toLowerCase() ===
+          sourceAsset.name.toLowerCase() &&
+        a.address.toLowerCase() === sourceAsset.walletAddress.toLowerCase(),
     );
     if (!asset) {
       throw new Error('address not found in account');
@@ -561,6 +562,16 @@ export const sendCrypto = async (
             operationStatus.transaction.externalVendorTransactionId,
           );
           return {success: true};
+        }
+
+        // throw an error for failure states
+        if (
+          operationStatus.status === OperationStatus.FAILED ||
+          operationStatus.status === OperationStatus.CANCELLED
+        ) {
+          throw new Error(
+            `Transferred failed ${operationStatus.status.toLowerCase()}`,
+          );
         }
         return {success: false};
       },

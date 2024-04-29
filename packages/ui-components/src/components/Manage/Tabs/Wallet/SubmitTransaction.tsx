@@ -23,6 +23,7 @@ import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../../../../lib/fireBlocks/client';
 import {pollForSuccess} from '../../../../lib/poll';
 import {OperationStatus} from '../../../../lib/types/fireBlocks';
 import Link from '../../../Link';
+import type {TokenEntry} from '../../../Wallet/Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   flexColCenterAligned: {
@@ -111,8 +112,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 type Props = {
   onCloseClick: () => void;
   accessToken: string;
-  sourceAddress: string;
-  sourceSymbol: string;
+  asset: TokenEntry;
   recipientAddress: string;
   recipientDomain?: string;
   amount: string;
@@ -132,8 +132,7 @@ const truncateAddress = (address: string) => {
 export const SubmitTransaction: React.FC<Props> = ({
   onCloseClick,
   accessToken,
-  sourceAddress,
-  sourceSymbol,
+  asset,
   recipientAddress,
   recipientDomain,
   amount,
@@ -165,13 +164,13 @@ export const SubmitTransaction: React.FC<Props> = ({
         }
         // retrieve the asset associated with the optionally requested address,
         // otherwise just retrieve the first first asset.
-        const asset = assets.find(
+        const assetToSend = assets.find(
           a =>
             a.blockchainAsset.symbol.toLowerCase() ===
-              sourceSymbol.toLowerCase() &&
-            a.address.toLowerCase() === sourceAddress.toLowerCase(),
+              asset.symbol.toLowerCase() &&
+            a.address.toLowerCase() === asset.walletAddress.toLowerCase(),
         );
-        if (!asset) {
+        if (!assetToSend) {
           throw new Error('address not found in account');
         }
         if (!isMounted.current) {
@@ -180,7 +179,7 @@ export const SubmitTransaction: React.FC<Props> = ({
         // initialize a transaction to retrieve auth tokens
         setStatusMessage(SendCryptoStatus.STARTING_TRANSACTION);
         const operationResponse = await getTransferOperationResponse(
-          asset,
+          assetToSend,
           accessToken,
           recipientAddress,
           parseFloat(amount),
@@ -280,29 +279,30 @@ export const SubmitTransaction: React.FC<Props> = ({
         <Box className={classes.transactionStatusContainer} mt={2}>
           <Typography variant="h5">{statusMessage}</Typography>
           <Typography variant="caption">
-            {status === Status.Success
-              ? t('wallet.sendTransactionSuccess', {
-                  amount,
-                  sourceSymbol,
-                  status,
-                  recipientDomain: recipientDomain ? ` ${recipientDomain}` : '',
-                  recipientAddress: truncateAddress(recipientAddress),
-                })
-              : status === Status.Failed
-              ? t('wallet.sendTransactionFailed', {
-                  amount,
-                  sourceSymbol,
-                  status,
-                  recipientDomain: recipientDomain ? ` ${recipientDomain}` : '',
-                  recipientAddress: truncateAddress(recipientAddress),
-                })
-              : ''}
+            {status === Status.Success || status === Status.Failed
+              ? t(
+                  status === Status.Success
+                    ? 'wallet.sendTransactionSuccess'
+                    : 'wallet.sendTransactionFailed',
+                  {
+                    amount,
+                    sourceSymbol: asset.symbol,
+                    status,
+                    recipientDomain: recipientDomain
+                      ? ` ${recipientDomain}`
+                      : '',
+                    recipientAddress: truncateAddress(recipientAddress),
+                  },
+                )
+              : null}
           </Typography>
           {transactionId && (
             <Link
               variant={'caption'}
               target="_blank"
-              href={`${config.BLOCKCHAINS[sourceSymbol].BLOCK_EXPLORER_TX_URL}${transactionId}`}
+              href={`${
+                config.BLOCKCHAINS[asset.symbol].BLOCK_EXPLORER_TX_URL
+              }${transactionId}`}
             >
               {t('wallet.viewTransaction')}
             </Link>

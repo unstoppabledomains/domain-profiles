@@ -175,15 +175,25 @@ const Send: React.FC<Props> = ({
 
   if (transactionSubmitted) {
     return (
-      <TransactionStatus
-        onCloseClick={onCancelClick}
-        accessToken={accessToken}
-        asset={asset}
-        recipientAddress={recipientAddress}
-        recipientDomain={resolvedDomain}
-        amount={amount}
-        client={client}
-      />
+      <Box className={classes.flexColCenterAligned}>
+        <TitleWithBackButton
+          label={t('wallet.actionOnBlockchainTitle', {
+            action: t('common.send'),
+            symbol: asset.ticker,
+            blockchain: asset.name,
+          })}
+          onCancelClick={onCancelClick}
+        />
+        <TransactionStatus
+          onCloseClick={onCancelClick}
+          accessToken={accessToken}
+          asset={asset}
+          recipientAddress={recipientAddress}
+          recipientDomain={resolvedDomain}
+          amount={amount}
+          client={client}
+        />
+      </Box>
     );
   }
 
@@ -201,7 +211,11 @@ const Send: React.FC<Props> = ({
     <Box className={classes.flexColCenterAligned}>
       <TitleWithBackButton
         onCancelClick={handleBackClick}
-        label={`Send ${asset.ticker} on ${asset.name}`}
+        label={t('wallet.actionOnBlockchainTitle', {
+          action: t('common.send'),
+          symbol: asset.ticker,
+          blockchain: asset.name,
+        })}
       />
       <Box className={classes.contentWrapper}>
         <Box className={classes.selectAssetContainer}>

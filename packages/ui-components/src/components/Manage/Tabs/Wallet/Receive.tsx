@@ -127,7 +127,11 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
     <Box className={classes.flexColCenterAligned}>
       <TitleWithBackButton
         onCancelClick={handleBackClick}
-        label={`Receive ${asset.ticker} on ${asset.name}`}
+        label={t('wallet.actionOnBlockchainTitle', {
+          action: t('common.receive'),
+          symbol: asset.ticker,
+          blockchain: asset.name,
+        })}
       />
       <Box className={classes.contentWrapper}>
         <Box className={classes.receiveContentContainer}>

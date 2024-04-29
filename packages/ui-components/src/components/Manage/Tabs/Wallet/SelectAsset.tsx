@@ -5,7 +5,7 @@ import React from 'react';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance} from '../../../../lib';
-import {TokenType, useTranslationContext} from '../../../../lib';
+import {TokenType} from '../../../../lib';
 import type {TokenEntry} from '../../../Wallet/Token';
 import Token from '../../../Wallet/Token';
 import {TitleWithBackButton} from './TitleWithBackButton';
@@ -54,7 +54,6 @@ export const SelectAsset: React.FC<Props> = ({
   showGraph,
   hideBalance,
 }) => {
-  const [t] = useTranslationContext();
   const {classes} = useStyles();
 
   const serializeNativeTokens = (wallet: SerializedWalletBalance) => {

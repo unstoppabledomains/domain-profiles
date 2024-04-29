@@ -17,73 +17,11 @@ import Link from '../../../Link';
 import type {TokenEntry} from '../../../Wallet/Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
-  flexColCenterAligned: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
   fullWidth: {
     width: '100%',
   },
-  contentWrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    minHeight: '250px',
-    width: '400px',
-  },
-  selectAssetContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    minHeight: '250px',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  assetsContainer: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 5,
-    alignItems: 'center',
-  },
-  asset: {
-    backgroundImage: 'linear-gradient(#0655DD, #043893)',
-    borderRadius: 9,
-    padding: 12,
-    width: '100%',
-  },
-  assetLogo: {
-    height: '60px',
-    width: '60px',
-    marginTop: '10px',
-  },
-  sendAssetContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  sendAmountContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-    height: '113px',
-  },
-  recipientWrapper: {
-    height: '109px',
-    width: '100%',
-  },
-  amountInputWrapper: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-  },
-  availableBalance: {
-    textAlign: 'right',
-    fontSize: '13px',
-    marginTop: '2px',
-  },
   sendLoadingContainer: {
+    marginTop: theme.spacing(10),
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -93,7 +31,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     gap: '7px',
-    height: '155px',
+    marginBottom: theme.spacing(5),
   },
   icon: {
     fontSize: '60px',
@@ -141,6 +79,7 @@ export const SubmitTransaction: React.FC<Props> = ({
 
   const submitTransaction = async () => {
     try {
+      // send the crypto
       await sendCrypto(
         accessToken,
         asset,
@@ -164,44 +103,42 @@ export const SubmitTransaction: React.FC<Props> = ({
   };
 
   return (
-    <Box>
-      <Box className={classes.sendLoadingContainer}>
-        {status === Status.Success ? (
-          <CheckIcon color="success" className={classes.icon} />
-        ) : status === Status.Failed ? (
-          <ErrorIcon color="error" className={classes.icon} />
-        ) : (
-          <CircularProgress />
+    <Box className={classes.sendLoadingContainer}>
+      {status === Status.Success ? (
+        <CheckIcon color="success" className={classes.icon} />
+      ) : status === Status.Failed ? (
+        <ErrorIcon color="error" className={classes.icon} />
+      ) : (
+        <CircularProgress />
+      )}
+      <Box className={classes.transactionStatusContainer} mt={2}>
+        <Typography variant="h5">{statusMessage}</Typography>
+        <Typography variant="caption">
+          {amount} {asset.ticker}{' '}
+          {status === Status.Success
+            ? 'was successfully sent '
+            : status === Status.Failed
+            ? 'failed to send '
+            : ''}
+          to {recipientDomain ? recipientDomain : null} (
+          {truncateAddress(recipientAddress)})
+        </Typography>
+        {transactionId && (
+          <Link
+            variant={'caption'}
+            target="_blank"
+            href={`${
+              config.BLOCKCHAINS[asset.symbol].BLOCK_EXPLORER_TX_URL
+            }${transactionId}`}
+          >
+            {t('wallet.viewTransaction')}
+          </Link>
         )}
-        <Box className={classes.transactionStatusContainer} mt={2}>
-          <Typography variant="h5">{statusMessage}</Typography>
-          <Typography variant="caption">
-            {amount} {asset.ticker}{' '}
-            {status === Status.Success
-              ? 'was successfully sent '
-              : status === Status.Failed
-              ? 'failed to send '
-              : ''}
-            to {recipientDomain ? recipientDomain : null} (
-            {truncateAddress(recipientAddress)})
-          </Typography>
-          {transactionId && (
-            <Link
-              variant={'caption'}
-              target="_blank"
-              href={`${
-                config.BLOCKCHAINS[asset.symbol].BLOCK_EXPLORER_TX_URL
-              }${transactionId}`}
-            >
-              {t('wallet.viewTransaction')}
-            </Link>
-          )}
-        </Box>
-        <Box display="flex" mt={2} className={classes.fullWidth}>
-          <Button fullWidth onClick={onCloseClick} variant="outlined">
-            {t('common.close')}
-          </Button>
-        </Box>
+      </Box>
+      <Box display="flex" mt={2} className={classes.fullWidth}>
+        <Button fullWidth onClick={onCloseClick} variant="outlined">
+          {t('common.close')}
+        </Button>
       </Box>
     </Box>
   );

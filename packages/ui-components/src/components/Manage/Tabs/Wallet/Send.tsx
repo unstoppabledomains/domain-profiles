@@ -14,7 +14,7 @@ import type {TokenEntry} from '../../../Wallet/Token';
 import ManageInput from '../../common/ManageInput';
 import AddressInput from './AddressInput';
 import {SelectAsset} from './SelectAsset';
-import TransactionStatus from './SubmitTransaction';
+import SubmitTransaction from './SubmitTransaction';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   flexColCenterAligned: {
@@ -180,7 +180,7 @@ const Send: React.FC<Props> = ({
 
   if (transactionSubmitted) {
     return (
-      <TransactionStatus
+      <SubmitTransaction
         onCloseClick={onCancelClick}
         accessToken={accessToken}
         sourceAddress={asset.walletAddress}

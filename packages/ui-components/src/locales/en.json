@@ -785,6 +785,7 @@
     "viewExplorer": "Blockchain explorer"
   },
   "wallet": {
+    "viewTransaction": "View transaction",
     "approve": "Confirm",
     "beginSetup": "Continue",
     "bootstrapCode": "One-time code",
@@ -802,13 +803,14 @@
     "reject": "Cancel",
     "rememberOnThisDevice": "Remember on this device",
     "rememberOnThisDeviceDescription": "Your Unstoppable Wallet access will be stored securely in this web browser",
-    "selectAsset": "Select asset to send",
+    "selectAssetToSend": "Select asset to send",
+    "selectAssetToReceive": "Select asset to receive",
+    "selectAssetToBuy": "Select asset to buy",
     "signMessage": "Confirmation",
     "signMessageDescription": "Only confirm if you fully understand the content and trust the requesting site.",
     "signMessageSubtitle": "You are confirming",
     "successDescription": "Unstoppable Wallet is ready to be used on this browser",
-    "title": "Unstoppable Wallet",
-    "transactionId": "Transaction ID {{id}}"
+    "title": "Unstoppable Wallet"
   },
   "webacy": {
     "high": "Unsafe",

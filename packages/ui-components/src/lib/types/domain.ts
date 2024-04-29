@@ -550,6 +550,11 @@ export type YoutubeUserInfo = {
   subscriberCount: number;
 } | null;
 
+export const isValidDomain = (domain: string): boolean => {
+  const domainSuffix = domain.split('.').pop();
+  return Object.values(DomainSuffixes).includes(domainSuffix as DomainSuffixes);
+};
+
 export const kbToMb = (kb: number): number => {
   return kb / 1000 / 1024;
 };

@@ -23,7 +23,9 @@ import {getFireBlocksClient} from '../../../../lib/fireBlocks/client';
 import {getBootstrapState} from '../../../../lib/fireBlocks/storage/state';
 import {DomainWalletTransactions} from '../../../Wallet';
 import {TokensPortfolio} from '../../../Wallet/TokensPortfolio';
-import {Send} from './Send';
+import Buy from './Buy';
+import Receive from './Receive';
+import Send from './Send';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -123,6 +125,8 @@ export const Client: React.FC<ClientProps> = ({
 
   // component state variables
   const [isSend, setIsSend] = useState(false);
+  const [isReceive, setIsReceive] = useState(false);
+  const [isBuy, setIsBuy] = useState(false);
   const [tabValue, setTabValue] = useState(ClientTabType.Portfolio);
 
   useEffect(() => {
@@ -158,20 +162,18 @@ export const Client: React.FC<ClientProps> = ({
     setIsSend(true);
   };
 
-  const handleClickedReceive = () => {
-    // TODO
-    alert('switch view to QR code list for available addresses');
-  };
-
   const handleClickedBuy = () => {
-    // TODO
-    alert(
-      'select wallet, then redirect to e-commerce buy/sell crypto page with this wallet preselected',
-    );
+    setIsBuy(true);
   };
 
-  const handleCancelSend = () => {
+  const handleClickedReceive = () => {
+    setIsReceive(true);
+  };
+
+  const handleCancel = () => {
     setIsSend(false);
+    setIsReceive(false);
+    setIsBuy(false);
   };
 
   return (
@@ -179,11 +181,15 @@ export const Client: React.FC<ClientProps> = ({
       <Box className={classes.walletContainer}>
         {isSend ? (
           <Send
-            onCancelClick={handleCancelSend}
             client={client!}
             accessToken={accessToken}
+            onCancelClick={handleCancel}
             wallets={wallets}
           />
+        ) : isReceive ? (
+          <Receive onCancelClick={handleCancel} wallets={wallets} />
+        ) : isBuy ? (
+          <Buy onCancelClick={handleCancel} wallets={wallets} />
         ) : (
           <TabContext value={tabValue as ClientTabType}>
             <Box className={classes.balanceContainer}>

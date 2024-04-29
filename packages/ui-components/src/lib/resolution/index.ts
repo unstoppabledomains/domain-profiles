@@ -1,1 +1,1 @@
-export * from './unstoppableDomainsLoader';
+export * from './unstoppableDomainsResolution';

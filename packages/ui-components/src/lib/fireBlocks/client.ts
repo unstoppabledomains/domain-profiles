@@ -18,7 +18,7 @@ import {SecureKeyStorageProvider} from './storage/secureStorage';
 import {UnsecureKeyStorageProvider} from './storage/unsecureStorage';
 
 export const FB_MAX_RETRY = 100;
-export const FB_WAIT_TIME_MS = 500;
+export const FB_WAIT_TIME_MS = 1000;
 
 export const getFireBlocksClient = async (
   deviceId: string,

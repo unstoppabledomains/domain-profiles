@@ -62,14 +62,7 @@ export interface GetOperationStatusResponse {
   '@type': string;
   id: string;
   lastUpdatedTimestamp: number;
-  status:
-    | 'QUEUED'
-    | 'PROCESSING'
-    | 'COMPLETED'
-    | 'FAILED'
-    | 'CANCELLED'
-    | 'SIGNATURE_REQUIRED'
-    | 'AWAITING_UPDATES';
+  status: OperationStatus;
   type: string;
   parameters: Parameters;
   result?: Result;
@@ -78,7 +71,6 @@ export interface GetOperationStatusResponse {
     externalVendorTransactionId?: string;
   };
 }
-
 export interface GetTokenResponse {
   code?: 'SUCCESS' | 'PROCESSING';
   accessToken: string;
@@ -99,6 +91,16 @@ export interface Operation {
   lastUpdatedTimestamp: number;
   status: string;
   type: string;
+}
+
+export enum OperationStatus {
+  QUEUED = 'QUEUED',
+  PROCESSING = 'PROCESSING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
+  SIGNATURE_REQUIRED = 'SIGNATURE_REQUIRED',
+  AWAITING_UPDATES = 'AWAITING_UPDATES',
 }
 
 export interface Parameters {

@@ -6,6 +6,7 @@ export type BaseBlockchainConfig = {
   JSON_RPC_API_URL: string;
   BLOCK_EXPLORER_NAME: string;
   BLOCK_EXPLORER_BASE_URL: string;
+  BLOCK_EXPLORER_TX_URL: string;
   DISABLE_CONTRACTS_CACHE: boolean;
 };
 
@@ -14,6 +15,7 @@ export type ZilliqaBlockchainConfig = BaseBlockchainConfig & {
   NETWORK_NAME: 'testnet' | 'mainnet';
   ZILLIQA_VERSION: number;
   ZNS_REGISTRY_ADDRESS: string;
+  BLOCK_EXPLORER_TX_URL: '';
 };
 
 export type EthereumBlockchainConfig = BaseBlockchainConfig & {
@@ -25,15 +27,28 @@ export type EthereumBlockchainConfig = BaseBlockchainConfig & {
     | 'https://opensea.io/assets/'
     | 'https://testnets.opensea.io/assets/'
     | 'https://testnets.opensea.io/assets/goerli/';
+  BLOCK_EXPLORER_TX_URL:
+    | 'https://www.oklink.com/goerli-test/tx/'
+    | 'https://www.oklink.com/eth/tx/';
 };
 
 export type MaticBlockchainConfig = BaseBlockchainConfig & {
-  CHAIN_ID: 80001 | 137 | 1337;
-  NETWORK_NAME: 'mumbai' | 'polygon-mainnet' | 'local';
+  CHAIN_ID: 80002 | 137 | 1337;
+  NETWORK_NAME: 'amoy' | 'polygon-mainnet' | 'local';
   PROXY_READER_ADDRESS: string;
   OPEN_SEA_BASE_URL:
     | 'https://opensea.io/assets/matic/'
-    | 'https://testnets.opensea.io/assets/mumbai/';
+    | 'https://testnets.opensea.io/assets/amoy/';
+  BLOCK_EXPLORER_TX_URL:
+    | 'https://www.oklink.com/amoy/tx/'
+    | 'https://www.oklink.com/polygon/tx/';
+};
+
+export type BitcoinBlockchainConfig = {
+  BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/btc/tx/';
+};
+export type SolanaBlockchainConfig = {
+  BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/sol/tx/';
 };
 
 export type Config = {
@@ -43,6 +58,8 @@ export type Config = {
     ZIL: ZilliqaBlockchainConfig;
     ETH: EthereumBlockchainConfig;
     MATIC: MaticBlockchainConfig;
+    BTC: BitcoinBlockchainConfig;
+    SOL: SolanaBlockchainConfig;
   };
   ASSETS_BUCKET_URL: string;
   UD_ME_BASE_URL: string;

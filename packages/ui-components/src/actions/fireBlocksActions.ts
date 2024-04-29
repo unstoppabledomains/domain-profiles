@@ -10,6 +10,7 @@ import {
   getBootstrapState,
   saveBootstrapState,
 } from '../lib/fireBlocks/storage/state';
+import {pollForSuccess} from '../lib/poll';
 import {sleep} from '../lib/sleep';
 import type {
   AccountAsset,
@@ -21,6 +22,18 @@ import type {
   GetOperationStatusResponse,
   GetTokenResponse,
 } from '../lib/types/fireBlocks';
+import {OperationStatus} from '../lib/types/fireBlocks';
+
+export enum SendCryptoStatus {
+  RETRIEVING_ACCOUNT = 'Retrieving account...',
+  STARTING_TRANSACTION = 'Starting transaction...',
+  GETTING_TRANSACTION_TO_SIGN = 'Getting signature to sign...',
+  SIGNING = 'Signing...',
+  SUBMITTING_TRANSACTION = 'Submitting transaction...',
+  WAITING_FOR_TRANSACTION = 'Waiting for transaction to complete...',
+  TRANSACTION_COMPLETED = 'Transaction completed!',
+  TRANSACTION_FAILED = 'Transaction failed',
+}
 
 export const confirmAuthorizationTokenTx = async (
   bootstrapJwt: string,
@@ -449,13 +462,14 @@ export const sendCrypto = async (
   },
   onSignTx: (txId: string) => Promise<void>,
   opts?: {
-    onStatusChange?: (status: string) => void;
+    onStatusChange?: (status: SendCryptoStatus) => void;
+    onTxId?: (txId: string) => void;
   },
-): Promise<string> => {
+): Promise<void> => {
   try {
     // retrieve the accounts associated with the access token
     if (opts?.onStatusChange) {
-      opts.onStatusChange('retrieving account');
+      opts.onStatusChange(SendCryptoStatus.RETRIEVING_ACCOUNT);
     }
     const assets = await getAccountAssets(accessToken);
     if (!assets) {
@@ -475,7 +489,7 @@ export const sendCrypto = async (
 
     // initialize a transaction to retrieve auth tokens
     if (opts?.onStatusChange) {
-      opts.onStatusChange('starting MPC transaction');
+      opts.onStatusChange(SendCryptoStatus.STARTING_TRANSACTION);
     }
     const operationResponse = await fetchApi<GetOperationResponse>(
       `/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
@@ -498,62 +512,85 @@ export const sendCrypto = async (
       throw new Error('error starting transaction');
     }
 
-    // wait for the TX to pass to the client
     if (opts?.onStatusChange) {
-      opts.onStatusChange('submitted transaction');
+      opts.onStatusChange(SendCryptoStatus.GETTING_TRANSACTION_TO_SIGN);
     }
     let signedWithClient = false;
-    for (let i = 0; i < FB_MAX_RETRY; i++) {
-      const operationStatus = await getOperationStatus(
-        accessToken,
-        operationResponse.operation.id,
-      );
-      if (!operationStatus) {
-        throw new Error('error requesting transaction operation status');
-      }
 
-      // sign the message if requested
-      if (
-        !signedWithClient &&
-        operationStatus.status === 'SIGNATURE_REQUIRED' &&
-        operationStatus.transaction?.externalVendorTransactionId
-      ) {
-        // request for the client to sign the Tx string
-        if (opts?.onStatusChange) {
-          opts.onStatusChange('ready to sign transaction');
+    await pollForSuccess({
+      fn: async () => {
+        const operationStatus = await getOperationStatus(
+          accessToken,
+          operationResponse.operation.id,
+        );
+        if (!operationStatus) {
+          throw new Error('error requesting transaction operation status');
         }
-        await onSignTx(operationStatus.transaction.externalVendorTransactionId);
-        signedWithClient = true;
-        if (opts?.onStatusChange) {
-          opts.onStatusChange('signed transaction');
+        if (
+          !signedWithClient &&
+          operationStatus.status === OperationStatus.SIGNATURE_REQUIRED &&
+          operationStatus.transaction?.externalVendorTransactionId
+        ) {
+          // request for the client to sign the Tx string
+          if (opts?.onStatusChange) {
+            opts.onStatusChange(SendCryptoStatus.SIGNING);
+          }
+          await onSignTx(
+            operationStatus.transaction.externalVendorTransactionId,
+          );
+          signedWithClient = true;
+          return {success: true};
         }
-      }
+        return {success: false};
+      },
+      attempts: FB_MAX_RETRY,
+      interval: FB_WAIT_TIME_MS,
+    });
 
-      // return once transaction ID obtained
-      if (operationStatus.transaction?.id) {
-        if (opts?.onStatusChange) {
-          opts.onStatusChange('transaction completed');
-        }
-        return operationStatus.transaction.id;
-      }
-
-      // throw an error for failure states
-      if (
-        operationStatus.status === 'CANCELLED' ||
-        operationStatus.status === 'FAILED'
-      ) {
-        throw new Error(`transfer ${operationStatus.status.toLowerCase()}`);
-      }
-
-      // wait for next interval
-      await sleep(FB_WAIT_TIME_MS);
+    if (opts?.onStatusChange) {
+      opts.onStatusChange(SendCryptoStatus.SUBMITTING_TRANSACTION);
     }
 
-    // reaching this point means the Tx was not successful
-    throw new Error('failed to complete transaction');
+    const {success} = await pollForSuccess({
+      fn: async () => {
+        const operationStatus = await getOperationStatus(
+          accessToken,
+          operationResponse.operation.id,
+        );
+        if (!operationStatus) {
+          throw new Error('error requesting transaction operation status');
+        }
+        if (operationStatus.transaction?.id && opts?.onTxId) {
+          opts.onTxId(operationStatus.transaction.id);
+          if (opts?.onStatusChange) {
+            opts.onStatusChange(SendCryptoStatus.WAITING_FOR_TRANSACTION);
+          }
+        }
+        if (operationStatus.status === OperationStatus.COMPLETED) {
+          if (opts?.onStatusChange) {
+            opts.onStatusChange(SendCryptoStatus.TRANSACTION_COMPLETED);
+          }
+          return {success: true};
+        }
+        if (
+          operationStatus.status === OperationStatus.FAILED ||
+          operationStatus.status === OperationStatus.CANCELLED
+        ) {
+          throw new Error(
+            `Transferred failed ${operationStatus.status.toLowerCase()}`,
+          );
+        }
+        return {success: false};
+      },
+      attempts: FB_MAX_RETRY,
+      interval: FB_WAIT_TIME_MS,
+    });
+    if (!success) {
+      throw new Error('failed to complete transaction');
+    }
   } catch (e) {
     if (opts?.onStatusChange) {
-      opts.onStatusChange('transaction failed');
+      opts.onStatusChange(SendCryptoStatus.TRANSACTION_FAILED);
     }
     notifyEvent(e, 'error', 'Wallet', 'Signature', {
       msg: 'error sending crypto',

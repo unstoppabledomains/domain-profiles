@@ -102,11 +102,18 @@ type Props = {
   onClick: () => void;
   primaryShade: boolean;
   showGraph?: boolean;
+  hideBalance?: boolean;
 };
 
 const bgNeutralShade = 800;
 
-const Token: React.FC<Props> = ({token, onClick, primaryShade, showGraph}) => {
+const Token: React.FC<Props> = ({
+  token,
+  onClick,
+  primaryShade,
+  showGraph,
+  hideBalance,
+}) => {
   const theme = useTheme();
 
   const {classes, cx} = useStyles({
@@ -163,7 +170,7 @@ const Token: React.FC<Props> = ({token, onClick, primaryShade, showGraph}) => {
             {token.name}
           </Typography>
           <Typography variant="caption" className={classes.txSubTitle}>
-            {numeral(token.balance).format('0.[000000]')}{' '}
+            {!hideBalance && numeral(token.balance).format('0.[000000]')}{' '}
             {token.type === TokenType.Nft
               ? `NFT${token.balance === 1 ? '' : 's'}`
               : token.ticker}
@@ -218,36 +225,38 @@ const Token: React.FC<Props> = ({token, onClick, primaryShade, showGraph}) => {
         )}
       </Grid>
       <Grid item xs={2}>
-        <Box
-          display="flex"
-          flexDirection="column"
-          textAlign="right"
-          justifyContent="right"
-          justifyItems="right"
-        >
-          <Typography variant="caption" className={classes.txBalance}>
-            {token.value.toLocaleString('en-US', {
-              style: 'currency',
-              currency: 'USD',
-            })}
-          </Typography>
-          <Typography
-            variant="caption"
-            className={
-              !token.pctChange
-                ? classes.txPctChangeNeutral
-                : token.pctChange < 0
-                ? classes.txPctChangeDown
-                : classes.txPctChangeUp
-            }
+        {!hideBalance && (
+          <Box
+            display="flex"
+            flexDirection="column"
+            textAlign="right"
+            justifyContent="right"
+            justifyItems="right"
           >
-            {token.pctChange
-              ? `${token.pctChange > 0 ? '+' : ''}${numeral(
-                  token.pctChange,
-                ).format('0.[00]')}%`
-              : `---`}
-          </Typography>
-        </Box>
+            <Typography variant="caption" className={classes.txBalance}>
+              {token.value.toLocaleString('en-US', {
+                style: 'currency',
+                currency: 'USD',
+              })}
+            </Typography>
+            <Typography
+              variant="caption"
+              className={
+                !token.pctChange
+                  ? classes.txPctChangeNeutral
+                  : token.pctChange < 0
+                  ? classes.txPctChangeDown
+                  : classes.txPctChangeUp
+              }
+            >
+              {token.pctChange
+                ? `${token.pctChange > 0 ? '+' : ''}${numeral(
+                    token.pctChange,
+                  ).format('0.[00]')}%`
+                : `---`}
+            </Typography>
+          </Box>
+        )}
       </Grid>
     </Grid>
   );

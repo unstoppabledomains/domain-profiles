@@ -12,6 +12,7 @@ export default function getDefaultConfig(): Config {
         ZILLIQA_VERSION: 21823489,
         BLOCK_EXPLORER_NAME: 'viewblock',
         BLOCK_EXPLORER_BASE_URL: 'https://viewblock.io',
+        BLOCK_EXPLORER_TX_URL: '',
         ZNS_REGISTRY_ADDRESS: 'zil1hyj6m5w4atcn7s806s69r0uh5g4t84e8gp6nps',
         DISABLE_CONTRACTS_CACHE: true,
       },
@@ -21,21 +22,29 @@ export default function getDefaultConfig(): Config {
         JSON_RPC_API_URL: `https://goerli.infura.io/v3/a58ebb0c76a64c149e35145f85f82382`,
         BLOCK_EXPLORER_NAME: 'etherscan',
         BLOCK_EXPLORER_BASE_URL: 'https://goerli.etherscan.io',
+        BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/goerli-test/tx/',
         DISABLE_CONTRACTS_CACHE: true,
         PROXY_READER_ADDRESS: '0xFc5f608149f4D9e2Ed0733efFe9DD57ee24BCF68',
         OPEN_SEA_BASE_URL: 'https://testnets.opensea.io/assets/goerli/',
         ENS_CONTRACT_ADDRESS: '0x114d4603199df73e7d157787f8778e21fcd13066',
       },
       MATIC: {
-        CHAIN_ID: 80001,
-        NETWORK_NAME: 'mumbai', // testnet
+        CHAIN_ID: 80002,
+        NETWORK_NAME: 'amoy', // testnet
         JSON_RPC_API_URL:
-          'https://polygon-mumbai.infura.io/v3/a58ebb0c76a64c149e35145f85f82382',
+          'https://polygon-amoy.infura.io/v3/a58ebb0c76a64c149e35145f85f82382',
         BLOCK_EXPLORER_NAME: 'polygonscan',
-        BLOCK_EXPLORER_BASE_URL: 'https://mumbai.polygonscan.com',
+        BLOCK_EXPLORER_BASE_URL: 'https://amoy.polygonscan.com',
+        BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/amoy/tx/',
         DISABLE_CONTRACTS_CACHE: true,
         PROXY_READER_ADDRESS: '0x332A8191905fA8E6eeA7350B5799F225B8ed30a9',
-        OPEN_SEA_BASE_URL: 'https://testnets.opensea.io/assets/mumbai/',
+        OPEN_SEA_BASE_URL: 'https://testnets.opensea.io/assets/amoy/',
+      },
+      BTC: {
+        BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/btc/tx/',
+      },
+      SOL: {
+        BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/sol/tx/',
       },
     },
     UD_LOGO_URL:

@@ -1,26 +1,11 @@
 import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
-import {fireEvent, render} from '@testing-library/react';
+import {fireEvent} from '@testing-library/react';
 import React from 'react';
 
 import type {SerializedWalletBalance} from '../../../../lib';
 import {TokenType} from '../../../../lib';
+import {customRender} from '../../../../tests/test-utils';
 import Send from './Send';
-
-jest.mock('@mui/material/styles', () => ({
-  ...jest.requireActual('@mui/material/styles'),
-  useTheme: () => ({
-    palette: {
-      primaryShades: {200: '#043893'},
-      neutralShades: {200: '#043893'},
-      success: {main: '#043893'},
-      primary: {main: '#043893'},
-      common: {black: '#000000'},
-    },
-    shape: {
-      borderRadius: 9,
-    },
-  }),
-}));
 
 const mockClient = {
   sendTransaction: jest.fn(),
@@ -76,12 +61,12 @@ const defaultProps = {
 
 describe('<Send />', () => {
   it('renders the SelectAsset if no asset is selected', () => {
-    const {getByTestId} = render(<Send {...defaultProps} />);
+    const {getByTestId} = customRender(<Send {...defaultProps} />);
     expect(getByTestId('select-asset-container')).toBeInTheDocument();
   });
 
   it('handles the back button correctly', () => {
-    const {getByTestId} = render(<Send {...defaultProps} />);
+    const {getByTestId} = customRender(<Send {...defaultProps} />);
     fireEvent.click(getByTestId('back-button'));
     expect(defaultProps.onCancelClick).toHaveBeenCalled();
   });

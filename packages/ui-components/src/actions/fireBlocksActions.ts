@@ -515,8 +515,6 @@ export const sendCrypto = async (
     if (opts?.onStatusChange) {
       opts.onStatusChange(SendCryptoStatus.GETTING_TRANSACTION_TO_SIGN);
     }
-    let signedWithClient = false;
-
     await pollForSuccess({
       fn: async () => {
         const operationStatus = await getOperationStatus(
@@ -527,7 +525,6 @@ export const sendCrypto = async (
           throw new Error('error requesting transaction operation status');
         }
         if (
-          !signedWithClient &&
           operationStatus.status === OperationStatus.SIGNATURE_REQUIRED &&
           operationStatus.transaction?.externalVendorTransactionId
         ) {
@@ -538,7 +535,6 @@ export const sendCrypto = async (
           await onSignTx(
             operationStatus.transaction.externalVendorTransactionId,
           );
-          signedWithClient = true;
           return {success: true};
         }
         return {success: false};

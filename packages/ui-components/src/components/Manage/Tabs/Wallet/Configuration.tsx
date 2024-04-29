@@ -41,12 +41,29 @@ import {
 import {DomainProfileTabType} from '../../DomainProfile';
 import ManageInput from '../../common/ManageInput';
 import type {ManageTabProps} from '../../common/types';
-import {Client} from './Client';
+import {Client, MIN_CLIENT_HEIGHT} from './Client';
+import type {WalletMode} from './index';
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles<{
+  configState: WalletConfigState;
+  mode: WalletMode;
+}>()((theme: Theme, {configState, mode}) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
+    minHeight:
+      configState === WalletConfigState.Complete && mode === 'portfolio'
+        ? `${MIN_CLIENT_HEIGHT}px`
+        : undefined,
+  },
+  loadingContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    height:
+      configState === WalletConfigState.Complete && mode === 'portfolio'
+        ? `${MIN_CLIENT_HEIGHT - 125}px`
+        : undefined,
+    alignItems: 'center',
   },
   infoContainer: {
     marginBottom: theme.spacing(3),
@@ -80,12 +97,9 @@ enum WalletConfigState {
 
 export const Configuration: React.FC<
   ManageTabProps & {
-    mode?: 'basic' | 'portfolio';
+    mode?: WalletMode;
   }
 > = ({onUpdate, setButtonComponent, mode = 'basic'}) => {
-  const {classes} = useStyles();
-  const [t] = useTranslationContext();
-
   // component state variables
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -107,6 +121,10 @@ export const Configuration: React.FC<
   const [recoveryPhrase, setRecoveryPhrase] = useState<string>();
   const [emailAddress, setEmailAddress] = useState<string>();
   const [mpcWallets, setMpcWallets] = useState<SerializedWalletBalance[]>([]);
+
+  // style and translation
+  const {classes} = useStyles({configState, mode});
+  const [t] = useTranslationContext();
 
   useEffect(() => {
     setIsLoaded(false);
@@ -269,12 +287,27 @@ export const Configuration: React.FC<
   const loadFromState = async () => {
     // retrieve existing state from session or local storage if available
     const existingState = getBootstrapState(state);
+    if (!existingState) {
+      setIsLoaded(true);
+      return;
+    }
+
+    // after retrieving the unverified state, assume that configuration
+    // will complete successfully
+    setConfigState(WalletConfigState.Complete);
+
+    // no more work to do if access token available
+    if (accessToken) {
+      setIsLoaded(true);
+      return;
+    }
 
     // check state for device ID and refresh token
-    if (accessToken) {
-      // wallet state is complete
-      setConfigState(WalletConfigState.Complete);
-    } else if (existingState?.deviceId && existingState?.refreshToken) {
+    if (
+      !accessToken &&
+      existingState?.deviceId &&
+      existingState?.refreshToken
+    ) {
       const tokens = await getAccessToken(existingState.refreshToken, {
         deviceId: existingState.deviceId,
         state,
@@ -282,12 +315,15 @@ export const Configuration: React.FC<
         setAccessToken,
       });
       if (tokens) {
+        // successfully retrieved access token
         setAccessToken(tokens.accessToken);
-        setConfigState(WalletConfigState.Complete);
+        return;
       }
     }
 
-    // set loaded state
+    // unable to retrieve access token, so revert back to configuration
+    // state before returning
+    setConfigState(WalletConfigState.PasswordEntry);
     setIsLoaded(true);
   };
 
@@ -648,7 +684,7 @@ export const Configuration: React.FC<
           )
         )
       ) : (
-        <Box display="flex" justifyContent="center">
+        <Box className={classes.loadingContainer}>
           <CircularProgress />
         </Box>
       )}

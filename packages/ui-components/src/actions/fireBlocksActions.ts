@@ -5,6 +5,7 @@ import config from '@unstoppabledomains/config';
 import type {TokenType} from '../lib';
 import {fetchApi} from '../lib';
 import {notifyEvent} from '../lib/error';
+import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../lib/fireBlocks/client';
 import {
   getBootstrapState,
   saveBootstrapState,
@@ -61,7 +62,7 @@ export const confirmAuthorizationTokenTx = async (
 
     // retry if the state is reported as processing
     if (getTokenResponse?.code === 'PROCESSING') {
-      await sleep(250);
+      await sleep(FB_WAIT_TIME_MS);
       return await confirmAuthorizationTokenTx(bootstrapJwt);
     }
   } catch (e) {
@@ -224,11 +225,15 @@ export const getAuthorizationTokenTx = async (
 
     // wait for the Tx to reach pending state
     let tx = await getAuthorizationTokenTxStatus(bootstrapJwt);
-    for (let i = 0; i < 10 && tx?.status !== 'PENDING_SIGNATURE'; i++) {
+    for (
+      let i = 0;
+      i < FB_MAX_RETRY && tx?.status !== 'PENDING_SIGNATURE';
+      i++
+    ) {
       if (!tx) {
         return;
       }
-      await sleep(500);
+      await sleep(FB_WAIT_TIME_MS);
       tx = await getAuthorizationTokenTxStatus(bootstrapJwt);
     }
     return tx;
@@ -336,11 +341,11 @@ export const getMessageSignature = async (
       throw new Error('error requesting signature');
     }
 
-    // wait up to 30 seconds for the signature TX to pass to the client
+    // wait for the signature TX to pass to the client
     if (opts?.onStatusChange) {
       opts.onStatusChange('waiting to sign with local key');
     }
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < FB_MAX_RETRY; i++) {
       const operationStatus = await getOperationStatus(
         accessToken,
         operationResponse.operation.id,
@@ -359,40 +364,22 @@ export const getMessageSignature = async (
           opts.onStatusChange('signing with local key');
         }
         await onSignTx(operationStatus.transaction.externalVendorTransactionId);
-        break;
+
+        // indicate status change
+        if (opts?.onStatusChange) {
+          opts.onStatusChange('waiting for MPC signature');
+        }
       }
 
-      // break on these states
-      if (operationStatus.status === 'COMPLETED') {
-        break;
-      }
-
-      // abandon on these states
+      // throw an error for failure states
       if (
         operationStatus.status === 'CANCELLED' ||
         operationStatus.status === 'FAILED'
       ) {
-        throw new Error('signature failed');
+        throw new Error(`signature ${operationStatus.status.toLowerCase()}`);
       }
 
-      // wait for next interval
-      await sleep(500);
-    }
-
-    // wait up to 30 seconds for the signature to be completed
-    if (opts?.onStatusChange) {
-      opts.onStatusChange('waiting for MPC signature');
-    }
-    for (let i = 0; i < 60; i++) {
-      const operationStatus = await getOperationStatus(
-        accessToken,
-        operationResponse.operation.id,
-      );
-      if (!operationStatus) {
-        throw new Error('error requesting signature operation status');
-      }
-
-      // signature is completed
+      // return the completed signature
       if (
         operationStatus.status === 'COMPLETED' &&
         operationStatus.result?.signature
@@ -403,14 +390,8 @@ export const getMessageSignature = async (
         return operationStatus.result.signature;
       }
 
-      // abandon on these states
-      if (
-        operationStatus.status === 'CANCELLED' ||
-        operationStatus.status === 'FAILED'
-      ) {
-        throw new Error('signature failed');
-      }
-      await sleep(500);
+      // wait for next interval
+      await sleep(FB_WAIT_TIME_MS);
     }
 
     // reaching this point means the signature was not successful
@@ -555,8 +536,8 @@ export const sendCrypto = async (
         }
         return {success: false};
       },
-      attempts: 60,
-      interval: 1500,
+      attempts: FB_MAX_RETRY,
+      interval: FB_WAIT_TIME_MS,
     });
 
     if (opts?.onStatusChange) {
@@ -584,13 +565,13 @@ export const sendCrypto = async (
           }
           return {success: true};
         }
-        if (operationStatus.status === OperationStatus.FAILED) {
-          throw new Error("Failed transaction")
+        if (operationStatus.status === OperationStatus.FAILED|| operationStatus.status === OperationStatus.CANCELLED) {
+          throw new Error(`Transferred failed ${operationStatus.status.toLowerCase()}`)
         }
         return {success: false};
       },
-      attempts: 300,
-      interval: 1500,
+      attempts: FB_MAX_RETRY,
+      interval: FB_WAIT_TIME_MS,
     });
     if (!success) {
       throw new Error('failed to complete transaction');

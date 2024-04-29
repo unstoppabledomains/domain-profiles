@@ -47,8 +47,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '100%',
   },
   assetLogo: {
-    height: '40px',
-    width: '40px',
+    height: '80px',
+    width: '80px',
     marginTop: '5px',
   },
   contentWrapper: {
@@ -138,7 +138,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
             <Typography variant="h5" className={classes.fullWidth}>
               Receive {asset.symbol}
             </Typography>
-            {/* <img src={asset.imageUrl} className={classes.assetLogo} /> */}
+            <img src={asset.imageUrl} className={classes.assetLogo} />
           </Box>
           <QRCode
             value={`${asset.name}:${asset.walletAddress}`}

@@ -39,8 +39,10 @@ export class ReactSigner {
   // that needs to be signed
   async signMessage(message: string | signMessageProps): Promise<string> {
     const signingMutexUnlock = await signingMutex.acquire();
-
     try {
+      // clear any unhandled signatures
+      UD_COMPLETED_SIGNATURE.length = 0;
+
       // extract the message that should be sign
       const messageToSign =
         typeof message === 'string' ? message : message.message;
@@ -53,6 +55,9 @@ export class ReactSigner {
       notifyEvent(e, 'warning', 'Wallet', 'Signature');
       throw e;
     } finally {
+      if (this.setMessage) {
+        this.setMessage('');
+      }
       signingMutexUnlock();
     }
   }

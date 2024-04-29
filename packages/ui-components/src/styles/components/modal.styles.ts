@@ -5,9 +5,6 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 const useStyles = makeStyles()((theme: Theme) => ({
   dialogRoot: {
     margin: 0,
-    [theme.breakpoints.down('sm')]: {
-      margin: theme.spacing(1),
-    },
   },
   modalContent: {
     backgroundColor: 'rgba(17, 51, 83, 0.02)',
@@ -16,7 +13,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     minWidth: 420,
     [theme.breakpoints.down('sm')]: {
-      minWidth: 300,
+      minWidth: '348px',
       padding: theme.spacing(1.5),
     },
   },

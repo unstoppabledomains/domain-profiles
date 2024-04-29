@@ -8,6 +8,8 @@ const useWeb3Context = () => {
     setWeb3Deps,
     accessToken,
     setAccessToken,
+    messageToSign,
+    setMessageToSign,
     sessionKeyState,
     setSessionKeyState,
     persistentKeyState,
@@ -16,6 +18,7 @@ const useWeb3Context = () => {
   if (
     !setWeb3Deps ||
     !setAccessToken ||
+    !setMessageToSign ||
     !setSessionKeyState ||
     !setPersistentKeyState
   ) {
@@ -28,6 +31,8 @@ const useWeb3Context = () => {
     setWeb3Deps,
     accessToken,
     setAccessToken,
+    messageToSign,
+    setMessageToSign,
     sessionKeyState,
     setSessionKeyState,
     persistentKeyState,

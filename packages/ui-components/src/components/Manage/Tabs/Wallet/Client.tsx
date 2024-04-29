@@ -8,7 +8,6 @@ import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
 import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
@@ -33,6 +32,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
+    height: `${MIN_CLIENT_HEIGHT}px`,
+  },
+  loadingContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    height: `${MIN_CLIENT_HEIGHT - 125}px`,
+    alignItems: 'center',
   },
   walletContainer: {
     display: 'flex',
@@ -48,7 +54,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   balanceContainer: {
     display: 'flex',
     justifyContent: 'center',
-    marginTop: theme.spacing(-1),
   },
   actionContainer: {
     display: 'flex',
@@ -61,28 +66,48 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginRight: theme.spacing(2),
     width: '100px',
     cursor: 'pointer',
+    [theme.breakpoints.down('sm')]: {
+      width: '70px',
+    },
   },
   portfolioContainer: {
     display: 'flex',
     marginTop: theme.spacing(-2),
     marginBottom: theme.spacing(-2),
-    width: '100%',
+    maxWidth: '375px',
+    [theme.breakpoints.down('sm')]: {
+      maxWidth: '330px',
+    },
   },
   actionIcon: {
     color: theme.palette.primary.main,
     width: '50px',
     height: '50px',
+    [theme.breakpoints.down('sm')]: {
+      width: '35px',
+      height: '35px',
+    },
   },
   actionText: {
     color: theme.palette.primary.main,
+    [theme.breakpoints.down('sm')]: {
+      display: 'none',
+    },
   },
   tabList: {
     marginTop: theme.spacing(-3),
     marginRight: theme.spacing(-4),
+    [theme.breakpoints.down('sm')]: {
+      marginRight: theme.spacing(-1),
+    },
   },
   tabContentItem: {
     marginLeft: theme.spacing(-3),
     marginRight: theme.spacing(-3),
+    [theme.breakpoints.down('sm')]: {
+      marginLeft: theme.spacing(-1),
+      marginRight: theme.spacing(-1),
+    },
   },
 }));
 
@@ -99,7 +124,6 @@ export const Client: React.FC<ClientProps> = ({
   const [state, saveState] = useFireblocksState();
 
   // component state variables
-  const [isLoaded, setIsLoaded] = useState(false);
   const [isSend, setIsSend] = useState(false);
   const [isReceive, setIsReceive] = useState(false);
   const [isBuy, setIsBuy] = useState(false);
@@ -123,9 +147,6 @@ export const Client: React.FC<ClientProps> = ({
         saveState,
       }),
     );
-
-    // loading complete
-    setIsLoaded(true);
   };
 
   const handleTabChange = async (
@@ -157,51 +178,51 @@ export const Client: React.FC<ClientProps> = ({
 
   return (
     <Box className={classes.container}>
-      {isLoaded ? (
-        <Box className={classes.walletContainer}>
-          {isSend ? (
-            <Send
-              client={client!}
-              accessToken={accessToken}
-              onCancelClick={handleCancel}
-              wallets={wallets}
-            />
-          ) : isReceive ? (
-            <Receive onCancelClick={handleCancel} wallets={wallets} />
-          ) : isBuy ? (
-            <Buy onCancelClick={handleCancel} wallets={wallets} />
-          ) : (
-            <TabContext value={tabValue as ClientTabType}>
-              <Box className={classes.balanceContainer}>
-                <Typography variant="h3">
-                  {wallets
-                    .map(w => w.totalValueUsdAmt || 0)
-                    .reduce((p, c) => p + c, 0)
-                    .toLocaleString('en-US', {
-                      style: 'currency',
-                      currency: 'USD',
-                    })}
+      <Box className={classes.walletContainer}>
+        {isSend ? (
+          <Send
+            client={client!}
+            accessToken={accessToken}
+            onCancelClick={handleCancel}
+            wallets={wallets}
+          />
+        ) : isReceive ? (
+          <Receive onCancelClick={handleCancel} wallets={wallets} />
+        ) : isBuy ? (
+          <Buy onCancelClick={handleCancel} wallets={wallets} />
+        ) : (
+          <TabContext value={tabValue as ClientTabType}>
+            <Box className={classes.balanceContainer}>
+              <Typography variant="h3">
+                {wallets
+                  .map(w => w.totalValueUsdAmt || 0)
+                  .reduce((p, c) => p + c, 0)
+                  .toLocaleString('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                  })}
+              </Typography>
+            </Box>
+            <Box className={classes.mainActionsContainer}>
+              <Box
+                className={classes.actionContainer}
+                onClick={handleClickedSend}
+              >
+                <SendIcon className={classes.actionIcon} />
+                <Typography variant="body1" className={classes.actionText}>
+                  {t('common.send')}
                 </Typography>
               </Box>
-              <Box className={classes.mainActionsContainer}>
-                <Box
-                  className={classes.actionContainer}
-                  onClick={handleClickedSend}
-                >
-                  <SendIcon className={classes.actionIcon} />
-                  <Typography variant="body1" className={classes.actionText}>
-                    {t('common.send')}
-                  </Typography>
-                </Box>
-                <Box
-                  className={classes.actionContainer}
-                  onClick={handleClickedReceive}
-                >
-                  <AddOutlinedIcon className={classes.actionIcon} />
-                  <Typography variant="body1" className={classes.actionText}>
-                    {t('common.receive')}
-                  </Typography>
-                </Box>
+              <Box
+                className={classes.actionContainer}
+                onClick={handleClickedReceive}
+              >
+                <AddOutlinedIcon className={classes.actionIcon} />
+                <Typography variant="body1" className={classes.actionText}>
+                  {t('common.receive')}
+                </Typography>
+              </Box>
+              <Box mr={-2}>
                 <Box
                   className={classes.actionContainer}
                   onClick={handleClickedBuy}
@@ -212,54 +233,50 @@ export const Client: React.FC<ClientProps> = ({
                   </Typography>
                 </Box>
               </Box>
-              <Grid container className={classes.portfolioContainer}>
-                <Grid item xs={12}>
-                  <TabPanel
-                    value={ClientTabType.Portfolio}
-                    className={classes.tabContentItem}
-                  >
-                    <TokensPortfolio wallets={wallets} isOwner={true} />
-                  </TabPanel>
-                  <TabPanel
-                    value={ClientTabType.Transactions}
-                    className={classes.tabContentItem}
-                  >
-                    <DomainWalletTransactions
-                      id="unstoppable-wallet"
-                      wallets={wallets}
-                      isOwner={true}
-                      accessToken={accessToken}
-                    />
-                  </TabPanel>
-                </Grid>
-              </Grid>
-              <TabList
-                orientation="horizontal"
-                onChange={handleTabChange}
-                variant="fullWidth"
-                className={classes.tabList}
-              >
-                <Tab
-                  icon={<PaidOutlinedIcon />}
+            </Box>
+            <Grid container className={classes.portfolioContainer}>
+              <Grid item xs={12}>
+                <TabPanel
                   value={ClientTabType.Portfolio}
-                  label={t('tokensPortfolio.title')}
-                  iconPosition="start"
-                />
-                <Tab
-                  icon={<HistoryIcon />}
+                  className={classes.tabContentItem}
+                >
+                  <TokensPortfolio wallets={wallets} isOwner={true} />
+                </TabPanel>
+                <TabPanel
                   value={ClientTabType.Transactions}
-                  label={t('activity.title')}
-                  iconPosition="start"
-                />
-              </TabList>
-            </TabContext>
-          )}
-        </Box>
-      ) : (
-        <Box display="flex" justifyContent="center">
-          <CircularProgress />
-        </Box>
-      )}
+                  className={classes.tabContentItem}
+                >
+                  <DomainWalletTransactions
+                    id="unstoppable-wallet"
+                    wallets={wallets}
+                    isOwner={true}
+                    accessToken={accessToken}
+                  />
+                </TabPanel>
+              </Grid>
+            </Grid>
+            <TabList
+              orientation="horizontal"
+              onChange={handleTabChange}
+              variant="fullWidth"
+              className={classes.tabList}
+            >
+              <Tab
+                icon={<PaidOutlinedIcon />}
+                value={ClientTabType.Portfolio}
+                label={t('tokensPortfolio.title')}
+                iconPosition="start"
+              />
+              <Tab
+                icon={<HistoryIcon />}
+                value={ClientTabType.Transactions}
+                label={t('activity.title')}
+                iconPosition="start"
+              />
+            </TabList>
+          </TabContext>
+        )}
+      </Box>
     </Box>
   );
 };
@@ -274,3 +291,5 @@ export enum ClientTabType {
   Portfolio = 'portfolio',
   Transactions = 'txns',
 }
+
+export const MIN_CLIENT_HEIGHT = 550;

@@ -1,16 +1,16 @@
 import {fetcher} from '@xmtp/proto';
 import {Signature} from '@xmtp/xmtp-js';
 import {Base64} from 'js-base64';
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 
 import {AccessWalletModal} from '../../components/Wallet/AccessWallet';
+import {useWeb3Context} from '../../hooks';
 import {fetchApi} from '../../lib';
 import {sleep} from '../../lib/sleep';
 import {DomainProfileKeys} from '../../lib/types/domain';
 import type {Web3Dependencies} from '../../lib/types/web3';
-import {Web3Context} from '../../providers/Web3ContextProvider';
 import {signMessage as signPushMessage} from '../Chat/protocol/push';
 import {signMessage as signXmtpMessage} from '../Chat/protocol/xmtp';
 import {getPushLocalKey, getXmtpLocalKey} from '../Chat/storage';
@@ -23,7 +23,7 @@ export type ManagerProps = {
   saveClicked: boolean;
   setSaveClicked: (value: boolean) => void;
   onSignature: (signature: string, expiry: string) => void;
-  onFailed?: () => void;
+  onFailed?: (reason?: string) => void;
   useLocalPushKey?: boolean;
   useLocalXmtpKey?: boolean;
   forceWalletConnected?: boolean;
@@ -32,7 +32,11 @@ export type ManagerProps = {
 
 export const ONE_WEEK = 60 * 60 * 24 * 7 * 1000;
 
-export const ProfileManager: React.FC<ManagerProps> = ({
+export const ProfileManager: React.FC<ManagerProps> = opts => {
+  return opts.saveClicked ? <Manager {...opts} /> : <></>;
+};
+
+const Manager: React.FC<ManagerProps> = ({
   domain,
   ownerAddress,
   setWeb3Deps,
@@ -46,7 +50,7 @@ export const ProfileManager: React.FC<ManagerProps> = ({
   useLocalXmtpKey = true,
   useLocalPushKey = false,
 }) => {
-  const web3Context = useContext(Web3Context);
+  const {web3Deps, messageToSign} = useWeb3Context();
   const [messageResponse, setMessageResponse] = useState<MessageResponse>();
   const [signature, setSignature] = useState<string>();
   const [expiry, setExpiry] = useState<string>();
@@ -55,7 +59,7 @@ export const ProfileManager: React.FC<ManagerProps> = ({
 
   useEffect(() => {
     if (saveClicked) {
-      if (forceWalletConnected && !web3Context?.web3Deps) {
+      if (forceWalletConnected && !web3Deps) {
         setAccessWalletModalIsOpen(true);
       }
       void handlePrepareSignature();
@@ -82,11 +86,11 @@ export const ProfileManager: React.FC<ManagerProps> = ({
   }, [clickedReconnect, accessWalletModalIsOpen]);
 
   useEffect(() => {
-    if (!web3Context.web3Deps || !messageResponse) {
+    if (!web3Deps || !messageResponse || messageToSign) {
       return;
     }
     void handlePromptSignature(messageResponse.message);
-  }, [web3Context, messageResponse]);
+  }, [web3Deps, messageResponse]);
 
   useEffect(() => {
     if (saveComplete) {
@@ -101,7 +105,7 @@ export const ProfileManager: React.FC<ManagerProps> = ({
     }
 
     // optionally require web3deps to be set
-    if (forceWalletConnected && !web3Context?.web3Deps) {
+    if (forceWalletConnected && !web3Deps) {
       return;
     }
 
@@ -121,7 +125,7 @@ export const ProfileManager: React.FC<ManagerProps> = ({
     // store signature value on local device
     localStorage.setItem(getDomainSignatureValueKey(domain), signature);
     localStorage.setItem(getDomainSignatureExpiryKey(domain), expiry);
-  }, [signature, expiry, web3Context]);
+  }, [signature, expiry, web3Deps]);
 
   // handlePrepareSignature retrieves the message that must be signed for the profile
   // management request.
@@ -156,6 +160,10 @@ export const ProfileManager: React.FC<ManagerProps> = ({
         },
       },
     );
+    if (!responseBody) {
+      onFailed?.(`Authentication error for ${domain}`);
+      return;
+    }
 
     // sign with locally stored XMTP key if available
     const localXmtpKey = getXmtpLocalKey(ownerAddress);
@@ -188,8 +196,7 @@ export const ProfileManager: React.FC<ManagerProps> = ({
     // request wallet signature
     setMessageResponse(responseBody);
     setAccessWalletModalIsOpen(
-      !web3Context.web3Deps ||
-        web3Context.web3Deps?.unstoppableWallet?.promptForSignatures === true,
+      !web3Deps || web3Deps?.unstoppableWallet?.promptForSignatures === true,
     );
   };
 
@@ -197,15 +204,20 @@ export const ProfileManager: React.FC<ManagerProps> = ({
   // the domain profile.
   const handlePromptSignature = async (messageText: string): Promise<void> => {
     try {
-      if (!web3Context.web3Deps) {
+      // require web3 dependency value
+      if (!web3Deps) {
         return;
       }
 
+      // clear message response value to prepare the state for a subsequent
+      // message signature to be collected
+      setMessageResponse(undefined);
+
       // sign a message linking the domain and secondary wallet address
-      setSignature(await web3Context.web3Deps.signer.signMessage(messageText));
+      setSignature(await web3Deps.signer.signMessage(messageText));
       setExpiry(String(messageResponse?.headers['x-auth-expires']));
     } catch (signError) {
-      onFailed?.();
+      onFailed?.(`signature failed: ${String(signError)}`);
     } finally {
       setSaveClicked(false);
     }
@@ -215,9 +227,12 @@ export const ProfileManager: React.FC<ManagerProps> = ({
   const handleAccessWalletComplete = async (
     web3Dependencies?: Web3Dependencies,
   ) => {
-    setWeb3Deps(web3Dependencies);
-    if (web3Dependencies?.unstoppableWallet?.promptForSignatures) {
-      return;
+    // handle the provided deps if provided
+    if (web3Dependencies) {
+      setWeb3Deps(web3Dependencies);
+      if (web3Dependencies?.unstoppableWallet?.promptForSignatures) {
+        return;
+      }
     }
     setAccessWalletModalIsOpen(false);
   };
@@ -226,16 +241,23 @@ export const ProfileManager: React.FC<ManagerProps> = ({
     setClickedReconnect(true);
   };
 
+  const handleClose = () => {
+    setSaveClicked(false);
+    setAccessWalletModalIsOpen(false);
+  };
+
   return (
     <div>
-      <AccessWalletModal
-        prompt={true}
-        address={ownerAddress}
-        onComplete={deps => handleAccessWalletComplete(deps)}
-        open={accessWalletModalIsOpen}
-        onClose={() => setAccessWalletModalIsOpen(false)}
-        onReconnect={handleReconnect}
-      />
+      {accessWalletModalIsOpen && (
+        <AccessWalletModal
+          prompt={true}
+          address={ownerAddress}
+          onComplete={deps => handleAccessWalletComplete(deps)}
+          open={accessWalletModalIsOpen}
+          onClose={handleClose}
+          onReconnect={handleReconnect}
+        />
+      )}
     </div>
   );
 };

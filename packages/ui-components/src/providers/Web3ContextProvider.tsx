@@ -13,6 +13,8 @@ export const Web3Context = React.createContext<{
   setWeb3Deps?: (v: Web3Dependencies | undefined) => void;
   accessToken?: string;
   setAccessToken?: (v: string) => void;
+  messageToSign?: string;
+  setMessageToSign?: (v: string) => void;
   sessionKeyState?: Record<string, Record<string, string>>;
   setSessionKeyState?: (state: Record<string, Record<string, string>>) => void;
   persistentKeyState?: Record<string, Record<string, string>>;
@@ -33,12 +35,15 @@ const Web3ContextProvider: React.FC<Props> = ({children}) => {
   const [persistentKeyState, setPersistentKeyState] = useLocalStorage<
     Record<string, Record<string, string>>
   >(FireblocksStateKey, {});
+  const [messageToSign, setMessageToSign] = useState<string>();
 
   const value = {
     web3Deps,
     setWeb3Deps,
     accessToken,
     setAccessToken,
+    messageToSign,
+    setMessageToSign,
     sessionKeyState,
     setSessionKeyState,
     persistentKeyState,

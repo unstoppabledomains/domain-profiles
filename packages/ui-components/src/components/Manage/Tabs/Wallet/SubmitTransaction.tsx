@@ -310,7 +310,11 @@ export const SubmitTransaction: React.FC<Props> = ({
         </Box>
         <Box display="flex" mt={2} className={classes.fullWidth}>
           <Button fullWidth onClick={onCloseClick} variant="outlined">
-            {t('common.close')}
+            {statusMessage === SendCryptoStatus.RETRIEVING_ACCOUNT ||
+            statusMessage === SendCryptoStatus.STARTING_TRANSACTION ||
+            statusMessage === SendCryptoStatus.GETTING_TRANSACTION_TO_SIGN
+              ? t('common.cancel')
+              : t('common.close')}
           </Button>
         </Box>
       </Box>

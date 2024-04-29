@@ -195,9 +195,7 @@ const Manager: React.FC<ManagerProps> = ({
 
     // request wallet signature
     setMessageResponse(responseBody);
-    setAccessWalletModalIsOpen(
-      !web3Deps || web3Deps?.unstoppableWallet?.promptForSignatures === true,
-    );
+    setAccessWalletModalIsOpen(!web3Deps);
   };
 
   // handlePromptSignature prompts the user to sign a message to authorize management of
@@ -230,9 +228,6 @@ const Manager: React.FC<ManagerProps> = ({
     // handle the provided deps if provided
     if (web3Dependencies) {
       setWeb3Deps(web3Dependencies);
-      if (web3Dependencies?.unstoppableWallet?.promptForSignatures) {
-        return;
-      }
     }
     setAccessWalletModalIsOpen(false);
   };

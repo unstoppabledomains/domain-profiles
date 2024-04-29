@@ -332,6 +332,7 @@ export const getMessageSignature = async (
     if (opts?.onStatusChange) {
       opts.onStatusChange('waiting to sign with local key');
     }
+    let signedWithClient = false;
     for (let i = 0; i < FB_MAX_RETRY; i++) {
       const operationStatus = await getOperationStatus(
         accessToken,
@@ -343,6 +344,7 @@ export const getMessageSignature = async (
 
       // sign the message if requested
       if (
+        !signedWithClient &&
         operationStatus.status === 'SIGNATURE_REQUIRED' &&
         operationStatus.transaction?.externalVendorTransactionId
       ) {
@@ -351,6 +353,7 @@ export const getMessageSignature = async (
           opts.onStatusChange('signing with local key');
         }
         await onSignTx(operationStatus.transaction.externalVendorTransactionId);
+        signedWithClient = true;
 
         // indicate status change
         if (opts?.onStatusChange) {
@@ -499,6 +502,7 @@ export const sendCrypto = async (
     if (opts?.onStatusChange) {
       opts.onStatusChange('submitted transaction');
     }
+    let signedWithClient = false;
     for (let i = 0; i < FB_MAX_RETRY; i++) {
       const operationStatus = await getOperationStatus(
         accessToken,
@@ -510,6 +514,7 @@ export const sendCrypto = async (
 
       // sign the message if requested
       if (
+        !signedWithClient &&
         operationStatus.status === 'SIGNATURE_REQUIRED' &&
         operationStatus.transaction?.externalVendorTransactionId
       ) {
@@ -518,6 +523,7 @@ export const sendCrypto = async (
           opts.onStatusChange('ready to sign transaction');
         }
         await onSignTx(operationStatus.transaction.externalVendorTransactionId);
+        signedWithClient = true;
         if (opts?.onStatusChange) {
           opts.onStatusChange('signed transaction');
         }

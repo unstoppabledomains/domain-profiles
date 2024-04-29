@@ -1,5 +1,4 @@
 import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
-import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -15,12 +14,14 @@ import ManageInput from '../../common/ManageInput';
 import AddressInput from './AddressInput';
 import {SelectAsset} from './SelectAsset';
 import TransactionStatus from './SubmitTransaction';
+import {TitleWithBackButton} from './TitleWithBackButton';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   flexColCenterAligned: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    width: '100%',
   },
   fullWidth: {
     width: '100%',
@@ -30,7 +31,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     minHeight: '250px',
-    width: '400px',
+    width: '100%',
   },
   selectAssetContainer: {
     display: 'flex',
@@ -162,11 +163,6 @@ const Send: React.FC<Props> = ({
   if (!asset) {
     return (
       <Box className={classes.flexColCenterAligned}>
-        <Box className={classes.fullWidth}>
-          <Button onClick={handleBackClick} data-testid={'back-button'}>
-            <ArrowBackOutlinedIcon />
-          </Button>
-        </Box>
         <SelectAsset
           onSelectAsset={setAsset}
           wallets={wallets}
@@ -182,8 +178,7 @@ const Send: React.FC<Props> = ({
       <TransactionStatus
         onCloseClick={onCancelClick}
         accessToken={accessToken}
-        sourceAddress={asset.walletAddress}
-        sourceSymbol={asset.symbol}
+        asset={asset}
         recipientAddress={recipientAddress}
         recipientDomain={resolvedDomain}
         amount={amount}
@@ -204,15 +199,13 @@ const Send: React.FC<Props> = ({
 
   return (
     <Box className={classes.flexColCenterAligned}>
-      <Box className={classes.fullWidth}>
-        <Button onClick={handleBackClick} data-testid={'back-button'}>
-          <ArrowBackOutlinedIcon />
-        </Button>
-      </Box>
+      <TitleWithBackButton
+        onCancelClick={handleBackClick}
+        label={`Send ${asset.ticker} on ${asset.name}`}
+      />
       <Box className={classes.contentWrapper}>
         <Box className={classes.selectAssetContainer}>
           <Box className={classes.sendAssetContainer}>
-            <Typography variant="h5">Send {asset.symbol}</Typography>
             <img src={asset.imageUrl} className={classes.assetLogo} />
           </Box>
           <Box className={classes.recipientWrapper}>
@@ -221,7 +214,7 @@ const Send: React.FC<Props> = ({
               placeholder={'Recipient domain or address'}
               onAddressChange={handleRecipientChange}
               onResolvedDomainChange={handleResolvedDomainChange}
-              assetSymbol={asset.symbol}
+              assetSymbol={asset.ticker}
             />
           </Box>
           <Box className={classes.sendAmountContainer}>
@@ -230,7 +223,7 @@ const Send: React.FC<Props> = ({
                 id="amount"
                 value={amount}
                 label={'Amount'}
-                placeholder={`Amount in ${asset.symbol}`}
+                placeholder={`Amount in ${asset.ticker}`}
                 onChange={handleAmountChange}
                 stacked={true}
                 error={insufficientBalance}
@@ -243,7 +236,7 @@ const Send: React.FC<Props> = ({
                 variant="subtitle1"
                 className={classes.availableBalance}
               >
-                Available: {asset.balance.toFixed(5)} {asset.symbol}
+                Available: {asset.balance.toFixed(5)} {asset.ticker}
               </Typography>
             )}
           </Box>

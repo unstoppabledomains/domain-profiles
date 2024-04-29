@@ -1,6 +1,4 @@
-import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import type {Theme} from '@mui/material/styles';
 import {stringify} from 'querystring';
 import React from 'react';
@@ -18,8 +16,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-  },
-  fullWidth: {
     width: '100%',
   },
 }));
@@ -45,11 +41,6 @@ const Buy: React.FC<Props> = ({onCancelClick, wallets}) => {
 
   return (
     <Box className={classes.flexColCenterAligned}>
-      <Box className={classes.fullWidth}>
-        <Button onClick={onCancelClick} data-testid={'back-button'}>
-          <ArrowBackOutlinedIcon />
-        </Button>
-      </Box>
       <SelectAsset
         hideBalance
         onSelectAsset={handleBuyRedirect}

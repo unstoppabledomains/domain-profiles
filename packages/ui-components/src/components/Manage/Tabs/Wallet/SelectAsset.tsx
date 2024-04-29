@@ -1,6 +1,4 @@
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React from 'react';
 
@@ -10,6 +8,7 @@ import type {SerializedWalletBalance} from '../../../../lib';
 import {TokenType, useTranslationContext} from '../../../../lib';
 import type {TokenEntry} from '../../../Wallet/Token';
 import Token from '../../../Wallet/Token';
+import {TitleWithBackButton} from './TitleWithBackButton';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -17,9 +16,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     minHeight: '250px',
-    width: '400px',
-  },
-  fullWidth: {
     width: '100%',
   },
   assetsContainer: {
@@ -34,6 +30,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     borderRadius: 9,
     padding: 12,
     width: '100%',
+    marginBottom: theme.spacing(0.5),
   },
   icon: {
     fontSize: '60px',
@@ -96,9 +93,7 @@ export const SelectAsset: React.FC<Props> = ({
 
   return (
     <Box className={classes.container} data-testid={'select-asset-container'}>
-      <Box className={classes.fullWidth}>
-        <Typography variant="h5">{label}</Typography>
-      </Box>
+      <TitleWithBackButton onCancelClick={onCancelClick} label={label} />
       <Box className={classes.assetsContainer} mt={2}>
         {nativeTokens.map(token => {
           const handleClick = () => {
@@ -116,11 +111,6 @@ export const SelectAsset: React.FC<Props> = ({
             </div>
           );
         })}
-      </Box>
-      <Box className={classes.fullWidth} mt={2}>
-        <Button fullWidth onClick={onCancelClick} variant="outlined">
-          {t('common.cancel')}
-        </Button>
       </Box>
     </Box>
   );

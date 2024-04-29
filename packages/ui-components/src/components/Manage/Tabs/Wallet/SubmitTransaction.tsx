@@ -14,6 +14,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {sendCrypto} from '../../../../actions/fireBlocksActions';
 import {TokenType, useTranslationContext} from '../../../../lib';
 import Link from '../../../Link';
+import type {TokenEntry} from '../../../Wallet/Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   flexColCenterAligned: {
@@ -102,8 +103,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 type Props = {
   onCloseClick: () => void;
   accessToken: string;
-  sourceAddress: string;
-  sourceSymbol: string;
+  asset: TokenEntry;
   recipientAddress: string;
   recipientDomain?: string;
   amount: string;
@@ -123,8 +123,7 @@ const truncateAddress = (address: string) => {
 export const SubmitTransaction: React.FC<Props> = ({
   onCloseClick,
   accessToken,
-  sourceAddress,
-  sourceSymbol,
+  asset,
   recipientAddress,
   recipientDomain,
   amount,
@@ -144,8 +143,7 @@ export const SubmitTransaction: React.FC<Props> = ({
     try {
       await sendCrypto(
         accessToken,
-        sourceAddress,
-        sourceSymbol,
+        asset,
         recipientAddress,
         {
           type: TokenType.Native,
@@ -178,7 +176,7 @@ export const SubmitTransaction: React.FC<Props> = ({
         <Box className={classes.transactionStatusContainer} mt={2}>
           <Typography variant="h5">{statusMessage}</Typography>
           <Typography variant="caption">
-            {amount} {sourceSymbol}{' '}
+            {amount} {asset.ticker}{' '}
             {status === Status.Success
               ? 'was successfully sent '
               : status === Status.Failed
@@ -191,7 +189,9 @@ export const SubmitTransaction: React.FC<Props> = ({
             <Link
               variant={'caption'}
               target="_blank"
-              href={`${config.BLOCKCHAINS[sourceSymbol].BLOCK_EXPLORER_TX_URL}${transactionId}`}
+              href={`${
+                config.BLOCKCHAINS[asset.symbol].BLOCK_EXPLORER_TX_URL
+              }${transactionId}`}
             >
               {t('wallet.viewTransaction')}
             </Link>

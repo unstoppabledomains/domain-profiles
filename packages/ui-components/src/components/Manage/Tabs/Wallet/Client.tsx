@@ -43,7 +43,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
   walletContainer: {
     display: 'flex',
     flexDirection: 'column',
-    width: '100%',
+    width: '375px',
+    [theme.breakpoints.down('sm')]: {
+      width: '330px',
+    },
   },
   mainActionsContainer: {
     display: 'flex',
@@ -70,14 +73,15 @@ const useStyles = makeStyles()((theme: Theme) => ({
       width: '70px',
     },
   },
+  panelContainer: {
+    display: 'flex',
+    width: '100%',
+  },
   portfolioContainer: {
     display: 'flex',
     marginTop: theme.spacing(-2),
     marginBottom: theme.spacing(-2),
-    maxWidth: '375px',
-    [theme.breakpoints.down('sm')]: {
-      maxWidth: '330px',
-    },
+    width: '100%',
   },
   actionIcon: {
     color: theme.palette.primary.main,
@@ -180,16 +184,22 @@ export const Client: React.FC<ClientProps> = ({
     <Box className={classes.container}>
       <Box className={classes.walletContainer}>
         {isSend ? (
-          <Send
-            client={client!}
-            accessToken={accessToken}
-            onCancelClick={handleCancel}
-            wallets={wallets}
-          />
+          <Box className={classes.panelContainer}>
+            <Send
+              client={client!}
+              accessToken={accessToken}
+              onCancelClick={handleCancel}
+              wallets={wallets}
+            />
+          </Box>
         ) : isReceive ? (
-          <Receive onCancelClick={handleCancel} wallets={wallets} />
+          <Box className={classes.panelContainer}>
+            <Receive onCancelClick={handleCancel} wallets={wallets} />
+          </Box>
         ) : isBuy ? (
-          <Buy onCancelClick={handleCancel} wallets={wallets} />
+          <Box className={classes.panelContainer}>
+            <Buy onCancelClick={handleCancel} wallets={wallets} />
+          </Box>
         ) : (
           <TabContext value={tabValue as ClientTabType}>
             <Box className={classes.balanceContainer}>

@@ -1,4 +1,3 @@
-import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import CheckIcon from '@mui/icons-material/CheckCircle';
 import CopyIcon from '@mui/icons-material/ContentCopy';
 import Box from '@mui/material/Box';
@@ -15,15 +14,19 @@ import {useTranslationContext} from '../../../../lib';
 import type {TokenEntry} from '../../../Wallet/Token';
 import ManageInput from '../../common/ManageInput';
 import {SelectAsset} from './SelectAsset';
+import {TitleWithBackButton} from './TitleWithBackButton';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   flexColCenterAligned: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    width: '100%',
   },
   fullWidth: {
+    display: 'flex',
     width: '100%',
+    alignItems: 'center',
   },
   selectAssetContainer: {
     display: 'flex',
@@ -102,11 +105,6 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
   if (!asset) {
     return (
       <Box className={classes.flexColCenterAligned}>
-        <Box className={classes.fullWidth}>
-          <Button onClick={handleBackClick} data-testid={'back-button'}>
-            <ArrowBackOutlinedIcon />
-          </Button>
-        </Box>
         <SelectAsset
           onSelectAsset={setAsset}
           wallets={wallets}
@@ -127,17 +125,13 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
 
   return (
     <Box className={classes.flexColCenterAligned}>
-      <Box className={classes.fullWidth}>
-        <Button onClick={handleBackClick}>
-          <ArrowBackOutlinedIcon />
-        </Button>
-      </Box>
+      <TitleWithBackButton
+        onCancelClick={handleBackClick}
+        label={`Receive ${asset.ticker} on ${asset.name}`}
+      />
       <Box className={classes.contentWrapper}>
         <Box className={classes.receiveContentContainer}>
           <Box className={classes.receiveAssetContainer} mb={2}>
-            <Typography variant="h5" className={classes.fullWidth}>
-              Receive {asset.symbol}
-            </Typography>
             <img src={asset.imageUrl} className={classes.assetLogo} />
           </Box>
           <QRCode

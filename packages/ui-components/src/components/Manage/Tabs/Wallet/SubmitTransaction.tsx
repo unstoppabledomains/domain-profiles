@@ -1,9 +1,7 @@
 import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
-import CheckIcon from '@mui/icons-material/Check';
-import ErrorIcon from '@mui/icons-material/Error';
+import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
@@ -15,6 +13,7 @@ import {sendCrypto} from '../../../../actions/fireBlocksActions';
 import {TokenType, useTranslationContext} from '../../../../lib';
 import Link from '../../../Link';
 import type {TokenEntry} from '../../../Wallet/Token';
+import {OperationStatus} from './OperationStatus';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   fullWidth: {
@@ -35,6 +34,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   icon: {
     fontSize: '60px',
+  },
+  subTitlePending: {
+    marginTop: theme.spacing(1),
+    color: theme.palette.neutralShades[400],
+  },
+  subTitleComplete: {
+    marginTop: theme.spacing(1),
   },
 }));
 
@@ -104,16 +110,18 @@ export const SubmitTransaction: React.FC<Props> = ({
 
   return (
     <Box className={classes.sendLoadingContainer}>
-      {status === Status.Success ? (
-        <CheckIcon color="success" className={classes.icon} />
-      ) : status === Status.Failed ? (
-        <ErrorIcon color="error" className={classes.icon} />
-      ) : (
-        <CircularProgress />
-      )}
-      <Box className={classes.transactionStatusContainer} mt={2}>
-        <Typography variant="h5">{statusMessage}</Typography>
-        <Typography variant="caption">
+      <OperationStatus
+        label={statusMessage}
+        icon={<SendOutlinedIcon />}
+        success={status === Status.Success}
+        error={status === Status.Failed}
+      >
+        <Typography
+          variant="caption"
+          className={
+            transactionId ? classes.subTitleComplete : classes.subTitlePending
+          }
+        >
           {amount} {asset.ticker}{' '}
           {status === Status.Success
             ? 'was successfully sent '
@@ -134,12 +142,14 @@ export const SubmitTransaction: React.FC<Props> = ({
             {t('wallet.viewTransaction')}
           </Link>
         )}
-      </Box>
-      <Box display="flex" mt={2} className={classes.fullWidth}>
-        <Button fullWidth onClick={onCloseClick} variant="outlined">
-          {t('common.close')}
-        </Button>
-      </Box>
+        {(transactionId || status !== Status.Pending) && (
+          <Box display="flex" mt={5} className={classes.fullWidth}>
+            <Button fullWidth onClick={onCloseClick} variant="outlined">
+              {t('common.close')}
+            </Button>
+          </Box>
+        )}
+      </OperationStatus>
     </Box>
   );
 };

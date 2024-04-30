@@ -23,7 +23,7 @@ import type {
   GetOperationStatusResponse,
   GetTokenResponse,
 } from '../lib/types/fireBlocks';
-import {OperationStatus} from '../lib/types/fireBlocks';
+import {OperationStatusType} from '../lib/types/fireBlocks';
 
 export enum SendCryptoStatus {
   RETRIEVING_ACCOUNT = 'Retrieving account...',
@@ -551,7 +551,7 @@ export const sendCrypto = async (
           throw new Error('error requesting transaction operation status');
         }
         if (
-          operationStatus.status === OperationStatus.SIGNATURE_REQUIRED &&
+          operationStatus.status === OperationStatusType.SIGNATURE_REQUIRED &&
           operationStatus.transaction?.externalVendorTransactionId
         ) {
           // request for the client to sign the Tx string
@@ -566,8 +566,8 @@ export const sendCrypto = async (
 
         // throw an error for failure states
         if (
-          operationStatus.status === OperationStatus.FAILED ||
-          operationStatus.status === OperationStatus.CANCELLED
+          operationStatus.status === OperationStatusType.FAILED ||
+          operationStatus.status === OperationStatusType.CANCELLED
         ) {
           throw new Error(
             `Transferred failed ${operationStatus.status.toLowerCase()}`,
@@ -598,15 +598,15 @@ export const sendCrypto = async (
             opts.onStatusChange(SendCryptoStatus.WAITING_FOR_TRANSACTION);
           }
         }
-        if (operationStatus.status === OperationStatus.COMPLETED) {
+        if (operationStatus.status === OperationStatusType.COMPLETED) {
           if (opts?.onStatusChange) {
             opts.onStatusChange(SendCryptoStatus.TRANSACTION_COMPLETED);
           }
           return {success: true};
         }
         if (
-          operationStatus.status === OperationStatus.FAILED ||
-          operationStatus.status === OperationStatus.CANCELLED
+          operationStatus.status === OperationStatusType.FAILED ||
+          operationStatus.status === OperationStatusType.CANCELLED
         ) {
           throw new Error(
             `Transferred failed ${operationStatus.status.toLowerCase()}`,

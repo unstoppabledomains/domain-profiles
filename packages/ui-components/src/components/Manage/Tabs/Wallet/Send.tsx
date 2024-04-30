@@ -177,7 +177,7 @@ const Send: React.FC<Props> = ({
           onClickBuy={onClickBuy}
           onClickReceive={onClickReceive}
           label={t('wallet.selectAssetToSend')}
-          requireBalance={true}
+          requireBalance={false}
         />
       </Box>
     );

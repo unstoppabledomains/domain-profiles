@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -128,6 +128,7 @@ const Send: React.FC<Props> = ({
   const [transactionSubmitted, setTransactionSubmitted] = useState(false);
   const [resolvedDomain, setResolvedDomain] = useState('');
   const {classes} = useStyles();
+  const amountInputRef = useRef<HTMLInputElement>(null);
 
   const resetForm = () => {
     setResolvedDomain('');
@@ -153,6 +154,9 @@ const Send: React.FC<Props> = ({
 
   const handleResolvedDomainChange = (value: string) => {
     setResolvedDomain(value);
+    if (value && amountInputRef.current) {
+      amountInputRef.current.focus();
+    }
   };
 
   const handleMaxClick = () => {
@@ -230,10 +234,7 @@ const Send: React.FC<Props> = ({
       <Box className={classes.contentWrapper}>
         <Box className={classes.selectAssetContainer}>
           <Box className={classes.sendAssetContainer}>
-            <Box className={classes.fullWidth}>
-              <Typography variant="h5">Send {asset.symbol}</Typography>
-              <img src={asset.imageUrl} className={classes.assetLogo} />
-            </Box>
+            <img src={asset.imageUrl} className={classes.assetLogo} />
           </Box>
           <Box className={classes.recipientWrapper}>
             <AddressInput
@@ -248,6 +249,7 @@ const Send: React.FC<Props> = ({
             <div className={classes.amountInputWrapper}>
               <ManageInput
                 id="amount"
+                inputRef={amountInputRef}
                 value={amount}
                 label={t('wallet.amount')}
                 placeholder={t('wallet.amountInSymbol', {

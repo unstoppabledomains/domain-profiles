@@ -25,10 +25,10 @@ import type {
 } from '../lib/types/fireBlocks';
 import {OperationStatusType} from '../lib/types/fireBlocks';
 
-export enum SendCryptoStatus {
+export enum SendCryptoStatusMessage {
   RETRIEVING_ACCOUNT = 'Retrieving account...',
   STARTING_TRANSACTION = 'Starting transaction...',
-  GETTING_TRANSACTION_TO_SIGN = 'Waiting to sign...',
+  WAITING_TO_SIGN = 'Waiting to sign...',
   SIGNING = 'Signing...',
   SUBMITTING_TRANSACTION = 'Submitting transaction...',
   WAITING_FOR_TRANSACTION = 'Waiting for transaction to complete...',
@@ -63,7 +63,7 @@ export const confirmAuthorizationTokenTx = async (
 
     // retry if the state is reported as processing
     if (getTokenResponse?.code === 'PROCESSING') {
-      await sleep(FB_WAIT_TIME_MS);
+      await sleep(FB_MAX_RETRY);
       return await confirmAuthorizationTokenTx(bootstrapJwt);
     }
   } catch (e) {
@@ -487,14 +487,14 @@ export const sendCrypto = async (
   },
   onSignTx: (txId: string) => Promise<void>,
   opts?: {
-    onStatusChange?: (status: SendCryptoStatus) => void;
+    onStatusChange?: (status: SendCryptoStatusMessage) => void;
     onTxId?: (txId: string) => void;
   },
 ): Promise<void> => {
   try {
     // retrieve the accounts associated with the access token
     if (opts?.onStatusChange) {
-      opts.onStatusChange(SendCryptoStatus.RETRIEVING_ACCOUNT);
+      opts.onStatusChange(SendCryptoStatusMessage.RETRIEVING_ACCOUNT);
     }
     const assets = await getAccountAssets(accessToken);
     if (!assets) {
@@ -515,7 +515,7 @@ export const sendCrypto = async (
 
     // initialize a transaction to retrieve auth tokens
     if (opts?.onStatusChange) {
-      opts.onStatusChange(SendCryptoStatus.STARTING_TRANSACTION);
+      opts.onStatusChange(SendCryptoStatusMessage.STARTING_TRANSACTION);
     }
     const operationResponse = await fetchApi<GetOperationResponse>(
       `/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
@@ -539,7 +539,7 @@ export const sendCrypto = async (
     }
 
     if (opts?.onStatusChange) {
-      opts.onStatusChange(SendCryptoStatus.GETTING_TRANSACTION_TO_SIGN);
+      opts.onStatusChange(SendCryptoStatusMessage.WAITING_TO_SIGN);
     }
     await pollForSuccess({
       fn: async () => {
@@ -556,7 +556,7 @@ export const sendCrypto = async (
         ) {
           // request for the client to sign the Tx string
           if (opts?.onStatusChange) {
-            opts.onStatusChange(SendCryptoStatus.SIGNING);
+            opts.onStatusChange(SendCryptoStatusMessage.SIGNING);
           }
           await onSignTx(
             operationStatus.transaction.externalVendorTransactionId,
@@ -580,7 +580,7 @@ export const sendCrypto = async (
     });
 
     if (opts?.onStatusChange) {
-      opts.onStatusChange(SendCryptoStatus.SUBMITTING_TRANSACTION);
+      opts.onStatusChange(SendCryptoStatusMessage.SUBMITTING_TRANSACTION);
     }
 
     const {success} = await pollForSuccess({
@@ -595,12 +595,14 @@ export const sendCrypto = async (
         if (operationStatus.transaction?.id && opts?.onTxId) {
           opts.onTxId(operationStatus.transaction.id);
           if (opts?.onStatusChange) {
-            opts.onStatusChange(SendCryptoStatus.WAITING_FOR_TRANSACTION);
+            opts.onStatusChange(
+              SendCryptoStatusMessage.WAITING_FOR_TRANSACTION,
+            );
           }
         }
         if (operationStatus.status === OperationStatusType.COMPLETED) {
           if (opts?.onStatusChange) {
-            opts.onStatusChange(SendCryptoStatus.TRANSACTION_COMPLETED);
+            opts.onStatusChange(SendCryptoStatusMessage.TRANSACTION_COMPLETED);
           }
           return {success: true};
         }
@@ -622,7 +624,7 @@ export const sendCrypto = async (
     }
   } catch (e) {
     if (opts?.onStatusChange) {
-      opts.onStatusChange(SendCryptoStatus.TRANSACTION_FAILED);
+      opts.onStatusChange(SendCryptoStatusMessage.TRANSACTION_FAILED);
     }
     notifyEvent(e, 'error', 'Wallet', 'Signature', {
       msg: 'error sending crypto',

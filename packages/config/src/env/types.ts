@@ -26,9 +26,9 @@ export type EthereumBlockchainConfig = BaseBlockchainConfig & {
   OPEN_SEA_BASE_URL:
     | 'https://opensea.io/assets/'
     | 'https://testnets.opensea.io/assets/'
-    | 'https://testnets.opensea.io/assets/goerli/';
+    | 'https://testnets.opensea.io/assets/sepolia/';
   BLOCK_EXPLORER_TX_URL:
-    | 'https://www.oklink.com/goerli-test/tx/'
+    | 'https://www.oklink.com/sepolia-test/tx/'
     | 'https://www.oklink.com/eth/tx/';
 };
 

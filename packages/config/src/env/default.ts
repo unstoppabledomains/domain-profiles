@@ -22,10 +22,10 @@ export default function getDefaultConfig(): Config {
         JSON_RPC_API_URL: `https://goerli.infura.io/v3/a58ebb0c76a64c149e35145f85f82382`,
         BLOCK_EXPLORER_NAME: 'etherscan',
         BLOCK_EXPLORER_BASE_URL: 'https://goerli.etherscan.io',
-        BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/goerli-test/tx/',
+        BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/sepolia-test/tx/',
         DISABLE_CONTRACTS_CACHE: true,
         PROXY_READER_ADDRESS: '0xFc5f608149f4D9e2Ed0733efFe9DD57ee24BCF68',
-        OPEN_SEA_BASE_URL: 'https://testnets.opensea.io/assets/goerli/',
+        OPEN_SEA_BASE_URL: 'https://testnets.opensea.io/assets/sepolia/',
         ENS_CONTRACT_ADDRESS: '0x114d4603199df73e7d157787f8778e21fcd13066',
       },
       MATIC: {

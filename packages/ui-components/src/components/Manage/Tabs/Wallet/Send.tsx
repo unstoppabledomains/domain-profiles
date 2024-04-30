@@ -238,8 +238,8 @@ const Send: React.FC<Props> = ({
           </Box>
           <Box className={classes.recipientWrapper}>
             <AddressInput
-              label={'Recipient'}
-              placeholder={'Recipient domain or address'}
+              label={t('wallet.recipient')}
+              placeholder={t('wallet.recipientDomainOrAddress')}
               onAddressChange={handleRecipientChange}
               onResolvedDomainChange={handleResolvedDomainChange}
               assetSymbol={asset.ticker}

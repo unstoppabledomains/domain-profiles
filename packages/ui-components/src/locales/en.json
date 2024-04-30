@@ -790,6 +790,8 @@
     "sendTransactionFailed": "{{amount}} {{sourceSymbol}} failed to send to{{recipientDomain}} ({{recipientAddress}})",
     "actionOnBlockchainTitle": "{{action}} {{symbol}} on {{blockchain}}",
     "amount": "Amount",
+    "recipient": "Recipient",
+    "recipientDomainOrAddress": "Recipient domain or address",
     "insufficientBalance": "Insufficient balance",
     "amountInSymbol": "Amount in {{symbol}}",
     "availableAmount": "Available {{amount}} {{symbol}}",

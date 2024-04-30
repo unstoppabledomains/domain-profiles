@@ -164,14 +164,20 @@ export const Client: React.FC<ClientProps> = ({
 
   const handleClickedSend = () => {
     setIsSend(true);
+    setIsReceive(false);
+    setIsBuy(false);
   };
 
   const handleClickedBuy = () => {
     setIsBuy(true);
+    setIsSend(false);
+    setIsReceive(false);
   };
 
   const handleClickedReceive = () => {
     setIsReceive(true);
+    setIsSend(false);
+    setIsBuy(false);
   };
 
   const handleCancel = () => {
@@ -189,6 +195,8 @@ export const Client: React.FC<ClientProps> = ({
               client={client!}
               accessToken={accessToken}
               onCancelClick={handleCancel}
+              onClickBuy={handleClickedBuy}
+              onClickReceive={handleClickedReceive}
               wallets={wallets}
             />
           </Box>

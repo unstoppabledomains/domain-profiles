@@ -1,9 +1,7 @@
 import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
-import CheckIcon from '@mui/icons-material/Check';
-import ErrorIcon from '@mui/icons-material/Error';
+import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useRef, useState} from 'react';
@@ -21,78 +19,17 @@ import {useTranslationContext} from '../../../../lib';
 import {notifyEvent} from '../../../../lib/error';
 import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../../../../lib/fireBlocks/client';
 import {pollForSuccess} from '../../../../lib/poll';
-import {OperationStatus} from '../../../../lib/types/fireBlocks';
+import {OperationStatusType} from '../../../../lib/types/fireBlocks';
 import Link from '../../../Link';
 import type {TokenEntry} from '../../../Wallet/Token';
+import {OperationStatus} from './OperationStatus';
 
 const useStyles = makeStyles()((theme: Theme) => ({
-  flexColCenterAligned: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
   fullWidth: {
     width: '100%',
   },
-  contentWrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    minHeight: '250px',
-    width: '400px',
-  },
-  selectAssetContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    minHeight: '250px',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  assetsContainer: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 5,
-    alignItems: 'center',
-  },
-  asset: {
-    backgroundImage: 'linear-gradient(#0655DD, #043893)',
-    borderRadius: 9,
-    padding: 12,
-    width: '100%',
-  },
-  assetLogo: {
-    height: '60px',
-    width: '60px',
-    marginTop: '10px',
-  },
-  sendAssetContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  sendAmountContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-    height: '113px',
-  },
-  recipientWrapper: {
-    height: '109px',
-    width: '100%',
-  },
-  amountInputWrapper: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-  },
-  availableBalance: {
-    textAlign: 'right',
-    fontSize: '13px',
-    marginTop: '2px',
-  },
   sendLoadingContainer: {
+    marginTop: theme.spacing(10),
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -102,10 +39,17 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     gap: '7px',
-    height: '155px',
+    marginBottom: theme.spacing(5),
   },
   icon: {
     fontSize: '60px',
+  },
+  subTitlePending: {
+    marginTop: theme.spacing(1),
+    color: theme.palette.neutralShades[400],
+  },
+  subTitleComplete: {
+    marginTop: theme.spacing(1),
   },
 }));
 
@@ -201,7 +145,8 @@ export const SubmitTransaction: React.FC<Props> = ({
               throw new Error('error requesting transaction operation status');
             }
             if (
-              operationStatus.status === OperationStatus.SIGNATURE_REQUIRED &&
+              operationStatus.status ===
+                OperationStatusType.SIGNATURE_REQUIRED &&
               operationStatus.transaction?.externalVendorTransactionId
             ) {
               // request for the client to sign the Tx string
@@ -232,13 +177,13 @@ export const SubmitTransaction: React.FC<Props> = ({
               setTransactionId(operationStatus.transaction.id);
               setStatusMessage(SendCryptoStatus.WAITING_FOR_TRANSACTION);
             }
-            if (operationStatus.status === OperationStatus.COMPLETED) {
+            if (operationStatus.status === OperationStatusType.COMPLETED) {
               setStatusMessage(SendCryptoStatus.TRANSACTION_COMPLETED);
               return {success: true};
             }
             if (
-              operationStatus.status === OperationStatus.FAILED ||
-              operationStatus.status === OperationStatus.CANCELLED
+              operationStatus.status === OperationStatusType.FAILED ||
+              operationStatus.status === OperationStatusType.CANCELLED
             ) {
               throw new Error(
                 `Transferred failed ${operationStatus.status.toLowerCase()}`,
@@ -267,17 +212,14 @@ export const SubmitTransaction: React.FC<Props> = ({
   };
 
   return (
-    <Box>
-      <Box className={classes.sendLoadingContainer}>
-        {status === Status.Success ? (
-          <CheckIcon color="success" className={classes.icon} />
-        ) : status === Status.Failed ? (
-          <ErrorIcon color="error" className={classes.icon} />
-        ) : (
-          <CircularProgress />
-        )}
+    <Box className={classes.sendLoadingContainer}>
+      <OperationStatus
+        label={statusMessage}
+        icon={<SendOutlinedIcon />}
+        success={status === Status.Success}
+        error={status === Status.Failed}
+      >
         <Box className={classes.transactionStatusContainer} mt={2}>
-          <Typography variant="h5">{statusMessage}</Typography>
           <Typography variant="caption">
             {status === Status.Success || status === Status.Failed
               ? t(
@@ -308,7 +250,7 @@ export const SubmitTransaction: React.FC<Props> = ({
             </Link>
           )}
         </Box>
-        <Box display="flex" mt={2} className={classes.fullWidth}>
+        <Box display="flex" mt={5} className={classes.fullWidth}>
           <Button fullWidth onClick={onCloseClick} variant="outlined">
             {statusMessage === SendCryptoStatus.RETRIEVING_ACCOUNT ||
             statusMessage === SendCryptoStatus.STARTING_TRANSACTION ||
@@ -317,7 +259,7 @@ export const SubmitTransaction: React.FC<Props> = ({
               : t('common.close')}
           </Button>
         </Box>
-      </Box>
+      </OperationStatus>
     </Box>
   );
 };

@@ -1,5 +1,5 @@
 import type {TEvent} from '@fireblocks/ncw-js-sdk';
-import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -42,6 +42,7 @@ import {DomainProfileTabType} from '../../DomainProfile';
 import ManageInput from '../../common/ManageInput';
 import type {ManageTabProps} from '../../common/types';
 import {Client, MIN_CLIENT_HEIGHT} from './Client';
+import {OperationStatus} from './OperationStatus';
 import type {WalletMode} from './index';
 
 const useStyles = makeStyles<{
@@ -158,7 +159,8 @@ export const Configuration: React.FC<
 
     setButtonComponent(
       <Box className={classes.continueActionContainer}>
-        {configState !== WalletConfigState.OtpEntry || !isSaving ? (
+        {(configState !== WalletConfigState.OtpEntry || !isSaving) &&
+        !errorMessage ? (
           <>
             <LoadingButton
               variant="contained"
@@ -175,9 +177,7 @@ export const Configuration: React.FC<
               disabled={!isSaveEnabled}
               fullWidth
             >
-              {errorMessage
-                ? errorMessage
-                : configState === WalletConfigState.PasswordEntry
+              {configState === WalletConfigState.PasswordEntry
                 ? t('wallet.beginSetup')
                 : configState === WalletConfigState.OtpEntry &&
                   t('wallet.completeSetup')}
@@ -196,20 +196,16 @@ export const Configuration: React.FC<
             )}
           </>
         ) : (
-          <Box
-            display="flex"
-            flexDirection="column"
-            justifyItems="center"
-            width="100%"
-          >
-            <Box display="flex" alignItems="center" mb={3}>
-              <CircularProgress color="inherit" size={20} />
-              <Typography variant="body2" ml={1}>
-                {savingMessage}
-              </Typography>
+          !errorMessage && (
+            <Box
+              display="flex"
+              flexDirection="column"
+              justifyItems="center"
+              width="100%"
+            >
+              <LinearProgress variant="determinate" value={progressPct} />
             </Box>
-            <LinearProgress variant="determinate" value={progressPct} />
-          </Box>
+          )
         )}
       </Box>,
     );
@@ -387,6 +383,10 @@ export const Configuration: React.FC<
   const handlePersistChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPersistKeys(event.target.checked);
     setIsDirty(true);
+  };
+
+  const handleTryAgain = () => {
+    setErrorMessage(undefined);
   };
 
   const processPasswordEntry = async () => {
@@ -576,7 +576,21 @@ export const Configuration: React.FC<
   return (
     <Box className={classes.container}>
       {isLoaded ? (
-        configState === WalletConfigState.OtpEntry && emailAddress ? (
+        isSaving || errorMessage ? (
+          <Box mt={5}>
+            <OperationStatus
+              label={errorMessage || t('wallet.configuringWallet')}
+              icon={<LockOutlinedIcon />}
+              error={errorMessage !== undefined && errorMessage.length > 0}
+            >
+              {errorMessage && (
+                <Button variant="text" onClick={handleTryAgain}>
+                  {t('common.tryAgain')}
+                </Button>
+              )}
+            </OperationStatus>
+          </Box>
+        ) : configState === WalletConfigState.OtpEntry && emailAddress ? (
           <Box>
             <Typography variant="body1" className={classes.infoContainer}>
               <Markdown>
@@ -655,37 +669,37 @@ export const Configuration: React.FC<
             </Box>
           </Box>
         ) : (
-          configState === WalletConfigState.Complete && (
-            <Box display="flex" flexDirection="column" alignItems="center">
-              {mode === 'basic' ? (
-                <>
-                  <CheckCircleOutlinedIcon className={classes.iconConfigured} />
-                  <Typography variant="h5">{t('manage.allSet')}</Typography>
-                  <Box mb={2}>
-                    <Typography variant="body1">
-                      {t('wallet.successDescription')}
-                    </Typography>
-                  </Box>
-                  <Button variant="outlined" onClick={handleLogout}>
-                    {t('header.signOut')}
-                  </Button>
-                </>
-              ) : (
-                mode === 'portfolio' &&
-                accessToken && (
-                  <Client
-                    wallets={mpcWallets}
-                    accessToken={accessToken}
-                    onRefresh={loadMpcWallets}
-                  />
-                )
-              )}
+          configState === WalletConfigState.Complete &&
+          (mode === 'basic' ? (
+            <Box mt={5}>
+              <OperationStatus label={t('manage.allSet')} success={true}>
+                <Box mb={2}>
+                  <Typography variant="body1">
+                    {t('wallet.successDescription')}
+                  </Typography>
+                </Box>
+                <Button variant="outlined" onClick={handleLogout}>
+                  {t('header.signOut')}
+                </Button>
+              </OperationStatus>
             </Box>
-          )
+          ) : (
+            mode === 'portfolio' &&
+            accessToken && (
+              <Client
+                wallets={mpcWallets}
+                accessToken={accessToken}
+                onRefresh={loadMpcWallets}
+              />
+            )
+          ))
         )
       ) : (
         <Box className={classes.loadingContainer}>
-          <CircularProgress />
+          <OperationStatus
+            icon={<LockOutlinedIcon />}
+            label={t('wallet.loadingWallet')}
+          />
         </Box>
       )}
     </Box>

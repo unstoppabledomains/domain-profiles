@@ -64,6 +64,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     width: '100%',
+    marginTop: theme.spacing(3),
+    marginBottom: theme.spacing(2),
   },
   sendAmountContainer: {
     display: 'flex',
@@ -104,6 +106,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 type Props = {
   onCancelClick: () => void;
+  onClickReceive?: () => void;
+  onClickBuy?: () => void;
   client: IFireblocksNCW;
   accessToken: string;
   wallets: SerializedWalletBalance[];
@@ -111,6 +115,8 @@ type Props = {
 
 const Send: React.FC<Props> = ({
   onCancelClick,
+  onClickBuy,
+  onClickReceive,
   client,
   accessToken,
   wallets,
@@ -168,7 +174,10 @@ const Send: React.FC<Props> = ({
           onSelectAsset={setAsset}
           wallets={wallets}
           onCancelClick={handleBackClick}
+          onClickBuy={onClickBuy}
+          onClickReceive={onClickReceive}
           label={t('wallet.selectAssetToSend')}
+          requireBalance={true}
         />
       </Box>
     );
@@ -176,15 +185,25 @@ const Send: React.FC<Props> = ({
 
   if (transactionSubmitted) {
     return (
-      <SubmitTransaction
-        onCloseClick={onCancelClick}
-        accessToken={accessToken}
-        asset={asset}
-        recipientAddress={recipientAddress}
-        recipientDomain={resolvedDomain}
-        amount={amount}
-        client={client}
-      />
+      <Box className={classes.flexColCenterAligned}>
+        <TitleWithBackButton
+          label={t('wallet.actionOnBlockchainTitle', {
+            action: t('common.send'),
+            symbol: asset.ticker,
+            blockchain: asset.name,
+          })}
+          onCancelClick={onCancelClick}
+        />
+        <SubmitTransaction
+          onCloseClick={onCancelClick}
+          accessToken={accessToken}
+          asset={asset}
+          recipientAddress={recipientAddress}
+          recipientDomain={resolvedDomain}
+          amount={amount}
+          client={client}
+        />
+      </Box>
     );
   }
 
@@ -202,14 +221,18 @@ const Send: React.FC<Props> = ({
     <Box className={classes.flexColCenterAligned}>
       <TitleWithBackButton
         onCancelClick={handleBackClick}
-        label={`Send ${asset.ticker} on ${asset.name}`}
+        label={t('wallet.actionOnBlockchainTitle', {
+          action: t('common.send'),
+          symbol: asset.ticker,
+          blockchain: asset.name,
+        })}
       />
       <Box className={classes.contentWrapper}>
         <Box className={classes.selectAssetContainer}>
           <Box className={classes.sendAssetContainer}>
             <Box className={classes.fullWidth}>
               <Typography variant="h5">Send {asset.symbol}</Typography>
-            <img src={asset.imageUrl} className={classes.assetLogo} />
+              <img src={asset.imageUrl} className={classes.assetLogo} />
             </Box>
           </Box>
           <Box className={classes.recipientWrapper}>
@@ -244,7 +267,7 @@ const Send: React.FC<Props> = ({
               </Typography>
             )}
           </Box>
-          <Box display="flex" mt={1} className={classes.fullWidth}>
+          <Box display="flex" mt={3} className={classes.fullWidth}>
             <Button
               fullWidth
               onClick={handleSubmitTransaction}

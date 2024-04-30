@@ -28,7 +28,7 @@ import {OperationStatus} from '../lib/types/fireBlocks';
 export enum SendCryptoStatus {
   RETRIEVING_ACCOUNT = 'Retrieving account...',
   STARTING_TRANSACTION = 'Starting transaction...',
-  GETTING_TRANSACTION_TO_SIGN = 'Getting signature to sign...',
+  GETTING_TRANSACTION_TO_SIGN = 'Waiting to sign...',
   SIGNING = 'Signing...',
   SUBMITTING_TRANSACTION = 'Submitting transaction...',
   WAITING_FOR_TRANSACTION = 'Waiting for transaction to complete...',

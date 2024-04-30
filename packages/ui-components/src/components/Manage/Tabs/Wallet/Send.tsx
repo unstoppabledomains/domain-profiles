@@ -63,6 +63,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    marginTop: theme.spacing(3),
+    marginBottom: theme.spacing(2),
   },
   sendAmountContainer: {
     display: 'flex',

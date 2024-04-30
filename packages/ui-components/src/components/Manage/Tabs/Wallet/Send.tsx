@@ -249,12 +249,16 @@ const Send: React.FC<Props> = ({
               <ManageInput
                 id="amount"
                 value={amount}
-                label={'Amount'}
-                placeholder={`Amount in ${asset.ticker}`}
+                label={t('wallet.amount')}
+                placeholder={t('wallet.amountInSymbol', {
+                  symbol: asset.ticker,
+                })}
                 onChange={handleAmountChange}
                 stacked={true}
                 error={insufficientBalance}
-                errorText={insufficientBalance ? 'Insufficient balance' : ''}
+                errorText={
+                  insufficientBalance ? t('wallet.insufficientBalance') : ''
+                }
                 endAdornment={<Button onClick={handleMaxClick}>Max</Button>}
               />
             </div>
@@ -263,7 +267,10 @@ const Send: React.FC<Props> = ({
                 variant="subtitle1"
                 className={classes.availableBalance}
               >
-                Available: {asset.balance.toFixed(5)} {asset.ticker}
+                {t('wallet.availableAmount', {
+                  amount: asset.balance.toFixed(5),
+                  symbol: asset.ticker,
+                })}
               </Typography>
             )}
           </Box>

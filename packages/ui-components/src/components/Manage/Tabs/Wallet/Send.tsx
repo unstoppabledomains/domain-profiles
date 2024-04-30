@@ -261,7 +261,7 @@ const Send: React.FC<Props> = ({
               </Typography>
             )}
           </Box>
-          <Box display="flex" mt={1} className={classes.fullWidth}>
+          <Box display="flex" mt={3} className={classes.fullWidth}>
             <Button
               fullWidth
               onClick={handleSubmitTransaction}

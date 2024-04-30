@@ -23,11 +23,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
     width: '100%',
   },
-  fullWidth: {
-    display: 'flex',
-    width: '100%',
-    alignItems: 'center',
-  },
   selectAssetContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -65,6 +60,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    marginTop: theme.spacing(3),
   },
   receiveContentContainer: {
     display: 'flex',
@@ -171,11 +167,6 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
                 This address can only be used to receive compatible tokens
               </Typography>
             </Box>
-          </Box>
-          <Box display="flex" mt={2} className={classes.fullWidth}>
-            <Button fullWidth onClick={onCancelClick} variant="outlined">
-              {t('common.cancel')}
-            </Button>
           </Box>
         </Box>
       </Box>

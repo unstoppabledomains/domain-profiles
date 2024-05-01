@@ -131,10 +131,13 @@ export const SubmitTransaction: React.FC<Props> = ({
                 SendCryptoStatusMessage.RETRIEVING_ACCOUNT,
                 SendCryptoStatusMessage.STARTING_TRANSACTION,
                 SendCryptoStatusMessage.WAITING_TO_SIGN,
+                SendCryptoStatusMessage.TRANSACTION_COMPLETED,
               ].includes(statusMessage)
             }
           >
-            {t('common.cancel')}
+            {statusMessage === SendCryptoStatusMessage.TRANSACTION_COMPLETED
+              ? t('common.close')
+              : t('common.cancel')}
           </Button>
         </Box>
       </OperationStatus>

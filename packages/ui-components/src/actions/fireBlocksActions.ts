@@ -22,15 +22,15 @@ import type {
 } from '../lib/types/fireBlocks';
 
 export enum SendCryptoStatusMessage {
-  RETRIEVING_ACCOUNT = 'Retrieving account...',
-  STARTING_TRANSACTION = 'Starting transaction...',
-  WAITING_TO_SIGN = 'Waiting to sign...',
-  SIGNING = 'Signing...',
-  SUBMITTING_TRANSACTION = 'Submitting transaction...',
-  WAITING_FOR_TRANSACTION = 'Waiting for transaction to complete...',
-  TRANSACTION_COMPLETED = 'Transaction completed!',
-  TRANSACTION_FAILED = 'Transaction failed',
-  CHECKING_QUEUE = 'Checking queued transactions...',
+  RETRIEVING_ACCOUNT = 'Preparing transfer...',
+  CHECKING_QUEUE = 'Checking queued transfers...',
+  STARTING_TRANSACTION = 'Starting transfer...',
+  WAITING_TO_SIGN = 'Waiting to approve transfer...',
+  SIGNING = 'Approving transfer...',
+  SUBMITTING_TRANSACTION = 'Submitting transfer...',
+  WAITING_FOR_TRANSACTION = 'Waiting for transfer to complete...',
+  TRANSACTION_COMPLETED = 'Transfer completed!',
+  TRANSACTION_FAILED = 'Transfer failed',
 }
 
 export const confirmAuthorizationTokenTx = async (

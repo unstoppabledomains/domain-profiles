@@ -172,10 +172,14 @@ export const Client: React.FC<ClientProps> = ({
     setIsBuy(false);
   };
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
+    // restore the wallet home screen
     setIsSend(false);
     setIsReceive(false);
     setIsBuy(false);
+
+    // refresh portfolio data
+    await onRefresh();
   };
 
   return (

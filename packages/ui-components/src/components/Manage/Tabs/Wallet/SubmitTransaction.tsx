@@ -28,6 +28,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    width: '100%',
   },
   transactionStatusContainer: {
     display: 'flex',
@@ -82,6 +83,19 @@ export const SubmitTransaction: React.FC<Props> = ({
     getClient,
   });
 
+  const visibleButtonStates = [
+    SendCryptoStatusMessage.RETRIEVING_ACCOUNT,
+    SendCryptoStatusMessage.CHECKING_QUEUE,
+    SendCryptoStatusMessage.STARTING_TRANSACTION,
+    SendCryptoStatusMessage.WAITING_TO_SIGN,
+    SendCryptoStatusMessage.WAITING_FOR_TRANSACTION,
+    SendCryptoStatusMessage.TRANSACTION_COMPLETED,
+  ];
+  const closeButtonStates = [
+    SendCryptoStatusMessage.WAITING_FOR_TRANSACTION,
+    SendCryptoStatusMessage.TRANSACTION_COMPLETED,
+  ];
+
   return (
     <Box className={classes.sendLoadingContainer}>
       <OperationStatus
@@ -121,25 +135,15 @@ export const SubmitTransaction: React.FC<Props> = ({
             </Link>
           )}
         </Box>
-        <Box display="flex" mt={5} className={classes.fullWidth}>
-          <Button
-            fullWidth
-            onClick={onCloseClick}
-            variant="outlined"
-            disabled={
-              ![
-                SendCryptoStatusMessage.RETRIEVING_ACCOUNT,
-                SendCryptoStatusMessage.STARTING_TRANSACTION,
-                SendCryptoStatusMessage.WAITING_TO_SIGN,
-                SendCryptoStatusMessage.TRANSACTION_COMPLETED,
-              ].includes(statusMessage)
-            }
-          >
-            {statusMessage === SendCryptoStatusMessage.TRANSACTION_COMPLETED
-              ? t('common.close')
-              : t('common.cancel')}
-          </Button>
-        </Box>
+        {visibleButtonStates.includes(statusMessage) && (
+          <Box display="flex" mt={5} className={classes.fullWidth}>
+            <Button fullWidth onClick={onCloseClick} variant="outlined">
+              {closeButtonStates.includes(statusMessage)
+                ? t('common.close')
+                : t('common.cancel')}
+            </Button>
+          </Box>
+        )}
       </OperationStatus>
     </Box>
   );

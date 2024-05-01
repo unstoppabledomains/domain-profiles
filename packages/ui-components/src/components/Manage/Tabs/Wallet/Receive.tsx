@@ -17,6 +17,8 @@ import ManageInput from '../../common/ManageInput';
 import {SelectAsset} from './SelectAsset';
 import {TitleWithBackButton} from './TitleWithBackButton';
 
+const SUPPORTED_UD_SYMBOLS = ['ETH', 'MATIC'];
+
 const useStyles = makeStyles()((theme: Theme) => ({
   flexColCenterAligned: {
     display: 'flex',
@@ -175,10 +177,17 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
                 <InfoIcon className={classes.infoIcon} />
               </Box>
               <Typography variant="caption">
-                {t('wallet.receiveAddressCaption', {
-                  symbol: asset.ticker,
-                  blockchain: asset.name,
-                })}
+                {t(
+                  SUPPORTED_UD_SYMBOLS.map(s => s.toLowerCase()).includes(
+                    asset.symbol.toLowerCase(),
+                  )
+                    ? 'wallet.receiveAddressCaptionWithDomains'
+                    : 'wallet.receiveAddressCaption',
+                  {
+                    symbol: asset.ticker,
+                    blockchain: asset.name,
+                  },
+                )}
               </Typography>
             </Box>
           </Box>

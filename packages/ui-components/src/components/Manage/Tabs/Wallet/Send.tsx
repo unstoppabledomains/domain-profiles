@@ -144,7 +144,7 @@ const Send: React.FC<Props> = ({
     resetForm();
   };
 
-  const handleSubmitTransaction = async () => {
+  const handleSubmitTransaction = () => {
     setTransactionSubmitted(true);
   };
 
@@ -282,6 +282,7 @@ const Send: React.FC<Props> = ({
               onClick={handleSubmitTransaction}
               disabled={!canSend}
               variant="contained"
+              data-testid="send-button"
             >
               {t('common.send')}
             </Button>

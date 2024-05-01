@@ -154,7 +154,7 @@ export const SelectAsset: React.FC<Props> = ({
             onSelectAsset(token);
           };
           return (
-            <div className={classes.asset}>
+            <div className={classes.asset} id={token.name}>
               <Token
                 primaryShade
                 token={token}

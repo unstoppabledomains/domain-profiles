@@ -48,11 +48,8 @@ const AddressInput: React.FC<Props> = ({
   const {unsResolverKeys} = useResolverKeys();
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
-  const resolveDomain = async (
-    addressOrDomain: string,
-    symbol: string,
-  ): Promise<string> => {
-    const recordKey = getRecordKey(symbol);
+  const resolveDomain = async (addressOrDomain: string): Promise<string> => {
+    const recordKey = getRecordKey(assetSymbol);
     setIsLoading(true);
     const profileData = await getProfileData(addressOrDomain, [
       DomainFieldTypes.Records,
@@ -64,8 +61,8 @@ const AddressInput: React.FC<Props> = ({
     return recordValue;
   };
 
-  const validateAddress = (symbol: string, value: string) => {
-    const recordKey = getRecordKey(symbol);
+  const validateAddress = (value: string) => {
+    const recordKey = getRecordKey(assetSymbol);
     const isValid = isValidRecordKeyValue(recordKey, value, unsResolverKeys);
     onAddressChange(isValid ? value : '');
     setError(!isValid);
@@ -91,12 +88,12 @@ const AddressInput: React.FC<Props> = ({
       clearTimeout(timeout.current);
     }
     if (!isValidDomain(addressOrDomain)) {
-      validateAddress(assetSymbol, addressOrDomain);
+      validateAddress(addressOrDomain);
       return;
     }
     timeout.current = setTimeout(async () => {
-      const resolvedAddress = await resolveDomain(addressOrDomain, assetSymbol);
-      if (!resolvedAddress || !validateAddress(assetSymbol, resolvedAddress)) {
+      const resolvedAddress = await resolveDomain(addressOrDomain);
+      if (!resolvedAddress || !validateAddress(resolvedAddress)) {
         setErrorMessage(
           `Could not resolve ${addressOrDomain} to a valid ${assetSymbol} address`,
         );

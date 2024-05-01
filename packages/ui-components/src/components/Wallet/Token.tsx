@@ -122,7 +122,14 @@ const Token: React.FC<Props> = ({
       : theme.palette.neutralShades,
   });
   return (
-    <Grid container item xs={12} onClick={onClick} className={classes.txLink}>
+    <Grid
+      container
+      item
+      xs={12}
+      onClick={onClick}
+      className={classes.txLink}
+      data-testid={`token-${token.symbol}`}
+    >
       <Grid item xs={2}>
         <Box display="flex" justifyContent="left" textAlign="left">
           <Badge

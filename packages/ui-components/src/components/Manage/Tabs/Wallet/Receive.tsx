@@ -1,5 +1,6 @@
 import CheckIcon from '@mui/icons-material/CheckCircle';
 import CopyIcon from '@mui/icons-material/ContentCopy';
+import InfoIcon from '@mui/icons-material/Info';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -75,7 +76,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   captionContainer: {
     display: 'flex',
-    alignItems: 'center',
+    backgroundColor: '#EEF0F3',
+    padding: 10,
+    borderRadius: 9,
+  },
+  infoIcon: {
+    fontSize: 15,
+    color: 'grey',
   },
 }));
 
@@ -164,8 +171,14 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
               }
             />
             <Box mt={1} className={classes.captionContainer}>
+              <Box mr={1}>
+                <InfoIcon className={classes.infoIcon} />
+              </Box>
               <Typography variant="caption">
-                This address can only be used to receive compatible tokens
+                {t('wallet.receiveAddressCaption', {
+                  symbol: asset.ticker,
+                  blockchain: asset.name,
+                })}
               </Typography>
             </Box>
           </Box>

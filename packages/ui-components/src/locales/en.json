@@ -797,6 +797,7 @@
     "availableAmount": "Available {{amount}} {{symbol}}",
     "approve": "Confirm",
     "beginSetup": "Continue",
+    "receiveAddressCaption": "This address can only receive {{symbol}} on {{blockchain}}. Do not send {{symbol}} from other networks, other ERC-20s or NFTs, or it may result in a loss of funds.",
     "bootstrapCode": "One-time code",
     "bootstrapCodeDescription": "The one-time code sent to **{{emailAddress}}** is required to access Unstoppable Wallet on this device.",
     "completeSetup": "Continue",

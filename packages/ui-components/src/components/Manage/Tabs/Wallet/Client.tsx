@@ -1,4 +1,3 @@
-import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import HistoryIcon from '@mui/icons-material/History';
@@ -12,7 +11,7 @@ import Grid from '@mui/material/Grid';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -124,7 +123,6 @@ export const Client: React.FC<ClientProps> = ({
   const [t] = useTranslationContext();
 
   // wallet state variables
-  const [client, setClient] = useState<IFireblocksNCW>();
   const [state, saveState] = useFireblocksState();
 
   // component state variables
@@ -133,11 +131,7 @@ export const Client: React.FC<ClientProps> = ({
   const [isBuy, setIsBuy] = useState(false);
   const [tabValue, setTabValue] = useState(ClientTabType.Portfolio);
 
-  useEffect(() => {
-    void handleLoadClient();
-  }, []);
-
-  const handleLoadClient = async () => {
+  const getClient = async () => {
     // retrieve client state
     const clientState = getBootstrapState(state);
     if (!clientState) {
@@ -145,12 +139,10 @@ export const Client: React.FC<ClientProps> = ({
     }
 
     // initialize and set the client
-    setClient(
-      await getFireBlocksClient(clientState.deviceId, accessToken, {
-        state,
-        saveState,
-      }),
-    );
+    return await getFireBlocksClient(clientState.deviceId, accessToken, {
+      state,
+      saveState,
+    });
   };
 
   const handleTabChange = async (
@@ -192,7 +184,7 @@ export const Client: React.FC<ClientProps> = ({
         {isSend ? (
           <Box className={classes.panelContainer}>
             <Send
-              client={client!}
+              getClient={getClient}
               accessToken={accessToken}
               onCancelClick={handleCancel}
               onClickBuy={handleClickedBuy}

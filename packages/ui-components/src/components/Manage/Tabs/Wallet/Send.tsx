@@ -108,7 +108,7 @@ type Props = {
   onCancelClick: () => void;
   onClickReceive?: () => void;
   onClickBuy?: () => void;
-  client: IFireblocksNCW;
+  getClient: () => Promise<IFireblocksNCW>;
   accessToken: string;
   wallets: SerializedWalletBalance[];
 };
@@ -117,7 +117,7 @@ const Send: React.FC<Props> = ({
   onCancelClick,
   onClickBuy,
   onClickReceive,
-  client,
+  getClient,
   accessToken,
   wallets,
 }) => {
@@ -205,7 +205,7 @@ const Send: React.FC<Props> = ({
           recipientAddress={recipientAddress}
           recipientDomain={resolvedDomain}
           amount={amount}
-          client={client}
+          getClient={getClient}
         />
       </Box>
     );

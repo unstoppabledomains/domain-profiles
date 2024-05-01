@@ -13,7 +13,7 @@ import Send from './Send';
 
 const defaultProps = {
   onCancelClick: jest.fn(),
-  client: mockFireblocksClient(),
+  getClient: async () => mockFireblocksClient(),
   accessToken: 'dummy_access_token',
   wallets: mockWallets(),
 };

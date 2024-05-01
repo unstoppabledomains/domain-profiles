@@ -50,12 +50,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 type Props = {
   onCloseClick: () => void;
+  getClient: () => Promise<IFireblocksNCW>;
   accessToken: string;
   asset: TokenEntry;
   recipientAddress: string;
   recipientDomain?: string;
   amount: string;
-  client: IFireblocksNCW;
 };
 
 const truncateAddress = (address: string) => {
@@ -64,12 +64,12 @@ const truncateAddress = (address: string) => {
 
 export const SubmitTransaction: React.FC<Props> = ({
   onCloseClick,
+  getClient,
   accessToken,
   asset,
   recipientAddress,
   recipientDomain,
   amount,
-  client,
 }) => {
   const [t] = useTranslationContext();
   const {classes} = useStyles();
@@ -79,7 +79,7 @@ export const SubmitTransaction: React.FC<Props> = ({
     asset,
     recipientAddress,
     amount,
-    client,
+    getClient,
   });
 
   return (

@@ -153,6 +153,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
               value={asset.walletAddress}
               stacked={true}
               disabled
+              multiline
               endAdornment={
                 <Button
                   onClick={handleCopyClick}

@@ -62,7 +62,7 @@ export interface GetOperationStatusResponse {
   '@type': string;
   id: string;
   lastUpdatedTimestamp: number;
-  status: OperationStatus;
+  status: OperationStatusType;
   type: string;
   parameters: Parameters;
   result?: Result;
@@ -93,7 +93,7 @@ export interface Operation {
   type: string;
 }
 
-export enum OperationStatus {
+export enum OperationStatusType {
   QUEUED = 'QUEUED',
   PROCESSING = 'PROCESSING',
   COMPLETED = 'COMPLETED',

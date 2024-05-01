@@ -1,6 +1,6 @@
 import CircularProgress from '@mui/material/CircularProgress';
 import type {Theme} from '@mui/material/styles';
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -46,6 +46,7 @@ const AddressInput: React.FC<Props> = ({
   const [error, setError] = useState<boolean>(false);
   const {classes} = useStyles();
   const {unsResolverKeys} = useResolverKeys();
+  const timeout = useRef<NodeJS.Timeout | null>(null);
 
   const resolveDomain = async (
     addressOrDomain: string,
@@ -71,6 +72,14 @@ const AddressInput: React.FC<Props> = ({
     return isValid;
   };
 
+  useEffect(() => {
+    return () => {
+      if (timeout.current) {
+        clearTimeout(timeout.current);
+      }
+    };
+  }, []);
+
   const onChange = async (id: string, addressOrDomain: string) => {
     onResolvedDomainChange('');
     onAddressChange('');
@@ -78,21 +87,26 @@ const AddressInput: React.FC<Props> = ({
     setAddress(addressOrDomain);
     setResolvedDomain('');
 
+    if (timeout.current) {
+      clearTimeout(timeout.current);
+    }
     if (!isValidDomain(addressOrDomain)) {
       validateAddress(assetSymbol, addressOrDomain);
       return;
     }
-    const resolvedAddress = await resolveDomain(addressOrDomain, assetSymbol);
-    if (!resolvedAddress || !validateAddress(assetSymbol, resolvedAddress)) {
-      setErrorMessage(
-        `Could not resolve ${addressOrDomain} to a valid ${assetSymbol} address`,
-      );
-      return;
-    }
-    setAddress(resolvedAddress);
-    setResolvedDomain(addressOrDomain);
-    onResolvedDomainChange(addressOrDomain);
-    onAddressChange(resolvedAddress);
+    timeout.current = setTimeout(async () => {
+      const resolvedAddress = await resolveDomain(addressOrDomain, assetSymbol);
+      if (!resolvedAddress || !validateAddress(assetSymbol, resolvedAddress)) {
+        setErrorMessage(
+          `Could not resolve ${addressOrDomain} to a valid ${assetSymbol} address`,
+        );
+        return;
+      }
+      setAddress(resolvedAddress);
+      setResolvedDomain(addressOrDomain);
+      onResolvedDomainChange(addressOrDomain);
+      onAddressChange(resolvedAddress);
+    }, 1000);
   };
 
   return (

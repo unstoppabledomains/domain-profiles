@@ -66,6 +66,7 @@ interface ManageInputProps {
       id: string | null;
     }>
   >;
+  inputRef?: React.RefObject<HTMLInputElement>;
 }
 
 const ManageInput: React.FC<ManageInputProps> = ({
@@ -86,6 +87,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
   stacked = true,
   maxLength,
   rows,
+  inputRef,
   type = 'text',
   startAdornment = null,
   endAdornment = null,
@@ -222,6 +224,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
             error={error}
             minRows={rows}
             maxRows={rows}
+            inputRef={inputRef}
             value={value || ''}
             type={type}
             inputProps={{

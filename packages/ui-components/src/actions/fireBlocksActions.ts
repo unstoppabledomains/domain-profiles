@@ -23,12 +23,12 @@ import type {
   GetOperationStatusResponse,
   GetTokenResponse,
 } from '../lib/types/fireBlocks';
-import {OperationStatus} from '../lib/types/fireBlocks';
+import {OperationStatusType} from '../lib/types/fireBlocks';
 
-export enum SendCryptoStatus {
+export enum SendCryptoStatusMessage {
   RETRIEVING_ACCOUNT = 'Retrieving account...',
   STARTING_TRANSACTION = 'Starting transaction...',
-  GETTING_TRANSACTION_TO_SIGN = 'Waiting to sign...',
+  WAITING_TO_SIGN = 'Waiting to sign...',
   SIGNING = 'Signing...',
   SUBMITTING_TRANSACTION = 'Submitting transaction...',
   WAITING_FOR_TRANSACTION = 'Waiting for transaction to complete...',
@@ -63,7 +63,7 @@ export const confirmAuthorizationTokenTx = async (
 
     // retry if the state is reported as processing
     if (getTokenResponse?.code === 'PROCESSING') {
-      await sleep(FB_WAIT_TIME_MS);
+      await sleep(FB_MAX_RETRY);
       return await confirmAuthorizationTokenTx(bootstrapJwt);
     }
   } catch (e) {
@@ -427,6 +427,31 @@ export const getOperationStatus = async (
   });
 };
 
+export const getTransferOperationResponse = (
+  asset: AccountAsset,
+  accessToken: string,
+  destinationAddress: string,
+  amount: number,
+) => {
+  return fetchApi<GetOperationResponse>(
+    `/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
+    {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        destinationAddress,
+        amount: String(amount),
+      }),
+    },
+  );
+};
+
 export const sendBootstrapCode = async (
   emailAddress: string,
 ): Promise<boolean> => {
@@ -462,14 +487,14 @@ export const sendCrypto = async (
   },
   onSignTx: (txId: string) => Promise<void>,
   opts?: {
-    onStatusChange?: (status: SendCryptoStatus) => void;
+    onStatusChange?: (status: SendCryptoStatusMessage) => void;
     onTxId?: (txId: string) => void;
   },
 ): Promise<void> => {
   try {
     // retrieve the accounts associated with the access token
     if (opts?.onStatusChange) {
-      opts.onStatusChange(SendCryptoStatus.RETRIEVING_ACCOUNT);
+      opts.onStatusChange(SendCryptoStatusMessage.RETRIEVING_ACCOUNT);
     }
     const assets = await getAccountAssets(accessToken);
     if (!assets) {
@@ -490,7 +515,7 @@ export const sendCrypto = async (
 
     // initialize a transaction to retrieve auth tokens
     if (opts?.onStatusChange) {
-      opts.onStatusChange(SendCryptoStatus.STARTING_TRANSACTION);
+      opts.onStatusChange(SendCryptoStatusMessage.STARTING_TRANSACTION);
     }
     const operationResponse = await fetchApi<GetOperationResponse>(
       `/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
@@ -514,9 +539,8 @@ export const sendCrypto = async (
     }
 
     if (opts?.onStatusChange) {
-      opts.onStatusChange(SendCryptoStatus.GETTING_TRANSACTION_TO_SIGN);
+      opts.onStatusChange(SendCryptoStatusMessage.WAITING_TO_SIGN);
     }
-    let signedWithClient = false;
     await pollForSuccess({
       fn: async () => {
         const operationStatus = await getOperationStatus(
@@ -527,25 +551,23 @@ export const sendCrypto = async (
           throw new Error('error requesting transaction operation status');
         }
         if (
-          !signedWithClient &&
-          operationStatus.status === OperationStatus.SIGNATURE_REQUIRED &&
+          operationStatus.status === OperationStatusType.SIGNATURE_REQUIRED &&
           operationStatus.transaction?.externalVendorTransactionId
         ) {
           // request for the client to sign the Tx string
           if (opts?.onStatusChange) {
-            opts.onStatusChange(SendCryptoStatus.SIGNING);
+            opts.onStatusChange(SendCryptoStatusMessage.SIGNING);
           }
           await onSignTx(
             operationStatus.transaction.externalVendorTransactionId,
           );
-          signedWithClient = true;
           return {success: true};
         }
 
         // throw an error for failure states
         if (
-          operationStatus.status === OperationStatus.FAILED ||
-          operationStatus.status === OperationStatus.CANCELLED
+          operationStatus.status === OperationStatusType.FAILED ||
+          operationStatus.status === OperationStatusType.CANCELLED
         ) {
           throw new Error(
             `Transferred failed ${operationStatus.status.toLowerCase()}`,
@@ -558,7 +580,7 @@ export const sendCrypto = async (
     });
 
     if (opts?.onStatusChange) {
-      opts.onStatusChange(SendCryptoStatus.SUBMITTING_TRANSACTION);
+      opts.onStatusChange(SendCryptoStatusMessage.SUBMITTING_TRANSACTION);
     }
 
     const {success} = await pollForSuccess({
@@ -573,18 +595,20 @@ export const sendCrypto = async (
         if (operationStatus.transaction?.id && opts?.onTxId) {
           opts.onTxId(operationStatus.transaction.id);
           if (opts?.onStatusChange) {
-            opts.onStatusChange(SendCryptoStatus.WAITING_FOR_TRANSACTION);
+            opts.onStatusChange(
+              SendCryptoStatusMessage.WAITING_FOR_TRANSACTION,
+            );
           }
         }
-        if (operationStatus.status === OperationStatus.COMPLETED) {
+        if (operationStatus.status === OperationStatusType.COMPLETED) {
           if (opts?.onStatusChange) {
-            opts.onStatusChange(SendCryptoStatus.TRANSACTION_COMPLETED);
+            opts.onStatusChange(SendCryptoStatusMessage.TRANSACTION_COMPLETED);
           }
           return {success: true};
         }
         if (
-          operationStatus.status === OperationStatus.FAILED ||
-          operationStatus.status === OperationStatus.CANCELLED
+          operationStatus.status === OperationStatusType.FAILED ||
+          operationStatus.status === OperationStatusType.CANCELLED
         ) {
           throw new Error(
             `Transferred failed ${operationStatus.status.toLowerCase()}`,
@@ -600,7 +624,7 @@ export const sendCrypto = async (
     }
   } catch (e) {
     if (opts?.onStatusChange) {
-      opts.onStatusChange(SendCryptoStatus.TRANSACTION_FAILED);
+      opts.onStatusChange(SendCryptoStatusMessage.TRANSACTION_FAILED);
     }
     notifyEvent(e, 'error', 'Wallet', 'Signature', {
       msg: 'error sending crypto',

@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -13,7 +13,7 @@ import type {TokenEntry} from '../../../Wallet/Token';
 import ManageInput from '../../common/ManageInput';
 import AddressInput from './AddressInput';
 import {SelectAsset} from './SelectAsset';
-import TransactionStatus from './SubmitTransaction';
+import SubmitTransaction from './SubmitTransaction';
 import {TitleWithBackButton} from './TitleWithBackButton';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -63,6 +63,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    width: '100%',
     marginTop: theme.spacing(3),
     marginBottom: theme.spacing(2),
   },
@@ -127,6 +128,7 @@ const Send: React.FC<Props> = ({
   const [transactionSubmitted, setTransactionSubmitted] = useState(false);
   const [resolvedDomain, setResolvedDomain] = useState('');
   const {classes} = useStyles();
+  const amountInputRef = useRef<HTMLInputElement>(null);
 
   const resetForm = () => {
     setResolvedDomain('');
@@ -152,6 +154,9 @@ const Send: React.FC<Props> = ({
 
   const handleResolvedDomainChange = (value: string) => {
     setResolvedDomain(value);
+    if (value && amountInputRef.current) {
+      amountInputRef.current.focus();
+    }
   };
 
   const handleMaxClick = () => {
@@ -176,7 +181,7 @@ const Send: React.FC<Props> = ({
           onClickBuy={onClickBuy}
           onClickReceive={onClickReceive}
           label={t('wallet.selectAssetToSend')}
-          requireBalance={true}
+          requireBalance={false}
         />
       </Box>
     );
@@ -193,7 +198,7 @@ const Send: React.FC<Props> = ({
           })}
           onCancelClick={onCancelClick}
         />
-        <TransactionStatus
+        <SubmitTransaction
           onCloseClick={onCancelClick}
           accessToken={accessToken}
           asset={asset}
@@ -233,8 +238,8 @@ const Send: React.FC<Props> = ({
           </Box>
           <Box className={classes.recipientWrapper}>
             <AddressInput
-              label={'Recipient'}
-              placeholder={'Recipient domain or address'}
+              label={t('wallet.recipient')}
+              placeholder={t('wallet.recipientDomainOrAddress')}
               onAddressChange={handleRecipientChange}
               onResolvedDomainChange={handleResolvedDomainChange}
               assetSymbol={asset.ticker}
@@ -244,22 +249,30 @@ const Send: React.FC<Props> = ({
             <div className={classes.amountInputWrapper}>
               <ManageInput
                 id="amount"
+                inputRef={amountInputRef}
                 value={amount}
-                label={'Amount'}
-                placeholder={`Amount in ${asset.ticker}`}
+                label={t('wallet.amount')}
+                placeholder={t('wallet.amountInSymbol', {
+                  symbol: asset.ticker,
+                })}
                 onChange={handleAmountChange}
                 stacked={true}
                 error={insufficientBalance}
-                errorText={insufficientBalance ? 'Insufficient balance' : ''}
+                errorText={
+                  insufficientBalance ? t('wallet.insufficientBalance') : ''
+                }
                 endAdornment={<Button onClick={handleMaxClick}>Max</Button>}
               />
             </div>
-            {insufficientBalance ? null : (
+            {!insufficientBalance && (
               <Typography
                 variant="subtitle1"
                 className={classes.availableBalance}
               >
-                Available: {asset.balance.toFixed(5)} {asset.ticker}
+                {t('wallet.availableAmount', {
+                  amount: asset.balance.toFixed(5),
+                  symbol: asset.ticker,
+                })}
               </Typography>
             )}
           </Box>

@@ -4,13 +4,17 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {sendCrypto} from '../../../../actions/fireBlocksActions';
-import {TokenType, useTranslationContext} from '../../../../lib';
+import {SendCryptoStatusMessage} from '../../../../actions/fireBlocksActions';
+import {
+  Status,
+  useSubmitTransaction,
+} from '../../../../hooks/useSubmitTransaction';
+import {useTranslationContext} from '../../../../lib';
 import Link from '../../../Link';
 import type {TokenEntry} from '../../../Wallet/Token';
 import {OperationStatus} from './OperationStatus';
@@ -54,12 +58,6 @@ type Props = {
   client: IFireblocksNCW;
 };
 
-enum Status {
-  Pending = 'pending',
-  Success = 'success',
-  Failed = 'failed',
-}
-
 const truncateAddress = (address: string) => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
@@ -74,39 +72,15 @@ export const SubmitTransaction: React.FC<Props> = ({
   client,
 }) => {
   const [t] = useTranslationContext();
-  const [transactionId, setTransactionId] = useState<string>('');
-  const [status, setStatus] = useState<Status>(Status.Pending);
-  const [statusMessage, setStatusMessage] = useState<string>();
   const {classes} = useStyles();
 
-  useEffect(() => {
-    void submitTransaction();
-  }, []);
-
-  const submitTransaction = async () => {
-    try {
-      // send the crypto
-      await sendCrypto(
-        accessToken,
-        asset,
-        recipientAddress,
-        {
-          type: TokenType.Native,
-          amount: parseFloat(amount),
-        },
-        async (internalTxId: string) => {
-          await client.signTransaction(internalTxId);
-        },
-        {
-          onTxId: setTransactionId,
-          onStatusChange: setStatusMessage,
-        },
-      );
-      setStatus(Status.Success);
-    } catch (e) {
-      setStatus(Status.Failed);
-    }
-  };
+  const {transactionId, status, statusMessage} = useSubmitTransaction({
+    accessToken,
+    asset,
+    recipientAddress,
+    amount,
+    client,
+  });
 
   return (
     <Box className={classes.sendLoadingContainer}>
@@ -116,39 +90,56 @@ export const SubmitTransaction: React.FC<Props> = ({
         success={status === Status.Success}
         error={status === Status.Failed}
       >
-        <Typography
-          variant="caption"
-          className={
-            transactionId ? classes.subTitleComplete : classes.subTitlePending
-          }
-        >
-          {amount} {asset.ticker}{' '}
-          {status === Status.Success
-            ? 'was successfully sent '
-            : status === Status.Failed
-            ? 'failed to send '
-            : ''}
-          to {recipientDomain ? recipientDomain : null} (
-          {truncateAddress(recipientAddress)})
-        </Typography>
-        {transactionId && (
-          <Link
-            variant={'caption'}
-            target="_blank"
-            href={`${
-              config.BLOCKCHAINS[asset.symbol].BLOCK_EXPLORER_TX_URL
-            }${transactionId}`}
+        <Box className={classes.transactionStatusContainer} mt={2}>
+          <Typography variant="caption">
+            {status === Status.Success || status === Status.Failed
+              ? t(
+                  status === Status.Success
+                    ? 'wallet.sendTransactionSuccess'
+                    : 'wallet.sendTransactionFailed',
+                  {
+                    amount,
+                    sourceSymbol: asset.symbol,
+                    status,
+                    recipientDomain: recipientDomain
+                      ? ` ${recipientDomain}`
+                      : '',
+                    recipientAddress: truncateAddress(recipientAddress),
+                  },
+                )
+              : null}
+          </Typography>
+          {transactionId && (
+            <Link
+              variant={'caption'}
+              target="_blank"
+              href={`${
+                config.BLOCKCHAINS[asset.symbol].BLOCK_EXPLORER_TX_URL
+              }${transactionId}`}
+            >
+              {t('wallet.viewTransaction')}
+            </Link>
+          )}
+        </Box>
+        <Box display="flex" mt={5} className={classes.fullWidth}>
+          <Button
+            fullWidth
+            onClick={onCloseClick}
+            variant="outlined"
+            disabled={
+              ![
+                SendCryptoStatusMessage.RETRIEVING_ACCOUNT,
+                SendCryptoStatusMessage.STARTING_TRANSACTION,
+                SendCryptoStatusMessage.WAITING_TO_SIGN,
+                SendCryptoStatusMessage.TRANSACTION_COMPLETED,
+              ].includes(statusMessage)
+            }
           >
-            {t('wallet.viewTransaction')}
-          </Link>
-        )}
-        {(transactionId || status !== Status.Pending) && (
-          <Box display="flex" mt={5} className={classes.fullWidth}>
-            <Button fullWidth onClick={onCloseClick} variant="outlined">
-              {t('common.close')}
-            </Button>
-          </Box>
-        )}
+            {statusMessage === SendCryptoStatusMessage.TRANSACTION_COMPLETED
+              ? t('common.close')
+              : t('common.cancel')}
+          </Button>
+        </Box>
       </OperationStatus>
     </Box>
   );

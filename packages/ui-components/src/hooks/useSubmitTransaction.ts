@@ -19,7 +19,7 @@ type Params = {
   asset: TokenEntry;
   recipientAddress: string;
   amount: string;
-  client: IFireblocksNCW;
+  getClient: () => Promise<IFireblocksNCW>;
 };
 
 export enum Status {
@@ -33,7 +33,7 @@ export const useSubmitTransaction = ({
   asset,
   recipientAddress,
   amount,
-  client,
+  getClient,
 }: Params) => {
   const [transactionId, setTransactionId] = useState('');
   const [status, setStatus] = useState(Status.Pending);
@@ -52,6 +52,7 @@ export const useSubmitTransaction = ({
 
   const submitTransaction = async () => {
     try {
+      // retrieve account status
       setStatusMessage(SendCryptoStatusMessage.RETRIEVING_ACCOUNT);
       const assets = await getAccountAssets(accessToken);
       if (!assets) {
@@ -59,8 +60,8 @@ export const useSubmitTransaction = ({
       }
       const assetToSend = assets.find(
         a =>
-          a.blockchainAsset.symbol.toLowerCase() ===
-            asset.symbol.toLowerCase() &&
+          a.blockchainAsset.blockchain.name.toLowerCase() ===
+            asset.name.toLowerCase() &&
           a.address.toLowerCase() === asset.walletAddress.toLowerCase(),
       );
       if (!assetToSend) {
@@ -69,6 +70,23 @@ export const useSubmitTransaction = ({
       if (!isMounted.current) {
         return;
       }
+
+      // cancel any in progress transactions
+      setStatusMessage(SendCryptoStatusMessage.CHECKING_QUEUE);
+      const client = await getClient();
+      try {
+        while (await client.getInProgressSigningTxId()) {
+          await client.stopInProgressSignTransaction();
+        }
+      } catch (e) {
+        notifyEvent(e, 'warning', 'Wallet', 'Signature', {
+          msg: 'error managing in progress transactions',
+        });
+      } finally {
+        await client.dispose();
+      }
+
+      // create new transfer request
       setStatusMessage(SendCryptoStatusMessage.STARTING_TRANSACTION);
       const operationResponse = await getTransferOperationResponse(
         assetToSend,
@@ -113,9 +131,11 @@ export const useSubmitTransaction = ({
           operationStatus.transaction?.externalVendorTransactionId
         ) {
           setStatusMessage(SendCryptoStatusMessage.SIGNING);
+          const client = await getClient();
           await client.signTransaction(
             operationStatus.transaction.externalVendorTransactionId,
           );
+          await client.dispose();
           return {success: true};
         }
         return {success: false};

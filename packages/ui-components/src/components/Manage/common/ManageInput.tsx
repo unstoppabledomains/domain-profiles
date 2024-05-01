@@ -2,6 +2,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
 import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import FormControl from '@mui/material/FormControl';
@@ -23,6 +24,7 @@ import FormError from './FormError';
 interface ManageInputProps {
   id: string;
   value?: string;
+  mt?: number;
   label?: string | JSX.Element;
   placeholder: string;
   error?: boolean;
@@ -75,6 +77,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
   label,
   placeholder,
   error,
+  mt,
   errorText,
   disabled = false,
   deprecated = false,
@@ -194,99 +197,108 @@ const ManageInput: React.FC<ManageInputProps> = ({
   }
 
   return (
-    <FormControl className={classes.formMargin} fullWidth>
-      <Grid container>
-        <Grid
-          item
-          className={classes.labelGridItem}
-          xs={12}
-          sm={stacked ? 12 : 3}
-        >
-          {label && (
-            <div className={classes.labelAndIconDiv}>
-              {labelIcon && (
-                <div className={classes.labelIcon}>{labelIcon}</div>
-              )}
-              <InputLabel
-                focused={false}
-                htmlFor={id}
-                className={cx(classes.formLabel, classes.formControlInputLabel)}
-              >
-                {label}
-              </InputLabel>
-            </div>
-          )}
-        </Grid>
-        <Grid item xs={12} sm={stacked ? 12 : 9}>
-          <OutlinedInput
-            id={id}
-            disabled={disabled || deprecated}
-            error={error}
-            minRows={rows}
-            maxRows={rows}
-            inputRef={inputRef}
-            value={value || ''}
-            type={type}
-            inputProps={{
-              'data-testid': `input-${id}`,
-              className: !endAdornment && error ? classes.error : '',
-              maxLength,
-            }}
-            multiline={multiline}
-            placeholder={placeholder}
-            onChange={handleChange}
-            onKeyDown={onKeyDown}
-            classes={{
-              root: cx(classes.inputRoot, classesOverride?.root),
-              input: cx(classes.input, classesOverride?.input),
-              adornedStart: classesOverride?.adornedStart,
-              adornedEnd: classesOverride?.adornedEnd,
-            }}
-            startAdornment={startAdornment}
-            endAdornment={
-              endAdornment
-                ? endAdornment
-                : setPublicVisibilityValues && (
-                    <InputAdornment
-                      position="end"
-                      style={{paddingRight: '15px', position: 'relative'}}
-                    >
-                      {publicVisibilityValues &&
-                      publicVisibilityValues[id + 'Public'] ? (
-                        <Tooltip title={t('manage.publicData')}>
-                          <PublicOutlinedIcon className={classes.publicIcon} />
-                        </Tooltip>
-                      ) : (
-                        <Tooltip title={t('manage.privateData')}>
-                          <VisibilityOffOutlinedIcon
-                            className={classes.privateIcon}
-                          />
-                        </Tooltip>
-                      )}
-                      <IconButton
-                        data-testid="inlineToggle"
-                        aria-label="toggle public visibility"
-                        onClick={handleAdornmentClick}
-                        edge="end"
+    <Box mt={mt} width="100%" className={classes.formMargin}>
+      <FormControl className={classes.formMargin} fullWidth>
+        <Grid container>
+          <Grid
+            item
+            className={classes.labelGridItem}
+            xs={12}
+            sm={stacked ? 12 : 3}
+          >
+            {label && (
+              <div className={classes.labelAndIconDiv}>
+                {labelIcon && (
+                  <div className={classes.labelIcon}>{labelIcon}</div>
+                )}
+                <InputLabel
+                  focused={false}
+                  htmlFor={id}
+                  className={cx(
+                    classes.formLabel,
+                    classes.formControlInputLabel,
+                  )}
+                >
+                  {label}
+                </InputLabel>
+              </div>
+            )}
+          </Grid>
+          <Grid item xs={12} sm={stacked ? 12 : 9}>
+            <OutlinedInput
+              id={id}
+              disabled={disabled || deprecated}
+              error={error}
+              minRows={rows}
+              maxRows={rows}
+              inputRef={inputRef}
+              value={value || ''}
+              type={type}
+              inputProps={{
+                'data-testid': `input-${id}`,
+                className: !endAdornment && error ? classes.error : '',
+                maxLength,
+              }}
+              multiline={multiline}
+              placeholder={placeholder}
+              onChange={handleChange}
+              onKeyDown={onKeyDown}
+              classes={{
+                root: cx(classes.inputRoot, classesOverride?.root),
+                input: cx(classes.input, classesOverride?.input),
+                adornedStart: classesOverride?.adornedStart,
+                adornedEnd: classesOverride?.adornedEnd,
+              }}
+              startAdornment={startAdornment}
+              endAdornment={
+                endAdornment
+                  ? endAdornment
+                  : setPublicVisibilityValues && (
+                      <InputAdornment
+                        position="end"
+                        style={{paddingRight: '15px', position: 'relative'}}
                       >
-                        <ExpandMoreOutlinedIcon />
-                      </IconButton>
-                      <BasicCard></BasicCard>
-                    </InputAdornment>
-                  )
-            }
-          />
-          {helperText && <FormHelperText>{helperText}</FormHelperText>}
-          {(deprecated || (error && errorText)) && (
-            <div className={classes.formErrorContainer}>
-              <FormError
-                message={deprecated ? t('manage.legacyToken') : errorText ?? ''}
-              />
-            </div>
-          )}
+                        {publicVisibilityValues &&
+                        publicVisibilityValues[id + 'Public'] ? (
+                          <Tooltip title={t('manage.publicData')}>
+                            <PublicOutlinedIcon
+                              className={classes.publicIcon}
+                            />
+                          </Tooltip>
+                        ) : (
+                          <Tooltip title={t('manage.privateData')}>
+                            <VisibilityOffOutlinedIcon
+                              className={classes.privateIcon}
+                            />
+                          </Tooltip>
+                        )}
+                        <IconButton
+                          data-testid="inlineToggle"
+                          aria-label="toggle public visibility"
+                          onClick={handleAdornmentClick}
+                          edge="end"
+                        >
+                          <ExpandMoreOutlinedIcon />
+                        </IconButton>
+                        <BasicCard></BasicCard>
+                      </InputAdornment>
+                    )
+              }
+            />
+            {helperText && <FormHelperText>{helperText}</FormHelperText>}
+            {(deprecated || (error && errorText)) && (
+              <div className={classes.formErrorContainer}>
+                <FormError
+                  message={
+                    deprecated ? t('manage.legacyToken') : errorText ?? ''
+                  }
+                />
+              </div>
+            )}
+          </Grid>
         </Grid>
-      </Grid>
-    </FormControl>
+      </FormControl>
+    </Box>
   );
 };
 

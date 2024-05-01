@@ -338,6 +338,7 @@ export const Transfer: React.FC<ManageTabProps> = ({
               {t('manage.transferWarning')}
             </Typography>
             <ManageInput
+              mt={2}
               id="recipientAddress"
               value={recipientAddressInput}
               label={t('manage.recipientAddress')}

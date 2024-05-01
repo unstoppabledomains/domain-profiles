@@ -108,6 +108,7 @@ const AddressInput: React.FC<Props> = ({
 
   return (
     <ManageInput
+      mt={2}
       id="address-input"
       value={address}
       label={label}

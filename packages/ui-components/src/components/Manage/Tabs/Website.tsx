@@ -349,6 +349,7 @@ export const Website: React.FC<ManageTabProps> = ({
             )}
           </Box>
           <ManageInput
+            mt={2}
             id="ipfsHash"
             value={ipfsHash}
             label={t('manage.ipfsHash')}

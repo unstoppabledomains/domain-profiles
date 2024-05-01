@@ -1,5 +1,6 @@
 import CheckIcon from '@mui/icons-material/CheckCircle';
 import CopyIcon from '@mui/icons-material/ContentCopy';
+import InfoIcon from '@mui/icons-material/Info';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -11,10 +12,13 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance} from '../../../../lib';
 import {useTranslationContext} from '../../../../lib';
+import Link from '../../../Link';
 import type {TokenEntry} from '../../../Wallet/Token';
 import ManageInput from '../../common/ManageInput';
 import {SelectAsset} from './SelectAsset';
 import {TitleWithBackButton} from './TitleWithBackButton';
+
+const SUPPORTED_UD_SYMBOLS = ['ETH', 'MATIC'];
 
 const useStyles = makeStyles()((theme: Theme) => ({
   flexColCenterAligned: {
@@ -75,7 +79,19 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   captionContainer: {
     display: 'flex',
-    alignItems: 'center',
+    backgroundColor: '#EEF0F3',
+    padding: 10,
+    borderRadius: 9,
+  },
+  infoIcon: {
+    fontSize: 15,
+    color: 'grey',
+  },
+  learnMoreLink: {
+    display: 'inline-flex',
+  },
+  flex: {
+    display: 'flex',
   },
 }));
 
@@ -146,7 +162,13 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
             style={{innerHeight: 80, innerWidth: 30}}
           />
           <Box className={classes.addressWrapper} mt={2}>
+            <Box width="100%">
+              <Typography color="error" fontSize="16px" fontWeight="bold">
+                {t('wallet.receiveWarning')}
+              </Typography>
+            </Box>
             <ManageInput
+              mt={1}
               placeholder=""
               onChange={() => null}
               id="amount"
@@ -164,8 +186,34 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
               }
             />
             <Box mt={1} className={classes.captionContainer}>
+              <Box mr={1}>
+                <InfoIcon className={classes.infoIcon} />
+              </Box>
               <Typography variant="caption">
-                This address can only be used to receive compatible tokens
+                {t(
+                  SUPPORTED_UD_SYMBOLS.map(s => s.toLowerCase()).includes(
+                    asset.symbol.toLowerCase(),
+                  )
+                    ? 'wallet.receiveAddressCaptionWithDomains'
+                    : 'wallet.receiveAddressCaption',
+                  {
+                    symbol: asset.ticker,
+                    blockchain: asset.name,
+                  },
+                )}{' '}
+                {t('wallet.sendingForOtherNetworksAndTokens', {
+                  symbol: asset.ticker,
+                  blockchain: asset.name,
+                })}{' '}
+                <Link
+                  // TODO: Add link to learn more
+                  // href={`${config.UD_ME_BASE_URL}/${primarySponsor}`}
+                  // className={classes.descriptionLink}
+                  target="_blank"
+                  className={classes.learnMoreLink}
+                >
+                  <Typography variant={'caption'}>Learn More</Typography>
+                </Link>
               </Typography>
             </Box>
           </Box>

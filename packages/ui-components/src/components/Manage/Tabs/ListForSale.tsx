@@ -213,6 +213,7 @@ export const ListForSale: React.FC<ManageTabProps> = ({
       {isLoaded ? (
         <>
           <ManageInput
+            mt={2}
             id="publicDomainSellerEmail"
             value={userProfile?.profile?.publicDomainSellerEmail}
             label={t('manage.listForSaleEmail')}

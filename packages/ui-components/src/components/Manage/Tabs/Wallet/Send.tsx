@@ -108,7 +108,7 @@ type Props = {
   onCancelClick: () => void;
   onClickReceive?: () => void;
   onClickBuy?: () => void;
-  client: IFireblocksNCW;
+  getClient: () => Promise<IFireblocksNCW>;
   accessToken: string;
   wallets: SerializedWalletBalance[];
 };
@@ -117,7 +117,7 @@ const Send: React.FC<Props> = ({
   onCancelClick,
   onClickBuy,
   onClickReceive,
-  client,
+  getClient,
   accessToken,
   wallets,
 }) => {
@@ -181,7 +181,7 @@ const Send: React.FC<Props> = ({
           onClickBuy={onClickBuy}
           onClickReceive={onClickReceive}
           label={t('wallet.selectAssetToSend')}
-          requireBalance={false}
+          requireBalance={true}
         />
       </Box>
     );
@@ -205,7 +205,7 @@ const Send: React.FC<Props> = ({
           recipientAddress={recipientAddress}
           recipientDomain={resolvedDomain}
           amount={amount}
-          client={client}
+          getClient={getClient}
         />
       </Box>
     );
@@ -248,6 +248,7 @@ const Send: React.FC<Props> = ({
           <Box className={classes.sendAmountContainer}>
             <div className={classes.amountInputWrapper}>
               <ManageInput
+                mt={2}
                 id="amount"
                 inputRef={amountInputRef}
                 value={amount}

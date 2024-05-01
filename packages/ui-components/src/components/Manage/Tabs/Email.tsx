@@ -218,6 +218,7 @@ export const Email: React.FC<ManageTabProps> = ({
       {isLoaded ? (
         <>
           <ManageInput
+            mt={2}
             id="privateEmail"
             value={userProfile?.profile?.privateEmail}
             label={t('manage.privateEmail')}

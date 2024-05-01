@@ -6,9 +6,8 @@ const useStyles = makeStyles<void, 'error'>()(
   (theme: Theme, _params, classes) => ({
     // Input
     formMargin: {
-      marginTop: theme.spacing(2),
       '&:first-of-type': {
-        marginTop: 0,
+        marginTop: '0px !important',
       },
     },
     formLabel: {

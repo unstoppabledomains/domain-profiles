@@ -448,6 +448,7 @@ export const Profile: React.FC<ManageTabProps> = ({
         />
       </Box>
       <ManageInput
+        mt={2}
         id="displayName"
         value={userProfile?.profile?.displayName}
         label={t('manage.displayName')}
@@ -463,6 +464,7 @@ export const Profile: React.FC<ManageTabProps> = ({
         disabled={!isLoaded}
       />
       <ManageInput
+        mt={2}
         id="description"
         value={userProfile?.profile?.description}
         label={t('manage.description')}
@@ -485,6 +487,7 @@ export const Profile: React.FC<ManageTabProps> = ({
         </Typography>
       </Box>
       <ManageInput
+        mt={2}
         id="location"
         value={userProfile?.profile?.location}
         label={t('manage.location')}
@@ -499,6 +502,7 @@ export const Profile: React.FC<ManageTabProps> = ({
         disabled={!isLoaded}
       />
       <ManageInput
+        mt={2}
         id="web2Url"
         value={userProfile?.profile?.web2Url}
         label={t('manage.website')}
@@ -521,6 +525,7 @@ export const Profile: React.FC<ManageTabProps> = ({
         </Box>
       </Box>
       <ManageInput
+        mt={2}
         id="twitter"
         value={userProfile?.socialAccounts?.twitter.location}
         label={'Twitter (X)'}
@@ -532,6 +537,7 @@ export const Profile: React.FC<ManageTabProps> = ({
         disabled={!isLoaded}
       />
       <ManageInput
+        mt={2}
         id="discord"
         value={userProfile?.socialAccounts?.discord.location}
         label={'Discord'}
@@ -543,6 +549,7 @@ export const Profile: React.FC<ManageTabProps> = ({
         disabled={!isLoaded}
       />
       <ManageInput
+        mt={2}
         id="youtube"
         value={userProfile?.socialAccounts?.youtube.location}
         label={'YouTube'}
@@ -554,6 +561,7 @@ export const Profile: React.FC<ManageTabProps> = ({
         disabled={!isLoaded}
       />
       <ManageInput
+        mt={2}
         id="reddit"
         value={userProfile?.socialAccounts?.reddit.location}
         label={'Reddit'}
@@ -565,6 +573,7 @@ export const Profile: React.FC<ManageTabProps> = ({
         disabled={!isLoaded}
       />
       <ManageInput
+        mt={2}
         id="telegram"
         value={userProfile?.socialAccounts?.telegram.location}
         label={'Telegram'}
@@ -576,6 +585,7 @@ export const Profile: React.FC<ManageTabProps> = ({
         disabled={!isLoaded}
       />
       <ManageInput
+        mt={2}
         id="github"
         value={userProfile?.socialAccounts?.github.location}
         label={'Github'}
@@ -587,6 +597,7 @@ export const Profile: React.FC<ManageTabProps> = ({
         disabled={!isLoaded}
       />
       <ManageInput
+        mt={2}
         id="linkedin"
         value={userProfile?.socialAccounts?.linkedin.location}
         label={'Linkedin'}

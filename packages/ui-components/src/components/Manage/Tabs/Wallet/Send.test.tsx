@@ -133,7 +133,7 @@ describe('<Send />', () => {
     );
     expect(getByText('Insufficient balance')).toBeInTheDocument();
   });
-  it('should submit transaction', async () => {
+  it('should go to send confirmation page', async () => {
     const value = '.00001';
     const {getByTestId, getByText} = customRender(<Send {...defaultProps} />);
     act(() => {
@@ -152,9 +152,7 @@ describe('<Send />', () => {
     });
 
     await waitFor(() => {
-      expect(
-        getByText(SendCryptoStatusMessage.RETRIEVING_ACCOUNT),
-      ).toBeInTheDocument();
+      expect(getByText('Summary')).toBeInTheDocument();
     });
   });
 });

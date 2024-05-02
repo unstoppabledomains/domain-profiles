@@ -103,7 +103,7 @@ const AddressInput: React.FC<Props> = ({
       setResolvedDomain(addressOrDomain);
       onResolvedDomainChange(addressOrDomain);
       onAddressChange(resolvedAddress);
-    }, 1000);
+    }, 500);
   };
 
   return (

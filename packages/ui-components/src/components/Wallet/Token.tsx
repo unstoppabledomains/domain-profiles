@@ -88,6 +88,7 @@ export type TokenEntry = {
   name: string;
   ticker: string;
   value: number;
+  tokenMarketValueUsd: number;
   balance: number;
   pctChange?: number;
   imageUrl?: string;

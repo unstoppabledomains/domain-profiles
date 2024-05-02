@@ -105,7 +105,9 @@
     "beta": "Beta"
   },
   "common": {
+    "to": "To",
     "account": "Account",
+    "network": "Network",
     "addDomainCue": "Add a Web3 domain to start your journey on the decentralized web.",
     "address": "address",
     "and": "and",
@@ -789,6 +791,7 @@
     "sendTransactionSuccess": "{{amount}} {{sourceSymbol}} was successfully sent to{{recipientDomain}} ({{recipientAddress}})",
     "sendTransactionFailed": "{{amount}} {{sourceSymbol}} failed to send to{{recipientDomain}} ({{recipientAddress}})",
     "actionOnBlockchainTitle": "{{action}} {{symbol}} on {{blockchain}}",
+    "networkFee": "Network fee",
     "amount": "Amount",
     "recipient": "Recipient",
     "recipientDomainOrAddress": "Recipient domain or address",

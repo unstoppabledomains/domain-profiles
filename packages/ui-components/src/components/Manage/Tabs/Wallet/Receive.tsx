@@ -12,6 +12,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance} from '../../../../lib';
 import {useTranslationContext} from '../../../../lib';
+import Link from '../../../Link';
 import type {TokenEntry} from '../../../Wallet/Token';
 import ManageInput from '../../common/ManageInput';
 import {SelectAsset} from './SelectAsset';
@@ -86,6 +87,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
     fontSize: 15,
     color: 'grey',
   },
+  learnMoreLink: {
+    display: 'inline-flex',
+  },
+  flex: {
+    display: 'flex',
+  },
 }));
 
 type Props = {
@@ -155,7 +162,13 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
             style={{innerHeight: 80, innerWidth: 30}}
           />
           <Box className={classes.addressWrapper} mt={2}>
+            <Box width="100%">
+              <Typography color="error" fontSize="16px" fontWeight="bold">
+                {t('wallet.receiveWarning')}
+              </Typography>
+            </Box>
             <ManageInput
+              mt={1}
               placeholder=""
               onChange={() => null}
               id="amount"
@@ -187,7 +200,20 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
                     symbol: asset.ticker,
                     blockchain: asset.name,
                   },
-                )}
+                )}{' '}
+                {t('wallet.sendingForOtherNetworksAndTokens', {
+                  symbol: asset.ticker,
+                  blockchain: asset.name,
+                })}{' '}
+                <Link
+                  // TODO: Add link to learn more
+                  // href={`${config.UD_ME_BASE_URL}/${primarySponsor}`}
+                  // className={classes.descriptionLink}
+                  target="_blank"
+                  className={classes.learnMoreLink}
+                >
+                  <Typography variant={'caption'}>Learn More</Typography>
+                </Link>
               </Typography>
             </Box>
           </Box>

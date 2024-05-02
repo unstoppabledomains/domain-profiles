@@ -13,6 +13,7 @@ import type {TokenEntry} from '../../../Wallet/Token';
 import ManageInput from '../../common/ManageInput';
 import AddressInput from './AddressInput';
 import {SelectAsset} from './SelectAsset';
+import SendConfirm from './SendConfirm';
 import SubmitTransaction from './SubmitTransaction';
 import {TitleWithBackButton} from './TitleWithBackButton';
 
@@ -126,6 +127,7 @@ const Send: React.FC<Props> = ({
   const [asset, setAsset] = useState<TokenEntry>();
   const [amount, setAmount] = useState('');
   const [transactionSubmitted, setTransactionSubmitted] = useState(false);
+  const [sendConfirmation, setSendConfirmation] = useState(false);
   const [resolvedDomain, setResolvedDomain] = useState('');
   const {classes} = useStyles();
   const amountInputRef = useRef<HTMLInputElement>(null);
@@ -134,6 +136,7 @@ const Send: React.FC<Props> = ({
     setResolvedDomain('');
     setRecipientAddress('');
     setAmount('');
+    setSendConfirmation(false);
     setAsset(undefined);
   };
 
@@ -141,11 +144,19 @@ const Send: React.FC<Props> = ({
     if (!asset) {
       onCancelClick();
     }
+    if (!transactionSubmitted && sendConfirmation) {
+      setSendConfirmation(false);
+      return;
+    }
     resetForm();
   };
 
-  const handleSubmitTransaction = async () => {
+  const handleSubmitTransaction = () => {
     setTransactionSubmitted(true);
+  };
+
+  const handleSendConfirmationClick = () => {
+    setSendConfirmation(true);
   };
 
   const handleRecipientChange = (value: string) => {
@@ -187,6 +198,22 @@ const Send: React.FC<Props> = ({
     );
   }
 
+  if (!transactionSubmitted && sendConfirmation) {
+    return (
+      <SendConfirm
+        onBackClick={handleBackClick}
+        onSendClick={handleSubmitTransaction}
+        recipientAddress={recipientAddress}
+        resolvedDomain={resolvedDomain}
+        amount={amount}
+        blockchainName={asset.name}
+        symbol={asset.ticker}
+        amountInDollars={
+          '$' + (parseFloat(amount) * asset.tokenMarketValueUsd).toFixed(2)
+        }
+      />
+    );
+  }
   if (transactionSubmitted) {
     return (
       <Box className={classes.flexColCenterAligned}>
@@ -240,6 +267,8 @@ const Send: React.FC<Props> = ({
             <AddressInput
               label={t('wallet.recipient')}
               placeholder={t('wallet.recipientDomainOrAddress')}
+              initialAddressValue={recipientAddress}
+              initialResolvedDomainValue={resolvedDomain}
               onAddressChange={handleRecipientChange}
               onResolvedDomainChange={handleResolvedDomainChange}
               assetSymbol={asset.ticker}
@@ -248,6 +277,7 @@ const Send: React.FC<Props> = ({
           <Box className={classes.sendAmountContainer}>
             <div className={classes.amountInputWrapper}>
               <ManageInput
+                mt={2}
                 id="amount"
                 inputRef={amountInputRef}
                 value={amount}
@@ -279,9 +309,10 @@ const Send: React.FC<Props> = ({
           <Box display="flex" mt={3} className={classes.fullWidth}>
             <Button
               fullWidth
-              onClick={handleSubmitTransaction}
+              onClick={handleSendConfirmationClick}
               disabled={!canSend}
               variant="contained"
+              data-testid="send-button"
             >
               {t('common.send')}
             </Button>

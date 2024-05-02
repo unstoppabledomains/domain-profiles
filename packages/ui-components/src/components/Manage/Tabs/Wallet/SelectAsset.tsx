@@ -93,6 +93,7 @@ export const SelectAsset: React.FC<Props> = ({
       type: TokenType.Native,
       name: wallet.name,
       value: wallet.value?.walletUsdAmt || 0,
+      tokenMarketValueUsd: wallet.value?.marketUsdAmt || 0,
       balance: wallet.balanceAmt || 0,
       pctChange: wallet.value?.marketPctChange24Hr,
       history: wallet.value?.history?.sort(
@@ -154,7 +155,7 @@ export const SelectAsset: React.FC<Props> = ({
             onSelectAsset(token);
           };
           return (
-            <div className={classes.asset}>
+            <div className={classes.asset} id={token.name}>
               <Token
                 primaryShade
                 token={token}

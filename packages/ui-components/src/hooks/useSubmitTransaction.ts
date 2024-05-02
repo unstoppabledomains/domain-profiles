@@ -14,7 +14,7 @@ import {pollForSuccess} from '../lib/poll';
 import type {GetOperationResponse} from '../lib/types/fireBlocks';
 import {OperationStatusType} from '../lib/types/fireBlocks';
 
-type Params = {
+export type Params = {
   accessToken: string;
   asset: TokenEntry;
   recipientAddress: string;

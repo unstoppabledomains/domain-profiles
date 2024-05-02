@@ -598,6 +598,7 @@ export const Configuration: React.FC<
               </Markdown>
             </Typography>
             <ManageInput
+              mt={2}
               id="bootstrapCode"
               value={bootstrapCode}
               label={t('wallet.bootstrapCode')}
@@ -646,6 +647,7 @@ export const Configuration: React.FC<
             </Typography>
             <Box mt={5}>
               <ManageInput
+                mt={2}
                 id="emailAddress"
                 value={emailAddress}
                 label={t('wallet.emailAddress')}
@@ -656,6 +658,7 @@ export const Configuration: React.FC<
                 disabled={isSaving}
               />
               <ManageInput
+                mt={2}
                 id="recoveryPhrase"
                 value={recoveryPhrase}
                 label={t('wallet.recoveryPhrase')}

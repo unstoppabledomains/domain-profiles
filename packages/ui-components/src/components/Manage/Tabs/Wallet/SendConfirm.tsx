@@ -14,7 +14,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '100%',
   },
   container: {
-    marginTop: theme.spacing(10),
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',

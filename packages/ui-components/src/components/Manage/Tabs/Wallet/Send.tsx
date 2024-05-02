@@ -144,6 +144,10 @@ const Send: React.FC<Props> = ({
     if (!asset) {
       onCancelClick();
     }
+    if (!transactionSubmitted && sendConfirmation) {
+      setSendConfirmation(false);
+      return;
+    }
     resetForm();
   };
 
@@ -263,6 +267,8 @@ const Send: React.FC<Props> = ({
             <AddressInput
               label={t('wallet.recipient')}
               placeholder={t('wallet.recipientDomainOrAddress')}
+              initialAddressValue={recipientAddress}
+              initialResolvedDomainValue={resolvedDomain}
               onAddressChange={handleRecipientChange}
               onResolvedDomainChange={handleResolvedDomainChange}
               assetSymbol={asset.ticker}

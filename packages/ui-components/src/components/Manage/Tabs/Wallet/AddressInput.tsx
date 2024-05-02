@@ -28,6 +28,8 @@ type Props = {
   onAddressChange: (value: string) => void;
   onResolvedDomainChange: (value: string) => void;
   placeholder: string;
+  initialResolvedDomainValue: string;
+  initialAddressValue: string;
   label: string;
   assetSymbol: string;
 };
@@ -36,11 +38,15 @@ const AddressInput: React.FC<Props> = ({
   onAddressChange,
   onResolvedDomainChange,
   placeholder,
+  initialAddressValue,
+  initialResolvedDomainValue,
   label,
   assetSymbol,
 }) => {
-  const [address, setAddress] = useState<string>('');
-  const [resolvedDomain, setResolvedDomain] = useState<string>('');
+  const [address, setAddress] = useState<string>(initialAddressValue);
+  const [resolvedDomain, setResolvedDomain] = useState<string>(
+    initialResolvedDomainValue,
+  );
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [error, setError] = useState<boolean>(false);

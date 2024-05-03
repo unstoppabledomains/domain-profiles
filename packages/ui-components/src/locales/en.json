@@ -804,7 +804,7 @@
     "receiveAddressCaptionWithDomains": "This address can only receive {{symbol}} and Unstoppable Domains NFTs on {{blockchain}}.",
     "sendingForOtherNetworksAndTokens": "Sending {{symbol}} for other networks and tokens for {{blockchain}} is currently not supported and may result in a loss of funds.",
     "receiveAddressCaption": "This address can only receive {{symbol}} on {{blockchain}}.",
-    "receiveWarning": "Warning: Serious risk loss of funds",
+    "receiveWarning": "Warning: Serious risk of loss funds",
     "bootstrapCode": "One-time code",
     "bootstrapCodeDescription": "The one-time code sent to **{{emailAddress}}** is required to access Unstoppable Wallet on this device.",
     "completeSetup": "Continue",

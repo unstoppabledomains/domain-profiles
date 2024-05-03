@@ -114,7 +114,7 @@ const AmountInput: React.FC<Props> = ({
           stacked={true}
           error={insufficientBalance}
           errorText={insufficientBalance ? t('wallet.insufficientBalance') : ''}
-          endAdornment={<Button onClick={handleMaxClick}>Max</Button>}
+          endAdornment={<Button onClick={handleMaxClick} data-testid='max-amount-button'>Max</Button>}
         />
       </div>
       {!insufficientBalance && (
@@ -125,6 +125,7 @@ const AmountInput: React.FC<Props> = ({
             display="flex"
             alignItems="center"
             className={classes.swapCurrencyButton}
+            data-testid="swap-currency-button"
           >
             {!showFiat
               ? `~$${parseFloat(fiatAmount).toFixed(2)}`

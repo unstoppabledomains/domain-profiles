@@ -32,7 +32,7 @@ export const mockAsset = (): TokenEntry => ({
   ticker: 'ETH',
   value: 100,
   balance: 10,
-  tokenConversionUsd: 10,
+  tokenConversionUsd: 3.8512,
   walletAddress: '0x123',
   walletBlockChainLink: 'https://etherscan.io/address/0x123',
   walletName: 'Ethereum',

@@ -52,7 +52,7 @@ const AmountInput: React.FC<Props> = ({
   asset,
   onAmountChange,
 }) => {
-  const [tokenAmount, setTokenAmount] = useState(initialAmount || '0');
+  const [tokenAmount, setTokenAmount] = useState(initialAmount);
   const [fiatAmount, setFiatAmount] = useState('0');
   const [showFiat, setShowFiat] = useState(false);
   const {classes} = useStyles();
@@ -87,6 +87,7 @@ const AmountInput: React.FC<Props> = ({
   const toggleShowFiat = () => {
     setShowFiat(!showFiat);
     setFiatAmount(parseFloat(fiatAmount).toFixed(2));
+    setTokenAmount(!tokenAmount ? '0' : tokenAmount);
   };
 
   const handleMaxClick = () => {

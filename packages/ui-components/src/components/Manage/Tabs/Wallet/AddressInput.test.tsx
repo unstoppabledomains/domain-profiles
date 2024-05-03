@@ -74,6 +74,16 @@ describe('<AddressInput />', () => {
       ).toBeInTheDocument();
     });
   });
+  it('should display loader when resolving domain', async () => {
+    const {getByTestId} = customRender(<AddressInput {...defaultProps} />);
+    fireEvent.change(getByTestId('input-address-input'), {
+      target: {value: mkProfileData!.metadata!.domain},
+    });
+
+    await waitFor(() => {
+      expect(getByTestId('loader')).toBeInTheDocument();
+    });
+  });
   it('should fail to resolve domain', async () => {
     jest.spyOn(domainProfileActions, 'getProfileData').mockResolvedValue({});
     const invalidDomain = 'invalid.x';

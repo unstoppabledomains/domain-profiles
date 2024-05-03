@@ -123,7 +123,7 @@ const AddressInput: React.FC<Props> = ({
       disabled={isLoading}
       endAdornment={
         isLoading ? (
-          <div className={classes.loader}>
+          <div className={classes.loader} data-testid='loader'>
             <CircularProgress size={23} />
           </div>
         ) : undefined

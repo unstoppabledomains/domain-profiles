@@ -17,6 +17,19 @@ describe('<AmountInput />', () => {
     const {getByText} = customRender(<AmountInput {...defaultProps} />);
     expect(getByText('~$0.00')).toBeInTheDocument();
   });
+  it('renders the amount conversion after amount change', () => {
+    const value = '.123';
+    const usdConvertedValue = (
+      parseFloat(value) * defaultProps.asset.tokenConversionUsd
+    ).toFixed(2);
+    const {getByTestId, getByText} = customRender(
+      <AmountInput {...defaultProps} />,
+    );
+    fireEvent.change(getByTestId('input-amount'), {
+      target: {value},
+    });
+    expect(getByText(`~$${usdConvertedValue}`)).toBeInTheDocument();
+  });
 
   it('should return correct amount', () => {
     const value = '0.0001';
@@ -45,13 +58,14 @@ describe('<AmountInput />', () => {
   });
   it('should render insufficient balance', () => {
     const value = '100';
-    const {getByTestId, getByText} = customRender(
+    const {getByTestId, getByText, queryByTestId} = customRender(
       <AmountInput {...defaultProps} />,
     );
     fireEvent.change(getByTestId('input-amount'), {
       target: {value},
     });
     expect(getByText('Insufficient balance')).toBeInTheDocument();
+    expect(queryByTestId('swap-balance-container')).not.toBeInTheDocument();
   });
   it('should render the converted fiat amount', () => {
     const value = '1';
@@ -68,6 +82,7 @@ describe('<AmountInput />', () => {
         ).toFixed(2)}`,
       ),
     ).toBeInTheDocument();
+    expect(getByTestId('swap-balance-container')).toBeInTheDocument();
   });
   it('should swap amount value to fiat', () => {
     const value = '1';
@@ -79,6 +94,7 @@ describe('<AmountInput />', () => {
     expect((getByTestId('input-amount') as HTMLInputElement).value).toBe(
       (parseFloat(value) * defaultProps.asset.tokenConversionUsd).toFixed(2),
     );
+    expect(getByTestId('swap-balance-container')).toBeInTheDocument();
   });
   it('should display max amount', () => {
     const {getByTestId} = customRender(<AmountInput {...defaultProps} />);
@@ -86,6 +102,7 @@ describe('<AmountInput />', () => {
     expect((getByTestId('input-amount') as HTMLInputElement).value).toBe(
       defaultProps.asset.balance.toString(),
     );
+    expect(getByTestId('swap-balance-container')).toBeInTheDocument();
   });
   it('should display max amount after swap to fiat', () => {
     const {getByTestId} = customRender(<AmountInput {...defaultProps} />);
@@ -96,5 +113,6 @@ describe('<AmountInput />', () => {
         defaultProps.asset.balance * defaultProps.asset.tokenConversionUsd
       ).toFixed(2),
     );
+    expect(getByTestId('swap-balance-container')).toBeInTheDocument();
   });
 });

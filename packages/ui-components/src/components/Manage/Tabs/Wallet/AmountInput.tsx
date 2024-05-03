@@ -43,14 +43,14 @@ type Props = {
   initialAmount: string;
   amountInputRef: React.RefObject<HTMLInputElement>;
   asset: TokenEntry;
-  onAmountChange: (tokenAmount: string) => void;
+  onTokenAmountChange: (tokenAmount: string) => void;
 };
 
 const AmountInput: React.FC<Props> = ({
   amountInputRef,
   initialAmount,
   asset,
-  onAmountChange,
+  onTokenAmountChange,
 }) => {
   const [tokenAmount, setTokenAmount] = useState(initialAmount);
   const [fiatAmount, setFiatAmount] = useState('0');
@@ -75,13 +75,12 @@ const AmountInput: React.FC<Props> = ({
   const handleAmountChange = (id: string, value: string) => {
     const numberValue = Number(value);
     if ((isNaN(numberValue) || numberValue < 0) && value !== '.') {
-      onAmountChange('');
+      onTokenAmountChange('');
       return;
     }
     setTokenAmount(showFiat ? convertToToken(value) : value);
-
     setFiatAmount(showFiat ? value : convertToFiat(value));
-    onAmountChange(showFiat ? convertToToken(value) : value);
+    onTokenAmountChange(showFiat ? convertToToken(value) : value);
   };
 
   const toggleShowFiat = () => {
@@ -93,7 +92,7 @@ const AmountInput: React.FC<Props> = ({
   const handleMaxClick = () => {
     setFiatAmount((asset.balance * asset.tokenConversionUsd).toFixed(2));
     setTokenAmount(asset.balance.toString());
-    onAmountChange(asset.balance.toString());
+    onTokenAmountChange(asset.balance.toString());
   };
 
   const insufficientBalance = parseFloat(tokenAmount) > asset.balance;

@@ -9,7 +9,7 @@ const defaultProps = {
   initialAmount: '0',
   amountInputRef: {current: null},
   asset: mockAsset(),
-  onAmountChange: jest.fn(),
+  onTokenAmountChange: jest.fn(),
 };
 
 describe('<AmountInput />', () => {
@@ -25,7 +25,7 @@ describe('<AmountInput />', () => {
       target: {value},
     });
     expect((getByTestId('input-amount') as HTMLInputElement).value).toBe(value);
-    expect(defaultProps.onAmountChange).toHaveBeenCalledWith(value);
+    expect(defaultProps.onTokenAmountChange).toHaveBeenCalledWith(value);
   });
   it('should render the converted fiat amount', () => {
     const value = '0.0001';

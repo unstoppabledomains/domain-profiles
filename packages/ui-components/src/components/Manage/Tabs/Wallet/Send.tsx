@@ -269,7 +269,7 @@ const Send: React.FC<Props> = ({
             amountInputRef={amountInputRef}
             asset={asset}
             initialAmount={amount}
-            onAmountChange={handleAmountChange}
+            onTokenAmountChange={handleAmountChange}
           />
           <Box display="flex" mt={3} className={classes.fullWidth}>
             <Button

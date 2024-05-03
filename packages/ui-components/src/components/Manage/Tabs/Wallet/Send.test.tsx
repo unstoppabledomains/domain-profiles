@@ -155,4 +155,31 @@ describe('<Send />', () => {
       expect(getByText('Summary')).toBeInTheDocument();
     });
   });
+  it('should go to submit transaction after send confirmation', async () => {
+    const value = '.00001';
+    const {getByTestId, getByText} = customRender(<Send {...defaultProps} />);
+    act(() => {
+      fireEvent.click(getByTestId('token-ETH'));
+    });
+    act(() => {
+      fireEvent.change(getByTestId('input-address-input'), {
+        target: {value: VALID_ETH_ADDRESS},
+      });
+      fireEvent.change(getByTestId('input-amount'), {
+        target: {value},
+      });
+    });
+    act(() => {
+      fireEvent.click(getByTestId('send-button'));
+    });
+    act(() => {
+      fireEvent.click(getByTestId('send-confirm-button'));
+    });
+
+    await waitFor(() => {
+      expect(
+        getByText(SendCryptoStatusMessage.RETRIEVING_ACCOUNT),
+      ).toBeInTheDocument();
+    });
+  });
 });

@@ -116,7 +116,7 @@ export const SendConfirm: React.FC<Props> = ({
             <Typography variant="subtitle1">TODO</Typography>
           </Box>
         </Box>
-        <Button onClick={onSendClick} variant="contained" fullWidth>
+        <Button onClick={onSendClick} variant="contained" fullWidth data-testid='send-confirm-button'>
           {t('common.send')}
         </Button>
       </Box>

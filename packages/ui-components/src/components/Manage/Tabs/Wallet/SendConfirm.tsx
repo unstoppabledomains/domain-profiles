@@ -80,7 +80,7 @@ export const SendConfirm: React.FC<Props> = ({
         flexDirection="column"
         width="100%"
       >
-        <Typography variant="h4">
+        <Typography variant="h4" textAlign="center">
           {amount} {symbol}
         </Typography>
         <Typography variant="subtitle1">{amountInDollars}</Typography>

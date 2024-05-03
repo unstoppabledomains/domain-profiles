@@ -798,6 +798,7 @@
     "insufficientBalance": "Insufficient balance",
     "amountInSymbol": "Amount in {{symbol}}",
     "availableAmount": "Available {{amount}} {{symbol}}",
+    "availableUsd": "Available {{amount}} USD",
     "approve": "Confirm",
     "beginSetup": "Continue",
     "receiveAddressCaptionWithDomains": "This address can only receive {{symbol}} and Unstoppable Domains NFTs on {{blockchain}}.",

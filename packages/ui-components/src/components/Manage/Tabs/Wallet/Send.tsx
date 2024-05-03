@@ -1,7 +1,6 @@
 import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useRef, useState} from 'react';
 
@@ -10,8 +9,8 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import type {SerializedWalletBalance} from '../../../../lib';
 import {useTranslationContext} from '../../../../lib';
 import type {TokenEntry} from '../../../Wallet/Token';
-import ManageInput from '../../common/ManageInput';
 import AddressInput from './AddressInput';
+import AmountInput from './AmountInput';
 import {SelectAsset} from './SelectAsset';
 import SendConfirm from './SendConfirm';
 import SubmitTransaction from './SubmitTransaction';
@@ -170,15 +169,7 @@ const Send: React.FC<Props> = ({
     }
   };
 
-  const handleMaxClick = () => {
-    handleAmountChange('amount', asset?.balance.toString() || '');
-  };
-
-  const handleAmountChange = (id: string, value: string) => {
-    const numberValue = Number(value);
-    if ((isNaN(numberValue) || numberValue < 0) && value !== '.') {
-      return;
-    }
+  const handleAmountChange = (value: string) => {
     setAmount(value);
   };
 
@@ -209,7 +200,7 @@ const Send: React.FC<Props> = ({
         blockchainName={asset.name}
         symbol={asset.ticker}
         amountInDollars={
-          '$' + (parseFloat(amount) * asset.tokenMarketValueUsd).toFixed(2)
+          '$' + (parseFloat(amount) * asset.tokenConversionUsd).toFixed(2)
         }
       />
     );
@@ -274,38 +265,12 @@ const Send: React.FC<Props> = ({
               assetSymbol={asset.ticker}
             />
           </Box>
-          <Box className={classes.sendAmountContainer}>
-            <div className={classes.amountInputWrapper}>
-              <ManageInput
-                mt={2}
-                id="amount"
-                inputRef={amountInputRef}
-                value={amount}
-                label={t('wallet.amount')}
-                placeholder={t('wallet.amountInSymbol', {
-                  symbol: asset.ticker,
-                })}
-                onChange={handleAmountChange}
-                stacked={true}
-                error={insufficientBalance}
-                errorText={
-                  insufficientBalance ? t('wallet.insufficientBalance') : ''
-                }
-                endAdornment={<Button onClick={handleMaxClick}>Max</Button>}
-              />
-            </div>
-            {!insufficientBalance && (
-              <Typography
-                variant="subtitle1"
-                className={classes.availableBalance}
-              >
-                {t('wallet.availableAmount', {
-                  amount: asset.balance.toFixed(5),
-                  symbol: asset.ticker,
-                })}
-              </Typography>
-            )}
-          </Box>
+          <AmountInput
+            amountInputRef={amountInputRef}
+            asset={asset}
+            initialAmount={amount}
+            onAmountChange={handleAmountChange}
+          />
           <Box display="flex" mt={3} className={classes.fullWidth}>
             <Button
               fullWidth

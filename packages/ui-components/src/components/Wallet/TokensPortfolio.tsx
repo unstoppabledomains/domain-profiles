@@ -157,7 +157,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
           type: TokenType.Native,
           name: wallet.name,
           value: wallet.value?.walletUsdAmt || 0,
-          tokenMarketValueUsd: wallet.value?.marketUsdAmt || 0,
+          tokenConversionUsd: wallet.value?.marketUsdAmt || 0,
           balance: wallet.balanceAmt || 0,
           pctChange: wallet.value?.marketPctChange24Hr,
           history: wallet.value?.history?.sort(
@@ -197,7 +197,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
             name: walletNft.name,
             value: walletNft.totalValueUsdAmt || 0,
             balance: walletNft.ownedCount,
-            tokenMarketValueUsd:
+            tokenConversionUsd:
               walletNft.totalValueUsdAmt && walletNft.ownedCount
                 ? walletNft.totalValueUsdAmt / walletNft.ownedCount
                 : 0,
@@ -227,7 +227,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
             value: walletToken.value?.walletUsdAmt || 0,
             balance: walletToken.balanceAmt || 0,
             pctChange: walletToken.value?.marketPctChange24Hr,
-            tokenMarketValueUsd: walletToken.value?.marketUsdAmt || 0,
+            tokenConversionUsd: walletToken.value?.marketUsdAmt || 0,
             history: walletToken.value?.history?.sort(
               (a, b) =>
                 new Date(a.timestamp).getTime() -

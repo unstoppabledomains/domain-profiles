@@ -285,15 +285,6 @@ export const DomainWalletTransactions: React.FC<
         : isSender
         ? tx.to.label || truncateEthAddress(tx.to.address || '')
         : tx.from.label || truncateEthAddress(tx.from.address || '');
-    const actionSubjectLink = isNft
-      ? tx.link
-      : isSender && isXfer
-      ? tx.to.link
-      : !isSender && isXfer
-      ? tx.from.link
-      : isSender
-      ? tx.to.link
-      : tx.from.link;
     const currDate = moment(tx.timestamp).format('LL');
     const prevDate = prev ? moment(prev.timestamp).format('LL') : '';
     const nextDate = next ? moment(next.timestamp).format('LL') : '';
@@ -311,89 +302,83 @@ export const DomainWalletTransactions: React.FC<
             </Typography>
           </Grid>
         )}
-        <Grid
-          item
-          xs={2}
-          className={classes.txLink}
+        <Box
           onClick={() => handleClick(tx.link)}
+          width="100%"
+          display="flex"
+          mt={1}
         >
-          <Box display="flex" justifyContent="center" textAlign="center">
-            <Badge
-              overlap="circular"
-              anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
-              badgeContent={
-                isXfer || isNft ? (
-                  isSender ? (
-                    <SendIcon
-                      className={cx(classes.txIcon, classes.txIconSend)}
-                    />
+          <Grid item xs={2} className={classes.txLink}>
+            <Box display="flex" justifyContent="center" textAlign="center">
+              <Badge
+                overlap="circular"
+                anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+                badgeContent={
+                  isXfer || isNft ? (
+                    isSender ? (
+                      <SendIcon
+                        className={cx(classes.txIcon, classes.txIconSend)}
+                      />
+                    ) : (
+                      <SouthOutlinedIcon
+                        className={cx(classes.txIcon, classes.txIconReceive)}
+                      />
+                    )
                   ) : (
-                    <SouthOutlinedIcon
-                      className={cx(classes.txIcon, classes.txIconReceive)}
+                    <SyncAltIcon
+                      className={cx(classes.txIcon, classes.txIconInteract)}
                     />
                   )
-                ) : (
-                  <SyncAltIcon
-                    className={cx(classes.txIcon, classes.txIconInteract)}
-                  />
-                )
-              }
-            >
-              <CryptoIcon
-                currency={tx.symbol as CurrenciesType}
-                className={classes.currencyIcon}
-              />
-            </Badge>
-          </Box>
-        </Grid>
-        <Grid item xs={isNft ? 8 : 6}>
-          <Box display="flex" flexDirection="column">
-            <Typography
-              variant="caption"
-              onClick={() => handleClick(tx.link)}
-              className={classes.txTitle}
-            >
-              {actionName}
-            </Typography>
-            <Typography
-              variant="caption"
-              onClick={() => handleClick(actionSubjectLink)}
-              className={classes.txSubTitle}
-            >
-              {actionSubject}
-            </Typography>
-          </Box>
-        </Grid>
-        <Grid item xs={isNft ? 2 : 4}>
-          <Box
-            display="flex"
-            flexDirection="column"
-            textAlign="right"
-            justifyContent="right"
-            justifyItems="right"
-          >
-            {!isNft && Math.abs(tx.value) > 0 && (
-              <Typography
-                variant="caption"
-                className={isSender ? classes.txSent : classes.txReceived}
+                }
               >
-                {isSender ? '-' : '+'}
-                {numeral(Math.abs(tx.value)).format('0,0.[0000]')}{' '}
-                {isErc20 ? tx.method.toUpperCase() : tx.symbol}
+                <CryptoIcon
+                  currency={tx.symbol as CurrenciesType}
+                  className={classes.currencyIcon}
+                />
+              </Badge>
+            </Box>
+          </Grid>
+          <Grid item xs={isNft ? 8 : 6}>
+            <Box display="flex" flexDirection="column">
+              <Typography variant="caption" className={classes.txTitle}>
+                {actionName}
               </Typography>
-            )}
-            {!isNft && tx.gas > 0 && (
-              <Typography variant="caption" className={classes.txFee}>
-                -{numeral(tx.gas).format('0,0.[0000]')} {t('activity.gas')}
+              <Typography variant="caption" className={classes.txSubTitle}>
+                {actionSubject}
               </Typography>
-            )}
-            {isNft && tx.imageUrl && (
-              <Box display="flex" justifyContent="right">
-                <img className={classes.txImgPreview} src={tx.imageUrl} />
-              </Box>
-            )}
-          </Box>
-        </Grid>
+            </Box>
+          </Grid>
+          <Grid item xs={isNft ? 2 : 4}>
+            <Box
+              display="flex"
+              flexDirection="column"
+              textAlign="right"
+              justifyContent="right"
+              justifyItems="right"
+            >
+              {!isNft && Math.abs(tx.value) > 0 && (
+                <Typography
+                  variant="caption"
+                  className={isSender ? classes.txSent : classes.txReceived}
+                >
+                  {isSender ? '-' : '+'}
+                  {numeral(Math.abs(tx.value)).format('0,0.[0000]')}{' '}
+                  {isErc20 ? tx.method.toUpperCase() : tx.symbol}
+                </Typography>
+              )}
+              {!isNft && tx.gas > 0 && (
+                <Typography variant="caption" className={classes.txFee}>
+                  -{numeral(tx.gas).format('0,0.[0000]')} {t('activity.gas')}
+                </Typography>
+              )}
+              {isNft && tx.imageUrl && (
+                <Box display="flex" justifyContent="right">
+                  <img className={classes.txImgPreview} src={tx.imageUrl} />
+                </Box>
+              )}
+            </Box>
+          </Grid>
+        </Box>
         {currDate === nextDate && (
           <Grid item xs={12}>
             <Divider />

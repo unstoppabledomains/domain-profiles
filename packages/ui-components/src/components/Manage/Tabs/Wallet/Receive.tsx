@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {QRCode} from 'react-qrcode-logo';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -49,8 +49,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '100%',
   },
   assetLogo: {
-    height: '80px',
-    width: '80px',
+    height: '60px',
+    width: '60px',
     marginTop: '5px',
   },
   contentWrapper: {
@@ -85,7 +85,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   infoIcon: {
     fontSize: 15,
-    color: 'grey',
   },
   learnMoreLink: {
     display: 'inline-flex',
@@ -105,7 +104,16 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
   const [asset, setAsset] = useState<TokenEntry>();
   const [copied, setCopied] = useState<boolean>(false);
   const {classes} = useStyles();
+  const debounceTimer = useRef<NodeJS.Timeout>();
 
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, []);
+  
   const handleBackClick = () => {
     if (asset) {
       setAsset(undefined);
@@ -130,7 +138,10 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
   const handleCopyClick = () => {
     void navigator.clipboard.writeText(asset.walletAddress);
     setCopied(true);
-    setTimeout(() => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    debounceTimer.current = setTimeout(() => {
       setCopied(false);
     }, 3000);
   };
@@ -163,33 +174,20 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
           />
           <Box className={classes.addressWrapper} mt={2}>
             <Box width="100%">
-              <Typography color="error" fontSize="16px" fontWeight="bold">
+              <Typography
+                fontSize="16px"
+                fontWeight="bold"
+                textAlign="center"
+                color="error"
+              >
                 {t('wallet.receiveWarning')}
               </Typography>
             </Box>
-            <ManageInput
-              mt={1}
-              placeholder=""
-              onChange={() => null}
-              id="amount"
-              value={asset.walletAddress}
-              stacked={true}
-              disabled
-              multiline
-              endAdornment={
-                <Button
-                  onClick={handleCopyClick}
-                  className={classes.copyButton}
-                >
-                  {copied ? <CheckIcon color="success" /> : <CopyIcon />}
-                </Button>
-              }
-            />
             <Box mt={1} className={classes.captionContainer}>
               <Box mr={1}>
-                <InfoIcon className={classes.infoIcon} />
+                <InfoIcon className={classes.infoIcon} color="error" />
               </Box>
-              <Typography variant="caption">
+              <Typography variant="caption" color="error">
                 {t(
                   SUPPORTED_UD_SYMBOLS.map(s => s.toLowerCase()).includes(
                     asset.symbol.toLowerCase(),
@@ -216,6 +214,24 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
                 </Link>
               </Typography>
             </Box>
+            <ManageInput
+              mt={1}
+              placeholder=""
+              onChange={() => null}
+              id="amount"
+              value={asset.walletAddress}
+              stacked={true}
+              disabled
+              multiline
+              endAdornment={
+                <Button
+                  onClick={handleCopyClick}
+                  className={classes.copyButton}
+                >
+                  {copied ? <CheckIcon color="success" /> : <CopyIcon />}
+                </Button>
+              }
+            />
           </Box>
         </Box>
       </Box>

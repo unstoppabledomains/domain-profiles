@@ -156,6 +156,15 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     borderRadius: theme.shape.borderRadius,
     marginLeft: theme.spacing(1.5),
   },
+  tokenizeInfoContainer: {
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: theme.palette.primaryShades[100],
+    color: theme.palette.neutralShades[800],
+    padding: theme.spacing(2),
+    marginTop: theme.spacing(4),
+    marginBottom: theme.spacing(-4),
+    textAlign: 'center',
+  },
   badgeCount: {
     color: theme.palette.neutralShades[600],
     marginLeft: theme.spacing(1),

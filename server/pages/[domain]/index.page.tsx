@@ -1307,6 +1307,7 @@ const DomainProfile = ({
                   domain={domain}
                   isOwner={isOwner}
                   isError={isWalletBalanceError}
+                  verified={tokenId !== undefined}
                 />
               </Grid>
               <Grid item xs={12} md={6}>
@@ -1315,12 +1316,22 @@ const DomainProfile = ({
                   domain={domain}
                   isOwner={isOwner}
                   isError={isWalletBalanceError}
+                  verified={tokenId !== undefined}
                 />
               </Grid>
             </Grid>
-
-            {tokenId &&
-              profileData?.cryptoVerifications &&
+            {tokenId === undefined && (
+              <Box className={classes.tokenizeWarningContainer}>
+                <InfoOutlinedIcon className={classes.infoIconDark} />
+                <Typography ml={1} variant="caption">
+                  {t('verifiedWallets.verificationWarning', {
+                    domain,
+                    address: truncateEthAddress(ownerAddress),
+                  })}
+                </Typography>
+              </Box>
+            )}
+            {profileData?.cryptoVerifications &&
               profileData.cryptoVerifications.length > 0 && (
                 <TokenGallery
                   domain={domain}

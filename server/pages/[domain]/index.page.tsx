@@ -15,6 +15,7 @@ import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import RestoreOutlinedIcon from '@mui/icons-material/RestoreOutlined';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
+import TokenOutlinedIcon from '@mui/icons-material/TokenOutlined';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import Box from '@mui/material/Box';
@@ -154,7 +155,6 @@ const DomainProfile = ({
   const [showOtherDomainsModal, setShowOtherDomainsModal] = useState(false);
   const [authAddress, setAuthAddress] = useState('');
   const [authDomain, setAuthDomain] = useState('');
-  const [displayQrCode, setDisplayQrCode] = useState(false);
   const [isOwner, setIsOwner] = useState<boolean>();
   const [isWalletBalanceError, setIsWalletBalanceError] = useState<boolean>();
   const [someSocialsPublic, setIsSomeSocialsPublic] = useState<boolean>(false);
@@ -225,13 +225,14 @@ const DomainProfile = ({
   const domainSellerEmail = profileData?.profile?.publicDomainSellerEmail;
   const isForSale = Boolean(domainSellerEmail);
   const ipfsHash = records['ipfs.html.value'];
+  const tokenId = metadata.tokenId ? (metadata.tokenId as string) : undefined;
   const ownerAddress = (metadata.owner as string) || '';
   const openSeaLink = formOpenSeaLink({
     logicalOwnerAddress: ownerAddress,
     blockchain: metadata.blockchain as Blockchain,
     type: isEnsDomain ? Registry.ENS : Registry.UNS,
     ttl: 0,
-    tokenId: metadata.tokenId as string,
+    tokenId,
     domain,
     namehash: metadata.namehash as string,
     registryAddress: metadata.registry as string,
@@ -282,6 +283,10 @@ const DomainProfile = ({
   const handleViewFollowingClick = () => {
     setViewFollowerRelationship('following');
     setIsViewFollowModalOpen(true);
+  };
+
+  const handleTokenizationClick = () => {
+    window.open('https://unstoppabledomains.com');
   };
 
   const handleFollowClick = () => {
@@ -630,7 +635,7 @@ const DomainProfile = ({
             <Box className={classes.searchContainer}>
               <ProfileSearchBar setWeb3Deps={setWeb3Deps} />
             </Box>
-            {isOwner !== undefined && (
+            {tokenId && isOwner !== undefined && (
               <Box className={classes.loginContainer}>
                 {authDomain ? (
                   <>
@@ -675,10 +680,17 @@ const DomainProfile = ({
           <Box className={classes.leftPanel}>
             <Box className={classes.profilePicture}>
               <ProfilePicture
-                src={imagePath}
+                src={
+                  tokenId || isOwner === undefined
+                    ? imagePath
+                    : 'https://storage.googleapis.com/unstoppable-client-assets/images/domains/ens-logo.svg'
+                }
                 domain={domain}
-                imageType={profileData?.profile?.imageType}
-                hasUdBlueBadge={hasUdBlueBadge}
+                imageType={
+                  tokenId || isOwner === undefined
+                    ? profileData?.profile?.imageType
+                    : 'offChain'
+                }
               />
             </Box>
             {profileData?.profile?.displayName && (
@@ -728,44 +740,57 @@ const DomainProfile = ({
             )}
             {isOwner !== undefined && (
               <Box className={classes.menuButtonContainer}>
-                <ChipControlButton
-                  data-testid="edit-profile-button"
-                  onClick={handleManageDomainModalOpen}
-                  icon={<EditOutlinedIcon />}
-                  label={t('manage.manageProfile')}
-                  sx={{marginRight: 1}}
-                />
-                {!isOwner ? (
+                {tokenId ? (
                   <>
-                    <Box mr={1}>
-                      <FollowButton
-                        handleLogin={() => setLoginClicked(true)}
-                        setWeb3Deps={setWeb3Deps}
-                        authDomain={authDomain}
-                        domain={domain}
-                        authAddress={authAddress}
-                        onFollowClick={handleFollowClick}
-                        onUnfollowClick={handleUnfollowClick}
-                      />
-                    </Box>
-                    {authDomain && (
+                    <ChipControlButton
+                      data-testid="edit-profile-button"
+                      onClick={handleManageDomainModalOpen}
+                      icon={<EditOutlinedIcon />}
+                      label={t('manage.manageProfile')}
+                      sx={{marginRight: 1}}
+                    />
+                    {!isOwner ? (
+                      <>
+                        <Box mr={1}>
+                          <FollowButton
+                            handleLogin={() => setLoginClicked(true)}
+                            setWeb3Deps={setWeb3Deps}
+                            authDomain={authDomain}
+                            domain={domain}
+                            authAddress={authAddress}
+                            onFollowClick={handleFollowClick}
+                            onUnfollowClick={handleUnfollowClick}
+                          />
+                        </Box>
+                        {authDomain && (
+                          <ChipControlButton
+                            data-testid="chat-button"
+                            onClick={() => setOpenChat(domain)}
+                            icon={<ChatIcon />}
+                            label={t('push.chat')}
+                            sx={{marginRight: 1}}
+                            variant="outlined"
+                          />
+                        )}
+                      </>
+                    ) : (
                       <ChipControlButton
-                        data-testid="chat-button"
-                        onClick={() => setOpenChat(domain)}
-                        icon={<ChatIcon />}
-                        label={t('push.chat')}
-                        sx={{marginRight: 1}}
+                        data-testid="buy-crypto-button"
+                        onClick={handleBuyCrypto}
+                        icon={<AttachMoneyIcon />}
+                        label={t('profile.buyCrypto')}
                         variant="outlined"
                       />
                     )}
                   </>
                 ) : (
                   <ChipControlButton
-                    data-testid="buy-crypto-button"
-                    onClick={handleBuyCrypto}
-                    icon={<AttachMoneyIcon />}
-                    label={t('profile.buyCrypto')}
-                    variant="outlined"
+                    data-testid="tokenize-button"
+                    onClick={handleTokenizationClick}
+                    icon={<TokenOutlinedIcon />}
+                    label={t('profile.learnAboutTokenizationButton')}
+                    sx={{marginTop: 1}}
+                    variant="filled"
                   />
                 )}
               </Box>
@@ -776,7 +801,8 @@ const DomainProfile = ({
                   <Typography className={classes.description}>
                     {profileData?.profile?.description
                       ? profileData?.profile?.description
-                      : ''}
+                      : !tokenId &&
+                        t('profile.learnAboutTokenization', {domain})}
                   </Typography>
                 </Box>
                 <LeftBarContentCollapse
@@ -840,9 +866,14 @@ const DomainProfile = ({
                         onClick={handleOwnerAddressClick}
                         className={classes.ownerAddressLabel}
                       >
-                        {t('profile.ownerAddress', {
-                          address: truncateEthAddress(ownerAddress),
-                        })}
+                        {t(
+                          tokenId
+                            ? 'profile.ownerAddress'
+                            : 'profile.resolvesToAddress',
+                          {
+                            address: truncateEthAddress(ownerAddress),
+                          },
+                        )}
                       </Typography>
                     </Tooltip>
                   }
@@ -1266,7 +1297,8 @@ const DomainProfile = ({
               </Grid>
             </Grid>
 
-            {profileData?.cryptoVerifications &&
+            {tokenId &&
+              profileData?.cryptoVerifications &&
               profileData.cryptoVerifications.length > 0 && (
                 <TokenGallery
                   domain={domain}
@@ -1277,10 +1309,17 @@ const DomainProfile = ({
                   hideConfigureButton={true}
                 />
               )}
-            {isForSale && !nftShowAll && openSeaLink && domainSellerEmail && (
-              <ForSaleOnOpenSea email={domainSellerEmail} link={openSeaLink} />
-            )}
-            {hasBadges && !nftShowAll && (
+            {tokenId &&
+              isForSale &&
+              !nftShowAll &&
+              openSeaLink &&
+              domainSellerEmail && (
+                <ForSaleOnOpenSea
+                  email={domainSellerEmail}
+                  link={openSeaLink}
+                />
+              )}
+            {tokenId && hasBadges && !nftShowAll && (
               <>
                 {badgeTypes.map((badgeType, index) => {
                   const badgeList = badges.list?.filter(

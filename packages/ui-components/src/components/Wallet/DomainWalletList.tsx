@@ -93,6 +93,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
   wallets,
   minCount = 1,
   maxCount = 1,
+  verified,
 }) => {
   const theme = useTheme();
   const {classes} = useStyles();
@@ -132,7 +133,14 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
       <style>{swiperCss}</style>
       <Box className={classes.sectionHeaderContainer}>
         <Box className={classes.sectionHeader}>
-          <Tooltip title={t('verifiedWallets.verifiedOnly', {domain})}>
+          <Tooltip
+            title={t(
+              verified
+                ? 'verifiedWallets.verifiedOnly'
+                : 'verifiedWallets.notVerified',
+              {domain},
+            )}
+          >
             <WalletOutlinedIcon className={classes.headerIcon} />
           </Tooltip>
           <Typography variant="h6">{t('verifiedWallets.title')}</Typography>
@@ -227,4 +235,5 @@ export type DomainWalletListProps = {
   wallets?: SerializedWalletBalance[];
   minCount?: number;
   maxCount?: number;
+  verified: boolean;
 };

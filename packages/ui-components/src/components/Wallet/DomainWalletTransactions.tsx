@@ -153,7 +153,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export const DomainWalletTransactions: React.FC<
   DomainWalletTransactionsProps
-> = ({domain, wallets, isError}) => {
+> = ({domain, wallets, isError, verified}) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
   const [cursors, setCursors] = useState<Record<string, string>>({});
@@ -399,7 +399,14 @@ export const DomainWalletTransactions: React.FC<
     <Box className={classes.walletContainer}>
       <Box className={classes.sectionHeaderContainer}>
         <Box className={classes.sectionHeader}>
-          <Tooltip title={t('verifiedWallets.verifiedOnly', {domain})}>
+          <Tooltip
+            title={t(
+              verified
+                ? 'verifiedWallets.verifiedOnly'
+                : 'verifiedWallets.notVerified',
+              {domain},
+            )}
+          >
             <HistoryOutlinedIcon className={classes.headerIcon} />
           </Tooltip>
           <Typography variant="h6">{t('activity.title')}</Typography>
@@ -468,4 +475,5 @@ export type DomainWalletTransactionsProps = {
   wallets?: SerializedWalletBalance[];
   minCount?: number;
   maxCount?: number;
+  verified: boolean;
 };

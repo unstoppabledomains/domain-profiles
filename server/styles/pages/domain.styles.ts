@@ -169,6 +169,13 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     height: '225px',
     margin: theme.spacing(-5),
   },
+  tokenizeWarningContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: theme.palette.warningShades[100],
+    padding: theme.spacing(0.5),
+  },
   badgeCount: {
     color: theme.palette.neutralShades[600],
     marginLeft: theme.spacing(1),
@@ -179,6 +186,12 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   infoIcon: {
     marginLeft: theme.spacing(1),
     color: theme.palette.neutralShades[200],
+    width: '20px',
+    height: '20px',
+  },
+  infoIconDark: {
+    marginLeft: theme.spacing(1),
+    color: theme.palette.neutralShades[600],
     width: '20px',
     height: '20px',
   },

@@ -1257,17 +1257,38 @@ const DomainProfile = ({
           <Grid item xs={12} sm={12} md={8} className={classes.item}>
             {isOwner !== undefined && !tokenId && (
               <Box className={classes.tokenizeInfoContainer}>
-                <Typography variant="body2" mb={2}>
-                  {t('profile.learnAboutTokenization', {domain})}
-                </Typography>
-                <ChipControlButton
-                  data-testid="tokenize-button"
-                  onClick={handleTokenizationClick}
-                  icon={<TokenOutlinedIcon />}
-                  label={t('profile.learnAboutTokenizationButton', {domain})}
-                  sx={{marginTop: 1}}
-                  variant="filled"
-                />
+                <Grid container spacing={1}>
+                  <Grid item xs={12} md={4}>
+                    <img
+                      className={classes.tokenizeImage}
+                      src="https://storage.googleapis.com/unstoppable-client-assets/nft-gallery/nft-gallery-config.png"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={8}>
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      justifyContent="center"
+                      height="100%"
+                    >
+                      <Typography variant="body2" mb={2}>
+                        {t('profile.learnAboutTokenization', {domain})}
+                      </Typography>
+                      <Box>
+                        <ChipControlButton
+                          data-testid="tokenize-button"
+                          onClick={handleTokenizationClick}
+                          icon={<TokenOutlinedIcon />}
+                          label={t('profile.learnAboutTokenizationButton', {
+                            domain,
+                          })}
+                          sx={{marginTop: 1}}
+                          variant="filled"
+                        />
+                      </Box>
+                    </Box>
+                  </Grid>
+                </Grid>
               </Box>
             )}
             <Grid container spacing={2}>

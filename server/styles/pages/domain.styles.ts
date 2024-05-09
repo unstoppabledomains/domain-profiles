@@ -165,6 +165,10 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     marginBottom: theme.spacing(-4),
     textAlign: 'center',
   },
+  tokenizeImage: {
+    height: '225px',
+    margin: theme.spacing(-5),
+  },
   badgeCount: {
     color: theme.palette.neutralShades[600],
     marginLeft: theme.spacing(1),

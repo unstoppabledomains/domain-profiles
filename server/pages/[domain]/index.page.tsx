@@ -780,7 +780,6 @@ const DomainProfile = ({
                     variant="outlined"
                   />
                 )}
-                )
               </Box>
             )}
             {isLoaded && (

@@ -24,6 +24,7 @@ import {
   useTranslationContext,
 } from '../../../../lib';
 import {AddAvatarPopup} from './AddAvatarPopup';
+import SelectNftPopup from './SelectNftPopup';
 import SelectUrlPopup from './SelectUrlPopup';
 
 const AVATAR_SIZE = 120;
@@ -204,6 +205,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
   const {classes, cx} = useStyles();
   const [avatarPopupOpen, setAvatarPopupOpen] = useState(false);
   const [urlPopupOpen, setUrlPopupOpen] = useState(false);
+  const [nftPopupOpen, setNftPopupOpen] = useState(false);
   const [onChainImageUrl, setOnChainImageUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
   const isMounted = useIsMounted();
@@ -248,6 +250,14 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
     setUrlPopupOpen(false);
   };
 
+  const handleNftPopupOpen = () => {
+    setNftPopupOpen(true);
+  };
+
+  const handleNftPopupClose = () => {
+    setNftPopupOpen(false);
+  };
+
   const handleAvatarPopupOpen = () => {
     setAvatarPopupOpen(true);
   };
@@ -277,6 +287,15 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
     removeAvatar();
     handleAvatarPopupClose();
     handleUrlEntry(usableUrl);
+  };
+
+  const handleSelectNftClick = async (nftSpec: string) => {
+    removeAvatar();
+    handleAvatarPopupClose();
+    handleUrlEntry(
+      // TODO need to lookup the NFT URL here
+      'https://storage.googleapis.com/unstoppable-client-assets/images/common/hourglass-half.svg',
+    );
   };
 
   const handleAvatarUploadClick = async (event: {target: HTMLInputElement}) => {
@@ -459,6 +478,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
             popupOpen={avatarPopupOpen}
             handleAvatarPopupClose={handleAvatarPopupClose}
             handleUrlPopupOpen={handleUrlPopupOpen}
+            handleNftPopupOpen={handleNftPopupOpen}
             handleUploadClick={handleAvatarUploadClick}
           />
         )}
@@ -469,6 +489,16 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
           popupOpen={urlPopupOpen}
           handlePopupClose={handleUrlPopupClose}
           handleSelectUrlClick={handleSelectUrlClick}
+        />
+      )}
+
+      {nftPopupOpen && (
+        <SelectNftPopup
+          domain={domain}
+          address={ownerAddress}
+          popupOpen={nftPopupOpen}
+          handlePopupClose={handleNftPopupClose}
+          handleSelectNftClick={handleSelectNftClick}
         />
       )}
     </Grid>

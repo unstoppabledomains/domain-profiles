@@ -157,7 +157,7 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
 
 export const DomainWalletTransactions: React.FC<
   DomainWalletTransactionsProps
-> = ({id, accessToken, domain, isOwner, wallets, isError}) => {
+> = ({id, accessToken, domain, isOwner, wallets, isError, verified}) => {
   const theme = useTheme();
   const {classes, cx} = useStyles({
     palletteShade: isOwner
@@ -404,7 +404,14 @@ export const DomainWalletTransactions: React.FC<
       {domain && (
         <Box className={classes.sectionHeaderContainer}>
           <Box className={classes.sectionHeader}>
-            <Tooltip title={t('verifiedWallets.verifiedOnly', {domain})}>
+            <Tooltip
+              title={t(
+                verified
+                  ? 'verifiedWallets.verifiedOnly'
+                  : 'verifiedWallets.notVerified',
+                {domain},
+              )}
+            >
               <HistoryOutlinedIcon className={classes.headerIcon} />
             </Tooltip>
             <Typography variant="h6">{t('activity.title')}</Typography>
@@ -476,4 +483,5 @@ export type DomainWalletTransactionsProps = {
   wallets?: SerializedWalletBalance[];
   minCount?: number;
   maxCount?: number;
+  verified: boolean;
 };

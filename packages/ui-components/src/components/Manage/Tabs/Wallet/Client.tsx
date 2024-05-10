@@ -254,7 +254,11 @@ export const Client: React.FC<ClientProps> = ({
                   value={ClientTabType.Portfolio}
                   className={classes.tabContentItem}
                 >
-                  <TokensPortfolio wallets={wallets} isOwner={true} />
+                  <TokensPortfolio
+                    wallets={wallets}
+                    isOwner={true}
+                    verified={true}
+                  />
                 </TabPanel>
                 <TabPanel
                   value={ClientTabType.Transactions}
@@ -264,6 +268,7 @@ export const Client: React.FC<ClientProps> = ({
                     id="unstoppable-wallet"
                     wallets={wallets}
                     isOwner={true}
+                    verified={true}
                     accessToken={accessToken}
                   />
                 </TabPanel>

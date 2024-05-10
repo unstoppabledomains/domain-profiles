@@ -15,6 +15,7 @@ import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import RestoreOutlinedIcon from '@mui/icons-material/RestoreOutlined';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
+import TokenOutlinedIcon from '@mui/icons-material/TokenOutlined';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import Box from '@mui/material/Box';
@@ -155,7 +156,6 @@ const DomainProfile = ({
   const [showOtherDomainsModal, setShowOtherDomainsModal] = useState(false);
   const [authAddress, setAuthAddress] = useState('');
   const [authDomain, setAuthDomain] = useState('');
-  const [displayQrCode, setDisplayQrCode] = useState(false);
   const [isOwner, setIsOwner] = useState<boolean>();
   const [isWalletBalanceError, setIsWalletBalanceError] = useState<boolean>();
   const [someSocialsPublic, setIsSomeSocialsPublic] = useState<boolean>(false);
@@ -226,13 +226,14 @@ const DomainProfile = ({
   const domainSellerEmail = profileData?.profile?.publicDomainSellerEmail;
   const isForSale = Boolean(domainSellerEmail);
   const ipfsHash = records['ipfs.html.value'];
+  const tokenId = metadata.tokenId ? (metadata.tokenId as string) : undefined;
   const ownerAddress = (metadata.owner as string) || '';
   const openSeaLink = formOpenSeaLink({
     logicalOwnerAddress: ownerAddress,
     blockchain: metadata.blockchain as Blockchain,
     type: isEnsDomain ? Registry.ENS : Registry.UNS,
     ttl: 0,
-    tokenId: metadata.tokenId as string,
+    tokenId,
     domain,
     namehash: metadata.namehash as string,
     registryAddress: metadata.registry as string,
@@ -283,6 +284,10 @@ const DomainProfile = ({
   const handleViewFollowingClick = () => {
     setViewFollowerRelationship('following');
     setIsViewFollowModalOpen(true);
+  };
+
+  const handleTokenizationClick = () => {
+    window.open('https://unstoppabledomains.com');
   };
 
   const handleFollowClick = () => {
@@ -631,7 +636,7 @@ const DomainProfile = ({
             <Box className={classes.searchContainer}>
               <ProfileSearchBar setWeb3Deps={setWeb3Deps} />
             </Box>
-            {isOwner !== undefined && (
+            {tokenId && isOwner !== undefined && (
               <Box className={classes.loginContainer}>
                 {authDomain ? (
                   <>
@@ -676,10 +681,17 @@ const DomainProfile = ({
           <Box className={classes.leftPanel}>
             <Box className={classes.profilePicture}>
               <ProfilePicture
-                src={imagePath}
+                src={
+                  tokenId || isOwner === undefined
+                    ? imagePath
+                    : 'https://storage.googleapis.com/unstoppable-client-assets/images/domains/dns-logo.svg'
+                }
                 domain={domain}
-                imageType={profileData?.profile?.imageType}
-                hasUdBlueBadge={hasUdBlueBadge}
+                imageType={
+                  tokenId || isOwner === undefined
+                    ? profileData?.profile?.imageType
+                    : 'offChain'
+                }
               />
             </Box>
             {profileData?.profile?.displayName && (
@@ -727,7 +739,7 @@ const DomainProfile = ({
                 </Box>
               </Box>
             )}
-            {isOwner !== undefined && (
+            {isOwner !== undefined && tokenId && (
               <Box className={classes.menuButtonContainer}>
                 <ChipControlButton
                   data-testid="edit-profile-button"
@@ -844,9 +856,14 @@ const DomainProfile = ({
                         onClick={handleOwnerAddressClick}
                         className={classes.ownerAddressLabel}
                       >
-                        {t('profile.ownerAddress', {
-                          address: truncateEthAddress(ownerAddress),
-                        })}
+                        {t(
+                          tokenId
+                            ? 'profile.ownerAddress'
+                            : 'profile.resolvesToAddress',
+                          {
+                            address: truncateEthAddress(ownerAddress),
+                          },
+                        )}
                       </Typography>
                     </Tooltip>
                   }
@@ -1242,6 +1259,42 @@ const DomainProfile = ({
         </Grid>
         {isLoaded ? (
           <Grid item xs={12} sm={12} md={8} className={classes.item}>
+            {isOwner !== undefined && !tokenId && (
+              <Box className={classes.tokenizeInfoContainer}>
+                <Grid container spacing={1}>
+                  <Grid item xs={12} md={4}>
+                    <img
+                      className={classes.tokenizeImage}
+                      src="https://storage.googleapis.com/unstoppable-client-assets/nft-gallery/nft-gallery-config.png"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={8}>
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      justifyContent="center"
+                      height="100%"
+                    >
+                      <Typography variant="body2" mb={2}>
+                        {t('profile.learnAboutTokenization', {domain})}
+                      </Typography>
+                      <Box>
+                        <ChipControlButton
+                          data-testid="tokenize-button"
+                          onClick={handleTokenizationClick}
+                          icon={<TokenOutlinedIcon />}
+                          label={t('profile.learnAboutTokenizationButton', {
+                            domain,
+                          })}
+                          sx={{marginTop: 1}}
+                          variant="filled"
+                        />
+                      </Box>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
             <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
                 <TokensPortfolio
@@ -1257,6 +1310,7 @@ const DomainProfile = ({
                     )}
                   domain={domain}
                   isError={isWalletBalanceError}
+                  verified={tokenId !== undefined}
                 />
               </Grid>
               <Grid item xs={12} md={6}>
@@ -1265,10 +1319,21 @@ const DomainProfile = ({
                   wallets={walletBalances}
                   domain={domain}
                   isError={isWalletBalanceError}
+                  verified={tokenId !== undefined}
                 />
               </Grid>
             </Grid>
-
+            {tokenId === undefined && (
+              <Box className={classes.tokenizeWarningContainer}>
+                <InfoOutlinedIcon className={classes.infoIconDark} />
+                <Typography ml={1} variant="caption">
+                  {t('verifiedWallets.verificationWarning', {
+                    domain,
+                    address: truncateEthAddress(ownerAddress),
+                  })}
+                </Typography>
+              </Box>
+            )}
             {profileData?.cryptoVerifications &&
               profileData.cryptoVerifications.length > 0 && (
                 <TokenGallery
@@ -1280,10 +1345,17 @@ const DomainProfile = ({
                   hideConfigureButton={true}
                 />
               )}
-            {isForSale && !nftShowAll && openSeaLink && domainSellerEmail && (
-              <ForSaleOnOpenSea email={domainSellerEmail} link={openSeaLink} />
-            )}
-            {hasBadges && !nftShowAll && (
+            {tokenId &&
+              isForSale &&
+              !nftShowAll &&
+              openSeaLink &&
+              domainSellerEmail && (
+                <ForSaleOnOpenSea
+                  email={domainSellerEmail}
+                  link={openSeaLink}
+                />
+              )}
+            {tokenId && hasBadges && !nftShowAll && (
               <>
                 {badgeTypes.map((badgeType, index) => {
                   const badgeList = badges.list?.filter(

@@ -122,6 +122,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   wallets,
   isError,
   isOwner,
+  verified,
 }) => {
   const theme = useTheme();
   const {classes, cx} = useStyles({
@@ -347,7 +348,14 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
         <Box className={classes.sectionHeaderContainer}>
           <Box className={classes.sectionHeader}>
             {domain && (
-              <Tooltip title={t('verifiedWallets.verifiedOnly', {domain})}>
+              <Tooltip
+                title={t(
+                  verified
+                    ? 'verifiedWallets.verifiedOnly'
+                    : 'verifiedWallets.notVerified',
+                  {domain},
+                )}
+              >
                 <MonetizationOnOutlinedIcon className={classes.headerIcon} />
               </Tooltip>
             )}
@@ -422,4 +430,5 @@ export type TokensPortfolioProps = {
   maxCount?: number;
   isError?: boolean;
   isOwner?: boolean;
+  verified: boolean;
 };

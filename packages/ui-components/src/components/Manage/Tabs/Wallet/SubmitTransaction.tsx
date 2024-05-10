@@ -106,22 +106,19 @@ export const SubmitTransaction: React.FC<Props> = ({
       >
         <Box className={classes.transactionStatusContainer} mt={2}>
           <Typography variant="caption">
-            {status === Status.Success || status === Status.Failed
-              ? t(
-                  status === Status.Success
-                    ? 'wallet.sendTransactionSuccess'
-                    : 'wallet.sendTransactionFailed',
-                  {
-                    amount,
-                    sourceSymbol: asset.symbol,
-                    status,
-                    recipientDomain: recipientDomain
-                      ? ` ${recipientDomain}`
-                      : '',
-                    recipientAddress: truncateAddress(recipientAddress),
-                  },
-                )
-              : null}
+            {[Status.Success, Status.Failed].includes(status) &&
+              t(
+                `wallet.sendTransaction${
+                  status === Status.Success ? 'Success' : 'Failed'
+                }`,
+                {
+                  amount,
+                  sourceSymbol: asset.symbol,
+                  status,
+                  recipientDomain: recipientDomain ? ` ${recipientDomain}` : '',
+                  recipientAddress: truncateAddress(recipientAddress),
+                },
+              )}
           </Typography>
           {transactionId && (
             <Link

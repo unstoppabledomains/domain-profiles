@@ -10,21 +10,22 @@ export type BugsnagError = {
 export type SeverityLevel = 'info' | 'warning' | 'error';
 
 export enum BugsnagErrorContexts {
-  'BADGES',
-  'REQUEST',
-  'MESSAGING',
-  'PROFILE',
-  'TOKEN_GALLERY',
-  'WALLET',
+  'Badges',
+  'Request',
+  'Messaging',
+  'Profile',
+  'TokenGallery',
+  'Wallet',
 }
 
 export enum BugsnagErrorClasses {
-  Authorization = 'Authorization Error',
-  Signature = 'Signature Error',
-  Fetch = 'Fetch Error',
-  Resolution = 'Resolution Error',
-  Validation = 'Validation Error',
-  PushProtocol = 'Push Protocol Error',
-  XMTP = 'XMTP Error',
-  Info = 'Information',
+  Authorization = 'Authorization',
+  Configuration = 'Configuration',
+  Fetch = 'Fetch',
+  Fireblocks = 'Fireblocks',
+  PushProtocol = 'Push Protocol',
+  Resolution = 'Resolution',
+  Signature = 'Signature',
+  Validation = 'Validation',
+  XMTP = 'XMTP',
 }

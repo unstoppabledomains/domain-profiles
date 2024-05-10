@@ -98,6 +98,7 @@ import {
   getImageUrl,
   getProfileData,
   getSeoTags,
+  isDomainValidForManagement,
   isExternalDomain,
   parseRecords,
   useDomainConfig,
@@ -482,7 +483,7 @@ const DomainProfile = ({
           setRecords(recordsData.records);
         }
       } catch (e) {
-        notifyEvent(e, 'error', 'PROFILE', 'Resolution', {
+        notifyEvent(e, 'error', 'Profile', 'Resolution', {
           msg: 'error retrieving records',
         });
       }
@@ -505,7 +506,7 @@ const DomainProfile = ({
           setIsWalletBalanceError(true);
         }
       } catch (e) {
-        notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+        notifyEvent(e, 'error', 'Profile', 'Fetch', {
           msg: 'error retrieving wallets',
         });
       }
@@ -523,7 +524,7 @@ const DomainProfile = ({
           profileData.webacy = webacyData.webacy;
         }
       } catch (e) {
-        notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+        notifyEvent(e, 'error', 'Profile', 'Fetch', {
           msg: 'error retrieving webacy score',
         });
       }
@@ -550,7 +551,7 @@ const DomainProfile = ({
         setFeaturedPartner(shuffle(featuredPartners)[0]);
       }
     } catch (e) {
-      notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+      notifyEvent(e, 'error', 'Profile', 'Fetch', {
         msg: 'error retrieving badges',
       });
     }
@@ -749,17 +750,20 @@ const DomainProfile = ({
                 />
                 {!isOwner ? (
                   <>
-                    <Box mr={1}>
-                      <FollowButton
-                        handleLogin={() => setLoginClicked(true)}
-                        setWeb3Deps={setWeb3Deps}
-                        authDomain={authDomain}
-                        domain={domain}
-                        authAddress={authAddress}
-                        onFollowClick={handleFollowClick}
-                        onUnfollowClick={handleUnfollowClick}
-                      />
-                    </Box>
+                    {(!authDomain ||
+                      isDomainValidForManagement(authDomain)) && (
+                      <Box mr={1}>
+                        <FollowButton
+                          handleLogin={() => setLoginClicked(true)}
+                          setWeb3Deps={setWeb3Deps}
+                          authDomain={authDomain}
+                          domain={domain}
+                          authAddress={authAddress}
+                          onFollowClick={handleFollowClick}
+                          onUnfollowClick={handleUnfollowClick}
+                        />
+                      </Box>
+                    )}
                     {authDomain && (
                       <ChipControlButton
                         data-testid="chat-button"
@@ -1305,16 +1309,15 @@ const DomainProfile = ({
                         (b.totalValueUsdAmt || 0) - (a.totalValueUsdAmt || 0),
                     )}
                   domain={domain}
-                  isOwner={isOwner}
                   isError={isWalletBalanceError}
                   verified={tokenId !== undefined}
                 />
               </Grid>
               <Grid item xs={12} md={6}>
                 <DomainWalletTransactions
+                  id="profile"
                   wallets={walletBalances}
                   domain={domain}
-                  isOwner={isOwner}
                   isError={isWalletBalanceError}
                   verified={tokenId !== undefined}
                 />

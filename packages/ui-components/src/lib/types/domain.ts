@@ -416,7 +416,7 @@ export type SerializedTx = {
     link: string;
     label?: string;
   };
-  type: 'nft' | 'native' | 'erc20';
+  type: TokenType;
   imageUrl?: string;
   value: number;
   gas: number;
@@ -474,7 +474,7 @@ export type SerializedWalletNftCollection = {
 };
 
 export type SerializedWalletToken = {
-  type: 'native' | 'erc20';
+  type: TokenType.Erc20 | TokenType.Native;
   address: string;
   symbol: string;
   gasCurrency: string;
@@ -518,6 +518,12 @@ export type TelegramUserInfo = {
   userName: string;
 } | null;
 
+export enum TokenType {
+  Native = 'native',
+  Erc20 = 'erc20',
+  Nft = 'nft',
+}
+
 export type TwitterUserInfo = {
   kind: DomainProfileSocialMedia.Twitter;
   screenName: string;
@@ -543,6 +549,11 @@ export type YoutubeUserInfo = {
   channelUrl: string;
   subscriberCount: number;
 } | null;
+
+export const isValidDomain = (domain: string): boolean => {
+  const domainSuffix = domain.split('.').pop();
+  return Object.values(DomainSuffixes).includes(domainSuffix as DomainSuffixes);
+};
 
 export const kbToMb = (kb: number): number => {
   return kb / 1000 / 1024;

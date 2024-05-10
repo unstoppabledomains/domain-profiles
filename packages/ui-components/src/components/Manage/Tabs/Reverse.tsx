@@ -218,7 +218,7 @@ export const Reverse: React.FC<ManageTabProps> = ({
       }
       return true;
     } catch (e) {
-      notifyEvent(e, 'warning', 'PROFILE', 'Signature', {
+      notifyEvent(e, 'warning', 'Profile', 'Signature', {
         msg: 'error validating wallet',
       });
     }
@@ -236,7 +236,7 @@ export const Reverse: React.FC<ManageTabProps> = ({
       // sign a message linking the domain and secondary wallet address
       return await web3Deps.signer.signMessage(msg);
     } catch (signError) {
-      notifyEvent(signError, 'warning', 'PROFILE', 'Signature', {
+      notifyEvent(signError, 'warning', 'Profile', 'Signature', {
         msg: 'signature error',
       });
     }
@@ -325,6 +325,7 @@ export const Reverse: React.FC<ManageTabProps> = ({
             domain={domain}
             ownerAddress={address}
             setWeb3Deps={setWeb3Deps}
+            saveComplete={!isSaving}
             saveClicked={saveClicked}
             setSaveClicked={setSaveClicked}
             onSignature={handleRecordUpdate}

@@ -218,7 +218,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
         setLatestMessage(t('push.noGroupMessages'));
         badge.groupChatLatestMessage = t('push.noGroupMessages');
       } catch (e) {
-        notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+        notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
           msg: 'error retrieving latest message',
         });
       } finally {
@@ -306,7 +306,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
       setActiveCommunity(badge);
     } catch (e) {
       // unable to join group
-      notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+      notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
         msg: 'error joining group',
       });
       setErrorMsg(t('push.joinCommunityError'));

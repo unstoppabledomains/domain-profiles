@@ -155,7 +155,7 @@ export const Email: React.FC<ManageTabProps> = ({
       }
     } catch (e) {
       setUpdateErrorMessage(t('manage.updateError'));
-      notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+      notifyEvent(e, 'error', 'Profile', 'Fetch', {
         msg: 'unable to manage user profile',
       });
     }
@@ -218,6 +218,7 @@ export const Email: React.FC<ManageTabProps> = ({
       {isLoaded ? (
         <>
           <ManageInput
+            mt={2}
             id="privateEmail"
             value={userProfile?.profile?.privateEmail}
             label={t('manage.privateEmail')}

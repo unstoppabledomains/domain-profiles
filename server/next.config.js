@@ -3,6 +3,7 @@ const assert = require('assert');
 const path = require('path');
 const {createSecureHeaders} = require('next-secure-headers');
 const contentSecurityPolicy = require('./contentSecurityPolicy');
+const TerserPlugin = require('terser-webpack-plugin');
 const locales = require('./locales.json');
 
 // transpile any required modules
@@ -92,7 +93,12 @@ const nextConfig = {
       ...config.resolve.fallback,
       fs: false,
     };
-    return config;
+    return {
+      ...config,
+      optimization: {
+        minimizer: [new TerserPlugin()]
+      }
+    }
   },
   i18n: {
     locales: locales.locales.map(({code}) => code),

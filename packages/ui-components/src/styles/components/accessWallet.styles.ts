@@ -104,6 +104,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'column',
+    maxWidth: '500px',
     width: '100%',
   },
   prompt: {
@@ -143,6 +144,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
   modalContent: {
     padding: theme.spacing(3),
     paddingTop: 0,
+  },
+  udConfigContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    maxWidth: '505px',
+    minHeight: '485px',
   },
 }));
 

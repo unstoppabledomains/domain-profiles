@@ -269,6 +269,7 @@ const CurrencyInput: React.FC<Props> = ({
 
   return (
     <ManageInput
+      mt={2}
       id={currency}
       label={
         <div className={classes.managedControlLabelWrapper}>

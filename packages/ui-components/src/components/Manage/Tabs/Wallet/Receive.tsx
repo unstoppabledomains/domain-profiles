@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useRef, useState} from 'react';
 import {QRCode} from 'react-qrcode-logo';
 
@@ -32,7 +33,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     minHeight: '250px',
-    width: '400px',
     justifyContent: 'space-between',
   },
   assetsContainer: {
@@ -51,14 +51,15 @@ const useStyles = makeStyles()((theme: Theme) => ({
   assetLogo: {
     height: '60px',
     width: '60px',
-    marginTop: '5px',
+    borderRadius: '50%',
+    overflow: 'hidden',
+    marginTop: theme.spacing(1),
   },
   contentWrapper: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     minHeight: '250px',
-    width: '400px',
   },
   receiveAssetContainer: {
     display: 'flex',
@@ -113,7 +114,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
       }
     };
   }, []);
-  
+
   const handleBackClick = () => {
     if (asset) {
       setAsset(undefined);
@@ -173,47 +174,6 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
             style={{innerHeight: 80, innerWidth: 30}}
           />
           <Box className={classes.addressWrapper} mt={2}>
-            <Box width="100%">
-              <Typography
-                fontSize="16px"
-                fontWeight="bold"
-                textAlign="center"
-                color="error"
-              >
-                {t('wallet.receiveWarning')}
-              </Typography>
-            </Box>
-            <Box mt={1} className={classes.captionContainer}>
-              <Box mr={1}>
-                <InfoIcon className={classes.infoIcon} color="error" />
-              </Box>
-              <Typography variant="caption" color="error">
-                {t(
-                  SUPPORTED_UD_SYMBOLS.map(s => s.toLowerCase()).includes(
-                    asset.symbol.toLowerCase(),
-                  )
-                    ? 'wallet.receiveAddressCaptionWithDomains'
-                    : 'wallet.receiveAddressCaption',
-                  {
-                    symbol: asset.ticker,
-                    blockchain: asset.name,
-                  },
-                )}{' '}
-                {t('wallet.sendingForOtherNetworksAndTokens', {
-                  symbol: asset.ticker,
-                  blockchain: asset.name,
-                })}{' '}
-                <Link
-                  // TODO: Add link to learn more
-                  // href={`${config.UD_ME_BASE_URL}/${primarySponsor}`}
-                  // className={classes.descriptionLink}
-                  target="_blank"
-                  className={classes.learnMoreLink}
-                >
-                  <Typography variant={'caption'}>Learn More</Typography>
-                </Link>
-              </Typography>
-            </Box>
             <ManageInput
               mt={1}
               placeholder=""
@@ -232,6 +192,39 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
                 </Button>
               }
             />
+            <Box mt={3} className={classes.captionContainer}>
+              <Box mr={1}>
+                <InfoIcon className={classes.infoIcon} color="error" />
+              </Box>
+              <Typography variant="caption" color="error">
+                <Markdown>
+                  {t(
+                    SUPPORTED_UD_SYMBOLS.map(s => s.toLowerCase()).includes(
+                      asset.symbol.toLowerCase(),
+                    )
+                      ? 'wallet.receiveAddressCaptionWithDomains'
+                      : 'wallet.receiveAddressCaption',
+                    {
+                      symbol: asset.ticker,
+                      blockchain: asset.name,
+                    },
+                  )}
+                </Markdown>{' '}
+                {t('wallet.sendingForOtherNetworksAndTokens', {
+                  symbol: asset.ticker,
+                  blockchain: asset.name,
+                })}{' '}
+                <Link
+                  // TODO: Add link to learn more
+                  // href={`${config.UD_ME_BASE_URL}/${primarySponsor}`}
+                  // className={classes.descriptionLink}
+                  target="_blank"
+                  className={classes.learnMoreLink}
+                >
+                  <Typography variant={'caption'}>Learn More</Typography>
+                </Link>
+              </Typography>
+            </Box>
           </Box>
         </Box>
       </Box>

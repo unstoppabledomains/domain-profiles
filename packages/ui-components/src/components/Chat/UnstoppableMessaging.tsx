@@ -136,8 +136,8 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
 
   // Messaging user state
   const [configState, setConfigState] = useState(ConfigurationState.Initial);
-  const [signatureInProgress, setSignatureInProgress] =
-    useState<MessagingSignatureType>();
+  const [isSigning, setIsSigning] = useState(false);
+  const [signatureType, setSignatureType] = useState<MessagingSignatureType>();
   const [initChatOptions, setInitChatOptions] = useState<InitChatOptions>();
   const [walletModalIsOpen, setWalletModalIsOpen] = useState(false);
   const [clickedReconnect, setClickedReconnect] = useState(false);
@@ -227,7 +227,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
   // retrieve initial address settings
   useEffect(() => {
     if (address) {
-      setChatAddress(address);
+      setChatAddress(address.toLowerCase());
     }
   }, [address]);
 
@@ -277,8 +277,8 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       }
 
       // continue setup if the signature process is in progress
-      if (signatureInProgress) {
-        await initChatAccounts({skipPush: true});
+      if (signatureType) {
+        await initChatAccounts(initChatOptions || {skipPush: true});
       }
 
       // mark setup as complete
@@ -286,6 +286,13 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     };
     void fetchUser();
   }, [chatAddress]);
+
+  useEffect(() => {
+    if (!signatureType || !isSigning) {
+      return;
+    }
+    void initChatAccounts(initChatOptions || {skipPush: true});
+  }, [signatureType, isSigning]);
 
   // handles the notification click event, either onboarding the new user to Push or
   // opening the Push app for an existing user.
@@ -364,6 +371,15 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     void reload();
   }, [clickedReconnect, walletModalIsOpen]);
 
+  useEffect(() => {
+    if (configState === ConfigurationState.Error) {
+      setWeb3Deps(undefined);
+      setIsSigning(false);
+      setSignatureType(undefined);
+      setChatWalletConnected(false);
+    }
+  }, [configState]);
+
   // message icons
   const messageReadyIcon = (
     <ChatOutlinedIcon id="chat-icon" className={classes.messageIcon} />
@@ -390,7 +406,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     if (!chatAddress) {
       const resolutionAddress = await getProfileReverseResolution(chatUser);
       if (resolutionAddress?.address) {
-        setChatAddress(resolutionAddress.address);
+        setChatAddress(resolutionAddress.address.toLowerCase());
       }
     }
 
@@ -437,7 +453,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       // signature from the user's wallet
       if (xmtpSetupRequired || pushSetupRequired) {
         // open the configuration modal
-        setSignatureInProgress(MessagingSignatureType.NewUser);
+        setSignatureType(MessagingSignatureType.NewUser);
         setInitChatOptions(opts);
         if (!chatOpen) {
           setChatOpen(true);
@@ -449,6 +465,8 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         if (!web3Context?.web3Deps?.signer) {
           return;
         }
+
+        // set flag for connected wallet
         setChatWalletConnected(true);
 
         // perform XMTP setup if required
@@ -503,7 +521,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
               }
             } catch (profileErr) {
               // fail gracefully, as this API fails from time to time
-              notifyEvent(profileErr, 'warning', 'MESSAGING', 'PushProtocol', {
+              notifyEvent(profileErr, 'warning', 'Messaging', 'PushProtocol', {
                 msg: 'error updating profile',
               });
             }
@@ -536,7 +554,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
                   userAddress: getCaip10Address(pushUserAccount.wallets),
                   env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
                   onError: (e: unknown) =>
-                    notifyEvent(e, 'warning', 'MESSAGING', 'PushProtocol', {
+                    notifyEvent(e, 'warning', 'Messaging', 'PushProtocol', {
                       msg: 'subscription error',
                     }),
                 });
@@ -547,7 +565,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
             notifyEvent(
               subscriptionErr,
               'warning',
-              'MESSAGING',
+              'Messaging',
               'PushProtocol',
               {msg: 'error subscribing to channels'},
             );
@@ -567,7 +585,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         return;
       }
     } catch (e) {
-      notifyEvent(e, 'error', 'MESSAGING', 'Authorization', {
+      notifyEvent(e, 'error', 'Messaging', 'Authorization', {
         msg: 'error configuring messaging',
         meta: {
           address: chatAddress,
@@ -577,6 +595,8 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       });
       setConfigState(ConfigurationState.Error);
       return;
+    } finally {
+      setWalletModalIsOpen(false);
     }
 
     // remove the modal from view
@@ -588,7 +608,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
       notifyEvent(
         new Error('Required messaging accounts not defined'),
         'error',
-        'MESSAGING',
+        'Messaging',
         'Fetch',
         {msg: 'accounts not defined'},
       );
@@ -804,10 +824,11 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
   ) => {
     if (web3Dependencies?.address) {
       setWeb3Deps(web3Dependencies);
-      setChatAddress(web3Dependencies.address);
+      setChatAddress(web3Dependencies.address.toLowerCase());
       setWalletModalIsOpen(false);
-      if (signatureInProgress) {
+      if (signatureType) {
         setConfigState(ConfigurationState.RegisterXmtp);
+        setIsSigning(true);
       }
     }
   };
@@ -824,12 +845,27 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     setActiveTab(undefined);
   };
 
+  const handleOpenSetup = async () => {
+    setWalletModalIsOpen(true);
+  };
+
   const handleCloseSetup = () => {
-    setSignatureInProgress(undefined);
+    setIsSigning(false);
+    setSignatureType(undefined);
     setInitChatOptions(undefined);
     setChatOpen(false);
     setChatWalletConnected(false);
     setConfigState(ConfigurationState.Initial);
+
+    // clear web3deps in the case of UD wallet
+    if (web3Context.web3Deps?.unstoppableWallet) {
+      setWeb3Deps(undefined);
+    }
+  };
+
+  const handleCloseAccessWalletModal = () => {
+    setWalletModalIsOpen(false);
+    handleCloseSetup();
   };
 
   const handleChatClicked = async (chatId?: string) => {
@@ -842,12 +878,14 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     // initialize the chat accounts and keys if they have not already
     // been configured for this domain or address
     if (!chatUser) {
-      setSignatureInProgress(MessagingSignatureType.NoPrimaryDomain);
+      setSignatureType(MessagingSignatureType.NoPrimaryDomain);
     } else if (!chatAddress) {
-      setSignatureInProgress(MessagingSignatureType.NewUser);
+      setSignatureType(MessagingSignatureType.NewUser);
     } else if (!xmtpKey || initChatOptions) {
       // start account setup for XMTP
-      void initChatAccounts(initChatOptions || {skipPush: true});
+      if (!signatureType) {
+        void initChatAccounts(initChatOptions || {skipPush: true});
+      }
     } else {
       // clear new message flag and set last read timestamp
       setIsNewMessage(false);
@@ -874,7 +912,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     // initialize the chat accounts and keys if they have not already
     // been configured for this domain address
     if (!chatUser || !chatAddress) {
-      setSignatureInProgress(MessagingSignatureType.NoPrimaryDomain);
+      setSignatureType(MessagingSignatureType.NoPrimaryDomain);
     } else if (!pushKey || initChatOptions) {
       // continue an existing setup, or start a new one for XMTP only
       void initChatAccounts(initChatOptions || {skipPush: false});
@@ -908,7 +946,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
           setActiveCommunity(groupChatInfo);
         }
       } catch (e) {
-        notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+        notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
           msg: 'error joining group',
         });
       } finally {
@@ -972,7 +1010,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
             >
               {isNewMessage ? messageUnreadIcon : messageReadyIcon}
             </Tooltip>
-          ) : messagingInitialized && !signatureInProgress ? (
+          ) : messagingInitialized && !signatureType ? (
             <Tooltip
               PopperProps={tooltipProps}
               placement="bottom"
@@ -1000,7 +1038,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         address={chatAddress}
         onComplete={deps => handleAccessWalletComplete(deps)}
         open={walletModalIsOpen}
-        onClose={() => setWalletModalIsOpen(false)}
+        onClose={handleCloseAccessWalletModal}
         onReconnect={handleReconnect}
       />
       <SetupModal
@@ -1009,15 +1047,15 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         }
         domain={chatUser}
         domainRequired={domainRequired}
-        isNewUser={signatureInProgress === MessagingSignatureType.NewUser}
+        isNewUser={signatureType === MessagingSignatureType.NewUser}
         isNewNotification={
-          signatureInProgress === MessagingSignatureType.MissingChannels
+          signatureType === MessagingSignatureType.MissingChannels
         }
         configState={configState}
-        open={signatureInProgress !== undefined}
+        open={signatureType !== undefined}
         onChat={handleOpenChat}
         onClose={handleCloseSetup}
-        onConfirm={() => setWalletModalIsOpen(true)}
+        onConfirm={handleOpenSetup}
       />
       {chatAddress && xmtpKey && (
         <>
@@ -1043,12 +1081,12 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
             setBlockedTopics={setBlockedTopics}
             setWeb3Deps={setWeb3Deps}
             onClose={handleClosePush}
-            onInitPushAccount={() =>
-              initChatAccounts({
+            onInitPushAccount={() => {
+              return initChatAccounts({
                 skipXmtp: true,
                 skipPush: false,
-              })
-            }
+              });
+            }}
           />
           {!disableSupportBubble && (
             <SupportBubble

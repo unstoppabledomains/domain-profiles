@@ -10,7 +10,7 @@ import useTranslationContext from '../lib/i18n';
 import useStyles from '../styles/components/modal.styles';
 
 export type ModalProps = {
-  title: string | JSX.Element;
+  title?: string | JSX.Element;
   open: boolean;
   centerHeader?: boolean;
   onClose: (e: unknown) => void;

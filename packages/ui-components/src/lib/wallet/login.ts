@@ -1,3 +1,5 @@
+import truncateEthAddress from 'truncate-eth-address';
+
 import config from '@unstoppabledomains/config';
 
 import {getProfileReverseResolution} from '../../actions';
@@ -21,7 +23,7 @@ export const loginWithAddress = async (
       loginResult.address = address.toLowerCase();
       loginResult.domain =
         (await getProfileReverseResolution(loginResult.address))?.name ||
-        'Wallet';
+        truncateEthAddress(address);
     } else {
       // complete the login with UD flow
       const uauth = await getUAuth({
@@ -60,7 +62,7 @@ export const loginWithAddress = async (
     // return the login result
     return loginResult;
   } catch (loginError) {
-    notifyEvent(loginError, 'error', 'PROFILE', 'Authorization', {
+    notifyEvent(loginError, 'error', 'Profile', 'Authorization', {
       msg: 'login error',
     });
     throw loginError;

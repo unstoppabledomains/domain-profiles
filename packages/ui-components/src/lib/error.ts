@@ -7,12 +7,12 @@ import type {
 import {notifyBugsnag} from '@unstoppabledomains/config';
 
 export type ErrorMetadata = {
-  msg: string;
+  msg?: string;
   meta?: Record<string, any>;
 };
 
 export const notifyEvent = (
-  error: any,
+  event: any,
   severity: SeverityLevel,
   appContext: keyof typeof BugsnagErrorContexts,
   errorClass: keyof typeof BugsnagErrorClasses,
@@ -20,38 +20,31 @@ export const notifyEvent = (
   forceSend?: boolean,
 ) => {
   let sendToBugsnag = forceSend || false;
+  const logData = [
+    event?.message ? event.message : event || 'event',
+    metadata
+      ? JSON.stringify({
+          metadata,
+        })
+      : undefined,
+  ].filter(d => d !== undefined);
   switch (severity) {
     case 'info':
       // eslint-disable-next-line no-console
-      console.info(
-        error?.message ? error.message : error,
-        JSON.stringify({
-          metadata,
-        }),
-      );
+      console.info(...logData);
       break;
     case 'warning':
       // eslint-disable-next-line no-console
-      console.warn(
-        error?.message ? error.message : error,
-        JSON.stringify({
-          metadata,
-        }),
-      );
+      console.warn(...logData);
       break;
     default:
       // eslint-disable-next-line no-console
-      console.error(
-        error,
-        JSON.stringify({
-          metadata,
-        }),
-      );
+      console.error(...logData);
       sendToBugsnag = true;
   }
   if (sendToBugsnag) {
     notifyBugsnag({
-      error,
+      error: event,
       appContext,
       errorClass,
       severity,

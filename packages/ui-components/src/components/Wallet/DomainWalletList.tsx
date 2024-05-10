@@ -133,16 +133,18 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
       <style>{swiperCss}</style>
       <Box className={classes.sectionHeaderContainer}>
         <Box className={classes.sectionHeader}>
-          <Tooltip
-            title={t(
-              verified
-                ? 'verifiedWallets.verifiedOnly'
-                : 'verifiedWallets.notVerified',
-              {domain},
-            )}
-          >
-            <WalletOutlinedIcon className={classes.headerIcon} />
-          </Tooltip>
+          {domain && (
+            <Tooltip
+              title={t(
+                verified
+                  ? 'verifiedWallets.verifiedOnly'
+                  : 'verifiedWallets.notVerified',
+                {domain},
+              )}
+            >
+              <WalletOutlinedIcon className={classes.headerIcon} />
+            </Tooltip>
+          )}
           <Typography variant="h6">{t('verifiedWallets.title')}</Typography>
           {totalValue > 0 && (
             <Typography variant="body2" className={classes.totalValue}>
@@ -209,7 +211,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
                     key={index}
                     data-testid={`nft-carousel-item-${index}`}
                   >
-                    <DomainWallet key={index} domain={domain} wallet={wallet} />
+                    <DomainWallet key={index} wallet={wallet} />
                   </SwiperSlide>
                 ))}
             </>
@@ -230,7 +232,7 @@ export const DomainWalletList: React.FC<DomainWalletListProps> = ({
 };
 
 export type DomainWalletListProps = {
-  domain: string;
+  domain?: string;
   isOwner?: boolean;
   wallets?: SerializedWalletBalance[];
   minCount?: number;

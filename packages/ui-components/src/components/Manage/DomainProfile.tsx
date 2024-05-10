@@ -30,7 +30,7 @@ import truncateEthAddress from 'truncate-eth-address';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getOwnerDomains} from '../../actions';
+import {getOwnerDomains, useFeatureFlags} from '../../actions';
 import {useDomainConfig, useWeb3Context} from '../../hooks';
 import type {SerializedUserDomainProfileData} from '../../lib';
 import {
@@ -151,6 +151,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
 }) => {
   const {classes, cx} = useStyles({width});
   const [t] = useTranslationContext();
+  const {data: featureFlags} = useFeatureFlags(false, initialDomain);
   const theme = useTheme();
   const isVerticalNav = useMediaQuery(theme.breakpoints.up('md'));
   const [buttonComponent, setButtonComponent] = useState<React.ReactNode>(
@@ -185,7 +186,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
           return;
         }
       } catch (e) {
-        notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+        notifyEvent(e, 'error', 'Profile', 'Fetch', {
           msg: 'error resolving domain',
         });
       }
@@ -195,6 +196,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
   }, [selectedDomain]);
 
   useEffect(() => {
+    setTabValue(DomainProfileTabType.Profile);
     setIsOwner(
       localStorage.getItem(DomainProfileKeys.AuthAddress)?.toLowerCase() ===
         address.toLowerCase(),
@@ -264,7 +266,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
         }
       }
     } catch (e) {
-      notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+      notifyEvent(e, 'error', 'Profile', 'Fetch', {
         msg: 'error retrieving owner domains',
       });
     }
@@ -606,5 +608,6 @@ export enum DomainProfileTabType {
   Reverse = 'reverse',
   TokenGallery = 'tokenGallery',
   Transfer = 'transfer',
+  Wallet = 'wallet',
   Website = 'website',
 }

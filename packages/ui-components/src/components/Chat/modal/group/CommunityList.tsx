@@ -140,7 +140,7 @@ export const CommunityList: React.FC<CommunityListProps> = ({
             ?.ecommerceServiceUsersEnableChatCommunityUdBlue,
       );
     } catch (e) {
-      notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+      notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
         msg: 'error loading badges',
       });
     }

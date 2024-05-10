@@ -86,7 +86,7 @@ export const IncomingChatSnackbar = React.forwardRef<
           setAvatarUrl(addressMetadata.avatarUrl);
         }
       } catch (e) {
-        notifyEvent(e, 'warning', 'MESSAGING', 'Resolution', {
+        notifyEvent(e, 'warning', 'Messaging', 'Resolution', {
           msg: 'error looking up reverse resolution',
         });
       }

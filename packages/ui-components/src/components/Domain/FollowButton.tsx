@@ -4,6 +4,7 @@ import PersonRemoveOutlinedIcon from '@mui/icons-material/PersonRemoveOutlined';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import type {Theme} from '@mui/material/styles';
+import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -49,6 +50,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
   small,
 }) => {
   const {classes} = useStyles({color});
+  const {enqueueSnackbar} = useSnackbar();
   const {data: followStatus, isLoading} = useDomainProfileFollowStatus(
     authDomain,
     domain,
@@ -101,6 +103,10 @@ const FollowButton: React.FC<FollowButtonProps> = ({
       });
       if (onFollowClick) onFollowClick();
     }
+  };
+
+  const handleError = () => {
+    enqueueSnackbar(t('profile.followError', {domain}), {variant: 'error'});
   };
 
   return (
@@ -179,6 +185,8 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         saveClicked={followClicked}
         setSaveClicked={setFollowClicked}
         onSignature={handleCallback}
+        onFailed={handleError}
+        closeAfterSignature={true}
       />
     </>
   );

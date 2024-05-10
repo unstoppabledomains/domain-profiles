@@ -34,7 +34,7 @@ export const fetchFeatureFlags = async (
       variations: {...DEFAULT_FEATURE_FLAGS.variations, ...featureFlags},
     };
   } catch (e) {
-    notifyEvent(e, 'warning', 'REQUEST', 'Fetch', {
+    notifyEvent(e, 'warning', 'Request', 'Fetch', {
       msg: 'error retrieving feature flags',
     });
   }

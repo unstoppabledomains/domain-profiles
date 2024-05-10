@@ -10,6 +10,7 @@ import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import {useTheme} from '@mui/material/styles';
 import type {Theme} from '@mui/material/styles';
 import Bluebird from 'bluebird';
 import moment from 'moment';
@@ -20,16 +21,19 @@ import truncateEthAddress from 'truncate-eth-address';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getDomainTransactions} from '../../actions';
+import {getTransactionsByAddress, getTransactionsByDomain} from '../../actions';
 import type {CurrenciesType, SerializedTx} from '../../lib';
-import {WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
+import {TokenType, WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
 import {CryptoIcon} from '../Image';
 
 const bgNeutralShade = 800;
 
-const useStyles = makeStyles()((theme: Theme) => ({
+type StyleProps = {
+  palletteShade: Record<number, string>;
+};
+const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
   walletContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -54,11 +58,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     lineHeight: 1.4,
   },
   totalValue: {
-    color: theme.palette.neutralShades[600],
+    color: palletteShade[600],
     marginLeft: theme.spacing(1),
   },
   headerIcon: {
-    color: theme.palette.neutralShades[600],
+    color: palletteShade[600],
     marginRight: theme.spacing(1),
   },
   scrollableContainer: {
@@ -67,11 +71,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     overscrollBehavior: 'contain',
     height: `${WALLET_CARD_HEIGHT + 2}px`,
     width: '100%',
-    backgroundImage: `linear-gradient(${
-      theme.palette.neutralShades[bgNeutralShade - 200]
-    }, ${theme.palette.neutralShades[bgNeutralShade]})`,
+    backgroundImage: `linear-gradient(${palletteShade[bgNeutralShade - 200]}, ${
+      palletteShade[bgNeutralShade]
+    })`,
     borderRadius: theme.shape.borderRadius,
-    border: `1px solid ${theme.palette.neutralShades[bgNeutralShade - 600]}`,
+    border: `1px solid ${palletteShade[bgNeutralShade - 600]}`,
     padding: theme.spacing(2),
   },
   infiniteScrollLoading: {
@@ -153,8 +157,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export const DomainWalletTransactions: React.FC<
   DomainWalletTransactionsProps
-> = ({domain, wallets, isError, verified}) => {
-  const {classes, cx} = useStyles();
+> = ({id, accessToken, domain, isOwner, wallets, isError, verified}) => {
+  const theme = useTheme();
+  const {classes, cx} = useStyles({
+    palletteShade: isOwner
+      ? theme.palette.primaryShades
+      : theme.palette.neutralShades,
+  });
   const [t] = useTranslationContext();
   const [cursors, setCursors] = useState<Record<string, string>>({});
   const [txns, setTxns] = useState<SerializedTx[]>();
@@ -194,11 +203,21 @@ export const DomainWalletTransactions: React.FC<
       async cursorKey => {
         try {
           const symbol = cursorKey.split('-')[0];
-          const v = await getDomainTransactions(
-            domain,
-            symbol,
-            cursors[cursorKey],
-          );
+          const v = domain
+            ? await getTransactionsByDomain(domain, symbol, cursors[cursorKey])
+            : accessToken &&
+              wallets?.find(
+                w => w.symbol.toLowerCase() === symbol.toLowerCase(),
+              )
+            ? await getTransactionsByAddress(
+                wallets.find(
+                  w => w.symbol.toLowerCase() === symbol.toLowerCase(),
+                )!.address,
+                accessToken,
+                symbol,
+                cursors[cursorKey],
+              )
+            : undefined;
           if (v?.data) {
             newTxns.push(...v.data);
           }
@@ -212,7 +231,7 @@ export const DomainWalletTransactions: React.FC<
               tx.symbol = symbol;
             });
         } catch (e) {
-          notifyEvent(e, 'warning', 'WALLET', 'Fetch', {
+          notifyEvent(e, 'warning', 'Wallet', 'Fetch', {
             msg: 'unable to retrieve transactions',
           });
         }
@@ -234,9 +253,9 @@ export const DomainWalletTransactions: React.FC<
       (wallets || []).filter(
         w => w.address.toLowerCase() === tx.from?.address.toLowerCase(),
       ).length > 0;
-    const isNft = tx.type === 'nft';
-    const isErc20 = tx.type === 'erc20';
-    const isXfer = tx.value > 0;
+    const isNft = tx.type === TokenType.Nft;
+    const isErc20 = tx.type === TokenType.Erc20;
+    const isXfer = Math.abs(tx.value) > 0;
     const actionName =
       isSender && isXfer
         ? t('activity.sent')
@@ -266,15 +285,6 @@ export const DomainWalletTransactions: React.FC<
         : isSender
         ? tx.to.label || truncateEthAddress(tx.to.address || '')
         : tx.from.label || truncateEthAddress(tx.from.address || '');
-    const actionSubjectLink = isNft
-      ? tx.link
-      : isSender && isXfer
-      ? tx.to.link
-      : !isSender && isXfer
-      ? tx.from.link
-      : isSender
-      ? tx.to.link
-      : tx.from.link;
     const currDate = moment(tx.timestamp).format('LL');
     const prevDate = prev ? moment(prev.timestamp).format('LL') : '';
     const nextDate = next ? moment(next.timestamp).format('LL') : '';
@@ -292,89 +302,83 @@ export const DomainWalletTransactions: React.FC<
             </Typography>
           </Grid>
         )}
-        <Grid
-          item
-          xs={2}
-          className={classes.txLink}
+        <Box
           onClick={() => handleClick(tx.link)}
+          width="100%"
+          display="flex"
+          mt={1}
         >
-          <Box display="flex" justifyContent="center" textAlign="center">
-            <Badge
-              overlap="circular"
-              anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
-              badgeContent={
-                isXfer || isNft ? (
-                  isSender ? (
-                    <SendIcon
-                      className={cx(classes.txIcon, classes.txIconSend)}
-                    />
+          <Grid item xs={2} className={classes.txLink}>
+            <Box display="flex" justifyContent="center" textAlign="center">
+              <Badge
+                overlap="circular"
+                anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+                badgeContent={
+                  isXfer || isNft ? (
+                    isSender ? (
+                      <SendIcon
+                        className={cx(classes.txIcon, classes.txIconSend)}
+                      />
+                    ) : (
+                      <SouthOutlinedIcon
+                        className={cx(classes.txIcon, classes.txIconReceive)}
+                      />
+                    )
                   ) : (
-                    <SouthOutlinedIcon
-                      className={cx(classes.txIcon, classes.txIconReceive)}
+                    <SyncAltIcon
+                      className={cx(classes.txIcon, classes.txIconInteract)}
                     />
                   )
-                ) : (
-                  <SyncAltIcon
-                    className={cx(classes.txIcon, classes.txIconInteract)}
-                  />
-                )
-              }
-            >
-              <CryptoIcon
-                currency={tx.symbol as CurrenciesType}
-                className={classes.currencyIcon}
-              />
-            </Badge>
-          </Box>
-        </Grid>
-        <Grid item xs={isNft ? 8 : 6}>
-          <Box display="flex" flexDirection="column">
-            <Typography
-              variant="caption"
-              onClick={() => handleClick(tx.link)}
-              className={classes.txTitle}
-            >
-              {actionName}
-            </Typography>
-            <Typography
-              variant="caption"
-              onClick={() => handleClick(actionSubjectLink)}
-              className={classes.txSubTitle}
-            >
-              {actionSubject}
-            </Typography>
-          </Box>
-        </Grid>
-        <Grid item xs={isNft ? 2 : 4}>
-          <Box
-            display="flex"
-            flexDirection="column"
-            textAlign="right"
-            justifyContent="right"
-            justifyItems="right"
-          >
-            {!isNft && tx.value > 0 && (
-              <Typography
-                variant="caption"
-                className={isSender ? classes.txSent : classes.txReceived}
+                }
               >
-                {isSender ? '-' : '+'}
-                {numeral(tx.value).format('0,0.[0000]')}{' '}
-                {isErc20 ? tx.method.toUpperCase() : tx.symbol}
+                <CryptoIcon
+                  currency={tx.symbol as CurrenciesType}
+                  className={classes.currencyIcon}
+                />
+              </Badge>
+            </Box>
+          </Grid>
+          <Grid item xs={isNft ? 8 : 6}>
+            <Box display="flex" flexDirection="column">
+              <Typography variant="caption" className={classes.txTitle}>
+                {actionName}
               </Typography>
-            )}
-            {!isNft && tx.gas > 0 && (
-              <Typography variant="caption" className={classes.txFee}>
-                -{numeral(tx.gas).format('0,0.[0000]')} {t('activity.gas')}
+              <Typography variant="caption" className={classes.txSubTitle}>
+                {actionSubject}
               </Typography>
-            )}
-            {isNft && tx.imageUrl && (
-              <Box display="flex" justifyContent="right">
-                <img className={classes.txImgPreview} src={tx.imageUrl} />
-              </Box>
-            )}
-          </Box>
-        </Grid>
+            </Box>
+          </Grid>
+          <Grid item xs={isNft ? 2 : 4}>
+            <Box
+              display="flex"
+              flexDirection="column"
+              textAlign="right"
+              justifyContent="right"
+              justifyItems="right"
+            >
+              {!isNft && Math.abs(tx.value) > 0 && (
+                <Typography
+                  variant="caption"
+                  className={isSender ? classes.txSent : classes.txReceived}
+                >
+                  {isSender ? '-' : '+'}
+                  {numeral(Math.abs(tx.value)).format('0,0.[0000]')}{' '}
+                  {isErc20 ? tx.method.toUpperCase() : tx.symbol}
+                </Typography>
+              )}
+              {!isNft && tx.gas > 0 && (
+                <Typography variant="caption" className={classes.txFee}>
+                  -{numeral(tx.gas).format('0,0.[0000]')} {t('activity.gas')}
+                </Typography>
+              )}
+              {isNft && tx.imageUrl && (
+                <Box display="flex" justifyContent="right">
+                  <img className={classes.txImgPreview} src={tx.imageUrl} />
+                </Box>
+              )}
+            </Box>
+          </Grid>
+        </Box>
         {currDate === nextDate && (
           <Grid item xs={12}>
             <Divider />
@@ -397,36 +401,38 @@ export const DomainWalletTransactions: React.FC<
   // render the wallet list
   return (
     <Box className={classes.walletContainer}>
-      <Box className={classes.sectionHeaderContainer}>
-        <Box className={classes.sectionHeader}>
-          <Tooltip
-            title={t(
-              verified
-                ? 'verifiedWallets.verifiedOnly'
-                : 'verifiedWallets.notVerified',
-              {domain},
+      {domain && (
+        <Box className={classes.sectionHeaderContainer}>
+          <Box className={classes.sectionHeader}>
+            <Tooltip
+              title={t(
+                verified
+                  ? 'verifiedWallets.verifiedOnly'
+                  : 'verifiedWallets.notVerified',
+                {domain},
+              )}
+            >
+              <HistoryOutlinedIcon className={classes.headerIcon} />
+            </Tooltip>
+            <Typography variant="h6">{t('activity.title')}</Typography>
+            {txCount > 0 && (
+              <Typography variant="body2" className={classes.totalValue}>
+                ({txCount})
+              </Typography>
             )}
-          >
-            <HistoryOutlinedIcon className={classes.headerIcon} />
-          </Tooltip>
-          <Typography variant="h6">{t('activity.title')}</Typography>
-          {txCount > 0 && (
-            <Typography variant="body2" className={classes.totalValue}>
-              ({txCount})
-            </Typography>
-          )}
+          </Box>
         </Box>
-      </Box>
+      )}
       {isError || (txns && wallets) ? (
         <Box
           mt={'15px'}
           mb={2}
-          id={`scrollableTxDiv`}
+          id={`scrollableTxDiv-${id}`}
           className={classes.scrollableContainer}
         >
           {!isError && (txns || []).length > 0 ? (
             <InfiniteScroll
-              scrollableTarget={`scrollableTxDiv`}
+              scrollableTarget={`scrollableTxDiv-${id}`}
               hasMore={hasMore}
               loader={
                 <Box className={classes.infiniteScrollLoading}>
@@ -469,7 +475,9 @@ export const DomainWalletTransactions: React.FC<
 };
 
 export type DomainWalletTransactionsProps = {
-  domain: string;
+  id: string;
+  domain?: string;
+  accessToken?: string;
   isOwner?: boolean;
   isError?: boolean;
   wallets?: SerializedWalletBalance[];

@@ -23,7 +23,7 @@ export const uploadAttachment = async (
       notifyEvent(
         new Error('upload auth required'),
         'warning',
-        'MESSAGING',
+        'Messaging',
         'Authorization',
         {msg: 'domain not authorized', meta: {domain}},
       );
@@ -60,7 +60,7 @@ export const uploadAttachment = async (
       return responseJSON.url;
     }
   } catch (e) {
-    notifyEvent(e, 'warning', 'MESSAGING', 'Fetch', {
+    notifyEvent(e, 'warning', 'Messaging', 'Fetch', {
       msg: 'error uploading attachment',
       meta: {domain},
     });

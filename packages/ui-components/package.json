@@ -26,6 +26,7 @@
   "dependencies": {
     "@braintree/sanitize-url": "^6.0.4",
     "@emotion/server": "^11.4.0",
+    "@fireblocks/ncw-js-sdk": "^12.1.0",
     "@ipld/car": "^5.2.5",
     "@mui/icons-material": "5.10.3",
     "@mui/lab": "5.0.0-alpha.98",

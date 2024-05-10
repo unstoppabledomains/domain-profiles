@@ -8,6 +8,7 @@ export const defaultFlagValues: LaunchDarklyFlagSet = {
   'ecommerce-service-users-public-profile-address-verified-check': true,
   'ud-me-service-domains-enable-social-verification': false,
   'ud-me-service-domains-enable-management': false,
+  'ud-me-service-domains-enable-fireblocks': false,
   'ecommerce-service-users-enable-chat-community-udBlue': false,
   'ecommerce-service-wallets-disable-badges': [],
   'example-number': 0,

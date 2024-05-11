@@ -34,8 +34,10 @@ export type SelectNftPopupProps = {
 };
 
 const isValidNftSpec = (nftSpec: string) => {
-  // TODO
   if (!nftSpec) {
+    return false;
+  }
+  if (!nftSpec.match(/(\d+)\/(erc721|erc1155):0x[a-fA-F0-9]{40}\/(\d+)/)) {
     return false;
   }
   return true;
@@ -57,7 +59,7 @@ const SelectNftPopup: React.FC<SelectNftPopupProps> = ({
   const {web3Deps, setWeb3Deps} = useWeb3Context();
 
   const isValid = isValidNftSpec(nftSpec);
-  const haveError = Boolean(nftSpec) && blurred && !isValidNftSpec(nftSpec);
+  const isError = blurred && !isValidNftSpec(nftSpec);
 
   const handleSave = () => {
     setSaveClicked(true);
@@ -201,9 +203,9 @@ const SelectNftPopup: React.FC<SelectNftPopupProps> = ({
           onBlur={() => {
             setBlurred(true);
           }}
-          error={haveError}
+          error={isError}
         />
-        {haveError && (
+        {isError && (
           <Box mt={1}>
             <FormError message={t('manage.enterValidNft')} />
           </Box>

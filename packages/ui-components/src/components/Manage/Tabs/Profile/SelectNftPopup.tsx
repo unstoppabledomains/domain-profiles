@@ -8,10 +8,13 @@ import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import {fetcher} from '@xmtp/proto';
 import Markdown from 'markdown-to-jsx';
+import probe from 'probe-image-size';
 import React, {useState} from 'react';
 import truncateEthAddress from 'truncate-eth-address';
 
+import {setProfileUserData} from '../../../../actions';
 import {
   confirmRecordUpdate,
   getRegistrationMessage,
@@ -29,15 +32,20 @@ export type SelectNftPopupProps = {
   domain: string;
   address: string;
   popupOpen: boolean;
+  imageUrl?: string;
+  pfpURI?: string;
   handlePopupClose: () => void;
-  handleSelectNftClick: (nftSpec: string) => void;
 };
 
 const isValidNftSpec = (nftSpec: string) => {
   if (!nftSpec) {
     return false;
   }
-  if (!nftSpec.match(/(\d+)\/(erc721|erc1155):0x[a-fA-F0-9]{40}\/(\d+)/)) {
+  if (
+    !nftSpec.match(
+      /([A-Za-z0-9]+)\/([A-Za-z0-9]+):([A-Za-z0-9]+)\/([A-Za-z0-9]+)/,
+    )
+  ) {
     return false;
   }
   return true;
@@ -47,17 +55,19 @@ const SelectNftPopup: React.FC<SelectNftPopupProps> = ({
   domain,
   address,
   popupOpen,
+  imageUrl,
+  pfpURI,
   handlePopupClose,
-  handleSelectNftClick,
 }) => {
   const [t] = useTranslationContext();
   const {classes} = useStyles();
-  const [nftSpec, setNftSpec] = useState<string>('');
+  const [nftSpec, setNftSpec] = useState<string>(pfpURI || '');
   const [blurred, setBlurred] = useState<boolean>(false);
   const [saveClicked, setSaveClicked] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const {web3Deps, setWeb3Deps} = useWeb3Context();
 
+  const auth: Record<string, string> = {};
   const isValid = isValidNftSpec(nftSpec);
   const isError = blurred && !isValidNftSpec(nftSpec);
 
@@ -70,6 +80,11 @@ const SelectNftPopup: React.FC<SelectNftPopupProps> = ({
     signature: string,
     expiry: string,
   ): Promise<void> => {
+    // store auth in memory
+    auth.signature = signature;
+    auth.expiry = expiry;
+
+    // set records as requested
     if (await validateWalletRegistration(signature, expiry)) {
       // initiate a record update
       const updateRequest = await initiateRecordUpdate(
@@ -101,9 +116,7 @@ const SelectNftPopup: React.FC<SelectNftPopupProps> = ({
             )
           ) {
             // record updates successful
-            setIsSaving(false);
-            handleSelectNftClick(nftSpec);
-            handlePopupClose();
+            await handleImageUpload();
             return;
           }
         }
@@ -112,6 +125,34 @@ const SelectNftPopup: React.FC<SelectNftPopupProps> = ({
 
     // record update was not successful
     setIsSaving(false);
+  };
+
+  const handleImageUpload = async () => {
+    // if an image URL is available, upload it
+    if (imageUrl && auth.signature && auth.expiry) {
+      // retrieve image and metadata
+      const [imageResp, imageMetadata] = await Promise.all([
+        fetch(imageUrl),
+        probe(imageUrl),
+      ]);
+
+      // upload image if found at provided URL
+      if (imageResp.ok && imageMetadata.mime) {
+        const imageData = await imageResp.arrayBuffer();
+        await setProfileUserData(domain, {}, {}, auth.signature, auth.expiry, {
+          base64: fetcher.b64Encode(
+            new Uint8Array(imageData),
+            0,
+            imageData.byteLength,
+          ),
+          type: imageMetadata.mime,
+        });
+      }
+    }
+
+    // close the modal
+    setIsSaving(false);
+    handlePopupClose();
   };
 
   const validateWalletRegistration = async (
@@ -181,34 +222,42 @@ const SelectNftPopup: React.FC<SelectNftPopupProps> = ({
         </IconButton>
       </Typography>
       <DialogContent className={classes.dialogContent}>
-        <Typography
-          variant="body2"
-          component="div"
-          className={classes.dialogSubheader}
-        >
-          <Markdown>
-            {t('manage.avatarNftRequirements', {
-              address: truncateEthAddress(address),
-            })}
-          </Markdown>
-        </Typography>
-        <TextField
-          fullWidth
-          value={nftSpec}
-          label={t('manage.avatarNft')}
-          onChange={event => {
-            setBlurred(false);
-            setNftSpec(event.target.value);
-          }}
-          onBlur={() => {
-            setBlurred(true);
-          }}
-          error={isError}
-        />
-        {isError && (
-          <Box mt={1}>
-            <FormError message={t('manage.enterValidNft')} />
+        {imageUrl ? (
+          <Box className={classes.imagePreviewContainer}>
+            <img src={imageUrl} className={classes.imagePreview} />
           </Box>
+        ) : (
+          <>
+            <Typography
+              variant="body2"
+              component="div"
+              className={classes.dialogSubheader}
+            >
+              <Markdown>
+                {t('manage.avatarNftRequirements', {
+                  address: truncateEthAddress(address),
+                })}
+              </Markdown>
+            </Typography>
+            <TextField
+              fullWidth
+              value={nftSpec}
+              label={t('manage.avatarNft')}
+              onChange={event => {
+                setBlurred(false);
+                setNftSpec(event.target.value);
+              }}
+              onBlur={() => {
+                setBlurred(true);
+              }}
+              error={isError}
+            />
+            {isError && (
+              <Box mt={1}>
+                <FormError message={t('manage.enterValidNft')} />
+              </Box>
+            )}
+          </>
         )}
       </DialogContent>
       <Divider />
@@ -222,7 +271,7 @@ const SelectNftPopup: React.FC<SelectNftPopupProps> = ({
           className={classes.dialogConfirmButton}
           disableElevation
         >
-          {t('common.done')}
+          {t('common.save')}
         </LoadingButton>
       </DialogActions>
       <ProfileManager

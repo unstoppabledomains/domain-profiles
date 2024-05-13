@@ -256,6 +256,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
 
   const handleNftPopupClose = () => {
     setNftPopupOpen(false);
+    handleAvatarPopupClose();
   };
 
   const handleAvatarPopupOpen = () => {
@@ -287,15 +288,6 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
     removeAvatar();
     handleAvatarPopupClose();
     handleUrlEntry(usableUrl);
-  };
-
-  const handleSelectNftClick = async (nftSpec: string) => {
-    removeAvatar();
-    handleAvatarPopupClose();
-    handleUrlEntry(
-      // TODO need to lookup the NFT URL here
-      'https://storage.googleapis.com/unstoppable-client-assets/images/common/hourglass-half.svg',
-    );
   };
 
   const handleAvatarUploadClick = async (event: {target: HTMLInputElement}) => {
@@ -498,7 +490,6 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
           address={ownerAddress}
           popupOpen={nftPopupOpen}
           handlePopupClose={handleNftPopupClose}
-          handleSelectNftClick={handleSelectNftClick}
         />
       )}
     </Grid>

@@ -1,6 +1,8 @@
 import Close from '@mui/icons-material/Close';
 import OpenInNew from '@mui/icons-material/OpenInNew';
+import PortraitOutlinedIcon from '@mui/icons-material/PortraitOutlined';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
@@ -10,15 +12,15 @@ import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import numeral from 'numeral';
-import React from 'react';
+import React, {useState} from 'react';
 
-import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {CryptoIcon} from '../../components/Image/CryptoIcon';
 import type {Nft} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 import type {CurrenciesType} from '../../lib/types/blockchain';
+import SelectNftPopup from '../Manage/Tabs/Profile/SelectNftPopup';
 import NftImage from './NftImage';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -214,30 +216,24 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export interface NftModalProps {
   handleClose: () => void;
+  domain: string;
+  address: string;
   open: boolean;
   nft: Nft;
 }
 
 const NftModal: React.FC<NftModalProps> = ({
+  domain,
+  address,
   open,
   handleClose,
   nft,
 }: NftModalProps) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
+  const [avatarClicked, setAvatarClicked] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  let udMeLink: string | undefined;
-  if (nft?.mint) {
-    const contractAddress = nft.mint.split('/')[0];
-    if (
-      config.UNSTOPPABLE_CONTRACT_ADDRESS.includes(
-        contractAddress.toLowerCase(),
-      )
-    ) {
-      udMeLink = `${config.UD_ME_BASE_URL}/${nft.name}`;
-    }
-  }
 
   const handleContractAddress = (contract: string, index = 0) => {
     const splitContract = contract?.split('/');
@@ -384,6 +380,28 @@ const NftModal: React.FC<NftModalProps> = ({
                   nft.name
                 )}
               </Typography>
+              {nft.owner && nft.pfp_uri && (
+                <Box mt={1}>
+                  <Button
+                    startIcon={<PortraitOutlinedIcon />}
+                    onClick={() => setAvatarClicked(true)}
+                    variant="contained"
+                    size="small"
+                  >
+                    {t('nftCollection.setAsAvatar')}
+                  </Button>
+                </Box>
+              )}
+              {avatarClicked && (
+                <SelectNftPopup
+                  domain={domain}
+                  address={address}
+                  popupOpen={avatarClicked}
+                  imageUrl={nft.image_url}
+                  pfpURI={nft.pfp_uri}
+                  handlePopupClose={() => setAvatarClicked(false)}
+                />
+              )}
             </section>
             {nft.description && (
               <section className={classes.description}>

@@ -1,6 +1,7 @@
 import CollectionsOutlinedIcon from '@mui/icons-material/CollectionsOutlined';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import PortraitOutlinedIcon from '@mui/icons-material/PortraitOutlined';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
@@ -20,6 +21,7 @@ import {CryptoIcon} from '../../components/Image/CryptoIcon';
 import type {Nft} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 import type {CurrenciesType} from '../../lib/types/blockchain';
+import SelectNftPopup from '../Manage/Tabs/Profile/SelectNftPopup';
 import NftImage from './NftImage';
 import NftModal from './NftModal';
 
@@ -75,18 +77,20 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 interface Props {
   domain: string;
+  address: string;
   nft: Nft;
   placeholder?: boolean;
   compact?: boolean;
 }
 
-const NftCard = ({nft, compact, placeholder}: Props) => {
+const NftCard = ({domain, address, nft, compact, placeholder}: Props) => {
   const [t] = useTranslationContext();
   const videoRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
   const {classes, cx} = useStyles();
   const [open, setOpen] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [pfpModalOpen, setPfpModalOpen] = useState(false);
 
   const css = `
   .NFT-container {
@@ -226,6 +230,10 @@ const NftCard = ({nft, compact, placeholder}: Props) => {
     }
   };
 
+  const handleSetPfpClicked = () => {
+    setPfpModalOpen(true);
+  };
+
   const handleToggleCollectionVisibility = (v: boolean) => {
     if (nft.symbol && nft.mint) {
       const collectionId = nft.mint!.split('/')[0];
@@ -351,6 +359,22 @@ const NftCard = ({nft, compact, placeholder}: Props) => {
           transformOrigin={{horizontal: 'right', vertical: 'top'}}
           anchorOrigin={{horizontal: 'right', vertical: 'bottom'}}
         >
+          {nft.pfp_uri && (
+            <MenuItem
+              data-testid="nft-set-pfp"
+              onClick={async () => {
+                handleCloseMenu();
+                handleSetPfpClicked();
+              }}
+            >
+              <ListItemIcon>
+                <PortraitOutlinedIcon fontSize="small" />
+              </ListItemIcon>
+              <Typography variant="body2">
+                {t('nftCollection.setAsAvatar')}
+              </Typography>
+            </MenuItem>
+          )}
           <MenuItem
             data-testid="nft-card-hide-nft"
             onClick={async () => {
@@ -387,7 +411,23 @@ const NftCard = ({nft, compact, placeholder}: Props) => {
             </Typography>
           </MenuItem>
         </Menu>
-        <NftModal handleClose={handleClose} open={open} nft={nft} />
+        <NftModal
+          handleClose={handleClose}
+          open={open}
+          nft={nft}
+          domain={domain}
+          address={address}
+        />
+        {pfpModalOpen && (
+          <SelectNftPopup
+            domain={domain}
+            address={address}
+            popupOpen={pfpModalOpen}
+            imageUrl={nft.image_url}
+            pfpURI={nft.pfp_uri}
+            handlePopupClose={() => setPfpModalOpen(false)}
+          />
+        )}
       </Box>
       {compact && (
         <Box mt={1} display="flex" flexDirection="column">

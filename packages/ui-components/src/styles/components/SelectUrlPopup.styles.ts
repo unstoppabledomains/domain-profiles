@@ -47,6 +47,17 @@ const useStyles = makeStyles()((theme: Theme) => ({
   description: {
     marginBottom: theme.spacing(1),
   },
+  imagePreviewContainer: {
+    display: 'flex',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  imagePreview: {
+    width: '200px',
+    height: '200px',
+    borderRadius: '50%',
+  },
 }));
 
 // TODO jss-to-tss-react codemod: usages of this hook outside of this file will not be converted.

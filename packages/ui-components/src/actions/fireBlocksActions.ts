@@ -1,4 +1,5 @@
 import Bluebird from 'bluebird';
+import QueryString from 'qs';
 
 import config from '@unstoppabledomains/config';
 
@@ -16,10 +17,16 @@ import type {
   GetAccountsResponse,
   GetAuthorizationTxResponse,
   GetBootstrapTokenResponse,
+  GetOperationListResponse,
   GetOperationResponse,
   GetOperationStatusResponse,
   GetTokenResponse,
 } from '../lib/types/fireBlocks';
+
+export enum OperationStatus {
+  QUEUED = 'QUEUED',
+  SIGNATURE_REQUIRED = 'SIGNATURE_REQUIRED',
+}
 
 export enum SendCryptoStatusMessage {
   RETRIEVING_ACCOUNT = 'Preparing transfer...',
@@ -32,6 +39,37 @@ export enum SendCryptoStatusMessage {
   TRANSACTION_COMPLETED = 'Transfer completed!',
   TRANSACTION_FAILED = 'Transfer failed',
 }
+
+export const cancelOperation = async (
+  accessToken: string,
+  operationId: string,
+): Promise<void> => {
+  return await fetchApi(`/operations/${operationId}`, {
+    method: 'DELETE',
+    mode: 'cors',
+    headers: {
+      'Access-Control-Allow-Credentials': 'true',
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    host: config.WALLETS.HOST_URL,
+  });
+};
+
+export const cancelPendingOperations = async (
+  accessToken: string,
+  accountId: string,
+  assetId: string,
+): Promise<GetOperationListResponse> => {
+  // retrieve pending operations
+  const opsToCancel = await getOperationList(accessToken, accountId, assetId);
+
+  // cancel the operations
+  await Bluebird.map(opsToCancel.items, async operation => {
+    await cancelOperation(accessToken, operation.id);
+  });
+  return opsToCancel;
+};
 
 export const confirmAuthorizationTokenTx = async (
   bootstrapJwt: string,
@@ -406,6 +444,37 @@ export const getMessageSignature = async (
     });
   }
   return undefined;
+};
+
+export const getOperationList = async (
+  accessToken: string,
+  accountId: string,
+  assetId: string,
+  status: OperationStatus[] = [
+    OperationStatus.QUEUED,
+    OperationStatus.SIGNATURE_REQUIRED,
+  ],
+): Promise<GetOperationListResponse> => {
+  return await fetchApi(
+    `/operations?${QueryString.stringify(
+      {
+        assetId,
+        accountId,
+        status,
+      },
+      {arrayFormat: 'repeat'},
+    )}`,
+    {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+    },
+  );
 };
 
 export const getOperationStatus = async (

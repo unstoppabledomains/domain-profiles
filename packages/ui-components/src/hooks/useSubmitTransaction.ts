@@ -3,6 +3,7 @@ import {useEffect, useRef, useState} from 'react';
 
 import {
   SendCryptoStatusMessage,
+  cancelPendingOperations,
   getAccountAssets,
   getOperationStatus,
   getTransferOperationResponse,
@@ -64,7 +65,7 @@ export const useSubmitTransaction = ({
             asset.name.toLowerCase() &&
           a.address.toLowerCase() === asset.walletAddress.toLowerCase(),
       );
-      if (!assetToSend) {
+      if (!assetToSend?.accountId) {
         throw new Error('Asset not found in account');
       }
       if (!isMounted.current) {
@@ -75,9 +76,19 @@ export const useSubmitTransaction = ({
       setStatusMessage(SendCryptoStatusMessage.CHECKING_QUEUE);
       const client = await getClient();
       try {
+        // cancel local transactions for this client instance
         while (await client.getInProgressSigningTxId()) {
           await client.stopInProgressSignTransaction();
         }
+
+        // cancel queued operations for this specific account asset, which must be
+        // completed in case previous transactions are awaiting signature and in an
+        // abandoned state from another client.
+        await cancelPendingOperations(
+          accessToken,
+          assetToSend.accountId,
+          assetToSend.id,
+        );
       } catch (e) {
         notifyEvent(e, 'warning', 'Wallet', 'Signature', {
           msg: 'error managing in progress transactions',

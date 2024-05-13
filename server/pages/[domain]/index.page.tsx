@@ -1494,6 +1494,7 @@ const DomainProfile = ({
                           />
                           <NFTGalleryCarousel
                             domain={domain}
+                            address={ownerAddress}
                             nfts={getNftsForContract(
                               featuredPartner.contracts || [],
                             )}

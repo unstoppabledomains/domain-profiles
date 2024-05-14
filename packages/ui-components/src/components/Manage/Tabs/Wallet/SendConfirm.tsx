@@ -135,8 +135,7 @@ export const SendConfirm: React.FC<Props> = ({
           >
             <Typography variant="h6">{t('wallet.totalCost')}</Typography>
             <Typography variant="subtitle1">
-              `${Number(amount) + Number(gasFee)} $
-              {asset.blockchainAsset.symbol}`
+              ${Number(amount) + Number(gasFee)} ${asset.blockchainAsset.symbol}
             </Typography>
           </Box>
         </Box>

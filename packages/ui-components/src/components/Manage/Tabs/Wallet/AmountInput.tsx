@@ -42,15 +42,17 @@ const useStyles = makeStyles()((theme: Theme) => ({
 type Props = {
   initialAmount: string;
   amountInputRef: React.RefObject<HTMLInputElement>;
-  asset: TokenEntry;
+  token: TokenEntry;
   onTokenAmountChange: (tokenAmount: string) => void;
+  gasFeeEstimate: string;
 };
 
 const AmountInput: React.FC<Props> = ({
   amountInputRef,
   initialAmount,
-  asset,
+  token,
   onTokenAmountChange,
+  gasFeeEstimate,
 }) => {
   const [tokenAmount, setTokenAmount] = useState(initialAmount);
   const [fiatAmount, setFiatAmount] = useState('0');
@@ -58,18 +60,23 @@ const AmountInput: React.FC<Props> = ({
   const {classes} = useStyles();
   const [t] = useTranslationContext();
 
+  const MaxAvailableAmount =
+    token.balance - parseFloat(gasFeeEstimate) > 0
+      ? token.balance - parseFloat(gasFeeEstimate)
+      : 0;
+
   const convertToFiat = (value: string) => {
     if (!value || value === '.') {
       return '0.00';
     }
-    return (parseFloat(value || '0') * asset.tokenConversionUsd).toString();
+    return (parseFloat(value || '0') * token.tokenConversionUsd).toString();
   };
 
   const convertToToken = (value: string) => {
     if (!value || value === '.') {
       return '0';
     }
-    return (parseFloat(value || '0') / asset.tokenConversionUsd).toString();
+    return (parseFloat(value || '0') / token.tokenConversionUsd).toString();
   };
 
   const handleAmountChange = (id: string, value: string) => {
@@ -90,12 +97,12 @@ const AmountInput: React.FC<Props> = ({
   };
 
   const handleMaxClick = () => {
-    setFiatAmount((asset.balance * asset.tokenConversionUsd).toFixed(2));
-    setTokenAmount(asset.balance.toString());
-    onTokenAmountChange(asset.balance.toString());
+    setFiatAmount((MaxAvailableAmount * token.tokenConversionUsd).toFixed(2));
+    setTokenAmount(MaxAvailableAmount.toString());
+    onTokenAmountChange(MaxAvailableAmount.toString());
   };
 
-  const insufficientBalance = parseFloat(tokenAmount) > asset.balance;
+  const insufficientBalance = parseFloat(tokenAmount) > MaxAvailableAmount;
 
   return (
     <Box className={classes.container}>
@@ -107,7 +114,7 @@ const AmountInput: React.FC<Props> = ({
           value={showFiat ? fiatAmount : tokenAmount}
           label={t('wallet.amount')}
           placeholder={t('wallet.amountInSymbol', {
-            symbol: showFiat ? 'USD' : asset.ticker,
+            symbol: showFiat ? 'USD' : token.ticker,
           })}
           onChange={handleAmountChange}
           stacked={true}
@@ -137,17 +144,19 @@ const AmountInput: React.FC<Props> = ({
           >
             {!showFiat
               ? `~$${parseFloat(fiatAmount).toFixed(2)}`
-              : `${parseFloat(tokenAmount).toFixed(5)} ${asset.ticker}`}
+              : `${parseFloat(tokenAmount).toFixed(5)} ${token.ticker}`}
             <SwapVertIcon className={classes.swapIcon} />
           </Typography>
           <Typography variant="subtitle1" className={classes.availableBalance}>
             {showFiat
               ? t('wallet.availableUsd', {
-                  amount: (asset.balance * asset.tokenConversionUsd).toFixed(2),
+                  amount: (
+                    MaxAvailableAmount * token.tokenConversionUsd
+                  ).toFixed(2),
                 })
               : t('wallet.availableAmount', {
-                  amount: asset.balance.toFixed(5),
-                  symbol: asset.ticker,
+                  amount: MaxAvailableAmount.toFixed(5),
+                  symbol: token.ticker,
                 })}
           </Typography>
         </Box>

@@ -15,8 +15,8 @@ import {
   useSubmitTransaction,
 } from '../../../../hooks/useSubmitTransaction';
 import {useTranslationContext} from '../../../../lib';
+import type {AccountAsset} from '../../../../lib/types/fireBlocks';
 import Link from '../../../Link';
-import type {TokenEntry} from '../../../Wallet/Token';
 import {OperationStatus} from './OperationStatus';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -53,7 +53,7 @@ type Props = {
   onCloseClick: () => void;
   getClient: () => Promise<IFireblocksNCW>;
   accessToken: string;
-  asset: TokenEntry;
+  asset: AccountAsset;
   recipientAddress: string;
   recipientDomain?: string;
   amount: string;
@@ -84,7 +84,6 @@ export const SubmitTransaction: React.FC<Props> = ({
   });
 
   const visibleButtonStates = [
-    SendCryptoStatusMessage.RETRIEVING_ACCOUNT,
     SendCryptoStatusMessage.CHECKING_QUEUE,
     SendCryptoStatusMessage.STARTING_TRANSACTION,
     SendCryptoStatusMessage.WAITING_TO_SIGN,
@@ -113,7 +112,7 @@ export const SubmitTransaction: React.FC<Props> = ({
                 }`,
                 {
                   amount,
-                  sourceSymbol: asset.symbol,
+                  sourceSymbol: asset.blockchainAsset.symbol,
                   status,
                   recipientDomain: recipientDomain ? ` ${recipientDomain}` : '',
                   recipientAddress: truncateAddress(recipientAddress),
@@ -125,7 +124,8 @@ export const SubmitTransaction: React.FC<Props> = ({
               variant={'caption'}
               target="_blank"
               href={`${
-                config.BLOCKCHAINS[asset.symbol].BLOCK_EXPLORER_TX_URL
+                config.BLOCKCHAINS[asset.blockchainAsset.symbol]
+                  .BLOCK_EXPLORER_TX_URL
               }${transactionId}`}
             >
               {t('wallet.viewTransaction')}

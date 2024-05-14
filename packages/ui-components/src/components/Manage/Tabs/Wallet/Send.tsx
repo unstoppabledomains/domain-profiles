@@ -1,13 +1,19 @@
 import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import type {Theme} from '@mui/material/styles';
 import React, {useRef, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {
+  getAccountAssets,
+  getEstimateTransferResponse,
+} from '../../../../actions/fireBlocksActions';
 import type {SerializedWalletBalance} from '../../../../lib';
 import {useTranslationContext} from '../../../../lib';
+import type {AccountAsset} from '../../../../lib/types/fireBlocks';
 import type {TokenEntry} from '../../../Wallet/Token';
 import AddressInput from './AddressInput';
 import AmountInput from './AmountInput';
@@ -40,6 +46,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
     minHeight: '250px',
     justifyContent: 'space-between',
     width: '100%',
+  },
+  loaderContainer: {
+    display: 'flex',
+    height: '28em',
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   assetsContainer: {
     width: '100%',
@@ -123,11 +136,14 @@ const Send: React.FC<Props> = ({
 }) => {
   const [t] = useTranslationContext();
   const [recipientAddress, setRecipientAddress] = useState('');
-  const [asset, setAsset] = useState<TokenEntry>();
+  const [accountAsset, setAccountAsset] = useState<AccountAsset>();
+  const [selectedToken, setSelectedToken] = useState<TokenEntry>();
   const [amount, setAmount] = useState('');
   const [transactionSubmitted, setTransactionSubmitted] = useState(false);
   const [sendConfirmation, setSendConfirmation] = useState(false);
   const [resolvedDomain, setResolvedDomain] = useState('');
+  const [gasFeeEstimate, setGasFeeEstimate] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const {classes} = useStyles();
   const amountInputRef = useRef<HTMLInputElement>(null);
 
@@ -136,11 +152,12 @@ const Send: React.FC<Props> = ({
     setRecipientAddress('');
     setAmount('');
     setSendConfirmation(false);
-    setAsset(undefined);
+    setAccountAsset(undefined);
+    setSelectedToken(undefined);
   };
 
   const handleBackClick = () => {
-    if (!asset) {
+    if (!selectedToken) {
       onCancelClick();
     }
     if (!transactionSubmitted && sendConfirmation) {
@@ -150,12 +167,41 @@ const Send: React.FC<Props> = ({
     resetForm();
   };
 
+  const handleSelectToken = async (token: TokenEntry) => {
+    setIsLoading(true);
+    const assets = await getAccountAssets(accessToken);
+    if (!assets) {
+      throw new Error('Assets not found');
+    }
+    const assetToSend = assets.find(
+      a =>
+        a.blockchainAsset.blockchain.name.toLowerCase() ===
+          token.name.toLowerCase() &&
+        a.address.toLowerCase() === token.walletAddress.toLowerCase(),
+    );
+    if (!assetToSend) {
+      throw new Error('Asset not found');
+    }
+    const response = await getEstimateTransferResponse(
+      assetToSend,
+      accessToken,
+      // Doesn't matter what the recipient and amount are, just need to get the fee estimate
+      assetToSend.address,
+      '0.000000001',
+    );
+    setGasFeeEstimate(response.networkFee.amount);
+    setAccountAsset(assetToSend);
+    setSelectedToken(token);
+    setIsLoading(false);
+  };
+
   const handleSubmitTransaction = () => {
     setTransactionSubmitted(true);
   };
 
   const handleSendConfirmationClick = () => {
     setSendConfirmation(true);
+    setAmount(amount.startsWith('.') ? `0${amount}` : amount);
   };
 
   const handleRecipientChange = (value: string) => {
@@ -173,11 +219,19 @@ const Send: React.FC<Props> = ({
     setAmount(value);
   };
 
-  if (!asset) {
+  if (isLoading) {
+    return (
+      <Box className={classes.loaderContainer}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!selectedToken || !accountAsset) {
     return (
       <Box className={classes.flexColCenterAligned}>
         <SelectAsset
-          onSelectAsset={setAsset}
+          onSelectAsset={handleSelectToken}
           wallets={wallets}
           onCancelClick={handleBackClick}
           onClickBuy={onClickBuy}
@@ -192,15 +246,18 @@ const Send: React.FC<Props> = ({
   if (!transactionSubmitted && sendConfirmation) {
     return (
       <SendConfirm
+        gasFee={gasFeeEstimate}
+        asset={accountAsset}
         onBackClick={handleBackClick}
         onSendClick={handleSubmitTransaction}
         recipientAddress={recipientAddress}
         resolvedDomain={resolvedDomain}
         amount={amount}
-        blockchainName={asset.name}
-        symbol={asset.ticker}
+        blockchainName={selectedToken.name}
+        symbol={selectedToken.ticker}
         amountInDollars={
-          '$' + (parseFloat(amount) * asset.tokenConversionUsd).toFixed(2)
+          '$' +
+          (parseFloat(amount) * selectedToken.tokenConversionUsd).toFixed(2)
         }
       />
     );
@@ -211,15 +268,15 @@ const Send: React.FC<Props> = ({
         <TitleWithBackButton
           label={t('wallet.actionOnBlockchainTitle', {
             action: t('common.send'),
-            symbol: asset.ticker,
-            blockchain: asset.name,
+            symbol: selectedToken.ticker,
+            blockchain: selectedToken.name,
           })}
           onCancelClick={onCancelClick}
         />
         <SubmitTransaction
           onCloseClick={onCancelClick}
           accessToken={accessToken}
-          asset={asset}
+          asset={accountAsset}
           recipientAddress={recipientAddress}
           recipientDomain={resolvedDomain}
           amount={amount}
@@ -229,7 +286,7 @@ const Send: React.FC<Props> = ({
     );
   }
 
-  const insufficientBalance = parseFloat(amount) > asset.balance;
+  const insufficientBalance = parseFloat(amount) > selectedToken.balance;
 
   const canSend = Boolean(
     !insufficientBalance &&
@@ -245,14 +302,14 @@ const Send: React.FC<Props> = ({
         onCancelClick={handleBackClick}
         label={t('wallet.actionOnBlockchainTitle', {
           action: t('common.send'),
-          symbol: asset.ticker,
-          blockchain: asset.name,
+          symbol: selectedToken.ticker,
+          blockchain: selectedToken.name,
         })}
       />
       <Box className={classes.contentWrapper}>
         <Box className={classes.selectAssetContainer}>
           <Box className={classes.sendAssetContainer}>
-            <img src={asset.imageUrl} className={classes.assetLogo} />
+            <img src={selectedToken.imageUrl} className={classes.assetLogo} />
           </Box>
           <Box className={classes.recipientWrapper}>
             <AddressInput
@@ -262,12 +319,13 @@ const Send: React.FC<Props> = ({
               initialResolvedDomainValue={resolvedDomain}
               onAddressChange={handleRecipientChange}
               onResolvedDomainChange={handleResolvedDomainChange}
-              assetSymbol={asset.ticker}
+              assetSymbol={selectedToken.ticker}
             />
           </Box>
           <AmountInput
+            gasFeeEstimate={gasFeeEstimate}
             amountInputRef={amountInputRef}
-            asset={asset}
+            token={selectedToken}
             initialAmount={amount}
             onTokenAmountChange={handleAmountChange}
           />

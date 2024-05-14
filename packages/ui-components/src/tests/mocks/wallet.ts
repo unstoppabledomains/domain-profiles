@@ -28,19 +28,6 @@ export const mockAccountAsset = (): AccountAsset => {
   };
 };
 
-export const mockAsset = (): TokenEntry => ({
-  type: TokenType.Native,
-  symbol: 'ETH',
-  name: 'Ethereum',
-  ticker: 'ETH',
-  value: 100,
-  balance: 10,
-  tokenConversionUsd: 3.8512,
-  walletAddress: '0x123',
-  walletBlockChainLink: 'https://etherscan.io/address/0x123',
-  walletName: 'Ethereum',
-});
-
 export const mockFireblocksClient = (): IFireblocksNCW => {
   return {
     dispose: jest.fn(),
@@ -107,6 +94,19 @@ export const mockProfileData = ({
   };
 };
 
+export const mockTokenEntry = (): TokenEntry => ({
+  type: TokenType.Native,
+  symbol: 'ETH',
+  name: 'Ethereum',
+  ticker: 'ETH',
+  value: 100,
+  balance: 10,
+  tokenConversionUsd: 3.8512,
+  walletAddress: '0x123',
+  walletBlockChainLink: 'https://etherscan.io/address/0x123',
+  walletName: 'Ethereum',
+});
+
 export const mockWallets = (
   wallets: SerializedWalletBalance[] = [],
 ): SerializedWalletBalance[] => {
@@ -114,7 +114,7 @@ export const mockWallets = (
     ...wallets,
     {
       type: TokenType.Native,
-      address: '',
+      address: VALID_ETH_ADDRESS,
       symbol: 'ETH',
       gasCurrency: 'ETH',
       name: 'Ethereum',

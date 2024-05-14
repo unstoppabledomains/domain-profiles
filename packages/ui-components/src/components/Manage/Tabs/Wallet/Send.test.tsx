@@ -2,9 +2,12 @@ import {act, fireEvent, waitFor} from '@testing-library/react';
 import React from 'react';
 
 import {SendCryptoStatusMessage} from '../../../../actions/fireBlocksActions';
+import * as fireBlocksActions from '../../../../actions/fireBlocksActions';
 import useResolverKeys from '../../../../hooks/useResolverKeys';
+import type {GetEstimateTransactionResponse} from '../../../../lib/types/fireBlocks';
 import {VALID_ETH_ADDRESS} from '../../../../tests/common';
 import {
+  mockAccountAsset,
   mockFireblocksClient,
   mockWallets,
 } from '../../../../tests/mocks/wallet';
@@ -21,6 +24,15 @@ const defaultProps = {
 jest.mock('../../../../hooks/useResolverKeys', () => jest.fn());
 
 describe('<Send />', () => {
+  jest
+    .spyOn(fireBlocksActions, 'getEstimateTransferResponse')
+    .mockResolvedValue({
+      networkFee: {amount: '0.0000001'},
+    } as GetEstimateTransactionResponse);
+  jest
+    .spyOn(fireBlocksActions, 'getAccountAssets')
+    .mockResolvedValue([mockAccountAsset()]);
+
   beforeAll(() => {
     (useResolverKeys as jest.Mock).mockReturnValue({
       unsResolverKeys: {
@@ -43,15 +55,20 @@ describe('<Send />', () => {
     expect(defaultProps.onCancelClick).toHaveBeenCalled();
   });
 
-  it('selects asset', () => {
+  it('selects asset', async () => {
     const {getByTestId} = customRender(<Send {...defaultProps} />);
     fireEvent.click(getByTestId('token-ETH'));
-    expect(getByTestId('input-address-input')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(getByTestId('input-address-input')).toBeInTheDocument();
+    });
   });
 
-  it('updates the recipient address', () => {
+  it('updates the recipient address', async () => {
     const {getByTestId} = customRender(<Send {...defaultProps} />);
     fireEvent.click(getByTestId('token-ETH'));
+    await waitFor(() => {
+      expect(getByTestId('input-address-input')).toBeInTheDocument();
+    });
     fireEvent.change(getByTestId('input-address-input'), {
       target: {value: VALID_ETH_ADDRESS},
     });
@@ -63,13 +80,13 @@ describe('<Send />', () => {
     );
   });
 
-  it('updates the recipient address and amount', () => {
+  it('updates the recipient address and amount', async () => {
     const value = '.0001';
     const {getByTestId} = customRender(<Send {...defaultProps} />);
     act(() => {
       fireEvent.click(getByTestId('token-ETH'));
     });
-    act(() => {
+    await waitFor(() => {
       fireEvent.change(getByTestId('input-address-input'), {
         target: {value: VALID_ETH_ADDRESS},
       });
@@ -86,14 +103,14 @@ describe('<Send />', () => {
     );
   });
 
-  it('should keep send button disabled for invalid recipient address', () => {
+  it('should keep send button disabled for invalid recipient address', async () => {
     const address = '0xinvalid';
     const value = '.0001';
     const {getByTestId} = customRender(<Send {...defaultProps} />);
     act(() => {
       fireEvent.click(getByTestId('token-ETH'));
     });
-    act(() => {
+    await waitFor(() => {
       fireEvent.change(getByTestId('input-address-input'), {
         target: {value: address},
       });
@@ -110,13 +127,13 @@ describe('<Send />', () => {
     );
   });
 
-  it('should keep send button disabled for invalid amount', () => {
+  it('should keep send button disabled for invalid amount', async () => {
     const value = '123';
     const {getByTestId, getByText} = customRender(<Send {...defaultProps} />);
     act(() => {
       fireEvent.click(getByTestId('token-ETH'));
     });
-    act(() => {
+    await waitFor(() => {
       fireEvent.change(getByTestId('input-address-input'), {
         target: {value: VALID_ETH_ADDRESS},
       });
@@ -139,7 +156,7 @@ describe('<Send />', () => {
     act(() => {
       fireEvent.click(getByTestId('token-ETH'));
     });
-    act(() => {
+    await waitFor(() => {
       fireEvent.change(getByTestId('input-address-input'), {
         target: {value: VALID_ETH_ADDRESS},
       });
@@ -161,7 +178,7 @@ describe('<Send />', () => {
     act(() => {
       fireEvent.click(getByTestId('token-ETH'));
     });
-    act(() => {
+    await waitFor(() => {
       fireEvent.change(getByTestId('input-address-input'), {
         target: {value: VALID_ETH_ADDRESS},
       });
@@ -178,7 +195,7 @@ describe('<Send />', () => {
 
     await waitFor(() => {
       expect(
-        getByText(SendCryptoStatusMessage.RETRIEVING_ACCOUNT),
+        getByText(SendCryptoStatusMessage.CHECKING_QUEUE),
       ).toBeInTheDocument();
     });
   });

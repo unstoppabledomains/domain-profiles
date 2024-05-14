@@ -80,6 +80,10 @@ export interface GetEstimateTransactionResponse {
     };
   };
 }
+export interface GetOperationListResponse {
+  '@type': string;
+  items: Operation[];
+}
 
 export interface GetOperationResponse {
   '@type': string;
@@ -116,6 +120,8 @@ export interface IDeviceStore {
 export interface Operation {
   '@type': string;
   id: string;
+  accountId: string;
+  assetId: string;
   lastUpdatedTimestamp: number;
   status: string;
   type: string;

@@ -79,6 +79,7 @@ enum FilterType {
 
 interface Props {
   domain: string;
+  address: string;
   isOwner: boolean;
   nfts: Nft[];
   nftSymbolVisible: Record<string, boolean | undefined>;
@@ -90,6 +91,7 @@ interface Props {
 
 const NftGalleryView = ({
   domain,
+  address,
   nfts: allNfts,
   nftSymbolVisible,
   isOwner,
@@ -485,7 +487,12 @@ const NftGalleryView = ({
                   .map((nft, index) => (
                     <Grid key={index} item xs={6} sm={3} md={3}>
                       <Box className={classes.cardContainer}>
-                        <NftCard nft={nft} domain={domain} key={index} />
+                        <NftCard
+                          nft={nft}
+                          domain={domain}
+                          address={address}
+                          key={index}
+                        />
                       </Box>
                     </Grid>
                   ))}

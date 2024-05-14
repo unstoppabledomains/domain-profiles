@@ -1,6 +1,7 @@
 import AddLinkIcon from '@mui/icons-material/AddLink';
 import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowRightOutlinedIcon from '@mui/icons-material/KeyboardArrowRightOutlined';
+import StarOutlinedIcon from '@mui/icons-material/StarOutlined';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -83,6 +84,7 @@ type Props = {
   popupOpen: boolean;
   handleAvatarPopupClose: () => void;
   handleUrlPopupOpen: () => void;
+  handleNftPopupOpen: () => void;
   handleUploadClick: (event: {target: HTMLInputElement}) => void;
 };
 
@@ -91,6 +93,7 @@ export const AddAvatarPopup: React.FC<Props> = ({
   popupOpen,
   handleAvatarPopupClose,
   handleUrlPopupOpen,
+  handleNftPopupOpen,
   handleUploadClick,
 }) => {
   const {classes, cx} = useStyles();
@@ -158,7 +161,7 @@ export const AddAvatarPopup: React.FC<Props> = ({
             startIcon: classes.buttonIconContainer,
             disabled: classes.buttonDisabled,
           }}
-          className={classes.button}
+          className={cx(classes.button, classes.marginButton)}
           startIcon={
             <AddLinkIcon color="primary" className={classes.buttonStartIcon} />
           }
@@ -170,6 +173,33 @@ export const AddAvatarPopup: React.FC<Props> = ({
             {t('manage.enterAvatarUrl')}
             <Typography variant="body2" color="textSecondary">
               {t('manage.avatarUrlRequirements')}
+            </Typography>
+          </div>
+        </Button>
+        <Button
+          variant="outlined"
+          color="inherit"
+          disabled={uiDisabled}
+          onClick={handleNftPopupOpen}
+          classes={{
+            startIcon: classes.buttonIconContainer,
+            disabled: classes.buttonDisabled,
+          }}
+          className={classes.button}
+          startIcon={
+            <StarOutlinedIcon
+              color="primary"
+              className={classes.buttonStartIcon}
+            />
+          }
+          endIcon={
+            <KeyboardArrowRightOutlinedIcon className={classes.buttonEndIcon} />
+          }
+        >
+          <div className={classes.buttonText}>
+            {t('manage.selectNft')}
+            <Typography variant="body2" color="textSecondary">
+              {t('manage.selectNftDescription')}
             </Typography>
           </div>
         </Button>

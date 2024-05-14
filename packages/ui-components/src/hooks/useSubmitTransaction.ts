@@ -3,6 +3,7 @@ import {useEffect, useRef, useState} from 'react';
 
 import {
   SendCryptoStatusMessage,
+  cancelPendingOperations,
   getOperationStatus,
   getTransferOperationResponse,
 } from '../actions/fireBlocksActions';
@@ -56,9 +57,15 @@ export const useSubmitTransaction = ({
       // cancel any in progress transactions
       const client = await getClient();
       try {
+        // cancel local transactions for this client instance
         while (await client.getInProgressSigningTxId()) {
           await client.stopInProgressSignTransaction();
         }
+
+        // cancel queued operations for this specific account asset, which must be
+        // completed in case previous transactions are awaiting signature and in an
+        // abandoned state from another client.
+        await cancelPendingOperations(accessToken, asset.accountId!, asset.id);
       } catch (e) {
         notifyEvent(e, 'warning', 'Wallet', 'Signature', {
           msg: 'error managing in progress transactions',

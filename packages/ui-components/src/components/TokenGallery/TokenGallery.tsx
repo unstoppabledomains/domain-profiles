@@ -274,6 +274,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
       ) : expanded ? (
         <NftGalleryView
           domain={domain}
+          address={ownerAddress}
           nfts={nfts || []}
           isOwner={isOwner === true}
           nftSymbolVisible={nftSymbolVisible || {}}
@@ -285,6 +286,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
       ) : (
         <NFTGalleryCarousel
           domain={domain}
+          address={ownerAddress}
           maxNftCount={5}
           nfts={
             nfts

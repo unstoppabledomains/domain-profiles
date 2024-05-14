@@ -800,6 +800,7 @@
     "viewExplorer": "Blockchain explorer"
   },
   "wallet": {
+    "retrievingGasPrice": "Checking {{blockchain}} network health...",
     "actionOnBlockchainTitle": "{{action}} {{symbol}} on {{blockchain}}",
     "amount": "Amount",
     "amountInSymbol": "Amount in {{symbol}}",

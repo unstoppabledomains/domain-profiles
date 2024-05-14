@@ -1,7 +1,7 @@
 import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
+import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
 import type {Theme} from '@mui/material/styles';
 import React, {useRef, useState} from 'react';
 
@@ -17,6 +17,7 @@ import type {AccountAsset} from '../../../../lib/types/fireBlocks';
 import type {TokenEntry} from '../../../Wallet/Token';
 import AddressInput from './AddressInput';
 import AmountInput from './AmountInput';
+import {OperationStatus} from './OperationStatus';
 import {SelectAsset} from './SelectAsset';
 import SendConfirm from './SendConfirm';
 import SubmitTransaction from './SubmitTransaction';
@@ -168,6 +169,7 @@ const Send: React.FC<Props> = ({
   };
 
   const handleSelectToken = async (token: TokenEntry) => {
+    setSelectedToken(token);
     setIsLoading(true);
     const assets = await getAccountAssets(accessToken);
     if (!assets) {
@@ -191,7 +193,6 @@ const Send: React.FC<Props> = ({
     );
     setGasFeeEstimate(response.networkFee.amount);
     setAccountAsset(assetToSend);
-    setSelectedToken(token);
     setIsLoading(false);
   };
 
@@ -222,7 +223,12 @@ const Send: React.FC<Props> = ({
   if (isLoading) {
     return (
       <Box className={classes.loaderContainer}>
-        <CircularProgress />
+        <OperationStatus
+          label={t('wallet.retrievingGasPrice', {
+            blockchain: selectedToken?.name || '',
+          })}
+          icon={<MonitorHeartOutlinedIcon />}
+        />
       </Box>
     );
   }

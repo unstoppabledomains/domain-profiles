@@ -800,6 +800,7 @@
     "viewExplorer": "Blockchain explorer"
   },
   "wallet": {
+    "retrievingGasPrice": "Checking {{blockchain}} network health...",
     "actionOnBlockchainTitle": "{{action}} {{symbol}} on {{blockchain}}",
     "amount": "Amount",
     "amountInSymbol": "Amount in {{symbol}}",
@@ -807,6 +808,7 @@
     "availableAmount": "Available {{amount}} {{symbol}}",
     "availableUsd": "Available {{amount}} USD",
     "beginSetup": "Continue",
+    "totalCost": "Total cost",
     "bootstrapCode": "One-time code",
     "bootstrapCodeDescription": "The one-time code sent to **{{emailAddress}}** is required to access Unstoppable Wallet on this device.",
     "completeSetup": "Continue",

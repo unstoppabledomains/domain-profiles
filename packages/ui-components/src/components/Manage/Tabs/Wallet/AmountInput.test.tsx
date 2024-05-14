@@ -1,15 +1,16 @@
 import {fireEvent} from '@testing-library/react';
 import React from 'react';
 
-import {mockAsset} from '../../../../tests/mocks/wallet';
+import {mockTokenEntry} from '../../../../tests/mocks/wallet';
 import {customRender} from '../../../../tests/test-utils';
 import AmountInput from './AmountInput';
 
 const defaultProps = {
   initialAmount: '0',
   amountInputRef: {current: null},
-  asset: mockAsset(),
+  token: mockTokenEntry(),
   onTokenAmountChange: jest.fn(),
+  gasFeeEstimate: '0.0001',
 };
 
 describe('<AmountInput />', () => {
@@ -20,7 +21,7 @@ describe('<AmountInput />', () => {
   it('renders the amount conversion after amount change', () => {
     const value = '.123';
     const usdConvertedValue = (
-      parseFloat(value) * defaultProps.asset.tokenConversionUsd
+      parseFloat(value) * defaultProps.token.tokenConversionUsd
     ).toFixed(2);
     const {getByTestId, getByText} = customRender(
       <AmountInput {...defaultProps} />,
@@ -51,7 +52,7 @@ describe('<AmountInput />', () => {
     expect(
       getByText(
         `~$${(
-          parseFloat(value) * defaultProps.asset.tokenConversionUsd
+          parseFloat(value) * defaultProps.token.tokenConversionUsd
         ).toFixed(2)}`,
       ),
     ).toBeInTheDocument();
@@ -78,7 +79,7 @@ describe('<AmountInput />', () => {
     expect(
       getByText(
         `~$${(
-          parseFloat(value) * defaultProps.asset.tokenConversionUsd
+          parseFloat(value) * defaultProps.token.tokenConversionUsd
         ).toFixed(2)}`,
       ),
     ).toBeInTheDocument();
@@ -92,15 +93,17 @@ describe('<AmountInput />', () => {
     });
     fireEvent.click(getByTestId('swap-currency-button'));
     expect((getByTestId('input-amount') as HTMLInputElement).value).toBe(
-      (parseFloat(value) * defaultProps.asset.tokenConversionUsd).toFixed(2),
+      (parseFloat(value) * defaultProps.token.tokenConversionUsd).toFixed(2),
     );
     expect(getByTestId('swap-balance-container')).toBeInTheDocument();
   });
-  it('should display max amount', () => {
+  it('should display max amount accounting for gas fee estimate', () => {
     const {getByTestId} = customRender(<AmountInput {...defaultProps} />);
     fireEvent.click(getByTestId('max-amount-button'));
     expect((getByTestId('input-amount') as HTMLInputElement).value).toBe(
-      defaultProps.asset.balance.toString(),
+      (
+        defaultProps.token.balance - Number(defaultProps.gasFeeEstimate)
+      ).toString(),
     );
     expect(getByTestId('swap-balance-container')).toBeInTheDocument();
   });
@@ -110,7 +113,7 @@ describe('<AmountInput />', () => {
     fireEvent.click(getByTestId('swap-currency-button'));
     expect((getByTestId('input-amount') as HTMLInputElement).value).toBe(
       (
-        defaultProps.asset.balance * defaultProps.asset.tokenConversionUsd
+        defaultProps.token.balance * defaultProps.token.tokenConversionUsd
       ).toFixed(2),
     );
     expect(getByTestId('swap-balance-container')).toBeInTheDocument();

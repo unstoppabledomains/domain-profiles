@@ -53,6 +53,33 @@ export interface GetBootstrapTokenResponse {
   accessToken: string;
 }
 
+export interface GetEstimateTransactionResponse {
+  '@type': 'unstoppabledomains.com/wallets.v1.TransactionEstimate';
+  priority: string;
+  status: 'VALID' | 'INSUFFICIENT_FUNDS';
+  networkFee: {
+    amount: string;
+    asset: {
+      '@type': string;
+      id: string;
+      address: string;
+      balance: {
+        total: string;
+        decimals: number;
+      };
+      blockchainAsset: {
+        '@type': string;
+        id: string;
+        name: string;
+        symbol: string;
+        blockchain: {
+          id: string;
+          name: string;
+        };
+      };
+    };
+  };
+}
 export interface GetOperationListResponse {
   '@type': string;
   items: Operation[];

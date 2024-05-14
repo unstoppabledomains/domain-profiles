@@ -4,20 +4,18 @@ import {useEffect, useRef, useState} from 'react';
 import {
   SendCryptoStatusMessage,
   cancelPendingOperations,
-  getAccountAssets,
   getOperationStatus,
   getTransferOperationResponse,
 } from '../actions/fireBlocksActions';
-import type {TokenEntry} from '../components/Wallet/Token';
 import {notifyEvent} from '../lib/error';
 import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../lib/fireBlocks/client';
 import {pollForSuccess} from '../lib/poll';
-import type {GetOperationResponse} from '../lib/types/fireBlocks';
+import type {AccountAsset, GetOperationResponse} from '../lib/types/fireBlocks';
 import {OperationStatusType} from '../lib/types/fireBlocks';
 
 export type Params = {
   accessToken: string;
-  asset: TokenEntry;
+  asset: AccountAsset;
   recipientAddress: string;
   amount: string;
   getClient: () => Promise<IFireblocksNCW>;
@@ -39,7 +37,7 @@ export const useSubmitTransaction = ({
   const [transactionId, setTransactionId] = useState('');
   const [status, setStatus] = useState(Status.Pending);
   const [statusMessage, setStatusMessage] = useState<SendCryptoStatusMessage>(
-    SendCryptoStatusMessage.RETRIEVING_ACCOUNT,
+    SendCryptoStatusMessage.CHECKING_QUEUE,
   );
   const isMounted = useRef(false);
 
@@ -53,27 +51,10 @@ export const useSubmitTransaction = ({
 
   const submitTransaction = async () => {
     try {
-      // retrieve account status
-      setStatusMessage(SendCryptoStatusMessage.RETRIEVING_ACCOUNT);
-      const assets = await getAccountAssets(accessToken);
-      if (!assets) {
-        throw new Error('Assets not found');
-      }
-      const assetToSend = assets.find(
-        a =>
-          a.blockchainAsset.blockchain.name.toLowerCase() ===
-            asset.name.toLowerCase() &&
-          a.address.toLowerCase() === asset.walletAddress.toLowerCase(),
-      );
-      if (!assetToSend?.accountId) {
-        throw new Error('Asset not found in account');
-      }
       if (!isMounted.current) {
         return;
       }
-
       // cancel any in progress transactions
-      setStatusMessage(SendCryptoStatusMessage.CHECKING_QUEUE);
       const client = await getClient();
       try {
         // cancel local transactions for this client instance
@@ -84,11 +65,7 @@ export const useSubmitTransaction = ({
         // cancel queued operations for this specific account asset, which must be
         // completed in case previous transactions are awaiting signature and in an
         // abandoned state from another client.
-        await cancelPendingOperations(
-          accessToken,
-          assetToSend.accountId,
-          assetToSend.id,
-        );
+        await cancelPendingOperations(accessToken, asset.accountId!, asset.id);
       } catch (e) {
         notifyEvent(e, 'warning', 'Wallet', 'Signature', {
           msg: 'error managing in progress transactions',
@@ -100,7 +77,7 @@ export const useSubmitTransaction = ({
       // create new transfer request
       setStatusMessage(SendCryptoStatusMessage.STARTING_TRANSACTION);
       const operationResponse = await getTransferOperationResponse(
-        assetToSend,
+        asset,
         accessToken,
         recipientAddress,
         parseFloat(amount),

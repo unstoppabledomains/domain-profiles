@@ -17,6 +17,7 @@ import type {
   GetAccountsResponse,
   GetAuthorizationTxResponse,
   GetBootstrapTokenResponse,
+  GetEstimateTransactionResponse,
   GetOperationListResponse,
   GetOperationResponse,
   GetOperationStatusResponse,
@@ -29,7 +30,6 @@ export enum OperationStatus {
 }
 
 export enum SendCryptoStatusMessage {
-  RETRIEVING_ACCOUNT = 'Preparing transfer...',
   CHECKING_QUEUE = 'Checking queued transfers...',
   STARTING_TRANSACTION = 'Starting transfer...',
   WAITING_TO_SIGN = 'Waiting to approve transfer...',
@@ -326,6 +326,31 @@ export const getBootstrapToken = async (
   return undefined;
 };
 
+export const getEstimateTransferResponse = (
+  asset: AccountAsset,
+  accessToken: string,
+  destinationAddress: string,
+  amount: string,
+) => {
+  return fetchApi<GetEstimateTransactionResponse>(
+    `/estimates/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
+    {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        destinationAddress,
+        amount,
+      }),
+    },
+  );
+};
+
 export const getMessageSignature = async (
   accessToken: string,
   message: string,
@@ -492,7 +517,6 @@ export const getOperationStatus = async (
     host: config.WALLETS.HOST_URL,
   });
 };
-
 export const getTransferOperationResponse = (
   asset: AccountAsset,
   accessToken: string,

@@ -8,7 +8,7 @@ import type {AccountAsset} from '../lib/types/fireBlocks';
 import {VALID_ETH_ADDRESS} from '../tests/common';
 import {
   mockAccountAsset,
-  mockAsset,
+  mockTokenEntry,
   mockFireblocksClient,
 } from '../tests/mocks/wallet';
 import type {Params} from './useSubmitTransaction';
@@ -16,7 +16,7 @@ import {useSubmitTransaction} from './useSubmitTransaction';
 
 const defaultParams = {
   accessToken: 'dummy_access_token',
-  asset: mockAsset(),
+  token: mockTokenEntry(),
   recipientAddress: VALID_ETH_ADDRESS,
   amount: '10',
   getClient: async () => mockFireblocksClient(),

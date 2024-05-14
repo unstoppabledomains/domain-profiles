@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React from 'react';
@@ -7,6 +8,7 @@ import React from 'react';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useTranslationContext} from '../../../../lib';
+import type {AccountAsset} from '../../../../lib/types/fireBlocks';
 import {TitleWithBackButton} from './TitleWithBackButton';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -49,6 +51,8 @@ type Props = {
   resolvedDomain: string;
   amount: string;
   symbol: string;
+  asset: AccountAsset;
+  gasFee: string;
   amountInDollars: string;
   blockchainName: string;
 };
@@ -61,11 +65,13 @@ export const SendConfirm: React.FC<Props> = ({
   onBackClick,
   recipientAddress,
   resolvedDomain,
+  asset,
   amount,
   symbol,
   amountInDollars,
   blockchainName,
   onSendClick,
+  gasFee,
 }) => {
   const [t] = useTranslationContext();
   const {classes} = useStyles();
@@ -113,10 +119,32 @@ export const SendConfirm: React.FC<Props> = ({
             justifyContent="space-between"
           >
             <Typography variant="h6">{t('wallet.networkFee')}</Typography>
-            <Typography variant="subtitle1">TODO</Typography>
+            <Typography variant="subtitle1">
+              {!gasFee ? (
+                <CircularProgress size={20} />
+              ) : (
+                `${gasFee} ${asset.blockchainAsset.symbol}`
+              )}
+            </Typography>
+          </Box>
+          <Box
+            display="flex"
+            width="100%"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography variant="h6">{t('wallet.totalCost')}</Typography>
+            <Typography variant="subtitle1">
+              {Number(amount) + Number(gasFee)} {asset.blockchainAsset.symbol}
+            </Typography>
           </Box>
         </Box>
-        <Button onClick={onSendClick} variant="contained" fullWidth data-testid='send-confirm-button'>
+        <Button
+          onClick={onSendClick}
+          variant="contained"
+          fullWidth
+          data-testid="send-confirm-button"
+        >
           {t('common.send')}
         </Button>
       </Box>

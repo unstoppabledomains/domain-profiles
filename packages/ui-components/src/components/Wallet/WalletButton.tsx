@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
@@ -7,6 +8,8 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import Image from 'next/image';
 import React from 'react';
 
+import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
+import ShieldKeyHoleIcon from '@unstoppabledomains/ui-kit/icons/ShieldKeyHoleIcon';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import getImageUrl from '../../lib/domain/getImageUrl';
@@ -87,6 +90,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
   image: {
     display: 'flex',
   },
+  icon: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   cardTitle: {
     fontFamily: "'Inter', sans-serif",
     fontSize: theme.typography.body2.fontSize,
@@ -163,6 +171,7 @@ type CardTemplateProps = {
   title: string;
   tip?: React.ReactNode;
   iconUrl: string;
+  icon?: React.ReactNode;
   highlighted?: boolean;
   iconOnly?: boolean;
   borderless?: boolean;
@@ -177,6 +186,7 @@ type ButtonTemplateProps = {
   title: string;
   tip?: React.ReactNode;
   iconUrl: string;
+  icon?: React.ReactNode;
   highlighted?: boolean;
   buttonBackground?: string;
   loading?: boolean;
@@ -187,6 +197,7 @@ const CardTemplate: React.FC<CardTemplateProps> = ({
   title,
   tip,
   highlighted,
+  icon,
   iconUrl,
   disabled,
   loading,
@@ -214,6 +225,10 @@ const CardTemplate: React.FC<CardTemplateProps> = ({
       >
         {loading ? (
           <CircularProgress size={size} color="primary" />
+        ) : icon ? (
+          <Box className={classes.icon} height={size} width={size}>
+            {icon}
+          </Box>
         ) : (
           <Image
             src={getImageUrl(iconUrl)}
@@ -256,6 +271,7 @@ const ButtonTemplate: React.FC<ButtonTemplateProps> = ({
   title,
   tip,
   highlighted,
+  icon,
   iconUrl,
   disabled,
   onClick,
@@ -278,6 +294,10 @@ const ButtonTemplate: React.FC<ButtonTemplateProps> = ({
       <div className={classes.buttonLogo}>
         {loading ? (
           <CircularProgress size={30} className={classes.loader} />
+        ) : icon ? (
+          <Box className={classes.icon} height={size} width={size}>
+            {icon}
+          </Box>
         ) : (
           <Image
             src={getImageUrl(iconUrl)}
@@ -323,6 +343,7 @@ type Props = {
   iconOnly?: boolean;
   borderless?: boolean;
   horizontal?: boolean;
+  icon?: React.ReactNode;
   iconUrl?: string;
   highlightedOverride?: boolean;
   size?: number;
@@ -338,6 +359,7 @@ const WalletButton: React.FC<Props> = ({
   iconOnly = false,
   borderless = false,
   horizontal = false,
+  icon,
   iconUrl = '',
   highlightedOverride = false,
   size,
@@ -356,6 +378,7 @@ const WalletButton: React.FC<Props> = ({
     iconOnly,
     highlighted: false,
     highlightedOverride,
+    icon,
     iconUrl,
     buttonBackground: '',
     borderless,
@@ -368,7 +391,11 @@ const WalletButton: React.FC<Props> = ({
   switch (name) {
     case WalletName.UnstoppableWallet:
       props.title = t('wallet.title');
-      props.iconUrl = '/wallet-button/unstoppable-domains.svg';
+      props.icon = (
+        <IconPlate size={48} variant="info">
+          <ShieldKeyHoleIcon />
+        </IconPlate>
+      );
       break;
     case WalletName.MetaMask:
       props.title = 'MetaMask';

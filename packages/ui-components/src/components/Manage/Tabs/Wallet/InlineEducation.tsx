@@ -104,7 +104,7 @@ const InlineEducation: React.FC = () => {
   const handleScroll = () => {
     setIsAutoScrolling(false);
   };
-  
+
   return (
     <Box
       display="flex"
@@ -120,26 +120,13 @@ const InlineEducation: React.FC = () => {
         className={classes.educationCarousel}
         ref={carouselRef}
       >
-        <InlineEducationCard
-          title="What is MPC?"
-          content="MPC stands for Multi-Party Computation"
-          icon={<WalletIcon />}
-        />
-        <InlineEducationCard
-          title="Enhanced Security"
-          content="MPC protects your funds by distributing trust among multiple parties"
-          icon={<SecurityIcon />}
-        />
-        <InlineEducationCard
-          title="Keep Your Funds Safe"
-          content="Store your recovery phrase in a safe place"
-          icon={<LockIcon />}
-        />
-        <InlineEducationCard
-          title="Need Help?"
-          content="Contact support if you have any questions"
-          icon={<HelpIcon />}
-        />
+        {Cards.map(card => (
+          <InlineEducationCard
+            title={card.title}
+            content={card.content}
+            icon={card.icon}
+          />
+        ))}
       </Box>
     </Box>
   );

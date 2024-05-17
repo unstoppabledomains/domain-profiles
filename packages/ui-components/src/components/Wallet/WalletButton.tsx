@@ -1,4 +1,3 @@
-import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
@@ -70,6 +69,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     justifyContent: 'center',
     marginBottom: theme.spacing(1.5),
+    height: '100%',
   },
   cardLogoBorder: {
     display: 'flex',
@@ -86,6 +86,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginRight: theme.spacing(2),
     marginLeft: theme.spacing(1),
     width: 32,
+    height: '100%',
   },
   image: {
     display: 'flex',
@@ -226,9 +227,7 @@ const CardTemplate: React.FC<CardTemplateProps> = ({
         {loading ? (
           <CircularProgress size={size} color="primary" />
         ) : icon ? (
-          <Box className={classes.icon} height={size} width={size}>
-            {icon}
-          </Box>
+          icon
         ) : (
           <Image
             src={getImageUrl(iconUrl)}
@@ -295,9 +294,7 @@ const ButtonTemplate: React.FC<ButtonTemplateProps> = ({
         {loading ? (
           <CircularProgress size={30} className={classes.loader} />
         ) : icon ? (
-          <Box className={classes.icon} height={size} width={size}>
-            {icon}
-          </Box>
+          icon
         ) : (
           <Image
             src={getImageUrl(iconUrl)}
@@ -362,7 +359,7 @@ const WalletButton: React.FC<Props> = ({
   icon,
   iconUrl = '',
   highlightedOverride = false,
-  size,
+  size = 40,
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
@@ -392,7 +389,7 @@ const WalletButton: React.FC<Props> = ({
     case WalletName.UnstoppableWallet:
       props.title = t('wallet.title');
       props.icon = (
-        <IconPlate size={48} variant="info">
+        <IconPlate size={size} variant="info">
           <ShieldKeyHoleIcon />
         </IconPlate>
       );

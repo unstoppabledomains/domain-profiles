@@ -3,6 +3,7 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React from 'react';
 
+import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import ShieldKeyHoleIcon from '@unstoppabledomains/ui-kit/icons/ShieldKeyHoleIcon';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -48,7 +49,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   portfolioHeaderIcon: {
     width: '20px',
     height: '20px',
-    color: theme.palette.neutralShades[600],
   },
   descriptionText: {
     color: theme.palette.white,
@@ -162,7 +162,9 @@ export const Header: React.FC<Props> = ({domain, avatarUrl, mode}) => {
             src={avatarUrl}
           />
         ) : (
-          <ShieldKeyHoleIcon className={classes.portfolioHeaderIcon} />
+          <IconPlate size={20} variant="info">
+            <ShieldKeyHoleIcon />
+          </IconPlate>
         )}
       </Box>
       <Typography variant="h6">{domain || t('wallet.title')}</Typography>

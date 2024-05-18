@@ -104,7 +104,7 @@ export const Signer: React.FC<SignerProps> = ({
         <TabHeader
           icon={<WalletOutlinedIcon />}
           description={t('manage.cryptoWalletDescription')}
-          learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001205861-list-domain-for-sale-on-our-website"
+          learnMoreLink="https://unstoppabledomains.freshdesk.com/support/solutions/48000457487"
         />
         <Box
           display="flex"

@@ -41,7 +41,7 @@
     "@unstoppabledomains/config": "workspace:^",
     "@unstoppabledomains/resolution": "^8.5.0",
     "@unstoppabledomains/ui-components": "workspace:^",
-    "@unstoppabledomains/ui-kit": "^0.3.15",
+    "@unstoppabledomains/ui-kit": "^0.3.23",
     "@web3-react/core": "^8.2.2",
     "bluebird": "^3.7.2",
     "clipboard-copy": "^4.0.1",

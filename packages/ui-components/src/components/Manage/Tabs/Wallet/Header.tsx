@@ -1,9 +1,10 @@
-import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React from 'react';
 
+import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
+import ShieldKeyHoleIcon from '@unstoppabledomains/ui-kit/icons/ShieldKeyHoleIcon';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useTranslationContext} from '../../../../lib';
@@ -99,6 +100,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
       height: AVATAR_SIZE,
       padding: theme.spacing(2),
       fill: theme.palette.white,
+      color: theme.palette.white,
     },
   },
   learnMoreLink: {
@@ -129,7 +131,7 @@ export const Header: React.FC<Props> = ({domain, avatarUrl, mode}) => {
             )}
           >
             <Box className={classes.icon}>
-              <WalletOutlinedIcon />
+              <ShieldKeyHoleIcon />
             </Box>
           </Box>
         </Box>
@@ -160,7 +162,9 @@ export const Header: React.FC<Props> = ({domain, avatarUrl, mode}) => {
             src={avatarUrl}
           />
         ) : (
-          <WalletOutlinedIcon className={classes.portfolioHeaderIcon} />
+          <IconPlate size={20} variant="info">
+            <ShieldKeyHoleIcon />
+          </IconPlate>
         )}
       </Box>
       <Typography variant="h6">{domain || t('wallet.title')}</Typography>

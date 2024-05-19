@@ -9,7 +9,9 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
-import React, {useEffect, useRef, useState} from 'react';
+import React from 'react';
+import SwiperCore, {Autoplay, Navigation} from 'swiper';
+import {Swiper, SwiperSlide} from 'swiper/react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -17,20 +19,16 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    width: '243px',
+    width: '230px',
     height: '100%',
     backgroundColor: theme.palette.primaryShades[100],
     borderRadius: theme.shape.borderRadius,
     padding: theme.spacing(1),
+    marginRight: theme.spacing(1),
   },
   educationCarouselContainer: {
     width: '31em',
     overflowX: 'auto',
-  },
-  educationCarousel: {
-    display: 'flex',
-    flexWrap: 'nowrap',
-    transition: 'transform 0.5s ease-in-out',
   },
   educationTitle: {
     fontWeight: 'bold',
@@ -44,8 +42,35 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   educationCardContent: {
     color: theme.palette.neutralShades[800],
+    marginBottom: theme.spacing(-4),
+  },
+  swiper: {
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+    paddingLeft: '1px',
+    paddingRight: '1px',
   },
 }));
+
+const swiperCss = `
+   .swiper-button-next::after, .swiper-button-prev::after {
+     font-size: var(--swiper-navigation-small);
+   }
+  .swiper-button-prev, .swiper-button-next {
+     box-sizing: border-box;
+     width: 32px;
+     height: 32px;
+     background: rgba(255, 255, 255, 0.8);
+  
+     border: 1px solid #DDDDDF;
+     backdrop-filter: blur(2px);
+ 
+     border-radius: 50%;
+  } 
+  .swiper-wrapper { 
+  padding-bottom: 1rem;
+ }
+`;
 
 type Props = {
   title: string;
@@ -74,29 +99,29 @@ const InlineEducationCard: React.FC<Props> = ({title, content, icon}) => {
 const Cards = [
   {
     title: 'What is MPC?',
-    content: `MPC stands for multi-party computation. Unstoppable Wallet uses advanced MPC technology provided by <a href='https://fireblocks.com' target='_blank'>Fireblocks</a> to secure your wallet. As a trusted partner, Fireblocks has facilitated $4T+ over 170M+ wallets.`,
+    content: `MPC stands for multi-party computation. Unstoppable Wallet uses advanced MPC technology by <a href='https://fireblocks.com' target='_blank'>Fireblocks</a> to secure your wallet. Fireblocks has facilitated $4T+ in transactions over 170M+ wallets.`,
     icon: <WalletIcon />,
   },
   {
     title: 'Enhanced Security',
-    content: `MPC protects your funds by distributing trust between individuals or organizations. Multiple parties must collaborate in order to interact with your funds, reducing the risk of compromise and enhancing the integrity of your wallet. **<a href='https://ncw-developers.fireblocks.com/docs/main-capabilities' target='_blank'>Learn more</a>**`,
+    content: `MPC protects your funds by distributing trust between parties. Each must collaborate in order to access your funds, reducing the risk of compromise and enhancing the integrity of your wallet. **<a href='https://ncw-developers.fireblocks.com/docs/main-capabilities' target='_blank'>Learn more</a>**`,
     icon: <SecurityIcon />,
   },
   {
     title: 'Self custody',
     content:
-      'Not your keys, not your crypto! You have exclusive control over your Unstoppable Wallet contents. Every interaction requires your consent, such as transfers and signatures.',
+      'Not your keys, not your crypto! You have exclusive control over the contents of your Unstoppable Wallet. Every interaction requires your consent, such as transferring funds or signing messages.',
     icon: <VpnKeyIcon />,
   },
   {
     title: 'Backup and Recovery',
-    content: `Many self custody wallets come with the risk of lockout if a user loses their private key. Unstoppable Wallet offers an optional recovery feature, enabled by MPC technology to gain access to your wallet through a recovery link. **<a href='https://unstoppabledomains.freshdesk.com/support/solutions/48000457487' target='_blank'>Learn more</a>**`,
+    content: `Users of traditional self custody wallets risk lockout if they lose their private keys. Unstoppable Wallet offers a way to restore access to your wallet through an optional recovery link. **<a href='https://unstoppabledomains.freshdesk.com/support/solutions/48000457487' target='_blank'>Learn more</a>**`,
     icon: <LockResetIcon />,
   },
   {
     title: 'Convenient Access',
     content:
-      'You will never need to remember long seed phrases, mnemonics or deal with private keys. Simply use your password to access Unstoppable Wallet on any device through the website or on a supported Unstoppable Domains mobile app.',
+      'You will never need to remember long seed phrases or deal with private keys. Simply use your password to access Unstoppable Wallet on any device through the website or on a supported mobile app.',
     icon: <MobileFriendlyIcon />,
   },
   {
@@ -107,37 +132,14 @@ const Cards = [
   },
   {
     title: 'Need Help?',
-    content: `Contact support if you have any questions or read more in the **<a href='https://unstoppabledomains.freshdesk.com/support/solutions/48000457487'>documentation</a>**.`,
+    content: `Contact support if you have any questions or read more in the **<a href='https://unstoppabledomains.freshdesk.com/support/solutions/48000457487' target='_blank'>documentation</a>**.`,
     icon: <HelpIcon />,
   },
 ];
 const InlineEducation: React.FC = () => {
   const {classes} = useStyles();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAutoScrolling, setIsAutoScrolling] = useState(true);
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    if (isAutoScrolling) {
-      autoScrollInterval.current = setInterval(() => {
-        setCurrentIndex(prevIndex => (prevIndex + 1) % Cards.length);
-      }, 5000);
-    }
-
-    return () => clearInterval(autoScrollInterval.current!);
-  }, [isAutoScrolling]);
-
-  useEffect(() => {
-    const translateX = -currentIndex * 25;
-    if (carouselRef.current) {
-      carouselRef.current.style.transform = `translateX(${translateX}%)`;
-    }
-  }, [currentIndex]);
-
-  const handleScroll = () => {
-    setIsAutoScrolling(false);
-  };
+  SwiperCore.use([Autoplay, Navigation]);
 
   return (
     <Box
@@ -146,22 +148,48 @@ const InlineEducation: React.FC = () => {
       mt={1}
       mb={2}
       className={classes.educationCarouselContainer}
-      onScroll={handleScroll}
     >
-      <Box
-        display="flex"
-        gap={1}
-        className={classes.educationCarousel}
-        ref={carouselRef}
+      <style>{swiperCss}</style>
+      <Swiper
+        data-testid={'wallet-carousel'}
+        slidesPerGroup={1}
+        loop={true}
+        loopFillGroupWithBlank={false}
+        pagination={false}
+        navigation={false}
+        className={classes.swiper}
+        autoplay={true}
+        breakpoints={{
+          0: {
+            slidesPerView: 1,
+            spaceBetween: 16,
+          },
+          320: {
+            slidesPerView: 2,
+            spaceBetween: 16,
+          },
+          // when window width is >= 600px
+          600: {
+            slidesPerView: 2,
+            spaceBetween: 16,
+          },
+          // when window width is >= 640px
+          768: {
+            slidesPerView: 2,
+            spaceBetween: 16,
+          },
+        }}
       >
-        {Cards.map(card => (
-          <InlineEducationCard
-            title={card.title}
-            content={card.content}
-            icon={card.icon}
-          />
+        {Cards.map((card, index) => (
+          <SwiperSlide key={`inlineEducation-${index}`}>
+            <InlineEducationCard
+              title={card.title}
+              content={card.content}
+              icon={card.icon}
+            />
+          </SwiperSlide>
         ))}
-      </Box>
+      </Swiper>
     </Box>
   );
 };

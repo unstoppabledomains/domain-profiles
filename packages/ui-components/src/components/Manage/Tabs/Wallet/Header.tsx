@@ -47,11 +47,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignContent: 'center',
     justifyContent: 'center',
     marginBottom: theme.spacing(3),
-    cursor: 'pointer',
   },
   portfolioHeaderIcon: {
     width: '20px',
     height: '20px',
+  },
+  pointer: {
+    cursor: 'pointer',
   },
   descriptionText: {
     color: theme.palette.white,
@@ -162,8 +164,13 @@ export const Header: React.FC<Props> = ({domain, avatarUrl, mode}) => {
       </Box>
     </Box>
   ) : (
-    <Box className={classes.portfolioHeaderContainer} onClick={handleMenuClick}>
-      <Box display="flex" mr={1}>
+    <Box className={classes.portfolioHeaderContainer}>
+      <Box
+        display="flex"
+        mr={1}
+        className={classes.pointer}
+        onClick={handleMenuClick}
+      >
         {avatarUrl ? (
           <img
             className={cx(classes.round, classes.portfolioHeaderIcon)}
@@ -175,7 +182,13 @@ export const Header: React.FC<Props> = ({domain, avatarUrl, mode}) => {
           </IconPlate>
         )}
       </Box>
-      <Box display="flex" alignItems="center" position="relative">
+      <Box
+        display="flex"
+        alignItems="center"
+        position="relative"
+        onClick={handleMenuClick}
+        className={classes.pointer}
+      >
         <Typography variant="h6" mr={1}>
           {domain || t('wallet.title')}
         </Typography>

@@ -13,7 +13,7 @@ export const getSeoTags = (props: GetSeoTagsProps): NextSeoProps => {
   if (!props.profileData) {
     return {
       title,
-      description: DEFAULT_SEO_DESCRIPTION,
+      description: DEFAULT_SEO_DESCRIPTION || props.description,
     };
   }
 

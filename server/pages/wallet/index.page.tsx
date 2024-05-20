@@ -39,7 +39,8 @@ const WalletPage = () => {
   const [signInClicked, setSignInClicked] = useState(false);
 
   const seoTags = getSeoTags({
-    title: t('nftCollection.unstoppableDomains'),
+    title: t('wallet.title'),
+    description: t('manage.cryptoWalletDescription'),
   });
 
   useEffect(() => {
@@ -92,7 +93,10 @@ const WalletPage = () => {
   }, [isMounted, authComplete]);
 
   const handleLearnMore = () => {
-    // TODO
+    window.open(
+      'https://unstoppabledomains.freshdesk.com/support/solutions/48000457487',
+      '_blank',
+    );
   };
 
   const handleSignIn = () => {

@@ -145,7 +145,7 @@ export const Header: React.FC<Props> = ({domain, avatarUrl, mode}) => {
             className={classes.learnMoreLink}
             external={true}
             to={
-              'https://support.unstoppabledomains.com/support/solutions/articles/48001205861-list-domain-for-sale-on-our-website'
+              'https://unstoppabledomains.freshdesk.com/support/solutions/48000457487'
             }
           >
             {t('profile.learnMore')}

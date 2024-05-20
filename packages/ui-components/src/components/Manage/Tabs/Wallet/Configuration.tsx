@@ -42,6 +42,7 @@ import {DomainProfileTabType} from '../../DomainProfile';
 import ManageInput from '../../common/ManageInput';
 import type {ManageTabProps} from '../../common/types';
 import {Client, MIN_CLIENT_HEIGHT} from './Client';
+import InlineEducation from './InlineEducation';
 import {OperationStatus} from './OperationStatus';
 import type {WalletMode} from './index';
 
@@ -203,6 +204,7 @@ export const Configuration: React.FC<
               justifyItems="center"
               width="100%"
             >
+              <InlineEducation />
               <LinearProgress variant="determinate" value={progressPct} />
             </Box>
           )

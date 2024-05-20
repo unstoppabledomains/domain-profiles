@@ -215,9 +215,9 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
                   blockchain: asset.name,
                 })}{' '}
                 <Link
-                  // TODO: Add link to learn more
-                  // href={`${config.UD_ME_BASE_URL}/${primarySponsor}`}
-                  // className={classes.descriptionLink}
+                  href={
+                    'https://unstoppabledomains.freshdesk.com/support/solutions/48000457487'
+                  }
                   target="_blank"
                   className={classes.learnMoreLink}
                 >

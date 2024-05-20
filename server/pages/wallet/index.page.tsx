@@ -179,7 +179,6 @@ const WalletPage = () => {
                   Features & highlights
                 </Typography>
               </Box>
-
               <InlineEducation />
               <Box display="flex" flexDirection="column" width="100%">
                 <Button

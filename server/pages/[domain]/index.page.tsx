@@ -89,7 +89,6 @@ import {
   SocialAccountCard,
   TokenGallery,
   TokensPortfolio,
-  UD_BLUE_BADGE_CODE,
   UnstoppableMessaging,
   formOpenSeaLink,
   getDomainBadges,
@@ -608,10 +607,6 @@ const DomainProfile = ({
     }
     return retData;
   };
-
-  const hasUdBlueBadge = badges?.list?.some(
-    badge => badge.code === UD_BLUE_BADGE_CODE,
-  );
 
   return (
     <Box className={classes.container}>

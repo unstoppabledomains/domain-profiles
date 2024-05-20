@@ -9,8 +9,8 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
-import React from 'react';
-import SwiperCore, {Autoplay, Navigation} from 'swiper';
+import React, {useRef} from 'react';
+import SwiperCore, {Autoplay, Navigation, Pagination} from 'swiper';
 import {Swiper, SwiperSlide} from 'swiper/react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -22,7 +22,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     height: '100%',
     backgroundColor: theme.palette.primaryShades[100],
     borderRadius: theme.shape.borderRadius,
-    padding: theme.spacing(1),
+    padding: theme.spacing(2),
     marginRight: theme.spacing(1),
   },
   educationCarouselContainer: {
@@ -43,11 +43,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   educationCardContent: {
     color: theme.palette.neutralShades[800],
-    marginBottom: theme.spacing(-4),
+    marginBottom: theme.spacing(-6),
   },
   swiper: {
     paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
+    paddingBottom: theme.spacing(4),
     paddingLeft: '1px',
     paddingRight: '1px',
     marginRight: theme.spacing(-2),
@@ -55,23 +55,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 const swiperCss = `
-   .swiper-button-next::after, .swiper-button-prev::after {
-     font-size: var(--swiper-navigation-small);
-   }
-  .swiper-button-prev, .swiper-button-next {
-     box-sizing: border-box;
-     width: 32px;
-     height: 32px;
-     background: rgba(255, 255, 255, 0.8);
-  
-     border: 1px solid #DDDDDF;
-     backdrop-filter: blur(2px);
- 
-     border-radius: 50%;
-  } 
   .swiper-wrapper { 
-  padding-bottom: 1rem;
- }
+    padding-bottom: 1rem;
+  } 
 `;
 
 type Props = {
@@ -140,58 +126,69 @@ const Cards = [
 ];
 const InlineEducation: React.FC = () => {
   const {classes} = useStyles();
+  const paginationRef = useRef<HTMLDivElement | null>(null);
 
-  SwiperCore.use([Autoplay, Navigation]);
+  SwiperCore.use([Autoplay, Navigation, Pagination]);
 
   return (
     <Box
       display="flex"
-      gap={1}
-      mt={1}
-      mb={2}
-      className={classes.educationCarouselContainer}
+      flexDirection="column"
+      justifyContent="center"
+      alignItems="center"
     >
-      <style>{swiperCss}</style>
-      <Swiper
-        data-testid={'wallet-carousel'}
-        slidesPerGroup={1}
-        loop={true}
-        loopFillGroupWithBlank={false}
-        pagination={false}
-        navigation={false}
-        className={classes.swiper}
-        autoplay={true}
-        breakpoints={{
-          0: {
-            slidesPerView: 1,
-            spaceBetween: 8,
-          },
-          320: {
-            slidesPerView: 1,
-            spaceBetween: 8,
-          },
-          // when window width is >= 600px
-          600: {
-            slidesPerView: 2,
-            spaceBetween: 8,
-          },
-          // when window width is >= 640px
-          768: {
-            slidesPerView: 2,
-            spaceBetween: 8,
-          },
-        }}
+      <Box
+        display="flex"
+        mt={1}
+        mb={2}
+        className={classes.educationCarouselContainer}
       >
-        {Cards.map((card, index) => (
-          <SwiperSlide key={`inlineEducation-${index}`}>
-            <InlineEducationCard
-              title={card.title}
-              content={card.content}
-              icon={card.icon}
-            />
-          </SwiperSlide>
-        ))}
-      </Swiper>
+        <style>{swiperCss}</style>
+        <Swiper
+          data-testid={'wallet-carousel'}
+          slidesPerGroup={1}
+          loop={true}
+          loopFillGroupWithBlank={false}
+          pagination={{
+            el: paginationRef.current,
+            clickable: true,
+          }}
+          navigation={false}
+          className={classes.swiper}
+          autoplay={{delay: 8000}}
+          breakpoints={{
+            0: {
+              slidesPerView: 1,
+              spaceBetween: 8,
+            },
+            320: {
+              slidesPerView: 1,
+              spaceBetween: 8,
+            },
+            // when window width is >= 600px
+            600: {
+              slidesPerView: 1,
+              spaceBetween: 8,
+            },
+            // when window width is >= 640px
+            768: {
+              slidesPerView: 1,
+              spaceBetween: 8,
+            },
+          }}
+        >
+          {Cards.map((card, index) => (
+            <SwiperSlide key={`inlineEducation-${index}`}>
+              <InlineEducationCard
+                title={card.title}
+                content={card.content}
+                icon={card.icon}
+              />
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </Box>
+      <Box mb={3} display="flex" justifyContent="center" ref={paginationRef} />
     </Box>
   );
 };

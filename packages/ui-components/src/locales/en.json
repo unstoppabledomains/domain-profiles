@@ -235,6 +235,7 @@
     "terms": "Terms"
   },
   "header": {
+    "signIn": "Sign in",
     "signOut": "Sign Out"
   },
   "manage": {
@@ -270,6 +271,7 @@
     "cryptoAddressesDescription": "Add crypto addresses to receive payments. Optionally verify addresses on supported blockchains to unlock features for your domain.",
     "cryptoWallet": "Wallet",
     "cryptoWalletDescription": "Unstoppable Wallet protects your crypto with advanced multi-party computation (MPC) technology.",
+    "cryptoWalletDescriptionShort": "Protect your crypto with advanced multi-party computation (MPC) technology.",
     "description": "Short bio",
     "displayName": "Name",
     "domainProfileImage": "Domain profile image",
@@ -800,7 +802,6 @@
     "viewExplorer": "Blockchain explorer"
   },
   "wallet": {
-    "retrievingGasPrice": "Checking {{blockchain}} network health...",
     "actionOnBlockchainTitle": "{{action}} {{symbol}} on {{blockchain}}",
     "amount": "Amount",
     "amountInSymbol": "Amount in {{symbol}}",
@@ -808,7 +809,6 @@
     "availableAmount": "Available {{amount}} {{symbol}}",
     "availableUsd": "Available {{amount}} USD",
     "beginSetup": "Continue",
-    "totalCost": "Total cost",
     "bootstrapCode": "One-time code",
     "bootstrapCodeDescription": "The one-time code sent to **{{emailAddress}}** is required to access Unstoppable Wallet on this device.",
     "completeSetup": "Continue",
@@ -832,6 +832,7 @@
     "reject": "Cancel",
     "rememberOnThisDevice": "Remember on this device",
     "rememberOnThisDeviceDescription": "Your Unstoppable Wallet access will be stored securely in this web browser",
+    "retrievingGasPrice": "Checking {{blockchain}} network health...",
     "selectAssetToBuy": "Select crypto to buy",
     "selectAssetToReceive": "Select crypto to receive",
     "selectAssetToSend": "Select crypto to send",
@@ -843,6 +844,7 @@
     "signMessageSubtitle": "You are confirming",
     "successDescription": "Unstoppable Wallet is ready to be used on this browser",
     "title": "Unstoppable Wallet",
+    "totalCost": "Total cost",
     "viewTransaction": "View on blockchain"
   },
   "webacy": {

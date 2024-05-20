@@ -1,13 +1,15 @@
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import React from 'react';
+import React, {useState} from 'react';
 
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import ShieldKeyHoleIcon from '@unstoppabledomains/ui-kit/icons/ShieldKeyHoleIcon';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useTranslationContext} from '../../../../lib';
+import DropDownMenu from '../../../DropDownMenu';
 import Link from '../../../Link';
 import type {WalletMode} from './index';
 
@@ -49,6 +51,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   portfolioHeaderIcon: {
     width: '20px',
     height: '20px',
+  },
+  pointer: {
+    cursor: 'pointer',
   },
   descriptionText: {
     color: theme.palette.white,
@@ -117,7 +122,12 @@ type Props = {
 
 export const Header: React.FC<Props> = ({domain, avatarUrl, mode}) => {
   const {classes, cx} = useStyles();
+  const [menuOpen, setMenuOpen] = useState(false);
   const [t] = useTranslationContext();
+
+  const handleMenuClick = () => {
+    setMenuOpen(prev => !prev && !menuOpen);
+  };
 
   return mode === 'basic' ? (
     <Box className={classes.root}>
@@ -155,7 +165,12 @@ export const Header: React.FC<Props> = ({domain, avatarUrl, mode}) => {
     </Box>
   ) : (
     <Box className={classes.portfolioHeaderContainer}>
-      <Box display="flex" mr={1}>
+      <Box
+        display="flex"
+        mr={1}
+        className={classes.pointer}
+        onClick={handleMenuClick}
+      >
         {avatarUrl ? (
           <img
             className={cx(classes.round, classes.portfolioHeaderIcon)}
@@ -167,7 +182,21 @@ export const Header: React.FC<Props> = ({domain, avatarUrl, mode}) => {
           </IconPlate>
         )}
       </Box>
-      <Typography variant="h6">{domain || t('wallet.title')}</Typography>
+      <Box
+        display="flex"
+        alignItems="center"
+        position="relative"
+        onClick={handleMenuClick}
+        className={classes.pointer}
+      >
+        <Typography variant="h6" mr={1}>
+          {domain || t('wallet.title')}
+        </Typography>
+        <ExpandMoreIcon />
+        {menuOpen && (
+          <DropDownMenu isOwner={true} authDomain={domain} marginTop={30} />
+        )}
+      </Box>
     </Box>
   );
 };

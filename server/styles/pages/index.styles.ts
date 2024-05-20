@@ -17,7 +17,7 @@ export const useStyles = makeStyles<
     flexDirection: 'column',
     flex: '1 1 auto',
     height: '100%',
-    minHeight: '970px',
+    minHeight: '1050px',
   },
   content: {
     paddingLeft: theme.spacing(2),
@@ -28,12 +28,29 @@ export const useStyles = makeStyles<
     justifyContent: 'center',
     display: 'flex',
   },
+  button: {
+    marginTop: theme.spacing(1),
+  },
   searchContainer: {
     display: 'flex',
     zIndex: 102,
     flexDirection: 'column',
     maxWidth: '650px',
     width: '100%',
+  },
+  walletContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: 'white',
+    padding: theme.spacing(2),
+    boxShadow: theme.shadows[6],
+  },
+  walletInfoContainer: {
+    width: '535px',
+  },
+  walletPortfolioContainer: {
+    width: '420px',
   },
   sectionTitle: {
     fontSize: 60,

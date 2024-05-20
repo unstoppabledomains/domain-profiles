@@ -8,6 +8,7 @@ export const DEFAULT_SEO_DESCRIPTION =
 export type GetSeoTagsProps = {
   domain?: string;
   title: string;
+  description?: string;
   profileData?: SerializedPublicDomainProfileData | null | undefined;
   socialsInfo?: SerializedDomainProfileSocialAccountsUserInfo;
   domainAvatar?: string | null;

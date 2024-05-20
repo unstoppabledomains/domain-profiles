@@ -2,6 +2,7 @@ export interface AddressResolution {
   address: string;
   name?: string;
   avatarUrl?: string;
+  imageType?: 'onChain' | 'offChain' | 'default';
 }
 
 export const ChatModalQueryString = 'open-chat-window';

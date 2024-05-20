@@ -11,6 +11,7 @@ import {GlobalStyles} from 'tss-react';
 import config from '@unstoppabledomains/config';
 import type {DomainProfileTabType} from '@unstoppabledomains/ui-components';
 import {
+  DomainProfileKeys,
   Wallet,
   getSeoTags,
   useFireblocksState,
@@ -22,6 +23,8 @@ import {
 } from '@unstoppabledomains/ui-components/src/components/Chat/protocol/resolution';
 import InlineEducation from '@unstoppabledomains/ui-components/src/components/Manage/Tabs/Wallet/InlineEducation';
 import {getBootstrapState} from '@unstoppabledomains/ui-components/src/lib/fireBlocks/storage/state';
+import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
+import ShieldKeyHoleIcon from '@unstoppabledomains/ui-kit/icons/ShieldKeyHoleIcon';
 
 const WalletPage = () => {
   const {classes, cx} = useStyles({});
@@ -66,11 +69,19 @@ const WalletPage = () => {
           return;
         }
         setAuthAddress(accountEvmAddresses[0]);
+        localStorage.setItem(
+          DomainProfileKeys.AuthAddress,
+          accountEvmAddresses[0],
+        );
 
         // resolve the domain of this address (if available)
         const resolution = await getAddressMetadata(accountEvmAddresses[0]);
         if (resolution?.name) {
           setAuthDomain(resolution.name);
+          localStorage.setItem(
+            DomainProfileKeys.AuthDomain,
+            resolution.name.toLowerCase(),
+          );
           if (resolution?.imageType !== 'default') {
             setAuthAvatar(resolution.avatarUrl);
           }
@@ -86,6 +97,10 @@ const WalletPage = () => {
 
   const handleSignIn = () => {
     setSignInClicked(true);
+  };
+
+  const handleAuthComplete = () => {
+    setAuthComplete(true);
   };
 
   return (
@@ -134,7 +149,7 @@ const WalletPage = () => {
                 domain={authDomain}
                 avatarUrl={authAvatar}
                 onUpdate={(_t: DomainProfileTabType) => {
-                  setAuthComplete(true);
+                  handleAuthComplete();
                 }}
                 setButtonComponent={setAuthButton}
               />
@@ -152,9 +167,16 @@ const WalletPage = () => {
                 classes.walletInfoContainer,
               )}
             >
-              <Box mt={-2}>
-                <InlineEducation />
+              <Box mt={1} display="flex" alignItems="center">
+                <IconPlate size={35} variant="info">
+                  <ShieldKeyHoleIcon />
+                </IconPlate>
+                <Typography ml={1} variant="h6">
+                  Features & highlights
+                </Typography>
               </Box>
+
+              <InlineEducation />
               <Box display="flex" flexDirection="column" width="100%">
                 <Button
                   fullWidth

@@ -1,13 +1,15 @@
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import React from 'react';
+import React, {useState} from 'react';
 
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import ShieldKeyHoleIcon from '@unstoppabledomains/ui-kit/icons/ShieldKeyHoleIcon';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useTranslationContext} from '../../../../lib';
+import DropDownMenu from '../../../DropDownMenu';
 import Link from '../../../Link';
 import type {WalletMode} from './index';
 
@@ -45,6 +47,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignContent: 'center',
     justifyContent: 'center',
     marginBottom: theme.spacing(3),
+    cursor: 'pointer',
   },
   portfolioHeaderIcon: {
     width: '20px',
@@ -117,7 +120,12 @@ type Props = {
 
 export const Header: React.FC<Props> = ({domain, avatarUrl, mode}) => {
   const {classes, cx} = useStyles();
+  const [menuOpen, setMenuOpen] = useState(false);
   const [t] = useTranslationContext();
+
+  const handleMenuClick = () => {
+    setMenuOpen(prev => !prev && !menuOpen);
+  };
 
   return mode === 'basic' ? (
     <Box className={classes.root}>
@@ -154,7 +162,7 @@ export const Header: React.FC<Props> = ({domain, avatarUrl, mode}) => {
       </Box>
     </Box>
   ) : (
-    <Box className={classes.portfolioHeaderContainer}>
+    <Box className={classes.portfolioHeaderContainer} onClick={handleMenuClick}>
       <Box display="flex" mr={1}>
         {avatarUrl ? (
           <img
@@ -167,7 +175,15 @@ export const Header: React.FC<Props> = ({domain, avatarUrl, mode}) => {
           </IconPlate>
         )}
       </Box>
-      <Typography variant="h6">{domain || t('wallet.title')}</Typography>
+      <Box display="flex" alignItems="center" position="relative">
+        <Typography variant="h6" mr={1}>
+          {domain || t('wallet.title')}
+        </Typography>
+        <ExpandMoreIcon />
+        {menuOpen && (
+          <DropDownMenu isOwner={true} authDomain={domain} marginTop={30} />
+        )}
+      </Box>
     </Box>
   );
 };

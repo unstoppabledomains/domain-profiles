@@ -13,46 +13,48 @@ import {isDomainValidForManagement} from '../lib';
 import useTranslationContext from '../lib/i18n';
 
 interface Props {
-  classes?: {
-    root?: string;
-    input?: string;
-    adornedStart?: string;
-    adornedEnd?: string;
-  };
-  domain: string;
+  domain?: string;
   isOwner: boolean;
-  authDomain: string;
-  onWalletClicked: () => void;
+  authDomain?: string;
+  onWalletClicked?: () => void;
+  marginTop?: number;
 }
 
-const useStyles = makeStyles()((theme: Theme) => ({
-  cardBody: {
-    position: 'absolute',
-    top: '44px',
-    right: '0px',
-  },
-  container: {
-    display: 'flex',
-    fontSize: '16px',
-    margin: '20px',
-    whiteSpace: 'nowrap',
-  },
-  settingsIcon: {
-    marginRight: '10px',
-  },
-  red: {
-    color: '#BD1B0F',
-  },
-  font: {
-    fontWeight: 600,
-    color: '#000',
-  },
-}));
+const useStyles = makeStyles<{marginTop?: number}>()(
+  (theme: Theme, {marginTop}) => ({
+    cardBody: {
+      position: 'absolute',
+      top: `${marginTop || '44'}px`,
+      right: '0px',
+    },
+    container: {
+      display: 'flex',
+      fontSize: '16px',
+      margin: '20px',
+      whiteSpace: 'nowrap',
+      cursor: 'pointer',
+    },
+    settingsIcon: {
+      marginRight: '10px',
+    },
+    red: {
+      color: '#BD1B0F',
+    },
+    font: {
+      fontWeight: 600,
+      color: '#000',
+    },
+  }),
+);
 
-const DropDownMenu: React.FC<Props> = ({authDomain, onWalletClicked}) => {
+const DropDownMenu: React.FC<Props> = ({
+  authDomain,
+  marginTop,
+  onWalletClicked,
+}) => {
   const [isLoggingOut, setLoggingOut] = useState<boolean>(false);
   const [t] = useTranslationContext();
-  const {classes, cx} = useStyles();
+  const {classes, cx} = useStyles({marginTop});
 
   // MPC wallet state
   const [isMpcWallet, setIsMpcWallet] = useState(false);
@@ -84,7 +86,7 @@ const DropDownMenu: React.FC<Props> = ({authDomain, onWalletClicked}) => {
 
   return (
     <Card className={classes.cardBody} data-testid={'dropdown'}>
-      {isDomainValidForManagement(authDomain) && (
+      {authDomain && isDomainValidForManagement(authDomain) && (
         <div
           data-testid={`manage-profile-button`}
           className={classes.container}
@@ -98,7 +100,7 @@ const DropDownMenu: React.FC<Props> = ({authDomain, onWalletClicked}) => {
           </Typography>
         </div>
       )}
-      {isMpcWallet && (
+      {isMpcWallet && onWalletClicked && (
         <div
           data-testid={`manage-wallet-button`}
           className={classes.container}

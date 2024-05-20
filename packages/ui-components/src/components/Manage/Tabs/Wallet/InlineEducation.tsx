@@ -19,7 +19,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    width: '230px',
     height: '100%',
     backgroundColor: theme.palette.primaryShades[100],
     borderRadius: theme.shape.borderRadius,
@@ -28,7 +27,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   educationCarouselContainer: {
     width: '31em',
-    overflowX: 'auto',
+    [theme.breakpoints.down('sm')]: {
+      width: '355px',
+    },
   },
   educationTitle: {
     fontWeight: 'bold',
@@ -49,6 +50,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     paddingBottom: theme.spacing(2),
     paddingLeft: '1px',
     paddingRight: '1px',
+    marginRight: theme.spacing(-2),
   },
 }));
 
@@ -162,21 +164,21 @@ const InlineEducation: React.FC = () => {
         breakpoints={{
           0: {
             slidesPerView: 1,
-            spaceBetween: 16,
+            spaceBetween: 8,
           },
           320: {
-            slidesPerView: 2,
-            spaceBetween: 16,
+            slidesPerView: 1,
+            spaceBetween: 8,
           },
           // when window width is >= 600px
           600: {
             slidesPerView: 2,
-            spaceBetween: 16,
+            spaceBetween: 8,
           },
           // when window width is >= 640px
           768: {
             slidesPerView: 2,
-            spaceBetween: 16,
+            spaceBetween: 8,
           },
         }}
       >

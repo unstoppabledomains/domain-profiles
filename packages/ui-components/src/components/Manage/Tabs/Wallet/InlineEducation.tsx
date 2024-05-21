@@ -87,7 +87,7 @@ const InlineEducationCard: React.FC<Props> = ({title, content, icon}) => {
 const Cards = [
   {
     title: 'What is MPC?',
-    content: `MPC stands for multi-party computation. Unstoppable Wallet uses advanced MPC technology by <a href='https://fireblocks.com' target='_blank'>Fireblocks</a> to secure your wallet. Fireblocks has facilitated $4T+ in transactions over 170M+ wallets.`,
+    content: `MPC stands for multi-party computation. Unstoppable Wallet uses a next generation wallet platform by <a href='https://fireblocks.com' target='_blank'>Fireblocks</a> to secure your investments. Fireblocks has facilitated $4T+ in transactions over 170M+ wallets.`,
     icon: <WalletIcon />,
   },
   {
@@ -98,12 +98,12 @@ const Cards = [
   {
     title: 'Self custody',
     content:
-      'Not your keys, not your crypto! You have exclusive control over the contents of your Unstoppable Wallet. Every interaction requires your consent, such as transferring funds or signing messages.',
+      'Not your keys, not your crypto! Since it is a self custody service, you have exclusive control over the contents of your Unstoppable Wallet. Every interaction requires your consent, such as transferring funds or signing messages.',
     icon: <VpnKeyIcon />,
   },
   {
     title: 'Backup and Recovery',
-    content: `Users of traditional self custody wallets risk lockout if they lose their private keys. Unstoppable Wallet offers a way to restore access to your wallet through an optional recovery link. **<a href='https://unstoppabledomains.freshdesk.com/support/solutions/48000457487' target='_blank'>Learn more</a>**`,
+    content: `Users of traditional self custody wallets risk lockout if they lose their private keys. Unstoppable Wallet offers an innovative way to restore access to your wallet through an optional recovery link. **<a href='https://unstoppabledomains.freshdesk.com/support/solutions/48000457487' target='_blank'>Learn more</a>**`,
     icon: <LockResetIcon />,
   },
   {
@@ -115,12 +115,12 @@ const Cards = [
   {
     title: 'Keep Your Funds Safe',
     content:
-      'Store your Unstoppable Wallet password in a safe place and never share it with anyone. Unstoppable Domains staff will never ask you for your wallet password.',
+      'Store your Unstoppable Wallet password in a safe place and never share it with anyone. Always be on the lookup for suspicious links when entering your password on an app. **Unstoppable Domains staff will never ask you for your wallet password.**',
     icon: <LockIcon />,
   },
   {
     title: 'Need Help?',
-    content: `Contact support if you have any questions or read more in the **<a href='https://unstoppabledomains.freshdesk.com/support/solutions/48000457487' target='_blank'>documentation</a>**.`,
+    content: `We are here to help! Contact support if you have any questions or read more in the Unstoppable Wallet **<a href='https://unstoppabledomains.freshdesk.com/support/solutions/48000457487' target='_blank'>documentation</a>**.`,
     icon: <HelpIcon />,
   },
 ];

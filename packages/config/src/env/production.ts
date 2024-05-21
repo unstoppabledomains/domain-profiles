@@ -54,6 +54,9 @@ export default function getProductionConfig(): ConfigOverride {
       CHANNELS: ['eip155:1:0xdbBc2Ac8cb8D02B26F165b4BC120fd4b14DA6cDA'],
       APP_URL: 'https://app.push.org',
     },
+    WALLETS: {
+      HOST_URL: 'https://api.unstoppabledomains.com/wallet/v1',
+    },
     XMTP: {
       ENVIRONMENT: 'production',
       SUPPORT_WALLET_ADDRESS: '0x9B4Ed628640A73154895e369AE39a93732535924',

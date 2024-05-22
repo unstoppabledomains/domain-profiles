@@ -34,8 +34,8 @@ export const Wallet: React.FC<
   const {classes} = useStyles();
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const handleWalletLoaded = () => {
-    setIsLoaded(true);
+  const handleWalletLoaded = (v: boolean) => {
+    setIsLoaded(v);
   };
 
   return (

@@ -13,6 +13,7 @@ import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useState} from 'react';
 import truncateEthAddress from 'truncate-eth-address';
 
+import {Wallet as UnstoppableWalletConfig} from '.';
 import AccessEthereum from '../../components/Wallet/AccessEthereum';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksSigner from '../../hooks/useFireblocksSigner';
@@ -28,8 +29,7 @@ import type {Web3Dependencies} from '../../lib/types/web3';
 import useAccessWalletStyles from '../../styles/components/accessWallet.styles';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileTabType} from '../Manage/DomainProfile';
-import {Wallet as UnstoppableWalletConfig} from '../Manage/Tabs/Wallet';
-import {Signer as UnstoppableWalletSigner} from '../Manage/Tabs/Wallet/Signer';
+import {Signer as UnstoppableWalletSigner} from './Signer';
 
 type Props = {
   address?: string;

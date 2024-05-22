@@ -8,9 +8,9 @@ import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import ShieldKeyHoleIcon from '@unstoppabledomains/ui-kit/icons/ShieldKeyHoleIcon';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {useTranslationContext} from '../../../../lib';
-import DropDownMenu from '../../../DropDownMenu';
-import Link from '../../../Link';
+import {useTranslationContext} from '../../lib';
+import DropDownMenu from '../DropDownMenu';
+import Link from '../Link';
 import type {WalletMode} from './index';
 
 const AVATAR_SIZE = 120;

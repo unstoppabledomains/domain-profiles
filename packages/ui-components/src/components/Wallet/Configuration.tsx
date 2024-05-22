@@ -22,25 +22,25 @@ import {
   getAuthorizationTokenTx,
   getBootstrapToken,
   sendBootstrapCode,
-} from '../../../../actions/fireBlocksActions';
-import {getWalletPortfolio} from '../../../../actions/walletActions';
-import {useWeb3Context} from '../../../../hooks';
-import useFireblocksState from '../../../../hooks/useFireblocksState';
-import type {SerializedWalletBalance} from '../../../../lib';
-import {useTranslationContext} from '../../../../lib';
-import {notifyEvent} from '../../../../lib/error';
+} from '../../actions/fireBlocksActions';
+import {getWalletPortfolio} from '../../actions/walletActions';
+import {useWeb3Context} from '../../hooks';
+import useFireblocksState from '../../hooks/useFireblocksState';
+import type {SerializedWalletBalance} from '../../lib';
+import {useTranslationContext} from '../../lib';
+import {notifyEvent} from '../../lib/error';
 import {
   getFireBlocksClient,
   initializeClient,
   signTransaction,
-} from '../../../../lib/fireBlocks/client';
+} from '../../lib/fireBlocks/client';
 import {
   getBootstrapState,
   saveBootstrapState,
-} from '../../../../lib/fireBlocks/storage/state';
-import {DomainProfileTabType} from '../../DomainProfile';
-import ManageInput from '../../common/ManageInput';
-import type {ManageTabProps} from '../../common/types';
+} from '../../lib/fireBlocks/storage/state';
+import {DomainProfileTabType} from '../Manage/DomainProfile';
+import ManageInput from '../Manage/common/ManageInput';
+import type {ManageTabProps} from '../Manage/common/types';
 import {Client, MIN_CLIENT_HEIGHT} from './Client';
 import InlineEducation from './InlineEducation';
 import {OperationStatus} from './OperationStatus';

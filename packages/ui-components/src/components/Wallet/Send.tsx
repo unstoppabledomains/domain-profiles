@@ -14,7 +14,6 @@ import {
 import type {SerializedWalletBalance} from '../../../../lib';
 import {useTranslationContext} from '../../../../lib';
 import type {AccountAsset} from '../../../../lib/types/fireBlocks';
-import type {TokenEntry} from '../../../Wallet/Token';
 import AddressInput from './AddressInput';
 import AmountInput from './AmountInput';
 import {OperationStatus} from './OperationStatus';
@@ -22,6 +21,7 @@ import {SelectAsset} from './SelectAsset';
 import SendConfirm from './SendConfirm';
 import SubmitTransaction from './SubmitTransaction';
 import {TitleWithBackButton} from './TitleWithBackButton';
+import type {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   flexColCenterAligned: {

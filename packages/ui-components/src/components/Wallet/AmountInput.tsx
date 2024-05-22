@@ -8,8 +8,8 @@ import React, {useState} from 'react';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useTranslationContext} from '../../../../lib';
-import type {TokenEntry} from '../../../Wallet/Token';
-import ManageInput from '../../common/ManageInput';
+import ManageInput from '../Manage/common/ManageInput';
+import type {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {

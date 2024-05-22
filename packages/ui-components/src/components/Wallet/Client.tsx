@@ -15,16 +15,16 @@ import React, {useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import useFireblocksState from '../../../../hooks/useFireblocksState';
-import type {SerializedWalletBalance} from '../../../../lib';
-import {useTranslationContext} from '../../../../lib';
-import {getFireBlocksClient} from '../../../../lib/fireBlocks/client';
-import {getBootstrapState} from '../../../../lib/fireBlocks/storage/state';
-import {DomainWalletTransactions} from '../../../Wallet';
-import {TokensPortfolio} from '../../../Wallet/TokensPortfolio';
+import {DomainWalletTransactions} from '.';
+import useFireblocksState from '../../hooks/useFireblocksState';
+import type {SerializedWalletBalance} from '../../lib';
+import {useTranslationContext} from '../../lib';
+import {getFireBlocksClient} from '../../lib/fireBlocks/client';
+import {getBootstrapState} from '../../lib/fireBlocks/storage/state';
 import Buy from './Buy';
 import Receive from './Receive';
 import Send from './Send';
+import {TokensPortfolio} from './TokensPortfolio';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {

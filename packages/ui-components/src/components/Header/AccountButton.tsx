@@ -14,8 +14,8 @@ import getImageUrl from '../../lib/domain/getImageUrl';
 import {notifyEvent} from '../../lib/error';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import {DomainFieldTypes} from '../../lib/types/domain';
-import {Wallet} from '../Manage/Tabs/Wallet';
 import Modal from '../Modal';
+import {Wallet} from '../Wallet';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   profileButtonContainer: {

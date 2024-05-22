@@ -11,10 +11,10 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import useFireblocksSigner from '../../../../hooks/useFireblocksSigner';
-import {useTranslationContext} from '../../../../lib';
-import {notifyEvent} from '../../../../lib/error';
-import {TabHeader} from '../../common/TabHeader';
+import useFireblocksSigner from '../../hooks/useFireblocksSigner';
+import {useTranslationContext} from '../../lib';
+import {notifyEvent} from '../../lib/error';
+import {TabHeader} from '../Manage/common/TabHeader';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {

@@ -4,12 +4,12 @@ import React, {useEffect, useRef, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getProfileData} from '../../../../actions';
-import useResolverKeys from '../../../../hooks/useResolverKeys';
-import {DomainFieldTypes, isValidDomain} from '../../../../lib';
-import type {ResolverKeyName} from '../../../../lib/types/resolverKeys';
-import ManageInput from '../../common/ManageInput';
-import {isValidRecordKeyValue} from '../../common/currencyRecords';
+import {getProfileData} from '../../actions';
+import useResolverKeys from '../../hooks/useResolverKeys';
+import {DomainFieldTypes, isValidDomain} from '../../lib';
+import type {ResolverKeyName} from '../../lib/types/resolverKeys';
+import ManageInput from '../Manage/common/ManageInput';
+import {isValidRecordKeyValue} from '../Manage/common/currencyRecords';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   loader: {
@@ -123,7 +123,7 @@ const AddressInput: React.FC<Props> = ({
       disabled={isLoading}
       endAdornment={
         isLoading ? (
-          <div className={classes.loader} data-testid='loader'>
+          <div className={classes.loader} data-testid="loader">
             <CircularProgress size={23} />
           </div>
         ) : undefined

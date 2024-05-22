@@ -21,7 +21,7 @@ import {
   getAddressMetadata,
   isEthAddress,
 } from '@unstoppabledomains/ui-components/src/components/Chat/protocol/resolution';
-import InlineEducation from '@unstoppabledomains/ui-components/src/components/Manage/Tabs/Wallet/InlineEducation';
+import InlineEducation from '@unstoppabledomains/ui-components/src/components/Wallet/InlineEducation';
 import {getBootstrapState} from '@unstoppabledomains/ui-components/src/lib/fireBlocks/storage/state';
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import ShieldKeyHoleIcon from '@unstoppabledomains/ui-kit/icons/ShieldKeyHoleIcon';

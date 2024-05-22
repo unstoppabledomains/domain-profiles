@@ -6,7 +6,7 @@ export * from './Domain';
 export * from './Header';
 export * from './Image';
 export * from './Manage';
-export * from './Manage/Tabs/Wallet/index';
+export * from './Wallet/index';
 export * from './TokenGallery';
 export * from './Wallet';
 export {default as Badges} from './Badges';

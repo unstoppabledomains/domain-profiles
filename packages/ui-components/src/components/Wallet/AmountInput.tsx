@@ -7,7 +7,7 @@ import React, {useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {useTranslationContext} from '../../../../lib';
+import {useTranslationContext} from '../../lib';
 import ManageInput from '../Manage/common/ManageInput';
 import type {TokenEntry} from './Token';
 

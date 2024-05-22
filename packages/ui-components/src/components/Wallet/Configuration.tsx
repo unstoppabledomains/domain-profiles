@@ -100,8 +100,9 @@ enum WalletConfigState {
 export const Configuration: React.FC<
   ManageTabProps & {
     mode?: WalletMode;
+    onLoaded?: () => void;
   }
-> = ({onUpdate, setButtonComponent, mode = 'basic'}) => {
+> = ({onUpdate, onLoaded, setButtonComponent, mode = 'basic'}) => {
   // component state variables
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -148,6 +149,9 @@ export const Configuration: React.FC<
   useEffect(() => {
     if (!isLoaded) {
       return;
+    }
+    if (isLoaded && onLoaded) {
+      onLoaded();
     }
     if (configState === WalletConfigState.Complete) {
       setButtonComponent(<></>);

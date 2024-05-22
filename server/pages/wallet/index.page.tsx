@@ -152,6 +152,7 @@ const WalletPage = () => {
                 address={authAddress}
                 domain={authDomain}
                 avatarUrl={authAvatar}
+                showMessages={true}
                 onUpdate={(_t: DomainProfileTabType) => {
                   handleAuthComplete();
                 }}

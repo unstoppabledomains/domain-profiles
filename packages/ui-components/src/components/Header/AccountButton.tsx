@@ -15,7 +15,7 @@ import {notifyEvent} from '../../lib/error';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import {DomainFieldTypes} from '../../lib/types/domain';
 import Modal from '../Modal';
-import {Wallet} from '../Wallet';
+import {Wallet} from '../Wallet/Wallet';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   profileButtonContainer: {

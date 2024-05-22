@@ -13,7 +13,6 @@ import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useState} from 'react';
 import truncateEthAddress from 'truncate-eth-address';
 
-import {Wallet as UnstoppableWalletConfig} from '.';
 import AccessEthereum from '../../components/Wallet/AccessEthereum';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksSigner from '../../hooks/useFireblocksSigner';
@@ -30,6 +29,7 @@ import useAccessWalletStyles from '../../styles/components/accessWallet.styles';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileTabType} from '../Manage/DomainProfile';
 import {Signer as UnstoppableWalletSigner} from './Signer';
+import {Wallet as UnstoppableWalletConfig} from './Wallet';
 
 type Props = {
   address?: string;
@@ -40,7 +40,7 @@ type Props = {
   onClose: () => void;
 };
 
-const AccessWallet = (props: Props) => {
+export const AccessWallet = (props: Props) => {
   const {classes} = useAccessWalletStyles();
   const [error, setError] = useState('');
   const [t] = useTranslationContext();
@@ -240,8 +240,6 @@ const AccessWallet = (props: Props) => {
     </div>
   );
 };
-
-export default AccessWallet;
 
 type ModalProps = Props & {
   open: boolean;

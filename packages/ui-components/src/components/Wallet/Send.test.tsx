@@ -21,7 +21,7 @@ const defaultProps = {
   wallets: mockWallets(),
 };
 
-jest.mock('../../../../hooks/useResolverKeys', () => jest.fn());
+jest.mock('../../hooks/useResolverKeys', () => jest.fn());
 
 describe('<Send />', () => {
   jest

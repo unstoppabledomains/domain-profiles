@@ -24,7 +24,7 @@ jest
   .spyOn(domainProfileActions, 'getProfileData')
   .mockResolvedValue(mkProfileData);
 
-jest.mock('../../../../hooks/useResolverKeys', () => jest.fn());
+jest.mock('../../hooks/useResolverKeys', () => jest.fn());
 
 (useResolverKeys as jest.Mock).mockReturnValue({
   unsResolverKeys: {

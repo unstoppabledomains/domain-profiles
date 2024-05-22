@@ -9,6 +9,7 @@ import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useRef, useState} from 'react';
 import {QRCode} from 'react-qrcode-logo';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance} from '../../lib';
@@ -215,9 +216,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
                   blockchain: asset.name,
                 })}{' '}
                 <Link
-                  href={
-                    'https://unstoppabledomains.freshdesk.com/support/solutions/48000457487'
-                  }
+                  href={config.WALLETS.LANDING_PAGE_URL}
                   target="_blank"
                   className={classes.learnMoreLink}
                 >

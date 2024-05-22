@@ -1,4 +1,5 @@
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import Logout from '@mui/icons-material/Logout';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import {Card, Typography} from '@mui/material/';
@@ -16,6 +17,7 @@ interface Props {
   domain?: string;
   isOwner: boolean;
   authDomain?: string;
+  onDomainsClicked?: () => void;
   onWalletClicked?: () => void;
   marginTop?: number;
 }
@@ -50,6 +52,7 @@ const useStyles = makeStyles<{marginTop?: number}>()(
 const DropDownMenu: React.FC<Props> = ({
   authDomain,
   marginTop,
+  onDomainsClicked,
   onWalletClicked,
 }) => {
   const [isLoggingOut, setLoggingOut] = useState<boolean>(false);
@@ -97,6 +100,18 @@ const DropDownMenu: React.FC<Props> = ({
           <AccountCircleIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
             {t('profile.viewMyProfile')}
+          </Typography>
+        </div>
+      )}
+      {onDomainsClicked && (
+        <div
+          data-testid={`my-domains-button`}
+          className={classes.container}
+          onClick={onDomainsClicked}
+        >
+          <ListOutlinedIcon className={classes.settingsIcon} />
+          <Typography className={cx(classes.font)} color="text.secondary">
+            {t('profile.viewMyDomains')}
           </Typography>
         </div>
       )}

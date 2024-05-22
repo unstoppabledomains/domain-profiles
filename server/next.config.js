@@ -141,12 +141,12 @@ const nextConfig = {
         source: '/:path*',
         headers,
       },
-      // Headers for homepage
-      ...['/'].map(source => ({
+      // Headers for common landing pages
+      ...['/', "/wallet"].map(source => ({
         source,
         headers: [
           ...fastlyCacheHeaders({
-            ttl: 86400, // 1 day
+            ttl: 3600, // 1 hour
           }),
           {
             key: 'Content-Security-Policy',
@@ -160,7 +160,7 @@ const nextConfig = {
         source: '/:domain',
         headers: [
           ...fastlyCacheHeaders({
-            ttl: 86400, // 1 day
+            ttl: 3600, // 1 hour
             purgableBy: ['Domain/:domain', 'CryptoWallet/update'],
           }),
           {
@@ -175,7 +175,7 @@ const nextConfig = {
         source: '/badge/:badgeCode',
         headers: [
           ...fastlyCacheHeaders({
-            ttl: 86400,
+            ttl: 86400, // 1 day 
           }),
           {
             key: 'Content-Security-Policy',

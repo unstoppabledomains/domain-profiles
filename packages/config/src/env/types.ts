@@ -92,6 +92,8 @@ export type Config = {
   };
   WALLETS: {
     HOST_URL: string;
+    LANDING_PAGE_URL: string;
+    DOCUMENTATION_URL: string;
   };
   VERIFICATION_SUPPORTED: string[];
   PUSH: {

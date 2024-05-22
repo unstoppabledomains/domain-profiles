@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import type {Theme} from '@mui/material/styles';
-import React from 'react';
+import React, {useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -19,29 +19,40 @@ const useStyles = makeStyles()((theme: Theme) => ({
 export const Wallet: React.FC<
   ManageTabProps & {
     avatarUrl?: string;
+    showMessages?: boolean;
     mode?: WalletMode;
   }
 > = ({
   address,
   domain,
   avatarUrl,
+  showMessages,
   mode = 'basic',
   onUpdate,
   setButtonComponent,
 }) => {
   const {classes} = useStyles();
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  const handleWalletLoaded = (v: boolean) => {
+    setIsLoaded(v);
+  };
 
   return (
     <Box className={classes.container}>
       <Header
         mode={mode}
+        isLoaded={isLoaded}
         avatarUrl={avatarUrl}
+        showMessages={showMessages}
+        address={address}
         domain={isDomainValidForManagement(domain) ? domain : undefined}
       />
       <Configuration
         mode={mode}
         address={address}
         domain={domain}
+        onLoaded={handleWalletLoaded}
         onUpdate={onUpdate}
         setButtonComponent={setButtonComponent}
       />

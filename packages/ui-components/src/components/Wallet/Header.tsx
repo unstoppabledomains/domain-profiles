@@ -1,14 +1,21 @@
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import MoreVertOutlinedIcon from '@mui/icons-material/MoreVertOutlined';
 import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
+import config from '@unstoppabledomains/config';
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import ShieldKeyHoleIcon from '@unstoppabledomains/ui-kit/icons/ShieldKeyHoleIcon';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {getOwnerDomains} from '../../actions';
+import {useWeb3Context} from '../../hooks';
 import {useTranslationContext} from '../../lib';
+import {notifyEvent} from '../../lib/error';
+import {UnstoppableMessaging} from '../Chat';
+import {DomainListModal} from '../Domain';
 import DropDownMenu from '../DropDownMenu';
 import Link from '../Link';
 import type {WalletMode} from './index';
@@ -47,13 +54,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignContent: 'center',
     justifyContent: 'center',
     marginBottom: theme.spacing(3),
+    position: 'relative',
+    width: '100%',
   },
   portfolioHeaderIcon: {
     width: '20px',
     height: '20px',
-  },
-  pointer: {
-    cursor: 'pointer',
   },
   descriptionText: {
     color: theme.palette.white,
@@ -108,6 +114,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
       color: theme.palette.white,
     },
   },
+  optionsContainer: {
+    display: 'flex',
+    position: 'absolute',
+    right: theme.spacing(-0.5),
+    top: theme.spacing(-0.5),
+  },
   learnMoreLink: {
     color: theme.palette.white,
     fontSize: theme.typography.body2.fontSize,
@@ -115,18 +127,78 @@ const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 type Props = {
+  address: string;
   domain?: string;
   avatarUrl?: string;
+  showMessages?: boolean;
   mode?: WalletMode;
+  isLoaded: boolean;
 };
 
-export const Header: React.FC<Props> = ({domain, avatarUrl, mode}) => {
+export const Header: React.FC<Props> = ({
+  address,
+  domain,
+  avatarUrl,
+  showMessages,
+  mode,
+  isLoaded,
+}) => {
   const {classes, cx} = useStyles();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const {setWeb3Deps} = useWeb3Context();
   const [t] = useTranslationContext();
 
-  const handleMenuClick = () => {
-    setMenuOpen(prev => !prev && !menuOpen);
+  // Menu state
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Domain modal state
+  const [isDomainModalOpen, setIsDomainModalOpen] = useState(false);
+  const [isDomains, setIsDomains] = useState(false);
+
+  // load wallet domains
+  useEffect(() => {
+    if (!isDomains) {
+      void handleRetrieveOwnerDomains();
+    }
+  }, []);
+
+  const handleOptionsClick = () => {
+    setIsMenuOpen(prev => !prev && !isMenuOpen);
+  };
+
+  const handleDomainsOpen = () => {
+    setIsDomainModalOpen(true);
+  };
+
+  const handleDomainsClose = () => {
+    setIsDomainModalOpen(false);
+  };
+
+  const handleDomainClicked = (v: string) => {
+    handleDomainsClose();
+    window.location.href = `${config.UD_ME_BASE_URL}/${v}`;
+  };
+
+  const handleRetrieveOwnerDomains = async (cursor?: number | string) => {
+    const retData: {domains: string[]; cursor?: string} = {
+      domains: [],
+      cursor: undefined,
+    };
+    try {
+      const domainData = await getOwnerDomains(address, cursor as string);
+      if (domainData) {
+        retData.domains = domainData.data.map(f => f.domain);
+        retData.cursor = domainData.meta.pagination.cursor;
+        if (retData.domains.length > 0) {
+          // set a flag that other domains exist in portfolio
+          setIsDomains(true);
+        }
+      }
+    } catch (e) {
+      notifyEvent(e, 'error', 'Profile', 'Fetch', {
+        msg: 'error retrieving owner domains',
+      });
+    }
+    return retData;
   };
 
   return mode === 'basic' ? (
@@ -154,9 +226,7 @@ export const Header: React.FC<Props> = ({domain, avatarUrl, mode}) => {
           <Link
             className={classes.learnMoreLink}
             external={true}
-            to={
-              'https://unstoppabledomains.freshdesk.com/support/solutions/48000457487'
-            }
+            to={config.WALLETS.LANDING_PAGE_URL}
           >
             {t('profile.learnMore')}
           </Link>
@@ -165,12 +235,7 @@ export const Header: React.FC<Props> = ({domain, avatarUrl, mode}) => {
     </Box>
   ) : (
     <Box className={classes.portfolioHeaderContainer}>
-      <Box
-        display="flex"
-        mr={1}
-        className={classes.pointer}
-        onClick={handleMenuClick}
-      >
+      <Box display="flex" mr={1}>
         {avatarUrl ? (
           <img
             className={cx(classes.round, classes.portfolioHeaderIcon)}
@@ -182,21 +247,43 @@ export const Header: React.FC<Props> = ({domain, avatarUrl, mode}) => {
           </IconPlate>
         )}
       </Box>
-      <Box
-        display="flex"
-        alignItems="center"
-        position="relative"
-        onClick={handleMenuClick}
-        className={classes.pointer}
-      >
-        <Typography variant="h6" mr={1}>
-          {domain || t('wallet.title')}
-        </Typography>
-        <ExpandMoreIcon />
-        {menuOpen && (
-          <DropDownMenu isOwner={true} authDomain={domain} marginTop={30} />
-        )}
+      <Box display="flex" alignItems="center">
+        <Typography variant="h6">{domain || t('wallet.title')}</Typography>
       </Box>
+      {isLoaded && (
+        <Box className={classes.optionsContainer}>
+          {showMessages && (
+            <UnstoppableMessaging
+              address={address}
+              disableSupportBubble
+              inheritStyle
+            />
+          )}
+          <IconButton size="small" onClick={handleOptionsClick}>
+            <MoreVertOutlinedIcon />
+          </IconButton>
+        </Box>
+      )}
+      {isMenuOpen && (
+        <DropDownMenu
+          isOwner={true}
+          authDomain={domain}
+          marginTop={30}
+          onDomainsClicked={isDomains ? handleDomainsOpen : undefined}
+        />
+      )}
+      {isDomainModalOpen && (
+        <DomainListModal
+          id="domainMenuList"
+          title={t('manage.otherDomains')}
+          subtitle={t('manage.otherDomainsDescription')}
+          retrieveDomains={handleRetrieveOwnerDomains}
+          open={isDomainModalOpen}
+          setWeb3Deps={setWeb3Deps}
+          onClose={handleDomainsClose}
+          onClick={handleDomainClicked}
+        />
+      )}
     </Box>
   );
 };

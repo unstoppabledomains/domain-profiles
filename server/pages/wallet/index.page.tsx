@@ -93,10 +93,7 @@ const WalletPage = () => {
   }, [isMounted, authComplete]);
 
   const handleLearnMore = () => {
-    window.open(
-      'https://unstoppabledomains.freshdesk.com/support/solutions/48000457487',
-      '_blank',
-    );
+    window.open(config.WALLETS.LANDING_PAGE_URL, '_blank');
   };
 
   const handleSignIn = () => {
@@ -152,6 +149,7 @@ const WalletPage = () => {
                 address={authAddress}
                 domain={authDomain}
                 avatarUrl={authAvatar}
+                showMessages={true}
                 onUpdate={(_t: DomainProfileTabType) => {
                   handleAuthComplete();
                 }}

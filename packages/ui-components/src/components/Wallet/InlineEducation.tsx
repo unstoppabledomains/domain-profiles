@@ -13,6 +13,7 @@ import React, {useRef} from 'react';
 import SwiperCore, {Autoplay, Navigation, Pagination} from 'swiper';
 import {Swiper, SwiperSlide} from 'swiper/react';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -103,7 +104,7 @@ const Cards = [
   },
   {
     title: 'Backup and Recovery',
-    content: `Users of traditional self custody wallets risk lockout if they lose their private keys. Unstoppable Wallet offers an innovative way to restore access to your wallet through an optional recovery link. **<a href='https://unstoppabledomains.freshdesk.com/support/solutions/48000457487' target='_blank'>Learn more</a>**`,
+    content: `Users of traditional self custody wallets risk lockout if they lose their private keys. Unstoppable Wallet offers an innovative way to restore access to your wallet through an optional recovery link. **<a href='${config.WALLETS.LANDING_PAGE_URL}' target='_blank'>Learn more</a>**`,
     icon: <LockResetIcon />,
   },
   {
@@ -120,7 +121,7 @@ const Cards = [
   },
   {
     title: 'Need Help?',
-    content: `We are here to help! Contact support if you have any questions or read more in the Unstoppable Wallet **<a href='https://unstoppabledomains.freshdesk.com/support/solutions/48000457487' target='_blank'>documentation</a>**.`,
+    content: `We are here to help! Contact support if you have any questions or read more in the Unstoppable Wallet **<a href='${config.WALLETS.LANDING_PAGE_URL}' target='_blank'>documentation</a>**.`,
     icon: <HelpIcon />,
   },
 ];

@@ -614,6 +614,7 @@
     "verifyAddress": "Verify {{symbol}} address",
     "verifyWalletAddress": "Verify your wallet address",
     "viewAddress": "View all addresses",
+    "viewMyDomains": "My domains",
     "viewMyProfile": "My profile",
     "viewProfile": "View Profile",
     "website": "Website"

@@ -9,6 +9,7 @@ import type {Theme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useState} from 'react';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import useFireblocksSigner from '../../hooks/useFireblocksSigner';
@@ -104,7 +105,7 @@ export const Signer: React.FC<SignerProps> = ({
         <TabHeader
           icon={<WalletOutlinedIcon />}
           description={t('manage.cryptoWalletDescription')}
-          learnMoreLink="https://unstoppabledomains.freshdesk.com/support/solutions/48000457487"
+          learnMoreLink={config.WALLETS.LANDING_PAGE_URL}
         />
         <Box
           display="flex"

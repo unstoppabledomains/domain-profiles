@@ -11,13 +11,13 @@ import {QRCode} from 'react-qrcode-logo';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import type {SerializedWalletBalance} from '../../../../lib';
-import {useTranslationContext} from '../../../../lib';
-import Link from '../../../Link';
-import type {TokenEntry} from '../../../Wallet/Token';
-import ManageInput from '../../common/ManageInput';
+import type {SerializedWalletBalance} from '../../lib';
+import {useTranslationContext} from '../../lib';
+import Link from '../Link';
+import ManageInput from '../Manage/common/ManageInput';
 import {SelectAsset} from './SelectAsset';
 import {TitleWithBackButton} from './TitleWithBackButton';
+import type {TokenEntry} from './Token';
 
 const SUPPORTED_UD_SYMBOLS = ['ETH', 'MATIC'];
 

@@ -9,14 +9,11 @@ import React from 'react';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {SendCryptoStatusMessage} from '../../../../actions/fireBlocksActions';
-import {
-  Status,
-  useSubmitTransaction,
-} from '../../../../hooks/useSubmitTransaction';
-import {useTranslationContext} from '../../../../lib';
-import type {AccountAsset} from '../../../../lib/types/fireBlocks';
-import Link from '../../../Link';
+import {SendCryptoStatusMessage} from '../../actions/fireBlocksActions';
+import {Status, useSubmitTransaction} from '../../hooks/useSubmitTransaction';
+import {useTranslationContext} from '../../lib';
+import type {AccountAsset} from '../../lib/types/fireBlocks';
+import Link from '../Link';
 import {OperationStatus} from './OperationStatus';
 
 const useStyles = makeStyles()((theme: Theme) => ({

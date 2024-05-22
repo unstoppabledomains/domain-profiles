@@ -1,17 +1,17 @@
 import {act, fireEvent, waitFor} from '@testing-library/react';
 import React from 'react';
 
-import {SendCryptoStatusMessage} from '../../../../actions/fireBlocksActions';
-import * as fireBlocksActions from '../../../../actions/fireBlocksActions';
-import useResolverKeys from '../../../../hooks/useResolverKeys';
-import type {GetEstimateTransactionResponse} from '../../../../lib/types/fireBlocks';
-import {VALID_ETH_ADDRESS} from '../../../../tests/common';
+import {SendCryptoStatusMessage} from '../../actions/fireBlocksActions';
+import * as fireBlocksActions from '../../actions/fireBlocksActions';
+import useResolverKeys from '../../hooks/useResolverKeys';
+import type {GetEstimateTransactionResponse} from '../../lib/types/fireBlocks';
+import {VALID_ETH_ADDRESS} from '../../tests/common';
 import {
   mockAccountAsset,
   mockFireblocksClient,
   mockWallets,
-} from '../../../../tests/mocks/wallet';
-import {customRender} from '../../../../tests/test-utils';
+} from '../../tests/mocks/wallet';
+import {customRender} from '../../tests/test-utils';
 import Send from './Send';
 
 const defaultProps = {
@@ -21,7 +21,7 @@ const defaultProps = {
   wallets: mockWallets(),
 };
 
-jest.mock('../../../../hooks/useResolverKeys', () => jest.fn());
+jest.mock('../../hooks/useResolverKeys', () => jest.fn());
 
 describe('<Send />', () => {
   jest

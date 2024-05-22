@@ -9,11 +9,11 @@ import React from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import type {SerializedWalletBalance} from '../../../../lib';
-import {TokenType, useTranslationContext} from '../../../../lib';
-import type {TokenEntry} from '../../../Wallet/Token';
-import Token from '../../../Wallet/Token';
+import type {SerializedWalletBalance} from '../../lib';
+import {TokenType, useTranslationContext} from '../../lib';
 import {TitleWithBackButton} from './TitleWithBackButton';
+import type {TokenEntry} from './Token';
+import Token from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {

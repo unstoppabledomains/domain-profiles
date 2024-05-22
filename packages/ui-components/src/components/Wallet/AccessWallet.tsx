@@ -28,8 +28,8 @@ import type {Web3Dependencies} from '../../lib/types/web3';
 import useAccessWalletStyles from '../../styles/components/accessWallet.styles';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileTabType} from '../Manage/DomainProfile';
-import {Wallet as UnstoppableWalletConfig} from '../Manage/Tabs/Wallet';
-import {Signer as UnstoppableWalletSigner} from '../Manage/Tabs/Wallet/Signer';
+import {Signer as UnstoppableWalletSigner} from './Signer';
+import {Wallet as UnstoppableWalletConfig} from './Wallet';
 
 type Props = {
   address?: string;
@@ -40,7 +40,7 @@ type Props = {
   onClose: () => void;
 };
 
-const AccessWallet = (props: Props) => {
+export const AccessWallet = (props: Props) => {
   const {classes} = useAccessWalletStyles();
   const [error, setError] = useState('');
   const [t] = useTranslationContext();
@@ -240,8 +240,6 @@ const AccessWallet = (props: Props) => {
     </div>
   );
 };
-
-export default AccessWallet;
 
 type ModalProps = Props & {
   open: boolean;

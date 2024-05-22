@@ -7,8 +7,8 @@ import React from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {useTranslationContext} from '../../../../lib';
-import type {AccountAsset} from '../../../../lib/types/fireBlocks';
+import {useTranslationContext} from '../../lib';
+import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {TitleWithBackButton} from './TitleWithBackButton';
 
 const useStyles = makeStyles()((theme: Theme) => ({

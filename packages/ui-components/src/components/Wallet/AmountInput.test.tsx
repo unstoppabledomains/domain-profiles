@@ -1,8 +1,8 @@
 import {fireEvent} from '@testing-library/react';
 import React from 'react';
 
-import {mockTokenEntry} from '../../../../tests/mocks/wallet';
-import {customRender} from '../../../../tests/test-utils';
+import {mockTokenEntry} from '../../tests/mocks/wallet';
+import {customRender} from '../../tests/test-utils';
 import AmountInput from './AmountInput';
 
 const defaultProps = {

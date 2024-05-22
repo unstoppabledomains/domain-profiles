@@ -4,8 +4,8 @@ import React from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {isDomainValidForManagement} from '../../../../lib';
-import type {ManageTabProps} from '../../common/types';
+import {isDomainValidForManagement} from '../../lib';
+import type {ManageTabProps} from '../Manage/common/types';
 import {Configuration} from './Configuration';
 import {Header} from './Header';
 

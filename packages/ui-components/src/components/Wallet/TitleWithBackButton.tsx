@@ -7,7 +7,7 @@ import React from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {useTranslationContext} from '../../../../lib';
+import {useTranslationContext} from '../../lib';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   fullWidth: {

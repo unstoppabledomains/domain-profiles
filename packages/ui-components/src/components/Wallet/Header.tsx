@@ -226,9 +226,7 @@ export const Header: React.FC<Props> = ({
           <Link
             className={classes.learnMoreLink}
             external={true}
-            to={
-              'https://unstoppabledomains.freshdesk.com/support/solutions/48000457487'
-            }
+            to={config.WALLETS.LANDING_PAGE_URL}
           >
             {t('profile.learnMore')}
           </Link>

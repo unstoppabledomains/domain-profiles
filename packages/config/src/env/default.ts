@@ -82,6 +82,9 @@ export default function getDefaultConfig(): Config {
     },
     WALLETS: {
       HOST_URL: 'https://api.ud-staging.com/wallet/v1',
+      DOCUMENTATION_URL:
+        'https://unstoppabledomains.freshdesk.com/support/solutions/48000457487',
+      LANDING_PAGE_URL: 'https://unstoppabledomains.com/products/wallet-p',
     },
     PUSH: {
       CHANNELS: ['eip155:5:0x0389246fB9191Dc41722e1f0D558dC8f82Be3C7A'],

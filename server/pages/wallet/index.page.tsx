@@ -2,7 +2,9 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import {EMAIL_PARAM, RECOVERY_TOKEN_PARAM, SIGN_IN_PARAM} from 'lib/types';
 import {NextSeo} from 'next-seo';
+import {useRouter} from 'next/router';
 import React, {useEffect, useState} from 'react';
 import useIsMounted from 'react-is-mounted-hook';
 import {useStyles} from 'styles/pages/index.styles';
@@ -29,6 +31,7 @@ import ShieldKeyHoleIcon from '@unstoppabledomains/ui-kit/icons/ShieldKeyHoleIco
 const WalletPage = () => {
   const {classes, cx} = useStyles({});
   const [t] = useTranslationContext();
+  const {query: params} = useRouter();
   const isMounted = useIsMounted();
   const [walletState] = useFireblocksState();
   const [authAddress, setAuthAddress] = useState<string>('');
@@ -36,12 +39,40 @@ const WalletPage = () => {
   const [authAvatar, setAuthAvatar] = useState<string>();
   const [authButton, setAuthButton] = useState<React.ReactNode>();
   const [authComplete, setAuthComplete] = useState(false);
+  const [recoveryToken, setRecoveryToken] = useState<string>();
+  const [emailAddress, setEmailAddress] = useState<string>();
   const [signInClicked, setSignInClicked] = useState(false);
 
+  // build default wallet page SEO tags
   const seoTags = getSeoTags({
     title: t('wallet.title'),
     description: t('manage.cryptoWalletDescription'),
   });
+
+  useEffect(() => {
+    if (!params) {
+      return;
+    }
+
+    // select email address if specified in parameter
+    if (params[EMAIL_PARAM] && typeof params[EMAIL_PARAM] === 'string') {
+      setEmailAddress(params[EMAIL_PARAM]);
+    }
+
+    // select recovery if specified in parameter
+    if (
+      params[RECOVERY_TOKEN_PARAM] &&
+      typeof params[RECOVERY_TOKEN_PARAM] === 'string'
+    ) {
+      setRecoveryToken(params[RECOVERY_TOKEN_PARAM]);
+      return;
+    }
+
+    // select sign in if specified in parameter
+    if (params[SIGN_IN_PARAM] !== undefined) {
+      setSignInClicked(true);
+    }
+  }, [params]);
 
   useEffect(() => {
     if (!isMounted()) {
@@ -118,88 +149,97 @@ const WalletPage = () => {
           },
         }}
       />
-      <Grid
-        container
-        className={classes.content}
-        data-testid="mainContentContainer"
-      >
-        <Grid item xs={12} className={classes.item}>
-          <Typography className={classes.sectionTitle}>
-            {t('wallet.title')}
-          </Typography>
-        </Grid>
-        <Grid item xs={12} className={classes.item}>
-          <Typography className={classes.sectionSubTitle}>
-            {t('manage.cryptoWalletDescriptionShort')}
-          </Typography>
-        </Grid>
-        <Grid item xs={12} className={classes.item}>
-          {signInClicked || authAddress ? (
-            <Box
-              className={cx(
-                classes.searchContainer,
-                classes.walletContainer,
-                authAddress
-                  ? classes.walletPortfolioContainer
-                  : classes.walletInfoContainer,
-              )}
-            >
-              <Wallet
-                mode={authAddress ? 'portfolio' : 'basic'}
-                address={authAddress}
-                domain={authDomain}
-                avatarUrl={authAvatar}
-                showMessages={true}
-                onUpdate={(_t: DomainProfileTabType) => {
-                  handleAuthComplete();
-                }}
-                setButtonComponent={setAuthButton}
-              />
-              {!authAddress && (
-                <Box display="flex" flexDirection="column" width="100%" mt={2}>
-                  {authButton}
+      {isMounted() && (
+        <Grid
+          container
+          className={classes.content}
+          data-testid="mainContentContainer"
+        >
+          <Grid item xs={12} className={classes.item}>
+            <Typography className={classes.sectionTitle}>
+              {t('wallet.title')}
+            </Typography>
+          </Grid>
+          <Grid item xs={12} className={classes.item}>
+            <Typography className={classes.sectionSubTitle}>
+              {t('manage.cryptoWalletDescriptionShort')}
+            </Typography>
+          </Grid>
+          <Grid item xs={12} className={classes.item}>
+            {signInClicked || recoveryToken || emailAddress || authAddress ? (
+              <Box
+                className={cx(
+                  classes.searchContainer,
+                  classes.walletContainer,
+                  authAddress
+                    ? classes.walletPortfolioContainer
+                    : classes.walletInfoContainer,
+                )}
+              >
+                <Wallet
+                  mode={authAddress ? 'portfolio' : 'basic'}
+                  emailAddress={emailAddress}
+                  address={authAddress}
+                  domain={authDomain}
+                  avatarUrl={authAvatar}
+                  recoveryToken={recoveryToken}
+                  showMessages={true}
+                  onUpdate={(_t: DomainProfileTabType) => {
+                    handleAuthComplete();
+                  }}
+                  setButtonComponent={setAuthButton}
+                />
+                {!authAddress && (
+                  <Box
+                    display="flex"
+                    flexDirection="column"
+                    width="100%"
+                    mt={2}
+                  >
+                    {authButton}
+                  </Box>
+                )}
+              </Box>
+            ) : (
+              <Box
+                className={cx(
+                  classes.searchContainer,
+                  classes.walletContainer,
+                  classes.walletInfoContainer,
+                )}
+              >
+                <Box mt={1} display="flex" alignItems="center">
+                  <IconPlate size={35} variant="info">
+                    <ShieldKeyHoleIcon />
+                  </IconPlate>
+                  <Typography ml={1} variant="h6">
+                    Features & highlights
+                  </Typography>
                 </Box>
-              )}
-            </Box>
-          ) : (
-            <Box
-              className={cx(
-                classes.searchContainer,
-                classes.walletContainer,
-                classes.walletInfoContainer,
-              )}
-            >
-              <Box mt={1} display="flex" alignItems="center">
-                <IconPlate size={35} variant="info">
-                  <ShieldKeyHoleIcon />
-                </IconPlate>
-                <Typography ml={1} variant="h6">
-                  Features & highlights
-                </Typography>
+                <InlineEducation />
+                <Box display="flex" flexDirection="column" width="100%">
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    className={classes.button}
+                    onClick={handleLearnMore}
+                  >
+                    {t('common.learnMore')}
+                  </Button>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    className={classes.button}
+                    onClick={handleSignIn}
+                  >
+                    {t('header.signIn')}
+                  </Button>
+                </Box>
               </Box>
-              <InlineEducation />
-              <Box display="flex" flexDirection="column" width="100%">
-                <Button
-                  fullWidth
-                  variant="contained"
-                  className={classes.button}
-                  onClick={handleLearnMore}
-                >
-                  {t('common.learnMore')}
-                </Button>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  className={classes.button}
-                  onClick={handleSignIn}
-                >
-                  {t('header.signIn')}
-                </Button>
-              </Box>
-            </Box>
-          )}
+            )}
+          </Grid>
         </Grid>
-      </Grid>
+      )}
       <Box className={classes.footerContainer}>
         <Box className={classes.footerContent}>
           <Typography className={classes.copyright} variant="body2">

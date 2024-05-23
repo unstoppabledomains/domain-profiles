@@ -74,6 +74,7 @@ const useStyles = makeStyles<{
     marginTop: theme.spacing(3),
   },
   continueActionContainer: {
+    marginTop: theme.spacing(3),
     width: '100%',
   },
   checkbox: {
@@ -100,9 +101,18 @@ enum WalletConfigState {
 export const Configuration: React.FC<
   ManageTabProps & {
     mode?: WalletMode;
+    emailAddress?: string;
+    recoveryToken?: string;
     onLoaded?: (v: boolean) => void;
   }
-> = ({onUpdate, onLoaded, setButtonComponent, mode = 'basic'}) => {
+> = ({
+  onUpdate,
+  onLoaded,
+  setButtonComponent,
+  mode = 'basic',
+  emailAddress: initialEmailAddress,
+  recoveryToken,
+}) => {
   // component state variables
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -122,7 +132,9 @@ export const Configuration: React.FC<
   const {accessToken, setAccessToken} = useWeb3Context();
   const [bootstrapCode, setBootstrapCode] = useState<string>();
   const [recoveryPhrase, setRecoveryPhrase] = useState<string>();
-  const [emailAddress, setEmailAddress] = useState<string>();
+  const [recoveryPhraseConfirmation, setRecoveryPhraseConfirmation] =
+    useState<string>();
+  const [emailAddress, setEmailAddress] = useState(initialEmailAddress);
   const [mpcWallets, setMpcWallets] = useState<SerializedWalletBalance[]>([]);
 
   // style and translation
@@ -157,10 +169,19 @@ export const Configuration: React.FC<
       setButtonComponent(<></>);
       return;
     }
+
+    // validate whether the save button should be enabled
+    const isRecoveryConfirmed = recoveryToken
+      ? recoveryPhrase === recoveryPhraseConfirmation
+      : true;
     const isSaveEnabled =
       configState === WalletConfigState.PasswordEntry
-        ? isDirty && emailAddress && recoveryPhrase && !errorMessage
-        : isDirty && !errorMessage;
+        ? isDirty &&
+          emailAddress &&
+          recoveryPhrase &&
+          !errorMessage &&
+          isRecoveryConfirmed
+        : isDirty && !errorMessage && isRecoveryConfirmed;
 
     setButtonComponent(
       <Box className={classes.continueActionContainer}>
@@ -209,7 +230,9 @@ export const Configuration: React.FC<
               width="100%"
             >
               <InlineEducation />
-              <LinearProgress variant="determinate" value={progressPct} />
+              <Box mt={2}>
+                <LinearProgress variant="determinate" value={progressPct} />
+              </Box>
             </Box>
           )
         )}
@@ -217,11 +240,13 @@ export const Configuration: React.FC<
     );
   }, [
     isSaving,
+    isDirty,
     configState,
     savingMessage,
     bootstrapCode,
     emailAddress,
     recoveryPhrase,
+    recoveryPhraseConfirmation,
     errorMessage,
     progressPct,
     isLoaded,
@@ -334,6 +359,8 @@ export const Configuration: React.FC<
     setErrorMessage(undefined);
     if (id === 'recoveryPhrase') {
       setRecoveryPhrase(value);
+    } else if (id === 'recoveryPhraseConfirmation') {
+      setRecoveryPhraseConfirmation(value);
     } else if (id === 'bootstrapCode') {
       setBootstrapCode(value);
     } else if (id === 'emailAddress') {
@@ -355,6 +382,7 @@ export const Configuration: React.FC<
     setPersistKeys(false);
     setEmailAddress(undefined);
     setRecoveryPhrase(undefined);
+    setRecoveryPhraseConfirmation(undefined);
 
     // clear all storage state
     saveState({});
@@ -371,6 +399,7 @@ export const Configuration: React.FC<
 
   const handleSave = async () => {
     setIsSaving(true);
+    setIsDirty(false);
 
     if (configState === WalletConfigState.OtpEntry) {
       // submit the bootstrap code
@@ -381,7 +410,6 @@ export const Configuration: React.FC<
     }
 
     // saving complete
-    setIsDirty(false);
     setIsSaving(false);
     setSavingMessage(undefined);
   };
@@ -425,6 +453,14 @@ export const Configuration: React.FC<
     // bootstrap and recovery phrase code is required
     if (!bootstrapCode || !recoveryPhrase) {
       return;
+    }
+
+    // validate recovery phrase confirmation matches if necessary
+    if (recoveryToken) {
+      if (recoveryPhrase !== recoveryPhraseConfirmation) {
+        setErrorMessage(t('wallet.resetPasswordMismatch'));
+        return;
+      }
     }
 
     // indicates start time for progress tracking
@@ -487,6 +523,7 @@ export const Configuration: React.FC<
     const isInitialized = await initializeClient(fbClientForInit, {
       bootstrapJwt,
       recoveryPhrase,
+      recoveryToken,
     });
     if (!isInitialized) {
       notifyEvent(
@@ -495,7 +532,11 @@ export const Configuration: React.FC<
         'Wallet',
         'Authorization',
       );
-      setErrorMessage(t('wallet.invalidRecoveryAccount'));
+      setErrorMessage(
+        recoveryToken
+          ? t('wallet.invalidResetAttempt')
+          : t('wallet.invalidRecoveryAccount'),
+      );
       return;
     }
 
@@ -600,7 +641,9 @@ export const Configuration: React.FC<
           <Box>
             <Typography variant="body1" className={classes.infoContainer}>
               <Markdown>
-                {t('wallet.bootstrapCodeDescription', {emailAddress})}
+                {recoveryToken
+                  ? t('wallet.resetPasswordConfirmation', {emailAddress})
+                  : t('wallet.bootstrapCodeDescription', {emailAddress})}
               </Markdown>
             </Typography>
             <ManageInput
@@ -649,32 +692,60 @@ export const Configuration: React.FC<
         ) : configState === WalletConfigState.PasswordEntry ? (
           <Box>
             <Typography variant="body1" className={classes.infoContainer}>
-              <Markdown>{t('wallet.recoveryPhraseDescription')}</Markdown>
+              <Markdown>
+                {recoveryToken
+                  ? t('wallet.resetPasswordDescription')
+                  : t('wallet.recoveryPhraseDescription')}
+              </Markdown>
             </Typography>
             <Box mt={5}>
-              <ManageInput
-                mt={2}
-                id="emailAddress"
-                value={emailAddress}
-                label={t('wallet.emailAddress')}
-                placeholder={t('common.enterYourEmail')}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                stacked={false}
-                disabled={isSaving}
-              />
+              {!initialEmailAddress && (
+                <ManageInput
+                  mt={2}
+                  id="emailAddress"
+                  value={emailAddress}
+                  label={t('wallet.emailAddress')}
+                  placeholder={t('common.enterYourEmail')}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  stacked={false}
+                  disabled={isSaving}
+                />
+              )}
               <ManageInput
                 mt={2}
                 id="recoveryPhrase"
                 value={recoveryPhrase}
-                label={t('wallet.recoveryPhrase')}
-                placeholder={t('wallet.enterRecoveryPhrase')}
+                label={
+                  recoveryToken
+                    ? t('wallet.resetPassword')
+                    : t('wallet.recoveryPhrase')
+                }
+                placeholder={
+                  recoveryToken
+                    ? t('wallet.enterResetPassword')
+                    : t('wallet.enterRecoveryPhrase')
+                }
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 disabled={isSaving}
                 type="password"
                 stacked={false}
               />
+              {recoveryToken && (
+                <ManageInput
+                  mt={2}
+                  id="recoveryPhraseConfirmation"
+                  value={recoveryPhraseConfirmation}
+                  label={t('wallet.confirmRecoveryPhrase')}
+                  placeholder={t('wallet.enterRecoveryPhraseConfirmation')}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  stacked={false}
+                  type="password"
+                  disabled={isSaving}
+                />
+              )}
             </Box>
           </Box>
         ) : (

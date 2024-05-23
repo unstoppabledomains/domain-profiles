@@ -517,6 +517,7 @@ export const getOperationStatus = async (
     host: config.WALLETS.HOST_URL,
   });
 };
+
 export const getTransferOperationResponse = (
   asset: AccountAsset,
   accessToken: string,
@@ -584,6 +585,41 @@ export const sendJoinRequest = async (
       body: JSON.stringify({
         walletJoinRequestId,
         recoveryPassphrase,
+      }),
+    });
+    if (!joinResult) {
+      return false;
+    }
+    return true;
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
+      msg: 'error retrieving bootstrap token',
+    });
+  }
+  return false;
+};
+
+export const sendResetRequest = async (
+  walletJoinRequestId: string,
+  bootstrapJwt: string,
+  recoveryToken: string,
+  newRecoveryPassphrase: string,
+): Promise<boolean> => {
+  try {
+    const joinResult = await fetchApi('/auth/devices/recover', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${bootstrapJwt}`,
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        recoveryToken,
+        newRecoveryPassphrase,
+        walletJoinRequestId,
+        sendNewRecoveryEmail: true,
       }),
     });
     if (!joinResult) {

@@ -6,7 +6,10 @@ import type {
 } from '@fireblocks/ncw-js-sdk';
 import {FireblocksNCWFactory} from '@fireblocks/ncw-js-sdk';
 
-import {sendJoinRequest} from '../../actions/fireBlocksActions';
+import {
+  sendJoinRequest,
+  sendResetRequest,
+} from '../../actions/fireBlocksActions';
 import {notifyEvent} from '../error';
 import {sleep} from '../sleep';
 import {LogEventHandler} from './events/logHandler';
@@ -70,6 +73,7 @@ export const initializeClient = async (
   opts: {
     bootstrapJwt: string;
     recoveryPhrase: string;
+    recoveryToken?: string;
   },
 ): Promise<boolean> => {
   try {
@@ -78,11 +82,18 @@ export const initializeClient = async (
     const joinResult = await client.requestJoinExistingWallet({
       onRequestId: async requestId => {
         // send the join request
-        isJoinRequestSuccessful = await sendJoinRequest(
-          requestId,
-          opts.bootstrapJwt,
-          opts.recoveryPhrase,
-        );
+        isJoinRequestSuccessful = opts.recoveryToken
+          ? await sendResetRequest(
+              requestId,
+              opts.bootstrapJwt,
+              opts.recoveryToken,
+              opts.recoveryPhrase,
+            )
+          : await sendJoinRequest(
+              requestId,
+              opts.bootstrapJwt,
+              opts.recoveryPhrase,
+            );
 
         // determine if join request was successful
         if (!isJoinRequestSuccessful) {

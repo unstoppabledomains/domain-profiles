@@ -1,4 +1,5 @@
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import Logout from '@mui/icons-material/Logout';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
@@ -17,6 +18,7 @@ interface Props {
   domain?: string;
   isOwner: boolean;
   authDomain?: string;
+  onGetDomainClicked?: () => void;
   onDomainsClicked?: () => void;
   onWalletClicked?: () => void;
   marginTop?: number;
@@ -52,6 +54,7 @@ const useStyles = makeStyles<{marginTop?: number}>()(
 const DropDownMenu: React.FC<Props> = ({
   authDomain,
   marginTop,
+  onGetDomainClicked,
   onDomainsClicked,
   onWalletClicked,
 }) => {
@@ -112,6 +115,18 @@ const DropDownMenu: React.FC<Props> = ({
           <ListOutlinedIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
             {t('profile.viewMyDomains')}
+          </Typography>
+        </div>
+      )}
+      {onGetDomainClicked && (
+        <div
+          data-testid={`get-domain-button`}
+          className={classes.container}
+          onClick={onGetDomainClicked}
+        >
+          <AddHomeOutlinedIcon className={classes.settingsIcon} />
+          <Typography className={cx(classes.font)} color="text.secondary">
+            {t('push.communitiesGetADomain')}
           </Typography>
         </div>
       )}

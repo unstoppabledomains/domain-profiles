@@ -169,6 +169,10 @@ export const Header: React.FC<Props> = ({
     setIsDomainModalOpen(true);
   };
 
+  const handleGetDomain = () => {
+    window.open(`${config.UNSTOPPABLE_WEBSITE_URL}/search`, '_blank');
+  };
+
   const handleDomainsClose = () => {
     setIsDomainModalOpen(false);
   };
@@ -269,6 +273,7 @@ export const Header: React.FC<Props> = ({
           isOwner={true}
           authDomain={domain}
           marginTop={30}
+          onGetDomainClicked={!isDomains ? handleGetDomain : undefined}
           onDomainsClicked={isDomains ? handleDomainsOpen : undefined}
         />
       )}

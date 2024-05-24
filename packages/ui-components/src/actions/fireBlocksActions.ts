@@ -517,6 +517,7 @@ export const getOperationStatus = async (
     host: config.WALLETS.HOST_URL,
   });
 };
+
 export const getTransferOperationResponse = (
   asset: AccountAsset,
   accessToken: string,
@@ -593,6 +594,71 @@ export const sendJoinRequest = async (
   } catch (e) {
     notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error retrieving bootstrap token',
+    });
+  }
+  return false;
+};
+
+export const sendRecoveryEmail = async (
+  accessToken: string,
+  recoveryPassphrase: string,
+): Promise<boolean> => {
+  try {
+    const emailResult = await fetchApi('/recovery/email', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        recoveryPassphrase,
+      }),
+    });
+    if (!emailResult) {
+      return false;
+    }
+    return true;
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
+      msg: 'error sending recovery email',
+    });
+  }
+  return false;
+};
+
+export const sendResetRequest = async (
+  walletJoinRequestId: string,
+  bootstrapJwt: string,
+  recoveryToken: string,
+  newRecoveryPassphrase: string,
+): Promise<boolean> => {
+  try {
+    const resetResult = await fetchApi('/auth/devices/recover', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${bootstrapJwt}`,
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        recoveryToken,
+        newRecoveryPassphrase,
+        walletJoinRequestId,
+        sendNewRecoveryEmail: false,
+      }),
+    });
+    if (!resetResult) {
+      return false;
+    }
+    return true;
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
+      msg: 'error sending reset request',
     });
   }
   return false;

@@ -103,6 +103,7 @@ import {
   useDomainConfig,
   useEnsDomainStatus,
   useFeatureFlags,
+  useFireblocksState,
   useTokenGallery,
   useTranslationContext,
   useUnstoppableMessaging,
@@ -173,6 +174,10 @@ const DomainProfile = ({
   );
   const [featuredPartner, setFeaturedPartner] =
     useState<SerializedCryptoWalletBadge>();
+
+  // MPC wallet state
+  const [isMpcWallet, setIsMpcWallet] = useState(false);
+  const [state] = useFireblocksState();
 
   const {
     data: featureFlags,
@@ -377,6 +382,9 @@ const DomainProfile = ({
     setAuthAddress(newAddress);
     setAuthDomain(newDomain);
     setIsOwner(ownerAddress.toLowerCase() === newAddress.toLowerCase());
+
+    // determine if logged in user is an MPC wallet
+    setIsMpcWallet(Object.keys(state).length > 0);
   };
 
   const hasBadges =
@@ -425,10 +433,14 @@ const DomainProfile = ({
       localStorage.getItem(DomainProfileKeys.AuthDomain) || '';
     let isAuthorized = false;
     if (localAuthAddress && localAuthDomain) {
+      // set local state for logged in user
       setAuthAddress(localAuthAddress);
       setAuthDomain(localAuthDomain);
       isAuthorized =
         ownerAddress.toLowerCase() === localAuthAddress.toLowerCase();
+
+      // determine if logged in user is an MPC wallet
+      setIsMpcWallet(Object.keys(state).length > 0);
     }
     setIsOwner(isAuthorized);
   }, [isMounted, isFeatureFlagSuccess, featureFlags, ownerAddress]);
@@ -636,14 +648,15 @@ const DomainProfile = ({
                 {authDomain ? (
                   <>
                     {featureFlags?.variations
-                      ?.ecommerceServiceUsersEnableChat && (
-                      <Box className={classes.chatContainer}>
-                        <UnstoppableMessaging
-                          address={authAddress}
-                          disableSupportBubble
-                        />
-                      </Box>
-                    )}
+                      ?.ecommerceServiceUsersEnableChat &&
+                      !isMpcWallet && (
+                        <Box className={classes.chatContainer}>
+                          <UnstoppableMessaging
+                            address={authAddress}
+                            disableSupportBubble
+                          />
+                        </Box>
+                      )}
                     <AccountButton
                       domain={domain}
                       domainOwner={ownerAddress}

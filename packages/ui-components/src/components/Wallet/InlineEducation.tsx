@@ -53,12 +53,20 @@ const useStyles = makeStyles()((theme: Theme) => ({
     paddingRight: '1px',
     marginRight: theme.spacing(-2),
   },
+  swiperPagination: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: theme.spacing(3),
+    minHeight: '15px',
+    width: '100%',
+  },
 }));
 
 const swiperCss = `
   .swiper-wrapper { 
     padding-bottom: 1rem;
-  } 
+  }
 `;
 
 type Props = {
@@ -137,6 +145,7 @@ const InlineEducation: React.FC = () => {
       flexDirection="column"
       justifyContent="center"
       alignItems="center"
+      width="100%"
     >
       <Box
         display="flex"
@@ -189,7 +198,7 @@ const InlineEducation: React.FC = () => {
           ))}
         </Swiper>
       </Box>
-      <Box mb={3} display="flex" justifyContent="center" ref={paginationRef} />
+      <Box className={classes.swiperPagination} ref={paginationRef} />
     </Box>
   );
 };

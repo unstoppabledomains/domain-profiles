@@ -18,14 +18,18 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export const Wallet: React.FC<
   ManageTabProps & {
+    emailAddress?: string;
     avatarUrl?: string;
+    recoveryToken?: string;
     showMessages?: boolean;
     mode?: WalletMode;
   }
 > = ({
+  emailAddress,
   address,
   domain,
   avatarUrl,
+  recoveryToken,
   showMessages,
   mode = 'basic',
   onUpdate,
@@ -50,8 +54,10 @@ export const Wallet: React.FC<
       />
       <Configuration
         mode={mode}
+        emailAddress={emailAddress}
         address={address}
         domain={domain}
+        recoveryToken={recoveryToken}
         onLoaded={handleWalletLoaded}
         onUpdate={onUpdate}
         setButtonComponent={setButtonComponent}

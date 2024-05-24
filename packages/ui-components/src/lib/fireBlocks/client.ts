@@ -6,7 +6,10 @@ import type {
 } from '@fireblocks/ncw-js-sdk';
 import {FireblocksNCWFactory} from '@fireblocks/ncw-js-sdk';
 
-import {sendJoinRequest} from '../../actions/fireBlocksActions';
+import {
+  sendJoinRequest,
+  sendResetRequest,
+} from '../../actions/fireBlocksActions';
 import {notifyEvent} from '../error';
 import {sleep} from '../sleep';
 import {LogEventHandler} from './events/logHandler';
@@ -70,35 +73,51 @@ export const initializeClient = async (
   opts: {
     bootstrapJwt: string;
     recoveryPhrase: string;
+    recoveryToken?: string;
   },
 ): Promise<boolean> => {
   try {
     // create a join request for this device
-    let isJoinRequestSuccessful = false;
-    const joinResult = await client.requestJoinExistingWallet({
+    let callbackPromise: Promise<boolean> | undefined;
+    await client.requestJoinExistingWallet({
       onRequestId: async requestId => {
-        // send the join request
-        isJoinRequestSuccessful = await sendJoinRequest(
-          requestId,
-          opts.bootstrapJwt,
-          opts.recoveryPhrase,
-        );
+        callbackPromise = opts.recoveryToken
+          ? // send a reset request
+            sendResetRequest(
+              requestId,
+              opts.bootstrapJwt,
+              opts.recoveryToken,
+              opts.recoveryPhrase,
+            )
+          : // send a join request
+            sendJoinRequest(requestId, opts.bootstrapJwt, opts.recoveryPhrase);
 
-        // determine if join request was successful
-        if (!isJoinRequestSuccessful) {
+        // the request has been submitted, but we will wait for the promise to
+        // complete after the client call returns
+        const isSuccess = await callbackPromise;
+        if (!isSuccess) {
           try {
             // request to stop the join transaction
             client.stopJoinWallet();
           } catch (stopJoinWalletErr) {
             notifyEvent(stopJoinWalletErr, 'warning', 'Wallet', 'Fireblocks', {
               msg: 'unable to cancel join request',
-              meta: {requestId},
             });
           }
         }
       },
     });
-    if (!joinResult || !isJoinRequestSuccessful) {
+
+    // ensure the promise was initialized
+    if (!callbackPromise) {
+      throw new Error('failed to initiate join request');
+    }
+
+    // wait for the callback promise to complete
+    const isCallbackSuccessful = await callbackPromise;
+
+    // determine if join request was successful
+    if (!isCallbackSuccessful) {
       throw new Error('failed to initialize fireblocks client');
     }
 

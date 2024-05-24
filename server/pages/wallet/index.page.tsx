@@ -2,7 +2,9 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import {EMAIL_PARAM, RECOVERY_TOKEN_PARAM, SIGN_IN_PARAM} from 'lib/types';
 import {NextSeo} from 'next-seo';
+import {useRouter} from 'next/router';
 import React, {useEffect, useState} from 'react';
 import useIsMounted from 'react-is-mounted-hook';
 import {useStyles} from 'styles/pages/index.styles';
@@ -29,6 +31,7 @@ import ShieldKeyHoleIcon from '@unstoppabledomains/ui-kit/icons/ShieldKeyHoleIco
 const WalletPage = () => {
   const {classes, cx} = useStyles({});
   const [t] = useTranslationContext();
+  const {query: params} = useRouter();
   const isMounted = useIsMounted();
   const [walletState] = useFireblocksState();
   const [authAddress, setAuthAddress] = useState<string>('');
@@ -36,13 +39,58 @@ const WalletPage = () => {
   const [authAvatar, setAuthAvatar] = useState<string>();
   const [authButton, setAuthButton] = useState<React.ReactNode>();
   const [authComplete, setAuthComplete] = useState(false);
+  const [recoveryToken, setRecoveryToken] = useState<string>();
+  const [emailAddress, setEmailAddress] = useState<string>();
   const [signInClicked, setSignInClicked] = useState(false);
+  const [isReloadChecked, setIsReloadChecked] = useState(false);
 
+  // build default wallet page SEO tags
   const seoTags = getSeoTags({
     title: t('wallet.title'),
     description: t('manage.cryptoWalletDescription'),
   });
 
+  // sign the user out if recovery is requested
+  useEffect(() => {
+    if (!walletState || !recoveryToken || isReloadChecked) {
+      return;
+    }
+    if (Object.keys(walletState).length > 0) {
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.reload();
+      return;
+    }
+    setIsReloadChecked(true);
+  }, [walletState, recoveryToken]);
+
+  // load query string params
+  useEffect(() => {
+    if (!params) {
+      return;
+    }
+
+    // select email address if specified in parameter
+    if (params[EMAIL_PARAM] && typeof params[EMAIL_PARAM] === 'string') {
+      setEmailAddress(params[EMAIL_PARAM]);
+    }
+
+    // select recovery if specified in parameter
+    if (
+      params[RECOVERY_TOKEN_PARAM] &&
+      typeof params[RECOVERY_TOKEN_PARAM] === 'string'
+    ) {
+      setRecoveryToken(params[RECOVERY_TOKEN_PARAM]);
+      return;
+    }
+
+    // select sign in if specified in parameter
+    if (params[SIGN_IN_PARAM] !== undefined) {
+      setSignInClicked(true);
+    }
+  }, [params]);
+
+  // load the existing wallet if singed in
   useEffect(() => {
     if (!isMounted()) {
       return;
@@ -134,7 +182,7 @@ const WalletPage = () => {
           </Typography>
         </Grid>
         <Grid item xs={12} className={classes.item}>
-          {signInClicked || authAddress ? (
+          {signInClicked || recoveryToken || emailAddress || authAddress ? (
             <Box
               className={cx(
                 classes.searchContainer,
@@ -146,10 +194,12 @@ const WalletPage = () => {
             >
               <Wallet
                 mode={authAddress ? 'portfolio' : 'basic'}
+                emailAddress={emailAddress}
                 address={authAddress}
                 domain={authDomain}
                 avatarUrl={authAvatar}
-                showMessages={true}
+                recoveryToken={recoveryToken}
+                showMessages={false}
                 onUpdate={(_t: DomainProfileTabType) => {
                   handleAuthComplete();
                 }}

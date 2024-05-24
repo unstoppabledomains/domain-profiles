@@ -599,6 +599,36 @@ export const sendJoinRequest = async (
   return false;
 };
 
+export const sendRecoveryEmail = async (
+  accessToken: string,
+  recoveryPassphrase: string,
+): Promise<boolean> => {
+  try {
+    const emailResult = await fetchApi('/recovery/email', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        recoveryPassphrase,
+      }),
+    });
+    if (!emailResult) {
+      return false;
+    }
+    return true;
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
+      msg: 'error sending recovery email',
+    });
+  }
+  return false;
+};
+
 export const sendResetRequest = async (
   walletJoinRequestId: string,
   bootstrapJwt: string,
@@ -606,7 +636,7 @@ export const sendResetRequest = async (
   newRecoveryPassphrase: string,
 ): Promise<boolean> => {
   try {
-    const joinResult = await fetchApi('/auth/devices/recover', {
+    const resetResult = await fetchApi('/auth/devices/recover', {
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -619,16 +649,16 @@ export const sendResetRequest = async (
         recoveryToken,
         newRecoveryPassphrase,
         walletJoinRequestId,
-        sendNewRecoveryEmail: true,
+        sendNewRecoveryEmail: false,
       }),
     });
-    if (!joinResult) {
+    if (!resetResult) {
       return false;
     }
     return true;
   } catch (e) {
     notifyEvent(e, 'error', 'Wallet', 'Fetch', {
-      msg: 'error retrieving bootstrap token',
+      msg: 'error sending reset request',
     });
   }
   return false;

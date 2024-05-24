@@ -42,6 +42,7 @@ const WalletPage = () => {
   const [recoveryToken, setRecoveryToken] = useState<string>();
   const [emailAddress, setEmailAddress] = useState<string>();
   const [signInClicked, setSignInClicked] = useState(false);
+  const [isReloadChecked, setIsReloadChecked] = useState(false);
 
   // build default wallet page SEO tags
   const seoTags = getSeoTags({
@@ -49,6 +50,21 @@ const WalletPage = () => {
     description: t('manage.cryptoWalletDescription'),
   });
 
+  // sign the user out if recovery is requested
+  useEffect(() => {
+    if (!walletState || !recoveryToken || isReloadChecked) {
+      return;
+    }
+    if (Object.keys(walletState).length > 0) {
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.reload();
+      return;
+    }
+    setIsReloadChecked(true);
+  }, [walletState, recoveryToken]);
+
+  // load query string params
   useEffect(() => {
     if (!params) {
       return;
@@ -74,6 +90,7 @@ const WalletPage = () => {
     }
   }, [params]);
 
+  // load the existing wallet if singed in
   useEffect(() => {
     if (!isMounted()) {
       return;
@@ -149,97 +166,90 @@ const WalletPage = () => {
           },
         }}
       />
-      {isMounted() && (
-        <Grid
-          container
-          className={classes.content}
-          data-testid="mainContentContainer"
-        >
-          <Grid item xs={12} className={classes.item}>
-            <Typography className={classes.sectionTitle}>
-              {t('wallet.title')}
-            </Typography>
-          </Grid>
-          <Grid item xs={12} className={classes.item}>
-            <Typography className={classes.sectionSubTitle}>
-              {t('manage.cryptoWalletDescriptionShort')}
-            </Typography>
-          </Grid>
-          <Grid item xs={12} className={classes.item}>
-            {signInClicked || recoveryToken || emailAddress || authAddress ? (
-              <Box
-                className={cx(
-                  classes.searchContainer,
-                  classes.walletContainer,
-                  authAddress
-                    ? classes.walletPortfolioContainer
-                    : classes.walletInfoContainer,
-                )}
-              >
-                <Wallet
-                  mode={authAddress ? 'portfolio' : 'basic'}
-                  emailAddress={emailAddress}
-                  address={authAddress}
-                  domain={authDomain}
-                  avatarUrl={authAvatar}
-                  recoveryToken={recoveryToken}
-                  showMessages={true}
-                  onUpdate={(_t: DomainProfileTabType) => {
-                    handleAuthComplete();
-                  }}
-                  setButtonComponent={setAuthButton}
-                />
-                {!authAddress && (
-                  <Box
-                    display="flex"
-                    flexDirection="column"
-                    width="100%"
-                    mt={2}
-                  >
-                    {authButton}
-                  </Box>
-                )}
-              </Box>
-            ) : (
-              <Box
-                className={cx(
-                  classes.searchContainer,
-                  classes.walletContainer,
-                  classes.walletInfoContainer,
-                )}
-              >
-                <Box mt={1} display="flex" alignItems="center">
-                  <IconPlate size={35} variant="info">
-                    <ShieldKeyHoleIcon />
-                  </IconPlate>
-                  <Typography ml={1} variant="h6">
-                    Features & highlights
-                  </Typography>
-                </Box>
-                <InlineEducation />
-                <Box display="flex" flexDirection="column" width="100%">
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    className={classes.button}
-                    onClick={handleLearnMore}
-                  >
-                    {t('common.learnMore')}
-                  </Button>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    className={classes.button}
-                    onClick={handleSignIn}
-                  >
-                    {t('header.signIn')}
-                  </Button>
-                </Box>
-              </Box>
-            )}
-          </Grid>
+      <Grid
+        container
+        className={classes.content}
+        data-testid="mainContentContainer"
+      >
+        <Grid item xs={12} className={classes.item}>
+          <Typography className={classes.sectionTitle}>
+            {t('wallet.title')}
+          </Typography>
         </Grid>
-      )}
+        <Grid item xs={12} className={classes.item}>
+          <Typography className={classes.sectionSubTitle}>
+            {t('manage.cryptoWalletDescriptionShort')}
+          </Typography>
+        </Grid>
+        <Grid item xs={12} className={classes.item}>
+          {signInClicked || recoveryToken || emailAddress || authAddress ? (
+            <Box
+              className={cx(
+                classes.searchContainer,
+                classes.walletContainer,
+                authAddress
+                  ? classes.walletPortfolioContainer
+                  : classes.walletInfoContainer,
+              )}
+            >
+              <Wallet
+                mode={authAddress ? 'portfolio' : 'basic'}
+                emailAddress={emailAddress}
+                address={authAddress}
+                domain={authDomain}
+                avatarUrl={authAvatar}
+                recoveryToken={recoveryToken}
+                showMessages={false}
+                onUpdate={(_t: DomainProfileTabType) => {
+                  handleAuthComplete();
+                }}
+                setButtonComponent={setAuthButton}
+              />
+              {!authAddress && (
+                <Box display="flex" flexDirection="column" width="100%" mt={2}>
+                  {authButton}
+                </Box>
+              )}
+            </Box>
+          ) : (
+            <Box
+              className={cx(
+                classes.searchContainer,
+                classes.walletContainer,
+                classes.walletInfoContainer,
+              )}
+            >
+              <Box mt={1} display="flex" alignItems="center">
+                <IconPlate size={35} variant="info">
+                  <ShieldKeyHoleIcon />
+                </IconPlate>
+                <Typography ml={1} variant="h6">
+                  Features & highlights
+                </Typography>
+              </Box>
+              <InlineEducation />
+              <Box display="flex" flexDirection="column" width="100%">
+                <Button
+                  fullWidth
+                  variant="contained"
+                  className={classes.button}
+                  onClick={handleLearnMore}
+                >
+                  {t('common.learnMore')}
+                </Button>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  className={classes.button}
+                  onClick={handleSignIn}
+                >
+                  {t('header.signIn')}
+                </Button>
+              </Box>
+            </Box>
+          )}
+        </Grid>
+      </Grid>
       <Box className={classes.footerContainer}>
         <Box className={classes.footerContent}>
           <Typography className={classes.copyright} variant="body2">

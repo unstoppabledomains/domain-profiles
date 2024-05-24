@@ -822,7 +822,7 @@
     "enterResetPassword": "Enter your new password",
     "insufficientBalance": "Insufficient balance",
     "invalidRecoveryAccount": "Invalid email address or password",
-    "invalidResetAttempt": "Invalid password recovery link",
+    "invalidResetAttempt": "Invalid recovery link",
     "invalidSetupCode": "Invalid one-time code",
     "loadingWallet": "Loading wallet...",
     "networkFee": "Network fee",

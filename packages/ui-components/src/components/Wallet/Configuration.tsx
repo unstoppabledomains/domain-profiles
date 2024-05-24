@@ -22,6 +22,7 @@ import {
   getAuthorizationTokenTx,
   getBootstrapToken,
   sendBootstrapCode,
+  sendRecoveryEmail,
 } from '../../actions/fireBlocksActions';
 import {getWalletPortfolio} from '../../actions/walletActions';
 import {useWeb3Context} from '../../hooks';
@@ -185,8 +186,7 @@ export const Configuration: React.FC<
 
     setButtonComponent(
       <Box className={classes.continueActionContainer}>
-        {(configState !== WalletConfigState.OtpEntry || !isSaving) &&
-        !errorMessage ? (
+        {!isSaving && !errorMessage ? (
           <>
             <LoadingButton
               variant="contained"
@@ -222,7 +222,8 @@ export const Configuration: React.FC<
             )}
           </>
         ) : (
-          !errorMessage && (
+          !errorMessage &&
+          configState === WalletConfigState.OtpEntry && (
             <Box
               display="flex"
               flexDirection="column"
@@ -588,7 +589,7 @@ export const Configuration: React.FC<
     }
 
     // retrieve the wallet service JWT tokens
-    trackProgress(startTime, 95);
+    trackProgress(startTime, 90);
     const walletServiceTokens = await confirmAuthorizationTokenTx(bootstrapJwt);
     if (!walletServiceTokens) {
       notifyEvent(
@@ -599,6 +600,12 @@ export const Configuration: React.FC<
       );
       setErrorMessage(t('wallet.recoveryError'));
       return;
+    }
+
+    // if this is a recovery, also send a new recovery email
+    if (recoveryToken) {
+      trackProgress(startTime, 95);
+      await sendRecoveryEmail(walletServiceTokens.accessToken, recoveryPhrase);
     }
 
     // store the wallet service JWT tokens at desired persistence level

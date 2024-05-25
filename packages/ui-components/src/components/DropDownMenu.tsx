@@ -2,6 +2,8 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import Logout from '@mui/icons-material/Logout';
+import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
+import SupportOutlinedIcon from '@mui/icons-material/SupportOutlined';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import {Card, Typography} from '@mui/material/';
 import type {Theme} from '@mui/material/styles';
@@ -21,6 +23,8 @@ interface Props {
   onGetDomainClicked?: () => void;
   onDomainsClicked?: () => void;
   onWalletClicked?: () => void;
+  onRecoveryLinkClicked?: () => void;
+  onSupportClicked?: () => void;
   marginTop?: number;
 }
 
@@ -57,6 +61,8 @@ const DropDownMenu: React.FC<Props> = ({
   onGetDomainClicked,
   onDomainsClicked,
   onWalletClicked,
+  onRecoveryLinkClicked,
+  onSupportClicked,
 }) => {
   const [isLoggingOut, setLoggingOut] = useState<boolean>(false);
   const [t] = useTranslationContext();
@@ -139,6 +145,30 @@ const DropDownMenu: React.FC<Props> = ({
           <WalletOutlinedIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
             {t('wallet.title')}
+          </Typography>
+        </div>
+      )}
+      {onRecoveryLinkClicked && (
+        <div
+          data-testid={`recovery-link-button`}
+          className={classes.container}
+          onClick={onRecoveryLinkClicked}
+        >
+          <SupportOutlinedIcon className={classes.settingsIcon} />
+          <Typography className={cx(classes.font)} color="text.secondary">
+            {t('wallet.recoveryKit')}
+          </Typography>
+        </div>
+      )}
+      {onSupportClicked && (
+        <div
+          data-testid={`support-button`}
+          className={classes.container}
+          onClick={onSupportClicked}
+        >
+          <SchoolOutlinedIcon className={classes.settingsIcon} />
+          <Typography className={cx(classes.font)} color="text.secondary">
+            {t('wallet.help')}
           </Typography>
         </div>
       )}

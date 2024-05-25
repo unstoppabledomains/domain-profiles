@@ -5,6 +5,7 @@ import React, {useState} from 'react';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {isDomainValidForManagement} from '../../lib';
+import type {DomainProfileTabType} from '../Manage';
 import type {ManageTabProps} from '../Manage/common/types';
 import {Configuration} from './Configuration';
 import {Header} from './Header';
@@ -37,9 +38,18 @@ export const Wallet: React.FC<
 }) => {
   const {classes} = useStyles();
   const [isLoaded, setIsLoaded] = useState(false);
+  const [accessToken, setAccessToken] = useState<string>();
 
   const handleWalletLoaded = (v: boolean) => {
     setIsLoaded(v);
+  };
+
+  const handleAccessToken = (
+    t: DomainProfileTabType,
+    v: {accessToken: string},
+  ) => {
+    setAccessToken(v.accessToken);
+    onUpdate(t, v);
   };
 
   return (
@@ -50,6 +60,7 @@ export const Wallet: React.FC<
         avatarUrl={avatarUrl}
         showMessages={showMessages}
         address={address}
+        accessToken={accessToken}
         domain={isDomainValidForManagement(domain) ? domain : undefined}
       />
       <Configuration
@@ -59,7 +70,7 @@ export const Wallet: React.FC<
         domain={domain}
         recoveryToken={recoveryToken}
         onLoaded={handleWalletLoaded}
-        onUpdate={onUpdate}
+        onUpdate={handleAccessToken}
         setButtonComponent={setButtonComponent}
       />
     </Box>

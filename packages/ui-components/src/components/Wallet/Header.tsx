@@ -18,6 +18,8 @@ import {UnstoppableMessaging} from '../Chat';
 import {DomainListModal} from '../Domain';
 import DropDownMenu from '../DropDownMenu';
 import Link from '../Link';
+import Modal from '../Modal';
+import RecoverySetup from './RecoverySetup';
 import type {WalletMode} from './index';
 
 const AVATAR_SIZE = 120;
@@ -129,6 +131,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 type Props = {
   address: string;
   domain?: string;
+  accessToken?: string;
   avatarUrl?: string;
   showMessages?: boolean;
   mode?: WalletMode;
@@ -138,6 +141,7 @@ type Props = {
 export const Header: React.FC<Props> = ({
   address,
   domain,
+  accessToken,
   avatarUrl,
   showMessages,
   mode,
@@ -150,7 +154,8 @@ export const Header: React.FC<Props> = ({
   // Menu state
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Domain modal state
+  // Modal states
+  const [isRecoveryModalOpen, setIsRecoveryModalOpen] = useState(false);
   const [isDomainModalOpen, setIsDomainModalOpen] = useState(false);
   const [isDomains, setIsDomains] = useState(false);
 
@@ -165,21 +170,33 @@ export const Header: React.FC<Props> = ({
     setIsMenuOpen(prev => !prev && !isMenuOpen);
   };
 
-  const handleDomainsOpen = () => {
+  const handleDomainsClick = () => {
     setIsDomainModalOpen(true);
+    setIsMenuOpen(false);
   };
 
-  const handleGetDomain = () => {
+  const handleDomainClick = (v: string) => {
+    handleDomainsClose();
+    window.location.href = `${config.UD_ME_BASE_URL}/${v}`;
+  };
+
+  const handleSupportClick = () => {
+    window.open(`${config.WALLETS.DOCUMENTATION_URL}`, '_blank');
+    setIsMenuOpen(false);
+  };
+
+  const handleRecoveryKitClicked = () => {
+    setIsRecoveryModalOpen(true);
+    setIsMenuOpen(false);
+  };
+
+  const handleGetDomainClick = () => {
     window.open(`${config.UNSTOPPABLE_WEBSITE_URL}/search`, '_blank');
+    setIsMenuOpen(false);
   };
 
   const handleDomainsClose = () => {
     setIsDomainModalOpen(false);
-  };
-
-  const handleDomainClicked = (v: string) => {
-    handleDomainsClose();
-    window.location.href = `${config.UD_ME_BASE_URL}/${v}`;
   };
 
   const handleRetrieveOwnerDomains = async (cursor?: number | string) => {
@@ -273,8 +290,10 @@ export const Header: React.FC<Props> = ({
           isOwner={true}
           authDomain={domain}
           marginTop={30}
-          onGetDomainClicked={!isDomains ? handleGetDomain : undefined}
-          onDomainsClicked={isDomains ? handleDomainsOpen : undefined}
+          onGetDomainClicked={!isDomains ? handleGetDomainClick : undefined}
+          onDomainsClicked={isDomains ? handleDomainsClick : undefined}
+          onSupportClicked={handleSupportClick}
+          onRecoveryLinkClicked={handleRecoveryKitClicked}
         />
       )}
       {isDomainModalOpen && (
@@ -286,8 +305,19 @@ export const Header: React.FC<Props> = ({
           open={isDomainModalOpen}
           setWeb3Deps={setWeb3Deps}
           onClose={handleDomainsClose}
-          onClick={handleDomainClicked}
+          onClick={handleDomainClick}
         />
+      )}
+      {isRecoveryModalOpen && (
+        <Box>
+          <Modal
+            title={t('wallet.recoveryKit')}
+            open={isRecoveryModalOpen}
+            onClose={() => setIsRecoveryModalOpen(false)}
+          >
+            <RecoverySetup accessToken={accessToken} />
+          </Modal>
+        </Box>
       )}
     </Box>
   );

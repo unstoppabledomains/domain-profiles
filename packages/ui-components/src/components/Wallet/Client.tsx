@@ -46,6 +46,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     [theme.breakpoints.down('sm')]: {
       width: '330px',
     },
+    height: '100%',
   },
   mainActionsContainer: {
     display: 'flex',
@@ -75,6 +76,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   panelContainer: {
     display: 'flex',
     width: '100%',
+    height: '100%',
   },
   portfolioContainer: {
     display: 'flex',
@@ -107,10 +109,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
   tabContentItem: {
     marginLeft: theme.spacing(-3),
     marginRight: theme.spacing(-3),
-    [theme.breakpoints.down('sm')]: {
-      marginLeft: theme.spacing(-1),
-      marginRight: theme.spacing(-1),
-    },
+  },
+  footer: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    justifyContent: 'space-between',
   },
 }));
 
@@ -274,25 +278,28 @@ export const Client: React.FC<ClientProps> = ({
                 </TabPanel>
               </Grid>
             </Grid>
-            <TabList
-              orientation="horizontal"
-              onChange={handleTabChange}
-              variant="fullWidth"
-              className={classes.tabList}
-            >
-              <Tab
-                icon={<PaidOutlinedIcon />}
-                value={ClientTabType.Portfolio}
-                label={t('tokensPortfolio.title')}
-                iconPosition="start"
-              />
-              <Tab
-                icon={<HistoryIcon />}
-                value={ClientTabType.Transactions}
-                label={t('activity.title')}
-                iconPosition="start"
-              />
-            </TabList>
+            <Box className={classes.footer}>
+              <Box />
+              <TabList
+                orientation="horizontal"
+                onChange={handleTabChange}
+                variant="fullWidth"
+                className={classes.tabList}
+              >
+                <Tab
+                  icon={<PaidOutlinedIcon />}
+                  value={ClientTabType.Portfolio}
+                  label={t('tokensPortfolio.title')}
+                  iconPosition="start"
+                />
+                <Tab
+                  icon={<HistoryIcon />}
+                  value={ClientTabType.Transactions}
+                  label={t('activity.title')}
+                  iconPosition="start"
+                />
+              </TabList>
+            </Box>
           </TabContext>
         )}
       </Box>

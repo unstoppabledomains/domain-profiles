@@ -29,6 +29,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     width: '100%',
+    height: '100%',
   },
   fullWidth: {
     width: '100%',
@@ -39,6 +40,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
     minHeight: '250px',
     width: '100%',
+    height: '100%',
   },
   selectAssetContainer: {
     display: 'flex',
@@ -47,6 +49,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     minHeight: '250px',
     justifyContent: 'space-between',
     width: '100%',
+    height: '100%',
   },
   loaderContainer: {
     display: 'flex',
@@ -116,6 +119,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
   icon: {
     fontSize: '60px',
   },
+  footer: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    justifyContent: 'space-between',
+  },
 }));
 
 type Props = {
@@ -145,7 +154,7 @@ const Send: React.FC<Props> = ({
   const [resolvedDomain, setResolvedDomain] = useState('');
   const [gasFeeEstimate, setGasFeeEstimate] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const {classes} = useStyles();
+  const {classes, cx} = useStyles();
   const amountInputRef = useRef<HTMLInputElement>(null);
 
   const resetForm = () => {
@@ -251,21 +260,23 @@ const Send: React.FC<Props> = ({
 
   if (!transactionSubmitted && sendConfirmation) {
     return (
-      <SendConfirm
-        gasFee={gasFeeEstimate}
-        asset={accountAsset}
-        onBackClick={handleBackClick}
-        onSendClick={handleSubmitTransaction}
-        recipientAddress={recipientAddress}
-        resolvedDomain={resolvedDomain}
-        amount={amount}
-        blockchainName={selectedToken.name}
-        symbol={selectedToken.ticker}
-        amountInDollars={
-          '$' +
-          (parseFloat(amount) * selectedToken.tokenConversionUsd).toFixed(2)
-        }
-      />
+      <Box className={classes.flexColCenterAligned}>
+        <SendConfirm
+          gasFee={gasFeeEstimate}
+          asset={accountAsset}
+          onBackClick={handleBackClick}
+          onSendClick={handleSubmitTransaction}
+          recipientAddress={recipientAddress}
+          resolvedDomain={resolvedDomain}
+          amount={amount}
+          blockchainName={selectedToken.name}
+          symbol={selectedToken.ticker}
+          amountInDollars={
+            '$' +
+            (parseFloat(amount) * selectedToken.tokenConversionUsd).toFixed(2)
+          }
+        />
+      </Box>
     );
   }
   if (transactionSubmitted) {
@@ -335,21 +346,19 @@ const Send: React.FC<Props> = ({
             initialAmount={amount}
             onTokenAmountChange={handleAmountChange}
           />
-          <Box display="flex" mt={3} className={classes.fullWidth}>
-            <Button
-              fullWidth
-              onClick={handleSendConfirmationClick}
-              disabled={!canSend}
-              variant="contained"
-              data-testid="send-button"
-            >
-              {t('common.send')}
-            </Button>
-          </Box>
-          <Box display="flex" mt={1} className={classes.fullWidth}>
-            <Button fullWidth onClick={onCancelClick} variant="outlined">
-              {t('common.cancel')}
-            </Button>
+          <Box className={cx(classes.fullWidth, classes.footer)}>
+            <Box />
+            <Box display="flex" mt={3}>
+              <Button
+                fullWidth
+                onClick={handleSendConfirmationClick}
+                disabled={!canSend}
+                variant="contained"
+                data-testid="send-button"
+              >
+                {t('common.send')}
+              </Button>
+            </Box>
           </Box>
         </Box>
       </Box>

@@ -26,6 +26,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     width: '100%',
+    height: '100%',
+    justifyContent: 'space-between',
   },
   transactionStatusContainer: {
     display: 'flex',
@@ -129,16 +131,16 @@ export const SubmitTransaction: React.FC<Props> = ({
             </Link>
           )}
         </Box>
-        {visibleButtonStates.includes(statusMessage) && (
-          <Box display="flex" mt={5} className={classes.fullWidth}>
-            <Button fullWidth onClick={onCloseClick} variant="outlined">
-              {closeButtonStates.includes(statusMessage)
-                ? t('common.close')
-                : t('common.cancel')}
-            </Button>
-          </Box>
-        )}
       </OperationStatus>
+      {visibleButtonStates.includes(statusMessage) && (
+        <Box className={classes.fullWidth}>
+          <Button fullWidth onClick={onCloseClick} variant="outlined">
+            {closeButtonStates.includes(statusMessage)
+              ? t('common.close')
+              : t('common.cancel')}
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 };

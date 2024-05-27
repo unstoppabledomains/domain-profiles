@@ -1,6 +1,8 @@
 import MoreVertOutlinedIcon from '@mui/icons-material/MoreVertOutlined';
 import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
@@ -136,6 +138,7 @@ type Props = {
   showMessages?: boolean;
   mode?: WalletMode;
   isLoaded: boolean;
+  isFetching?: boolean;
 };
 
 export const Header: React.FC<Props> = ({
@@ -146,6 +149,7 @@ export const Header: React.FC<Props> = ({
   showMessages,
   mode,
   isLoaded,
+  isFetching,
 }) => {
   const {classes, cx} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
@@ -257,7 +261,14 @@ export const Header: React.FC<Props> = ({
   ) : (
     <Box className={classes.portfolioHeaderContainer}>
       <Box display="flex" mr={1}>
-        {avatarUrl ? (
+        {isLoaded && isFetching ? (
+          <Tooltip title={t('wallet.refreshingData')}>
+            <CircularProgress
+              size="20px"
+              className={classes.portfolioHeaderIcon}
+            />
+          </Tooltip>
+        ) : avatarUrl ? (
           <img
             className={cx(classes.round, classes.portfolioHeaderIcon)}
             src={avatarUrl}

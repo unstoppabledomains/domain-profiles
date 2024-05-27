@@ -12,7 +12,9 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import Bluebird from 'bluebird';
 import Markdown from 'markdown-to-jsx';
+import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
+import truncateMiddle from 'truncate-middle';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -105,11 +107,13 @@ export const Configuration: React.FC<
     emailAddress?: string;
     recoveryToken?: string;
     onLoaded?: (v: boolean) => void;
+    setIsFetching?: (v?: boolean) => void;
   }
 > = ({
   onUpdate,
   onLoaded,
   setButtonComponent,
+  setIsFetching,
   mode = 'basic',
   emailAddress: initialEmailAddress,
   recoveryToken,
@@ -123,6 +127,7 @@ export const Configuration: React.FC<
     WalletConfigState.PasswordEntry,
   );
   const [errorMessage, setErrorMessage] = useState<string>();
+  const {enqueueSnackbar} = useSnackbar();
 
   // wallet key management state
   const [persistKeys, setPersistKeys] = useState(false);
@@ -276,6 +281,11 @@ export const Configuration: React.FC<
       return;
     }
 
+    // set fetching flag if provided
+    if (setIsFetching) {
+      setIsFetching(true);
+    }
+
     // query addresses belonging to accounts
     const accountChains = [
       ...bootstrapState.assets?.map(a =>
@@ -287,6 +297,7 @@ export const Configuration: React.FC<
     ];
 
     // retrieve portfolio data for each asset
+    const missingAddresses: string[] = [];
     const accountAddresses = [
       ...new Set(bootstrapState.assets?.map(a => a.address)),
     ];
@@ -298,18 +309,39 @@ export const Configuration: React.FC<
         undefined,
         true,
       );
-      if (addressPortfolio) {
-        wallets.push(
-          ...addressPortfolio.filter(p =>
-            accountChains.includes(p.symbol.toLowerCase()),
-          ),
-        );
+      if (!addressPortfolio) {
+        missingAddresses.push(address);
+        return;
       }
+      wallets.push(
+        ...addressPortfolio.filter(p =>
+          accountChains.includes(p.symbol.toLowerCase()),
+        ),
+      );
     });
+
+    // show error message if any wallet data is missing
+    if (missingAddresses.length > 0) {
+      enqueueSnackbar(
+        <Markdown>
+          {t('wallet.loadingError', {
+            address: missingAddresses
+              .map(a => truncateMiddle(a, 4, 4, '...'))
+              .join(', '),
+          })}
+        </Markdown>,
+        {variant: 'error'},
+      );
+    }
 
     // display rendered wallets
     setMpcWallets(wallets.sort((a, b) => a.name.localeCompare(b.name)));
     setIsLoaded(true);
+
+    // clear fetching flag if provided
+    if (setIsFetching) {
+      setIsFetching(false);
+    }
   };
 
   const loadFromState = async () => {

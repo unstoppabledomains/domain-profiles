@@ -1,4 +1,7 @@
+import CheckIcon from '@mui/icons-material/Check';
+import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useRef, useState} from 'react';
 
@@ -8,12 +11,30 @@ import {getProfileData} from '../../actions';
 import useResolverKeys from '../../hooks/useResolverKeys';
 import {DomainFieldTypes, isValidDomain} from '../../lib';
 import type {ResolverKeyName} from '../../lib/types/resolverKeys';
+import {getAddressMetadata} from '../Chat/protocol/resolution';
 import ManageInput from '../Manage/common/ManageInput';
 import {isValidRecordKeyValue} from '../Manage/common/currencyRecords';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   loader: {
+    display: 'flex',
+    alignItems: 'center',
     marginRight: '8px',
+  },
+  checkIcon: {
+    color: theme.palette.success.main,
+    height: '16px',
+    width: '16px',
+  },
+  resolvedContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    minHeight: '20px',
+    marginTop: theme.spacing(1),
+  },
+  resolvedText: {
+    color: theme.palette.neutralShades[600],
+    marginLeft: theme.spacing(1),
   },
 }));
 
@@ -88,53 +109,78 @@ const AddressInput: React.FC<Props> = ({
     setAddress(addressOrDomain);
     setResolvedDomain('');
 
+    // clear the existing timeout
     if (timeout.current) {
       clearTimeout(timeout.current);
     }
-    if (!isValidDomain(addressOrDomain)) {
-      validateAddress(addressOrDomain);
-      return;
+
+    // reverse resolve address to name
+    if (validateAddress(addressOrDomain)) {
+      timeout.current = setTimeout(async () => {
+        setIsLoading(true);
+        const resolutionData = await getAddressMetadata(addressOrDomain);
+        setIsLoading(false);
+        if (resolutionData?.name) {
+          setAddress(addressOrDomain);
+          setResolvedDomain(resolutionData.name);
+          onResolvedDomainChange(resolutionData.name);
+          onAddressChange(addressOrDomain);
+        }
+      }, 500);
     }
-    timeout.current = setTimeout(async () => {
-      setIsLoading(true);
-      const resolvedAddress = await resolveDomain(addressOrDomain);
-      setIsLoading(false);
-      if (!resolvedAddress || !validateAddress(resolvedAddress)) {
-        setErrorMessage(
-          `Could not resolve ${addressOrDomain} to a valid ${assetSymbol} address`,
-        );
-        return;
-      }
-      setAddress(resolvedAddress);
-      setResolvedDomain(addressOrDomain);
-      onResolvedDomainChange(addressOrDomain);
-      onAddressChange(resolvedAddress);
-    }, 500);
+
+    // forward resolve domain to address
+    if (isValidDomain(addressOrDomain)) {
+      timeout.current = setTimeout(async () => {
+        setIsLoading(true);
+        const resolvedAddress = await resolveDomain(addressOrDomain);
+        setIsLoading(false);
+        if (!resolvedAddress || !validateAddress(resolvedAddress)) {
+          setErrorMessage(
+            `Could not resolve ${addressOrDomain} to a valid ${assetSymbol} address`,
+          );
+          return;
+        }
+        setAddress(resolvedAddress);
+        setResolvedDomain(addressOrDomain);
+        onResolvedDomainChange(addressOrDomain);
+        onAddressChange(resolvedAddress);
+      }, 500);
+    }
   };
 
   return (
-    <ManageInput
-      mt={2}
-      id="address-input"
-      value={address}
-      label={label}
-      placeholder={placeholder}
-      onChange={onChange}
-      disabled={isLoading}
-      endAdornment={
-        isLoading ? (
-          <div className={classes.loader} data-testid="loader">
-            <CircularProgress size={23} />
-          </div>
-        ) : undefined
-      }
-      helperText={
-        resolvedDomain ? `Successfully resolved ${resolvedDomain}` : undefined
-      }
-      errorText={errorMessage}
-      error={error || !!errorMessage}
-      stacked={true}
-    />
+    <Box>
+      <ManageInput
+        mt={2}
+        id="address-input"
+        value={address}
+        label={label}
+        placeholder={placeholder}
+        onChange={onChange}
+        disabled={isLoading}
+        endAdornment={
+          isLoading ? (
+            <div className={classes.loader} data-testid="loader">
+              <CircularProgress size={23} />
+            </div>
+          ) : undefined
+        }
+        errorText={errorMessage}
+        error={error || !!errorMessage}
+        stacked={true}
+      />
+      <Box className={classes.resolvedContainer}>
+        {resolvedDomain && (
+          <>
+            <CheckIcon className={classes.checkIcon} />
+            <Typography variant="caption" className={classes.resolvedText}>
+              Successfully resolved {resolvedDomain}
+            </Typography>
+          </>
+        )}
+      </Box>
+    </Box>
   );
 };
 

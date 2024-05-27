@@ -54,41 +54,39 @@ const HomePage = () => {
           },
         }}
       />
-      <Grid
-        container
-        className={classes.content}
-        data-testid="mainContentContainer"
-      >
-        <Grid item xs={12} className={classes.item}>
-          <Box className={classes.rightBlock}>
-            <img
-              src={firstNFTCard}
-              alt="nft-card-1"
-              className={cx(classes.cardImage, classes.cardImageTop)}
-            />
-            <img
-              src={secondNFTCard}
-              alt="nft-card-2"
-              className={cx(classes.cardImage, classes.cardImageBottom)}
-            />
-          </Box>
+      <Box className={classes.content}>
+        <Grid container data-testid="mainContentContainer">
+          <Grid item xs={12} className={classes.item}>
+            <Box className={classes.rightBlock}>
+              <img
+                src={firstNFTCard}
+                alt="nft-card-1"
+                className={cx(classes.cardImage, classes.cardImageTop)}
+              />
+              <img
+                src={secondNFTCard}
+                alt="nft-card-2"
+                className={cx(classes.cardImage, classes.cardImageBottom)}
+              />
+            </Box>
+          </Grid>
+          <Grid item xs={12} className={classes.item}>
+            <Typography className={classes.sectionTitle}>
+              Unstoppable Profiles
+            </Typography>
+          </Grid>
+          <Grid item xs={12} className={classes.item}>
+            <Typography className={classes.sectionSubTitle}>
+              Find your friends and connect with the world in Web3.
+            </Typography>
+          </Grid>
+          <Grid item xs={12} className={classes.item}>
+            <Box className={classes.searchContainer}>
+              <ProfileSearchBar variant="homepage" setWeb3Deps={setWeb3Deps} />
+            </Box>
+          </Grid>
         </Grid>
-        <Grid item xs={12} className={classes.item}>
-          <Typography className={classes.sectionTitle}>
-            Unstoppable Profiles
-          </Typography>
-        </Grid>
-        <Grid item xs={12} className={classes.item}>
-          <Typography className={classes.sectionSubTitle}>
-            Find your friends and connect with the world in Web3.
-          </Typography>
-        </Grid>
-        <Grid item xs={12} className={classes.item}>
-          <Box className={classes.searchContainer}>
-            <ProfileSearchBar variant="homepage" setWeb3Deps={setWeb3Deps} />
-          </Box>
-        </Grid>
-      </Grid>
+      </Box>
       <Box className={classes.footerContainer}>
         <Box className={classes.footerContent}>
           <Typography className={classes.copyright} variant="body2">

@@ -4948,6 +4948,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/truncate-middle@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "@types/truncate-middle@npm:1.0.4"
+  checksum: e421ccb7ac2baaae9e45d3b292bd3497e0c6d18a790a7c16bc505bc8a09778ebb4691058c4712ba97c149f47161ac930a21b4ff74bb4c6ff3d674b83ecf7fd35
+  languageName: node
+  linkType: hard
+
 "@types/trusted-types@npm:^2.0.2":
   version: 2.0.4
   resolution: "@types/trusted-types@npm:2.0.4"
@@ -5272,6 +5279,7 @@ __metadata:
     "@types/react-lazy-load-image-component": ^1.6.0
     "@types/react-linkify": ^1.0.1
     "@types/react-tagcloud": ^2.3.2
+    "@types/truncate-middle": ^1.0.4
     "@uauth/js": ^2.8.0
     "@unstoppabledomains/config": "workspace:^"
     "@unstoppabledomains/resolution": ^8.5.0
@@ -5329,6 +5337,7 @@ __metadata:
     swiper: ^8.0.0
     title-case: ^3.0.3
     truncate-eth-address: ^1.0.2
+    truncate-middle: ^1.0.6
     tslib: ^2.6.2
     tss-react: ^4.0.0
     typescript: 5.0.4
@@ -20493,6 +20502,13 @@ __metadata:
   version: 1.0.2
   resolution: "truncate-eth-address@npm:1.0.2"
   checksum: c56406753f5071e008ef67269e86f6b5c598e9a673930715b6175ad5a2708a4b39a32571ccc49b1dbd143e774a19a0a38b0bf2a5ae6e857560eae8c84140e95b
+  languageName: node
+  linkType: hard
+
+"truncate-middle@npm:^1.0.6":
+  version: 1.0.6
+  resolution: "truncate-middle@npm:1.0.6"
+  checksum: 5f366ff69b1f794f6f9314f34178aff446d38c7b576b1d484ec562e9e27e36a7c970abdf202201709fd9d89d0db051698838b79e5eec491bff2c268e5d776b25
   languageName: node
   linkType: hard
 

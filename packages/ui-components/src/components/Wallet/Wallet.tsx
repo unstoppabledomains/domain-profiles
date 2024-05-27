@@ -38,6 +38,7 @@ export const Wallet: React.FC<
 }) => {
   const {classes} = useStyles();
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isFetching, setIsFetching] = useState<boolean>();
   const [accessToken, setAccessToken] = useState<string>();
 
   const handleWalletLoaded = (v: boolean) => {
@@ -57,6 +58,7 @@ export const Wallet: React.FC<
       <Header
         mode={mode}
         isLoaded={isLoaded}
+        isFetching={isFetching}
         avatarUrl={avatarUrl}
         showMessages={showMessages}
         address={address}
@@ -72,6 +74,7 @@ export const Wallet: React.FC<
         onLoaded={handleWalletLoaded}
         onUpdate={handleAccessToken}
         setButtonComponent={setButtonComponent}
+        setIsFetching={setIsFetching}
       />
     </Box>
   );

@@ -20,6 +20,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     width: '100%',
+    height: '100%',
   },
   contentContainer: {
     display: 'flex',
@@ -31,6 +32,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     backgroundColor: theme.palette.primaryShades[100],
     padding: 12,
     borderRadius: 8,
+    height: '100%',
   },
   icon: {
     fontSize: '60px',
@@ -85,58 +87,67 @@ export const SendConfirm: React.FC<Props> = ({
         alignItems="center"
         flexDirection="column"
         width="100%"
+        height="100%"
+        justifyContent="space-between"
       >
-        <Typography variant="h4" textAlign="center">
-          {amount} {symbol}
-        </Typography>
-        <Typography variant="subtitle1">{amountInDollars}</Typography>
-        <Box className={classes.contentContainer} mt={3}>
-          <Box
-            display="flex"
-            width="100%"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <Typography variant="h6">{t('common.to')}</Typography>
-            <Typography variant="subtitle1">
-              {resolvedDomain ? <b>{resolvedDomain} </b> : ''}(
-              {truncateAddress(recipientAddress)})
-            </Typography>
-          </Box>
-          <Box
-            display="flex"
-            width="100%"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <Typography variant="h6">{t('common.network')}</Typography>
-            <Typography variant="subtitle1">{blockchainName}</Typography>
-          </Box>
-          <Box
-            display="flex"
-            width="100%"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <Typography variant="h6">{t('wallet.networkFee')}</Typography>
-            <Typography variant="subtitle1">
-              {!gasFee ? (
-                <CircularProgress size={20} />
-              ) : (
-                `${gasFee} ${asset.blockchainAsset.symbol}`
-              )}
-            </Typography>
-          </Box>
-          <Box
-            display="flex"
-            width="100%"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <Typography variant="h6">{t('wallet.totalCost')}</Typography>
-            <Typography variant="subtitle1">
-              {Number(amount) + Number(gasFee)} {asset.blockchainAsset.symbol}
-            </Typography>
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          width="100%"
+        >
+          <Typography variant="h4" textAlign="center">
+            {amount} {symbol}
+          </Typography>
+          <Typography variant="subtitle1">{amountInDollars}</Typography>
+          <Box className={classes.contentContainer} mt={3}>
+            <Box
+              display="flex"
+              width="100%"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Typography variant="h6">{t('common.to')}</Typography>
+              <Typography variant="subtitle1">
+                {resolvedDomain ? <b>{resolvedDomain} </b> : ''}(
+                {truncateAddress(recipientAddress)})
+              </Typography>
+            </Box>
+            <Box
+              display="flex"
+              width="100%"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Typography variant="h6">{t('common.network')}</Typography>
+              <Typography variant="subtitle1">{blockchainName}</Typography>
+            </Box>
+            <Box
+              display="flex"
+              width="100%"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Typography variant="h6">{t('wallet.networkFee')}</Typography>
+              <Typography variant="subtitle1">
+                {!gasFee ? (
+                  <CircularProgress size={20} />
+                ) : (
+                  `${gasFee} ${asset.blockchainAsset.symbol}`
+                )}
+              </Typography>
+            </Box>
+            <Box
+              display="flex"
+              width="100%"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Typography variant="h6">{t('wallet.totalCost')}</Typography>
+              <Typography variant="subtitle1">
+                {Number(amount) + Number(gasFee)} {asset.blockchainAsset.symbol}
+              </Typography>
+            </Box>
           </Box>
         </Box>
         <Button

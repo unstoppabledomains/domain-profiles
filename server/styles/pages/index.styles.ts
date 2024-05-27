@@ -13,16 +13,18 @@ export const useStyles = makeStyles<
   container: {
     position: 'relative',
     background: theme.palette.neutralShades[100],
+    justifyContent: 'space-between',
     display: 'flex',
     flexDirection: 'column',
     flex: '1 1 auto',
     height: '100%',
-    minHeight: '1050px',
   },
   content: {
+    display: 'flex',
+    alignItems: 'center',
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
-    marginTop: theme.spacing(15),
+    height: '100%',
   },
   item: {
     justifyContent: 'center',
@@ -165,12 +167,11 @@ export const useStyles = makeStyles<
   },
   footerContainer: {
     padding: theme.spacing(2),
-    position: 'absolute',
-    bottom: 0,
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
     justifyContent: 'center',
+    marginTop: theme.spacing(5),
   },
   footerContent: {
     display: 'flex',

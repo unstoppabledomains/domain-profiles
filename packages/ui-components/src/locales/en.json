@@ -820,7 +820,6 @@
     "enterRecoveryPhrase": "Enter your password",
     "enterRecoveryPhraseConfirmation": "Confirm your new password",
     "enterResetPassword": "Enter your new password",
-    "help": "Documentation",
     "insufficientBalance": "Insufficient balance",
     "invalidRecoveryAccount": "Invalid email address or password",
     "invalidResetAttempt": "Invalid recovery link",

@@ -12,6 +12,7 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import Bluebird from 'bluebird';
 import Markdown from 'markdown-to-jsx';
+import {useRouter} from 'next/router';
 import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 import truncateMiddle from 'truncate-middle';
@@ -48,6 +49,8 @@ import {Client, MIN_CLIENT_HEIGHT} from './Client';
 import InlineEducation from './InlineEducation';
 import {OperationStatus} from './OperationStatus';
 import type {WalletMode} from './index';
+
+const EMAIL_PARAM = 'email';
 
 const useStyles = makeStyles<{
   configState: WalletConfigState;
@@ -119,6 +122,7 @@ export const Configuration: React.FC<
   recoveryToken,
 }) => {
   // component state variables
+  const {query: params} = useRouter();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -152,6 +156,13 @@ export const Configuration: React.FC<
     setButtonComponent(<></>);
     void loadFromState();
   }, []);
+
+  useEffect(() => {
+    // select email address if specified in parameter
+    if (params[EMAIL_PARAM] && typeof params[EMAIL_PARAM] === 'string') {
+      setEmailAddress(params[EMAIL_PARAM]);
+    }
+  }, [params]);
 
   useEffect(() => {
     if (configState === WalletConfigState.Complete && accessToken) {

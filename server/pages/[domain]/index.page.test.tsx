@@ -133,6 +133,7 @@ const defaultTokenGalleryData = (): SerializedPublicDomainProfileData => {
         address: 'test-eth-address',
         plaintextMessage: 'message',
         signedMessage: 'signature',
+        type: 'external',
       },
     ],
   };

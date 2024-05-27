@@ -124,7 +124,7 @@ const Cards = [
   {
     title: 'Keep Your Funds Safe',
     content:
-      'Store your Unstoppable Wallet password in a safe place and never share it with anyone. Always be on the lookup for suspicious links when entering your password on an app. **Unstoppable Domains staff will never ask you for your wallet password.**',
+      'Store your Unstoppable Wallet password in a safe place and never share it with anyone. Always be on the lookout for suspicious links when entering your password on an app. **Unstoppable Domains staff will never ask you for your wallet password.**',
     icon: <LockIcon />,
   },
   {

@@ -33,6 +33,7 @@ import {Wallet as UnstoppableWalletConfig} from './Wallet';
 
 type Props = {
   address?: string;
+  isMpcWallet?: boolean;
   message?: React.ReactNode;
   prompt?: boolean;
   onComplete?: (web3Deps?: Web3Dependencies) => void;
@@ -55,9 +56,9 @@ export const AccessWallet = (props: Props) => {
   const [udConfigSuccess, setUdConfigSuccess] = useState(false);
   const {messageToSign, setMessageToSign} = useWeb3Context();
 
+  // automatically select a connected Unstoppable Wallet if one of the managed
+  // addresses matches the requested address
   useEffect(() => {
-    // automatically select a connected Unstoppable Wallet if one of the managed
-    // addresses matches the requested address
     if (state && Object.keys(state).length > 0 && props.address) {
       const bootstrapState = getBootstrapState(state);
       if (
@@ -70,6 +71,13 @@ export const AccessWallet = (props: Props) => {
       }
     }
   }, [state, props.address]);
+
+  // automatically select Unstoppable Wallet if the MPC flag is set
+  useEffect(() => {
+    if (props.isMpcWallet) {
+      setSelectedWallet(WalletName.UnstoppableWallet);
+    }
+  }, [props.isMpcWallet]);
 
   const handleWalletConnected = (web3Deps?: Web3Dependencies) => {
     setError('');
@@ -296,6 +304,7 @@ export const AccessWalletModal = (props: ModalProps) => {
           onClose={onCloseWrapper}
           prompt={props.prompt}
           message={props.message}
+          isMpcWallet={props.isMpcWallet}
         />
       </div>
     </ConnectWalletWrapper>

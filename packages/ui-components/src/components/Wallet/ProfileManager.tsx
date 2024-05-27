@@ -5,11 +5,12 @@ import React, {useEffect, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 
+import {getProfileData} from '../../actions';
 import {AccessWalletModal} from '../../components/Wallet/AccessWallet';
 import {useWeb3Context} from '../../hooks';
 import {fetchApi} from '../../lib';
 import {sleep} from '../../lib/sleep';
-import {DomainProfileKeys} from '../../lib/types/domain';
+import {DomainFieldTypes, DomainProfileKeys} from '../../lib/types/domain';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import {signMessage as signPushMessage} from '../Chat/protocol/push';
 import {signMessage as signXmtpMessage} from '../Chat/protocol/xmtp';
@@ -56,6 +57,7 @@ const Manager: React.FC<ManagerProps> = ({
   const [expiry, setExpiry] = useState<string>();
   const [accessWalletModalIsOpen, setAccessWalletModalIsOpen] = useState(false);
   const [clickedReconnect, setClickedReconnect] = useState(false);
+  const [isMpcWallet, setIsMpcWallet] = useState(false);
 
   useEffect(() => {
     if (saveClicked) {
@@ -130,6 +132,20 @@ const Manager: React.FC<ManagerProps> = ({
   // handlePrepareSignature retrieves the message that must be signed for the profile
   // management request.
   const handlePrepareSignature = async () => {
+    // check domain owner address MPC status
+    if (!isMpcWallet) {
+      const publicData = await getProfileData(domain, [
+        DomainFieldTypes.CryptoVerifications,
+      ]);
+      setIsMpcWallet(
+        publicData?.cryptoVerifications?.some(
+          v =>
+            v.address.toLowerCase() === ownerAddress.toLowerCase() &&
+            v.type === 'mpc',
+        ) || false,
+      );
+    }
+
     // check whether the domain signature is stored on local device
     const localSignature = localStorage.getItem(
       getDomainSignatureValueKey(domain),
@@ -251,6 +267,7 @@ const Manager: React.FC<ManagerProps> = ({
           open={accessWalletModalIsOpen}
           onClose={handleClose}
           onReconnect={handleReconnect}
+          isMpcWallet={isMpcWallet}
         />
       )}
     </div>

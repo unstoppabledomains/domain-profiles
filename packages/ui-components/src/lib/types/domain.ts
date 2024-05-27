@@ -207,6 +207,7 @@ export type SerializedDomainCryptoVerification = {
   address: string;
   plaintextMessage: string;
   signedMessage: string;
+  type: string;
 };
 
 export type SerializedDomainListData = {

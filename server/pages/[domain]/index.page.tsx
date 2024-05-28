@@ -654,15 +654,14 @@ const DomainProfile = ({
                 {authDomain ? (
                   <>
                     {featureFlags?.variations
-                      ?.ecommerceServiceUsersEnableChat &&
-                      !isMpcWallet && (
-                        <Box className={classes.chatContainer}>
-                          <UnstoppableMessaging
-                            address={authAddress}
-                            disableSupportBubble
-                          />
-                        </Box>
-                      )}
+                      ?.ecommerceServiceUsersEnableChat && (
+                      <Box className={classes.chatContainer}>
+                        <UnstoppableMessaging
+                          address={authAddress}
+                          disableSupportBubble
+                        />
+                      </Box>
+                    )}
                     <AccountButton
                       domain={domain}
                       domainOwner={ownerAddress}

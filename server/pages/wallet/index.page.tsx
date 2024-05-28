@@ -196,7 +196,7 @@ const WalletPage = () => {
                   domain={authDomain}
                   avatarUrl={authAvatar}
                   recoveryToken={recoveryToken}
-                  showMessages={false}
+                  showMessages={true}
                   onUpdate={(_t: DomainProfileTabType) => {
                     handleAuthComplete();
                   }}

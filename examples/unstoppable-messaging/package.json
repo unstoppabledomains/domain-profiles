@@ -8,7 +8,7 @@
   "dependencies": {
     "@unstoppabledomains/config": "^0.0.5",
     "@unstoppabledomains/ui-components": "^0.0.21",
-    "@unstoppabledomains/ui-kit": "^0.3.23",
+    "@unstoppabledomains/ui-kit": "^0.3.24",
     "next": "^12.3.4",
     "next-transpile-modules": "^10.0.0"
   },

@@ -8,8 +8,7 @@ import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
-import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
-import ShieldKeyHoleIcon from '@unstoppabledomains/ui-kit/icons/ShieldKeyHoleIcon';
+import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableWalletIcon';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getOwnerDomains} from '../../actions';
@@ -117,6 +116,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
       fill: theme.palette.white,
       color: theme.palette.white,
     },
+  },
+  logo: {
+    color: theme.palette.primary.main,
   },
   optionsContainer: {
     display: 'flex',
@@ -238,7 +240,7 @@ export const Header: React.FC<Props> = ({
             )}
           >
             <Box className={classes.icon}>
-              <ShieldKeyHoleIcon />
+              <UnstoppableWalletIcon />
             </Box>
           </Box>
         </Box>
@@ -274,9 +276,9 @@ export const Header: React.FC<Props> = ({
             src={avatarUrl}
           />
         ) : (
-          <IconPlate size={20} variant="info">
-            <ShieldKeyHoleIcon />
-          </IconPlate>
+          <UnstoppableWalletIcon
+            className={cx(classes.portfolioHeaderIcon, classes.logo)}
+          />
         )}
       </Box>
       <Box display="flex" alignItems="center">

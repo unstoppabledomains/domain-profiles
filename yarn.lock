@@ -5346,15 +5346,15 @@ __metadata:
     wagmi: ^1.4.12
     web3.storage: ^4.5.5
   peerDependencies:
-    "@unstoppabledomains/ui-kit": ^0.3.23
+    "@unstoppabledomains/ui-kit": ^0.3.24
     notistack: ^2.0.5
     react-query: ^3.39.3
   languageName: unknown
   linkType: soft
 
-"@unstoppabledomains/ui-kit@npm:^0.3.23":
-  version: 0.3.23
-  resolution: "@unstoppabledomains/ui-kit@npm:0.3.23"
+"@unstoppabledomains/ui-kit@npm:^0.3.24":
+  version: 0.3.24
+  resolution: "@unstoppabledomains/ui-kit@npm:0.3.24"
   dependencies:
     "@emotion/react": ^11.0.0
     "@emotion/styled": ^11.0.0
@@ -5372,7 +5372,7 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: c84fac0dc69234f122faf57a19a06f4d434a7459a7afbefddaa5bfcf45ad3e8a9390b82ff841542b65e06291555c9cb153e6f08629a886e2d1b3a5fff5513b8d
+  checksum: 5993ac08b94f957375a693e6cc7b750a4b2f7fbc2e0bb6eb5568e2ffe1ccf08f3ae31f5a84edfe682242f822c4f6434bb69fc0cd33b019d76a85ae7a11ba6acf
   languageName: node
   linkType: hard
 
@@ -18986,7 +18986,7 @@ __metadata:
     "@unstoppabledomains/config": "workspace:^"
     "@unstoppabledomains/resolution": ^8.5.0
     "@unstoppabledomains/ui-components": "workspace:^"
-    "@unstoppabledomains/ui-kit": ^0.3.23
+    "@unstoppabledomains/ui-kit": ^0.3.24
     "@web3-react/core": ^8.2.2
     bluebird: ^3.7.2
     clipboard-copy: ^4.0.1

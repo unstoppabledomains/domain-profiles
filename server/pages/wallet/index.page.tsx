@@ -26,7 +26,7 @@ import {
 import InlineEducation from '@unstoppabledomains/ui-components/src/components/Wallet/InlineEducation';
 import {getBootstrapState} from '@unstoppabledomains/ui-components/src/lib/fireBlocks/storage/state';
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
-import ShieldKeyHoleIcon from '@unstoppabledomains/ui-kit/icons/ShieldKeyHoleIcon';
+import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableWalletIcon';
 
 const WalletPage = () => {
   const {classes, cx} = useStyles({});
@@ -223,7 +223,7 @@ const WalletPage = () => {
               >
                 <Box mt={1} display="flex" alignItems="center">
                   <IconPlate size={35} variant="info">
-                    <ShieldKeyHoleIcon />
+                    <UnstoppableWalletIcon />
                   </IconPlate>
                   <Typography ml={1} variant="h6">
                     Features & highlights

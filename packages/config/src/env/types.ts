@@ -94,6 +94,12 @@ export type Config = {
     HOST_URL: string;
     LANDING_PAGE_URL: string;
     DOCUMENTATION_URL: string;
+    CHAINS: {
+      BUY: string[];
+      RECEIVE: string[];
+      SEND: string[];
+      DOMAINS: string[];
+    };
   };
   VERIFICATION_SUPPORTED: string[];
   PUSH: {

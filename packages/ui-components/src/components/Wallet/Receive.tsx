@@ -14,13 +14,12 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance} from '../../lib';
 import {useTranslationContext} from '../../lib';
+import {filterWallets} from '../../lib/wallet/filter';
 import Link from '../Link';
 import ManageInput from '../Manage/common/ManageInput';
 import {SelectAsset} from './SelectAsset';
 import {TitleWithBackButton} from './TitleWithBackButton';
 import type {TokenEntry} from './Token';
-
-const SUPPORTED_UD_SYMBOLS = ['ETH', 'MATIC'];
 
 const useStyles = makeStyles()((theme: Theme) => ({
   flexColCenterAligned: {
@@ -129,7 +128,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
       <Box className={classes.flexColCenterAligned}>
         <SelectAsset
           onSelectAsset={setAsset}
-          wallets={wallets}
+          wallets={filterWallets(wallets, config.WALLETS.CHAINS.RECEIVE)}
           onCancelClick={handleBackClick}
           label={t('wallet.selectAssetToReceive')}
         />
@@ -200,9 +199,9 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
               <Typography variant="caption" color="error">
                 <Markdown>
                   {t(
-                    SUPPORTED_UD_SYMBOLS.map(s => s.toLowerCase()).includes(
-                      asset.symbol.toLowerCase(),
-                    )
+                    config.WALLETS.CHAINS.DOMAINS.map(s =>
+                      s.toLowerCase(),
+                    ).includes(asset.symbol.toLowerCase())
                       ? 'wallet.receiveAddressCaptionWithDomains'
                       : 'wallet.receiveAddressCaption',
                     {

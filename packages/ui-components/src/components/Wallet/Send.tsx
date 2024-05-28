@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 import type {Theme} from '@mui/material/styles';
 import React, {useRef, useState} from 'react';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {
@@ -14,6 +15,7 @@ import {
 import type {SerializedWalletBalance} from '../../lib';
 import {useTranslationContext} from '../../lib';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
+import {filterWallets} from '../../lib/wallet/filter';
 import AddressInput from './AddressInput';
 import AmountInput from './AmountInput';
 import {OperationStatus} from './OperationStatus';
@@ -247,7 +249,7 @@ const Send: React.FC<Props> = ({
       <Box className={classes.flexColCenterAligned}>
         <SelectAsset
           onSelectAsset={handleSelectToken}
-          wallets={wallets}
+          wallets={filterWallets(wallets, config.WALLETS.CHAINS.SEND)}
           onCancelClick={handleBackClick}
           onClickBuy={onClickBuy}
           onClickReceive={onClickReceive}

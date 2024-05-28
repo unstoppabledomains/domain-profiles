@@ -749,15 +749,26 @@ const DomainProfile = ({
             )}
             {isOwner !== undefined && tokenId && (
               <Box className={classes.menuButtonContainer}>
-                <ChipControlButton
-                  data-testid="edit-profile-button"
-                  onClick={handleManageDomainModalOpen}
-                  icon={<EditOutlinedIcon />}
-                  label={t('manage.manageProfile')}
-                  sx={{marginRight: 1}}
-                />
+                {(isOwner || !authDomain) && (
+                  <ChipControlButton
+                    data-testid="edit-profile-button"
+                    onClick={handleManageDomainModalOpen}
+                    icon={<EditOutlinedIcon />}
+                    label={t('manage.manageProfile')}
+                    sx={{marginRight: 1}}
+                  />
+                )}
                 {!isOwner ? (
                   <>
+                    {authDomain && (
+                      <ChipControlButton
+                        data-testid="chat-button"
+                        onClick={() => setOpenChat(domain)}
+                        icon={<ChatIcon />}
+                        label={t('push.chat')}
+                        sx={{marginRight: 1}}
+                      />
+                    )}
                     {(!authDomain ||
                       isDomainValidForManagement(authDomain)) && (
                       <Box mr={1}>
@@ -771,16 +782,6 @@ const DomainProfile = ({
                           onUnfollowClick={handleUnfollowClick}
                         />
                       </Box>
-                    )}
-                    {authDomain && (
-                      <ChipControlButton
-                        data-testid="chat-button"
-                        onClick={() => setOpenChat(domain)}
-                        icon={<ChatIcon />}
-                        label={t('push.chat')}
-                        sx={{marginRight: 1}}
-                        variant="outlined"
-                      />
                     )}
                   </>
                 ) : (

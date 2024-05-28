@@ -8,7 +8,7 @@ import Image from 'next/image';
 import React from 'react';
 
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
-import ShieldKeyHoleIcon from '@unstoppabledomains/ui-kit/icons/ShieldKeyHoleIcon';
+import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableWalletIcon';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import getImageUrl from '../../lib/domain/getImageUrl';
@@ -390,7 +390,7 @@ const WalletButton: React.FC<Props> = ({
       props.title = t('wallet.title');
       props.icon = (
         <IconPlate size={size} variant="info">
-          <ShieldKeyHoleIcon />
+          <UnstoppableWalletIcon />
         </IconPlate>
       );
       break;

@@ -126,7 +126,7 @@
     "tslib": "^2.6.2"
   },
   "peerDependencies": {
-    "@unstoppabledomains/ui-kit": "^0.3.23",
+    "@unstoppabledomains/ui-kit": "^0.3.24",
     "notistack": "^2.0.5",
     "react-query": "^3.39.3"
   },

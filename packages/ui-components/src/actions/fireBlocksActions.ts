@@ -374,7 +374,12 @@ export const getMessageSignature = async (
     // otherwise just retrieve the first first asset.
     const asset =
       assets.find(
-        a => a.address.toLowerCase() === opts?.address?.toLowerCase(),
+        a =>
+          a.blockchainAsset.blockchain.id.toLowerCase() ===
+            config.WALLETS.SIGNATURE_SYMBOL.split('/')[0].toLowerCase() &&
+          a.blockchainAsset.symbol.toLowerCase() ===
+            config.WALLETS.SIGNATURE_SYMBOL.split('/')[1].toLowerCase() &&
+          a.address.toLowerCase() === opts?.address?.toLowerCase(),
       ) || assets[0];
     if (!asset) {
       throw new Error('address not found in account');

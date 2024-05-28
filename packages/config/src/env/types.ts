@@ -100,6 +100,7 @@ export type Config = {
       SEND: string[];
       DOMAINS: string[];
     };
+    SIGNATURE_SYMBOL: string;
   };
   VERIFICATION_SUPPORTED: string[];
   PUSH: {

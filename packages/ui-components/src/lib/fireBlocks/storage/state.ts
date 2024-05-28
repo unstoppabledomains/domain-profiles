@@ -21,7 +21,7 @@ export const saveBootstrapState = async (
   state: Record<string, Record<string, string>>,
   setState: (state: Record<string, Record<string, string>>) => void,
   accessToken: string,
-): Promise<void> => {
+): Promise<BootstrapState> => {
   // saturate values if required
   if (!values.assets || values.assets.length === 0) {
     values.assets = (await getAccountAssets(accessToken)) || [];
@@ -33,4 +33,7 @@ export const saveBootstrapState = async (
   state[`${BootstrapStatePrefix}-${BootstrapStateCurrentKey}`] =
     values as unknown as Record<string, string>;
   setState({...state});
+
+  // return the resulting state
+  return values;
 };

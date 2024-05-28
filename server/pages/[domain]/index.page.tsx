@@ -99,6 +99,7 @@ import {
   getSeoTags,
   isDomainValidForManagement,
   isExternalDomain,
+  loginWithAddress,
   parseRecords,
   useDomainConfig,
   useEnsDomainStatus,
@@ -441,6 +442,11 @@ const DomainProfile = ({
 
       // determine if logged in user is an MPC wallet
       setIsMpcWallet(Object.keys(state).length > 0);
+
+      // check for a new resolved domain name
+      void loginWithAddress(localAuthAddress).then(r =>
+        setAuthDomain(r.domain),
+      );
     }
     setIsOwner(isAuthorized);
   }, [isMounted, isFeatureFlagSuccess, featureFlags, ownerAddress]);
@@ -648,15 +654,14 @@ const DomainProfile = ({
                 {authDomain ? (
                   <>
                     {featureFlags?.variations
-                      ?.ecommerceServiceUsersEnableChat &&
-                      !isMpcWallet && (
-                        <Box className={classes.chatContainer}>
-                          <UnstoppableMessaging
-                            address={authAddress}
-                            disableSupportBubble
-                          />
-                        </Box>
-                      )}
+                      ?.ecommerceServiceUsersEnableChat && (
+                      <Box className={classes.chatContainer}>
+                        <UnstoppableMessaging
+                          address={authAddress}
+                          disableSupportBubble
+                        />
+                      </Box>
+                    )}
                     <AccountButton
                       domain={domain}
                       domainOwner={ownerAddress}

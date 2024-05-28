@@ -85,6 +85,12 @@ export default function getDefaultConfig(): Config {
       DOCUMENTATION_URL:
         'https://unstoppabledomains.freshdesk.com/support/solutions/48000457487',
       LANDING_PAGE_URL: 'https://unstoppabledomains.com/products/wallet-p',
+      CHAINS: {
+        BUY: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'ETH/ETH'],
+        RECEIVE: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'BASE/ETH', 'ETH/ETH'],
+        SEND: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'BASE/ETH', 'ETH/ETH'],
+        DOMAINS: ['ETH', 'MATIC'],
+      },
     },
     PUSH: {
       CHANNELS: ['eip155:5:0x0389246fB9191Dc41722e1f0D558dC8f82Be3C7A'],

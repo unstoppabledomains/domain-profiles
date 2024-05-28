@@ -133,7 +133,6 @@ export enum DomainSuffixes {
 }
 
 export const EXTERNAL_DOMAIN_SUFFIXES = ['eth'];
-
 export type EnsDomainExpiryResponse = {
   expiresAt?: string | null;
   isAvailable?: boolean;
@@ -533,7 +532,9 @@ export type TwitterUserInfo = {
   listedCount: number;
   tweetsCount: number;
 } | null;
+
 export const UD_BLUE_BADGE_CODE = 'UdBlue';
+export const WEB2_DOMAIN_SUFFIXES = ['com'];
 
 export enum Web2Suffixes {
   Com = 'com',

@@ -36,6 +36,7 @@ import type {SerializedUserDomainProfileData} from '../../lib';
 import {
   DomainProfileKeys,
   isExternalDomain,
+  isWeb2Domain,
   loginWithAddress,
   useTranslationContext,
 } from '../../lib';
@@ -44,6 +45,7 @@ import {getAddressMetadata} from '../Chat/protocol/resolution';
 import {DomainListModal} from '../Domain';
 import {Badges as BadgesTab} from './Tabs/Badges';
 import {Crypto as CryptoTab} from './Tabs/Crypto';
+import {DnsRecords as DnsRecordsTab} from './Tabs/DnsRecords';
 import {Email as EmailTab} from './Tabs/Email';
 import {ListForSale as ListForSaleTab} from './Tabs/ListForSale';
 import {Profile as ProfileTab} from './Tabs/Profile';
@@ -217,6 +219,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
     !isExternalDomain(domain) &&
     (metadata.type as string)?.toLowerCase() === 'uns' &&
     (metadata.blockchain as string)?.toLowerCase() === 'matic';
+  const isWeb2Supported = isOnchainSupported && isWeb2Domain(domain);
 
   const onUpdateWrapper = (
     tab: DomainProfileTabType,
@@ -375,7 +378,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                       disabled={!web3Deps?.address && !isOwner}
                     />
                   )}
-                  {isOnchainSupported && (
+                  {isOnchainSupported && !isWeb2Supported && (
                     <Tab
                       icon={<LanguageOutlinedIcon />}
                       iconPosition="top"
@@ -385,6 +388,19 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                         </Box>
                       }
                       value={DomainProfileTabType.Website}
+                      disabled={!web3Deps?.address && !isOwner}
+                    />
+                  )}
+                  {isOnchainSupported && isWeb2Supported && (
+                    <Tab
+                      icon={<LanguageOutlinedIcon />}
+                      iconPosition="top"
+                      label={
+                        <Box className={classes.tabLabel}>
+                          {t('manage.dnsManagement')}
+                        </Box>
+                      }
+                      value={DomainProfileTabType.DNSRecords}
                       disabled={!web3Deps?.address && !isOwner}
                     />
                   )}
@@ -432,7 +448,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                     value={DomainProfileTabType.ListForSale}
                     disabled={!web3Deps?.address && !isOwner}
                   />
-                  {isOnchainSupported && (
+                  {isOnchainSupported && !isWeb2Supported && (
                     <Tab
                       icon={<SendOutlinedIcon />}
                       iconPosition="top"
@@ -539,6 +555,17 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                 />
               </TabPanel>
               <TabPanel
+                value={DomainProfileTabType.DNSRecords}
+                className={cx(classes.tabContentItem)}
+              >
+                <DnsRecordsTab
+                  domain={domain}
+                  address={address}
+                  onUpdate={onUpdateWrapper}
+                  setButtonComponent={setButtonComponent}
+                />
+              </TabPanel>
+              <TabPanel
                 value={DomainProfileTabType.Reverse}
                 className={cx(classes.tabContentItem)}
               >
@@ -610,4 +637,5 @@ export enum DomainProfileTabType {
   Transfer = 'transfer',
   Wallet = 'wallet',
   Website = 'website',
+  DNSRecords = 'DNSRecords',
 }

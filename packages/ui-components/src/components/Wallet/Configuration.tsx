@@ -31,7 +31,7 @@ import {getWalletPortfolio} from '../../actions/walletActions';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
 import type {SerializedWalletBalance} from '../../lib';
-import {useTranslationContext} from '../../lib';
+import {loginWithAddress, useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import {
   getFireBlocksClient,
@@ -652,8 +652,7 @@ export const Configuration: React.FC<
     }
 
     // store the wallet service JWT tokens at desired persistence level
-    trackProgress(startTime, 100);
-    await saveBootstrapState(
+    const bootstrapState = await saveBootstrapState(
       {
         assets: [],
         bootstrapToken: walletServiceTokens.bootstrapToken,
@@ -665,7 +664,16 @@ export const Configuration: React.FC<
       walletServiceTokens.accessToken,
     );
 
+    // set local storage values if a MATIC address is available
+    const primaryAddress = bootstrapState.assets.find(
+      v => v.blockchainAsset.symbol === 'MATIC',
+    )?.address;
+    if (primaryAddress) {
+      await loginWithAddress(primaryAddress);
+    }
+
     // set component state
+    trackProgress(startTime, 100);
     setAccessToken(walletServiceTokens.accessToken);
     setConfigState(WalletConfigState.Complete);
   };

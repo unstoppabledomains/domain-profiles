@@ -63,6 +63,7 @@ export const Wallet: React.FC<
         showMessages={showMessages}
         address={address}
         accessToken={accessToken}
+        emailAddress={emailAddress}
         domain={isDomainValidForManagement(domain) ? domain : undefined}
       />
       <Configuration

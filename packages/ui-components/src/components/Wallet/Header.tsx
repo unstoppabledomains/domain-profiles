@@ -5,6 +5,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import QueryString from 'qs';
 import React, {useEffect, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
@@ -138,6 +139,7 @@ type Props = {
   domain?: string;
   accessToken?: string;
   avatarUrl?: string;
+  emailAddress?: string;
   showMessages?: boolean;
   mode?: WalletMode;
   isLoaded: boolean;
@@ -149,6 +151,7 @@ export const Header: React.FC<Props> = ({
   domain,
   accessToken,
   avatarUrl,
+  emailAddress,
   showMessages,
   mode,
   isLoaded,
@@ -204,6 +207,15 @@ export const Header: React.FC<Props> = ({
 
   const handleDomainsClose = () => {
     setIsDomainModalOpen(false);
+  };
+
+  const handleReload = () => {
+    window.location.href = `${
+      config.UD_ME_BASE_URL
+    }/wallet?${QueryString.stringify(
+      {email: emailAddress},
+      {skipNulls: true},
+    )}`;
   };
 
   const handleRetrieveOwnerDomains = async (cursor?: number | string) => {
@@ -315,6 +327,7 @@ export const Header: React.FC<Props> = ({
           onDomainsClicked={isDomains ? handleDomainsClick : undefined}
           onSupportClicked={handleSupportClick}
           onRecoveryLinkClicked={handleRecoveryKitClicked}
+          onReload={handleReload}
         />
       )}
       {isDomainModalOpen && (

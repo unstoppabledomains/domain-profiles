@@ -25,6 +25,7 @@ interface Props {
   onWalletClicked?: () => void;
   onRecoveryLinkClicked?: () => void;
   onSupportClicked?: () => void;
+  onReload?: () => void;
   marginTop?: number;
 }
 
@@ -63,6 +64,7 @@ const DropDownMenu: React.FC<Props> = ({
   onWalletClicked,
   onRecoveryLinkClicked,
   onSupportClicked,
+  onReload,
 }) => {
   const [isLoggingOut, setLoggingOut] = useState<boolean>(false);
   const [t] = useTranslationContext();
@@ -93,7 +95,11 @@ const DropDownMenu: React.FC<Props> = ({
     setLoggingOut(prev => !prev);
     localStorage.clear();
     sessionStorage.clear();
-    window.location.reload();
+    if (onReload) {
+      onReload();
+    } else {
+      window.location.reload();
+    }
   };
 
   return (

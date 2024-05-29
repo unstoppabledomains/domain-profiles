@@ -8,8 +8,8 @@ import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
 import HealthAndSafetyOutlinedIcon from '@mui/icons-material/HealthAndSafetyOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import IosShareIcon from '@mui/icons-material/IosShare';
-import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
+import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import ManageHistoryOutlinedIcon from '@mui/icons-material/ManageHistoryOutlined';
 import OutlinedFlagIcon from '@mui/icons-material/OutlinedFlag';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
@@ -954,7 +954,7 @@ const DomainProfile = ({
                 {(profileData?.portfolio?.account?.domainCount || 0) > 1 && (
                   <LeftBarContentCollapse
                     id="domains"
-                    icon={<LanguageOutlinedIcon />}
+                    icon={<ListOutlinedIcon />}
                     header={
                       <Box
                         className={classes.otherDomainsLabel}

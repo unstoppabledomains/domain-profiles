@@ -83,7 +83,7 @@ export default function getDefaultConfig(): Config {
     WALLETS: {
       HOST_URL: 'https://api.ud-staging.com/wallet/v1',
       DOCUMENTATION_URL:
-        'https://unstoppabledomains.freshdesk.com/support/solutions/48000457487',
+        'https://support.unstoppabledomains.com/support/solutions/48000457487',
       LANDING_PAGE_URL: 'https://unstoppabledomains.com/products/wallet',
       CHAINS: {
         BUY: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'ETH/ETH'],

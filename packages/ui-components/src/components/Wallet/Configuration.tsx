@@ -356,46 +356,47 @@ export const Configuration: React.FC<
   };
 
   const loadFromState = async () => {
-    // retrieve existing state from session or local storage if available
-    const existingState = getBootstrapState(state);
-    if (!existingState) {
-      setIsLoaded(true);
-      return;
-    }
-
-    // after retrieving the unverified state, assume that configuration
-    // will complete successfully
-    setConfigState(WalletConfigState.Complete);
-
-    // no more work to do if access token available
-    if (accessToken) {
-      setIsLoaded(true);
-      return;
-    }
-
-    // check state for device ID and refresh token
-    if (
-      !accessToken &&
-      existingState?.deviceId &&
-      existingState?.refreshToken
-    ) {
-      const tokens = await getAccessToken(existingState.refreshToken, {
-        deviceId: existingState.deviceId,
-        state,
-        saveState,
-        setAccessToken,
-      });
-      if (tokens) {
-        // successfully retrieved access token
-        setAccessToken(tokens.accessToken);
+    try {
+      // retrieve existing state from session or local storage if available
+      const existingState = getBootstrapState(state);
+      if (!existingState) {
         return;
       }
-    }
 
-    // unable to retrieve access token, so revert back to configuration
-    // state before returning
-    setConfigState(WalletConfigState.PasswordEntry);
-    setIsLoaded(true);
+      // after retrieving the unverified state, assume that configuration
+      // will complete successfully
+      setConfigState(WalletConfigState.Complete);
+
+      // no more work to do if access token available
+      if (accessToken) {
+        return;
+      }
+
+      // check state for device ID and refresh token
+      if (
+        !accessToken &&
+        existingState?.deviceId &&
+        existingState?.refreshToken
+      ) {
+        const tokens = await getAccessToken(existingState.refreshToken, {
+          deviceId: existingState.deviceId,
+          state,
+          saveState,
+          setAccessToken,
+        });
+        if (tokens) {
+          // successfully retrieved access token
+          setAccessToken(tokens.accessToken);
+          return;
+        }
+      }
+
+      // unable to retrieve access token, so revert back to configuration
+      // state before returning
+      setConfigState(WalletConfigState.PasswordEntry);
+    } finally {
+      setIsLoaded(true);
+    }
   };
 
   const handleInputChange = (id: string, value: string) => {

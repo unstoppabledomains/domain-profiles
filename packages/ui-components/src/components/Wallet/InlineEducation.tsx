@@ -1,8 +1,8 @@
-import WalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import HelpIcon from '@mui/icons-material/Help';
 import LockIcon from '@mui/icons-material/Lock';
 import LockResetIcon from '@mui/icons-material/LockReset';
 import MobileFriendlyIcon from '@mui/icons-material/MobileFriendly';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import SecurityIcon from '@mui/icons-material/Security';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import Box from '@mui/material/Box';
@@ -14,6 +14,7 @@ import SwiperCore, {Autoplay, Navigation, Pagination} from 'swiper';
 import {Swiper, SwiperSlide} from 'swiper/react';
 
 import config from '@unstoppabledomains/config';
+import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableWalletIcon';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -95,24 +96,29 @@ const InlineEducationCard: React.FC<Props> = ({title, content, icon}) => {
 
 const Cards = [
   {
-    title: 'What is MPC?',
-    content: `MPC stands for multi-party computation. Unstoppable Wallet uses a next generation wallet platform by <a href='https://fireblocks.com' target='_blank'>Fireblocks</a> to secure your investments. Fireblocks has facilitated $4T+ in transactions over 170M+ wallets.`,
-    icon: <WalletIcon />,
+    title: 'Your Wallet for Domains',
+    content: `Unstoppable Wallet is a user friendly wallet that gives you full ownership. Designed with domain investors as the first priority, it allows you to effortlessly store, manage and transfer your domains and other crypto investments.`,
+    icon: <UnstoppableWalletIcon />,
+  },
+  {
+    title: 'Advanced Technology',
+    content: `Unstoppable Domains has partnered with <a href='https://fireblocks.com' target='_blank'>Fireblocks</a> to provide a next generation wallet, protecting your investments with advanced multi-party computation (MPC) technology. Fireblocks has facilitated $4T+ in transactions over 170M+ wallets.`,
+    icon: <RocketLaunchIcon />,
   },
   {
     title: 'Enhanced Security',
-    content: `MPC protects your funds by distributing trust between parties. Each must collaborate in order to access your funds, reducing the risk of compromise and enhancing the integrity of your wallet. **<a href='https://ncw-developers.fireblocks.com/docs/main-capabilities' target='_blank'>Learn more</a>**`,
+    content: `Multi-party computation (MPC) protects your investments by distributing trust between Unstoppable Domains, Fireblocks and the user. Each must collaborate to access funds, reducing the risk of compromise and enhancing the integrity of your wallet. **<a href='https://ncw-developers.fireblocks.com/docs/main-capabilities' target='_blank'>Learn more</a>**`,
     icon: <SecurityIcon />,
   },
   {
-    title: 'Self custody',
+    title: 'Self Custody',
     content:
-      'Not your keys, not your crypto! Since it is a self custody service, you have exclusive control over the contents of your Unstoppable Wallet. Every interaction requires your consent, such as transferring funds or signing messages.',
+      'Not your keys, not your crypto! Your password is the key to exclusive control over the contents of your Unstoppable Wallet. Every interaction requires your consent, such as transferring funds or signing messages.',
     icon: <VpnKeyIcon />,
   },
   {
     title: 'Backup and Recovery',
-    content: `Users of traditional self custody wallets risk lockout if they lose their private keys. Unstoppable Wallet offers an innovative way to restore access to your wallet through an optional recovery link. **<a href='${config.WALLETS.LANDING_PAGE_URL}' target='_blank'>Learn more</a>**`,
+    content: `Users of traditional self custody wallets risk lockout if they lose their keys. Unstoppable Wallet offers an innovative way to restore access to your wallet through an optional recovery kit. **<a href='${config.WALLETS.DOCUMENTATION_URL}' target='_blank'>Learn more</a>**`,
     icon: <LockResetIcon />,
   },
   {
@@ -122,14 +128,14 @@ const Cards = [
     icon: <MobileFriendlyIcon />,
   },
   {
-    title: 'Keep Your Funds Safe',
+    title: 'Safety First',
     content:
       'Store your Unstoppable Wallet password in a safe place and never share it with anyone. Always be on the lookout for suspicious links when entering your password on an app. **Unstoppable Domains staff will never ask you for your wallet password.**',
     icon: <LockIcon />,
   },
   {
-    title: 'Need Help?',
-    content: `We are here to help! Contact support if you have any questions or read more in the Unstoppable Wallet **<a href='${config.WALLETS.LANDING_PAGE_URL}' target='_blank'>documentation</a>**.`,
+    title: 'Support',
+    content: `We are here to help! You can <a href='mailto:support@unstoppabledomains.com' target='_blank'>contact support</a> or reach out on social channels if you have any questions. You can also read more about Unstoppable Wallet in the <a href='${config.WALLETS.DOCUMENTATION_URL}' target='_blank'>documentation</a> found in the help center.`,
     icon: <HelpIcon />,
   },
 ];

@@ -226,7 +226,7 @@ const WalletPage = () => {
                     <UnstoppableWalletIcon />
                   </IconPlate>
                   <Typography ml={1} variant="h6">
-                    Features & highlights
+                    Features & Highlights
                   </Typography>
                 </Box>
                 <InlineEducation />

@@ -35,6 +35,9 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
   walletListContainer: {
     display: 'flex',
     overflowX: 'auto',
+    ['::-webkit-scrollbar']: {
+      display: 'none',
+    },
   },
   walletContainer: {
     color: palletteShade[bgNeutralShade - 600],
@@ -110,7 +113,9 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
     borderRadius: theme.shape.borderRadius,
     border: `1px solid ${palletteShade[bgNeutralShade - 600]}`,
     padding: theme.spacing(2),
-    scrollbarWidth: 'thin',
+    ['::-webkit-scrollbar']: {
+      display: 'none',
+    },
   },
   noActivity: {
     color: palletteShade[bgNeutralShade - 600],
@@ -378,12 +383,12 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
           mt={'15px'}
           mb={2}
           id={`scrollablePortfolioDiv`}
-          className={classes.scrollableContainer}
+          className={cx(classes.scrollableContainer)}
         >
           <Grid container spacing={2}>
             <Grid item xs={12}>
               {wallets && (
-                <Box className={classes.walletListContainer}>
+                <Box className={cx(classes.walletListContainer)}>
                   {wallets.length > 1 && renderWallet()}
                   {wallets.map(wallet => renderWallet(wallet))}
                 </Box>

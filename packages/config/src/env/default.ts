@@ -91,7 +91,7 @@ export default function getDefaultConfig(): Config {
         SEND: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'BASE/ETH', 'ETH/ETH'],
         DOMAINS: ['ETH', 'MATIC'],
       },
-      SIGNATURE_SYMBOL: 'POLYGON/MATIC',
+      SIGNATURE_SYMBOL: 'ETHEREUM/ETH',
     },
     PUSH: {
       CHANNELS: ['eip155:5:0x0389246fB9191Dc41722e1f0D558dC8f82Be3C7A'],

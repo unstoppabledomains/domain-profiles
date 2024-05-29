@@ -77,6 +77,12 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
     borderRadius: theme.shape.borderRadius,
     border: `1px solid ${palletteShade[bgNeutralShade - 600]}`,
     padding: theme.spacing(2),
+    ['::-webkit-scrollbar']: {
+      display: 'none',
+    },
+  },
+  transactionContainer: {
+    border: '1px solid transparent',
   },
   infiniteScrollLoading: {
     width: '100%',
@@ -443,7 +449,11 @@ export const DomainWalletTransactions: React.FC<
               dataLength={(txns || []).length}
               scrollThreshold={0.7}
             >
-              <Grid container spacing={1}>
+              <Grid
+                container
+                spacing={1}
+                className={classes.transactionContainer}
+              >
                 {sortedTxns?.map((tx, i) =>
                   renderActivity(
                     i,

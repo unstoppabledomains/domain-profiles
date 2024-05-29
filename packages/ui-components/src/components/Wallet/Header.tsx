@@ -25,6 +25,7 @@ import type {WalletMode} from './index';
 
 const AVATAR_SIZE = 120;
 const AVATAR_PLACEHOLDER_SIZE = 132;
+const MAX_NAME_DISPLAY_CHARS = 22;
 
 const useStyles = makeStyles()((theme: Theme) => ({
   root: {
@@ -165,12 +166,12 @@ export const Header: React.FC<Props> = ({
   const [isDomainModalOpen, setIsDomainModalOpen] = useState(false);
   const [isDomains, setIsDomains] = useState(false);
 
-  // load wallet domains
+  // load wallet domains when an address is provided
   useEffect(() => {
     if (!isDomains) {
       void handleRetrieveOwnerDomains();
     }
-  }, []);
+  }, [address]);
 
   const handleOptionsClick = () => {
     setIsMenuOpen(prev => !prev && !isMenuOpen);
@@ -211,7 +212,8 @@ export const Header: React.FC<Props> = ({
       cursor: undefined,
     };
     try {
-      const domainData = await getOwnerDomains(address, cursor as string);
+      // load domains that are contained by this Unstoppable Wallet instance
+      const domainData = await getOwnerDomains(address, cursor as string, true);
       if (domainData) {
         retData.domains = domainData.data.map(f => f.domain);
         retData.cursor = domainData.meta.pagination.cursor;
@@ -270,11 +272,13 @@ export const Header: React.FC<Props> = ({
               className={classes.portfolioHeaderIcon}
             />
           </Tooltip>
-        ) : avatarUrl ? (
-          <img
-            className={cx(classes.round, classes.portfolioHeaderIcon)}
-            src={avatarUrl}
-          />
+        ) : avatarUrl && domain ? (
+          <Tooltip title={domain}>
+            <img
+              className={cx(classes.round, classes.portfolioHeaderIcon)}
+              src={avatarUrl}
+            />
+          </Tooltip>
         ) : (
           <UnstoppableWalletIcon
             className={cx(classes.portfolioHeaderIcon, classes.logo)}
@@ -282,7 +286,11 @@ export const Header: React.FC<Props> = ({
         )}
       </Box>
       <Box display="flex" alignItems="center">
-        <Typography variant="h6">{domain || t('wallet.title')}</Typography>
+        <Typography variant="h6">
+          {domain && domain.length <= MAX_NAME_DISPLAY_CHARS
+            ? domain
+            : t('wallet.title')}
+        </Typography>
       </Box>
       {isLoaded && (
         <Box className={classes.optionsContainer}>

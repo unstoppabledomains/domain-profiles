@@ -832,7 +832,7 @@
     "networkFee": "Network fee",
     "noTokensAvailableForSend": "No crypto available to send. The following options can be used to fund your wallet.",
     "onboardingButtonText": "Get Unstoppable Wallet",
-    "onboardingMessage": "## Let's get you a wallet...\nWe couldn't find an Unstoppable Wallet for **{{emailAddress}}**, but setting one up is easy! Create your wallet to experience a safe and user-friendly Web3 journey.",
+    "onboardingMessage": "## Let's get you a wallet...\nWe couldn't find an Unstoppable Wallet for **{{emailAddress}}**, but setting one up is easy! Create your wallet to experience a safer and more user-friendly Web3.",
     "receiveAddressCaption": "**Warning: Use supported tokens.** This address can only receive {{symbol}} on the {{blockchain}} network.",
     "receiveAddressCaptionWithDomains": "**Warning: Use supported tokens.** This address can only receive {{symbol}} and Unstoppable Domains NFTs on the {{blockchain}} network.",
     "recipient": "Recipient",

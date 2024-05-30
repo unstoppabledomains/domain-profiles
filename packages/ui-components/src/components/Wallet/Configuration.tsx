@@ -17,6 +17,7 @@ import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 import truncateMiddle from 'truncate-middle';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {
@@ -27,7 +28,10 @@ import {
   sendBootstrapCode,
   sendRecoveryEmail,
 } from '../../actions/fireBlocksActions';
-import {getWalletPortfolio} from '../../actions/walletActions';
+import {
+  getOnboardingStatus,
+  getWalletPortfolio,
+} from '../../actions/walletActions';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
 import type {SerializedWalletBalance} from '../../lib';
@@ -102,6 +106,7 @@ enum WalletConfigState {
   OtpEntry = 'otpEntry',
   PasswordEntry = 'passwordEntry',
   Complete = 'complete',
+  NeedsOnboarding = 'needsOnboarding',
 }
 
 export const Configuration: React.FC<
@@ -192,13 +197,14 @@ export const Configuration: React.FC<
       ? recoveryPhrase === recoveryPhraseConfirmation
       : true;
     const isSaveEnabled =
-      configState === WalletConfigState.PasswordEntry
+      configState === WalletConfigState.NeedsOnboarding ||
+      (configState === WalletConfigState.PasswordEntry
         ? isDirty &&
           emailAddress &&
           recoveryPhrase &&
           !errorMessage &&
           isRecoveryConfirmed
-        : isDirty && !errorMessage && isRecoveryConfirmed;
+        : isDirty && !errorMessage && isRecoveryConfirmed);
 
     setButtonComponent(
       <Box className={classes.continueActionContainer}>
@@ -219,12 +225,17 @@ export const Configuration: React.FC<
               disabled={!isSaveEnabled}
               fullWidth
             >
-              {configState === WalletConfigState.PasswordEntry
+              {configState === WalletConfigState.NeedsOnboarding
+                ? t('wallet.onboardingButtonText')
+                : configState === WalletConfigState.PasswordEntry
                 ? t('wallet.beginSetup')
                 : configState === WalletConfigState.OtpEntry &&
                   t('wallet.completeSetup')}
             </LoadingButton>
-            {configState === WalletConfigState.OtpEntry && (
+            {[
+              WalletConfigState.OtpEntry,
+              WalletConfigState.NeedsOnboarding,
+            ].includes(configState) && (
               <Box mt={1}>
                 <Button
                   onClick={handleBack}
@@ -446,7 +457,9 @@ export const Configuration: React.FC<
     setIsSaving(true);
     setIsDirty(false);
 
-    if (configState === WalletConfigState.OtpEntry) {
+    if (configState === WalletConfigState.NeedsOnboarding) {
+      processOnboarding();
+    } else if (configState === WalletConfigState.OtpEntry) {
       // submit the bootstrap code
       await processBootstrapCode();
     } else if (configState === WalletConfigState.PasswordEntry) {
@@ -468,6 +481,10 @@ export const Configuration: React.FC<
     setErrorMessage(undefined);
   };
 
+  const processOnboarding = () => {
+    window.open(config.WALLETS.GET_WALLET_URL, '_blank');
+  };
+
   const processPasswordEntry = async () => {
     // validate recovery phrase
     if (!recoveryPhrase) {
@@ -482,6 +499,13 @@ export const Configuration: React.FC<
       )
     ) {
       setErrorMessage(t('common.enterValidEmail'));
+      return;
+    }
+
+    // check for onboarding
+    const isOnboarded = await getOnboardingStatus(emailAddress);
+    if (!isOnboarded) {
+      setConfigState(WalletConfigState.NeedsOnboarding);
       return;
     }
 
@@ -695,6 +719,15 @@ export const Configuration: React.FC<
                 </Button>
               )}
             </OperationStatus>
+          </Box>
+        ) : configState === WalletConfigState.NeedsOnboarding &&
+          emailAddress ? (
+          <Box>
+            <Typography variant="body1" className={classes.infoContainer}>
+              <Markdown>
+                {t('wallet.onboardingMessage', {emailAddress})}
+              </Markdown>
+            </Typography>
           </Box>
         ) : configState === WalletConfigState.OtpEntry && emailAddress ? (
           <Box>

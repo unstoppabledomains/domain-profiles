@@ -56,6 +56,8 @@ export default function getProductionConfig(): ConfigOverride {
     },
     WALLETS: {
       HOST_URL: 'https://api.unstoppabledomains.com/wallet/v1',
+      GET_WALLET_URL:
+        'https://unstoppabledomains.com/cart?product=unstoppable-wallet',
     },
     XMTP: {
       ENVIRONMENT: 'production',

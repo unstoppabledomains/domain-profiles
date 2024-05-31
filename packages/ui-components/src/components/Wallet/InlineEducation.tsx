@@ -97,7 +97,7 @@ const InlineEducationCard: React.FC<Props> = ({title, content, icon}) => {
 const Cards = [
   {
     title: 'Your Wallet for Domains',
-    content: `Unstoppable Wallet is designed for domainers. It allows you to effortlessly store, manage and transfer your domains and other investments in a crypto wallet labeled with your domain.`,
+    content: `Unstoppable Lite Wallet is designed by domainers, for domainers. It allows you to effortlessly store, manage and transfer your domains and other investments in a web3 wallet labeled with your domain.`,
     icon: <UnstoppableWalletIcon />,
   },
   {
@@ -113,29 +113,29 @@ const Cards = [
   {
     title: 'Self Custody',
     content:
-      'Not your keys, not your crypto! Your password is the key to exclusive control over the contents of your Unstoppable Wallet. Every interaction requires your consent, such as transferring funds or signing messages.',
+      'Not your keys, not your crypto! Your password is the key to exclusive control over the contents of your Unstoppable Lite Wallet. Every interaction requires your consent, such as transferring funds or signing messages.',
     icon: <VpnKeyIcon />,
   },
   {
     title: 'Backup and Recovery',
-    content: `Users of traditional self custody wallets risk lockout if they lose their keys. Unstoppable Wallet offers an innovative way to restore access to your wallet through an optional recovery kit. **<a href='${config.WALLETS.DOCUMENTATION_URL}' target='_blank'>Learn more</a>**`,
+    content: `Users of traditional self custody wallets risk lockout if they lose their keys. Unstoppable Lite Wallet offers an innovative way to restore access to your wallet through an optional recovery kit. **<a href='${config.WALLETS.DOCUMENTATION_URL}' target='_blank'>Learn more</a>**`,
     icon: <LockResetIcon />,
   },
   {
     title: 'Convenient Access',
     content:
-      'You will never need to remember long seed phrases or deal with private keys. Simply use your password to access Unstoppable Wallet on any device through the website or on a supported mobile app.',
+      'You will never need to remember long seed phrases or deal with private keys. Simply use your password to access Unstoppable Lite Wallet on any device through the website or on a supported mobile app.',
     icon: <MobileFriendlyIcon />,
   },
   {
     title: 'Safety First',
     content:
-      'Store your Unstoppable Wallet password in a safe place and never share it with anyone. Always be on the lookout for suspicious links when entering your password on an app. **Unstoppable Domains staff will never ask you for your wallet password.**',
+      'Store your Unstoppable Lite Wallet password in a safe place and never share it with anyone. Always be on the lookout for suspicious links when entering your password on an app. **Unstoppable Domains staff will never ask you for your wallet password.**',
     icon: <LockIcon />,
   },
   {
     title: 'Support',
-    content: `We are here to help! You can <a href='mailto:support@unstoppabledomains.com' target='_blank'>contact support</a> or reach out on social channels if you have any questions. You can also read more about Unstoppable Wallet in the <a href='${config.WALLETS.DOCUMENTATION_URL}' target='_blank'>documentation</a> found in the help center.`,
+    content: `We are here to help! You can <a href='mailto:support@unstoppabledomains.com' target='_blank'>contact support</a> or reach out on social channels if you have any questions. You can also read more about Unstoppable Lite Wallet in the <a href='${config.WALLETS.DOCUMENTATION_URL}' target='_blank'>documentation</a> found in the help center.`,
     icon: <HelpIcon />,
   },
 ];

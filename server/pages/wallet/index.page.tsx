@@ -47,7 +47,7 @@ const WalletPage = () => {
   // build default wallet page SEO tags
   const seoTags = getSeoTags({
     title: t('wallet.title'),
-    description: t('manage.cryptoWalletDescription'),
+    description: t('manage.cryptoWalletDescriptionShort'),
   });
 
   // sign the user out if recovery is requested

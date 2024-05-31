@@ -97,7 +97,7 @@ const InlineEducationCard: React.FC<Props> = ({title, content, icon}) => {
 const Cards = [
   {
     title: 'Your Wallet for Domains',
-    content: `Unstoppable Lite Wallet is designed by domainers, for domainers. It allows you to effortlessly store, manage and transfer your domains and other investments in a crypto wallet labeled with your domain.`,
+    content: `Unstoppable Lite Wallet is designed by domainers, for domainers. It allows you to effortlessly store, manage and transfer your domains and other investments in a web3 wallet labeled with your domain.`,
     icon: <UnstoppableWalletIcon />,
   },
   {

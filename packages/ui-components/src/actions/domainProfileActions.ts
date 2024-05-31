@@ -123,12 +123,14 @@ export const getOwnerDomains = async (
   address: string,
   cursor?: string,
   strict?: boolean,
+  forceRefresh?: boolean,
 ): Promise<SerializedDomainListData | undefined> => {
   const domainProfileUrl = `/user/${address.toLowerCase()}/domains?${QueryString.stringify(
     {
       take: DOMAIN_LIST_PAGE_SIZE,
       strict,
       cursor,
+      forceRefresh: forceRefresh ? Date.now() : undefined,
     },
     {skipNulls: true},
   )}`;

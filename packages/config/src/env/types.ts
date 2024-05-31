@@ -92,6 +92,7 @@ export type Config = {
   };
   WALLETS: {
     HOST_URL: string;
+    GET_WALLET_URL: string;
     LANDING_PAGE_URL: string;
     DOCUMENTATION_URL: string;
     CHAINS: {

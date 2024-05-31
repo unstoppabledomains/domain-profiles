@@ -17,6 +17,7 @@ import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 import truncateMiddle from 'truncate-middle';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {
@@ -27,7 +28,10 @@ import {
   sendBootstrapCode,
   sendRecoveryEmail,
 } from '../../actions/fireBlocksActions';
-import {getWalletPortfolio} from '../../actions/walletActions';
+import {
+  getOnboardingStatus,
+  getWalletPortfolio,
+} from '../../actions/walletActions';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
 import type {SerializedWalletBalance} from '../../lib';
@@ -51,6 +55,20 @@ import {OperationStatus} from './OperationStatus';
 import type {WalletMode} from './index';
 
 const EMAIL_PARAM = 'email';
+const WALLET_PASSWORD_MIN_LENGTH = 12;
+const WALLET_PASSWORD_MAX_LENGTH = 32;
+const WALLET_PASSWORD_NUMBER_VALIDATION_REGEX = /\d/;
+const WALLET_PASSWORD_SPECIAL_CHARACTER_VALIDATION_REGEX =
+  /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+
+const isValidWalletPasswordFormat = (password: string): boolean => {
+  return (
+    password.length >= WALLET_PASSWORD_MIN_LENGTH &&
+    password.length < WALLET_PASSWORD_MAX_LENGTH &&
+    WALLET_PASSWORD_NUMBER_VALIDATION_REGEX.test(password) &&
+    WALLET_PASSWORD_SPECIAL_CHARACTER_VALIDATION_REGEX.test(password)
+  );
+};
 
 const useStyles = makeStyles<{
   configState: WalletConfigState;
@@ -102,6 +120,7 @@ enum WalletConfigState {
   OtpEntry = 'otpEntry',
   PasswordEntry = 'passwordEntry',
   Complete = 'complete',
+  NeedsOnboarding = 'needsOnboarding',
 }
 
 export const Configuration: React.FC<
@@ -192,13 +211,14 @@ export const Configuration: React.FC<
       ? recoveryPhrase === recoveryPhraseConfirmation
       : true;
     const isSaveEnabled =
-      configState === WalletConfigState.PasswordEntry
+      configState === WalletConfigState.NeedsOnboarding ||
+      (configState === WalletConfigState.PasswordEntry
         ? isDirty &&
           emailAddress &&
           recoveryPhrase &&
           !errorMessage &&
           isRecoveryConfirmed
-        : isDirty && !errorMessage && isRecoveryConfirmed;
+        : isDirty && !errorMessage && isRecoveryConfirmed);
 
     setButtonComponent(
       <Box className={classes.continueActionContainer}>
@@ -219,12 +239,17 @@ export const Configuration: React.FC<
               disabled={!isSaveEnabled}
               fullWidth
             >
-              {configState === WalletConfigState.PasswordEntry
+              {configState === WalletConfigState.NeedsOnboarding
+                ? t('wallet.onboardingButtonText')
+                : configState === WalletConfigState.PasswordEntry
                 ? t('wallet.beginSetup')
                 : configState === WalletConfigState.OtpEntry &&
                   t('wallet.completeSetup')}
             </LoadingButton>
-            {configState === WalletConfigState.OtpEntry && (
+            {[
+              WalletConfigState.OtpEntry,
+              WalletConfigState.NeedsOnboarding,
+            ].includes(configState) && (
               <Box mt={1}>
                 <Button
                   onClick={handleBack}
@@ -446,7 +471,9 @@ export const Configuration: React.FC<
     setIsSaving(true);
     setIsDirty(false);
 
-    if (configState === WalletConfigState.OtpEntry) {
+    if (configState === WalletConfigState.NeedsOnboarding) {
+      processOnboarding();
+    } else if (configState === WalletConfigState.OtpEntry) {
       // submit the bootstrap code
       await processBootstrapCode();
     } else if (configState === WalletConfigState.PasswordEntry) {
@@ -468,6 +495,10 @@ export const Configuration: React.FC<
     setErrorMessage(undefined);
   };
 
+  const processOnboarding = () => {
+    window.open(config.WALLETS.GET_WALLET_URL, '_blank');
+  };
+
   const processPasswordEntry = async () => {
     // validate recovery phrase
     if (!recoveryPhrase) {
@@ -482,6 +513,21 @@ export const Configuration: React.FC<
       )
     ) {
       setErrorMessage(t('common.enterValidEmail'));
+      return;
+    }
+
+    // validate password strength
+    if (recoveryToken) {
+      if (!isValidWalletPasswordFormat(recoveryPhrase)) {
+        setErrorMessage(t('wallet.resetPasswordStrength'));
+        return;
+      }
+    }
+
+    // check for onboarding
+    const isOnboarded = await getOnboardingStatus(emailAddress);
+    if (!isOnboarded) {
+      setConfigState(WalletConfigState.NeedsOnboarding);
       return;
     }
 
@@ -500,10 +546,17 @@ export const Configuration: React.FC<
       return;
     }
 
-    // validate recovery phrase confirmation matches if necessary
+    // validate recovery phrase confirmation
     if (recoveryToken) {
+      // validate the two password fields match
       if (recoveryPhrase !== recoveryPhraseConfirmation) {
         setErrorMessage(t('wallet.resetPasswordMismatch'));
+        return;
+      }
+
+      // validate password strength
+      if (!isValidWalletPasswordFormat(recoveryPhrase)) {
+        setErrorMessage(t('wallet.resetPasswordStrength'));
         return;
       }
     }
@@ -683,7 +736,7 @@ export const Configuration: React.FC<
     <Box className={classes.container}>
       {isLoaded ? (
         isSaving || errorMessage ? (
-          <Box mt={5}>
+          <Box mt={5} textAlign="center">
             <OperationStatus
               label={errorMessage || t('wallet.configuringWallet')}
               icon={<LockOutlinedIcon />}
@@ -695,6 +748,15 @@ export const Configuration: React.FC<
                 </Button>
               )}
             </OperationStatus>
+          </Box>
+        ) : configState === WalletConfigState.NeedsOnboarding &&
+          emailAddress ? (
+          <Box>
+            <Typography variant="body1" className={classes.infoContainer}>
+              <Markdown>
+                {t('wallet.onboardingMessage', {emailAddress})}
+              </Markdown>
+            </Typography>
           </Box>
         ) : configState === WalletConfigState.OtpEntry && emailAddress ? (
           <Box>

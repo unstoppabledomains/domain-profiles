@@ -82,6 +82,7 @@ export default function getDefaultConfig(): Config {
     },
     WALLETS: {
       HOST_URL: 'https://api.ud-staging.com/wallet/v1',
+      GET_WALLET_URL: 'https://ud-staging.com/cart?product=unstoppable-wallet',
       DOCUMENTATION_URL:
         'https://support.unstoppabledomains.com/support/solutions/48000457487',
       LANDING_PAGE_URL: 'https://unstoppabledomains.com/products/wallet',

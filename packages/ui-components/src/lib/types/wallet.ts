@@ -15,6 +15,11 @@ export type WagmiConnectorType =
   | 'walletConnect'
   | 'coinbaseWallet';
 
+export interface WalletAccountResponse {
+  emailAddress: string;
+  active: boolean;
+}
+
 export enum WalletName {
   MetaMask = 'MetaMask',
   WalletConnect = 'WalletConnect',

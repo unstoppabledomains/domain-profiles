@@ -225,7 +225,12 @@ export const Header: React.FC<Props> = ({
     };
     try {
       // load domains that are contained by this Unstoppable Wallet instance
-      const domainData = await getOwnerDomains(address, cursor as string, true);
+      const domainData = await getOwnerDomains(
+        address,
+        cursor as string,
+        true,
+        true,
+      );
       if (domainData) {
         retData.domains = domainData.data.map(f => f.domain);
         retData.cursor = domainData.meta.pagination.cursor;

@@ -5,6 +5,8 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import QueryString from 'qs';
 import React, {useEffect, useState} from 'react';
 
@@ -125,7 +127,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   optionsContainer: {
     display: 'flex',
     position: 'absolute',
-    right: theme.spacing(-0.5),
+    right: theme.spacing(-1.5),
     top: theme.spacing(-0.5),
   },
   learnMoreLink: {
@@ -162,6 +164,8 @@ export const Header: React.FC<Props> = ({
   const [t] = useTranslationContext();
 
   // Menu state
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Modal states
@@ -311,7 +315,7 @@ export const Header: React.FC<Props> = ({
       </Box>
       {isLoaded && (
         <Box className={classes.optionsContainer}>
-          {showMessages && (
+          {showMessages && !isMobile && (
             <UnstoppableMessaging
               address={address}
               disableSupportBubble

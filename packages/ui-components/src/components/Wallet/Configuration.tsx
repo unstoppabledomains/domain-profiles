@@ -55,6 +55,20 @@ import {OperationStatus} from './OperationStatus';
 import type {WalletMode} from './index';
 
 const EMAIL_PARAM = 'email';
+const WALLET_PASSWORD_MIN_LENGTH = 12;
+const WALLET_PASSWORD_MAX_LENGTH = 32;
+const WALLET_PASSWORD_NUMBER_VALIDATION_REGEX = /\d/;
+const WALLET_PASSWORD_SPECIAL_CHARACTER_VALIDATION_REGEX =
+  /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+
+const isValidWalletPasswordFormat = (password: string): boolean => {
+  return (
+    password.length >= WALLET_PASSWORD_MIN_LENGTH &&
+    password.length < WALLET_PASSWORD_MAX_LENGTH &&
+    WALLET_PASSWORD_NUMBER_VALIDATION_REGEX.test(password) &&
+    WALLET_PASSWORD_SPECIAL_CHARACTER_VALIDATION_REGEX.test(password)
+  );
+};
 
 const useStyles = makeStyles<{
   configState: WalletConfigState;
@@ -502,6 +516,14 @@ export const Configuration: React.FC<
       return;
     }
 
+    // validate password strength
+    if (recoveryToken) {
+      if (!isValidWalletPasswordFormat(recoveryPhrase)) {
+        setErrorMessage(t('wallet.resetPasswordStrength'));
+        return;
+      }
+    }
+
     // check for onboarding
     const isOnboarded = await getOnboardingStatus(emailAddress);
     if (!isOnboarded) {
@@ -524,10 +546,17 @@ export const Configuration: React.FC<
       return;
     }
 
-    // validate recovery phrase confirmation matches if necessary
+    // validate recovery phrase confirmation
     if (recoveryToken) {
+      // validate the two password fields match
       if (recoveryPhrase !== recoveryPhraseConfirmation) {
         setErrorMessage(t('wallet.resetPasswordMismatch'));
+        return;
+      }
+
+      // validate password strength
+      if (!isValidWalletPasswordFormat(recoveryPhrase)) {
+        setErrorMessage(t('wallet.resetPasswordStrength'));
         return;
       }
     }
@@ -707,7 +736,7 @@ export const Configuration: React.FC<
     <Box className={classes.container}>
       {isLoaded ? (
         isSaving || errorMessage ? (
-          <Box mt={5}>
+          <Box mt={5} textAlign="center">
             <OperationStatus
               label={errorMessage || t('wallet.configuringWallet')}
               icon={<LockOutlinedIcon />}

@@ -851,6 +851,7 @@
     "resetPasswordConfirmation": "## Confirm password reset\nThe one-time code sent to **{{emailAddress}}** is required to reset your Unstoppable Wallet password. We will send your new password recovery link after the reset is complete.",
     "resetPasswordDescription": "## Password reset\nChoose a new password to access your Unstoppable Wallet. Store your password in safe place. **Do not share your password with anyone**, including Unstoppable Domains staff.",
     "resetPasswordMismatch": "Recovery phrase does not match",
+    "resetPasswordStrength": "Choose a stronger password. Your password must be > 12 characters and include at least one number and one special character",
     "retrievingGasPrice": "Checking {{blockchain}} network health...",
     "selectAssetToBuy": "Select crypto to buy",
     "selectAssetToReceive": "Select crypto to receive",

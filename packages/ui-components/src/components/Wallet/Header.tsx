@@ -23,12 +23,14 @@ import {DomainListModal} from '../Domain';
 import DropDownMenu from '../DropDownMenu';
 import Link from '../Link';
 import Modal from '../Modal';
-import RecoverySetup from './RecoverySetup';
+import ReceiveDomainModal from './ReceiveDomainModal';
+import RecoverySetupModal from './RecoverySetupModal';
 import type {WalletMode} from './index';
 
 const AVATAR_SIZE = 120;
 const AVATAR_PLACEHOLDER_SIZE = 132;
-const MAX_NAME_DISPLAY_CHARS = 22;
+const MAX_NAME_DISPLAY_CHARS = 30;
+const MAX_NAME_DISPLAY_CHARS_MOBILE = 15;
 
 const useStyles = makeStyles()((theme: Theme) => ({
   root: {
@@ -134,6 +136,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     color: theme.palette.white,
     fontSize: theme.typography.body2.fontSize,
   },
+  clickable: {
+    cursor: 'pointer',
+  },
 }));
 
 type Props = {
@@ -146,6 +151,7 @@ type Props = {
   mode?: WalletMode;
   isLoaded: boolean;
   isFetching?: boolean;
+  onHeaderClick?: () => void;
 };
 
 export const Header: React.FC<Props> = ({
@@ -158,6 +164,7 @@ export const Header: React.FC<Props> = ({
   mode,
   isLoaded,
   isFetching,
+  onHeaderClick,
 }) => {
   const {classes, cx} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
@@ -170,7 +177,8 @@ export const Header: React.FC<Props> = ({
 
   // Modal states
   const [isRecoveryModalOpen, setIsRecoveryModalOpen] = useState(false);
-  const [isDomainModalOpen, setIsDomainModalOpen] = useState(false);
+  const [isDomainAddModalOpen, setIsDomainAddModalOpen] = useState(false);
+  const [isDomainListModalOpen, setIsDomainListModalOpen] = useState(false);
   const [isDomains, setIsDomains] = useState(false);
 
   // load wallet domains when an address is provided
@@ -185,7 +193,7 @@ export const Header: React.FC<Props> = ({
   };
 
   const handleDomainsClick = () => {
-    setIsDomainModalOpen(true);
+    setIsDomainListModalOpen(true);
     setIsMenuOpen(false);
   };
 
@@ -205,12 +213,12 @@ export const Header: React.FC<Props> = ({
   };
 
   const handleGetDomainClick = () => {
-    window.open(`${config.UNSTOPPABLE_WEBSITE_URL}/search`, '_blank');
+    setIsDomainAddModalOpen(true);
     setIsMenuOpen(false);
   };
 
   const handleDomainsClose = () => {
-    setIsDomainModalOpen(false);
+    setIsDomainListModalOpen(false);
   };
 
   const handleReload = () => {
@@ -285,7 +293,12 @@ export const Header: React.FC<Props> = ({
     </Box>
   ) : (
     <Box className={classes.portfolioHeaderContainer}>
-      <Box display="flex" mr={1}>
+      <Box
+        display="flex"
+        mr={1}
+        onClick={onHeaderClick}
+        className={classes.clickable}
+      >
         {isLoaded && isFetching ? (
           <Tooltip title={t('wallet.refreshingData')}>
             <CircularProgress
@@ -306,16 +319,23 @@ export const Header: React.FC<Props> = ({
           />
         )}
       </Box>
-      <Box display="flex" alignItems="center">
+      <Box
+        display="flex"
+        alignItems="center"
+        onClick={onHeaderClick}
+        className={classes.clickable}
+      >
         <Typography variant="h6">
-          {domain && domain.length <= MAX_NAME_DISPLAY_CHARS
+          {domain &&
+          domain.length <=
+            (isMobile ? MAX_NAME_DISPLAY_CHARS_MOBILE : MAX_NAME_DISPLAY_CHARS)
             ? domain
-            : t('wallet.title')}
+            : t('wallet.titleShort')}
         </Typography>
       </Box>
       {isLoaded && (
         <Box className={classes.optionsContainer}>
-          {showMessages && !isMobile && (
+          {showMessages && (
             <UnstoppableMessaging
               address={address}
               disableSupportBubble
@@ -339,17 +359,28 @@ export const Header: React.FC<Props> = ({
           onReload={handleReload}
         />
       )}
-      {isDomainModalOpen && (
+      {isDomainListModalOpen && (
         <DomainListModal
           id="domainMenuList"
           title={t('manage.otherDomains')}
           subtitle={t('manage.otherDomainsDescription')}
           retrieveDomains={handleRetrieveOwnerDomains}
-          open={isDomainModalOpen}
+          open={isDomainListModalOpen}
           setWeb3Deps={setWeb3Deps}
           onClose={handleDomainsClose}
           onClick={handleDomainClick}
         />
+      )}
+      {isDomainAddModalOpen && (
+        <Box>
+          <Modal
+            title={t('wallet.addDomain')}
+            open={isDomainAddModalOpen}
+            onClose={() => setIsDomainAddModalOpen(false)}
+          >
+            <ReceiveDomainModal />
+          </Modal>
+        </Box>
       )}
       {isRecoveryModalOpen && (
         <Box>
@@ -358,7 +389,7 @@ export const Header: React.FC<Props> = ({
             open={isRecoveryModalOpen}
             onClose={() => setIsRecoveryModalOpen(false)}
           >
-            <RecoverySetup accessToken={accessToken} />
+            <RecoverySetupModal accessToken={accessToken} />
           </Modal>
         </Box>
       )}

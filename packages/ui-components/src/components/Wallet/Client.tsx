@@ -11,7 +11,7 @@ import Grid from '@mui/material/Grid';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -109,6 +109,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
   tabContentItem: {
     marginLeft: theme.spacing(-3),
     marginRight: theme.spacing(-3),
+    [theme.breakpoints.down('sm')]: {
+      marginLeft: theme.spacing(-4),
+      marginRight: theme.spacing(-4),
+    },
   },
   footer: {
     display: 'flex',
@@ -122,6 +126,8 @@ export const Client: React.FC<ClientProps> = ({
   accessToken,
   wallets,
   onRefresh,
+  setIsHeaderClicked,
+  isHeaderClicked,
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
@@ -134,6 +140,14 @@ export const Client: React.FC<ClientProps> = ({
   const [isReceive, setIsReceive] = useState(false);
   const [isBuy, setIsBuy] = useState(false);
   const [tabValue, setTabValue] = useState(ClientTabType.Portfolio);
+
+  useEffect(() => {
+    if (!isHeaderClicked || !setIsHeaderClicked) {
+      return;
+    }
+    setIsHeaderClicked(false);
+    void handleCancel();
+  }, [isHeaderClicked]);
 
   const getClient = async () => {
     // retrieve client state
@@ -311,6 +325,8 @@ export type ClientProps = {
   accessToken: string;
   wallets: SerializedWalletBalance[];
   onRefresh: () => Promise<void>;
+  isHeaderClicked: boolean;
+  setIsHeaderClicked?: (v: boolean) => void;
 };
 
 export enum ClientTabType {

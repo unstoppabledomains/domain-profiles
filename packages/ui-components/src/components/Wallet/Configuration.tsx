@@ -130,12 +130,16 @@ export const Configuration: React.FC<
     recoveryToken?: string;
     onLoaded?: (v: boolean) => void;
     setIsFetching?: (v?: boolean) => void;
+    isHeaderClicked: boolean;
+    setIsHeaderClicked?: (v: boolean) => void;
   }
 > = ({
   onUpdate,
   onLoaded,
   setButtonComponent,
   setIsFetching,
+  isHeaderClicked,
+  setIsHeaderClicked,
   mode = 'basic',
   emailAddress: initialEmailAddress,
   recoveryToken,
@@ -891,6 +895,8 @@ export const Configuration: React.FC<
                 wallets={mpcWallets}
                 accessToken={accessToken}
                 onRefresh={loadMpcWallets}
+                isHeaderClicked={isHeaderClicked}
+                setIsHeaderClicked={setIsHeaderClicked}
               />
             )
           ))

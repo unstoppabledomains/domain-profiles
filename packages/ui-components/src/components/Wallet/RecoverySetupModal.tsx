@@ -31,7 +31,7 @@ type Props = {
   accessToken?: string;
 };
 
-const RecoverySetup: React.FC<Props> = ({accessToken}) => {
+const RecoverySetupModal: React.FC<Props> = ({accessToken}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
   const [password, setPassword] = useState<string>();
@@ -114,4 +114,4 @@ const RecoverySetup: React.FC<Props> = ({accessToken}) => {
   );
 };
 
-export default RecoverySetup;
+export default RecoverySetupModal;

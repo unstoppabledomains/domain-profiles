@@ -39,6 +39,7 @@ export const Wallet: React.FC<
   const {classes} = useStyles();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isFetching, setIsFetching] = useState<boolean>();
+  const [isHeaderClicked, setIsHeaderClicked] = useState(false);
   const [accessToken, setAccessToken] = useState<string>();
 
   const handleWalletLoaded = (v: boolean) => {
@@ -64,6 +65,7 @@ export const Wallet: React.FC<
         address={address}
         accessToken={accessToken}
         emailAddress={emailAddress}
+        onHeaderClick={() => setIsHeaderClicked(true)}
         domain={isDomainValidForManagement(domain) ? domain : undefined}
       />
       <Configuration
@@ -76,6 +78,8 @@ export const Wallet: React.FC<
         onUpdate={handleAccessToken}
         setButtonComponent={setButtonComponent}
         setIsFetching={setIsFetching}
+        isHeaderClicked={isHeaderClicked}
+        setIsHeaderClicked={setIsHeaderClicked}
       />
     </Box>
   );

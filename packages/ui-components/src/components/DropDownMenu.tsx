@@ -138,7 +138,7 @@ const DropDownMenu: React.FC<Props> = ({
         >
           <AddHomeOutlinedIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
-            {t('push.communitiesGetADomain')}
+            {t('wallet.addDomain')}
           </Typography>
         </div>
       )}

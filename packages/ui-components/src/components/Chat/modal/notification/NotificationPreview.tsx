@@ -58,7 +58,11 @@ export const NotificationPreview: React.FC<NotificationPreviewProps> = ({
   };
 
   return isSearchTermMatch() ? (
-    <Card className={classes.notificationContainer} elevation={0}>
+    <Card
+      style={{border: 'none', boxShadow: 'none'}}
+      className={classes.notificationContainer}
+      elevation={0}
+    >
       <CardHeader
         title={
           <Typography

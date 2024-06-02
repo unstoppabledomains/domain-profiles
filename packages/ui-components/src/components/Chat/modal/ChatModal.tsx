@@ -20,7 +20,8 @@ import Tab from '@mui/material/Tab';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {styled} from '@mui/material/styles';
+import {styled, useTheme} from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import type {IMessageIPFS} from '@pushprotocol/restapi';
 import type {
   DecodedMessage,
@@ -45,6 +46,7 @@ import useTranslationContext from '../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../lib/types/badge';
 import type {SerializedUserDomainProfileData} from '../../../lib/types/domain';
 import type {Web3Dependencies} from '../../../lib/types/web3';
+import Modal from '../../Modal';
 import {registerClientTopics} from '../protocol/registration';
 import {getAddressMetadata} from '../protocol/resolution';
 import type {ConversationMeta} from '../protocol/xmtp';
@@ -70,17 +72,18 @@ const useStyles = makeStyles()((theme: Theme) => ({
     margin: theme.spacing(1),
     boxShadow: theme.shadows[6],
     zIndex: 200,
-    [theme.breakpoints.down('sm')]: {
-      width: '100%',
-      height: '100%',
-      bottom: '0px',
-      right: '0px',
-      margin: 0,
-    },
   },
   chatModalContentContainer: {
     padding: theme.spacing(1),
     border: 'none',
+  },
+  chatMobileContainer: {
+    width: '100%',
+    height: '100%',
+    margin: 0,
+  },
+  chatMobilePaper: {
+    backgroundColor: 'white',
   },
   loadingContainer: {
     display: 'flex',
@@ -216,6 +219,10 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     useState<SerializedUserDomainProfileData>();
   const {fetchNotifications, loading: notificationsLoading} =
     useFetchNotifications(getCaip10Address(pushAccount));
+
+  // mobile behavior flag
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // conversations to display in the current inbox view
   const visibleConversations = conversations?.filter(c =>
@@ -780,321 +787,333 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   // number of chat requests
   const requestCount = getRequestCount();
 
-  return (
-    <Card
-      className={classes.chatModalContainer}
-      sx={{display: open ? '' : 'none'}}
-      variant="elevation"
-    >
-      {conversationSearch ? (
-        <ConversationStart
-          address={xmtpAddress}
-          onClose={onClose}
-          onBack={handleCloseSearch}
-          selectedCallback={handleOpenChatFromAddress}
-          initialSearch={searchValue}
+  // display wrapper element
+  const wrapChatComponent = (children: React.ReactNode) => {
+    return isMobile ? (
+      <Modal
+        open={open}
+        onClose={onClose}
+        noModalHeader={true}
+        noContentPadding={true}
+        dialogPaperStyle={classes.chatMobilePaper}
+      >
+        <Box className={classes.chatMobileContainer}>{children}</Box>
+      </Modal>
+    ) : (
+      <Card
+        className={classes.chatModalContainer}
+        sx={{display: open ? '' : 'none'}}
+        variant="elevation"
+      >
+        {children}
+      </Card>
+    );
+  };
+
+  return wrapChatComponent(
+    conversationSearch ? (
+      <ConversationStart
+        address={xmtpAddress}
+        onClose={onClose}
+        onBack={handleCloseSearch}
+        selectedCallback={handleOpenChatFromAddress}
+        initialSearch={searchValue}
+      />
+    ) : conversationPeer || conversationMetadata ? (
+      <Conversation
+        authDomain={authDomain}
+        conversation={conversationPeer}
+        metadata={conversationMetadata}
+        acceptedTopics={acceptedTopics}
+        blockedTopics={blockedTopics}
+        storageApiKey={userProfile?.storage?.apiKey}
+        setAcceptedTopics={setAcceptedTopics}
+        setBlockedTopics={setBlockedTopics}
+        setWeb3Deps={setWeb3Deps}
+        onNewMessage={(msg: DecodedMessage) =>
+          handleConversationMessage(msg, conversationPeer)
+        }
+        onBack={handleCloseChat}
+        onClose={onClose}
+      />
+    ) : pushAccount && pushKey && activeCommunity?.groupChatId ? (
+      <Community
+        address={xmtpAddress}
+        authDomain={authDomain}
+        badge={activeCommunity}
+        pushKey={pushKey}
+        incomingMessage={incomingGroup}
+        storageApiKey={userProfile?.storage?.apiKey}
+        setWeb3Deps={setWeb3Deps}
+        onBack={handleCloseChat}
+        onClose={onClose}
+      />
+    ) : tabValue === TabType.Loading ? (
+      <Box className={classes.loadingTab}>
+        <CallToAction
+          icon="ForumOutlinedIcon"
+          title={t('push.loadingYourChat')}
+          subTitle={t('push.loadingYourChatDescription')}
+          loading={true}
         />
-      ) : conversationPeer || conversationMetadata ? (
-        <Conversation
-          authDomain={authDomain}
-          conversation={conversationPeer}
-          metadata={conversationMetadata}
-          acceptedTopics={acceptedTopics}
-          blockedTopics={blockedTopics}
-          storageApiKey={userProfile?.storage?.apiKey}
-          setAcceptedTopics={setAcceptedTopics}
-          setBlockedTopics={setBlockedTopics}
-          setWeb3Deps={setWeb3Deps}
-          onNewMessage={(msg: DecodedMessage) =>
-            handleConversationMessage(msg, conversationPeer)
-          }
-          onBack={handleCloseChat}
-          onClose={onClose}
-        />
-      ) : pushAccount && pushKey && activeCommunity?.groupChatId ? (
-        <Community
-          address={xmtpAddress}
-          authDomain={authDomain}
-          badge={activeCommunity}
-          pushKey={pushKey}
-          incomingMessage={incomingGroup}
-          storageApiKey={userProfile?.storage?.apiKey}
-          setWeb3Deps={setWeb3Deps}
-          onBack={handleCloseChat}
-          onClose={onClose}
-        />
-      ) : tabValue === TabType.Loading ? (
-        <Box className={classes.loadingTab}>
-          <CallToAction
-            icon="ForumOutlinedIcon"
-            title={t('push.loadingYourChat')}
-            subTitle={t('push.loadingYourChatDescription')}
-            loading={true}
-          />
-        </Box>
-      ) : (
-        <Card className={classes.chatModalContentContainer} variant="outlined">
-          <CardHeader
-            title={t('push.messages')}
-            action={
-              <Box className={classes.headerActionContainer}>
-                <Tooltip title={t('push.chatNew')}>
-                  <SmsOutlinedIcon
-                    className={cx(
-                      classes.headerActionIcon,
-                      classes.newChatIcon,
-                    )}
-                    onClick={handleNewChat}
-                  />
-                </Tooltip>
-                {(!authDomain || !isDomainValidForManagement(authDomain)) && (
-                  <Badge color="warning" variant="dot">
-                    <Tooltip title={t('push.getAnIdentity')}>
-                      <FingerprintIcon
-                        className={classes.headerActionIcon}
-                        onClick={handleIdentityClick}
-                        color="warning"
-                        id="identity-button"
-                      />
-                    </Tooltip>
-                  </Badge>
-                )}
-                <Tooltip title={t('common.close')}>
-                  <CloseIcon
-                    className={classes.headerActionIcon}
-                    onClick={onClose}
-                  />
-                </Tooltip>
-              </Box>
-            }
-          />
-          <CardContent>
-            <TabContext value={tabValue}>
-              <Box className={classes.tabHeaderContainer}>
-                <TabList
-                  onChange={handleTabChange}
-                  variant="fullWidth"
-                  className={classes.tabList}
-                >
-                  <Tab
-                    icon={<ChatIcon />}
-                    label={
-                      <StyledTabBadge
-                        color="primary"
-                        variant="dot"
-                        invisible={!tabUnreadDot[TabType.Chat]}
-                      >
-                        {t('push.chat')}
-                      </StyledTabBadge>
-                    }
-                    value={TabType.Chat}
-                  />
-                  {featureFlags.variations
-                    ?.ecommerceServiceUsersEnableChatCommunity && (
-                    <Tab
-                      icon={<GroupsIcon />}
-                      label={
-                        <StyledTabBadge
-                          color="primary"
-                          variant="dot"
-                          invisible={
-                            !tabUnreadDot[TabType.Communities] &&
-                            pushKey !== undefined
-                          }
-                        >
-                          {t('push.communities')}
-                        </StyledTabBadge>
-                      }
-                      value={TabType.Communities}
+      </Box>
+    ) : (
+      <Card
+        className={classes.chatModalContentContainer}
+        style={{border: 'none', boxShadow: 'none'}}
+        variant="outlined"
+      >
+        <CardHeader
+          title={t('push.messages')}
+          action={
+            <Box className={classes.headerActionContainer}>
+              <Tooltip title={t('push.chatNew')}>
+                <SmsOutlinedIcon
+                  className={cx(classes.headerActionIcon, classes.newChatIcon)}
+                  onClick={handleNewChat}
+                />
+              </Tooltip>
+              {(!authDomain || !isDomainValidForManagement(authDomain)) && (
+                <Badge color="warning" variant="dot">
+                  <Tooltip title={t('push.getAnIdentity')}>
+                    <FingerprintIcon
+                      className={classes.headerActionIcon}
+                      onClick={handleIdentityClick}
+                      color="warning"
+                      id="identity-button"
                     />
-                  )}
+                  </Tooltip>
+                </Badge>
+              )}
+              <Tooltip title={t('common.close')}>
+                <CloseIcon
+                  className={classes.headerActionIcon}
+                  onClick={onClose}
+                />
+              </Tooltip>
+            </Box>
+          }
+        />
+        <CardContent>
+          <TabContext value={tabValue}>
+            <Box className={classes.tabHeaderContainer}>
+              <TabList
+                onChange={handleTabChange}
+                variant="fullWidth"
+                className={classes.tabList}
+              >
+                <Tab
+                  icon={<ChatIcon />}
+                  label={
+                    <StyledTabBadge
+                      color="primary"
+                      variant="dot"
+                      invisible={!tabUnreadDot[TabType.Chat]}
+                    >
+                      {t('push.chat')}
+                    </StyledTabBadge>
+                  }
+                  value={TabType.Chat}
+                />
+                {featureFlags.variations
+                  ?.ecommerceServiceUsersEnableChatCommunity && (
                   <Tab
-                    icon={<AppsIcon />}
+                    icon={<GroupsIcon />}
                     label={
                       <StyledTabBadge
                         color="primary"
                         variant="dot"
                         invisible={
-                          !tabUnreadDot[TabType.Notification] &&
+                          !tabUnreadDot[TabType.Communities] &&
                           pushKey !== undefined
                         }
                       >
-                        {featureFlags.variations
-                          ?.ecommerceServiceUsersEnableChatCommunity
-                          ? t('push.notificationsShort')
-                          : t('push.notifications')}
+                        {t('push.communities')}
                       </StyledTabBadge>
                     }
-                    value={TabType.Notification}
+                    value={TabType.Communities}
                   />
-                </TabList>
-              </Box>
-              <Box className={classes.searchContainer}>
-                <Search handleSearch={handleSearch} tab={tabValue} />
-              </Box>
-              <Box className={classes.tabContentContainer} id="scrollable-div">
-                <TabPanel
-                  value={TabType.Chat}
-                  className={classes.tabContentItem}
-                >
-                  {loadingText ? (
-                    <Box className={classes.loadingContainer}>
-                      <CircularProgress className={classes.loadingSpinner} />
-                      <Typography className={classes.loadingText}>
-                        {loadingText}
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <Box>
-                      {!conversationRequestView && getRequestCount() > 0 && (
-                        <Button
-                          fullWidth
-                          variant="contained"
-                          color="secondary"
-                          className={classes.viewRequestsButton}
-                          onClick={() => setConversationRequestView(true)}
-                        >
-                          {t('push.showRequests', {
-                            count: getRequestCount(),
-                          })}
-                        </Button>
-                      )}
-                      {conversationRequestView && (
-                        <Button
-                          fullWidth
-                          variant="contained"
-                          color="primary"
-                          className={classes.viewRequestsButton}
-                          onClick={() => setConversationRequestView(false)}
-                        >
-                          {t('push.backToInbox')}
-                        </Button>
-                      )}
-                      {visibleConversations &&
-                      visibleConversations.length > 0 ? (
-                        visibleConversations.map(c => (
-                          <ConversationPreview
-                            key={c.conversation.topic}
-                            selectedCallback={handleOpenChat}
-                            searchTermCallback={(visible: boolean) =>
-                              handleSearchCallback(c, visible)
-                            }
-                            searchTerm={searchValue}
-                            acceptedTopics={acceptedTopics}
-                            conversation={c}
-                          />
-                        ))
-                      ) : (
-                        <CallToAction
-                          icon="ForumOutlinedIcon"
-                          title={
-                            requestCount === 0
-                              ? t('push.chatNew')
-                              : t('push.chatNewRequest')
-                          }
-                          subTitle={
-                            requestCount === 0
-                              ? t('push.chatNewDescription')
-                              : t('push.chatNewRequestDescription')
-                          }
-                        />
-                      )}
-                    </Box>
-                  )}
-                </TabPanel>
-                <TabPanel
-                  value={TabType.Communities}
-                  className={classes.tabContentItem}
-                >
-                  {pushAccount &&
-                  pushKey &&
-                  authDomain &&
-                  isDomainValidForManagement(authDomain) ? (
-                    <CommunityList
-                      address={xmtpAddress}
-                      domain={authDomain}
-                      pushKey={pushKey}
-                      searchTerm={searchValue}
-                      incomingMessage={incomingGroup}
-                      setActiveCommunity={setActiveCommunity}
-                    />
-                  ) : (
-                    <CallToAction
-                      icon={'GroupsIcon'}
-                      title={t('push.communitiesNotReady')}
-                      subTitle={`${t('push.communitiesNotReadyDescription')} ${
-                        authDomain && isDomainValidForManagement(authDomain)
-                          ? ''
-                          : t('push.communitiesRequireADomain')
-                      }`}
-                      buttonText={
-                        authDomain && isDomainValidForManagement(authDomain)
-                          ? t('manage.enable')
-                          : t('push.communitiesGetADomain')
+                )}
+                <Tab
+                  icon={<AppsIcon />}
+                  label={
+                    <StyledTabBadge
+                      color="primary"
+                      variant="dot"
+                      invisible={
+                        !tabUnreadDot[TabType.Notification] &&
+                        pushKey !== undefined
                       }
-                      handleButtonClick={
-                        authDomain && isDomainValidForManagement(authDomain)
-                          ? onInitPushAccount
-                          : handleAddDomain
-                      }
-                    />
-                  )}
-                </TabPanel>
-                <TabPanel
-                  value={TabType.Notification}
-                  className={classes.tabContentItem}
-                >
-                  {pushKey &&
-                  notificationsLoading &&
-                  notificationsPage === 1 ? (
-                    <Box className={classes.loadingContainer}>
-                      <CircularProgress className={classes.loadingSpinner} />
-                      <Typography className={classes.loadingText}>
-                        {t('push.loadingNotifications')}
-                      </Typography>
-                    </Box>
-                  ) : pushKey && notifications?.length > 0 ? (
-                    <InfiniteScroll
-                      className={classes.infiniteScroll}
-                      scrollableTarget="scrollable-div"
-                      hasMore={notificationsAvailable}
-                      next={() => loadNotifications(false)}
-                      dataLength={notifications.length}
-                      loader={<div></div>}
-                      scrollThreshold={0.9}
                     >
-                      {notifications.map(notification => (
-                        <NotificationPreview
-                          key={notification.sid}
-                          notification={notification}
+                      {featureFlags.variations
+                        ?.ecommerceServiceUsersEnableChatCommunity
+                        ? t('push.notificationsShort')
+                        : t('push.notifications')}
+                    </StyledTabBadge>
+                  }
+                  value={TabType.Notification}
+                />
+              </TabList>
+            </Box>
+            <Box className={classes.searchContainer}>
+              <Search handleSearch={handleSearch} tab={tabValue} />
+            </Box>
+            <Box className={classes.tabContentContainer} id="scrollable-div">
+              <TabPanel value={TabType.Chat} className={classes.tabContentItem}>
+                {loadingText ? (
+                  <Box className={classes.loadingContainer}>
+                    <CircularProgress className={classes.loadingSpinner} />
+                    <Typography className={classes.loadingText}>
+                      {loadingText}
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Box>
+                    {!conversationRequestView && getRequestCount() > 0 && (
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        color="secondary"
+                        className={classes.viewRequestsButton}
+                        onClick={() => setConversationRequestView(true)}
+                      >
+                        {t('push.showRequests', {
+                          count: getRequestCount(),
+                        })}
+                      </Button>
+                    )}
+                    {conversationRequestView && (
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        color="primary"
+                        className={classes.viewRequestsButton}
+                        onClick={() => setConversationRequestView(false)}
+                      >
+                        {t('push.backToInbox')}
+                      </Button>
+                    )}
+                    {visibleConversations && visibleConversations.length > 0 ? (
+                      visibleConversations.map(c => (
+                        <ConversationPreview
+                          key={c.conversation.topic}
+                          selectedCallback={handleOpenChat}
+                          searchTermCallback={(visible: boolean) =>
+                            handleSearchCallback(c, visible)
+                          }
                           searchTerm={searchValue}
+                          acceptedTopics={acceptedTopics}
+                          conversation={c}
                         />
-                      ))}
-                    </InfiniteScroll>
-                  ) : pushKey ? (
-                    <CallToAction
-                      icon="NotificationsActiveOutlinedIcon"
-                      title={t('push.emptyNotifications')}
-                      subTitle={t('push.emptyNotificationsDescription')}
-                      buttonText={t('push.findChannel')}
-                      handleButtonClick={handleAppSubscribe}
-                    />
-                  ) : (
-                    <CallToAction
-                      icon={'NotificationsActiveOutlinedIcon'}
-                      title={t('push.notificationsNotReady')}
-                      subTitle={t('push.notificationsNotReadyDescription')}
-                      buttonText={t('manage.enable')}
-                      handleButtonClick={onInitPushAccount}
-                    />
-                  )}
-                </TabPanel>
-              </Box>
-            </TabContext>
-          </CardContent>
-        </Card>
-      )}
-    </Card>
+                      ))
+                    ) : (
+                      <CallToAction
+                        icon="ForumOutlinedIcon"
+                        title={
+                          requestCount === 0
+                            ? t('push.chatNew')
+                            : t('push.chatNewRequest')
+                        }
+                        subTitle={
+                          requestCount === 0
+                            ? t('push.chatNewDescription')
+                            : t('push.chatNewRequestDescription')
+                        }
+                      />
+                    )}
+                  </Box>
+                )}
+              </TabPanel>
+              <TabPanel
+                value={TabType.Communities}
+                className={classes.tabContentItem}
+              >
+                {pushAccount &&
+                pushKey &&
+                authDomain &&
+                isDomainValidForManagement(authDomain) ? (
+                  <CommunityList
+                    address={xmtpAddress}
+                    domain={authDomain}
+                    pushKey={pushKey}
+                    searchTerm={searchValue}
+                    incomingMessage={incomingGroup}
+                    setActiveCommunity={setActiveCommunity}
+                  />
+                ) : (
+                  <CallToAction
+                    icon={'GroupsIcon'}
+                    title={t('push.communitiesNotReady')}
+                    subTitle={`${t('push.communitiesNotReadyDescription')} ${
+                      authDomain && isDomainValidForManagement(authDomain)
+                        ? ''
+                        : t('push.communitiesRequireADomain')
+                    }`}
+                    buttonText={
+                      authDomain && isDomainValidForManagement(authDomain)
+                        ? t('manage.enable')
+                        : t('push.communitiesGetADomain')
+                    }
+                    handleButtonClick={
+                      authDomain && isDomainValidForManagement(authDomain)
+                        ? onInitPushAccount
+                        : handleAddDomain
+                    }
+                  />
+                )}
+              </TabPanel>
+              <TabPanel
+                value={TabType.Notification}
+                className={classes.tabContentItem}
+              >
+                {pushKey && notificationsLoading && notificationsPage === 1 ? (
+                  <Box className={classes.loadingContainer}>
+                    <CircularProgress className={classes.loadingSpinner} />
+                    <Typography className={classes.loadingText}>
+                      {t('push.loadingNotifications')}
+                    </Typography>
+                  </Box>
+                ) : pushKey && notifications?.length > 0 ? (
+                  <InfiniteScroll
+                    className={classes.infiniteScroll}
+                    scrollableTarget="scrollable-div"
+                    hasMore={notificationsAvailable}
+                    next={() => loadNotifications(false)}
+                    dataLength={notifications.length}
+                    loader={<div></div>}
+                    scrollThreshold={0.9}
+                  >
+                    {notifications.map(notification => (
+                      <NotificationPreview
+                        key={notification.sid}
+                        notification={notification}
+                        searchTerm={searchValue}
+                      />
+                    ))}
+                  </InfiniteScroll>
+                ) : pushKey ? (
+                  <CallToAction
+                    icon="NotificationsActiveOutlinedIcon"
+                    title={t('push.emptyNotifications')}
+                    subTitle={t('push.emptyNotificationsDescription')}
+                    buttonText={t('push.findChannel')}
+                    handleButtonClick={handleAppSubscribe}
+                  />
+                ) : (
+                  <CallToAction
+                    icon={'NotificationsActiveOutlinedIcon'}
+                    title={t('push.notificationsNotReady')}
+                    subTitle={t('push.notificationsNotReadyDescription')}
+                    buttonText={t('manage.enable')}
+                    handleButtonClick={onInitPushAccount}
+                  />
+                )}
+              </TabPanel>
+            </Box>
+          </TabContext>
+        </CardContent>
+      </Card>
+    ),
   );
 };
 

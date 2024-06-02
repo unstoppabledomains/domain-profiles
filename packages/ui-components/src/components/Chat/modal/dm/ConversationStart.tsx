@@ -140,7 +140,11 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
   };
 
   return (
-    <Card className={classes.cardContainer} variant="outlined">
+    <Card
+      style={{border: 'none', boxShadow: 'none'}}
+      className={classes.cardContainer}
+      variant="outlined"
+    >
       <CardHeader
         title={t('push.newMessage')}
         action={

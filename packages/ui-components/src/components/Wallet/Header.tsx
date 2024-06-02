@@ -372,26 +372,22 @@ export const Header: React.FC<Props> = ({
         />
       )}
       {isDomainAddModalOpen && (
-        <Box>
-          <Modal
-            title={t('wallet.addDomain')}
-            open={isDomainAddModalOpen}
-            onClose={() => setIsDomainAddModalOpen(false)}
-          >
-            <ReceiveDomainModal />
-          </Modal>
-        </Box>
+        <Modal
+          title={t('wallet.addDomain')}
+          open={isDomainAddModalOpen}
+          onClose={() => setIsDomainAddModalOpen(false)}
+        >
+          <ReceiveDomainModal />
+        </Modal>
       )}
       {isRecoveryModalOpen && (
-        <Box>
-          <Modal
-            title={t('wallet.recoveryKit')}
-            open={isRecoveryModalOpen}
-            onClose={() => setIsRecoveryModalOpen(false)}
-          >
-            <RecoverySetupModal accessToken={accessToken} />
-          </Modal>
-        </Box>
+        <Modal
+          title={t('wallet.recoveryKit')}
+          open={isRecoveryModalOpen}
+          onClose={() => setIsRecoveryModalOpen(false)}
+        >
+          <RecoverySetupModal accessToken={accessToken} />
+        </Modal>
       )}
     </Box>
   );

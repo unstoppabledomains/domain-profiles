@@ -16,6 +16,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
       minWidth: '348px',
       padding: theme.spacing(1.5),
     },
+    overflow: 'hidden',
   },
   contentContainerNoPadding: {
     display: 'flex',

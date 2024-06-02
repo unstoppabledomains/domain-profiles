@@ -4,6 +4,8 @@ import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import type {ModalProps as MuiModalProps} from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
+import {useTheme} from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import React from 'react';
 
 import useTranslationContext from '../lib/i18n';
@@ -25,7 +27,6 @@ export type ModalProps = {
   dialogPaperStyle?: string;
   includeHeaderPadding?: boolean;
   noModalHeader?: boolean;
-  maxWidth?: DialogProps['maxWidth'];
 };
 
 /**
@@ -43,10 +44,11 @@ const Modal: React.FC<ModalProps> = ({
   noContentPadding = false,
   includeHeaderPadding = false,
   noModalHeader = false,
-  maxWidth = false,
 }) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleCloseOnBlur: MuiModalProps['onClose'] = event => {
     if (isConfirmation) {
@@ -65,11 +67,10 @@ const Modal: React.FC<ModalProps> = ({
     open: open || false,
     onClose: handleCloseOnBlur,
     classes: {paper: cx(classes.dialogRoot, dialogPaperStyle)},
-    maxWidth,
   };
 
   return (
-    <Dialog {...dialogProps}>
+    <Dialog {...dialogProps} fullWidth={isMobile}>
       <div className={classes.modalContent} data-testid={`${title}-modal`}>
         {!noModalHeader && (
           <div

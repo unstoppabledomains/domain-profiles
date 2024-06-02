@@ -1,5 +1,4 @@
 import CheckIcon from '@mui/icons-material/Check';
-import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -9,13 +8,12 @@ import type {Theme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useState} from 'react';
 
-import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import useFireblocksSigner from '../../hooks/useFireblocksSigner';
 import {useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
-import {TabHeader} from '../Manage/common/TabHeader';
+import {Header} from './Header';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -38,6 +36,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     wordWrap: 'break-word',
     maxWidth: '500px',
     textAlign: 'left',
+    width: '100%',
+    overflowWrap: 'break-word',
+    [theme.breakpoints.down('sm')]: {
+      maxWidth: 'calc(100vw - 50px)',
+    },
   },
   button: {
     marginTop: theme.spacing(1),
@@ -102,11 +105,7 @@ export const Signer: React.FC<SignerProps> = ({
   return (
     <Box className={classes.container}>
       <Box display="flex" flexDirection="column" height="100%">
-        <TabHeader
-          icon={<WalletOutlinedIcon />}
-          description={t('manage.cryptoWalletDescription')}
-          learnMoreLink={config.WALLETS.LANDING_PAGE_URL}
-        />
+        <Header mode="basic" address={address || ''} isLoaded={true} />
         <Box
           display="flex"
           flexDirection="column"

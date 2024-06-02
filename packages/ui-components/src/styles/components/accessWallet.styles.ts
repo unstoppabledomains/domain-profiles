@@ -125,8 +125,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
   modalRoot: {
     left: '0 !important',
     bottom: '0 !important',
-    [theme.breakpoints.down('md')]: {
-      maxWidth: 432,
+    [theme.breakpoints.down('sm')]: {
+      maxWidth: 'calc(100vw)',
     },
   },
   modalHeader: {
@@ -151,6 +151,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
     maxWidth: '505px',
     minHeight: '485px',
+    [theme.breakpoints.down('sm')]: {
+      maxWidth: 'calc(100vw)',
+    },
   },
 }));
 

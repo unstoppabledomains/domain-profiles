@@ -267,6 +267,7 @@ export const useConversationStyles = makeStyles<{
   isChatRequest?: boolean;
 }>()((theme: Theme, {isChatRequest}) => ({
   cardContainer: {
+    backgroundColor: 'transparent',
     padding: theme.spacing(1),
     border: 'none',
     height: '100%',
@@ -297,7 +298,7 @@ export const useConversationStyles = makeStyles<{
     overscrollBehavior: 'contain',
     height: '430px',
     [theme.breakpoints.down('sm')]: {
-      height: 'calc(100vh - 200px)',
+      height: 'calc(100vh - 300px)',
     },
   },
   composeContainer: {

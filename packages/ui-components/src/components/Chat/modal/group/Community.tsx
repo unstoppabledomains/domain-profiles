@@ -361,7 +361,11 @@ export const Community: React.FC<CommunityProps> = ({
     ));
 
   return (
-    <Card className={classes.cardContainer} variant="outlined">
+    <Card
+      style={{border: 'none', boxShadow: 'none'}}
+      className={classes.cardContainer}
+      variant="outlined"
+    >
       <CardHeader
         title={
           <Box className={classes.headerTitleContainer}>

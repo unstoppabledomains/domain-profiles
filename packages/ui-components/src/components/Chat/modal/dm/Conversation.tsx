@@ -264,7 +264,11 @@ export const Conversation: React.FC<ConversationProps> = ({
   };
 
   return (
-    <Card className={classes.cardContainer} variant="outlined">
+    <Card
+      className={classes.cardContainer}
+      style={{border: 'none', boxShadow: 'none'}}
+      variant="outlined"
+    >
       <CardHeader
         title={
           <Box className={classes.headerTitleContainer}>

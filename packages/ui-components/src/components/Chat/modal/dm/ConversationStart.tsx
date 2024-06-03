@@ -24,6 +24,7 @@ import Search from '../Search';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   cardContainer: {
+    backgroundColor: 'transparent',
     padding: theme.spacing(1),
     border: 'none',
     height: '100%',
@@ -140,7 +141,11 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
   };
 
   return (
-    <Card className={classes.cardContainer} variant="outlined">
+    <Card
+      style={{border: 'none', boxShadow: 'none'}}
+      className={classes.cardContainer}
+      variant="outlined"
+    >
       <CardHeader
         title={t('push.newMessage')}
         action={

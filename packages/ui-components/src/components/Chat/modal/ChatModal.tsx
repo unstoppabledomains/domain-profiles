@@ -76,11 +76,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
   chatModalContentContainer: {
     padding: theme.spacing(1),
     border: 'none',
+    backgroundColor: 'transparent',
   },
   chatMobileContainer: {
     width: '100%',
     height: '100%',
     margin: 0,
+    backgroundColor: 'transparent',
   },
   chatMobilePaper: {
     backgroundColor: 'white',

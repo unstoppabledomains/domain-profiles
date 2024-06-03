@@ -15,6 +15,7 @@ import type {PayloadData} from '../../types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   notificationContainer: {
+    backgroundColor: 'transparent',
     marginBottom: theme.spacing(2),
     marginRight: theme.spacing(0),
   },

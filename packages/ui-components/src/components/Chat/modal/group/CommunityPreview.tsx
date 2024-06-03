@@ -43,6 +43,7 @@ import {fromCaip10Address} from '../../types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   communityContainer: {
+    backgroundColor: 'transparent',
     position: 'relative',
     marginBottom: theme.spacing(2),
     marginLeft: theme.spacing(0.25),

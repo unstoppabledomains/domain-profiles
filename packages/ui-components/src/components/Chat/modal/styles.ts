@@ -267,6 +267,7 @@ export const useConversationStyles = makeStyles<{
   isChatRequest?: boolean;
 }>()((theme: Theme, {isChatRequest}) => ({
   cardContainer: {
+    backgroundColor: 'transparent',
     padding: theme.spacing(1),
     border: 'none',
     height: '100%',

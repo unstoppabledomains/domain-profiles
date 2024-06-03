@@ -24,6 +24,7 @@ import Search from '../Search';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   cardContainer: {
+    backgroundColor: 'transparent',
     padding: theme.spacing(1),
     border: 'none',
     height: '100%',

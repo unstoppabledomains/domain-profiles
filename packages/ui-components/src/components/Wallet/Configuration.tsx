@@ -199,9 +199,6 @@ export const Configuration: React.FC<
   }, [configState, accessToken]);
 
   useEffect(() => {
-    if (onLoaded) {
-      onLoaded(isLoaded);
-    }
     if (!isLoaded) {
       return;
     }
@@ -377,6 +374,11 @@ export const Configuration: React.FC<
     // display rendered wallets
     setMpcWallets(wallets.sort((a, b) => a.name.localeCompare(b.name)));
     setIsLoaded(true);
+
+    // set loaded flag if provided
+    if (onLoaded) {
+      onLoaded(true);
+    }
 
     // clear fetching flag if provided
     if (setIsFetching) {
@@ -738,7 +740,10 @@ export const Configuration: React.FC<
 
   return (
     <Box className={classes.container}>
-      {isLoaded ? (
+      {isLoaded &&
+      (configState !== WalletConfigState.Complete ||
+        mode === 'basic' ||
+        mpcWallets.length > 0) ? (
         isSaving || errorMessage ? (
           <Box mt={5} textAlign="center">
             <OperationStatus

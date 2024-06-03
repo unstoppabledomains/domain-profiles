@@ -35,12 +35,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '100%',
     height: `${MIN_CLIENT_HEIGHT}px`,
   },
-  loadingContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    height: `${MIN_CLIENT_HEIGHT - 125}px`,
-    alignItems: 'center',
-  },
   walletContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -323,6 +317,9 @@ export const Client: React.FC<ClientProps> = ({
                   value={ClientTabType.Transactions}
                   label={t('activity.title')}
                   iconPosition="start"
+                  disabled={
+                    !wallets?.some(w => w.txns?.data && w.txns.data.length > 0)
+                  }
                 />
               </TabList>
             </Box>

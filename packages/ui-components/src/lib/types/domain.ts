@@ -455,6 +455,7 @@ export type SerializedWalletBalance = SerializedWalletToken & {
   blockchainScanUrl: string;
   totalValueUsd?: string;
   totalValueUsdAmt?: number;
+  walletType?: string;
 };
 
 export type SerializedWalletNftCollection = {

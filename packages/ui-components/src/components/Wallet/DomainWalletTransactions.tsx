@@ -103,20 +103,25 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
     marginTop: theme.spacing(2),
     color: theme.palette.neutralShades[bgNeutralShade - 600],
   },
+  txContainer: {
+    display: 'flex',
+    cursor: 'pointer',
+    width: '100%',
+    padding: theme.spacing(0.5),
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: 'transparent',
+    marginLeft: theme.spacing(1),
+    '&:hover': {
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    },
+  },
   txTitle: {
     fontWeight: 'bold',
     color: theme.palette.white,
     cursor: 'pointer',
-    '&:hover': {
-      textDecoration: 'underline',
-    },
   },
   txSubTitle: {
     color: theme.palette.neutralShades[bgNeutralShade - 600],
-    cursor: 'pointer',
-    '&:hover': {
-      textDecoration: 'underline',
-    },
   },
   txReceived: {
     fontWeight: 'bold',
@@ -294,6 +299,8 @@ export const DomainWalletTransactions: React.FC<
     const currDate = moment(tx.timestamp).format('LL');
     const prevDate = prev ? moment(prev.timestamp).format('LL') : '';
     const nextDate = next ? moment(next.timestamp).format('LL') : '';
+    const gasFee =
+      tx.gas && tx.gas > 0 ? numeral(tx.gas).format('0,0.[0000]') : '';
 
     return (
       <React.Fragment key={`${tx.hash}-${index}`}>
@@ -310,9 +317,7 @@ export const DomainWalletTransactions: React.FC<
         )}
         <Box
           onClick={() => handleClick(tx.link)}
-          width="100%"
-          display="flex"
-          mt={1}
+          className={classes.txContainer}
         >
           <Grid item xs={2} className={classes.txLink}>
             <Box display="flex" justifyContent="center" textAlign="center">
@@ -372,7 +377,7 @@ export const DomainWalletTransactions: React.FC<
                   {isErc20 ? tx.method.toUpperCase() : tx.symbol}
                 </Typography>
               )}
-              {!isNft && tx.gas && numeral(tx.gas) && tx.gas > 0 && (
+              {!isNft && gasFee && gasFee.toLowerCase() !== 'nan' && (
                 <Typography variant="caption" className={classes.txFee}>
                   -{numeral(tx.gas).format('0,0.[0000]')} {t('activity.gas')}
                 </Typography>

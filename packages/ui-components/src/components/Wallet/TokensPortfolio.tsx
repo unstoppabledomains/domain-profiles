@@ -120,6 +120,16 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
   noActivity: {
     color: palletteShade[bgNeutralShade - 600],
   },
+  tokenContainer: {
+    display: 'flex',
+    width: '100%',
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: 'transparent',
+    padding: theme.spacing(0.5),
+    '&:hover': {
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    },
+  },
 }));
 
 export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
@@ -388,7 +398,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
           id={`scrollablePortfolioDiv`}
           className={cx(classes.scrollableContainer)}
         >
-          <Grid container spacing={2}>
+          <Grid container spacing={1}>
             <Grid item xs={12}>
               {wallets && (
                 <Box className={cx(classes.walletListContainer)}>
@@ -399,12 +409,16 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
             </Grid>
             {!isError && groupedTokens.length > 0 ? (
               groupedTokens.map(token => (
-                <Token
-                  primaryShade={!!isOwner}
-                  token={token}
-                  onClick={() => handleClick(token.walletBlockChainLink)}
-                  showGraph
-                />
+                <Grid item xs={12}>
+                  <Box className={classes.tokenContainer}>
+                    <Token
+                      primaryShade={!!isOwner}
+                      token={token}
+                      onClick={() => handleClick(token.walletBlockChainLink)}
+                      showGraph
+                    />
+                  </Box>
+                </Grid>
               ))
             ) : (
               <Grid item xs={12}>

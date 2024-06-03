@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import {useSnackbar} from 'notistack';
 import QueryString from 'qs';
 import React, {useEffect, useState} from 'react';
 
@@ -22,6 +23,7 @@ import {UnstoppableMessaging} from '../Chat';
 import {DomainListModal} from '../Domain';
 import DropDownMenu from '../DropDownMenu';
 import Link from '../Link';
+import {DomainProfileModal} from '../Manage';
 import Modal from '../Modal';
 import ReceiveDomainModal from './ReceiveDomainModal';
 import RecoverySetupModal from './RecoverySetupModal';
@@ -169,6 +171,7 @@ export const Header: React.FC<Props> = ({
   const {classes, cx} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
   const [t] = useTranslationContext();
+  const {enqueueSnackbar} = useSnackbar();
 
   // Menu state
   const theme = useTheme();
@@ -179,6 +182,7 @@ export const Header: React.FC<Props> = ({
   const [isRecoveryModalOpen, setIsRecoveryModalOpen] = useState(false);
   const [isDomainAddModalOpen, setIsDomainAddModalOpen] = useState(false);
   const [isDomainListModalOpen, setIsDomainListModalOpen] = useState(false);
+  const [domainToManage, setDomainToManage] = useState<string>();
   const [isDomains, setIsDomains] = useState(false);
 
   // load wallet domains when an address is provided
@@ -199,7 +203,7 @@ export const Header: React.FC<Props> = ({
 
   const handleDomainClick = (v: string) => {
     handleDomainsClose();
-    window.location.href = `${config.UD_ME_BASE_URL}/${v}`;
+    setDomainToManage(v);
   };
 
   const handleSupportClick = () => {
@@ -219,6 +223,10 @@ export const Header: React.FC<Props> = ({
 
   const handleDomainsClose = () => {
     setIsDomainListModalOpen(false);
+  };
+
+  const handleUpdateSuccess = () => {
+    enqueueSnackbar(t('manage.updatedDomainSuccess'), {variant: 'success'});
   };
 
   const handleReload = () => {
@@ -369,6 +377,15 @@ export const Header: React.FC<Props> = ({
           setWeb3Deps={setWeb3Deps}
           onClose={handleDomainsClose}
           onClick={handleDomainClick}
+        />
+      )}
+      {domainToManage && (
+        <DomainProfileModal
+          domain={domainToManage}
+          address={address}
+          open={true}
+          onClose={() => setDomainToManage(undefined)}
+          onUpdate={handleUpdateSuccess}
         />
       )}
       {isDomainAddModalOpen && (

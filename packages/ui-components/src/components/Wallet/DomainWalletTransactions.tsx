@@ -372,7 +372,7 @@ export const DomainWalletTransactions: React.FC<
                   {isErc20 ? tx.method.toUpperCase() : tx.symbol}
                 </Typography>
               )}
-              {!isNft && tx.gas > 0 && (
+              {!isNft && tx.gas && numeral(tx.gas) && tx.gas > 0 && (
                 <Typography variant="caption" className={classes.txFee}>
                   -{numeral(tx.gas).format('0,0.[0000]')} {t('activity.gas')}
                 </Typography>

@@ -96,6 +96,7 @@ export type TokenEntry = {
   walletAddress: string;
   walletBlockChainLink: string;
   walletName: string;
+  walletType?: string;
 };
 
 type Props = {

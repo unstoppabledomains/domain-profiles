@@ -175,6 +175,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
           walletAddress: wallet.address,
           walletBlockChainLink: wallet.blockchainScanUrl,
           walletName: wallet.name,
+          walletType: wallet.walletType,
           imageUrl: wallet.logoUrl,
         };
       }),
@@ -221,6 +222,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
             walletAddress: wallet.address,
             walletBlockChainLink: wallet.blockchainScanUrl,
             walletName: wallet.name,
+            walletType: wallet.walletType,
             imageUrl: walletNft.collectionImageUrl,
           };
         }),
@@ -244,12 +246,13 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
             walletAddress: wallet.address,
             walletBlockChainLink: wallet.blockchainScanUrl,
             walletName: wallet.name,
+            walletType: wallet.walletType,
             imageUrl: walletToken.logoUrl,
           };
         }),
       ),
     ]
-      .filter(item => item?.value > 0.01)
+      .filter(item => item?.value > 0.01 || item?.walletType === 'mpc')
       .sort((a, b) => b.value - a.value)
       .filter(
         item =>

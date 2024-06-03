@@ -11,6 +11,8 @@ import Grid from '@mui/material/Grid';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -95,9 +97,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   actionText: {
     color: theme.palette.primary.main,
-    [theme.breakpoints.down('sm')]: {
-      display: 'none',
-    },
   },
   tabList: {
     marginTop: theme.spacing(-3),
@@ -140,6 +139,10 @@ export const Client: React.FC<ClientProps> = ({
   const [isReceive, setIsReceive] = useState(false);
   const [isBuy, setIsBuy] = useState(false);
   const [tabValue, setTabValue] = useState(ClientTabType.Portfolio);
+
+  // mobile behavior flag
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     if (!isHeaderClicked || !setIsHeaderClicked) {
@@ -241,7 +244,10 @@ export const Client: React.FC<ClientProps> = ({
                 onClick={handleClickedSend}
               >
                 <SendIcon className={classes.actionIcon} />
-                <Typography variant="body1" className={classes.actionText}>
+                <Typography
+                  variant={isMobile ? 'caption' : 'body1'}
+                  className={classes.actionText}
+                >
                   {t('common.send')}
                 </Typography>
               </Box>
@@ -250,7 +256,10 @@ export const Client: React.FC<ClientProps> = ({
                 onClick={handleClickedReceive}
               >
                 <AddOutlinedIcon className={classes.actionIcon} />
-                <Typography variant="body1" className={classes.actionText}>
+                <Typography
+                  variant={isMobile ? 'caption' : 'body1'}
+                  className={classes.actionText}
+                >
                   {t('common.receive')}
                 </Typography>
               </Box>
@@ -260,7 +269,10 @@ export const Client: React.FC<ClientProps> = ({
                   onClick={handleClickedBuy}
                 >
                   <AttachMoneyIcon className={classes.actionIcon} />
-                  <Typography variant="body1" className={classes.actionText}>
+                  <Typography
+                    variant={isMobile ? 'caption' : 'body1'}
+                    className={classes.actionText}
+                  >
                     {t('common.buy')}
                   </Typography>
                 </Box>

@@ -127,7 +127,7 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
     backgroundColor: 'transparent',
     padding: theme.spacing(0.5),
     '&:hover': {
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      backgroundColor: 'rgba(255, 255, 255, 0.05)',
     },
   },
 }));

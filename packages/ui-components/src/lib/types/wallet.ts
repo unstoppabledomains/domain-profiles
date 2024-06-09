@@ -34,10 +34,13 @@ export enum WalletName {
 }
 
 export const WalletOptions: Record<WalletName, walletProps> = {
-  [WalletName.MetaMask]: {
+  [WalletName.Phantom]: {
     connectorType: 'metaMask',
   },
   [WalletName.UnstoppableWallet]: {
+    connectorType: 'walletConnect',
+  },
+  [WalletName.MetaMask]: {
     connectorType: 'metaMask',
   },
   [WalletName.WalletConnect]: {
@@ -56,9 +59,6 @@ export const WalletOptions: Record<WalletName, walletProps> = {
     connectorType: 'metaMask',
   },
   [WalletName.Brave]: {
-    connectorType: 'metaMask',
-  },
-  [WalletName.Phantom]: {
     connectorType: 'metaMask',
   },
   [WalletName.Kresus]: {

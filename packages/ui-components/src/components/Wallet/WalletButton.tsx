@@ -387,7 +387,7 @@ const WalletButton: React.FC<Props> = ({
 
   switch (name) {
     case WalletName.UnstoppableWallet:
-      props.title = t('wallet.title');
+      props.title = t('wallet.titleShort');
       props.icon = (
         <IconPlate size={size} variant="info">
           <UnstoppableWalletIcon />

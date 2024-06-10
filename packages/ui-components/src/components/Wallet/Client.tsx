@@ -193,7 +193,7 @@ export const Client: React.FC<ClientProps> = ({
 
   // domain list state
   const [domains, setDomains] = useState<string[]>([]);
-  const [domainsValue, setDomainsValue] = useState(0);
+  const [domainsValue, setDomainsValue] = useState<number>(0);
   const [cursor, setCursor] = useState<number | string>();
   const [isLoading, setIsLoading] = useState(true);
   const [retrievedAll, setRetrievedAll] = useState(false);
@@ -273,7 +273,7 @@ export const Client: React.FC<ClientProps> = ({
           const marketData = await getProfileData(retData.domains[0], [
             DomainFieldTypes.Portfolio,
           ]);
-          setDomainsValue(marketData?.portfolio?.account?.valueAmt || 0);
+          setDomainsValue((marketData?.portfolio?.wallet?.valueAmt || 0) / 100);
         }
       }
     } catch (e) {

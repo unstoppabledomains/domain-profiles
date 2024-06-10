@@ -63,7 +63,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   rowFirst: {
     borderTop: `0px`,
   },
-
   leftContent: {
     display: 'flex',
     alignItems: 'center',
@@ -74,12 +73,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   domainText: {
     fontWeight: 600,
-    marginLeft: theme.spacing(1),
-    fontSize: 14,
-    color: 'initial',
+    marginLeft: theme.spacing(2),
   },
   arrowRightIcon: {
-    color: theme.palette.neutralShades[400],
+    color: 'inherit',
   },
   paginationContainer: {
     display: 'flex',
@@ -89,7 +86,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     overflowY: 'auto',
     overflowX: 'hidden',
     overscrollBehavior: 'contain',
-    height: '350px',
+    height: '100%',
     width: '100%',
   },
   infiniteScrollLoading: {
@@ -117,6 +114,7 @@ type DomainProfileListProps = {
   withInfiniteScroll?: boolean;
   setWeb3Deps?: (value: Web3Dependencies | undefined) => void;
   hasMore?: boolean;
+  rowStyle?: string;
 };
 
 const DomainProfileList: React.FC<DomainProfileListProps> = ({
@@ -131,6 +129,7 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
   onLastPage,
   onClick,
   hasMore = false,
+  rowStyle,
 }) => {
   const {classes, cx} = useStyles();
   const [page, setPage] = useState(1);
@@ -160,7 +159,7 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
         {domains.map((domain, i) => (
           <Box key={`domainList-${domain}-${i}`}>
             <a
-              className={cx(classes.row, {
+              className={cx(rowStyle || classes.row, {
                 [classes.rowFirst]: i === 0,
               })}
               onClick={onClick ? () => onClick(domain) : undefined}
@@ -178,7 +177,9 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
                   size={30}
                   setWeb3Deps={setWeb3Deps}
                 />
-                <Typography className={classes.domainText}>{domain}</Typography>
+                <Typography variant="body2" className={classes.domainText}>
+                  {domain}
+                </Typography>
               </div>
               <KeyboardArrowRightOutlinedIcon
                 className={classes.arrowRightIcon}
@@ -203,7 +204,7 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
           .map((domain, i) => (
             <>
               <a
-                className={cx(classes.row, {
+                className={cx(rowStyle || classes.row, {
                   [classes.rowFirst]: i === 0,
                 })}
                 href={`${config.UD_ME_BASE_URL}/${domain}`}

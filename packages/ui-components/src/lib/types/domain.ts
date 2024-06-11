@@ -324,6 +324,8 @@ export type SerializedPortfolioSummary = {
     address: string;
     primaryDomain?: string;
     domainCount: number;
+    value?: string;
+    valueAmt?: number;
   };
   account: {
     domainCount: number;

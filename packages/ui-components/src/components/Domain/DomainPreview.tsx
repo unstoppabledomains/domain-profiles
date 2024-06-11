@@ -110,7 +110,9 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
       ? getImageUrl('/domains/ens-logo.svg')
       : Web2SuffixesList.includes(extension)
       ? getImageUrl('/domains/dns-logo.svg')
-      : `${config.UNSTOPPABLE_METADATA_ENDPOINT}/image-src/${domain}?withOverlay=false`);
+      : `${
+          config.UNSTOPPABLE_METADATA_ENDPOINT
+        }/image-src/${domain}?withOverlay=false&ref=${Date.now()}`);
   const isMouseOver = Boolean(anchorEl);
 
   // read from local storage on page load

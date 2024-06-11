@@ -1,6 +1,7 @@
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import HistoryIcon from '@mui/icons-material/History';
+import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import SendIcon from '@mui/icons-material/Send';
 import TabContext from '@mui/lab/TabContext';
@@ -13,20 +14,37 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {DomainWalletTransactions} from '.';
+import {
+  DOMAIN_LIST_PAGE_SIZE,
+  getOwnerDomains,
+  getProfileData,
+} from '../../actions';
+import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
 import type {SerializedWalletBalance} from '../../lib';
-import {useTranslationContext} from '../../lib';
+import {
+  DomainFieldTypes,
+  WALLET_CARD_HEIGHT,
+  useTranslationContext,
+} from '../../lib';
+import {notifyEvent} from '../../lib/error';
 import {getFireBlocksClient} from '../../lib/fireBlocks/client';
 import {getBootstrapState} from '../../lib/fireBlocks/storage/state';
+import {isEthAddress} from '../Chat/protocol/resolution';
+import {DomainProfileList} from '../Domain';
+import {DomainProfileModal} from '../Manage';
 import Buy from './Buy';
 import Receive from './Receive';
 import Send from './Send';
 import {TokensPortfolio} from './TokensPortfolio';
+
+const bgNeutralShade = 800;
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -69,6 +87,40 @@ const useStyles = makeStyles()((theme: Theme) => ({
       width: '70px',
     },
   },
+  domainListContainer: {
+    color: theme.palette.primaryShades[bgNeutralShade - 600],
+    display: 'flex',
+    backgroundImage: `linear-gradient(${
+      theme.palette.primaryShades[bgNeutralShade - 200]
+    }, ${theme.palette.primaryShades[bgNeutralShade]})`,
+    borderRadius: theme.shape.borderRadius,
+    border: `1px solid ${theme.palette.primaryShades[bgNeutralShade - 600]}`,
+    padding: theme.spacing(2),
+    height: `${WALLET_CARD_HEIGHT + 2}px`,
+    marginBottom: theme.spacing(2),
+    marginTop: '15px',
+  },
+  domainRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    textDecoration: 'none !important',
+    alignItems: 'center',
+    cursor: 'pointer',
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
+    color: theme.palette.white,
+    '&:visited': {
+      color: theme.palette.white,
+    },
+    '&:hover': {
+      '& p': {
+        color: theme.palette.white,
+      },
+      '& svg': {
+        color: theme.palette.white,
+      },
+    },
+  },
   panelContainer: {
     display: 'flex',
     width: '100%',
@@ -96,7 +148,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginTop: theme.spacing(-3),
     marginRight: theme.spacing(-4),
     [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing(-1),
+      marginLeft: theme.spacing(-1),
+      marginRight: theme.spacing(-5),
     },
   },
   tabContentItem: {
@@ -124,9 +177,14 @@ export const Client: React.FC<ClientProps> = ({
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const {enqueueSnackbar} = useSnackbar();
 
   // wallet state variables
   const [state, saveState] = useFireblocksState();
+  const {setWeb3Deps} = useWeb3Context();
+  const cryptoValue = wallets
+    .map(w => w.totalValueUsdAmt || 0)
+    .reduce((p, c) => p + c, 0);
 
   // component state variables
   const [isSend, setIsSend] = useState(false);
@@ -134,17 +192,38 @@ export const Client: React.FC<ClientProps> = ({
   const [isBuy, setIsBuy] = useState(false);
   const [tabValue, setTabValue] = useState(ClientTabType.Portfolio);
 
+  // domain list state
+  const [domains, setDomains] = useState<string[]>([]);
+  const [domainsValue, setDomainsValue] = useState<number>(0);
+  const [cursor, setCursor] = useState<number | string>();
+  const [isLoading, setIsLoading] = useState(true);
+  const [retrievedAll, setRetrievedAll] = useState(false);
+  const [domainToManage, setDomainToManage] = useState<string>();
+
   // mobile behavior flag
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  // owner address
+  const address = wallets.find(w => isEthAddress(w.address))?.address;
 
   useEffect(() => {
     if (!isHeaderClicked || !setIsHeaderClicked) {
       return;
     }
+    if (address) {
+      void handleLoadDomains(true);
+    }
     setIsHeaderClicked(false);
     void handleCancel();
-  }, [isHeaderClicked]);
+  }, [address, isHeaderClicked]);
+
+  useEffect(() => {
+    if (!address) {
+      return;
+    }
+    void handleLoadDomains(true);
+  }, [address]);
 
   const getClient = async () => {
     // retrieve client state
@@ -166,7 +245,78 @@ export const Client: React.FC<ClientProps> = ({
   ) => {
     const tv = newValue as ClientTabType;
     setTabValue(tv);
+    if (address && tv === ClientTabType.Domains) {
+      void handleLoadDomains(true);
+    }
     await onRefresh();
+  };
+
+  const handleRetrieveOwnerDomains = async (
+    ownerAddress: string,
+    reload?: boolean,
+  ) => {
+    const retData: {domains: string[]; cursor?: string} = {
+      domains: [],
+      cursor: undefined,
+    };
+    try {
+      // load domains that are contained by this Unstoppable Wallet instance
+      const domainData = await getOwnerDomains(
+        ownerAddress,
+        reload ? undefined : (cursor as string),
+        true,
+        true,
+      );
+      if (domainData) {
+        retData.domains = domainData.data.map(f => f.domain);
+        retData.cursor = domainData.meta.pagination.cursor;
+        if (reload) {
+          const marketData = await getProfileData(retData.domains[0], [
+            DomainFieldTypes.Portfolio,
+          ]);
+          setDomainsValue((marketData?.portfolio?.wallet?.valueAmt || 0) / 100);
+        }
+      }
+    } catch (e) {
+      notifyEvent(e, 'error', 'Profile', 'Fetch', {
+        msg: 'error retrieving owner domains',
+      });
+    }
+    return retData;
+  };
+
+  const handleLoadDomains = async (reload?: boolean) => {
+    if (!address) {
+      return;
+    }
+    if (retrievedAll && !reload) {
+      return;
+    }
+    setIsLoading(true);
+    const resp = await handleRetrieveOwnerDomains(address, reload);
+    if (resp.domains.length) {
+      if (reload) {
+        setDomains([...resp.domains]);
+      } else {
+        setDomains(d => [...d, ...resp.domains]);
+      }
+      setCursor(resp.cursor);
+      if (resp.domains.length < DOMAIN_LIST_PAGE_SIZE) {
+        setRetrievedAll(true);
+      }
+    } else {
+      setRetrievedAll(true);
+    }
+    setIsLoading(false);
+  };
+
+  const handleDomainClick = (v: string) => {
+    setDomainToManage(v);
+  };
+
+  const handleDomainUpdate = () => {
+    void handleLoadDomains(true);
+    enqueueSnackbar(t('manage.updatedDomainSuccess'), {variant: 'success'});
   };
 
   const handleClickedSend = () => {
@@ -223,13 +373,19 @@ export const Client: React.FC<ClientProps> = ({
           <TabContext value={tabValue as ClientTabType}>
             <Box className={classes.balanceContainer}>
               <Typography variant="h3">
-                {wallets
-                  .map(w => w.totalValueUsdAmt || 0)
-                  .reduce((p, c) => p + c, 0)
-                  .toLocaleString('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                  })}
+                {(tabValue === ClientTabType.Domains
+                  ? // show only domain value on domain tab
+                    domainsValue
+                  : tabValue === ClientTabType.Portfolio
+                  ? // show only crypto value on crypto tab
+                    cryptoValue
+                  : tabValue === ClientTabType.Transactions &&
+                    // show aggregate value (domains + crypto) on activity tab
+                    domainsValue + cryptoValue
+                ).toLocaleString('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                })}
               </Typography>
             </Box>
             <Box className={classes.mainActionsContainer}>
@@ -285,6 +441,24 @@ export const Client: React.FC<ClientProps> = ({
                   />
                 </TabPanel>
                 <TabPanel
+                  value={ClientTabType.Domains}
+                  className={classes.tabContentItem}
+                >
+                  <Box className={classes.domainListContainer}>
+                    <DomainProfileList
+                      id={'wallet-domain-list'}
+                      domains={domains}
+                      isLoading={isLoading}
+                      withInfiniteScroll={true}
+                      setWeb3Deps={setWeb3Deps}
+                      onLastPage={handleLoadDomains}
+                      hasMore={!retrievedAll}
+                      onClick={handleDomainClick}
+                      rowStyle={classes.domainRow}
+                    />
+                  </Box>
+                </TabPanel>
+                <TabPanel
                   value={ClientTabType.Transactions}
                   className={classes.tabContentItem}
                 >
@@ -309,8 +483,15 @@ export const Client: React.FC<ClientProps> = ({
                 <Tab
                   icon={<PaidOutlinedIcon />}
                   value={ClientTabType.Portfolio}
-                  label={t('tokensPortfolio.title')}
+                  label={t('tokensPortfolio.crypto')}
                   iconPosition="start"
+                />
+                <Tab
+                  icon={<ListOutlinedIcon />}
+                  value={ClientTabType.Domains}
+                  label={t('common.domains')}
+                  iconPosition="start"
+                  disabled={domains.length === 0}
                 />
                 <Tab
                   icon={<HistoryIcon />}
@@ -326,6 +507,15 @@ export const Client: React.FC<ClientProps> = ({
           </TabContext>
         )}
       </Box>
+      {domainToManage && (
+        <DomainProfileModal
+          domain={domainToManage}
+          address={address}
+          open={true}
+          onClose={() => setDomainToManage(undefined)}
+          onUpdate={handleDomainUpdate}
+        />
+      )}
     </Box>
   );
 };
@@ -339,6 +529,7 @@ export type ClientProps = {
 };
 
 export enum ClientTabType {
+  Domains = 'domains',
   Portfolio = 'portfolio',
   Transactions = 'txns',
 }

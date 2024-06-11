@@ -148,7 +148,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginTop: theme.spacing(-3),
     marginRight: theme.spacing(-4),
     [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing(-1),
+      marginLeft: theme.spacing(-1),
+      marginRight: theme.spacing(-5),
     },
   },
   tabContentItem: {

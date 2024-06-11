@@ -374,8 +374,14 @@ export const Client: React.FC<ClientProps> = ({
             <Box className={classes.balanceContainer}>
               <Typography variant="h3">
                 {(tabValue === ClientTabType.Domains
-                  ? domainsValue
-                  : cryptoValue
+                  ? // show only domain value on domain tab
+                    domainsValue
+                  : tabValue === ClientTabType.Portfolio
+                  ? // show only crypto value on crypto tab
+                    cryptoValue
+                  : tabValue === ClientTabType.Transactions &&
+                    // show aggregate value (domains + crypto) on activity tab
+                    domainsValue + cryptoValue
                 ).toLocaleString('en-US', {
                   style: 'currency',
                   currency: 'USD',

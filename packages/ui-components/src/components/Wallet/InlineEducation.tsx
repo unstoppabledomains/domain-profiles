@@ -1,8 +1,8 @@
 import HelpIcon from '@mui/icons-material/Help';
+import LanguageIcon from '@mui/icons-material/Language';
 import LockIcon from '@mui/icons-material/Lock';
 import LockResetIcon from '@mui/icons-material/LockReset';
 import MobileFriendlyIcon from '@mui/icons-material/MobileFriendly';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import SecurityIcon from '@mui/icons-material/Security';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import Box from '@mui/material/Box';
@@ -14,7 +14,6 @@ import SwiperCore, {Autoplay, Navigation, Pagination} from 'swiper';
 import {Swiper, SwiperSlide} from 'swiper/react';
 
 import config from '@unstoppabledomains/config';
-import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableWalletIcon';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -26,6 +25,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     borderRadius: theme.shape.borderRadius,
     padding: theme.spacing(2),
     marginRight: theme.spacing(1),
+    textAlign: 'center',
+    alignItems: 'center',
   },
   educationCarouselContainer: {
     width: '31em',
@@ -96,25 +97,20 @@ const InlineEducationCard: React.FC<Props> = ({title, content, icon}) => {
 
 const Cards = [
   {
-    title: 'Your Wallet for Domains',
+    title: 'Built for Domains',
     content: `Unstoppable Lite Wallet is designed by domainers, for domainers. It allows you to effortlessly store, manage and transfer your domains and other investments in a web3 wallet labeled with your domain.`,
-    icon: <UnstoppableWalletIcon />,
-  },
-  {
-    title: 'Advanced Technology',
-    content: `Unstoppable Domains has partnered with <a href='https://fireblocks.com' target='_blank'>Fireblocks</a> to provide a next generation wallet, protecting your investments with advanced multi-party computation (MPC) technology. Fireblocks has facilitated $4T+ in transactions over 170M+ wallets.`,
-    icon: <RocketLaunchIcon />,
-  },
-  {
-    title: 'Enhanced Security',
-    content: `Multi-party computation (MPC) protects your investments by distributing trust between Unstoppable Domains, Fireblocks and the user. Each must collaborate to access funds, reducing the risk of compromise and enhancing the integrity of your wallet. **<a href='https://ncw-developers.fireblocks.com/docs/main-capabilities' target='_blank'>Learn more</a>**`,
-    icon: <SecurityIcon />,
+    icon: <LanguageIcon />,
   },
   {
     title: 'Self Custody',
     content:
-      'Not your keys, not your crypto! Your password is the key to exclusive control over the contents of your Unstoppable Lite Wallet. Every interaction requires your consent, such as transferring funds or signing messages.',
+      'Not your keys, not your crypto! With Unstoppable lite Wallet you have full ownership and control over your investments. Every interaction with Unstoppable Lite Wallet requires your consent, such as transfers and signatures.',
     icon: <VpnKeyIcon />,
+  },
+  {
+    title: 'Enhanced Security',
+    content: `Unstoppable Lite Wallet leverages Multi-party computation (MPC) technology and protects your investments by distributing trust. Decentralized signatures reduce the risk of compromise and enhance the integrity of your wallet. **<a href='https://ncw-developers.fireblocks.com/docs/main-capabilities' target='_blank'>Learn more</a>**`,
+    icon: <SecurityIcon />,
   },
   {
     title: 'Backup and Recovery',
@@ -124,7 +120,7 @@ const Cards = [
   {
     title: 'Convenient Access',
     content:
-      'You will never need to remember long seed phrases or deal with private keys. Simply use your password to access Unstoppable Lite Wallet on any device through the website or on a supported mobile app.',
+      'You will never need to remember long seed phrases or deal with private keys. Simply use your email address and password to access Unstoppable Lite Wallet on any device through the website or on a supported mobile app.',
     icon: <MobileFriendlyIcon />,
   },
   {

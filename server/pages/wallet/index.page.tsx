@@ -24,6 +24,7 @@ import {
   isEthAddress,
 } from '@unstoppabledomains/ui-components/src/components/Chat/protocol/resolution';
 import InlineEducation from '@unstoppabledomains/ui-components/src/components/Wallet/InlineEducation';
+import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
 import {getBootstrapState} from '@unstoppabledomains/ui-components/src/lib/fireBlocks/storage/state';
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableWalletIcon';
@@ -33,6 +34,7 @@ const WalletPage = () => {
   const [t] = useTranslationContext();
   const {query: params} = useRouter();
   const isMounted = useIsMounted();
+  const [isLoaded, setIsLoaded] = useState(false);
   const [walletState] = useFireblocksState();
   const [authAddress, setAuthAddress] = useState<string>('');
   const [authDomain, setAuthDomain] = useState<string>('');
@@ -135,7 +137,11 @@ const WalletPage = () => {
             setAuthAvatar(resolution.avatarUrl);
           }
         }
-      } catch {}
+      } catch (e) {
+        notifyEvent(e, 'error', 'Wallet', 'Configuration');
+      } finally {
+        setIsLoaded(true);
+      }
     };
     void loadWallet();
   }, [isMounted, authComplete]);
@@ -178,7 +184,12 @@ const WalletPage = () => {
               {t('manage.cryptoWalletDescriptionShort')}
             </Typography>
           </Grid>
-          <Grid item xs={12} className={classes.item}>
+          <Grid
+            item
+            xs={12}
+            className={classes.item}
+            sx={{display: isLoaded ? undefined : 'none'}}
+          >
             {signInClicked || recoveryToken || emailAddress || authAddress ? (
               <Box
                 className={cx(
@@ -222,10 +233,10 @@ const WalletPage = () => {
                 )}
               >
                 <Box mt={1} display="flex" alignItems="center">
-                  <IconPlate size={35} variant="info">
+                  <IconPlate size={40} variant="info">
                     <UnstoppableWalletIcon />
                   </IconPlate>
-                  <Typography ml={1} variant="h6">
+                  <Typography ml={1} variant="h5">
                     Features & Highlights
                   </Typography>
                 </Box>

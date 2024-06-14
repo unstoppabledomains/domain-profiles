@@ -54,6 +54,14 @@ export const useStyles = makeStyles<
   walletPortfolioContainer: {
     width: '420px',
   },
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+    height: '100%',
+  },
   sectionTitle: {
     fontSize: 60,
     lineHeight: '64px',
@@ -189,5 +197,41 @@ export const useStyles = makeStyles<
   },
   copyright: {
     color: theme.palette.neutralShades[600],
+  },
+  manageContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    width: '520px',
+    [theme.breakpoints.down('sm')]: {
+      width: '100%',
+    },
+  },
+  manageIcon: {
+    width: '30px',
+    height: '30px',
+  },
+  manageTitle: {
+    display: 'flex',
+    width: '100%',
+    color: 'black',
+    marginTop: theme.spacing(1),
+    marginRight: theme.spacing(-6),
+  },
+  upperContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    width: '100%',
+    maxHeight: '450px',
+  },
+  lowerContainer: {
+    display: 'flex',
+    marginTop: theme.spacing(1),
+    width: '100%',
+    [theme.breakpoints.down('md')]: {
+      marginRight: theme.spacing(3),
+    },
   },
 }));

@@ -104,6 +104,23 @@
   "claimDomains": {
     "beta": "Beta"
   },
+  "claimIdentity": {
+    "description": "Verify your email address to configure onchain crypto payments. Your email address will **not be visible** on the blockchain.",
+    "enterOneTimeCode": "Enter verification code",
+    "invalidOtp": "Invalid one-time code",
+    "manage": "Manage identity",
+    "mintingTitle": "Minting your identity",
+    "oneTimeCode": "Verification code",
+    "saveRecordError": "Error saving your identity. Try again in a few moments.",
+    "savingDescription": "## Success!\n Your onchain records for **{{identity}}** are being configured securely and privately. Your contact information will not be visible on the blockchain.\n\nYou can safely close this window.",
+    "sendCode": "Send verification code",
+    "sendOtpError": "Error sending one-time code. Try again in a few moments.",
+    "sessionExpired": "Your session expired. Verify again to continue.",
+    "subTitle": "Tokenize your email address and use it to receive crypto payments.",
+    "title": "Claim Your Identity",
+    "updateSuccessful": "Submitted transaction",
+    "updatingTitle": "Updating your identity"
+  },
   "common": {
     "account": "Account",
     "addDomainCue": "Add a Web3 domain to start your journey on the decentralized web.",
@@ -355,7 +372,7 @@
     "sign": "Sign",
     "signatureError": "Error signing with wallet {{connectedAddress}}",
     "signing": "Signing",
-    "startRecordUpdate": "Start Record Update",
+    "startRecordUpdate": "Save Records",
     "startTransfer": "Start Transfer",
     "tokenGallery": "Collectibles Gallery",
     "tokenGalleryDescription": "Curate a showcase for the digital collectibles associated with your domain's verified crypto addresses.",
@@ -830,6 +847,7 @@
     "enterRecoveryPhraseConfirmation": "Confirm your new password",
     "enterResetPassword": "Enter your new password",
     "insufficientBalance": "Insufficient balance",
+    "invalidEmailAddress": "Invalid email address",
     "invalidRecoveryAccount": "Invalid email address or password",
     "invalidResetAttempt": "Invalid recovery link",
     "invalidSetupCode": "Invalid one-time code",

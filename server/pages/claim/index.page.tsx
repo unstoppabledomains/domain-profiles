@@ -29,6 +29,7 @@ import {
 } from '@unstoppabledomains/ui-components/src/actions';
 import ManageInput from '@unstoppabledomains/ui-components/src/components/Manage/common/ManageInput';
 import Modal from '@unstoppabledomains/ui-components/src/components/Modal';
+import {isEmailValid} from '@unstoppabledomains/ui-components/src/lib';
 import {sleep} from '@unstoppabledomains/ui-components/src/lib/sleep';
 
 enum VerificationState {
@@ -86,6 +87,7 @@ const ClaimPage = () => {
       if (await isTokenValid(emailAddress, accessToken)) {
         // token is valid and can be used to manage identity
         setVerificationState(VerificationState.Complete);
+        setIsSaving(false);
       } else {
         // clear state for invalid token
         handleLogout();
@@ -131,13 +133,14 @@ const ClaimPage = () => {
 
   const handleLogout = () => {
     handleCancel();
+    setIsSaving(false);
     setAccessToken(undefined);
     setIdentityDomain(undefined);
     setErrorMessage(t('claimIdentity.sessionExpired'));
   };
 
   const handleVerifyClicked = () => {
-    if (!isEmailValid()) {
+    if (!isEmailValid(emailAddress)) {
       setErrorMessage(t('wallet.invalidEmailAddress'));
       return;
     }
@@ -237,17 +240,10 @@ const ClaimPage = () => {
       // update page state with the JWT token and domain
       setAccessToken(jwtToken);
       setIdentityDomain(decodedToken.meta.domain);
-      setIsSaving(false);
     } catch (e) {
       setErrorMessage(t('claimIdentity.invalidOtp'));
       return;
     }
-  };
-
-  const isEmailValid = () => {
-    return emailAddress?.match(
-      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-    );
   };
 
   const isTokenValid = async (

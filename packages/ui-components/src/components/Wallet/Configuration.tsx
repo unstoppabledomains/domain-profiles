@@ -35,7 +35,7 @@ import {
 import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
 import type {SerializedWalletBalance} from '../../lib';
-import {loginWithAddress, useTranslationContext} from '../../lib';
+import {isEmailValid, loginWithAddress, useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import {
   getFireBlocksClient,
@@ -513,11 +513,7 @@ export const Configuration: React.FC<
     }
 
     // validate the email address
-    if (
-      !emailAddress?.match(
-        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-      )
-    ) {
+    if (!emailAddress || !isEmailValid(emailAddress)) {
       setErrorMessage(t('common.enterValidEmail'));
       return;
     }

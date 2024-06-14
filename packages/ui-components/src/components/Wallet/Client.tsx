@@ -274,7 +274,9 @@ export const Client: React.FC<ClientProps> = ({
           const marketData = await getProfileData(retData.domains[0], [
             DomainFieldTypes.Portfolio,
           ]);
-          setDomainsValue((marketData?.portfolio?.wallet?.valueAmt || 0) / 100);
+          setDomainsValue(
+            (marketData?.portfolio?.account?.valueAmt || 0) / 100,
+          );
         }
       }
     } catch (e) {

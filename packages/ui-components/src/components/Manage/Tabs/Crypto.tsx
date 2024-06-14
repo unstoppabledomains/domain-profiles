@@ -11,7 +11,7 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getProfileData, useFeatureFlags} from '../../../actions';
+import {getProfileData} from '../../../actions';
 import {
   confirmRecordUpdate,
   getRegistrationMessage,
@@ -89,7 +89,6 @@ export const Crypto: React.FC<CryptoProps> = ({
 }) => {
   const {classes} = useStyles();
   const {web3Deps, setWeb3Deps} = useWeb3Context();
-  const {data: featureFlags} = useFeatureFlags(false, domain);
   const {unsResolverKeys: resolverKeys, loading: resolverKeysLoading} =
     useResolverKeys();
   const [saveClicked, setSaveClicked] = useState(false);
@@ -364,22 +363,6 @@ export const Crypto: React.FC<CryptoProps> = ({
       );
     });
   };
-
-  // show coming soon if feature flag disabled
-  if (!featureFlags.variations?.udMeServiceDomainsEnableManagement) {
-    return (
-      <Box className={classes.container}>
-        <TabHeader
-          icon={<MonetizationOnOutlinedIcon />}
-          description={t('manage.cryptoAddressesDescription')}
-          learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001181827-add-crypto-addresses"
-        />
-        <Typography variant="h5" className={classes.title}>
-          {t('manage.comingSoon')}
-        </Typography>
-      </Box>
-    );
-  }
 
   return (
     <Box className={classes.container}>

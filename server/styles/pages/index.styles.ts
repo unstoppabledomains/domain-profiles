@@ -225,6 +225,7 @@ export const useStyles = makeStyles<
     overflowX: 'hidden',
     width: '100%',
     maxHeight: '450px',
+    textAlign: 'center',
   },
   lowerContainer: {
     display: 'flex',

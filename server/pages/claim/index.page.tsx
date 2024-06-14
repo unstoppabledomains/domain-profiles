@@ -390,6 +390,15 @@ const ClaimPage = () => {
                 >
                   <Box className={cx(classes.manageContainer)}>
                     <Box className={classes.upperContainer}>
+                      {emailAddress && (
+                        <Typography variant="body2" mb={-1}>
+                          <Markdown>
+                            {t('claimIdentity.manageDescription', {
+                              emailAddress,
+                            })}
+                          </Markdown>
+                        </Typography>
+                      )}
                       <Crypto
                         domain={identityDomain}
                         address={''}

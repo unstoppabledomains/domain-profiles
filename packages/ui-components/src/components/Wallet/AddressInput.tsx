@@ -9,7 +9,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getProfileData} from '../../actions';
 import useResolverKeys from '../../hooks/useResolverKeys';
-import {DomainFieldTypes, isValidDomain} from '../../lib';
+import {DomainFieldTypes, isValidDomain, isValidIdentity} from '../../lib';
 import type {ResolverKeyName} from '../../lib/types/resolverKeys';
 import {getAddressMetadata} from '../Chat/protocol/resolution';
 import ManageInput from '../Manage/common/ManageInput';
@@ -79,6 +79,7 @@ const AddressInput: React.FC<Props> = ({
     const recordKey = getRecordKey(assetSymbol);
     const profileData = await getProfileData(addressOrDomain, [
       DomainFieldTypes.Records,
+      DomainFieldTypes.CryptoVerifications,
     ]);
     const recordValue = profileData?.records
       ? profileData?.records[recordKey]
@@ -130,7 +131,7 @@ const AddressInput: React.FC<Props> = ({
     }
 
     // forward resolve domain to address
-    if (isValidDomain(addressOrDomain)) {
+    if (isValidDomain(addressOrDomain) || isValidIdentity(addressOrDomain)) {
       timeout.current = setTimeout(async () => {
         setIsLoading(true);
         const resolvedAddress = await resolveDomain(addressOrDomain);

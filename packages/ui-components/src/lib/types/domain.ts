@@ -1,3 +1,5 @@
+import {isDomainValidForManagement} from '../domain';
+import {isEmailValid} from '../isEmailValid';
 import type {WebacyRiskScore} from './webacy';
 
 export enum AffiliateTier {
@@ -555,9 +557,12 @@ export type YoutubeUserInfo = {
   subscriberCount: number;
 } | null;
 
-export const isValidDomain = (domain: string): boolean => {
-  const domainSuffix = domain.split('.').pop();
-  return Object.values(DomainSuffixes).includes(domainSuffix as DomainSuffixes);
+export const isValidDomain = (maybeDomain: string): boolean => {
+  return isDomainValidForManagement(maybeDomain);
+};
+
+export const isValidIdentity = (maybeIdentity: string): boolean => {
+  return isEmailValid(maybeIdentity);
 };
 
 export const kbToMb = (kb: number): number => {

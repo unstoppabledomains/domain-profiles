@@ -30,6 +30,7 @@ import {
 } from '../../actions/fireBlocksActions';
 import {
   getOnboardingStatus,
+  getPaymentConfigStatus,
   getWalletPortfolio,
 } from '../../actions/walletActions';
 import {useWeb3Context} from '../../hooks';
@@ -46,6 +47,7 @@ import {
   getBootstrapState,
   saveBootstrapState,
 } from '../../lib/fireBlocks/storage/state';
+import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {DomainProfileTabType} from '../Manage/DomainProfile';
 import ManageInput from '../Manage/common/ManageInput';
 import type {ManageTabProps} from '../Manage/common/types';
@@ -168,6 +170,8 @@ export const Configuration: React.FC<
   const [recoveryPhraseConfirmation, setRecoveryPhraseConfirmation] =
     useState<string>();
   const [emailAddress, setEmailAddress] = useState(initialEmailAddress);
+  const [paymentConfigStatus, setPaymentConfigStatus] =
+    useState<SerializedIdentityResponse>();
   const [mpcWallets, setMpcWallets] = useState<SerializedWalletBalance[]>([]);
 
   // style and translation
@@ -339,23 +343,31 @@ export const Configuration: React.FC<
       ...new Set(bootstrapState.assets?.map(a => a.address)),
     ];
     const wallets: SerializedWalletBalance[] = [];
-    await Bluebird.map(accountAddresses, async address => {
-      const addressPortfolio = await getWalletPortfolio(
-        address,
-        accessToken,
-        undefined,
-        true,
-      );
-      if (!addressPortfolio) {
-        missingAddresses.push(address);
-        return;
-      }
-      wallets.push(
-        ...addressPortfolio.filter(p =>
-          accountChains.includes(p.symbol.toLowerCase()),
-        ),
-      );
-    });
+    const [paymentConfig] = await Promise.all([
+      accountAddresses.length > 0
+        ? getPaymentConfigStatus(accountAddresses[0], accessToken)
+        : undefined,
+      Bluebird.map(accountAddresses, async address => {
+        const addressPortfolio = await getWalletPortfolio(
+          address,
+          accessToken,
+          undefined,
+          true,
+        );
+        if (!addressPortfolio) {
+          missingAddresses.push(address);
+          return;
+        }
+        wallets.push(
+          ...addressPortfolio.filter(p =>
+            accountChains.includes(p.symbol.toLowerCase()),
+          ),
+        );
+      }),
+    ]);
+
+    // set payment config status
+    setPaymentConfigStatus(paymentConfig);
 
     // show error message if any wallet data is missing
     if (missingAddresses.length > 0) {
@@ -894,6 +906,7 @@ export const Configuration: React.FC<
             accessToken && (
               <Client
                 wallets={mpcWallets}
+                paymentConfigStatus={paymentConfigStatus}
                 accessToken={accessToken}
                 onRefresh={loadMpcWallets}
                 isHeaderClicked={isHeaderClicked}

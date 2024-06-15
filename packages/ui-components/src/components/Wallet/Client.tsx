@@ -36,6 +36,7 @@ import {
 import {notifyEvent} from '../../lib/error';
 import {getFireBlocksClient} from '../../lib/fireBlocks/client';
 import {getBootstrapState} from '../../lib/fireBlocks/storage/state';
+import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileList} from '../Domain';
 import {DomainProfileModal} from '../Manage';
@@ -171,6 +172,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 export const Client: React.FC<ClientProps> = ({
   accessToken,
   wallets,
+  paymentConfigStatus,
   onRefresh,
   setIsHeaderClicked,
   isHeaderClicked,
@@ -217,6 +219,29 @@ export const Client: React.FC<ClientProps> = ({
     setIsHeaderClicked(false);
     void handleCancel();
   }, [address, isHeaderClicked]);
+
+  useEffect(() => {
+    if (paymentConfigStatus?.status !== 'ready') {
+      return;
+    }
+
+    // nothing to do if message has already been shown
+    if (state['wallet-service-state-current'].identityConfigReady) {
+      return;
+    }
+
+    // show message and set state key so it is not displayed again
+    state['wallet-service-state-current'].identityConfigReady = 'true';
+    saveState({
+      ...state,
+    });
+    enqueueSnackbar(
+      t('claimIdentity.mpcWalletReady', {
+        emailAddress: paymentConfigStatus.account,
+      }),
+      {variant: 'info'},
+    );
+  }, [paymentConfigStatus]);
 
   useEffect(() => {
     if (!address) {
@@ -525,6 +550,7 @@ export const Client: React.FC<ClientProps> = ({
 export type ClientProps = {
   accessToken: string;
   wallets: SerializedWalletBalance[];
+  paymentConfigStatus?: SerializedIdentityResponse;
   onRefresh: () => Promise<void>;
   isHeaderClicked: boolean;
   setIsHeaderClicked?: (v: boolean) => void;

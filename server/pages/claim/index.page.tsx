@@ -1,6 +1,7 @@
 import WalletIcon from '@mui/icons-material/Wallet';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -372,6 +373,7 @@ const ClaimPage = () => {
                 <Modal
                   onClose={handleCancel}
                   open={true}
+                  noContentPadding
                   titleStyle={classes.manageTitle}
                   title={
                     <Box
@@ -391,12 +393,26 @@ const ClaimPage = () => {
                   <Box className={cx(classes.manageContainer)}>
                     <Box className={classes.upperContainer}>
                       {emailAddress && (
-                        <Typography variant="body2" mb={-1}>
+                        <Typography variant="body2" mt={1}>
                           <Markdown>
                             {t('claimIdentity.manageDescription', {
                               emailAddress,
                             })}
                           </Markdown>
+                          <Box>
+                            <Button
+                              variant="text"
+                              size="small"
+                              onClick={() =>
+                                window.open(
+                                  config.WALLETS.LANDING_PAGE_URL,
+                                  '_blank',
+                                )
+                              }
+                            >
+                              {t('claimIdentity.needWallet')}
+                            </Button>
+                          </Box>
                         </Typography>
                       )}
                       <Crypto
@@ -407,6 +423,7 @@ const ClaimPage = () => {
                         updateFn={handleSaveIdentityClicked}
                         onUpdate={handleUpdateSuccess}
                         hideHeader={true}
+                        hideVerifyButtons={true}
                       />
                     </Box>
                     <Box className={cx(classes.lowerContainer)}>
@@ -438,6 +455,7 @@ const ClaimPage = () => {
                     </Typography>
                   </Box>
                 }
+                noContentPadding
                 onClose={handleCancel}
                 open={true}
               >
@@ -445,7 +463,7 @@ const ClaimPage = () => {
                   <Box mt={3}>
                     <CircularProgress />
                   </Box>
-                  <Typography variant="body1" mt={3}>
+                  <Typography variant="body1">
                     <Markdown>
                       {t('claimIdentity.savingDescription', {
                         identity: emailAddress,

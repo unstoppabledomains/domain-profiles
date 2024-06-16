@@ -33,6 +33,7 @@ type Props = {
   uiDisabled: boolean;
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;
   saveClicked: boolean;
+  hideEndAdornment?: boolean;
 };
 
 const MultiChainInput: React.FC<Props> = ({
@@ -46,6 +47,7 @@ const MultiChainInput: React.FC<Props> = ({
   uiDisabled,
   setWeb3Deps,
   saveClicked,
+  hideEndAdornment,
 }) => {
   const [t] = useTranslationContext();
   const {classes} = useStyles();
@@ -150,16 +152,18 @@ const MultiChainInput: React.FC<Props> = ({
                         )
                       }
                       endAdornment={
-                        <VerifyAdornment
-                          addressCurrent={value}
-                          domain={domain}
-                          ownerAddress={ownerAddress}
-                          profileData={profileData}
-                          currency={currency}
-                          setWeb3Deps={setWeb3Deps}
-                          uiDisabled={false}
-                          saveClicked={saveClicked}
-                        />
+                        hideEndAdornment ? undefined : (
+                          <VerifyAdornment
+                            addressCurrent={value}
+                            domain={domain}
+                            ownerAddress={ownerAddress}
+                            profileData={profileData}
+                            currency={currency}
+                            setWeb3Deps={setWeb3Deps}
+                            uiDisabled={false}
+                            saveClicked={saveClicked}
+                          />
+                        )
                       }
                     />
                     {(errors[key] || isDeprecated) && (

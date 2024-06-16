@@ -224,7 +224,7 @@ export const useStyles = makeStyles<
     overflowY: 'auto',
     overflowX: 'hidden',
     width: '100%',
-    maxHeight: '450px',
+    maxHeight: '520px',
     textAlign: 'center',
   },
   lowerContainer: {

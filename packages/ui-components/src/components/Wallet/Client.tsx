@@ -14,6 +14,7 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import Markdown from 'markdown-to-jsx';
 import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 
@@ -167,6 +168,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     height: '100%',
     justifyContent: 'space-between',
   },
+  identitySnackbar: {
+    display: 'flex',
+    maxWidth: '300px',
+  },
 }));
 
 export const Client: React.FC<ClientProps> = ({
@@ -221,24 +226,38 @@ export const Client: React.FC<ClientProps> = ({
   }, [address, isHeaderClicked]);
 
   useEffect(() => {
-    if (paymentConfigStatus?.status !== 'ready') {
+    if (!paymentConfigStatus?.status) {
       return;
     }
 
     // nothing to do if message has already been shown
-    if (state['wallet-service-state-current'].identityConfigReady) {
+    if (paymentConfigStatus?.status === state.config?.identityState) {
       return;
     }
 
     // show message and set state key so it is not displayed again
-    state['wallet-service-state-current'].identityConfigReady = 'true';
+    state.config = {
+      ...state.config,
+      identityState: paymentConfigStatus.status,
+    };
     saveState({
       ...state,
     });
     enqueueSnackbar(
-      t('claimIdentity.mpcWalletReady', {
-        emailAddress: paymentConfigStatus.account,
-      }),
+      <Box className={classes.identitySnackbar}>
+        <Markdown>
+          {t(
+            paymentConfigStatus.status === 'ready'
+              ? 'claimIdentity.mpcWalletReady'
+              : paymentConfigStatus.status === 'minting'
+              ? 'claimIdentity.mpcWalletMinting'
+              : 'claimIdentity.mpcWalletUpdating',
+            {
+              emailAddress: paymentConfigStatus.account,
+            },
+          )}
+        </Markdown>
+      </Box>,
       {variant: 'info'},
     );
   }, [paymentConfigStatus]);

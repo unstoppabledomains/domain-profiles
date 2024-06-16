@@ -111,6 +111,10 @@
     "manage": "Verify code",
     "manageDescription": "Choose where to receive funds when people send crypto to {{emailAddress}}. Your email address will **not be visible** onchain.",
     "mintingTitle": "Minting your identity",
+    "mpcWalletMinting": "Minting identity to receive crypto payments using your email address **{{emailAddress}}**",
+    "mpcWalletReady": "Ready to receive crypto payments using your email address **{{emailAddress}}**",
+    "mpcWalletUpdating": "Configuring your wallet to receive crypto payments using your email address **{{emailAddress}}**",
+    "needWallet": "Need a wallet?",
     "oneTimeCode": "Verification code",
     "saveRecordError": "Error saving your identity. Try again in a few moments.",
     "savingDescription": "## Success!\n Your onchain records for **{{identity}}** are being configured securely and privately. Your contact information will not be visible on the blockchain.\n\nYou can safely close this window.",
@@ -120,8 +124,7 @@
     "subTitle": "Tokenize your email address and use it to receive crypto payments.",
     "title": "Claim Your Identity",
     "updateSuccessful": "Submitted transaction",
-    "updatingTitle": "Updating your identity",
-    "mpcWalletReady": "Unstoppable Lite Wallet is ready to receive payments using your email address {{emailAddress}}"
+    "updatingTitle": "Updating your identity"
   },
   "common": {
     "account": "Account",

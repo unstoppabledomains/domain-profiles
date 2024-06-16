@@ -50,6 +50,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   pendingTxContainer: {
     display: 'flex',
+    width: '100%',
     marginTop: theme.spacing(1),
     padding: theme.spacing(1),
     backgroundImage: `linear-gradient(to left, ${theme.palette.primaryShades[400]}, ${theme.palette.primaryShades[600]})`,
@@ -86,6 +87,7 @@ export const Crypto: React.FC<CryptoProps> = ({
   filterFn,
   updateFn,
   hideHeader,
+  hideVerifyButtons,
 }) => {
   const {classes} = useStyles();
   const {web3Deps, setWeb3Deps} = useWeb3Context();
@@ -337,6 +339,7 @@ export const Crypto: React.FC<CryptoProps> = ({
         uiDisabled={!!isPendingTx}
         setWeb3Deps={setWeb3Deps}
         saveClicked={isSignatureSuccess}
+        hideEndAdornment={hideVerifyButtons}
       />
     ));
   };
@@ -359,6 +362,7 @@ export const Crypto: React.FC<CryptoProps> = ({
           profileData={profileData}
           setWeb3Deps={setWeb3Deps}
           saveClicked={isSignatureSuccess}
+          hideEndAdornment={hideVerifyButtons}
         />
       );
     });
@@ -424,4 +428,5 @@ export type CryptoProps = ManageTabProps & {
   filterFn?: (k: string) => boolean;
   updateFn?: (records: Record<string, string>) => Promise<void>;
   hideHeader?: boolean;
+  hideVerifyButtons?: boolean;
 };

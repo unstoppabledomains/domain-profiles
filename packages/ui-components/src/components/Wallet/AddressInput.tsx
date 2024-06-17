@@ -183,7 +183,7 @@ const AddressInput: React.FC<Props> = ({
               <CircularProgress size={23} />
             </div>
           ) : error && errorMessage && onInvitation && isEmailValid(address) ? (
-            <Button variant="text" size="small" onClick={handleInviteClick}>
+            <Button variant="text" onClick={handleInviteClick}>
               {t('wallet.invite')}
             </Button>
           ) : undefined

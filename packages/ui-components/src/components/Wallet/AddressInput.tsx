@@ -1,5 +1,6 @@
 import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -11,6 +12,7 @@ import {getProfileData} from '../../actions';
 import useResolverKeys from '../../hooks/useResolverKeys';
 import {
   DomainFieldTypes,
+  isEmailValid,
   isValidDomain,
   isValidIdentity,
   useTranslationContext,
@@ -53,6 +55,7 @@ const getRecordKey = (symbol: string): ResolverKeyName => {
 type Props = {
   onAddressChange: (value: string) => void;
   onResolvedDomainChange: (value: string) => void;
+  onInvitation?: (emailAddress: string) => Promise<void>;
   placeholder: string;
   initialResolvedDomainValue: string;
   initialAddressValue: string;
@@ -63,6 +66,7 @@ type Props = {
 const AddressInput: React.FC<Props> = ({
   onAddressChange,
   onResolvedDomainChange,
+  onInvitation,
   placeholder,
   initialAddressValue,
   initialResolvedDomainValue,
@@ -80,6 +84,14 @@ const AddressInput: React.FC<Props> = ({
   const {classes} = useStyles();
   const {unsResolverKeys} = useResolverKeys();
   const timeout = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeout.current) {
+        clearTimeout(timeout.current);
+      }
+    };
+  }, []);
 
   const resolveDomain = async (addressOrDomain: string): Promise<string> => {
     const recordKey = getRecordKey(assetSymbol);
@@ -101,18 +113,19 @@ const AddressInput: React.FC<Props> = ({
     return isValid;
   };
 
-  useEffect(() => {
-    return () => {
-      if (timeout.current) {
-        clearTimeout(timeout.current);
-      }
-    };
-  }, []);
+  const handleInviteClick = async () => {
+    if (onInvitation) {
+      setIsLoading(true);
+      await onInvitation(address);
+      setIsLoading(false);
+    }
+  };
 
   const onChange = async (id: string, addressOrDomain: string) => {
     onResolvedDomainChange('');
     onAddressChange('');
     setErrorMessage('');
+    setError(false);
     setAddress(addressOrDomain);
     setResolvedDomain('');
 
@@ -169,6 +182,10 @@ const AddressInput: React.FC<Props> = ({
             <div className={classes.loader} data-testid="loader">
               <CircularProgress size={23} />
             </div>
+          ) : error && errorMessage && onInvitation && isEmailValid(address) ? (
+            <Button variant="text" size="small" onClick={handleInviteClick}>
+              {t('wallet.invite')}
+            </Button>
           ) : undefined
         }
         errorText={errorMessage}

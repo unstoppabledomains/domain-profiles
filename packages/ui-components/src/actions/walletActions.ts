@@ -27,28 +27,6 @@ export const getOnboardingStatus = async (
   return false;
 };
 
-export const getPaymentConfigStatus = async (
-  address: string,
-  accessToken: string,
-): Promise<SerializedIdentityResponse | undefined> => {
-  try {
-    return await fetchApi<SerializedIdentityResponse>(
-      `/user/${address}/wallet/configurePayment`,
-      {
-        method: 'POST',
-        host: config.PROFILE.HOST_URL,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-      },
-    );
-  } catch (e) {
-    notifyEvent(e, 'warning', 'Wallet', 'Validation');
-  }
-  return undefined;
-};
-
 export const getWalletPortfolio = async (
   address: string,
   accessToken: string,
@@ -67,4 +45,55 @@ export const getWalletPortfolio = async (
       },
     },
   );
+};
+
+export const sendInvitation = async (
+  senderWalletAddress: string,
+  recipientEmailAddress: string,
+  accessToken: string,
+): Promise<boolean> => {
+  try {
+    const inviteStatus = await fetchApi<WalletAccountResponse>(
+      `/user/${senderWalletAddress}/wallet/invite`,
+      {
+        method: 'POST',
+        host: config.PROFILE.HOST_URL,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          emailAddress: recipientEmailAddress,
+        }),
+      },
+    );
+    if (inviteStatus?.emailAddress === recipientEmailAddress) {
+      return true;
+    }
+  } catch (e) {
+    notifyEvent(e, 'warning', 'Wallet', 'Validation');
+  }
+  return false;
+};
+
+export const syncIdentityConfig = async (
+  address: string,
+  accessToken: string,
+): Promise<SerializedIdentityResponse | undefined> => {
+  try {
+    return await fetchApi<SerializedIdentityResponse>(
+      `/user/${address}/wallet/identity`,
+      {
+        method: 'POST',
+        host: config.PROFILE.HOST_URL,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+  } catch (e) {
+    notifyEvent(e, 'warning', 'Wallet', 'Validation');
+  }
+  return undefined;
 };

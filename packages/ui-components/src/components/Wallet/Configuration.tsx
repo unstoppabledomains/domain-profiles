@@ -30,8 +30,8 @@ import {
 } from '../../actions/fireBlocksActions';
 import {
   getOnboardingStatus,
-  getPaymentConfigStatus,
   getWalletPortfolio,
+  syncIdentityConfig,
 } from '../../actions/walletActions';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
@@ -345,7 +345,7 @@ export const Configuration: React.FC<
     const wallets: SerializedWalletBalance[] = [];
     const [paymentConfig] = await Promise.all([
       accountAddresses.length > 0
-        ? getPaymentConfigStatus(accountAddresses[0], accessToken)
+        ? syncIdentityConfig(accountAddresses[0], accessToken)
         : undefined,
       Bluebird.map(accountAddresses, async address => {
         const addressPortfolio = await getWalletPortfolio(

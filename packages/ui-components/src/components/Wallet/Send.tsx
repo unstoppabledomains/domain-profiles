@@ -3,6 +3,7 @@ import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import type {Theme} from '@mui/material/styles';
+import {useSnackbar} from 'notistack';
 import React, {useRef, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
@@ -12,6 +13,7 @@ import {
   getAccountAssets,
   getEstimateTransferResponse,
 } from '../../actions/fireBlocksActions';
+import {sendInvitation} from '../../actions/walletActions';
 import type {SerializedWalletBalance} from '../../lib';
 import {useTranslationContext} from '../../lib';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
@@ -147,6 +149,7 @@ const Send: React.FC<Props> = ({
   wallets,
 }) => {
   const [t] = useTranslationContext();
+  const {enqueueSnackbar} = useSnackbar();
   const [recipientAddress, setRecipientAddress] = useState('');
   const [accountAsset, setAccountAsset] = useState<AccountAsset>();
   const [selectedToken, setSelectedToken] = useState<TokenEntry>();
@@ -224,6 +227,22 @@ const Send: React.FC<Props> = ({
     setResolvedDomain(value);
     if (value && amountInputRef.current) {
       amountInputRef.current.focus();
+    }
+  };
+
+  const handleSendInvitation = async (emailAddress: string) => {
+    if (!accountAsset) {
+      return;
+    }
+    const inviteResult = await sendInvitation(
+      accountAsset?.address,
+      emailAddress,
+      accessToken,
+    );
+    if (inviteResult) {
+      enqueueSnackbar(t('wallet.inviteSent', {emailAddress}), {
+        variant: 'success',
+      });
     }
   };
 
@@ -338,6 +357,7 @@ const Send: React.FC<Props> = ({
               initialResolvedDomainValue={resolvedDomain}
               onAddressChange={handleRecipientChange}
               onResolvedDomainChange={handleResolvedDomainChange}
+              onInvitation={handleSendInvitation}
               assetSymbol={selectedToken.ticker}
             />
           </Box>

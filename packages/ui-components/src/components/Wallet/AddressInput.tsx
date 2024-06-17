@@ -9,7 +9,12 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getProfileData} from '../../actions';
 import useResolverKeys from '../../hooks/useResolverKeys';
-import {DomainFieldTypes, isValidDomain, isValidIdentity} from '../../lib';
+import {
+  DomainFieldTypes,
+  isValidDomain,
+  isValidIdentity,
+  useTranslationContext,
+} from '../../lib';
 import type {ResolverKeyName} from '../../lib/types/resolverKeys';
 import {getAddressMetadata} from '../Chat/protocol/resolution';
 import ManageInput from '../Manage/common/ManageInput';
@@ -64,6 +69,7 @@ const AddressInput: React.FC<Props> = ({
   label,
   assetSymbol,
 }) => {
+  const [t] = useTranslationContext();
   const [address, setAddress] = useState<string>(initialAddressValue);
   const [resolvedDomain, setResolvedDomain] = useState<string>(
     initialResolvedDomainValue,
@@ -137,9 +143,7 @@ const AddressInput: React.FC<Props> = ({
         const resolvedAddress = await resolveDomain(addressOrDomain);
         setIsLoading(false);
         if (!resolvedAddress || !validateAddress(resolvedAddress)) {
-          setErrorMessage(
-            `Could not resolve ${addressOrDomain} to a valid ${assetSymbol} address`,
-          );
+          setErrorMessage(t('wallet.resolutionError', {assetSymbol}));
           return;
         }
         setAddress(resolvedAddress);

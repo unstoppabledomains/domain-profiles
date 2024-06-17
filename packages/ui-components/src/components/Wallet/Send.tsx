@@ -93,7 +93,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     height: '113px',
   },
   recipientWrapper: {
-    height: '109px',
+    minHeight: '109px',
     width: '100%',
   },
   amountInputWrapper: {

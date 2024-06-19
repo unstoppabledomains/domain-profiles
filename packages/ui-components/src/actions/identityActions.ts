@@ -19,6 +19,23 @@ interface UseIdentityQueryOptions {
   name?: string;
 }
 
+export const createIdentity = async (
+  identity: string,
+  accessToken: string,
+): Promise<SerializedIdentityResponse | undefined> => {
+  return await fetchApi<SerializedIdentityResponse>(`/user/identity/wallet`, {
+    method: 'POST',
+    mode: 'cors',
+    host: config.PROFILE.HOST_URL,
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Authorization: accessToken,
+      'x-auth-subject': identity,
+    },
+  });
+};
+
 export const getHumanityCheckStatus = async (
   options: GetIdentityOptions | UseIdentityQueryOptions,
 ): Promise<PersonaIdentity | Record<string, PersonaIdentity>> => {

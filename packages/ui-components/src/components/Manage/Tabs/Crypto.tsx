@@ -67,7 +67,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     height: '50px',
   },
   button: {
-    marginBottom: theme.spacing(2),
+    marginBottom: theme.spacing(1),
   },
   icon: {
     color: theme.palette.neutralShades[600],

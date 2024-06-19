@@ -55,12 +55,13 @@ const getRecordKey = (symbol: string): ResolverKeyName => {
 type Props = {
   onAddressChange: (value: string) => void;
   onResolvedDomainChange: (value: string) => void;
-  onInvitation?: (emailAddress: string) => Promise<void>;
+  onInvitation?: (emailAddress: string) => Promise<boolean>;
   placeholder: string;
   initialResolvedDomainValue: string;
   initialAddressValue: string;
   label: string;
   assetSymbol: string;
+  createWalletEnabled?: boolean;
 };
 
 const AddressInput: React.FC<Props> = ({
@@ -72,6 +73,7 @@ const AddressInput: React.FC<Props> = ({
   initialResolvedDomainValue,
   label,
   assetSymbol,
+  createWalletEnabled,
 }) => {
   const [t] = useTranslationContext();
   const [address, setAddress] = useState<string>(initialAddressValue);
@@ -79,6 +81,7 @@ const AddressInput: React.FC<Props> = ({
     initialResolvedDomainValue,
   );
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isCreatingWallet, setIsCreatingWallet] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [error, setError] = useState<boolean>(false);
   const {classes} = useStyles();
@@ -116,12 +119,23 @@ const AddressInput: React.FC<Props> = ({
   const handleInviteClick = async () => {
     if (onInvitation) {
       setIsLoading(true);
-      await onInvitation(address);
+      if (createWalletEnabled) {
+        setIsCreatingWallet(true);
+        setErrorMessage('');
+      }
+      if ((await onInvitation(address)) && createWalletEnabled) {
+        await onChange('', address);
+      } else {
+        setErrorMessage(t('wallet.inviteSendError'));
+      }
       setIsLoading(false);
+      if (createWalletEnabled) {
+        setIsCreatingWallet(false);
+      }
     }
   };
 
-  const onChange = async (id: string, addressOrDomain: string) => {
+  const onChange = async (_id: string, addressOrDomain: string) => {
     onResolvedDomainChange('');
     onAddressChange('');
     setErrorMessage('');
@@ -156,7 +170,11 @@ const AddressInput: React.FC<Props> = ({
         const resolvedAddress = await resolveDomain(addressOrDomain);
         setIsLoading(false);
         if (!resolvedAddress || !validateAddress(resolvedAddress)) {
-          setErrorMessage(t('wallet.resolutionError', {assetSymbol}));
+          if (isEmailValid(addressOrDomain) && createWalletEnabled) {
+            setErrorMessage(t('wallet.resolutionErrorForEmail', {assetSymbol}));
+          } else {
+            setErrorMessage(t('wallet.resolutionError', {assetSymbol}));
+          }
           return;
         }
         setAddress(resolvedAddress);
@@ -178,7 +196,7 @@ const AddressInput: React.FC<Props> = ({
         onChange={onChange}
         disabled={isLoading}
         endAdornment={
-          isLoading ? (
+          isCreatingWallet ? undefined : isLoading ? (
             <div className={classes.loader} data-testid="loader">
               <CircularProgress size={23} />
             </div>
@@ -198,6 +216,14 @@ const AddressInput: React.FC<Props> = ({
             <CheckIcon className={classes.checkIcon} />
             <Typography variant="caption" className={classes.resolvedText}>
               Successfully resolved {resolvedDomain}
+            </Typography>
+          </>
+        )}
+        {isCreatingWallet && (
+          <>
+            <CircularProgress size={14} />
+            <Typography variant="caption" className={classes.resolvedText}>
+              {t('wallet.inviteInProgress')}
             </Typography>
           </>
         )}

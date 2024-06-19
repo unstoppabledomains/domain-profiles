@@ -235,4 +235,14 @@ export const useStyles = makeStyles<
       marginRight: theme.spacing(3),
     },
   },
+  errorIcon: {
+    color: theme.palette.error.main,
+    height: '55px',
+    width: '55px',
+  },
+  successIcon: {
+    color: theme.palette.success.main,
+    height: '55px',
+    width: '55px',
+  },
 }));

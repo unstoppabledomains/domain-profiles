@@ -1,3 +1,5 @@
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
 import WalletIcon from '@mui/icons-material/Wallet';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
@@ -20,14 +22,17 @@ import {
   DomainFieldTypes,
   getProfileData,
   getSeoTags,
+  useFeatureFlags,
   useTranslationContext,
   verifyOneTimeCode,
 } from '@unstoppabledomains/ui-components';
 import {
+  createIdentity,
   getIdentity,
   saveIdentity,
   sendOneTimeCode,
 } from '@unstoppabledomains/ui-components/src/actions';
+import {getOnboardingStatus} from '@unstoppabledomains/ui-components/src/actions/walletActions';
 import ManageInput from '@unstoppabledomains/ui-components/src/components/Manage/common/ManageInput';
 import Modal from '@unstoppabledomains/ui-components/src/components/Modal';
 import {isEmailValid} from '@unstoppabledomains/ui-components/src/lib';
@@ -39,6 +44,7 @@ enum VerificationState {
   Complete = 'complete',
   Minting = 'minting',
   Updating = 'updating',
+  CreatingWallet = 'creatingWallet',
 }
 
 const disabledStates = [
@@ -46,16 +52,22 @@ const disabledStates = [
   VerificationState.Minting,
   VerificationState.Updating,
 ];
-const updatingStates = [VerificationState.Minting, VerificationState.Updating];
+const updatingStates = [
+  VerificationState.Minting,
+  VerificationState.Updating,
+  VerificationState.CreatingWallet,
+];
 
 const ClaimPage = () => {
   const {classes, cx} = useStyles({});
   const [t] = useTranslationContext();
   const {enqueueSnackbar} = useSnackbar();
+  const {data: featureFlags, isFetched: isFeatureFlagFetched} =
+    useFeatureFlags();
   const [verificationState, setVerificationState] = useState(
     VerificationState.EnterEmail,
   );
-  const [domainUpdateButton, setDomainUpdateButton] = useState<React.ReactNode>(
+  const [buttonComponent, setButtonComponent] = useState<React.ReactNode>(
     <></>,
   );
   const [accessToken, setAccessToken] = useSessionStorage<string | undefined>(
@@ -68,7 +80,10 @@ const ClaimPage = () => {
   const [emailAddress, setEmailAddress] = useState<string>();
   const [oneTimeCode, setOneTimeCode] = useState<string>();
   const [errorMessage, setErrorMessage] = useState<string>();
+  const [isExistingWallet, setIsExistingWallet] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSuccess, setIsSuccess] = useState<boolean>();
+  const [clickedManualSetup, setClickedManualSetup] = useState(false);
 
   useEffect(() => {
     if (!accessToken || !identityDomain) {
@@ -81,11 +96,33 @@ const ClaimPage = () => {
   }, [accessToken, identityDomain]);
 
   useEffect(() => {
-    if (!accessToken || !identityDomain || !emailAddress) {
+    if (
+      !accessToken ||
+      !identityDomain ||
+      !emailAddress ||
+      !isFeatureFlagFetched
+    ) {
       return;
     }
     const validateState = async () => {
       if (await isTokenValid(emailAddress, accessToken)) {
+        // check Lite Wallet onboarding status
+        const isOnboarded = await getOnboardingStatus(emailAddress);
+        setIsExistingWallet(isOnboarded);
+
+        // check for existing records if not already onboarded
+        if (!isOnboarded) {
+          setClickedManualSetup(
+            !featureFlags.variations?.profileServiceEnableWalletCreation ||
+              (await isDomainReady(
+                emailAddress,
+                identityDomain,
+                accessToken,
+                false,
+              )),
+          );
+        }
+
         // token is valid and can be used to manage identity
         setVerificationState(VerificationState.Complete);
         setIsSaving(false);
@@ -95,7 +132,43 @@ const ClaimPage = () => {
       }
     };
     void validateState();
-  }, [accessToken, identityDomain, emailAddress]);
+  }, [accessToken, identityDomain, emailAddress, isFeatureFlagFetched]);
+
+  useEffect(() => {
+    if (verificationState !== VerificationState.Complete) {
+      return;
+    }
+    setButtonComponent(
+      <Box display="flex" flexDirection="column" mt={2}>
+        {isExistingWallet ? (
+          <Button
+            variant="contained"
+            className={classes.button}
+            onClick={handleOpenWalletClicked}
+          >
+            {t('wallet.title')}
+          </Button>
+        ) : (
+          <>
+            <Button
+              variant="outlined"
+              className={classes.button}
+              onClick={handleSetupManualClicked}
+            >
+              {t('claimIdentity.setupManually')}
+            </Button>
+            <Button
+              variant="contained"
+              className={classes.button}
+              onClick={handleSetupAutomaticClicked}
+            >
+              {t('claimIdentity.setupAutomatically')}
+            </Button>
+          </>
+        )}
+      </Box>,
+    );
+  }, [verificationState, isExistingWallet]);
 
   useEffect(() => {
     if (errorMessage) {
@@ -130,6 +203,7 @@ const ClaimPage = () => {
     setEmailAddress(undefined);
     setOneTimeCode(undefined);
     setVerificationState(VerificationState.EnterEmail);
+    setClickedManualSetup(false);
   };
 
   const handleLogout = () => {
@@ -155,6 +229,42 @@ const ClaimPage = () => {
       case VerificationState.EnterOtp:
         void processVerifyOtp();
         return;
+    }
+  };
+
+  const handleOpenWalletClicked = () => {
+    window.location.href = '/wallet';
+  };
+
+  const handleSetupManualClicked = () => {
+    setClickedManualSetup(true);
+  };
+
+  const handleSetupAutomaticClicked = async () => {
+    if (!emailAddress || !accessToken || !identityDomain) {
+      return;
+    }
+
+    // set wallet creation state
+    setVerificationState(VerificationState.CreatingWallet);
+    const createResult = await createIdentity(emailAddress, accessToken);
+    if (!createResult) {
+      setIsSuccess(false);
+      return;
+    }
+
+    // wait for changes to take effect
+    while (true) {
+      // wait 30 seconds and check domain status
+      await sleep(30000);
+
+      // check status of the identity domain and mint if necessary
+      if (
+        await isDomainReady(emailAddress, identityDomain, accessToken, false)
+      ) {
+        setIsSuccess(true);
+        return;
+      }
     }
   };
 
@@ -186,8 +296,10 @@ const ClaimPage = () => {
       await sleep(30000);
 
       // check status of the identity domain and mint if necessary
-      if (await isDomainReady(emailAddress, identityDomain, accessToken)) {
-        setVerificationState(VerificationState.Complete);
+      if (
+        await isDomainReady(emailAddress, identityDomain, accessToken, true)
+      ) {
+        setIsSuccess(true);
         return;
       }
     }
@@ -262,6 +374,7 @@ const ClaimPage = () => {
     subject: string,
     domain: string,
     token: string,
+    checkPending: boolean,
   ): Promise<boolean> => {
     // request subject domain status
     const statusResponse = await getIdentity(subject, token);
@@ -275,7 +388,7 @@ const ClaimPage = () => {
         DomainFieldTypes.Records,
         DomainFieldTypes.CryptoVerifications,
       ]);
-      if (!recordsResponse?.metadata?.pending) {
+      if (!checkPending || !recordsResponse?.metadata?.pending) {
         return true;
       }
     }
@@ -318,7 +431,14 @@ const ClaimPage = () => {
             >
               <Box mt={1} display="flex" alignItems="center">
                 <Typography ml={1} variant="body1">
-                  <Markdown>{t('claimIdentity.description')}</Markdown>
+                  <Markdown>
+                    {t(
+                      verificationState === VerificationState.EnterEmail
+                        ? 'claimIdentity.description'
+                        : 'claimIdentity.verifyCodeDescription',
+                      {emailAddress: emailAddress || ''},
+                    )}
+                  </Markdown>
                 </Typography>
               </Box>
               <Box display="flex" width="100%" mt={2} mb={2}>
@@ -395,41 +515,47 @@ const ClaimPage = () => {
                       {emailAddress && (
                         <Typography variant="body2" mt={1}>
                           <Markdown>
-                            {t('claimIdentity.manageDescription', {
-                              emailAddress,
-                            })}
+                            {t(
+                              isExistingWallet
+                                ? 'claimIdentity.alreadyClaimed'
+                                : 'claimIdentity.manageDescription',
+                              {
+                                emailAddress,
+                              },
+                            )}
                           </Markdown>
-                          <Box>
-                            <Button
-                              variant="text"
-                              size="small"
-                              onClick={() =>
-                                window.open(
-                                  config.WALLETS.LANDING_PAGE_URL,
-                                  '_blank',
-                                )
-                              }
-                            >
-                              {t('claimIdentity.needWallet')}
-                            </Button>
-                          </Box>
+                          {clickedManualSetup &&
+                            featureFlags.variations
+                              ?.profileServiceEnableWalletCreation && (
+                              <Box>
+                                <Button
+                                  variant="text"
+                                  size="small"
+                                  onClick={handleSetupAutomaticClicked}
+                                >
+                                  {t('claimIdentity.switchToLiteWallet')}
+                                </Button>
+                              </Box>
+                            )}
                         </Typography>
                       )}
-                      <Crypto
-                        domain={identityDomain}
-                        address={''}
-                        setButtonComponent={setDomainUpdateButton}
-                        filterFn={(k: string) => k.startsWith('crypto.')}
-                        updateFn={handleSaveIdentityClicked}
-                        onUpdate={handleUpdateSuccess}
-                        hideHeader={true}
-                        hideVerifyButtons={true}
-                      />
+                      {clickedManualSetup && (
+                        <Crypto
+                          domain={identityDomain}
+                          address={''}
+                          setButtonComponent={setButtonComponent}
+                          filterFn={(k: string) => k.startsWith('crypto.')}
+                          updateFn={handleSaveIdentityClicked}
+                          onUpdate={handleUpdateSuccess}
+                          hideHeader={true}
+                          hideVerifyButtons={true}
+                        />
+                      )}
                     </Box>
                     <Box className={cx(classes.lowerContainer)}>
                       <Grid container>
                         <Grid item xs={12}>
-                          {domainUpdateButton}
+                          {buttonComponent}
                         </Grid>
                       </Grid>
                     </Box>
@@ -451,6 +577,8 @@ const ClaimPage = () => {
                     <Typography ml={1} variant="h5">
                       {verificationState === VerificationState.Minting
                         ? t('claimIdentity.mintingTitle')
+                        : verificationState === VerificationState.CreatingWallet
+                        ? t('claimIdentity.creatingWalletTitle')
                         : t('claimIdentity.updatingTitle')}
                     </Typography>
                   </Box>
@@ -460,14 +588,31 @@ const ClaimPage = () => {
                 open={true}
               >
                 <Box className={classes.loadingContainer}>
-                  <Box mt={3}>
-                    <CircularProgress />
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    mt={3}
+                    sx={{height: '65px'}}
+                  >
+                    {isSuccess === true ? (
+                      <CheckCircleIcon className={classes.successIcon} />
+                    ) : isSuccess === undefined ? (
+                      <CircularProgress size={42} />
+                    ) : (
+                      isSuccess === false && (
+                        <ErrorIcon className={classes.errorIcon} />
+                      )
+                    )}
                   </Box>
                   <Typography variant="body1">
                     <Markdown>
-                      {t('claimIdentity.savingDescription', {
-                        identity: emailAddress,
-                      })}
+                      {verificationState === VerificationState.CreatingWallet
+                        ? t('claimIdentity.creatingWalletDescription', {
+                            identity: emailAddress,
+                          })
+                        : t('claimIdentity.savingDescription', {
+                            identity: emailAddress,
+                          })}
                     </Markdown>
                   </Typography>
                 </Box>

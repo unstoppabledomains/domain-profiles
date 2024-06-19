@@ -51,6 +51,7 @@ export const sendInvitation = async (
   senderWalletAddress: string,
   recipientEmailAddress: string,
   accessToken: string,
+  createWallet?: boolean,
 ): Promise<boolean> => {
   try {
     const inviteStatus = await fetchApi<WalletAccountResponse>(
@@ -64,6 +65,7 @@ export const sendInvitation = async (
         },
         body: JSON.stringify({
           emailAddress: recipientEmailAddress,
+          createIfMissing: createWallet,
         }),
       },
     );

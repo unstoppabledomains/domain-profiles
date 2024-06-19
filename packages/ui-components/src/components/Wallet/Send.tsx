@@ -9,13 +9,15 @@ import React, {useRef, useState} from 'react';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {getProfileData, useFeatureFlags} from '../../actions';
 import {
   getAccountAssets,
   getEstimateTransferResponse,
 } from '../../actions/fireBlocksActions';
 import {sendInvitation} from '../../actions/walletActions';
 import type {SerializedWalletBalance} from '../../lib';
-import {useTranslationContext} from '../../lib';
+import {DomainFieldTypes, useTranslationContext} from '../../lib';
+import {sleep} from '../../lib/sleep';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {filterWallets} from '../../lib/wallet/filter';
 import AddressInput from './AddressInput';
@@ -150,6 +152,7 @@ const Send: React.FC<Props> = ({
 }) => {
   const [t] = useTranslationContext();
   const {enqueueSnackbar} = useSnackbar();
+  const {data: featureFlags} = useFeatureFlags();
   const [recipientAddress, setRecipientAddress] = useState('');
   const [accountAsset, setAccountAsset] = useState<AccountAsset>();
   const [selectedToken, setSelectedToken] = useState<TokenEntry>();
@@ -161,6 +164,8 @@ const Send: React.FC<Props> = ({
   const [isLoading, setIsLoading] = useState(false);
   const {classes, cx} = useStyles();
   const amountInputRef = useRef<HTMLInputElement>(null);
+  const isCreateWalletEnabled =
+    featureFlags.variations?.profileServiceEnableWalletCreation === true;
 
   const resetForm = () => {
     setResolvedDomain('');
@@ -230,20 +235,39 @@ const Send: React.FC<Props> = ({
     }
   };
 
-  const handleSendInvitation = async (emailAddress: string) => {
+  const handleSendInvitation = async (
+    emailAddress: string,
+  ): Promise<boolean> => {
     if (!accountAsset) {
-      return;
+      return false;
     }
+
     const inviteResult = await sendInvitation(
       accountAsset?.address,
       emailAddress,
       accessToken,
+      isCreateWalletEnabled,
     );
     if (inviteResult) {
+      // wait for wallet to begin resolving if wallet creation enabled
+      while (
+        isCreateWalletEnabled &&
+        !(await getProfileData(emailAddress, [
+          DomainFieldTypes.Records,
+          DomainFieldTypes.CryptoVerifications,
+        ]))
+      ) {
+        // wait 10 seconds and try again
+        await sleep(10000);
+      }
+
+      // show a success message
       enqueueSnackbar(t('wallet.inviteSent', {emailAddress}), {
         variant: 'success',
       });
+      return true;
     }
+    return false;
   };
 
   const handleAmountChange = (value: string) => {
@@ -359,6 +383,7 @@ const Send: React.FC<Props> = ({
               onResolvedDomainChange={handleResolvedDomainChange}
               onInvitation={handleSendInvitation}
               assetSymbol={selectedToken.ticker}
+              createWalletEnabled={isCreateWalletEnabled}
             />
           </Box>
           <AmountInput

@@ -189,7 +189,8 @@ const Send: React.FC<Props> = ({
     const assetToSend = assets.find(
       a =>
         a.blockchainAsset.blockchain.name.toLowerCase() ===
-          token.name.toLowerCase() &&
+          token.walletName.toLowerCase() &&
+        a.blockchainAsset.symbol.toLowerCase() === token.ticker.toLowerCase() &&
         a.address.toLowerCase() === token.walletAddress.toLowerCase(),
     );
     if (!assetToSend) {
@@ -236,7 +237,7 @@ const Send: React.FC<Props> = ({
       <Box className={classes.loaderContainer}>
         <OperationStatus
           label={t('wallet.retrievingGasPrice', {
-            blockchain: selectedToken?.name || '',
+            blockchain: selectedToken?.walletName || '',
           })}
           icon={<MonitorHeartOutlinedIcon />}
         />
@@ -271,7 +272,7 @@ const Send: React.FC<Props> = ({
           recipientAddress={recipientAddress}
           resolvedDomain={resolvedDomain}
           amount={amount}
-          blockchainName={selectedToken.name}
+          blockchainName={selectedToken.walletName}
           symbol={selectedToken.ticker}
           amountInDollars={
             '$' +
@@ -288,7 +289,7 @@ const Send: React.FC<Props> = ({
           label={t('wallet.actionOnBlockchainTitle', {
             action: t('common.send'),
             symbol: selectedToken.ticker,
-            blockchain: selectedToken.name,
+            blockchain: selectedToken.walletName,
           })}
           onCancelClick={onCancelClick}
         />
@@ -322,7 +323,7 @@ const Send: React.FC<Props> = ({
         label={t('wallet.actionOnBlockchainTitle', {
           action: t('common.send'),
           symbol: selectedToken.ticker,
-          blockchain: selectedToken.name,
+          blockchain: selectedToken.walletName,
         })}
       />
       <Box className={classes.contentWrapper}>

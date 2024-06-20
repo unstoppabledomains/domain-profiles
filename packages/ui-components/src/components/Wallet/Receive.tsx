@@ -154,7 +154,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
         label={t('wallet.actionOnBlockchainTitle', {
           action: t('common.receive'),
           symbol: asset.ticker,
-          blockchain: asset.name,
+          blockchain: asset.walletName,
         })}
       />
       <Box className={classes.contentWrapper}>
@@ -163,7 +163,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
             <img src={asset.imageUrl} className={classes.assetLogo} />
           </Box>
           <QRCode
-            value={`${asset.name}:${asset.walletAddress}`}
+            value={`${asset.walletName}:${asset.walletAddress}`}
             size={110}
             logoOpacity={0.5}
             logoHeight={60}
@@ -206,13 +206,13 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
                       : 'wallet.receiveAddressCaption',
                     {
                       symbol: asset.ticker,
-                      blockchain: asset.name,
+                      blockchain: asset.walletName,
                     },
                   )}
                 </Markdown>{' '}
                 {t('wallet.sendingForOtherNetworksAndTokens', {
                   symbol: asset.ticker,
-                  blockchain: asset.name,
+                  blockchain: asset.walletName,
                 })}{' '}
                 <Link
                   href={config.WALLETS.LANDING_PAGE_URL}

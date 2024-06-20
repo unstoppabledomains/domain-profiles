@@ -21,3 +21,24 @@ export const getBlockchainName = (symbol: string): string => {
       return symbol;
   }
 };
+
+export const getBlockchainSymbol = (name: string): string => {
+  switch (name.toUpperCase()) {
+    case 'ETHEREUM':
+    case 'ETH':
+      return 'ETH';
+    case 'POLYGON':
+    case 'MATIC':
+      return 'MATIC';
+    case 'BASE':
+      return 'BASE';
+    case 'BITCOIN':
+    case 'BTC':
+      return 'BTC';
+    case 'SOLANA':
+    case 'SOL':
+      return 'SOL';
+    default:
+      return name.toUpperCase();
+  }
+};

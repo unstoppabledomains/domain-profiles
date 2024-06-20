@@ -4,7 +4,7 @@ import React from 'react';
 import * as domainProfileActions from '../../actions/domainProfileActions';
 import useResolverKeys from '../../hooks/useResolverKeys';
 import {VALID_ETH_ADDRESS} from '../../tests/common';
-import {mockProfileData} from '../../tests/mocks/wallet';
+import {mockProfileData, mockTokenEntry} from '../../tests/mocks/wallet';
 import {customRender} from '../../tests/test-utils';
 import AddressInput from './AddressInput';
 
@@ -15,7 +15,7 @@ const defaultProps = {
   initialResolvedDomainValue: '',
   initialAddressValue: '',
   label: '',
-  assetSymbol: 'ETH',
+  asset: mockTokenEntry(),
 };
 
 const mkProfileData = mockProfileData({ethAddress: VALID_ETH_ADDRESS});

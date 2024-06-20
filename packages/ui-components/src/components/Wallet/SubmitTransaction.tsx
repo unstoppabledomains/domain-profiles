@@ -14,6 +14,7 @@ import {Status, useSubmitTransaction} from '../../hooks/useSubmitTransaction';
 import {useTranslationContext} from '../../lib';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import Link from '../Link';
+import {getBlockchainSymbol} from '../Manage/common/verification/types';
 import {OperationStatus} from './OperationStatus';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -123,8 +124,9 @@ export const SubmitTransaction: React.FC<Props> = ({
               variant={'caption'}
               target="_blank"
               href={`${
-                config.BLOCKCHAINS[asset.blockchainAsset.symbol]
-                  .BLOCK_EXPLORER_TX_URL
+                config.BLOCKCHAINS[
+                  getBlockchainSymbol(asset.blockchainAsset.blockchain.id)
+                ].BLOCK_EXPLORER_TX_URL
               }${transactionId}`}
             >
               {t('wallet.viewTransaction')}

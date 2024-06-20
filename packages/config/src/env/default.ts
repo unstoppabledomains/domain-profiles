@@ -40,6 +40,9 @@ export default function getDefaultConfig(): Config {
         PROXY_READER_ADDRESS: '0x332A8191905fA8E6eeA7350B5799F225B8ed30a9',
         OPEN_SEA_BASE_URL: 'https://testnets.opensea.io/assets/amoy/',
       },
+      BASE: {
+        BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/base/tx/',
+      },
       BTC: {
         BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/btc/tx/',
       },

@@ -342,7 +342,7 @@ const Send: React.FC<Props> = ({
               initialResolvedDomainValue={resolvedDomain}
               onAddressChange={handleRecipientChange}
               onResolvedDomainChange={handleResolvedDomainChange}
-              assetSymbol={selectedToken.ticker}
+              asset={selectedToken}
             />
           </Box>
           <AmountInput

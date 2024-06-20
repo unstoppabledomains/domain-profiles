@@ -8,7 +8,6 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance} from '../../lib';
 import {useTranslationContext} from '../../lib';
-import {filterWallets} from '../../lib/wallet/filter';
 import {SelectAsset} from './SelectAsset';
 import type {TokenEntry} from './Token';
 
@@ -45,9 +44,10 @@ const Buy: React.FC<Props> = ({onCancelClick, wallets}) => {
       <SelectAsset
         hideBalance
         onSelectAsset={handleBuyRedirect}
-        wallets={filterWallets(wallets, config.WALLETS.CHAINS.BUY)}
+        wallets={wallets}
         onCancelClick={onCancelClick}
         label={t('wallet.selectAssetToBuy')}
+        supportedTokenList={config.WALLETS.CHAINS.BUY}
       />
     </Box>
   );

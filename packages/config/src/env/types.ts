@@ -50,6 +50,9 @@ export type BitcoinBlockchainConfig = {
 export type SolanaBlockchainConfig = {
   BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/sol/tx/';
 };
+export type BaseChainBlockchainConfig = {
+  BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/base/tx/';
+};
 
 export type Config = {
   APP_ENV: AppEnv;
@@ -60,6 +63,7 @@ export type Config = {
     MATIC: MaticBlockchainConfig;
     BTC: BitcoinBlockchainConfig;
     SOL: SolanaBlockchainConfig;
+    BASE: BaseChainBlockchainConfig;
   };
   ASSETS_BUCKET_URL: string;
   UD_ME_BASE_URL: string;

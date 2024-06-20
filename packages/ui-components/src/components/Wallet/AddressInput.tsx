@@ -21,6 +21,7 @@ import type {ResolverKeyName} from '../../lib/types/resolverKeys';
 import {getAddressMetadata} from '../Chat/protocol/resolution';
 import ManageInput from '../Manage/common/ManageInput';
 import {isValidRecordKeyValue} from '../Manage/common/currencyRecords';
+import type {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   loader: {
@@ -60,7 +61,7 @@ type Props = {
   initialResolvedDomainValue: string;
   initialAddressValue: string;
   label: string;
-  assetSymbol: string;
+  asset: TokenEntry;
   createWalletEnabled?: boolean;
 };
 
@@ -72,7 +73,7 @@ const AddressInput: React.FC<Props> = ({
   initialAddressValue,
   initialResolvedDomainValue,
   label,
-  assetSymbol,
+  asset,
   createWalletEnabled,
 }) => {
   const [t] = useTranslationContext();
@@ -96,8 +97,11 @@ const AddressInput: React.FC<Props> = ({
     };
   }, []);
 
-  const resolveDomain = async (addressOrDomain: string): Promise<string> => {
-    const recordKey = getRecordKey(assetSymbol);
+  const resolveDomain = async (
+    addressOrDomain: string,
+    symbol: string,
+  ): Promise<string> => {
+    const recordKey = getRecordKey(symbol);
     const profileData = await getProfileData(addressOrDomain, [
       DomainFieldTypes.Records,
       DomainFieldTypes.CryptoVerifications,
@@ -109,11 +113,17 @@ const AddressInput: React.FC<Props> = ({
   };
 
   const validateAddress = (value: string) => {
-    const recordKey = getRecordKey(assetSymbol);
-    const isValid = isValidRecordKeyValue(recordKey, value, unsResolverKeys);
-    onAddressChange(isValid ? value : '');
-    setError(!isValid);
-    return isValid;
+    const validationSymbols = [asset.ticker, asset.symbol];
+    for (const symbol of validationSymbols) {
+      const recordKey = getRecordKey(symbol);
+      const isValid = isValidRecordKeyValue(recordKey, value, unsResolverKeys);
+      onAddressChange(isValid ? value : '');
+      setError(!isValid);
+      if (isValid) {
+        return isValid;
+      }
+    }
+    return false;
   };
 
   const handleInviteClick = async () => {
@@ -167,13 +177,19 @@ const AddressInput: React.FC<Props> = ({
     if (isValidDomain(addressOrDomain) || isValidIdentity(addressOrDomain)) {
       timeout.current = setTimeout(async () => {
         setIsLoading(true);
-        const resolvedAddress = await resolveDomain(addressOrDomain);
+        const resolvedAddress =
+          (await resolveDomain(addressOrDomain, asset.ticker)) ||
+          (await resolveDomain(addressOrDomain, asset.symbol));
         setIsLoading(false);
         if (!resolvedAddress || !validateAddress(resolvedAddress)) {
           if (isEmailValid(addressOrDomain) && createWalletEnabled) {
-            setErrorMessage(t('wallet.resolutionErrorForEmail', {assetSymbol}));
+            setErrorMessage(
+              t('wallet.resolutionErrorForEmail', {assetSymbol: asset.ticker}),
+            );
           } else {
-            setErrorMessage(t('wallet.resolutionError', {assetSymbol}));
+            setErrorMessage(
+              t('wallet.resolutionError', {assetSymbol: asset.ticker}),
+            );
           }
           return;
         }

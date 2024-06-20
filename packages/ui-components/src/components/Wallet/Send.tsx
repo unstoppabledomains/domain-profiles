@@ -19,7 +19,6 @@ import type {SerializedWalletBalance} from '../../lib';
 import {DomainFieldTypes, useTranslationContext} from '../../lib';
 import {sleep} from '../../lib/sleep';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
-import {filterWallets} from '../../lib/wallet/filter';
 import AddressInput from './AddressInput';
 import AmountInput from './AmountInput';
 import {OperationStatus} from './OperationStatus';
@@ -190,27 +189,31 @@ const Send: React.FC<Props> = ({
   const handleSelectToken = async (token: TokenEntry) => {
     setSelectedToken(token);
     setIsLoading(true);
-    const assets = await getAccountAssets(accessToken);
+    const assets = await getAccountAssets(accessToken, true);
     if (!assets) {
       throw new Error('Assets not found');
     }
     const assetToSend = assets.find(
       a =>
         a.blockchainAsset.blockchain.name.toLowerCase() ===
-          token.name.toLowerCase() &&
+          token.walletName.toLowerCase() &&
+        a.blockchainAsset.symbol.toLowerCase() === token.ticker.toLowerCase() &&
         a.address.toLowerCase() === token.walletAddress.toLowerCase(),
     );
     if (!assetToSend) {
       throw new Error('Asset not found');
     }
-    const response = await getEstimateTransferResponse(
+
+    // estimate the gas cost
+    const gasResponse = await getEstimateTransferResponse(
       assetToSend,
       accessToken,
       // Doesn't matter what the recipient and amount are, just need to get the fee estimate
       assetToSend.address,
-      '0.000000001',
+      // Use a small test amount to measure gas
+      '0.0001',
     );
-    setGasFeeEstimate(response.networkFee.amount);
+    setGasFeeEstimate(gasResponse.networkFee.amount);
     setAccountAsset(assetToSend);
     setIsLoading(false);
   };
@@ -279,7 +282,7 @@ const Send: React.FC<Props> = ({
       <Box className={classes.loaderContainer}>
         <OperationStatus
           label={t('wallet.retrievingGasPrice', {
-            blockchain: selectedToken?.name || '',
+            blockchain: selectedToken?.walletName || '',
           })}
           icon={<MonitorHeartOutlinedIcon />}
         />
@@ -292,12 +295,13 @@ const Send: React.FC<Props> = ({
       <Box className={classes.flexColCenterAligned}>
         <SelectAsset
           onSelectAsset={handleSelectToken}
-          wallets={filterWallets(wallets, config.WALLETS.CHAINS.SEND)}
+          wallets={wallets}
           onCancelClick={handleBackClick}
           onClickBuy={onClickBuy}
           onClickReceive={onClickReceive}
           label={t('wallet.selectAssetToSend')}
           requireBalance={true}
+          supportedTokenList={config.WALLETS.CHAINS.SEND}
         />
       </Box>
     );
@@ -314,7 +318,7 @@ const Send: React.FC<Props> = ({
           recipientAddress={recipientAddress}
           resolvedDomain={resolvedDomain}
           amount={amount}
-          blockchainName={selectedToken.name}
+          blockchainName={selectedToken.walletName}
           symbol={selectedToken.ticker}
           amountInDollars={
             '$' +
@@ -331,7 +335,7 @@ const Send: React.FC<Props> = ({
           label={t('wallet.actionOnBlockchainTitle', {
             action: t('common.send'),
             symbol: selectedToken.ticker,
-            blockchain: selectedToken.name,
+            blockchain: selectedToken.walletName,
           })}
           onCancelClick={onCancelClick}
         />
@@ -365,7 +369,7 @@ const Send: React.FC<Props> = ({
         label={t('wallet.actionOnBlockchainTitle', {
           action: t('common.send'),
           symbol: selectedToken.ticker,
-          blockchain: selectedToken.name,
+          blockchain: selectedToken.walletName,
         })}
       />
       <Box className={classes.contentWrapper}>
@@ -382,8 +386,8 @@ const Send: React.FC<Props> = ({
               onAddressChange={handleRecipientChange}
               onResolvedDomainChange={handleResolvedDomainChange}
               onInvitation={handleSendInvitation}
-              assetSymbol={selectedToken.ticker}
               createWalletEnabled={isCreateWalletEnabled}
+              asset={selectedToken}
             />
           </Box>
           <AmountInput

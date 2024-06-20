@@ -3,6 +3,7 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {round} from 'lodash';
 import React from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -46,6 +47,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
+const MAX_DISPLAY_LENGTH = 12;
+
 type Props = {
   onBackClick: () => void;
   onSendClick: () => void;
@@ -77,6 +80,9 @@ export const SendConfirm: React.FC<Props> = ({
 }) => {
   const [t] = useTranslationContext();
   const {classes} = useStyles();
+  const maxDisplayLength = asset.balance?.decimals
+    ? Math.min(MAX_DISPLAY_LENGTH, asset.balance.decimals)
+    : MAX_DISPLAY_LENGTH;
 
   return (
     <Box className={classes.container}>
@@ -133,7 +139,9 @@ export const SendConfirm: React.FC<Props> = ({
                 {!gasFee ? (
                   <CircularProgress size={20} />
                 ) : (
-                  `${gasFee} ${asset.blockchainAsset.symbol}`
+                  `${round(parseFloat(gasFee), maxDisplayLength)} ${
+                    asset.blockchainAsset.symbol
+                  }`
                 )}
               </Typography>
             </Box>
@@ -145,7 +153,8 @@ export const SendConfirm: React.FC<Props> = ({
             >
               <Typography variant="h6">{t('wallet.totalCost')}</Typography>
               <Typography variant="subtitle1">
-                {Number(amount) + Number(gasFee)} {asset.blockchainAsset.symbol}
+                {round(Number(amount) + Number(gasFee), maxDisplayLength)}{' '}
+                {asset.blockchainAsset.symbol}
               </Typography>
             </Box>
           </Box>

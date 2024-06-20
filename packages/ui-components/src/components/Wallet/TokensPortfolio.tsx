@@ -263,7 +263,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
       ),
     ]
       .filter(item => item?.value > 0.01 || item?.walletType === 'mpc')
-      .sort((a, b) => b.value - a.value)
+      .sort((a, b) => b.value - a.value || b.balance - a.balance)
       .filter(
         item =>
           !filterAddress ||
@@ -409,7 +409,11 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
             </Grid>
             {!isError && groupedTokens.length > 0 ? (
               groupedTokens.map(token => (
-                <Grid item xs={12}>
+                <Grid
+                  item
+                  xs={12}
+                  key={`${token.type}/${token.symbol}/${token.ticker}/${token.walletAddress}`}
+                >
                   <Box className={classes.tokenContainer}>
                     <Token
                       primaryShade={!!isOwner}

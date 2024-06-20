@@ -14,7 +14,6 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance} from '../../lib';
 import {useTranslationContext} from '../../lib';
-import {filterWallets} from '../../lib/wallet/filter';
 import Link from '../Link';
 import ManageInput from '../Manage/common/ManageInput';
 import {SelectAsset} from './SelectAsset';
@@ -128,9 +127,10 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
       <Box className={classes.flexColCenterAligned}>
         <SelectAsset
           onSelectAsset={setAsset}
-          wallets={filterWallets(wallets, config.WALLETS.CHAINS.RECEIVE)}
+          wallets={wallets}
           onCancelClick={handleBackClick}
           label={t('wallet.selectAssetToReceive')}
+          supportedTokenList={config.WALLETS.CHAINS.RECEIVE}
         />
       </Box>
     );
@@ -154,7 +154,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
         label={t('wallet.actionOnBlockchainTitle', {
           action: t('common.receive'),
           symbol: asset.ticker,
-          blockchain: asset.name,
+          blockchain: asset.walletName,
         })}
       />
       <Box className={classes.contentWrapper}>
@@ -163,7 +163,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
             <img src={asset.imageUrl} className={classes.assetLogo} />
           </Box>
           <QRCode
-            value={`${asset.name}:${asset.walletAddress}`}
+            value={`${asset.walletName}:${asset.walletAddress}`}
             size={110}
             logoOpacity={0.5}
             logoHeight={60}
@@ -206,13 +206,13 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
                       : 'wallet.receiveAddressCaption',
                     {
                       symbol: asset.ticker,
-                      blockchain: asset.name,
+                      blockchain: asset.walletName,
                     },
                   )}
                 </Markdown>{' '}
                 {t('wallet.sendingForOtherNetworksAndTokens', {
                   symbol: asset.ticker,
-                  blockchain: asset.name,
+                  blockchain: asset.walletName,
                 })}{' '}
                 <Link
                   href={config.WALLETS.LANDING_PAGE_URL}

@@ -223,9 +223,7 @@ export const getAssets = async (
   try {
     // retrieve a new set of tokens using the refresh token
     return await fetchApi<GetAccountAssetsResponse>(
-      `/accounts/${accountId}/assets${
-        balance ? '?$expand=balance' : undefined
-      }`,
+      `/accounts/${accountId}/assets${balance ? '?$expand=balance' : ''}`,
       {
         mode: 'cors',
         headers: {

@@ -7,6 +7,11 @@ import {
   getOperationStatus,
   getTransferOperationResponse,
 } from '../actions/fireBlocksActions';
+import {
+  getBlockchainSymbol,
+  getRecordKey,
+} from '../components/Manage/common/verification/types';
+import {isEmailValid} from '../lib';
 import {notifyEvent} from '../lib/error';
 import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../lib/fireBlocks/client';
 import {pollForSuccess} from '../lib/poll';
@@ -19,6 +24,9 @@ export type Params = {
   recipientAddress: string;
   amount: string;
   getClient: () => Promise<IFireblocksNCW>;
+  onInvitation: (
+    emailAddress: string,
+  ) => Promise<Record<string, string> | undefined>;
 };
 
 export enum Status {
@@ -30,9 +38,10 @@ export enum Status {
 export const useSubmitTransaction = ({
   accessToken,
   asset,
-  recipientAddress,
+  recipientAddress: initialRecipientAddress,
   amount,
   getClient,
+  onInvitation,
 }: Params) => {
   const [transactionId, setTransactionId] = useState('');
   const [status, setStatus] = useState(Status.Pending);
@@ -72,6 +81,32 @@ export const useSubmitTransaction = ({
         });
       } finally {
         await client.dispose();
+      }
+
+      // check the recipient wallet to determine if it needs to be created
+      let recipientAddress = initialRecipientAddress;
+      if (isEmailValid(recipientAddress)) {
+        setStatusMessage(SendCryptoStatusMessage.CREATING_WALLET);
+        const records = await onInvitation(recipientAddress);
+        const resolvedAddress =
+          records && Object.keys(records).length > 0
+            ? records[getRecordKey(asset.blockchainAsset.symbol)] ||
+              records[
+                getRecordKey(
+                  getBlockchainSymbol(asset.blockchainAsset.blockchain.id),
+                )
+              ] ||
+              records[
+                getRecordKey(
+                  getBlockchainSymbol(asset.blockchainAsset.blockchain.id),
+                  'ERC20',
+                )
+              ]
+            : undefined;
+        if (!resolvedAddress) {
+          throw new Error('Wallet not created');
+        }
+        recipientAddress = resolvedAddress;
       }
 
       // create new transfer request

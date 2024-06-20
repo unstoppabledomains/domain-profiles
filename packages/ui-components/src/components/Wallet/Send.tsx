@@ -240,9 +240,9 @@ const Send: React.FC<Props> = ({
 
   const handleSendInvitation = async (
     emailAddress: string,
-  ): Promise<boolean> => {
+  ): Promise<Record<string, string> | undefined> => {
     if (!accountAsset) {
-      return false;
+      return undefined;
     }
 
     const inviteResult = await sendInvitation(
@@ -253,24 +253,25 @@ const Send: React.FC<Props> = ({
     );
     if (inviteResult) {
       // wait for wallet to begin resolving if wallet creation enabled
-      while (
-        isCreateWalletEnabled &&
-        !(await getProfileData(emailAddress, [
+      while (isCreateWalletEnabled) {
+        // retrieve resolution data
+        const resolutionResponse = await getProfileData(emailAddress, [
           DomainFieldTypes.Records,
           DomainFieldTypes.CryptoVerifications,
-        ]))
-      ) {
+        ]);
+        if (resolutionResponse?.records) {
+          // show a success message
+          enqueueSnackbar(t('wallet.inviteSent', {emailAddress}), {
+            variant: 'success',
+          });
+          return resolutionResponse.records;
+        }
+
         // wait 10 seconds and try again
         await sleep(10000);
       }
-
-      // show a success message
-      enqueueSnackbar(t('wallet.inviteSent', {emailAddress}), {
-        variant: 'success',
-      });
-      return true;
     }
-    return false;
+    return undefined;
   };
 
   const handleAmountChange = (value: string) => {
@@ -341,6 +342,7 @@ const Send: React.FC<Props> = ({
         />
         <SubmitTransaction
           onCloseClick={onCancelClick}
+          onInvitation={handleSendInvitation}
           accessToken={accessToken}
           asset={accountAsset}
           recipientAddress={recipientAddress}

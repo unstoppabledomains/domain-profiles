@@ -30,6 +30,7 @@ export enum OperationStatus {
 }
 
 export enum SendCryptoStatusMessage {
+  CREATING_WALLET = 'Creating destination wallet...',
   CHECKING_QUEUE = 'Checking queued transfers...',
   STARTING_TRANSACTION = 'Starting transfer...',
   WAITING_TO_SIGN = 'Waiting to approve transfer...',

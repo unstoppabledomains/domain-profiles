@@ -17,10 +17,10 @@ import {
   isValidIdentity,
   useTranslationContext,
 } from '../../lib';
-import type {ResolverKeyName} from '../../lib/types/resolverKeys';
 import {getAddressMetadata} from '../Chat/protocol/resolution';
 import ManageInput from '../Manage/common/ManageInput';
 import {isValidRecordKeyValue} from '../Manage/common/currencyRecords';
+import {getRecordKey} from '../Manage/common/verification/types';
 import type {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -46,17 +46,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-const getRecordKey = (symbol: string): ResolverKeyName => {
-  if (symbol === 'MATIC') {
-    return `crypto.MATIC.version.MATIC.address`;
-  }
-  return `crypto.${symbol}.address` as ResolverKeyName;
-};
-
 type Props = {
   onAddressChange: (value: string) => void;
   onResolvedDomainChange: (value: string) => void;
-  onInvitation?: (emailAddress: string) => Promise<boolean>;
+  onInvitation?: (
+    emailAddress: string,
+  ) => Promise<Record<string, string> | undefined>;
   placeholder: string;
   initialResolvedDomainValue: string;
   initialAddressValue: string;
@@ -183,9 +178,15 @@ const AddressInput: React.FC<Props> = ({
         setIsLoading(false);
         if (!resolvedAddress || !validateAddress(resolvedAddress)) {
           if (isEmailValid(addressOrDomain) && createWalletEnabled) {
-            setErrorMessage(
-              t('wallet.resolutionErrorForEmail', {assetSymbol: asset.ticker}),
-            );
+            // set an empty resolution address, which will indicate that a new
+            // wallet should be created for the validated identity
+            setError(false);
+            setAddress(addressOrDomain);
+            onAddressChange(addressOrDomain);
+
+            // set resolved domain to the validated identity
+            setResolvedDomain(addressOrDomain);
+            onResolvedDomainChange(addressOrDomain);
           } else {
             setErrorMessage(
               t('wallet.resolutionError', {assetSymbol: asset.ticker}),
@@ -231,7 +232,9 @@ const AddressInput: React.FC<Props> = ({
           <>
             <CheckIcon className={classes.checkIcon} />
             <Typography variant="caption" className={classes.resolvedText}>
-              Successfully resolved {resolvedDomain}
+              {resolvedDomain === address
+                ? t('wallet.resolvedMissingDomain', {resolvedDomain})
+                : t('wallet.resolvedDomain', {resolvedDomain})}
             </Typography>
           </>
         )}

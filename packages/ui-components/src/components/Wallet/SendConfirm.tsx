@@ -115,8 +115,10 @@ export const SendConfirm: React.FC<Props> = ({
             >
               <Typography variant="h6">{t('common.to')}</Typography>
               <Typography variant="subtitle1">
-                {resolvedDomain ? <b>{resolvedDomain} </b> : ''}(
-                {truncateAddress(recipientAddress)})
+                {resolvedDomain ? <b>{resolvedDomain} </b> : ''}
+                {resolvedDomain !== recipientAddress && (
+                  <>({truncateAddress(recipientAddress)})</>
+                )}
               </Typography>
             </Box>
             <Box
@@ -165,7 +167,7 @@ export const SendConfirm: React.FC<Props> = ({
           fullWidth
           data-testid="send-confirm-button"
         >
-          {t('common.send')}
+          {t('common.confirm')}
         </Button>
       </Box>
     </Box>

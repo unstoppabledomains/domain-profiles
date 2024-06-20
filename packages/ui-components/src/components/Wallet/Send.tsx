@@ -181,7 +181,7 @@ const Send: React.FC<Props> = ({
   const handleSelectToken = async (token: TokenEntry) => {
     setSelectedToken(token);
     setIsLoading(true);
-    const assets = await getAccountAssets(accessToken);
+    const assets = await getAccountAssets(accessToken, true);
     if (!assets) {
       throw new Error('Assets not found');
     }
@@ -195,14 +195,17 @@ const Send: React.FC<Props> = ({
     if (!assetToSend) {
       throw new Error('Asset not found');
     }
-    const response = await getEstimateTransferResponse(
+
+    // estimate the gas cost
+    const gasResponse = await getEstimateTransferResponse(
       assetToSend,
       accessToken,
       // Doesn't matter what the recipient and amount are, just need to get the fee estimate
       assetToSend.address,
-      '0.000000001',
+      // Use a small test amount to measure gas
+      '0.0001',
     );
-    setGasFeeEstimate(response.networkFee.amount);
+    setGasFeeEstimate(gasResponse.networkFee.amount);
     setAccountAsset(assetToSend);
     setIsLoading(false);
   };

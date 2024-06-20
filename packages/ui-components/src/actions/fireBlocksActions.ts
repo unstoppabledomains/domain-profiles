@@ -164,6 +164,7 @@ export const getAccessToken = async (
 
 export const getAccountAssets = async (
   accessToken: string,
+  balance?: boolean,
 ): Promise<AccountAsset[] | undefined> => {
   try {
     // retrieve the accounts associated with the access token
@@ -175,7 +176,7 @@ export const getAccountAssets = async (
     // query addresses belonging to accounts
     const accountAssets: AccountAsset[] = [];
     await Bluebird.map(accounts.items, async account => {
-      const assets = await getAssets(accessToken, account.id);
+      const assets = await getAssets(accessToken, account.id, balance);
       return (assets?.items || []).map(asset => {
         asset.accountId = account.id;
         accountAssets.push(asset);
@@ -217,11 +218,14 @@ export const getAccounts = async (
 export const getAssets = async (
   accessToken: string,
   accountId: string,
+  balance?: boolean,
 ): Promise<GetAccountAssetsResponse | undefined> => {
   try {
     // retrieve a new set of tokens using the refresh token
     return await fetchApi<GetAccountAssetsResponse>(
-      `/accounts/${accountId}/assets`,
+      `/accounts/${accountId}/assets${
+        balance ? '?$expand=balance' : undefined
+      }`,
       {
         mode: 'cors',
         headers: {

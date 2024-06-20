@@ -14,7 +14,6 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance} from '../../lib';
 import {useTranslationContext} from '../../lib';
-import {filterWallets} from '../../lib/wallet/filter';
 import Link from '../Link';
 import ManageInput from '../Manage/common/ManageInput';
 import {SelectAsset} from './SelectAsset';
@@ -128,9 +127,10 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
       <Box className={classes.flexColCenterAligned}>
         <SelectAsset
           onSelectAsset={setAsset}
-          wallets={filterWallets(wallets, config.WALLETS.CHAINS.RECEIVE)}
+          wallets={wallets}
           onCancelClick={handleBackClick}
           label={t('wallet.selectAssetToReceive')}
+          supportedTokenList={config.WALLETS.CHAINS.RECEIVE}
         />
       </Box>
     );

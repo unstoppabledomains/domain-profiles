@@ -15,7 +15,6 @@ import {
 import type {SerializedWalletBalance} from '../../lib';
 import {useTranslationContext} from '../../lib';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
-import {filterWallets} from '../../lib/wallet/filter';
 import AddressInput from './AddressInput';
 import AmountInput from './AmountInput';
 import {OperationStatus} from './OperationStatus';
@@ -250,12 +249,13 @@ const Send: React.FC<Props> = ({
       <Box className={classes.flexColCenterAligned}>
         <SelectAsset
           onSelectAsset={handleSelectToken}
-          wallets={filterWallets(wallets, config.WALLETS.CHAINS.SEND)}
+          wallets={wallets}
           onCancelClick={handleBackClick}
           onClickBuy={onClickBuy}
           onClickReceive={onClickReceive}
           label={t('wallet.selectAssetToSend')}
           requireBalance={true}
+          supportedTokenList={config.WALLETS.CHAINS.SEND}
         />
       </Box>
     );

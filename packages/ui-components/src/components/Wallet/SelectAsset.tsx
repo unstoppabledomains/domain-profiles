@@ -7,11 +7,12 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React from 'react';
 
-import config from '@unstoppabledomains/config';
+import type {ImmutableArray} from '@unstoppabledomains/config/build/src/env/types';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance} from '../../lib';
 import {TokenType, useTranslationContext} from '../../lib';
+import {filterWallets} from '../../lib/wallet/filter';
 import {TitleWithBackButton} from './TitleWithBackButton';
 import type {TokenEntry} from './Token';
 import Token from './Token';
@@ -62,21 +63,24 @@ type Props = {
   requireBalance?: boolean;
   onClickReceive?: () => void;
   onClickBuy?: () => void;
+  supportedTokenList: ImmutableArray<string>;
 };
 
 export const SelectAsset: React.FC<Props> = ({
   onCancelClick,
   onSelectAsset,
-  wallets,
+  wallets: initialWallets,
   label,
   showGraph,
   hideBalance,
   requireBalance,
   onClickReceive,
   onClickBuy,
+  supportedTokenList,
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const wallets = filterWallets(initialWallets, supportedTokenList);
 
   const serializeNativeTokens = (wallet: SerializedWalletBalance) => {
     if (
@@ -138,7 +142,7 @@ export const SelectAsset: React.FC<Props> = ({
   const filteredTokens: TokenEntry[] = allTokens
     .filter(token => !requireBalance || token.balance > 0)
     .filter(token =>
-      config.WALLETS.CHAINS.SEND.includes(
+      supportedTokenList.includes(
         `${token.symbol.toUpperCase()}/${token.ticker.toUpperCase()}`,
       ),
     )

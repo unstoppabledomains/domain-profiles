@@ -40,6 +40,9 @@ export default function getDefaultConfig(): Config {
         PROXY_READER_ADDRESS: '0x332A8191905fA8E6eeA7350B5799F225B8ed30a9',
         OPEN_SEA_BASE_URL: 'https://testnets.opensea.io/assets/amoy/',
       },
+      BASE: {
+        BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/base/tx/',
+      },
       BTC: {
         BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/btc/tx/',
       },
@@ -88,8 +91,22 @@ export default function getDefaultConfig(): Config {
       LANDING_PAGE_URL: 'https://unstoppabledomains.com/products/wallet',
       CHAINS: {
         BUY: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'ETH/ETH'],
-        RECEIVE: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'BASE/ETH', 'ETH/ETH'],
-        SEND: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'BASE/ETH', 'ETH/ETH'],
+        RECEIVE: [
+          'BTC/BTC',
+          'MATIC/MATIC',
+          'MATIC/USDC',
+          'SOL/SOL',
+          'BASE/ETH',
+          'ETH/ETH',
+        ],
+        SEND: [
+          'BTC/BTC',
+          'MATIC/MATIC',
+          'MATIC/USDC',
+          'SOL/SOL',
+          'BASE/ETH',
+          'ETH/ETH',
+        ],
         DOMAINS: ['ETH', 'MATIC'],
       },
       SIGNATURE_SYMBOL: 'ETHEREUM/ETH',

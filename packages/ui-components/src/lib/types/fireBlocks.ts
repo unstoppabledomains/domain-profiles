@@ -8,7 +8,13 @@ export interface AccountAsset {
   id: string;
   address: string;
   blockchainAsset: BlockchainAsset;
+  balance?: AssetBalance;
   accountId?: string;
+}
+
+export interface AssetBalance {
+  total: string;
+  decimals: number;
 }
 
 export interface Blockchain {

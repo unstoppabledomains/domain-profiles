@@ -7,10 +7,12 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React from 'react';
 
+import type {ImmutableArray} from '@unstoppabledomains/config/build/src/env/types';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance} from '../../lib';
 import {TokenType, useTranslationContext} from '../../lib';
+import {filterWallets} from '../../lib/wallet/filter';
 import {TitleWithBackButton} from './TitleWithBackButton';
 import type {TokenEntry} from './Token';
 import Token from './Token';
@@ -61,21 +63,24 @@ type Props = {
   requireBalance?: boolean;
   onClickReceive?: () => void;
   onClickBuy?: () => void;
+  supportedTokenList: ImmutableArray<string>;
 };
 
 export const SelectAsset: React.FC<Props> = ({
   onCancelClick,
   onSelectAsset,
-  wallets,
+  wallets: initialWallets,
   label,
   showGraph,
   hideBalance,
   requireBalance,
   onClickReceive,
   onClickBuy,
+  supportedTokenList,
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const wallets = filterWallets(initialWallets, supportedTokenList);
 
   const serializeNativeTokens = (wallet: SerializedWalletBalance) => {
     if (
@@ -108,10 +113,40 @@ export const SelectAsset: React.FC<Props> = ({
       imageUrl: wallet.logoUrl,
     };
   };
-  const allTokens: TokenEntry[] = wallets.flatMap(serializeNativeTokens);
-  const nativeTokens: TokenEntry[] = allTokens
+  const allTokens: TokenEntry[] = [
+    ...wallets.flatMap(serializeNativeTokens),
+    ...(wallets || []).flatMap(wallet =>
+      (wallet?.tokens || []).map(walletToken => {
+        return {
+          type: 'Token' as never,
+          name: walletToken.name,
+          value: walletToken.value?.walletUsdAmt || 0,
+          balance: walletToken.balanceAmt || 0,
+          pctChange: walletToken.value?.marketPctChange24Hr,
+          tokenConversionUsd: walletToken.value?.marketUsdAmt || 0,
+          history: walletToken.value?.history?.sort(
+            (a, b) =>
+              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+          ),
+          ticker: walletToken.symbol,
+          symbol: wallet.symbol,
+          walletAddress: wallet.address,
+          walletBlockChainLink: wallet.blockchainScanUrl,
+          walletName: wallet.name,
+          walletType: wallet.walletType,
+          imageUrl: walletToken.logoUrl,
+        };
+      }),
+    ),
+  ];
+  const filteredTokens: TokenEntry[] = allTokens
     .filter(token => !requireBalance || token.balance > 0)
-    .sort((a, b) => b.value - a.value);
+    .filter(token =>
+      supportedTokenList.includes(
+        `${token.symbol.toUpperCase()}/${token.ticker.toUpperCase()}`,
+      ),
+    )
+    .sort((a, b) => b.value - a.value || b.balance - a.balance);
 
   return (
     <Box className={classes.container} data-testid={'select-asset-container'}>
@@ -119,7 +154,7 @@ export const SelectAsset: React.FC<Props> = ({
       <Box className={classes.assetsContainer} mt={2}>
         {requireBalance &&
           allTokens.length > 0 &&
-          nativeTokens.length === 0 && (
+          filteredTokens.length === 0 && (
             <Box className={classes.noTokensContainer}>
               <Typography variant="body1" className={classes.noTokensText}>
                 {t('wallet.noTokensAvailableForSend')}
@@ -150,12 +185,16 @@ export const SelectAsset: React.FC<Props> = ({
               )}
             </Box>
           )}
-        {nativeTokens.map(token => {
+        {filteredTokens.map(token => {
           const handleClick = () => {
             onSelectAsset(token);
           };
           return (
-            <div className={classes.asset} id={token.name}>
+            <div
+              className={classes.asset}
+              id={token.name}
+              key={`${token.type}/${token.symbol}/${token.ticker}/${token.walletAddress}`}
+            >
               <Token
                 primaryShade
                 token={token}

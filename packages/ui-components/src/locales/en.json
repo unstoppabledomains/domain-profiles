@@ -893,7 +893,7 @@
     "resetPasswordStrength": "Choose a stronger password. Your password must be > 12 characters and include at least one number and one special character",
     "resolutionError": "Could not find recipient wallet address",
     "resolvedDomain": "Wallet found for {{resolvedDomain}}",
-    "resolvedMissingDomain": "Wallet will be created for {{resolvedDomain}}",
+    "resolvedMissingDomain": "Wallet will be created",
     "retrievingGasPrice": "Checking {{blockchain}} network health...",
     "selectAssetToBuy": "Select crypto to buy",
     "selectAssetToReceive": "Select crypto to receive",

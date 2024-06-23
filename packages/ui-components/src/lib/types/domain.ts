@@ -1,4 +1,3 @@
-import {isDomainValidForManagement} from '../domain';
 import {isEmailValid} from '../isEmailValid';
 import type {WebacyRiskScore} from './webacy';
 
@@ -556,10 +555,6 @@ export type YoutubeUserInfo = {
   channelUrl: string;
   subscriberCount: number;
 } | null;
-
-export const isValidDomain = (maybeDomain: string): boolean => {
-  return isDomainValidForManagement(maybeDomain);
-};
 
 export const isValidIdentity = (maybeIdentity: string): boolean => {
   return isEmailValid(maybeIdentity);

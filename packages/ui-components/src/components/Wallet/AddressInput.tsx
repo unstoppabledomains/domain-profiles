@@ -12,8 +12,8 @@ import {getProfileData} from '../../actions';
 import useResolverKeys from '../../hooks/useResolverKeys';
 import {
   DomainFieldTypes,
+  isDomainValidForManagement,
   isEmailValid,
-  isValidDomain,
   isValidIdentity,
   useTranslationContext,
 } from '../../lib';
@@ -169,7 +169,10 @@ const AddressInput: React.FC<Props> = ({
     }
 
     // forward resolve domain to address
-    if (isValidDomain(addressOrDomain) || isValidIdentity(addressOrDomain)) {
+    if (
+      isDomainValidForManagement(addressOrDomain) ||
+      isValidIdentity(addressOrDomain)
+    ) {
       timeout.current = setTimeout(async () => {
         setIsLoading(true);
         const resolvedAddress =

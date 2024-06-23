@@ -10,6 +10,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useTranslationContext} from '../../lib';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
+import {getBlockchainSymbol} from '../Manage/common/verification/types';
 import {TitleWithBackButton} from './TitleWithBackButton';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -83,6 +84,10 @@ export const SendConfirm: React.FC<Props> = ({
   const maxDisplayLength = asset.balance?.decimals
     ? Math.min(MAX_DISPLAY_LENGTH, asset.balance.decimals)
     : MAX_DISPLAY_LENGTH;
+  const assetSymbol = asset.blockchainAsset.symbol.toUpperCase();
+  const gasSymbol = getBlockchainSymbol(
+    asset.blockchainAsset.blockchain.id,
+  ).toUpperCase();
 
   return (
     <Box className={classes.container}>
@@ -141,23 +146,32 @@ export const SendConfirm: React.FC<Props> = ({
                 {!gasFee ? (
                   <CircularProgress size={20} />
                 ) : (
-                  `${round(parseFloat(gasFee), maxDisplayLength)} ${
-                    asset.blockchainAsset.symbol
-                  }`
+                  `${round(
+                    parseFloat(gasFee),
+                    maxDisplayLength,
+                  )} ${getBlockchainSymbol(
+                    asset.blockchainAsset.blockchain.id,
+                  )}`
                 )}
               </Typography>
             </Box>
-            <Box
-              display="flex"
-              width="100%"
-              alignItems="center"
-              justifyContent="space-between"
-            >
+            <Box display="flex" width="100%" justifyContent="space-between">
               <Typography variant="h6">{t('wallet.totalCost')}</Typography>
-              <Typography variant="subtitle1">
-                {round(Number(amount) + Number(gasFee), maxDisplayLength)}{' '}
-                {asset.blockchainAsset.symbol}
-              </Typography>
+              {assetSymbol === gasSymbol ? (
+                <Typography variant="subtitle1">
+                  {round(Number(amount) + Number(gasFee), maxDisplayLength)}{' '}
+                  {assetSymbol}
+                </Typography>
+              ) : (
+                <Box display="flex" flexDirection="column" textAlign="right">
+                  <Typography variant="subtitle1">
+                    {round(Number(amount), maxDisplayLength)} {assetSymbol}
+                  </Typography>
+                  <Typography variant="subtitle1">
+                    {round(Number(gasFee), maxDisplayLength)} {gasSymbol}
+                  </Typography>
+                </Box>
+              )}
             </Box>
           </Box>
         </Box>

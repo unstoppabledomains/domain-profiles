@@ -46,10 +46,12 @@ export const getBlockchainSymbol = (name: string): string => {
 
 export const getRecordKey = (
   symbol: string,
-  multichainVersion = 'MATIC',
+  multichainVersion?: string,
 ): ResolverKeyName => {
   if (symbol === 'MATIC') {
-    return `crypto.MATIC.version.${multichainVersion.toUpperCase()}.address` as ResolverKeyName;
+    return `crypto.MATIC.version.${(
+      multichainVersion || 'MATIC'
+    ).toUpperCase()}.address` as ResolverKeyName;
   }
   return multichainVersion
     ? (`crypto.${symbol.toUpperCase()}.version.${multichainVersion.toUpperCase()}.address` as ResolverKeyName)

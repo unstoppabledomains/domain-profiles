@@ -91,6 +91,7 @@ export const useSubmitTransaction = ({
         const resolvedAddress =
           records && Object.keys(records).length > 0
             ? records[getRecordKey(asset.blockchainAsset.symbol)] ||
+              records[getRecordKey(asset.blockchainAsset.symbol, 'ERC20')] ||
               records[
                 getRecordKey(
                   getBlockchainSymbol(asset.blockchainAsset.blockchain.id),

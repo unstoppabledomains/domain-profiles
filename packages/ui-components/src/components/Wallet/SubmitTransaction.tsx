@@ -35,6 +35,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
     gap: '7px',
     marginBottom: theme.spacing(5),
+    textAlign: 'center',
   },
   icon: {
     fontSize: '60px',
@@ -124,9 +125,6 @@ export const SubmitTransaction: React.FC<Props> = ({
                     : ` ${recipientAddress}`,
                 },
               )}
-            {recipientDomain && recipientAddress !== recipientDomain && (
-              <>({truncateAddress(recipientAddress)})</>
-            )}
           </Typography>
           {transactionId && (
             <Button

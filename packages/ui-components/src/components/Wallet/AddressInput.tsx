@@ -96,13 +96,13 @@ const AddressInput: React.FC<Props> = ({
     addressOrDomain: string,
     symbol: string,
   ): Promise<string> => {
-    const recordKey = getRecordKey(symbol);
     const profileData = await getProfileData(addressOrDomain, [
       DomainFieldTypes.Records,
       DomainFieldTypes.CryptoVerifications,
     ]);
     const recordValue = profileData?.records
-      ? profileData?.records[recordKey]
+      ? profileData?.records[getRecordKey(symbol)] ||
+        profileData?.records[getRecordKey(symbol, 'ERC20')]
       : '';
     return recordValue;
   };

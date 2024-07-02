@@ -1460,14 +1460,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fireblocks/ncw-js-sdk@npm:^12.1.0":
-  version: 12.1.1
-  resolution: "@fireblocks/ncw-js-sdk@npm:12.1.1"
+"@fireblocks/ncw-js-sdk@npm:^12.2.0":
+  version: 12.2.0
+  resolution: "@fireblocks/ncw-js-sdk@npm:12.2.0"
   dependencies:
     "@fireblocks/ncw-js-infra": 1.0.19
     jwt-decode: ^3.1.2
     node-forge: ^1.3.1
-  checksum: ac07b7b49cb1f66765d10f37ea51d9f917b529600359826be74769f24af9a40c8fd5550f6a4fda63a56ff8ae45c66791bb1df1c7186064b6f52cb305575e3428
+  checksum: 9da3d316ce9caa01b59282c1335750d59c079b25b3a725f30a5240f014e172f6a74691d0abf62c2051caea65a595ea1d66d660cbb1b5cb1e21f35ece73984404
   languageName: node
   linkType: hard
 
@@ -5249,7 +5249,7 @@ __metadata:
   dependencies:
     "@braintree/sanitize-url": ^6.0.4
     "@emotion/server": ^11.4.0
-    "@fireblocks/ncw-js-sdk": ^12.1.0
+    "@fireblocks/ncw-js-sdk": ^12.2.0
     "@ipld/car": ^5.2.5
     "@mui/icons-material": 5.10.3
     "@mui/lab": 5.0.0-alpha.98

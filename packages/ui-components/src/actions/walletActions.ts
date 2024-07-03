@@ -47,12 +47,12 @@ export const getWalletPortfolio = async (
   );
 };
 
-export const sendInvitation = async (
+export const prepareRecipientWallet = async (
   senderWalletAddress: string,
   recipientEmailAddress: string,
   accessToken: string,
   createWallet?: boolean,
-): Promise<boolean> => {
+): Promise<WalletAccountResponse | undefined> => {
   try {
     const inviteStatus = await fetchApi<WalletAccountResponse>(
       `/user/${senderWalletAddress}/wallet/invite`,
@@ -70,12 +70,12 @@ export const sendInvitation = async (
       },
     );
     if (inviteStatus?.emailAddress === recipientEmailAddress) {
-      return true;
+      return inviteStatus;
     }
   } catch (e) {
     notifyEvent(e, 'warning', 'Wallet', 'Validation');
   }
-  return false;
+  return undefined;
 };
 
 export const syncIdentityConfig = async (

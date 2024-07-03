@@ -102,7 +102,11 @@ export const useSubmitTransaction = ({
                   getBlockchainSymbol(asset.blockchainAsset.blockchain.id),
                   'ERC20',
                 )
-              ]
+              ] ||
+              getBlockchainSymbol(asset.blockchainAsset.blockchain.id) ===
+                'BASE'
+              ? records[getRecordKey('MATIC', 'ERC20')]
+              : undefined
             : undefined;
         if (!resolvedAddress) {
           throw new Error('Wallet not created');

@@ -20,6 +20,7 @@ import truncateMiddle from 'truncate-middle';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {useFeatureFlags} from '../../actions';
 import {
   confirmAuthorizationTokenTx,
   getAccessToken,
@@ -148,6 +149,7 @@ export const Configuration: React.FC<
 }) => {
   // component state variables
   const {query: params} = useRouter();
+  const {data: featureFlags} = useFeatureFlags();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -344,7 +346,8 @@ export const Configuration: React.FC<
     ];
     const wallets: SerializedWalletBalance[] = [];
     const [paymentConfig] = await Promise.all([
-      accountAddresses.length > 0
+      accountAddresses.length > 0 &&
+      featureFlags?.variations?.profileServiceEnableWalletIdentity
         ? syncIdentityConfig(accountAddresses[0], accessToken)
         : undefined,
       Bluebird.map(accountAddresses, async address => {

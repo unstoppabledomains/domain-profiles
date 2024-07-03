@@ -236,7 +236,7 @@ const AddressInput: React.FC<Props> = ({
             <CheckIcon className={classes.checkIcon} />
             <Typography variant="caption" className={classes.resolvedText}>
               {resolvedDomain === address
-                ? t('wallet.resolvedMissingDomain', {resolvedDomain})
+                ? t('wallet.sendByEmail', {resolvedDomain})
                 : t('wallet.resolvedDomain', {resolvedDomain})}
             </Typography>
           </>

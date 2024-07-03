@@ -3,20 +3,19 @@ import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import type {Theme} from '@mui/material/styles';
-import {useSnackbar} from 'notistack';
 import React, {useRef, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getProfileData, useFeatureFlags} from '../../actions';
+import {useFeatureFlags} from '../../actions';
 import {
   getAccountAssets,
   getEstimateTransferResponse,
 } from '../../actions/fireBlocksActions';
-import {sendInvitation} from '../../actions/walletActions';
+import {prepareRecipientWallet} from '../../actions/walletActions';
 import type {SerializedWalletBalance} from '../../lib';
-import {DomainFieldTypes, useTranslationContext} from '../../lib';
+import {useTranslationContext} from '../../lib';
 import {sleep} from '../../lib/sleep';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import AddressInput from './AddressInput';
@@ -150,7 +149,6 @@ const Send: React.FC<Props> = ({
   wallets,
 }) => {
   const [t] = useTranslationContext();
-  const {enqueueSnackbar} = useSnackbar();
   const {data: featureFlags} = useFeatureFlags();
   const [recipientAddress, setRecipientAddress] = useState('');
   const [accountAsset, setAccountAsset] = useState<AccountAsset>();
@@ -245,31 +243,23 @@ const Send: React.FC<Props> = ({
       return undefined;
     }
 
-    const inviteResult = await sendInvitation(
-      accountAsset?.address,
-      emailAddress,
-      accessToken,
-      isCreateWalletEnabled,
-    );
-    if (inviteResult) {
-      // wait for wallet to begin resolving if wallet creation enabled
-      while (isCreateWalletEnabled) {
-        // retrieve resolution data
-        const resolutionResponse = await getProfileData(emailAddress, [
-          DomainFieldTypes.Records,
-          DomainFieldTypes.CryptoVerifications,
-        ]);
-        if (resolutionResponse?.records) {
-          // show a success message
-          enqueueSnackbar(t('wallet.inviteSent', {emailAddress}), {
-            variant: 'success',
-          });
-          return resolutionResponse.records;
-        }
+    // wait for wallet to begin resolving if wallet creation enabled
+    while (isCreateWalletEnabled) {
+      // prepare the recipient wallet
+      const recipientResult = await prepareRecipientWallet(
+        accountAsset?.address,
+        emailAddress,
+        accessToken,
+        isCreateWalletEnabled,
+      );
 
-        // wait 10 seconds and try again
-        await sleep(10000);
+      // return the records if available
+      if (recipientResult?.records) {
+        return recipientResult.records;
       }
+
+      // wait 10 seconds and try again
+      await sleep(10000);
     }
     return undefined;
   };

@@ -372,7 +372,11 @@ const Send: React.FC<Props> = ({
           <Box className={classes.recipientWrapper}>
             <AddressInput
               label={t('wallet.recipient')}
-              placeholder={t('wallet.recipientDomainOrAddress')}
+              placeholder={t(
+                featureFlags?.variations?.profileServiceEnableWalletCreation
+                  ? 'wallet.recipientDomainEmailOrWallet'
+                  : 'wallet.recipientDomainOrAddress',
+              )}
               initialAddressValue={recipientAddress}
               initialResolvedDomainValue={resolvedDomain}
               onAddressChange={handleRecipientChange}

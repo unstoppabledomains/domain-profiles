@@ -220,7 +220,11 @@ const AddressInput: React.FC<Props> = ({
             <div className={classes.loader} data-testid="loader">
               <CircularProgress size={23} />
             </div>
-          ) : error && errorMessage && onInvitation && isEmailValid(address) ? (
+          ) : error &&
+            errorMessage &&
+            createWalletEnabled &&
+            onInvitation &&
+            isEmailValid(address) ? (
             <Button variant="text" onClick={handleInviteClick}>
               {t('wallet.invite')}
             </Button>

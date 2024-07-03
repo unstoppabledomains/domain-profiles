@@ -70,7 +70,7 @@ describe('<AddressInput />', () => {
         (getByTestId('input-address-input') as HTMLInputElement).value,
       ).toBe(mkProfileData!.records!['crypto.ETH.address']);
       expect(
-        getByText(`Successfully resolved ${mkProfileData!.metadata!.domain}`),
+        getByText(`Wallet found for ${mkProfileData!.metadata!.domain}`),
       ).toBeInTheDocument();
     });
   });
@@ -95,7 +95,7 @@ describe('<AddressInput />', () => {
     });
     await waitFor(() => {
       expect(
-        getByText(`Could not resolve ${invalidDomain} to a valid ETH address`),
+        getByText(`Could not find recipient wallet address`),
       ).toBeInTheDocument();
     });
   });

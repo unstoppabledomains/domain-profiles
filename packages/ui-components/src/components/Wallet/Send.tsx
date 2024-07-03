@@ -18,6 +18,7 @@ import type {SerializedWalletBalance} from '../../lib';
 import {useTranslationContext} from '../../lib';
 import {sleep} from '../../lib/sleep';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
+import {isEthAddress} from '../Chat/protocol/resolution';
 import AddressInput from './AddressInput';
 import AmountInput from './AmountInput';
 import {OperationStatus} from './OperationStatus';
@@ -149,7 +150,6 @@ const Send: React.FC<Props> = ({
   wallets,
 }) => {
   const [t] = useTranslationContext();
-  const {data: featureFlags} = useFeatureFlags();
   const [recipientAddress, setRecipientAddress] = useState('');
   const [accountAsset, setAccountAsset] = useState<AccountAsset>();
   const [selectedToken, setSelectedToken] = useState<TokenEntry>();
@@ -161,6 +161,12 @@ const Send: React.FC<Props> = ({
   const [isLoading, setIsLoading] = useState(false);
   const {classes, cx} = useStyles();
   const amountInputRef = useRef<HTMLInputElement>(null);
+
+  // determine feature flags for this wallet instance
+  const {data: featureFlags} = useFeatureFlags(
+    false,
+    wallets?.find(w => isEthAddress(w.address))?.address,
+  );
   const isCreateWalletEnabled =
     featureFlags.variations?.profileServiceEnableWalletCreation === true;
 
@@ -373,7 +379,7 @@ const Send: React.FC<Props> = ({
             <AddressInput
               label={t('wallet.recipient')}
               placeholder={t(
-                featureFlags?.variations?.profileServiceEnableWalletCreation
+                isCreateWalletEnabled
                   ? 'wallet.recipientDomainEmailOrWallet'
                   : 'wallet.recipientDomainOrAddress',
               )}

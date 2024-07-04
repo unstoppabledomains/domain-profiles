@@ -2,7 +2,7 @@ import type {DomainDescription, DomainSuffixes} from '../../lib/types/domain';
 import {
   EXTERNAL_DOMAIN_SUFFIXES,
   MANAGEABLE_DOMAIN_LABEL,
-  WEB2_DOMAIN_SUFFIXES,
+  Web2SuffixesList,
 } from '../../lib/types/domain';
 
 export const convertCentToDollar = (cent: number): number => {
@@ -101,7 +101,7 @@ export const isWeb2Domain = (domain: string): boolean => {
 };
 
 export const isWeb2DomainSuffixValid = (extension: string): boolean => {
-  return WEB2_DOMAIN_SUFFIXES.includes(extension);
+  return Web2SuffixesList.includes(extension);
 };
 
 const isDomainLabelValid = (

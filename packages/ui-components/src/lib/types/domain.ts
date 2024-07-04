@@ -537,7 +537,6 @@ export type TwitterUserInfo = {
 } | null;
 
 export const UD_BLUE_BADGE_CODE = 'UdBlue';
-export const WEB2_DOMAIN_SUFFIXES = ['com'];
 
 export enum Web2Suffixes {
   Com = 'com',

@@ -540,6 +540,7 @@ export const UD_BLUE_BADGE_CODE = 'UdBlue';
 
 export enum Web2Suffixes {
   Com = 'com',
+  Ca = 'ca',
 }
 
 export const Web2SuffixesList = Object.entries(Web2Suffixes).map(([_, v]) => {

@@ -2,6 +2,8 @@ import mapKeys from 'lodash/mapKeys';
 import pickBy from 'lodash/pickBy';
 import reduce from 'lodash/reduce';
 
+import {NullAddress} from '@unstoppabledomains/resolution/build/types';
+
 import type {
   MulticoinAddresses,
   MulticoinVersions,
@@ -40,6 +42,12 @@ export const parseRecords = (
     (_v, k) => k.split('.')[1],
   );
 
+  // Remove null and empty addresses
+  for (const key in addresses) {
+    if (addresses[key] === '0x' || addresses[key] === NullAddress) {
+      delete addresses[key];
+    }
+  }
   return {
     addresses,
     multicoinAddresses: mapMultiCoinAddresses(records),

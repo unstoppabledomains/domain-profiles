@@ -243,6 +243,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
               placeholder={placeholder}
               onChange={handleChange}
               onKeyDown={onKeyDown}
+              fullWidth
               classes={{
                 root: cx(classes.inputRoot, classesOverride?.root),
                 input: cx(classes.input, classesOverride?.input),

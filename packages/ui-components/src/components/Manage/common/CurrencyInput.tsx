@@ -34,6 +34,7 @@ export interface Props {
   profileData?: SerializedPublicDomainProfileData;
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;
   saveClicked: boolean;
+  hideEndAdornment?: boolean;
 }
 
 export const useStyles = makeStyles()((theme: Theme) => ({
@@ -231,6 +232,7 @@ const CurrencyInput: React.FC<Props> = ({
   profileData,
   setWeb3Deps,
   saveClicked,
+  hideEndAdornment,
 }) => {
   const [t] = useTranslationContext();
   const {classes} = useStyles();
@@ -314,16 +316,18 @@ const CurrencyInput: React.FC<Props> = ({
       }}
       stacked={true}
       endAdornment={
-        <VerifyAdornment
-          addressCurrent={address}
-          domain={domain}
-          ownerAddress={ownerAddress}
-          profileData={profileData}
-          currency={currency}
-          setWeb3Deps={setWeb3Deps}
-          uiDisabled={false}
-          saveClicked={saveClicked}
-        />
+        hideEndAdornment ? undefined : (
+          <VerifyAdornment
+            addressCurrent={address}
+            domain={domain}
+            ownerAddress={ownerAddress}
+            profileData={profileData}
+            currency={currency}
+            setWeb3Deps={setWeb3Deps}
+            uiDisabled={false}
+            saveClicked={saveClicked}
+          />
+        )
       }
     />
   );

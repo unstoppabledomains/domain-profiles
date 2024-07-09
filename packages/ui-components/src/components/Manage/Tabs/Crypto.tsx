@@ -11,7 +11,7 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getProfileData, useFeatureFlags} from '../../../actions';
+import {getProfileData} from '../../../actions';
 import {
   confirmRecordUpdate,
   getRegistrationMessage,
@@ -46,9 +46,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
     justifyItems: 'center',
+    width: '100%',
   },
   pendingTxContainer: {
     display: 'flex',
+    width: '100%',
     marginTop: theme.spacing(1),
     padding: theme.spacing(1),
     backgroundImage: `linear-gradient(to left, ${theme.palette.primaryShades[400]}, ${theme.palette.primaryShades[600]})`,
@@ -65,7 +67,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     height: '50px',
   },
   button: {
-    marginBottom: theme.spacing(2),
+    marginBottom: theme.spacing(1),
   },
   icon: {
     color: theme.palette.neutralShades[600],
@@ -83,10 +85,12 @@ export const Crypto: React.FC<CryptoProps> = ({
   domain,
   setButtonComponent,
   filterFn,
+  updateFn,
+  hideHeader,
+  hideVerifyButtons,
 }) => {
   const {classes} = useStyles();
   const {web3Deps, setWeb3Deps} = useWeb3Context();
-  const {data: featureFlags} = useFeatureFlags(false, domain);
   const {unsResolverKeys: resolverKeys, loading: resolverKeysLoading} =
     useResolverKeys();
   const [saveClicked, setSaveClicked] = useState(false);
@@ -142,7 +146,7 @@ export const Crypto: React.FC<CryptoProps> = ({
         </LoadingButton>
       </Box>,
     );
-  }, [isPendingTx, isSaving, isLoading]);
+  }, [isPendingTx, isSaving, isLoading, records]);
 
   const loadRecords = async () => {
     const data = await getProfileData(domain, [
@@ -157,9 +161,18 @@ export const Crypto: React.FC<CryptoProps> = ({
     setIsLoading(false);
   };
 
-  const handleSave = () => {
-    setSaveClicked(true);
+  const handleSave = async () => {
     setIsSaving(true);
+    if (updateFn) {
+      // request the update function
+      await updateFn(records);
+
+      // update page state and return
+      setIsPendingTx(true);
+      setIsSaving(false);
+      return;
+    }
+    setSaveClicked(true);
   };
 
   const handleRecordUpdate = async (
@@ -326,6 +339,7 @@ export const Crypto: React.FC<CryptoProps> = ({
         uiDisabled={!!isPendingTx}
         setWeb3Deps={setWeb3Deps}
         saveClicked={isSignatureSuccess}
+        hideEndAdornment={hideVerifyButtons}
       />
     ));
   };
@@ -348,40 +362,27 @@ export const Crypto: React.FC<CryptoProps> = ({
           profileData={profileData}
           setWeb3Deps={setWeb3Deps}
           saveClicked={isSignatureSuccess}
+          hideEndAdornment={hideVerifyButtons}
         />
       );
     });
   };
 
-  // show coming soon if feature flag disabled
-  if (!featureFlags.variations?.udMeServiceDomainsEnableManagement) {
-    return (
-      <Box className={classes.container}>
+  return (
+    <Box className={classes.container}>
+      {!hideHeader && (
         <TabHeader
           icon={<MonetizationOnOutlinedIcon />}
           description={t('manage.cryptoAddressesDescription')}
           learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001181827-add-crypto-addresses"
         />
-        <Typography variant="h5" className={classes.title}>
-          {t('manage.comingSoon')}
-        </Typography>
-      </Box>
-    );
-  }
-
-  return (
-    <Box className={classes.container}>
-      <TabHeader
-        icon={<MonetizationOnOutlinedIcon />}
-        description={t('manage.cryptoAddressesDescription')}
-        learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001181827-add-crypto-addresses"
-      />
+      )}
       {isLoading ? (
         <Box display="flex" justifyContent="center" mt={1}>
           <CircularProgress />
         </Box>
       ) : (
-        <Box>
+        <>
           {isPendingTx && (
             <Box className={classes.pendingTxContainer}>
               <UpdateOutlinedIcon className={classes.pendingTxIcon} />
@@ -395,11 +396,10 @@ export const Crypto: React.FC<CryptoProps> = ({
               </Box>
             </Box>
           )}
-          <Box mt={2}>
+          <Box mt={2} width="100%">
             {renderSingleChainAddresses()}
             {renderMultiChainAddresses()}
           </Box>
-
           <ProfileManager
             domain={domain}
             ownerAddress={address}
@@ -418,7 +418,7 @@ export const Crypto: React.FC<CryptoProps> = ({
               isEns={false}
             />
           )}
-        </Box>
+        </>
       )}
     </Box>
   );
@@ -426,4 +426,7 @@ export const Crypto: React.FC<CryptoProps> = ({
 
 export type CryptoProps = ManageTabProps & {
   filterFn?: (k: string) => boolean;
+  updateFn?: (records: Record<string, string>) => Promise<void>;
+  hideHeader?: boolean;
+  hideVerifyButtons?: boolean;
 };

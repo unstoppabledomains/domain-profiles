@@ -13,7 +13,6 @@ import {SendCryptoStatusMessage} from '../../actions/fireBlocksActions';
 import {Status, useSubmitTransaction} from '../../hooks/useSubmitTransaction';
 import {useTranslationContext} from '../../lib';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
-import Link from '../Link';
 import {getBlockchainSymbol} from '../Manage/common/verification/types';
 import {OperationStatus} from './OperationStatus';
 
@@ -36,6 +35,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
     gap: '7px',
     marginBottom: theme.spacing(5),
+    textAlign: 'center',
   },
   icon: {
     fontSize: '60px',
@@ -52,6 +52,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
 type Props = {
   onCloseClick: () => void;
   getClient: () => Promise<IFireblocksNCW>;
+  onInvitation: (
+    emailAddress: string,
+  ) => Promise<Record<string, string> | undefined>;
   accessToken: string;
   asset: AccountAsset;
   recipientAddress: string;
@@ -59,13 +62,10 @@ type Props = {
   amount: string;
 };
 
-const truncateAddress = (address: string) => {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-};
-
 export const SubmitTransaction: React.FC<Props> = ({
   onCloseClick,
   getClient,
+  onInvitation,
   accessToken,
   asset,
   recipientAddress,
@@ -81,9 +81,11 @@ export const SubmitTransaction: React.FC<Props> = ({
     recipientAddress,
     amount,
     getClient,
+    onInvitation,
   });
 
   const visibleButtonStates = [
+    SendCryptoStatusMessage.CREATING_WALLET,
     SendCryptoStatusMessage.CHECKING_QUEUE,
     SendCryptoStatusMessage.STARTING_TRANSACTION,
     SendCryptoStatusMessage.WAITING_TO_SIGN,
@@ -114,23 +116,28 @@ export const SubmitTransaction: React.FC<Props> = ({
                   amount,
                   sourceSymbol: asset.blockchainAsset.symbol,
                   status,
-                  recipientDomain: recipientDomain ? ` ${recipientDomain}` : '',
-                  recipientAddress: truncateAddress(recipientAddress),
+                  recipientDomain: recipientDomain
+                    ? ` ${recipientDomain}`
+                    : ` ${recipientAddress}`,
                 },
               )}
           </Typography>
           {transactionId && (
-            <Link
-              variant={'caption'}
-              target="_blank"
-              href={`${
-                config.BLOCKCHAINS[
-                  getBlockchainSymbol(asset.blockchainAsset.blockchain.id)
-                ].BLOCK_EXPLORER_TX_URL
-              }${transactionId}`}
+            <Button
+              variant="text"
+              onClick={() =>
+                window.open(
+                  `${
+                    config.BLOCKCHAINS[
+                      getBlockchainSymbol(asset.blockchainAsset.blockchain.id)
+                    ].BLOCK_EXPLORER_TX_URL
+                  }${transactionId}`,
+                  '_blank',
+                )
+              }
             >
               {t('wallet.viewTransaction')}
-            </Link>
+            </Button>
           )}
         </Box>
       </OperationStatus>

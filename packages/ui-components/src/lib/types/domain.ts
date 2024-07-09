@@ -1,3 +1,4 @@
+import {isEmailValid} from '../isEmailValid';
 import type {WebacyRiskScore} from './webacy';
 
 export enum AffiliateTier {
@@ -554,6 +555,10 @@ export type YoutubeUserInfo = {
   channelUrl: string;
   subscriberCount: number;
 } | null;
+
+export const isValidIdentity = (maybeIdentity: string): boolean => {
+  return isEmailValid(maybeIdentity);
+};
 
 export const kbToMb = (kb: number): number => {
   return kb / 1000 / 1024;

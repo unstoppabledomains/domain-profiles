@@ -14,6 +14,7 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import Markdown from 'markdown-to-jsx';
 import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 
@@ -36,6 +37,7 @@ import {
 import {notifyEvent} from '../../lib/error';
 import {getFireBlocksClient} from '../../lib/fireBlocks/client';
 import {getBootstrapState} from '../../lib/fireBlocks/storage/state';
+import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileList} from '../Domain';
 import {DomainProfileModal} from '../Manage';
@@ -166,11 +168,16 @@ const useStyles = makeStyles()((theme: Theme) => ({
     height: '100%',
     justifyContent: 'space-between',
   },
+  identitySnackbar: {
+    display: 'flex',
+    maxWidth: '300px',
+  },
 }));
 
 export const Client: React.FC<ClientProps> = ({
   accessToken,
   wallets,
+  paymentConfigStatus,
   onRefresh,
   setIsHeaderClicked,
   isHeaderClicked,
@@ -217,6 +224,43 @@ export const Client: React.FC<ClientProps> = ({
     setIsHeaderClicked(false);
     void handleCancel();
   }, [address, isHeaderClicked]);
+
+  useEffect(() => {
+    if (!paymentConfigStatus?.status) {
+      return;
+    }
+
+    // nothing to do if message has already been shown
+    if (paymentConfigStatus?.status === state.config?.identityState) {
+      return;
+    }
+
+    // show message and set state key so it is not displayed again
+    state.config = {
+      ...state.config,
+      identityState: paymentConfigStatus.status,
+    };
+    saveState({
+      ...state,
+    });
+    enqueueSnackbar(
+      <Box className={classes.identitySnackbar}>
+        <Markdown>
+          {t(
+            paymentConfigStatus.status === 'ready'
+              ? 'claimIdentity.mpcWalletReady'
+              : paymentConfigStatus.status === 'minting'
+              ? 'claimIdentity.mpcWalletMinting'
+              : 'claimIdentity.mpcWalletUpdating',
+            {
+              emailAddress: paymentConfigStatus.account,
+            },
+          )}
+        </Markdown>
+      </Box>,
+      {variant: 'info'},
+    );
+  }, [paymentConfigStatus]);
 
   useEffect(() => {
     if (!address) {
@@ -525,6 +569,7 @@ export const Client: React.FC<ClientProps> = ({
 export type ClientProps = {
   accessToken: string;
   wallets: SerializedWalletBalance[];
+  paymentConfigStatus?: SerializedIdentityResponse;
   onRefresh: () => Promise<void>;
   isHeaderClicked: boolean;
   setIsHeaderClicked?: (v: boolean) => void;

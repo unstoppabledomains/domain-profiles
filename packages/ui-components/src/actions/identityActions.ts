@@ -15,7 +15,7 @@ interface UseIdentityQueryOptions {
   name?: string;
 }
 
-export const getIdentity = async (
+export const getHumanityCheckStatus = async (
   options: GetIdentityOptions | UseIdentityQueryOptions,
 ): Promise<PersonaIdentity | Record<string, PersonaIdentity>> => {
   return await fetchApi<PersonaIdentity | Record<string, PersonaIdentity>>(

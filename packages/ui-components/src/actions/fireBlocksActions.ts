@@ -403,7 +403,10 @@ export const getMessageSignature = async (
           Authorization: `Bearer ${accessToken}`,
         },
         host: config.WALLETS.HOST_URL,
-        body: JSON.stringify({message, encoding: 'utf8'}),
+        body: JSON.stringify({
+          message,
+          encoding: message.startsWith('0x') ? 'hex' : 'utf8',
+        }),
       },
     );
     if (!operationResponse) {

@@ -1,4 +1,5 @@
 import Bluebird from 'bluebird';
+import {utils as EthersUtils} from 'ethers';
 import QueryString from 'qs';
 
 import config from '@unstoppabledomains/config';
@@ -403,7 +404,10 @@ export const getMessageSignature = async (
           Authorization: `Bearer ${accessToken}`,
         },
         host: config.WALLETS.HOST_URL,
-        body: JSON.stringify({message, encoding: 'utf8'}),
+        body: JSON.stringify({
+          message,
+          encoding: EthersUtils.isHexString(message) ? 'hex' : 'utf8',
+        }),
       },
     );
     if (!operationResponse) {

@@ -439,7 +439,7 @@ export const Configuration: React.FC<
 
       // unable to retrieve access token, so revert back to configuration
       // state before returning
-      setConfigState(WalletConfigState.PasswordEntry);
+      handleLogout();
     } finally {
       setIsLoaded(true);
     }

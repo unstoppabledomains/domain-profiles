@@ -47,7 +47,7 @@
     "eslint-plugin-mdx": "^2.2.0",
     "eslint-plugin-prettier": "4.0.0",
     "eslint-plugin-promise": "^6.0.0",
-    "eslint-plugin-react": "^7.30.1",
+    "eslint-plugin-react": "^7.34.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-sort-exports": "^0.8.0",
     "eslint-plugin-tss-unused-classes": "^1.0.2",
@@ -67,7 +67,7 @@
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.1.0",
-    "typescript": "5.0.4"
+    "typescript": "^5.4.3"
   },
   "optionalDependencies": {
     "@next/swc-linux-x64-gnu": "^12.2.5"

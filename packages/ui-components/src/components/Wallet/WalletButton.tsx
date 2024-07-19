@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
 import type {Theme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import Image from 'next/image';
+import Image from 'next/legacy/image';
 import React from 'react';
 
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';

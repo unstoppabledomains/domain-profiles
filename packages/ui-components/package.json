@@ -25,12 +25,8 @@
   "typings": "build/src/index.d.ts",
   "dependencies": {
     "@braintree/sanitize-url": "^6.0.4",
-    "@emotion/server": "^11.4.0",
     "@fireblocks/ncw-js-sdk": "^12.2.0",
     "@ipld/car": "^5.2.5",
-    "@mui/icons-material": "5.10.3",
-    "@mui/lab": "5.0.0-alpha.98",
-    "@mui/material": "5.10.4",
     "@pushprotocol/restapi": "1.6.6",
     "@pushprotocol/socket": "^0.5.1",
     "@solana/wallet-adapter-phantom": "^0.9.9",
@@ -47,11 +43,11 @@
     "@types/probe-image-size": "^7.2.0",
     "@types/qs": "^6.9.8",
     "@types/ramda": "^0.27.1",
-    "@types/react": "^17.0.0",
+    "@types/react": "^18.2.67",
     "@types/react-cookies": "^0.1.1",
-    "@types/react-dom": "^17.0.0",
-    "@types/react-lazy-load-image-component": "^1.6.0",
-    "@types/react-linkify": "^1.0.1",
+    "@types/react-dom": "^18.2.67",
+    "@types/react-lazy-load-image-component": "^1.6.3",
+    "@types/react-linkify": "^1.0.4",
     "@types/react-tagcloud": "^2.3.2",
     "@types/truncate-middle": "^1.0.4",
     "@uauth/js": "^2.8.0",
@@ -80,18 +76,16 @@
     "lodash.merge": "^4.6.2",
     "markdown-to-jsx": "^7.4.1",
     "moment": "^2.29.4",
-    "next": "^12.3.4",
-    "next-secure-headers": "^2.2.0",
+    "next": "^14.2.5",
     "next-seo": "^6.1.0",
-    "next-transpile-modules": "^10.0.0",
     "numeral": "^2.0.6",
     "probe-image-size": "^7.2.3",
     "qs": "^6.11.2",
     "ramda": "^0.27.1",
-    "react": "^17.0.0",
+    "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-cookies": "^0.1.1",
-    "react-dom": "^17.0.0",
+    "react-dom": "^18.2.0",
     "react-emoji-render": "^2.0.1",
     "react-hook-form": "^7.42.1",
     "react-infinite-scroll-component": "^6.1.0",
@@ -108,8 +102,8 @@
     "title-case": "^3.0.3",
     "truncate-eth-address": "^1.0.2",
     "truncate-middle": "^1.0.6",
-    "tss-react": "^4.0.0",
-    "typescript": "5.0.4",
+    "tss-react": "^4.9.5",
+    "typescript": "^5.4.3",
     "uns": "https://github.com/unstoppabledomains/uns#v0.8.35",
     "usehooks-ts": "^2.9.1",
     "wagmi": "^1.4.12",
@@ -126,12 +120,24 @@
     "tslib": "^2.6.2"
   },
   "peerDependencies": {
-    "@unstoppabledomains/ui-kit": "^0.3.24",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@unstoppabledomains/ui-kit": "file:../../1_backup/osa",
     "notistack": "^2.0.5",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
     "react-query": "^3.39.3"
   },
+  "peerDependenciesMeta": {
+    "@types/react": {
+      "optional": true
+    },
+    "@types/react-dom": {
+      "optional": true
+    }
+  },
   "engines": {
-    "node": "16.x.x",
+    "node": "18.x.x",
     "yarn": "1.22.x"
   },
   "publishConfig": {

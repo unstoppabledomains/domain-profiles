@@ -667,6 +667,7 @@ const DomainProfile = ({
                       domainOwner={ownerAddress}
                       authAddress={authAddress}
                       authDomain={authDomain}
+                      setAuthAddress={setAuthAddress}
                     />
                   </>
                 ) : (

@@ -1,6 +1,6 @@
-import type {InitialOptionsTsJest} from 'ts-jest/dist/types';
+import type {JestConfigWithTsJest} from 'ts-jest/dist/types';
 
-const config: InitialOptionsTsJest = {
+const config: JestConfigWithTsJest = {
   projects: [
     '<rootDir>/client.jest.config.ts',
     '<rootDir>/server.jest.config.ts',

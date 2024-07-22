@@ -1,3 +1,4 @@
+import {isEmailValid} from '../isEmailValid';
 import type {WebacyRiskScore} from './webacy';
 
 export enum AffiliateTier {
@@ -537,10 +538,10 @@ export type TwitterUserInfo = {
 } | null;
 
 export const UD_BLUE_BADGE_CODE = 'UdBlue';
-export const WEB2_DOMAIN_SUFFIXES = ['com'];
 
 export enum Web2Suffixes {
   Com = 'com',
+  Ca = 'ca',
 }
 
 export const Web2SuffixesList = Object.entries(Web2Suffixes).map(([_, v]) => {
@@ -554,6 +555,10 @@ export type YoutubeUserInfo = {
   channelUrl: string;
   subscriberCount: number;
 } | null;
+
+export const isValidIdentity = (maybeIdentity: string): boolean => {
+  return isEmailValid(maybeIdentity);
+};
 
 export const kbToMb = (kb: number): number => {
   return kb / 1000 / 1024;

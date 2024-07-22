@@ -1,4 +1,5 @@
 import type {Web3Dependencies} from '../../../../lib';
+import type {ResolverKeyName} from '../../../../lib/types/resolverKeys';
 
 export type VerificationProps = {
   ownerAddress: string;
@@ -41,4 +42,18 @@ export const getBlockchainSymbol = (name: string): string => {
     default:
       return name.toUpperCase();
   }
+};
+
+export const getRecordKey = (
+  symbol: string,
+  multichainVersion?: string,
+): ResolverKeyName => {
+  if (symbol === 'MATIC') {
+    return `crypto.MATIC.version.${(
+      multichainVersion || 'MATIC'
+    ).toUpperCase()}.address` as ResolverKeyName;
+  }
+  return multichainVersion
+    ? (`crypto.${symbol.toUpperCase()}.version.${multichainVersion.toUpperCase()}.address` as ResolverKeyName)
+    : (`crypto.${symbol.toUpperCase()}.address` as ResolverKeyName);
 };

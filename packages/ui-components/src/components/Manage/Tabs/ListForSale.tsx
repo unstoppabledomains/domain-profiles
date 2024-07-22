@@ -13,7 +13,11 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {getProfileUserData, setProfileUserData} from '../../../actions';
 import {useWeb3Context} from '../../../hooks';
 import type {SerializedUserDomainProfileData} from '../../../lib';
-import {DomainFieldTypes, useTranslationContext} from '../../../lib';
+import {
+  DomainFieldTypes,
+  isEmailValid,
+  useTranslationContext,
+} from '../../../lib';
 import {notifyEvent} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import {DomainProfileTabType} from '../DomainProfile';
@@ -186,11 +190,7 @@ export const ListForSale: React.FC<ManageTabProps> = ({
     });
     setIsListingEnabled(false);
     if (id === 'publicDomainSellerEmail') {
-      setIsInvalidEmail(
-        !value.match(
-          /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-        ),
-      );
+      setIsInvalidEmail(!isEmailValid(value));
     }
   };
 

@@ -205,7 +205,7 @@ describe('<DomainProfile />', () => {
     jest
       .spyOn(featureFlagActions, 'fetchFeatureFlags')
       .mockResolvedValue(featureFlagActions.DEFAULT_FEATURE_FLAGS);
-    jest.spyOn(identityActions, 'getIdentity').mockResolvedValue({
+    jest.spyOn(identityActions, 'getHumanityCheckStatus').mockResolvedValue({
       id: 'personaId',
       createdAt: Date.now(),
       name: 'foo.crypto',
@@ -365,7 +365,7 @@ describe('Token gallery for multiple blockchains', () => {
     jest
       .spyOn(featureFlagActions, 'fetchFeatureFlags')
       .mockResolvedValue(featureFlagActions.DEFAULT_FEATURE_FLAGS);
-    jest.spyOn(identityActions, 'getIdentity').mockResolvedValue({
+    jest.spyOn(identityActions, 'getHumanityCheckStatus').mockResolvedValue({
       id: 'personaId',
       createdAt: Date.now(),
       name: 'foo.crypto',
@@ -670,7 +670,7 @@ describe('Token gallery for single blockchain', () => {
     jest
       .spyOn(featureFlagActions, 'fetchFeatureFlags')
       .mockResolvedValue(featureFlagActions.DEFAULT_FEATURE_FLAGS);
-    jest.spyOn(identityActions, 'getIdentity').mockResolvedValue({
+    jest.spyOn(identityActions, 'getHumanityCheckStatus').mockResolvedValue({
       id: 'personaId',
       createdAt: Date.now(),
       name: 'foo.crypto',
@@ -798,7 +798,7 @@ describe('Token gallery carousel', () => {
     jest
       .spyOn(featureFlagActions, 'fetchFeatureFlags')
       .mockResolvedValue(featureFlagActions.DEFAULT_FEATURE_FLAGS);
-    jest.spyOn(identityActions, 'getIdentity').mockResolvedValue({
+    jest.spyOn(identityActions, 'getHumanityCheckStatus').mockResolvedValue({
       id: 'personaId',
       createdAt: Date.now(),
       name: 'foo.crypto',
@@ -1119,7 +1119,7 @@ describe('Owner operations', () => {
         udMeServiceDomainsEnableManagement: true,
       },
     });
-    jest.spyOn(identityActions, 'getIdentity').mockResolvedValue({
+    jest.spyOn(identityActions, 'getHumanityCheckStatus').mockResolvedValue({
       id: 'personaId',
       createdAt: Date.now(),
       name: 'foo.crypto',

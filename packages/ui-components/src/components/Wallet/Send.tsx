@@ -8,13 +8,17 @@ import React, {useRef, useState} from 'react';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {useFeatureFlags} from '../../actions';
 import {
   getAccountAssets,
   getEstimateTransferResponse,
 } from '../../actions/fireBlocksActions';
+import {prepareRecipientWallet} from '../../actions/walletActions';
 import type {SerializedWalletBalance} from '../../lib';
 import {useTranslationContext} from '../../lib';
+import {sleep} from '../../lib/sleep';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
+import {isEthAddress} from '../Chat/protocol/resolution';
 import AddressInput from './AddressInput';
 import AmountInput from './AmountInput';
 import {OperationStatus} from './OperationStatus';
@@ -92,7 +96,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     height: '113px',
   },
   recipientWrapper: {
-    height: '109px',
+    minHeight: '109px',
     width: '100%',
   },
   amountInputWrapper: {
@@ -157,6 +161,14 @@ const Send: React.FC<Props> = ({
   const [isLoading, setIsLoading] = useState(false);
   const {classes, cx} = useStyles();
   const amountInputRef = useRef<HTMLInputElement>(null);
+
+  // determine feature flags for this wallet instance
+  const {data: featureFlags} = useFeatureFlags(
+    false,
+    wallets?.find(w => isEthAddress(w.address))?.address,
+  );
+  const isCreateWalletEnabled =
+    featureFlags.variations?.profileServiceEnableWalletCreation === true;
 
   const resetForm = () => {
     setResolvedDomain('');
@@ -230,6 +242,34 @@ const Send: React.FC<Props> = ({
     }
   };
 
+  const handleSendInvitation = async (
+    emailAddress: string,
+  ): Promise<Record<string, string> | undefined> => {
+    if (!accountAsset) {
+      return undefined;
+    }
+
+    // wait for wallet to begin resolving if wallet creation enabled
+    while (isCreateWalletEnabled) {
+      // prepare the recipient wallet
+      const recipientResult = await prepareRecipientWallet(
+        accountAsset?.address,
+        emailAddress,
+        accessToken,
+        isCreateWalletEnabled,
+      );
+
+      // return the records if available
+      if (recipientResult?.records) {
+        return recipientResult.records;
+      }
+
+      // wait 10 seconds and try again
+      await sleep(10000);
+    }
+    return undefined;
+  };
+
   const handleAmountChange = (value: string) => {
     setAmount(value);
   };
@@ -298,6 +338,7 @@ const Send: React.FC<Props> = ({
         />
         <SubmitTransaction
           onCloseClick={onCancelClick}
+          onInvitation={handleSendInvitation}
           accessToken={accessToken}
           asset={accountAsset}
           recipientAddress={recipientAddress}
@@ -337,11 +378,17 @@ const Send: React.FC<Props> = ({
           <Box className={classes.recipientWrapper}>
             <AddressInput
               label={t('wallet.recipient')}
-              placeholder={t('wallet.recipientDomainOrAddress')}
+              placeholder={t(
+                isCreateWalletEnabled
+                  ? 'wallet.recipientDomainEmailOrWallet'
+                  : 'wallet.recipientDomainOrAddress',
+              )}
               initialAddressValue={recipientAddress}
               initialResolvedDomainValue={resolvedDomain}
               onAddressChange={handleRecipientChange}
               onResolvedDomainChange={handleResolvedDomainChange}
+              onInvitation={handleSendInvitation}
+              createWalletEnabled={isCreateWalletEnabled}
               asset={selectedToken}
             />
           </Box>

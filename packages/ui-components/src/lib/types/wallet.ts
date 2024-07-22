@@ -18,6 +18,7 @@ export type WagmiConnectorType =
 export interface WalletAccountResponse {
   emailAddress: string;
   active: boolean;
+  records?: Record<string, string>;
 }
 
 export enum WalletName {

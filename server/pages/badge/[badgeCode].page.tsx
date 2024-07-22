@@ -190,6 +190,7 @@ const BadgePage = ({
                     domainOwner={''}
                     authAddress={authAddress}
                     authDomain={authDomain}
+                    setAuthAddress={setAuthAddress}
                   />
                 </>
               ) : (

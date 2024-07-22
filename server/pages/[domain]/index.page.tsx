@@ -93,7 +93,7 @@ import {
   formOpenSeaLink,
   getDomainBadges,
   getFollowers,
-  getIdentity,
+  getHumanityCheckStatus,
   getImageUrl,
   getProfileData,
   getSeoTags,
@@ -667,6 +667,7 @@ const DomainProfile = ({
                       domainOwner={ownerAddress}
                       authAddress={authAddress}
                       authDomain={authDomain}
+                      setAuthAddress={setAuthAddress}
                     />
                   </>
                 ) : (
@@ -1633,7 +1634,7 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         DomainFieldTypes.Market,
         DomainFieldTypes.Portfolio,
       ]),
-      getIdentity({name: domain}),
+      getHumanityCheckStatus({name: domain}),
     ]);
     profileData =
       profileDataObj.status === 'fulfilled' ? profileDataObj.value : undefined;

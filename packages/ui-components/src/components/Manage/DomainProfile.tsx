@@ -30,7 +30,7 @@ import truncateEthAddress from 'truncate-eth-address';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getOwnerDomains, useFeatureFlags} from '../../actions';
+import {getOwnerDomains} from '../../actions';
 import {useDomainConfig, useWeb3Context} from '../../hooks';
 import type {SerializedUserDomainProfileData} from '../../lib';
 import {
@@ -153,7 +153,6 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
 }) => {
   const {classes, cx} = useStyles({width});
   const [t] = useTranslationContext();
-  const {data: featureFlags} = useFeatureFlags(false, initialDomain);
   const theme = useTheme();
   const isVerticalNav = useMediaQuery(theme.breakpoints.up('md'));
   const [buttonComponent, setButtonComponent] = useState<React.ReactNode>(

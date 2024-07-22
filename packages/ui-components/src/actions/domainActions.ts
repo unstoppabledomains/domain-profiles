@@ -114,7 +114,7 @@ export const getTransactionsByAddress = async (
       },
     },
   );
-  if (!data || !data[symbol.toUpperCase()]) {
+  if (!data?.[symbol.toUpperCase()]) {
     return;
   }
   return data[symbol.toUpperCase()];
@@ -135,7 +135,7 @@ export const getTransactionsByDomain = async (
       host: config.PROFILE.HOST_URL,
     },
   );
-  if (!data || !data[symbol.toUpperCase()]) {
+  if (!data?.[symbol.toUpperCase()]) {
     return;
   }
   return data[symbol.toUpperCase()];

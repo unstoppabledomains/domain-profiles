@@ -1,4 +1,3 @@
-export * from './BaseProvider';
 export * from './TokenGalleryProvider';
 export * from './UnstoppableMessagingProvider';
 export * from './Web3ContextProvider';

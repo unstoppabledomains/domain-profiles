@@ -114,7 +114,7 @@ import {
   getDomainConnections,
   getOwnerDomains,
 } from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
-import {SerializedPartialDomainProfileSocialAccountsUserInfo} from '@unstoppabledomains/ui-components/src/lib';
+import type {SerializedPartialDomainProfileSocialAccountsUserInfo} from '@unstoppabledomains/ui-components/src/lib';
 import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
 import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
@@ -207,15 +207,12 @@ const DomainProfile = ({
   const verifiedSocials = allSocials.filter(
     socialType =>
       Boolean(
-        (profileData?.socialAccounts &&
-          profileData?.socialAccounts[socialType]?.verified) ||
-          true,
+        profileData?.socialAccounts?.[socialType]?.verified || true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ) as any as ExcludesFalse,
   );
   verifiedSocials.forEach(socialType => {
-    const socialUser =
-      profileData?.socialAccounts &&
-      profileData?.socialAccounts[socialType]?.location;
+    const socialUser = profileData?.socialAccounts?.[socialType]?.location;
     socialsInfo[socialType] = {
       kind: socialType,
       userName: socialUser,
@@ -1246,10 +1243,8 @@ const DomainProfile = ({
                     <Box mb={1} display="flex" flexWrap="wrap">
                       {verifiedSocials
                         .filter(account => {
-                          return (
-                            profileData?.socialAccounts &&
-                            profileData.socialAccounts[account].location
-                          );
+                          return profileData?.socialAccounts?.[account]
+                            .location;
                         })
                         .map(account => {
                           return (

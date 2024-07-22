@@ -13,7 +13,7 @@ import getImageUrl from '../../lib/domain/getImageUrl';
 import {notifyEvent} from '../../lib/error';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import {DomainFieldTypes} from '../../lib/types/domain';
-import {DomainProfileTabType} from '../Manage/common/types';
+import type {DomainProfileTabType} from '../Manage/common/types';
 import Modal from '../Modal';
 import {Wallet} from '../Wallet/Wallet';
 

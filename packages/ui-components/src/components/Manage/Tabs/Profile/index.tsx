@@ -17,8 +17,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getProfileUserData, setProfileUserData} from '../../../../actions';
 import {useWeb3Context} from '../../../../hooks';
-import {
-  DomainProfileSocialMedia,
+import type {
   DomainProfileSocialMediaAutoPopulated,
   DomainProfileVisibilityValues,
   SerializedDomainProfileAttributes,
@@ -27,6 +26,7 @@ import {
 import {
   DOMAIN_PROFILE_VISIBILITY_VALUES,
   DomainFieldTypes,
+  DomainProfileSocialMedia,
   MAX_BIO_LENGTH,
   isExternalDomain,
   useTranslationContext,
@@ -34,7 +34,8 @@ import {
 import {notifyEvent} from '../../../../lib/error';
 import {ProfileManager} from '../../../Wallet/ProfileManager';
 import BulkUpdateLoadingButton from '../../common/BulkUpdateLoadingButton';
-import ManageInput, {ManageInputOnChange} from '../../common/ManageInput';
+import type {ManageInputOnChange} from '../../common/ManageInput';
+import ManageInput from '../../common/ManageInput';
 import {DomainProfileTabType} from '../../common/types';
 import type {ManageTabProps} from '../../common/types';
 import {Header} from './Header';

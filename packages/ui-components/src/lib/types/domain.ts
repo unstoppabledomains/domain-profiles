@@ -265,11 +265,6 @@ export type SerializedDomainProfileAttributes =
     udBlue?: boolean;
   };
 
-export type SerializedPartialDomainProfileSocialAccountsUserInfo = Record<
-  DomainProfileSocialMedia | DomainProfileSocialMediaAutoPopulated,
-  Partial<SocialAccountUserInfo>
->;
-
 export type SerializedDomainProfileSocialAccountsUserInfo = {
   [DomainProfileSocialMedia.Twitter]?: TwitterUserInfo;
   [DomainProfileSocialMedia.Reddit]?: RedditUserInfo;
@@ -317,6 +312,11 @@ export type SerializedFollowerListData = {
   relationship_type: 'following' | 'followers';
   domain: string;
 };
+
+export type SerializedPartialDomainProfileSocialAccountsUserInfo = Record<
+  DomainProfileSocialMedia | DomainProfileSocialMediaAutoPopulated,
+  Partial<SocialAccountUserInfo>
+>;
 
 export type SerializedPortfolioSummary = {
   wallet: {

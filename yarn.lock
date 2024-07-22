@@ -5204,7 +5204,6 @@ __metadata:
     "@uauth/js": ^2.8.0
     "@unstoppabledomains/config": "workspace:^"
     "@unstoppabledomains/resolution": ^8.5.0
-    "@unstoppabledomains/ui-kit": "file:../../../1_backup/osa/ui-kit"
     "@web3-react/core": ^8.2.2
     "@web3-storage/w3up-client": ^12.0.0
     "@xmtp/content-type-remote-attachment": ^1.1.4
@@ -5268,6 +5267,7 @@ __metadata:
   peerDependencies:
     "@types/react": ^18.0.0
     "@types/react-dom": ^18.0.0
+    "@unstoppabledomains/ui-kit": 0.4.0-canary.1
     notistack: ^2.0.5
     react: ^18.0.0
     react-dom: ^18.0.0
@@ -5275,16 +5275,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@unstoppabledomains/ui-kit@file:../../../1_backup/osa/ui-kit::locator=%40unstoppabledomains%2Fui-components%40workspace%3Apackages%2Fui-components":
-  version: 0.4.0-canary.0
-  resolution: "@unstoppabledomains/ui-kit@file:../../../1_backup/osa/ui-kit#../../../1_backup/osa/ui-kit::hash=1363f5&locator=%40unstoppabledomains%2Fui-components%40workspace%3Apackages%2Fui-components"
+"@unstoppabledomains/ui-kit@npm:0.4.0-canary.1":
+  version: 0.4.0-canary.1
+  resolution: "@unstoppabledomains/ui-kit@npm:0.4.0-canary.1"
   dependencies:
     "@emotion/react": ^11.11.4
     "@emotion/styled": ^11.11.0
     "@mui/icons-material": ^5.15.14
     "@mui/lab": ^5.0.0-alpha.169
     "@mui/material": ^5.15.14
-    tss-react: ^4.9.4
+    tss-react: ^4.9.10
   peerDependencies:
     "@types/react": ^18.0.0
     "@types/react-dom": ^18.0.0
@@ -5295,31 +5295,7 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: add2830858fed88a73a945d5a3cb1bd0330225f15118919cc9d3597f304f9dfb96cf8702fbe29568ddcf6775306a89484e20b3f4acdf8af7387f377119ec43cf
-  languageName: node
-  linkType: hard
-
-"@unstoppabledomains/ui-kit@file:../../1_backup/osa/ui-kit::locator=server%40workspace%3Aserver":
-  version: 0.4.0-canary.0
-  resolution: "@unstoppabledomains/ui-kit@file:../../1_backup/osa/ui-kit#../../1_backup/osa/ui-kit::hash=1363f5&locator=server%40workspace%3Aserver"
-  dependencies:
-    "@emotion/react": ^11.11.4
-    "@emotion/styled": ^11.11.0
-    "@mui/icons-material": ^5.15.14
-    "@mui/lab": ^5.0.0-alpha.169
-    "@mui/material": ^5.15.14
-    tss-react: ^4.9.4
-  peerDependencies:
-    "@types/react": ^18.0.0
-    "@types/react-dom": ^18.0.0
-    react: ^18.0.0
-    react-dom: ^18.0.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-    "@types/react-dom":
-      optional: true
-  checksum: add2830858fed88a73a945d5a3cb1bd0330225f15118919cc9d3597f304f9dfb96cf8702fbe29568ddcf6775306a89484e20b3f4acdf8af7387f377119ec43cf
+  checksum: c5235cb1c845a5e3558351b1204dff66d0cf1273a9138b4f999d2bc3eb2f4e2d1db3556b3ef344a36232769dd6521fc77489f3bede5a3724c6d1ba5befc2469d
   languageName: node
   linkType: hard
 
@@ -19453,7 +19429,7 @@ __metadata:
     "@unstoppabledomains/config": "workspace:^"
     "@unstoppabledomains/resolution": ^8.5.0
     "@unstoppabledomains/ui-components": "workspace:^"
-    "@unstoppabledomains/ui-kit": "file:../../1_backup/osa/ui-kit"
+    "@unstoppabledomains/ui-kit": 0.4.0-canary.1
     "@web3-react/core": ^8.2.2
     bluebird: ^3.7.2
     clipboard-copy: ^4.0.1
@@ -21215,7 +21191,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tss-react@npm:^4.9.10, tss-react@npm:^4.9.4, tss-react@npm:^4.9.5":
+"tss-react@npm:^4.9.10, tss-react@npm:^4.9.5":
   version: 4.9.10
   resolution: "tss-react@npm:4.9.10"
   dependencies:

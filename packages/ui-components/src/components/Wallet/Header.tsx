@@ -154,6 +154,7 @@ type Props = {
   isLoaded: boolean;
   isFetching?: boolean;
   onHeaderClick?: () => void;
+  onLogout?: () => void;
 };
 
 export const Header: React.FC<Props> = ({
@@ -167,6 +168,7 @@ export const Header: React.FC<Props> = ({
   isLoaded,
   isFetching,
   onHeaderClick,
+  onLogout,
 }) => {
   const {classes, cx} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
@@ -229,7 +231,12 @@ export const Header: React.FC<Props> = ({
     enqueueSnackbar(t('manage.updatedDomainSuccess'), {variant: 'success'});
   };
 
-  const handleReload = () => {
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+      return;
+    }
+
     window.location.href = `${
       config.UD_ME_BASE_URL
     }/wallet?${QueryString.stringify(
@@ -364,7 +371,7 @@ export const Header: React.FC<Props> = ({
           onDomainsClicked={isDomains ? handleDomainsClick : undefined}
           onSupportClicked={handleSupportClick}
           onRecoveryLinkClicked={handleRecoveryKitClicked}
-          onReload={handleReload}
+          onLogout={handleLogout}
         />
       )}
       {isDomainListModalOpen && (

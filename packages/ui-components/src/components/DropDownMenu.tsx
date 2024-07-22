@@ -25,7 +25,7 @@ interface Props {
   onWalletClicked?: () => void;
   onRecoveryLinkClicked?: () => void;
   onSupportClicked?: () => void;
-  onReload?: () => void;
+  onLogout?: () => void;
   marginTop?: number;
 }
 
@@ -64,7 +64,7 @@ const DropDownMenu: React.FC<Props> = ({
   onWalletClicked,
   onRecoveryLinkClicked,
   onSupportClicked,
-  onReload,
+  onLogout,
 }) => {
   const [isLoggingOut, setLoggingOut] = useState<boolean>(false);
   const [t] = useTranslationContext();
@@ -88,15 +88,16 @@ const DropDownMenu: React.FC<Props> = ({
 
   const handleManageProfileClick = (href: string) => {
     if (!isLoggingOut) {
-      window.location.href = href;
+      window.open(href);
     }
   };
+
   const handleLogout = () => {
     setLoggingOut(prev => !prev);
     localStorage.clear();
     sessionStorage.clear();
-    if (onReload) {
-      onReload();
+    if (onLogout) {
+      onLogout();
     } else {
       window.location.reload();
     }

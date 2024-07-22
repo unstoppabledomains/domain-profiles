@@ -47,16 +47,17 @@ const NextComposed = React.forwardRef(function NextComposed(
 ) {
   const {as, href, prefetch = false, children, locale, ...other} = props; // prefetch is set to false intentionally to avoid sending an additional chunk request on page load
   return (
-    <NextLink
+    (<NextLink
       href={sanitizeUrl(href)}
       prefetch={prefetch}
       as={as}
       locale={locale}
-    >
-      <a ref={ref} {...other}>
-        {children}
-      </a>
-    </NextLink>
+      ref={ref}
+      {...other}>
+
+      {children}
+
+    </NextLink>)
   );
 });
 

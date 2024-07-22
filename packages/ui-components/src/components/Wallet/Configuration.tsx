@@ -140,6 +140,7 @@ export const Configuration: React.FC<
     isHeaderClicked: boolean;
     setIsHeaderClicked?: (v: boolean) => void;
     setAuthAddress?: (v: string) => void;
+    disableInlineEducation?: boolean;
   }
 > = ({
   onUpdate,
@@ -152,6 +153,7 @@ export const Configuration: React.FC<
   mode = 'basic',
   emailAddress: initialEmailAddress,
   recoveryToken,
+  disableInlineEducation,
 }) => {
   // component state variables
   const router = useRouter();
@@ -286,6 +288,7 @@ export const Configuration: React.FC<
           </>
         ) : (
           !errorMessage &&
+          !disableInlineEducation &&
           configState === WalletConfigState.OtpEntry && (
             <Box
               display="flex"

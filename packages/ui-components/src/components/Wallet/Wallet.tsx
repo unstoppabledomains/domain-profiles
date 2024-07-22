@@ -24,6 +24,7 @@ export const Wallet: React.FC<
     recoveryToken?: string;
     showMessages?: boolean;
     mode?: WalletMode;
+    disableInlineEducation?: boolean;
     setAuthAddress?: (v: string) => void;
     onLogout?: () => void;
   }
@@ -35,6 +36,7 @@ export const Wallet: React.FC<
   recoveryToken,
   showMessages,
   mode = 'basic',
+  disableInlineEducation,
   onUpdate,
   onLogout,
   setAuthAddress,
@@ -86,6 +88,7 @@ export const Wallet: React.FC<
         isHeaderClicked={isHeaderClicked}
         setIsHeaderClicked={setIsHeaderClicked}
         setAuthAddress={setAuthAddress}
+        disableInlineEducation={disableInlineEducation}
       />
     </Box>
   );

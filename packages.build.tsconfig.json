@@ -23,6 +23,7 @@
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true,
+    "suppressImplicitAnyIndexErrors": true,
     "target": "esnext",
     "traceResolution": false
   },

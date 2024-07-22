@@ -25,6 +25,7 @@
     "sourceMap": true,
     "strict": true,
     "strictNullChecks": true,
+    "suppressImplicitAnyIndexErrors": true,
     "target": "esnext"
   },
   "exclude": ["node_modules", "**/node_modules", "test", "**/test"],

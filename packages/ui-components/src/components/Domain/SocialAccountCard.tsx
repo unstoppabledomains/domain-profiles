@@ -219,7 +219,7 @@ const useStyles = makeStyles<void, 'actionIcon'>()(
 );
 
 export type SocialAccountCardProps = {
-  socialInfo: SocialAccountUserInfo | null;
+  socialInfo?: SocialAccountUserInfo;
   handleClickToCopy: () => void;
   small?: boolean;
   monochrome?: boolean;

@@ -53,10 +53,10 @@ import type {
   DomainBadgesResponse,
   PersonaIdentity,
   SerializedCryptoWalletBadge,
-  SerializedDomainProfileSocialAccountsUserInfo,
   SerializedPublicDomainProfileData,
   SerializedRecommendation,
   SerializedWalletBalance,
+  SocialAccountUserInfo,
 } from '@unstoppabledomains/ui-components';
 import {
   AccountButton,
@@ -114,6 +114,7 @@ import {
   getDomainConnections,
   getOwnerDomains,
 } from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
+import {SerializedPartialDomainProfileSocialAccountsUserInfo} from '@unstoppabledomains/ui-components/src/lib';
 import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
 import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
@@ -196,16 +197,20 @@ const DomainProfile = ({
   const {data: ensDomainStatus} = useEnsDomainStatus(domain, isEnsDomain);
 
   // format social platform data
-  const socialsInfo: SerializedDomainProfileSocialAccountsUserInfo = {};
-  const allSocials = profileData?.socialAccounts
-    ? Object.keys(profileData.socialAccounts)
-    : [];
-  const verifiedSocials = allSocials.filter(socialType =>
-    Boolean(
-      (profileData?.socialAccounts &&
-        profileData?.socialAccounts[socialType]?.verified) ||
-        true,
-    ),
+  const socialsInfo =
+    {} as SerializedPartialDomainProfileSocialAccountsUserInfo;
+  const allSocials = (
+    profileData?.socialAccounts ? Object.keys(profileData.socialAccounts) : []
+  ) as (keyof SerializedPartialDomainProfileSocialAccountsUserInfo)[];
+  type ExcludesFalse = <T>(x: T | false) => x is T;
+
+  const verifiedSocials = allSocials.filter(
+    socialType =>
+      Boolean(
+        (profileData?.socialAccounts &&
+          profileData?.socialAccounts[socialType]?.verified) ||
+          true,
+      ) as any as ExcludesFalse,
   );
   verifiedSocials.forEach(socialType => {
     const socialUser =
@@ -1250,7 +1255,9 @@ const DomainProfile = ({
                           return (
                             <Box mr={1} key={account}>
                               <SocialAccountCard
-                                socialInfo={socialsInfo[account]}
+                                socialInfo={
+                                  socialsInfo[account] as SocialAccountUserInfo
+                                }
                                 handleClickToCopy={handleClickToCopy}
                                 verified={
                                   profileData!.socialAccounts![account].verified

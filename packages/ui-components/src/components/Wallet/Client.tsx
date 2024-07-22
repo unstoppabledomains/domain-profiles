@@ -46,127 +46,129 @@ import {TokensPortfolio} from './TokensPortfolio';
 
 const bgNeutralShade = 800;
 
-const useStyles = makeStyles()((theme: Theme) => ({
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-    height: `${MIN_CLIENT_HEIGHT}px`,
-  },
-  walletContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    width: '375px',
-    [theme.breakpoints.down('sm')]: {
-      width: '330px',
+const useStyles = makeStyles<{isMobile: boolean}>()(
+  (theme: Theme, {isMobile}) => ({
+    container: {
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      height: `${getMinClientHeight(isMobile)}px`,
     },
-    height: '100%',
-  },
-  mainActionsContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    marginTop: theme.spacing(3),
-    marginBottom: theme.spacing(2),
-  },
-  balanceContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-  },
-  actionContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.palette.primaryShades[100],
-    padding: theme.spacing(1),
-    borderRadius: theme.shape.borderRadius,
-    marginRight: theme.spacing(2),
-    width: '100px',
-    cursor: 'pointer',
-    [theme.breakpoints.down('sm')]: {
-      width: '70px',
+    walletContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      width: '375px',
+      [theme.breakpoints.down('sm')]: {
+        width: '330px',
+      },
+      height: '100%',
     },
-  },
-  domainListContainer: {
-    color: theme.palette.primaryShades[bgNeutralShade - 600],
-    display: 'flex',
-    backgroundImage: `linear-gradient(${
-      theme.palette.primaryShades[bgNeutralShade - 200]
-    }, ${theme.palette.primaryShades[bgNeutralShade]})`,
-    borderRadius: theme.shape.borderRadius,
-    border: `1px solid ${theme.palette.primaryShades[bgNeutralShade - 600]}`,
-    padding: theme.spacing(2),
-    height: `${WALLET_CARD_HEIGHT + 2}px`,
-    marginBottom: theme.spacing(2),
-    marginTop: '15px',
-  },
-  domainRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    textDecoration: 'none !important',
-    alignItems: 'center',
-    cursor: 'pointer',
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(1),
-    color: theme.palette.white,
-    '&:visited': {
+    mainActionsContainer: {
+      display: 'flex',
+      justifyContent: 'center',
+      marginTop: theme.spacing(3),
+      marginBottom: theme.spacing(2),
+    },
+    balanceContainer: {
+      display: 'flex',
+      justifyContent: 'center',
+    },
+    actionContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.palette.primaryShades[100],
+      padding: theme.spacing(1),
+      borderRadius: theme.shape.borderRadius,
+      marginRight: theme.spacing(2),
+      width: '100px',
+      cursor: 'pointer',
+      [theme.breakpoints.down('sm')]: {
+        width: '70px',
+      },
+    },
+    domainListContainer: {
+      color: theme.palette.primaryShades[bgNeutralShade - 600],
+      display: 'flex',
+      backgroundImage: `linear-gradient(${
+        theme.palette.primaryShades[bgNeutralShade - 200]
+      }, ${theme.palette.primaryShades[bgNeutralShade]})`,
+      borderRadius: theme.shape.borderRadius,
+      border: `1px solid ${theme.palette.primaryShades[bgNeutralShade - 600]}`,
+      padding: theme.spacing(2),
+      height: `${WALLET_CARD_HEIGHT + 2}px`,
+      marginBottom: theme.spacing(2),
+      marginTop: '15px',
+    },
+    domainRow: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      textDecoration: 'none !important',
+      alignItems: 'center',
+      cursor: 'pointer',
+      paddingTop: theme.spacing(1),
+      paddingBottom: theme.spacing(1),
       color: theme.palette.white,
-    },
-    '&:hover': {
-      '& p': {
+      '&:visited': {
         color: theme.palette.white,
       },
-      '& svg': {
-        color: theme.palette.white,
+      '&:hover': {
+        '& p': {
+          color: theme.palette.white,
+        },
+        '& svg': {
+          color: theme.palette.white,
+        },
       },
     },
-  },
-  panelContainer: {
-    display: 'flex',
-    width: '100%',
-    height: '100%',
-  },
-  portfolioContainer: {
-    display: 'flex',
-    marginTop: theme.spacing(-2),
-    marginBottom: theme.spacing(-2),
-    width: '100%',
-  },
-  actionIcon: {
-    color: theme.palette.primary.main,
-    width: '50px',
-    height: '50px',
-    [theme.breakpoints.down('sm')]: {
-      width: '35px',
-      height: '35px',
+    panelContainer: {
+      display: 'flex',
+      width: '100%',
+      height: '100%',
     },
-  },
-  actionText: {
-    color: theme.palette.primary.main,
-  },
-  tabList: {
-    marginTop: theme.spacing(-3),
-    marginRight: theme.spacing(-4),
-    [theme.breakpoints.down('sm')]: {
-      marginLeft: theme.spacing(-1),
-      marginRight: theme.spacing(-5),
+    portfolioContainer: {
+      display: 'flex',
+      marginTop: theme.spacing(-2),
+      marginBottom: theme.spacing(-2),
+      width: '100%',
     },
-  },
-  tabContentItem: {
-    marginLeft: theme.spacing(-3),
-    marginRight: theme.spacing(-3),
-    [theme.breakpoints.down('sm')]: {
-      marginLeft: theme.spacing(-4),
+    actionIcon: {
+      color: theme.palette.primary.main,
+      width: '50px',
+      height: '50px',
+      [theme.breakpoints.down('sm')]: {
+        width: '35px',
+        height: '35px',
+      },
+    },
+    actionText: {
+      color: theme.palette.primary.main,
+    },
+    tabList: {
+      marginTop: theme.spacing(-3),
       marginRight: theme.spacing(-4),
+      [theme.breakpoints.down('sm')]: {
+        marginLeft: theme.spacing(-1),
+        marginRight: theme.spacing(-5),
+      },
     },
-  },
-  footer: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    justifyContent: 'space-between',
-  },
-}));
+    tabContentItem: {
+      marginLeft: theme.spacing(-3),
+      marginRight: theme.spacing(-3),
+      [theme.breakpoints.down('sm')]: {
+        marginLeft: theme.spacing(-4),
+        marginRight: theme.spacing(-4),
+      },
+    },
+    footer: {
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      justifyContent: 'space-between',
+    },
+  }),
+);
 
 export const Client: React.FC<ClientProps> = ({
   accessToken,
@@ -175,7 +177,12 @@ export const Client: React.FC<ClientProps> = ({
   setIsHeaderClicked,
   isHeaderClicked,
 }) => {
-  const {classes} = useStyles();
+  // mobile behavior flag
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  // style and translation
+  const {classes} = useStyles({isMobile});
   const [t] = useTranslationContext();
   const {enqueueSnackbar} = useSnackbar();
 
@@ -199,10 +206,6 @@ export const Client: React.FC<ClientProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [retrievedAll, setRetrievedAll] = useState(false);
   const [domainToManage, setDomainToManage] = useState<string>();
-
-  // mobile behavior flag
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // owner address
   const address = wallets.find(w => isEthAddress(w.address))?.address;
@@ -536,4 +539,6 @@ export enum ClientTabType {
   Transactions = 'txns',
 }
 
-export const MIN_CLIENT_HEIGHT = 550;
+export const getMinClientHeight = (isMobile: boolean) => {
+  return isMobile ? 515 : 550;
+};

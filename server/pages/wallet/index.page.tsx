@@ -15,17 +15,15 @@ import type {DomainProfileTabType} from '@unstoppabledomains/ui-components';
 import {
   DomainProfileKeys,
   Wallet,
+  getAddressMetadata,
+  getBootstrapState,
   getSeoTags,
+  isEthAddress,
   useFireblocksState,
   useTranslationContext,
 } from '@unstoppabledomains/ui-components';
-import {
-  getAddressMetadata,
-  isEthAddress,
-} from '@unstoppabledomains/ui-components/src/components/Chat/protocol/resolution';
 import InlineEducation from '@unstoppabledomains/ui-components/src/components/Wallet/InlineEducation';
 import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
-import {getBootstrapState} from '@unstoppabledomains/ui-components/src/lib/fireBlocks/storage/state';
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableWalletIcon';
 

@@ -7,4 +7,5 @@ export * from './resolution';
 export * from './seo';
 export * from './types';
 export * from './wallet';
+export * from './fireBlocks';
 export {default as useTranslationContext} from './i18n';

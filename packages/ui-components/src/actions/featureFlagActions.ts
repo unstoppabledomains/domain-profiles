@@ -47,10 +47,10 @@ export const useFeatureFlags = (
   domainName: string = '',
 ) => {
   // retrieve domain name from path if possible
-  const {query: params} = useRouter();
+  const router = useRouter();
   const fallbackDomainName =
-    params.domain && typeof params.domain === 'string'
-      ? params.domain
+    router?.query?.domain && typeof router.query.domain === 'string'
+      ? router.query.domain
       : undefined;
   const domain = domainName || fallbackDomainName;
 

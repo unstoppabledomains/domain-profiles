@@ -10,6 +10,8 @@ import FormGroup from '@mui/material/FormGroup';
 import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import Bluebird from 'bluebird';
 import Markdown from 'markdown-to-jsx';
 import {useRouter} from 'next/router';
@@ -49,7 +51,7 @@ import {
 import {DomainProfileTabType} from '../Manage/DomainProfile';
 import ManageInput from '../Manage/common/ManageInput';
 import type {ManageTabProps} from '../Manage/common/types';
-import {Client, MIN_CLIENT_HEIGHT} from './Client';
+import {Client, getMinClientHeight} from './Client';
 import InlineEducation from './InlineEducation';
 import {OperationStatus} from './OperationStatus';
 import type {WalletMode} from './index';
@@ -73,13 +75,14 @@ const isValidWalletPasswordFormat = (password: string): boolean => {
 const useStyles = makeStyles<{
   configState: WalletConfigState;
   mode: WalletMode;
-}>()((theme: Theme, {configState, mode}) => ({
+  isMobile: boolean;
+}>()((theme: Theme, {configState, mode, isMobile}) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
     minHeight:
       configState === WalletConfigState.Complete && mode === 'portfolio'
-        ? `${MIN_CLIENT_HEIGHT}px`
+        ? `${getMinClientHeight(isMobile)}px`
         : undefined,
   },
   loadingContainer: {
@@ -87,7 +90,7 @@ const useStyles = makeStyles<{
     justifyContent: 'center',
     height:
       configState === WalletConfigState.Complete && mode === 'portfolio'
-        ? `${MIN_CLIENT_HEIGHT - 125}px`
+        ? `${getMinClientHeight(isMobile) - 125}px`
         : undefined,
     alignItems: 'center',
   },
@@ -145,7 +148,9 @@ export const Configuration: React.FC<
   recoveryToken,
 }) => {
   // component state variables
-  const {query: params} = useRouter();
+  const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -171,7 +176,7 @@ export const Configuration: React.FC<
   const [mpcWallets, setMpcWallets] = useState<SerializedWalletBalance[]>([]);
 
   // style and translation
-  const {classes} = useStyles({configState, mode});
+  const {classes} = useStyles({configState, mode, isMobile});
   const [t] = useTranslationContext();
 
   useEffect(() => {
@@ -181,11 +186,18 @@ export const Configuration: React.FC<
   }, []);
 
   useEffect(() => {
-    // select email address if specified in parameter
-    if (params[EMAIL_PARAM] && typeof params[EMAIL_PARAM] === 'string') {
-      setEmailAddress(params[EMAIL_PARAM]);
+    if (!router?.query) {
+      return;
     }
-  }, [params]);
+
+    // select email address if specified in parameter
+    if (
+      router.query[EMAIL_PARAM] &&
+      typeof router.query[EMAIL_PARAM] === 'string'
+    ) {
+      setEmailAddress(router.query[EMAIL_PARAM]);
+    }
+  }, [router?.query]);
 
   useEffect(() => {
     if (configState === WalletConfigState.Complete && accessToken) {

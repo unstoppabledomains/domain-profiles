@@ -49,6 +49,7 @@ import {
   saveBootstrapState,
 } from '../../lib/fireBlocks/storage/state';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
+import {isEthAddress} from '../Chat/protocol/resolution';
 import ManageInput from '../Manage/common/ManageInput';
 import {DomainProfileTabType} from '../Manage/common/types';
 import type {ManageTabProps} from '../Manage/common/types';
@@ -135,12 +136,14 @@ export const Configuration: React.FC<
     setIsFetching?: (v?: boolean) => void;
     isHeaderClicked: boolean;
     setIsHeaderClicked?: (v: boolean) => void;
+    setAuthAddress?: (v: string) => void;
   }
 > = ({
   onUpdate,
   onLoaded,
   setButtonComponent,
   setIsFetching,
+  setAuthAddress,
   isHeaderClicked,
   setIsHeaderClicked,
   mode = 'basic',
@@ -369,6 +372,14 @@ export const Configuration: React.FC<
       }),
     ]);
 
+    // set authenticated address if applicable
+    if (setAuthAddress && isLoaded) {
+      const accountAddress = accountAddresses.find(v => isEthAddress(v));
+      if (accountAddress) {
+        setAuthAddress(accountAddress);
+      }
+    }
+
     // set payment config status
     setPaymentConfigStatus(paymentConfig);
 
@@ -474,6 +485,11 @@ export const Configuration: React.FC<
     setEmailAddress(undefined);
     setRecoveryPhrase(undefined);
     setRecoveryPhraseConfirmation(undefined);
+
+    // clear authenticated address if necessary
+    if (setAuthAddress) {
+      setAuthAddress('');
+    }
 
     // clear all storage state
     saveState({});

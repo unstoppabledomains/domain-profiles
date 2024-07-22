@@ -211,6 +211,7 @@ const WalletPage = () => {
                   onUpdate={(_t: DomainProfileTabType) => {
                     handleAuthComplete();
                   }}
+                  setAuthAddress={setAuthAddress}
                   setButtonComponent={setAuthButton}
                 />
                 {!authAddress && (

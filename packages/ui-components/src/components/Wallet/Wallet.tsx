@@ -26,6 +26,7 @@ export const Wallet: React.FC<
     recoveryToken?: string;
     showMessages?: boolean;
     mode?: WalletMode;
+    setAuthAddress?: (v: string) => void;
   }
 > = ({
   emailAddress,
@@ -36,6 +37,7 @@ export const Wallet: React.FC<
   showMessages,
   mode = 'basic',
   onUpdate,
+  setAuthAddress,
   setButtonComponent,
 }) => {
   const {classes} = useStyles();
@@ -82,6 +84,7 @@ export const Wallet: React.FC<
         setIsFetching={setIsFetching}
         isHeaderClicked={isHeaderClicked}
         setIsHeaderClicked={setIsHeaderClicked}
+        setAuthAddress={setAuthAddress}
       />
     </Box>
   );

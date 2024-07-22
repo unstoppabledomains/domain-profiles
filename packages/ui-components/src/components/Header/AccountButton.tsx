@@ -91,12 +91,14 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
   domain,
   authAddress,
   authDomain,
+  setAuthAddress,
 }) => {
   const {classes, cx} = useStyles();
   const [isOwner, setIsOwner] = useState(false);
   const [isDropDownShown, setDropDownShown] = useState(false);
   const [authDomainAvatar, setAuthDomainAvatar] = useState<string>('');
   const [isMpcWalletOpen, setIsMpcWalletOpen] = useState(false);
+  const [buttonComponent, setButtonComponent] = useState<React.ReactNode>();
   const [domainProfileData, setDomainProfileData] =
     useState<SerializedPublicDomainProfileData>();
 
@@ -198,10 +200,14 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
               onUpdate={(_t: DomainProfileTabType) => {
                 return;
               }}
-              setButtonComponent={(_v: React.ReactElement) => {
-                return;
-              }}
+              setButtonComponent={setButtonComponent}
+              setAuthAddress={setAuthAddress}
             />
+            {!authAddress && (
+              <Box display="flex" flexDirection="column" width="100%" mt={2}>
+                {buttonComponent}
+              </Box>
+            )}
           </Box>
         </Modal>
       )}
@@ -214,4 +220,5 @@ export type AccountButtonProps = {
   domain: string;
   authAddress: string;
   authDomain: string;
+  setAuthAddress?: (v: string) => void;
 };

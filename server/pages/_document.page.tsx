@@ -20,6 +20,7 @@ export default function MyDocument(
   return (
     <Html>
       <Head>
+        <DocumentHeadTags {...props} />
         {/*
             Preconnect allows the browser to setup early connections before an HTTP request
             is actually sent to the server.
@@ -50,7 +51,6 @@ export default function MyDocument(
         <link rel="apple-touch-icon" href={appleTouchIcon} />
         <meta httpEquiv="Content-type" content="text/html" charSet="UTF-8" />
         <meta name="theme-color" content={theme.palette.common.white} />
-        <DocumentHeadTags {...props} />
       </Head>
       <body>
         <Main />

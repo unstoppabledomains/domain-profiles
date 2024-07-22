@@ -78,8 +78,16 @@ const useStyles = makeStyles()((theme: Theme) => ({
       -45deg,
       ${theme.palette.neutralShades[bgNeutralShade]},
       ${theme.palette.neutralShades[bgNeutralShade]} 5px,
-      ${theme.palette.neutralShades[bgNeutralShade - 100]} 5px,
-      ${theme.palette.neutralShades[bgNeutralShade - 100]} 6px
+      ${
+        theme.palette.neutralShades[
+          (bgNeutralShade - 100) as keyof typeof theme.palette.neutralShades
+        ]
+      } 5px,
+      ${
+        theme.palette.neutralShades[
+          (bgNeutralShade - 100) as keyof typeof theme.palette.neutralShades
+        ]
+      } 6px
     )`,
     border: `2px solid ${theme.palette.neutralShades[bgNeutralShade]}`,
     borderRadius: theme.shape.borderRadius,
@@ -99,7 +107,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   cardContainer: {
     position: 'relative',
     backgroundImage: `linear-gradient(${
-      theme.palette.neutralShades[bgNeutralShade - 200]
+      theme.palette.neutralShades[
+        (bgNeutralShade - 200) as keyof typeof theme.palette.neutralShades
+      ]
     }, ${theme.palette.neutralShades[bgNeutralShade]})`,
     height: '100%',
     minHeight: `${WALLET_CARD_HEIGHT}px`,
@@ -111,7 +121,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginBottom: theme.spacing(3),
   },
   detailsIcon: {
-    color: theme.palette.neutralShades[bgNeutralShade - 400],
+    color:
+      theme.palette.neutralShades[
+        (bgNeutralShade - 400) as keyof typeof theme.palette.neutralShades
+      ],
     width: '14px',
     height: '14px',
     marginRight: theme.spacing(0.5),
@@ -125,7 +138,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginTop: theme.spacing(1),
   },
   headerMenuIcon: {
-    color: theme.palette.neutralShades[bgNeutralShade - 400],
+    color:
+      theme.palette.neutralShades[
+        (bgNeutralShade - 400) as keyof typeof theme.palette.neutralShades
+      ],
   },
   menuContainer: {
     position: 'absolute',
@@ -141,7 +157,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'space-between',
   },
   subTitle: {
-    color: theme.palette.neutralShades[bgNeutralShade - 400],
+    color:
+      theme.palette.neutralShades[
+        (bgNeutralShade - 400) as keyof typeof theme.palette.neutralShades
+      ],
     whiteSpace: 'nowrap',
   },
   title: {

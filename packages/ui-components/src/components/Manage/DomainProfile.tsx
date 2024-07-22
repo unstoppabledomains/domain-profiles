@@ -53,6 +53,7 @@ import {Reverse as ReverseTab} from './Tabs/Reverse';
 import {TokenGallery as TokenGalleryTab} from './Tabs/TokenGallery';
 import {Transfer as TransferTab} from './Tabs/Transfer';
 import {Website as WebsiteTab} from './Tabs/Website';
+import {DomainProfileTabType} from './common/types';
 
 const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
   container: {
@@ -624,17 +625,3 @@ export type DomainProfileProps = {
     data?: SerializedUserDomainProfileData,
   ): void;
 };
-
-export enum DomainProfileTabType {
-  Badges = 'badges',
-  Crypto = 'crypto',
-  Email = 'email',
-  ListForSale = 'listForSale',
-  Profile = 'profile',
-  Reverse = 'reverse',
-  TokenGallery = 'tokenGallery',
-  Transfer = 'transfer',
-  Wallet = 'wallet',
-  Website = 'website',
-  DNSRecords = 'DNSRecords',
-}

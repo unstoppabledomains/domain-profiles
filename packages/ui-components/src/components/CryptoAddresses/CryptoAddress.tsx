@@ -10,6 +10,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
+import type {CSSObject} from 'tss-react';
 
 import config from '@unstoppabledomains/config';
 import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
@@ -24,7 +25,7 @@ import type {CurrenciesType} from '../../lib/types/blockchain';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import type {MulticoinVersions} from '../../lib/types/records';
 import {isEthAddress} from '../Chat/protocol/resolution';
-import {DomainProfileTabType} from '../Manage';
+import {DomainProfileTabType} from '../Manage/common/types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   root: {
@@ -69,7 +70,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   sendButton: {
     ...theme.typography.body1,
     fontWeight: theme.typography.fontWeightBold,
-  },
+  } as CSSObject, // Ensuring the type compatibility "typography.body1" from @mui with "CSSObject"
   chain: {
     textAlign: 'center',
     fontSize: theme.typography.caption.fontSize,

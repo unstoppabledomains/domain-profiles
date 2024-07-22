@@ -3,6 +3,7 @@ import MenuItem from '@mui/material/MenuItem';
 import type {Theme} from '@mui/material/styles';
 import type {ForwardedRef} from 'react';
 import React from 'react';
+import type {CSSObject} from 'tss-react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -24,7 +25,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'space-between',
     width: '100%',
     fontWeight: theme.typography.fontWeightMedium,
-  },
+  } as CSSObject, // Ensuring the type compatibility "typography.body2" from @mui with "CSSObject"
 }));
 
 type Props = {

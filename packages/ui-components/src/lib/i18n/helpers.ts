@@ -4,7 +4,7 @@ import type {DeepPartial} from '@unstoppabledomains/config';
 
 import localesConfig from '../../locales.json';
 import en_us from '../../locales/en.json';
-import type {AvailableLocales} from './types';
+import type {AvailableLocales, I18nInterpolations} from './types';
 import {DEFAULT_LOCALE} from './types';
 
 type LocaleTranslation = typeof en_us;
@@ -15,7 +15,7 @@ type LocalesLoaded = Record<
 
 export const i18nTranslate = (
   key: string,
-  interpolate = {},
+  interpolate: I18nInterpolations = {},
   locale: AvailableLocales = DEFAULT_LOCALE,
   isLowerCase?: boolean,
 ): string => {
@@ -57,7 +57,7 @@ export const i18nTranslate = (
 export const loadLocale = async (
   locale: AvailableLocales = DEFAULT_LOCALE,
 ): Promise<void> => {
-  const lowerCaseLocale = locale.toLowerCase();
+  const lowerCaseLocale = locale.toLowerCase() as AvailableLocales;
 
   // no need to import locale if it's already in memory
   if (localesLoaded[lowerCaseLocale]) {

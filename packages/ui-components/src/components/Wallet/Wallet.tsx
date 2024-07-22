@@ -5,8 +5,10 @@ import React, {useState} from 'react';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {isDomainValidForManagement} from '../../lib';
-import type {DomainProfileTabType} from '../Manage';
-import type {ManageTabProps} from '../Manage/common/types';
+import type {
+  DomainProfileTabType,
+  ManageTabProps,
+} from '../Manage/common/types';
 import {Configuration} from './Configuration';
 import {Header} from './Header';
 

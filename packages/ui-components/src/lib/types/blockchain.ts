@@ -379,14 +379,14 @@ export enum Mirror {
  * @versions array of versions, i.e. [{key: "crypto.MATIC.version.ERC20.address", version: "ERC20", value: "0x1238686868576575465464654"}]
  */
 export type MultiChainAddressRecord = {
-  currency: string;
+  currency: CurrenciesType;
   versions: MultiChainAddressVersion[];
 };
 
 export type MultiChainAddressVersion = DomainAddressRecord & {version: string};
 
 export type NewAddressRecord = {
-  currency: string;
+  currency: CurrenciesType;
   versions: {key: ResolverKeyName; deprecated: boolean}[];
 };
 
@@ -400,5 +400,5 @@ export enum Registry {
  * Single-chain address record
  */
 export type SingleChainAddressRecord = DomainAddressRecord & {
-  currency: string;
+  currency: CurrenciesType;
 };

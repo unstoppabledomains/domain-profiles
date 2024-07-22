@@ -90,13 +90,22 @@ const useStyles = makeStyles()((theme: Theme) => ({
     },
   },
   domainListContainer: {
-    color: theme.palette.primaryShades[bgNeutralShade - 600],
+    color:
+      theme.palette.primaryShades[
+        (bgNeutralShade - 600) as keyof typeof theme.palette.primaryShades
+      ],
     display: 'flex',
     backgroundImage: `linear-gradient(${
-      theme.palette.primaryShades[bgNeutralShade - 200]
+      theme.palette.primaryShades[
+        (bgNeutralShade - 200) as keyof typeof theme.palette.primaryShades
+      ]
     }, ${theme.palette.primaryShades[bgNeutralShade]})`,
     borderRadius: theme.shape.borderRadius,
-    border: `1px solid ${theme.palette.primaryShades[bgNeutralShade - 600]}`,
+    border: `1px solid ${
+      theme.palette.primaryShades[
+        (bgNeutralShade - 600) as keyof typeof theme.palette.primaryShades
+      ]
+    }`,
     padding: theme.spacing(2),
     height: `${WALLET_CARD_HEIGHT + 2}px`,
     marginBottom: theme.spacing(2),

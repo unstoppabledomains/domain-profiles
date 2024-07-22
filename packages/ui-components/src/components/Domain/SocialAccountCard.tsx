@@ -112,6 +112,9 @@ const useStyles = makeStyles<void, 'actionIcon'>()(
     discordIcon: {
       color: '#5865F2',
     },
+    githubIcon: {},
+    linkedinIcon: {},
+    farcasterIcon: {},
     lensIcon: {
       backgroundColor: '#282e29',
       borderRadius: '50%',
@@ -235,8 +238,12 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
 
+  if (!socialInfo) {
+    return null;
+  }
+
   const extractUserInfo = () => {
-    switch (socialInfo?.kind) {
+    switch (socialInfo.kind) {
       case DomainProfileSocialMedia.Twitter: {
         return {
           Icon: TwitterIcon,
@@ -344,7 +351,7 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
           className={i === 0 ? classes.tooltipTitle : classes.tooltipData}
           variant="caption"
         >
-          {socialInfo?.kind ? `${capitalize(socialInfo.kind)}: ` : ''}
+          {socialInfo.kind ? `${capitalize(socialInfo.kind)}: ` : ''}
           {v}
         </Typography>
       </div>
@@ -383,11 +390,11 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
               }
             >
               <userInfo.Icon
-                titleAccess={`${socialInfo?.kind} logo`}
+                titleAccess={`${socialInfo.kind} logo`}
                 classes={{
                   root: cx(
                     classes.socialIcon,
-                    classes[`${socialInfo?.kind}Icon`],
+                    classes[`${socialInfo.kind}Icon`],
                     monochrome ? classes.monochromeIcon : undefined,
                   ),
                 }}
@@ -419,11 +426,11 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
             )}
             <div className={classes.accountIconContainer}>
               <userInfo.Icon
-                titleAccess={`${socialInfo?.kind} logo`}
+                titleAccess={`${socialInfo.kind} logo`}
                 classes={{
                   root: cx(
                     classes.socialIcon,
-                    classes[`${socialInfo?.kind}Icon`],
+                    classes[`${socialInfo.kind}Icon`],
                   ),
                 }}
               />

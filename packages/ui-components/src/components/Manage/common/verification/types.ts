@@ -1,3 +1,5 @@
+import type config from '@unstoppabledomains/config';
+
 import type {Web3Dependencies} from '../../../../lib';
 import type {ResolverKeyName} from '../../../../lib/types/resolverKeys';
 
@@ -23,7 +25,8 @@ export const getBlockchainName = (symbol: string): string => {
   }
 };
 
-export const getBlockchainSymbol = (name: string): string => {
+type BLOCKCHAIN = keyof typeof config.BLOCKCHAINS;
+export const getBlockchainSymbol = (name: string): BLOCKCHAIN => {
   switch (name.toUpperCase()) {
     case 'ETHEREUM':
     case 'ETH':
@@ -40,7 +43,7 @@ export const getBlockchainSymbol = (name: string): string => {
     case 'SOL':
       return 'SOL';
     default:
-      return name.toUpperCase();
+      throw new Error(`Unknown blockchain name: ${name}`);
   }
 };
 

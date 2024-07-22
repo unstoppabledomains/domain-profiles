@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 
-import {DomainProfileTabType} from '../components';
+import {DomainProfileTabType} from '../components/Manage/common/types';
 import {AccessWalletModal} from '../components/Wallet/AccessWallet';
 import {useWeb3Context} from '../hooks';
 

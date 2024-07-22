@@ -14,8 +14,8 @@ import {useWeb3Context} from '../../../hooks';
 import type {NftResponse} from '../../../lib';
 import {useTranslationContext} from '../../../lib';
 import {Manager} from '../../TokenGallery/NftGalleryManager';
-import {DomainProfileTabType} from '../DomainProfile';
 import {TabHeader} from '../common/TabHeader';
+import {DomainProfileTabType} from '../common/types';
 import type {ManageTabProps} from '../common/types';
 
 const useStyles = makeStyles()((theme: Theme) => ({

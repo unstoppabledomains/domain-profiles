@@ -201,11 +201,17 @@ const Token: React.FC<Props> = ({
                     backgroundColor:
                       (token.pctChange || 0) > 0
                         ? theme.palette.success.main
-                        : theme.palette.neutralShades[bgNeutralShade - 400],
+                        : theme.palette.neutralShades[
+                            (bgNeutralShade -
+                              400) as keyof typeof theme.palette.neutralShades
+                          ],
                     borderColor:
                       (token.pctChange || 0) > 0
                         ? theme.palette.success.main
-                        : theme.palette.neutralShades[bgNeutralShade - 400],
+                        : theme.palette.neutralShades[
+                            (bgNeutralShade -
+                              400) as keyof typeof theme.palette.neutralShades
+                          ],
                     fill: false,
                   },
                 ],

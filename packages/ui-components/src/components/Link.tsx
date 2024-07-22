@@ -3,23 +3,30 @@ import MaterialLink from '@mui/material/Link';
 import type {Theme} from '@mui/material/styles';
 import NextLink from 'next/link';
 import React from 'react';
+import type {CSSObject} from 'tss-react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-const useStyles = makeStyles()((theme: Theme) => ({
-  link: {
-    ...theme.typography.body1,
-    color: theme.palette.primary.main,
-    fontWeight: theme.typography.fontWeightMedium,
-    textDecoration: 'none',
-    '&:hover': {
-      textDecoration: 'underline',
+const useStyles = makeStyles()((theme: Theme) => {
+  // Destructuring and omitting the problematic properties
+  const {'@font-face': fontFace, ...body1} = theme.typography.body1;
+
+  return {
+    link: {
+      ...body1,
+      fontFace,
+      color: theme.palette.primary.main,
+      fontWeight: theme.typography.fontWeightMedium,
+      textDecoration: 'none',
+      '&:hover': {
+        textDecoration: 'underline',
+      },
+    } as CSSObject, // Ensuring the type compatibility "typography.body1" from @mui with "CSSObject"
+    inherit: {
+      fontSize: 'inherit',
     },
-  },
-  inherit: {
-    fontSize: 'inherit',
-  },
-}));
+  };
+});
 
 interface NextProps {
   as?: string;

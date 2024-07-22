@@ -14,7 +14,10 @@ import type {
   Web3Dependencies,
 } from '../../../lib';
 import {CurrencyToName, useTranslationContext} from '../../../lib';
-import type {ResolverKeyName} from '../../../lib/types/resolverKeys';
+import type {
+  MultichainKeyToLocaleKeyKeys,
+  ResolverKeyName,
+} from '../../../lib/types/resolverKeys';
 import {MultichainKeyToLocaleKey} from '../../../lib/types/resolverKeys';
 import {CryptoIcon} from '../../Image';
 import {useStyles} from './CurrencyInput';
@@ -85,7 +88,8 @@ const MultiChainInput: React.FC<Props> = ({
                 />
               </div>
               <span className={classes.currency}>
-                {CurrencyToName[currency] || currency}
+                {(CurrencyToName as Record<CurrenciesType, string>)[currency] ||
+                  currency}
               </span>
             </div>
 
@@ -126,11 +130,14 @@ const MultiChainInput: React.FC<Props> = ({
                   }
                 };
 
+                const _key = key as MultichainKeyToLocaleKeyKeys;
                 const placeholder = t('manage.enterYourAddress', {
                   currency:
-                    (MultichainKeyToLocaleKey[key] &&
-                      t(MultichainKeyToLocaleKey[key])) ||
-                    CurrencyToName[currency] ||
+                    (MultichainKeyToLocaleKey[_key] &&
+                      t(MultichainKeyToLocaleKey[_key])) ||
+                    (CurrencyToName as Record<CurrenciesType, string>)[
+                      currency
+                    ] ||
                     currency,
                 });
 

@@ -14,7 +14,10 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getProfileUserData, setProfileUserData} from '../../../actions';
 import {useWeb3Context} from '../../../hooks';
-import type {SerializedUserDomainProfileData} from '../../../lib';
+import type {
+  SerializedDomainProfileAttributes,
+  SerializedUserDomainProfileData,
+} from '../../../lib';
 import {
   DomainFieldTypes,
   isEmailValid,
@@ -23,6 +26,7 @@ import {
 import {notifyEvent} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import BulkUpdateLoadingButton from '../common/BulkUpdateLoadingButton';
+import type {ManageInputOnChange} from '../common/ManageInput';
 import ManageInput from '../common/ManageInput';
 import {TabHeader} from '../common/TabHeader';
 import type {ManageTabProps} from '../common/types';
@@ -165,7 +169,10 @@ export const Email: React.FC<ManageTabProps> = ({
     }
   };
 
-  const handleInputChange = (id: string, value: string) => {
+  const handleInputChange = <T extends keyof SerializedDomainProfileAttributes>(
+    id: T,
+    value: SerializedDomainProfileAttributes[T],
+  ) => {
     if (!dirtyFlag) {
       setDirtyFlag(true);
     }
@@ -186,7 +193,7 @@ export const Email: React.FC<ManageTabProps> = ({
     });
 
     if (id === 'privateEmail') {
-      setIsInvalidEmail(!isEmailValid(value));
+      setIsInvalidEmail(!isEmailValid(String(value)));
     }
   };
 
@@ -223,7 +230,7 @@ export const Email: React.FC<ManageTabProps> = ({
             value={userProfile?.profile?.privateEmail}
             label={t('manage.privateEmail')}
             placeholder={t('manage.enterPrivateEmail')}
-            onChange={handleInputChange}
+            onChange={handleInputChange as ManageInputOnChange}
             disableTextTrimming
             error={isInvalidEmail}
             errorText={t('manage.enterValidEmail', {

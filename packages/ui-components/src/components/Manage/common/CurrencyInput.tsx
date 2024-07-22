@@ -23,7 +23,7 @@ import {isTokenDeprecated, isValidRecordKeyValue} from './currencyRecords';
 import VerifyAdornment from './verification/VerifyAdornment';
 
 export interface Props {
-  currency: string;
+  currency: CurrenciesType;
   domain: string;
   ownerAddress: string;
   onChange: (key: ResolverKeyName, value: string) => void;
@@ -238,11 +238,12 @@ const CurrencyInput: React.FC<Props> = ({
   const {classes} = useStyles();
   const [address, setAddress] = useState(value);
   const [isError, setIsError] = useState(false);
-  const initial = Boolean(AllInitialCurrenciesEnum[currency]);
+  const initial = currency in AllInitialCurrenciesEnum;
   const {unsResolverKeys, ensResolverKeys} = useResolverKeys();
   const resolverKeys = unsResolverKeys;
   const isDeprecated = isTokenDeprecated(recordKey, resolverKeys);
-  const currencyName = CurrencyToName[currency] || currency;
+  const currencyName =
+    (CurrencyToName as Record<CurrenciesType, string>)[currency] || currency;
   const placeholder = t('manage.enterYourAddress', {currency: currencyName});
 
   const handleChange = (_key: string, newValue: string) => {

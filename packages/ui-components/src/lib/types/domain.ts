@@ -238,39 +238,32 @@ export type SerializedDomainMarket = {
   secondary?: SerializedSecondarySale[];
 };
 
-export type SerializedDomainProfileAttributes = {
-  // profile fields
-  displayName?: string;
-  description?: string;
-  location?: string;
-  imagePath?: string;
-  imageType?: 'default' | 'onChain' | 'offChain';
-  coverPath?: string;
-  web2Url?: string;
-  publicDomainSellerEmail?: string;
-  phoneNumber?: string;
-  domainPurchased?: boolean;
-  collectibleImage?: string;
-  privateEmail?: string;
+export type SerializedDomainProfileAttributes =
+  Partial<DomainProfileVisibilityValues> & {
+    // profile fields
+    displayName?: string;
+    description?: string;
+    location?: string;
+    imagePath?: string;
+    imageType?: 'default' | 'onChain' | 'offChain';
+    coverPath?: string;
+    web2Url?: string;
+    publicDomainSellerEmail?: string;
+    phoneNumber?: string;
+    domainPurchased?: boolean;
+    collectibleImage?: string;
+    privateEmail?: string;
 
-  // public toggles
-  displayNamePublic?: boolean;
-  descriptionPublic?: boolean;
-  locationPublic?: boolean;
-  imagePathPublic?: boolean;
-  coverPathPublic?: boolean;
-  web2UrlPublic?: boolean;
+    // visibility toggles
+    emailOnPublicDomainProfile?: boolean;
+    tokenGalleryEnabled?: boolean;
+    showDomainSuggestion?: boolean;
+    showFeaturedCommunity?: boolean;
+    showFeaturedPartner?: boolean;
 
-  // visibility toggles
-  emailOnPublicDomainProfile?: boolean;
-  tokenGalleryEnabled?: boolean;
-  showDomainSuggestion?: boolean;
-  showFeaturedCommunity?: boolean;
-  showFeaturedPartner?: boolean;
-
-  // UD blue status
-  udBlue?: boolean;
-};
+    // UD blue status
+    udBlue?: boolean;
+  };
 
 export type SerializedDomainProfileSocialAccountsUserInfo = {
   [DomainProfileSocialMedia.Twitter]?: TwitterUserInfo;

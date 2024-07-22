@@ -8,8 +8,8 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {getProfileData, getProfileReverseResolution} from '../../actions';
 import type {SerializedUserDomainProfileData} from '../../lib';
 import {DomainFieldTypes} from '../../lib';
-import type {DomainProfileTabType} from './DomainProfile';
 import {DomainProfile} from './DomainProfile';
+import type {DomainProfileTabType} from './common/types';
 
 const MODAL_WIDTH = '750px';
 

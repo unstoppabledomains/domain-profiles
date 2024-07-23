@@ -6,9 +6,6 @@ const contentSecurityPolicy = require('./contentSecurityPolicy');
 const TerserPlugin = require('terser-webpack-plugin');
 const locales = require('./locales.json');
 
-// transpile any required modules
-const withNtm = require('next-transpile-modules')([]);
-
 /**
  * By default, NextJS returns Cache-Control headers for immutable assets, telling Fastly to cache the response
  * https://nextjs.org/docs/going-to-production#caching
@@ -73,7 +70,6 @@ const nextConfig = {
   productionBrowserSourceMaps: true,
   experimental: {
     externalDir: true,
-    forceSwcTransforms: true,
   },
   typescript: {
     ignoreBuildErrors: true,
@@ -202,4 +198,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withNtm(nextConfig);
+module.exports = nextConfig;

@@ -75,7 +75,11 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
       palletteShade[bgNeutralShade]
     })`,
     borderRadius: theme.shape.borderRadius,
-    border: `1px solid ${palletteShade[bgNeutralShade - 600]}`,
+    border: `1px solid ${
+      palletteShade[
+        (bgNeutralShade - 600) as keyof typeof theme.palette.neutralShades
+      ]
+    }`,
     padding: theme.spacing(2),
     ['::-webkit-scrollbar']: {
       display: 'none',
@@ -89,7 +93,10 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
     alignItems: 'center',
     textAlign: 'center',
     justifyContent: 'center',
-    color: theme.palette.neutralShades[bgNeutralShade - 400],
+    color:
+      theme.palette.neutralShades[
+        (bgNeutralShade - 400) as keyof typeof theme.palette.neutralShades
+      ],
     marginBottom: theme.spacing(1),
   },
   loadingSpinner: {
@@ -101,7 +108,10 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
   },
   noActivity: {
     marginTop: theme.spacing(2),
-    color: theme.palette.neutralShades[bgNeutralShade - 600],
+    color:
+      theme.palette.neutralShades[
+        (bgNeutralShade - 600) as keyof typeof theme.palette.neutralShades
+      ],
   },
   txContainer: {
     display: 'flex',
@@ -121,7 +131,10 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
     cursor: 'pointer',
   },
   txSubTitle: {
-    color: theme.palette.neutralShades[bgNeutralShade - 600],
+    color:
+      theme.palette.neutralShades[
+        (bgNeutralShade - 600) as keyof typeof theme.palette.neutralShades
+      ],
   },
   txReceived: {
     fontWeight: 'bold',
@@ -132,10 +145,16 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
     color: theme.palette.white,
   },
   txFee: {
-    color: theme.palette.neutralShades[bgNeutralShade - 400],
+    color:
+      theme.palette.neutralShades[
+        (bgNeutralShade - 400) as keyof typeof theme.palette.neutralShades
+      ],
   },
   txTime: {
-    color: theme.palette.neutralShades[bgNeutralShade - 400],
+    color:
+      theme.palette.neutralShades[
+        (bgNeutralShade - 400) as keyof typeof theme.palette.neutralShades
+      ],
     marginBottom: theme.spacing(1),
   },
   txLink: {

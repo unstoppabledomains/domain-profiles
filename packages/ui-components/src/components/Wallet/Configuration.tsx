@@ -50,8 +50,8 @@ import {
 } from '../../lib/fireBlocks/storage/state';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {isEthAddress} from '../Chat/protocol/resolution';
-import {DomainProfileTabType} from '../Manage/DomainProfile';
 import ManageInput from '../Manage/common/ManageInput';
+import {DomainProfileTabType} from '../Manage/common/types';
 import type {ManageTabProps} from '../Manage/common/types';
 import {Client, MIN_CLIENT_HEIGHT} from './Client';
 import InlineEducation from './InlineEducation';

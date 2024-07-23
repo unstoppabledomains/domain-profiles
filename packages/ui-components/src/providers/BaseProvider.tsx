@@ -4,7 +4,6 @@ import {ThemeProvider} from '@mui/material/styles';
 import {SnackbarProvider} from 'notistack';
 import React from 'react';
 import {QueryClient, QueryClientProvider} from 'react-query';
-import {createEmotionSsrAdvancedApproach} from 'tss-react/nextJs';
 
 import {lightTheme} from '@unstoppabledomains/ui-kit/styles';
 
@@ -24,10 +23,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// setup emotion cache for MUI
-export const {EmotionCacheProvider, withEmotionCache} =
-  createEmotionSsrAdvancedApproach({key: 'css'});
-
 type Props = {
   children: React.ReactNode;
   theme?: Theme;
@@ -36,22 +31,20 @@ type Props = {
 const BaseProvider: React.FC<Props> = ({children, theme = lightTheme}) => {
   return (
     <TranslationProvider>
-      <EmotionCacheProvider>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider theme={theme}>
-            {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-            <CssBaseline enableColorScheme />
-            <SnackbarProvider
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-            >
-              <Web3ContextProvider>{children}</Web3ContextProvider>
-            </SnackbarProvider>
-          </ThemeProvider>
-        </QueryClientProvider>
-      </EmotionCacheProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider theme={theme}>
+          {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+          <CssBaseline enableColorScheme />
+          <SnackbarProvider
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left',
+            }}
+          >
+            <Web3ContextProvider>{children}</Web3ContextProvider>
+          </SnackbarProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
     </TranslationProvider>
   );
 };

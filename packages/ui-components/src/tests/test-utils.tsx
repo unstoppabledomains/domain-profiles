@@ -15,7 +15,6 @@ import * as actions from '../actions';
 import {TranslationProvider} from '../lib';
 import {
   DomainConfigProvider,
-  EmotionCacheProvider,
   TokenGalleryProvider,
   UnstoppableMessagingProvider,
   Web3ContextProvider,
@@ -34,24 +33,22 @@ const createTestQueryClient = () =>
 
 // test class to wrap test components with required providers
 const createWrapper =
-  ({theme}: {theme?: Theme} = {}): React.FC =>
+  ({theme}: {theme?: Theme} = {}): React.FC<{children: React.ReactNode}> =>
   ({children}) => (
     <QueryClientProvider client={createTestQueryClient()}>
-      <EmotionCacheProvider>
-        <ThemeProvider theme={theme || defaultTheme}>
-          <SnackbarProvider>
-            <Web3ContextProvider>
-              <TokenGalleryProvider>
-                <UnstoppableMessagingProvider>
-                  <DomainConfigProvider>
-                    <TranslationProvider>{children}</TranslationProvider>
-                  </DomainConfigProvider>
-                </UnstoppableMessagingProvider>
-              </TokenGalleryProvider>
-            </Web3ContextProvider>
-          </SnackbarProvider>
-        </ThemeProvider>
-      </EmotionCacheProvider>
+      <ThemeProvider theme={theme || defaultTheme}>
+        <SnackbarProvider>
+          <Web3ContextProvider>
+            <TokenGalleryProvider>
+              <UnstoppableMessagingProvider>
+                <DomainConfigProvider>
+                  <TranslationProvider>{children}</TranslationProvider>
+                </DomainConfigProvider>
+              </UnstoppableMessagingProvider>
+            </TokenGalleryProvider>
+          </Web3ContextProvider>
+        </SnackbarProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 
@@ -67,6 +64,7 @@ export const createMockRouter = (
   replace: jest.fn(),
   reload: jest.fn(),
   back: jest.fn(),
+  forward: jest.fn(),
   prefetch: jest.fn(),
   beforePopState: jest.fn(),
   events: {

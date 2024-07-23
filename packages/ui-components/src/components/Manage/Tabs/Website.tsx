@@ -150,7 +150,7 @@ export const Website: React.FC<ManageTabProps> = ({
     if (profileData?.metadata) {
       setIsPendingTx(!!profileData.metadata.pending);
     }
-    if (profileData?.records && profileData.records[ipfsHashKey]) {
+    if (profileData?.records?.[ipfsHashKey]) {
       setIpfsHash(profileData.records[ipfsHashKey]);
       setIsLaunched(true);
     }

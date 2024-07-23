@@ -21,6 +21,7 @@ import {useTranslationContext} from '../../../lib';
 import useStyles from '../../../styles/components/manage.styles';
 import FormError from './FormError';
 
+export type ManageInputOnChange = (id: string, value: string) => void;
 interface ManageInputProps {
   id: string;
   value?: string;
@@ -31,7 +32,7 @@ interface ManageInputProps {
   errorText?: string;
   disabled?: boolean;
   deprecated?: boolean;
-  onChange: (id: string, value: string) => void;
+  onChange: ManageInputOnChange;
   onKeyDown?: React.KeyboardEventHandler;
   // if true, the input will allow adding multiple lines of text. Else, one line
   // only.  Defaults to false.
@@ -53,7 +54,7 @@ interface ManageInputProps {
     adornedStart?: string;
     adornedEnd?: string;
   };
-  publicVisibilityValues?: object;
+  publicVisibilityValues?: DomainProfileVisibilityValues;
   isCardOpen?: {
     cardOpen: boolean;
     id: string | null;
@@ -131,12 +132,18 @@ const ManageInput: React.FC<ManageInputProps> = ({
     e.stopPropagation();
     if (setPublicVisibilityValues) {
       setPublicVisibilityValues(prev => {
-        return {...prev, [id + 'Public']: prev && !prev[id + 'Public']};
+        return {
+          ...prev,
+          [id + 'Public']:
+            prev &&
+            !prev[(id + 'Public') as keyof DomainProfileVisibilityValues],
+        };
       });
     }
   };
 
   function BasicCard() {
+    const idPublic = (id + 'Public') as keyof DomainProfileVisibilityValues;
     return isCardOpen && isCardOpen.id === id && isCardOpen.cardOpen ? (
       <Card sx={{minWidth: 275}} className={classes.card}>
         <Typography color="text.secondary" className={classes.cardTitle}>
@@ -161,7 +168,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
               className={classes.iconButtonBig}
             >
               {publicVisibilityValues &&
-              publicVisibilityValues[id + 'Public'] === false ? (
+              publicVisibilityValues[idPublic] === false ? (
                 <CheckIcon className={classes.checkIcon} />
               ) : (
                 <VisibilityOffOutlinedIcon />
@@ -181,7 +188,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
               className={classes.iconButtonBig}
             >
               {publicVisibilityValues &&
-              publicVisibilityValues[id + 'Public'] === false ? (
+              publicVisibilityValues[idPublic] === false ? (
                 <PublicOutlinedIcon />
               ) : (
                 <CheckIcon className={classes.checkIcon} />
@@ -259,8 +266,9 @@ const ManageInput: React.FC<ManageInputProps> = ({
                         position="end"
                         style={{paddingRight: '15px', position: 'relative'}}
                       >
-                        {publicVisibilityValues &&
-                        publicVisibilityValues[id + 'Public'] ? (
+                        {publicVisibilityValues?.[
+                          (id + 'Public') as keyof DomainProfileVisibilityValues
+                        ] ? (
                           <Tooltip title={t('manage.publicData')}>
                             <PublicOutlinedIcon
                               className={classes.publicIcon}

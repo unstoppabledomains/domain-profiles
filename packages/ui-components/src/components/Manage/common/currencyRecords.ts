@@ -2,6 +2,7 @@
 import uniq from 'lodash/uniq';
 
 import type {
+  CurrenciesType,
   DomainRawRecords,
   DomainRecords,
   MultiChainAddressRecord,
@@ -51,14 +52,14 @@ export const EMPTY_DOMAIN_RECORDS: DomainRecords = {
 const extractCurrencyAndVersion = (
   key: ResolverKeyName,
   resolverKeys: ResolverKeys,
-): {currency: string; version: string} | null => {
+): {currency: CurrenciesType; version: string} | null => {
   // UNS single-chain address: "crypto.BTC.address"
   if (key.match(ADDRESS_REGEX)) {
     const [_crypto, currency, _address] = key.split('.');
     if (!currency) {
       return null;
     }
-    return {currency, version: currency};
+    return {currency: currency as CurrenciesType, version: currency};
   }
 
   // UNS multi-chain address: "crypto.MATIC.version.ERC20.address"
@@ -67,7 +68,7 @@ const extractCurrencyAndVersion = (
     if (!currency || !version) {
       return null;
     }
-    return {currency, version};
+    return {currency: currency as CurrenciesType, version};
   }
 
   return null;
@@ -169,7 +170,10 @@ export const getMultichainAddressRecords = (
     if (record) {
       record.versions.push({version, value, key});
     } else {
-      result.push({currency, versions: [{version, value, key}]});
+      result.push({
+        currency: currency as CurrenciesType,
+        versions: [{version, value, key}],
+      });
     }
   });
 

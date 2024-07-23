@@ -173,7 +173,9 @@ const AddCurrencyModal: React.FC<Props> = ({
 
         return (
           currency.toLowerCase().includes(searchValue) ||
-          CurrencyToName[currency]?.toLowerCase().includes(searchValue)
+          (CurrencyToName as Record<CurrenciesType, string>)[currency]
+            ?.toLowerCase()
+            .includes(searchValue)
         );
       }),
     );
@@ -194,7 +196,8 @@ const AddCurrencyModal: React.FC<Props> = ({
         </div>
         <div>
           <div className={classes.currencyTitle}>
-            {CurrencyToName[currency] || currency}
+            {(CurrencyToName as Record<CurrenciesType, string>)[currency] ||
+              currency}
           </div>
           <div>
             {currency}

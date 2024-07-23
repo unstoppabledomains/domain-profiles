@@ -18,21 +18,25 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {getProfileUserData, setProfileUserData} from '../../../../actions';
 import {useWeb3Context} from '../../../../hooks';
 import type {
+  DomainProfileSocialMediaAutoPopulated,
   DomainProfileVisibilityValues,
+  SerializedDomainProfileAttributes,
   SerializedUserDomainProfileData,
 } from '../../../../lib';
 import {
   DOMAIN_PROFILE_VISIBILITY_VALUES,
   DomainFieldTypes,
+  DomainProfileSocialMedia,
   MAX_BIO_LENGTH,
   isExternalDomain,
   useTranslationContext,
 } from '../../../../lib';
 import {notifyEvent} from '../../../../lib/error';
 import {ProfileManager} from '../../../Wallet/ProfileManager';
-import {DomainProfileTabType} from '../../DomainProfile';
 import BulkUpdateLoadingButton from '../../common/BulkUpdateLoadingButton';
+import type {ManageInputOnChange} from '../../common/ManageInput';
 import ManageInput from '../../common/ManageInput';
+import {DomainProfileTabType} from '../../common/types';
 import type {ManageTabProps} from '../../common/types';
 import {Header} from './Header';
 import ManagePublicVisibility from './ManagePublicVisibility';
@@ -160,7 +164,8 @@ export const Profile: React.FC<ManageTabProps> = ({
 
   useEffect(() => {
     Object.keys(publicVisibilityValues).map(k => {
-      handleInputChange(k, publicVisibilityValues[k]);
+      const key = k as keyof DomainProfileVisibilityValues;
+      handleInputChange(key, publicVisibilityValues[key]);
     });
   }, [publicVisibilityValues]);
 
@@ -305,7 +310,10 @@ export const Profile: React.FC<ManageTabProps> = ({
     }
   };
 
-  const handleInputChange = (id: string, value: string | boolean) => {
+  const handleInputChange = <T extends keyof SerializedDomainProfileAttributes>(
+    id: T,
+    value: SerializedDomainProfileAttributes[T],
+  ) => {
     if (!dirtyFlag) {
       setDirtyFlag(true);
     }
@@ -329,7 +337,10 @@ export const Profile: React.FC<ManageTabProps> = ({
     }
   };
 
-  const handleSocialInputChange = (id: string, value: string | boolean) => {
+  const handleSocialInputChange = (
+    id: DomainProfileSocialMedia | DomainProfileSocialMediaAutoPopulated,
+    value: string,
+  ) => {
     if (!dirtyFlag) {
       setDirtyFlag(true);
     }
@@ -453,7 +464,7 @@ export const Profile: React.FC<ManageTabProps> = ({
         value={userProfile?.profile?.displayName}
         label={t('manage.displayName')}
         placeholder={t('manage.enterDisplayName')}
-        onChange={handleInputChange}
+        onChange={handleInputChange as ManageInputOnChange}
         disableTextTrimming
         stacked={false}
         data-testid="displayNameInput"
@@ -472,7 +483,7 @@ export const Profile: React.FC<ManageTabProps> = ({
         multiline
         rows={4}
         maxLength={MAX_BIO_LENGTH}
-        onChange={handleInputChange}
+        onChange={handleInputChange as ManageInputOnChange}
         disableTextTrimming
         stacked={false}
         publicVisibilityValues={publicVisibilityValues}
@@ -492,7 +503,7 @@ export const Profile: React.FC<ManageTabProps> = ({
         value={userProfile?.profile?.location}
         label={t('manage.location')}
         placeholder={t('manage.enterLocation')}
-        onChange={handleInputChange}
+        onChange={handleInputChange as ManageInputOnChange}
         disableTextTrimming
         stacked={false}
         publicVisibilityValues={publicVisibilityValues}
@@ -507,7 +518,7 @@ export const Profile: React.FC<ManageTabProps> = ({
         value={userProfile?.profile?.web2Url}
         label={t('manage.website')}
         placeholder={t('manage.addWebsite')}
-        onChange={handleInputChange}
+        onChange={handleInputChange as ManageInputOnChange}
         disableTextTrimming
         stacked={false}
         error={isInvalidUrl}
@@ -526,84 +537,84 @@ export const Profile: React.FC<ManageTabProps> = ({
       </Box>
       <ManageInput
         mt={2}
-        id="twitter"
+        id={DomainProfileSocialMedia.Twitter}
         value={userProfile?.socialAccounts?.twitter.location}
         label={'Twitter (X)'}
         labelIcon={<TwitterXIcon className={classes.twitterIcon} />}
         placeholder={t('manage.enterUsernameOrProfileURL')}
-        onChange={handleSocialInputChange}
+        onChange={handleSocialInputChange as ManageInputOnChange}
         disableTextTrimming
         stacked={false}
         disabled={!isLoaded}
       />
       <ManageInput
         mt={2}
-        id="discord"
+        id={DomainProfileSocialMedia.Discord}
         value={userProfile?.socialAccounts?.discord.location}
         label={'Discord'}
         labelIcon={<Discord className={classes.discordIcon} />}
         placeholder={t('manage.enterUsername')}
-        onChange={handleSocialInputChange}
+        onChange={handleSocialInputChange as ManageInputOnChange}
         disableTextTrimming
         stacked={false}
         disabled={!isLoaded}
       />
       <ManageInput
         mt={2}
-        id="youtube"
+        id={DomainProfileSocialMedia.YouTube}
         value={userProfile?.socialAccounts?.youtube.location}
         label={'YouTube'}
         labelIcon={<YouTubeIcon className={classes.youtubeIcon} />}
         placeholder={t('manage.enterYoutubeChannel')}
-        onChange={handleSocialInputChange}
+        onChange={handleSocialInputChange as ManageInputOnChange}
         disableTextTrimming
         stacked={false}
         disabled={!isLoaded}
       />
       <ManageInput
         mt={2}
-        id="reddit"
+        id={DomainProfileSocialMedia.Reddit}
         value={userProfile?.socialAccounts?.reddit.location}
         label={'Reddit'}
         labelIcon={<RedditIcon className={classes.redditIcon} />}
         placeholder={t('manage.enterRedditUsernameOrProfileURL')}
-        onChange={handleSocialInputChange}
+        onChange={handleSocialInputChange as ManageInputOnChange}
         disableTextTrimming
         stacked={false}
         disabled={!isLoaded}
       />
       <ManageInput
         mt={2}
-        id="telegram"
+        id={DomainProfileSocialMedia.Telegram}
         value={userProfile?.socialAccounts?.telegram.location}
         label={'Telegram'}
         labelIcon={<TelegramIcon className={classes.telegramIcon} />}
         placeholder={t('manage.enterUsername')}
-        onChange={handleSocialInputChange}
+        onChange={handleSocialInputChange as ManageInputOnChange}
         disableTextTrimming
         stacked={false}
         disabled={!isLoaded}
       />
       <ManageInput
         mt={2}
-        id="github"
+        id={DomainProfileSocialMedia.Github}
         value={userProfile?.socialAccounts?.github.location}
         label={'Github'}
         labelIcon={<GitHubIcon className={classes.githubIcon} />}
         placeholder={t('manage.enterUsername')}
-        onChange={handleSocialInputChange}
+        onChange={handleSocialInputChange as ManageInputOnChange}
         disableTextTrimming
         stacked={false}
         disabled={!isLoaded}
       />
       <ManageInput
         mt={2}
-        id="linkedin"
+        id={DomainProfileSocialMedia.Linkedin}
         value={userProfile?.socialAccounts?.linkedin.location}
         label={'Linkedin'}
         labelIcon={<LinkedInIcon className={classes.linkedinIcon} />}
         placeholder={t('manage.enterLinkedinUrl')}
-        onChange={handleSocialInputChange}
+        onChange={handleSocialInputChange as ManageInputOnChange}
         disableTextTrimming
         stacked={false}
         disabled={!isLoaded}

@@ -130,7 +130,7 @@
     "react-query": "^3.39.3"
   },
   "engines": {
-    "node": "18.x.x",
+    "node": "20.x.x",
     "yarn": "1.22.x"
   },
   "publishConfig": {

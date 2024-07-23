@@ -1,7 +1,7 @@
 ###########################################################
 # Build container
 ###########################################################
-FROM launcher.gcr.io/google/nodejs AS builder
+FROM node:20.15.1-alpine3.20 AS builder
 
 # Prepare arguments
 ARG service
@@ -21,7 +21,6 @@ ENV NEXT_TELEMETRY_DISABLED 1
 ENV YARN_IGNORE_NODE 1
 
 # Prepare dependencies
-RUN install_node v20.15.1
 RUN yarn set version 3.2.0
 
 # Copy project files
@@ -41,7 +40,7 @@ RUN rm -rf .yarn/cache
 ###########################################################
 # Runtime container
 ###########################################################
-FROM launcher.gcr.io/google/nodejs
+FROM node:20.15.1-alpine3.20
 
 # Runtime environment variables
 ARG service
@@ -49,7 +48,6 @@ ENV NEXT_TELEMETRY_DISABLED 1
 ENV YARN_IGNORE_NODE 1
 
 # Runtime dependencies
-RUN install_node v20.15.1
 RUN yarn set version 3.2.0
 
 # Copy project files

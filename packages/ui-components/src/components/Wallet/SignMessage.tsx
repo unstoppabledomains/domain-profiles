@@ -10,7 +10,7 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import useFireblocksSigner from '../../hooks/useFireblocksSigner';
+import useFireblocksMessageSigner from '../../hooks/useFireblocksMessageSigner';
 import {useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import {Header} from './Header';
@@ -20,6 +20,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
+    height: '100%',
   },
   messageContainer: {
     backgroundColor: theme.palette.neutralShades[100],
@@ -47,7 +48,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const Signer: React.FC<SignerProps> = ({
+export const SignMessage: React.FC<SignMessageProps> = ({
   address,
   message,
   onComplete,
@@ -56,7 +57,7 @@ export const Signer: React.FC<SignerProps> = ({
   const [t] = useTranslationContext();
   const [isSigning, setIsSigning] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const fireblocksSigner = useFireblocksSigner();
+  const fireblocksSigner = useFireblocksMessageSigner();
 
   // sign requested message when button is clicked and the Fireblocks
   // client has been properly initialized
@@ -158,7 +159,7 @@ export const Signer: React.FC<SignerProps> = ({
   );
 };
 
-export interface SignerProps {
+export interface SignMessageProps {
   address?: string;
   message: string;
   onComplete: (signedMessage?: string) => void;

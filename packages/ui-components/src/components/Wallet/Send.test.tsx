@@ -24,11 +24,9 @@ const defaultProps = {
 jest.mock('../../hooks/useResolverKeys', () => jest.fn());
 
 describe('<Send />', () => {
-  jest
-    .spyOn(fireBlocksActions, 'getEstimateTransferResponse')
-    .mockResolvedValue({
-      networkFee: {amount: '0.0000001'},
-    } as GetEstimateTransactionResponse);
+  jest.spyOn(fireBlocksActions, 'getTransferGasEstimate').mockResolvedValue({
+    networkFee: {amount: '0.0000001'},
+  } as GetEstimateTransactionResponse);
   jest
     .spyOn(fireBlocksActions, 'getAccountAssets')
     .mockResolvedValue([mockAccountAsset()]);

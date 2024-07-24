@@ -14,6 +14,7 @@ import {
 import {sleep} from '../lib/sleep';
 import type {
   AccountAsset,
+  CreateTransaction,
   GetAccountAssetsResponse,
   GetAccountsResponse,
   GetAuthorizationTxResponse,
@@ -106,6 +107,71 @@ export const confirmAuthorizationTokenTx = async (
   } catch (e) {
     notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error confirming authorization token tx',
+    });
+  }
+  return undefined;
+};
+
+export const createSignatureOperation = async (
+  accessToken: string,
+  accountId: string,
+  assetId: string,
+  message: string,
+): Promise<GetOperationResponse | undefined> => {
+  try {
+    return await fetchApi<GetOperationResponse>(
+      `/accounts/${accountId}/assets/${assetId}/signatures`,
+      {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Access-Control-Allow-Credentials': 'true',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        host: config.WALLETS.HOST_URL,
+        body: JSON.stringify({
+          message,
+          encoding: EthersUtils.isHexString(message) ? 'hex' : 'utf8',
+        }),
+      },
+    );
+  } catch (e) {
+    notifyEvent(e, 'warning', 'Wallet', 'Signature', {
+      meta: {accountId, assetId, message},
+    });
+  }
+  return undefined;
+};
+
+export const createTransactionOperation = async (
+  accessToken: string,
+  accountId: string,
+  assetId: string,
+  tx: CreateTransaction,
+): Promise<GetOperationResponse | undefined> => {
+  try {
+    return await fetchApi<GetOperationResponse>(
+      `/accounts/${accountId}/assets/${assetId}/transactions`,
+      {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Access-Control-Allow-Credentials': 'true',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        host: config.WALLETS.HOST_URL,
+        body: JSON.stringify({
+          destinationAddress: tx.contractAddress,
+          data: tx.data,
+          value: tx.value,
+        }),
+      },
+    );
+  } catch (e) {
+    notifyEvent(e, 'warning', 'Wallet', 'Signature', {
+      meta: {accountId, assetId, tx},
     });
   }
   return undefined;
@@ -330,7 +396,32 @@ export const getBootstrapToken = async (
   return undefined;
 };
 
-export const getEstimateTransferResponse = (
+export const getTransactionGasEstimate = async (
+  asset: AccountAsset,
+  accessToken: string,
+  tx: CreateTransaction,
+) => {
+  return fetchApi<GetEstimateTransactionResponse>(
+    `/estimates/accounts/${asset.accountId}/assets/${asset.id}/transactions`,
+    {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        destinationAddress: tx.contractAddress,
+        data: tx.data,
+        value: tx.value,
+      }),
+    },
+  );
+};
+
+export const getTransferGasEstimate = async (
   asset: AccountAsset,
   accessToken: string,
   destinationAddress: string,
@@ -355,63 +446,24 @@ export const getEstimateTransferResponse = (
   );
 };
 
-export const getMessageSignature = async (
+export const signAndWait = async (
   accessToken: string,
-  message: string,
+  onGetOperation: () => Promise<GetOperationResponse | undefined>,
   onSignTx: (txId: string) => Promise<void>,
   opts?: {
     address?: string;
     onStatusChange?: (status: string) => void;
+    isComplete?: (status: GetOperationStatusResponse) => boolean;
   },
-): Promise<string | undefined> => {
+): Promise<GetOperationStatusResponse | undefined> => {
   try {
-    // retrieve the accounts associated with the access token
-    if (opts?.onStatusChange) {
-      opts.onStatusChange('retrieving account');
-    }
-    const assets = await getAccountAssets(accessToken);
-    if (!assets) {
-      throw new Error('account assets not found');
-    }
-
-    // retrieve the asset associated with the optionally requested address,
-    // otherwise just retrieve the first first asset.
-    const asset =
-      assets.find(
-        a =>
-          a.blockchainAsset.blockchain.id.toLowerCase() ===
-            config.WALLETS.SIGNATURE_SYMBOL.split('/')[0].toLowerCase() &&
-          a.blockchainAsset.symbol.toLowerCase() ===
-            config.WALLETS.SIGNATURE_SYMBOL.split('/')[1].toLowerCase() &&
-          a.address.toLowerCase() === opts?.address?.toLowerCase(),
-      ) || assets[0];
-    if (!asset) {
-      throw new Error('address not found in account');
-    }
-
     // initialize a transaction to retrieve auth tokens
     if (opts?.onStatusChange) {
-      opts.onStatusChange('starting MPC signature');
+      opts.onStatusChange('starting signing operation');
     }
-    const operationResponse = await fetchApi<GetOperationResponse>(
-      `/accounts/${asset.accountId}/assets/${asset.id}/signatures`,
-      {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Access-Control-Allow-Credentials': 'true',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        host: config.WALLETS.HOST_URL,
-        body: JSON.stringify({
-          message,
-          encoding: EthersUtils.isHexString(message) ? 'hex' : 'utf8',
-        }),
-      },
-    );
+    const operationResponse = await onGetOperation();
     if (!operationResponse) {
-      throw new Error('error requesting signature');
+      throw new Error('error requesting signing operation');
     }
 
     // wait for the signature TX to pass to the client
@@ -428,7 +480,7 @@ export const getMessageSignature = async (
         throw new Error('error requesting signature operation status');
       }
 
-      // sign the message if requested
+      // sign the Fireblocks transaction ID when requested
       if (
         !signedWithClient &&
         operationStatus.status === 'SIGNATURE_REQUIRED' &&
@@ -443,7 +495,7 @@ export const getMessageSignature = async (
 
         // indicate status change
         if (opts?.onStatusChange) {
-          opts.onStatusChange('waiting for MPC signature');
+          opts.onStatusChange('waiting for other signers');
         }
       }
 
@@ -456,14 +508,17 @@ export const getMessageSignature = async (
       }
 
       // return the completed signature
-      if (
-        operationStatus.status === 'COMPLETED' &&
-        operationStatus.result?.signature
-      ) {
+      if (operationStatus.status === 'COMPLETED') {
         if (opts?.onStatusChange) {
           opts.onStatusChange('signature completed');
         }
-        return operationStatus.result.signature;
+        if (opts?.isComplete) {
+          if (opts.isComplete(operationStatus)) {
+            return operationStatus;
+          }
+        } else {
+          return operationStatus;
+        }
       }
 
       // wait for next interval
@@ -471,13 +526,13 @@ export const getMessageSignature = async (
     }
 
     // reaching this point means the signature was not successful
-    throw new Error('failed to sign message');
+    throw new Error('failed to sign');
   } catch (e) {
     if (opts?.onStatusChange) {
       opts.onStatusChange('signature failed');
     }
     notifyEvent(e, 'error', 'Wallet', 'Signature', {
-      msg: 'error signing message',
+      msg: 'error signing',
     });
   }
   return undefined;

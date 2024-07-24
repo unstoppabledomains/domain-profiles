@@ -10,3 +10,4 @@ export * from './seo';
 export * from './wallet';
 export * from './web3';
 export * from './webacy';
+export type {CreateTransaction} from './fireBlocks';

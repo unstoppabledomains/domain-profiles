@@ -15,8 +15,9 @@ import truncateEthAddress from 'truncate-eth-address';
 
 import AccessEthereum from '../../components/Wallet/AccessEthereum';
 import {useWeb3Context} from '../../hooks';
-import useFireblocksSigner from '../../hooks/useFireblocksSigner';
+import useFireblocksMessageSigner from '../../hooks/useFireblocksMessageSigner';
 import useFireblocksState from '../../hooks/useFireblocksState';
+import useFireblocksTxSigner from '../../hooks/useFireblocksTxSigner';
 import {WalletName} from '../../lib';
 import {
   ReactSigner,
@@ -28,7 +29,8 @@ import type {Web3Dependencies} from '../../lib/types/web3';
 import useAccessWalletStyles from '../../styles/components/accessWallet.styles';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileTabType} from '../Manage/DomainProfile';
-import {Signer as UnstoppableWalletSigner} from './Signer';
+import {SignMessage as UnstoppableWalletMessageSigner} from './SignMessage';
+import {SignTx as UnstoppableWalletTxSigner} from './SignTx';
 import {Wallet as UnstoppableWalletConfig} from './Wallet';
 
 type Props = {
@@ -51,10 +53,12 @@ export const AccessWallet = (props: Props) => {
 
   // Unstoppable wallet signature state variables
   const [state] = useFireblocksState();
-  const fireblocksSigner = useFireblocksSigner();
+  const fireblocksMessageSigner = useFireblocksMessageSigner();
+  const fireblocksTxSigner = useFireblocksTxSigner();
   const [udConfigButton, setUdConfigButton] = useState<React.ReactNode>(<></>);
   const [udConfigSuccess, setUdConfigSuccess] = useState(false);
-  const {messageToSign, setMessageToSign} = useWeb3Context();
+  const {messageToSign, setMessageToSign, txToSign, setTxToSign} =
+    useWeb3Context();
 
   // automatically select a connected Unstoppable Wallet if one of the managed
   // addresses matches the requested address
@@ -136,9 +140,11 @@ export const AccessWallet = (props: Props) => {
       promptForSignatures
         ? {
             setMessage: setMessageToSign,
+            setTx: setTxToSign,
           }
         : {
-            signWithFireblocks: fireblocksSigner,
+            signMessageWithFireblocks: fireblocksMessageSigner,
+            signTxWithFireblocks: fireblocksTxSigner,
           },
     );
 
@@ -153,15 +159,15 @@ export const AccessWallet = (props: Props) => {
     });
   };
 
-  const handleUdWalletSignature = (signedMessage?: string) => {
-    if (!signedMessage) {
+  const handleUdWalletSignature = (messageSignature?: string) => {
+    if (!messageSignature) {
       UD_COMPLETED_SIGNATURE.push('');
       if (props.onComplete) {
         props.onComplete();
       }
       return;
     }
-    UD_COMPLETED_SIGNATURE.push(signedMessage);
+    UD_COMPLETED_SIGNATURE.push(messageSignature);
   };
 
   return (
@@ -212,7 +218,7 @@ export const AccessWallet = (props: Props) => {
           ) : (
             <Grid item xs={12} display="flex" justifyContent="center">
               <Box className={classes.udConfigContainer}>
-                {!messageToSign || !udConfigSuccess ? (
+                {(!messageToSign && !txToSign) || !udConfigSuccess ? (
                   <Box
                     display="flex"
                     flexDirection="column"
@@ -229,12 +235,22 @@ export const AccessWallet = (props: Props) => {
                       {udConfigButton}
                     </Box>
                   </Box>
+                ) : messageToSign ? (
+                  <>
+                    <UnstoppableWalletMessageSigner
+                      address={props.address}
+                      message={messageToSign}
+                      onComplete={handleUdWalletSignature}
+                    />
+                  </>
                 ) : (
-                  messageToSign && (
+                  txToSign && (
                     <>
-                      <UnstoppableWalletSigner
-                        address={props.address}
-                        message={messageToSign}
+                      <UnstoppableWalletTxSigner
+                        chainId={txToSign.chainId}
+                        contractAddress={txToSign.contractAddress}
+                        data={txToSign.data}
+                        value={txToSign.value}
                         onComplete={handleUdWalletSignature}
                       />
                     </>

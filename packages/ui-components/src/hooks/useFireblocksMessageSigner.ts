@@ -1,21 +1,24 @@
+import config from '@unstoppabledomains/config';
+
 import {
-  getAccessToken,
-  getMessageSignature,
+  createSignatureOperation,
+  signAndWait,
 } from '../actions/fireBlocksActions';
 import {notifyEvent} from '../lib/error';
 import {getFireBlocksClient} from '../lib/fireBlocks/client';
 import {getBootstrapState} from '../lib/fireBlocks/storage/state';
+import {GetOperationStatusResponse} from '../lib/types/fireBlocks';
+import useFireblocksAccessToken from './useFireblocksAccessToken';
 import useFireblocksState from './useFireblocksState';
-import useWeb3Context from './useWeb3Context';
 
-export type FireblocksSigner = (
+export type FireblocksMessageSigner = (
   message: string,
   address?: string,
 ) => Promise<string>;
 
-const useFireblocksSigner = (): FireblocksSigner => {
+const useFireblocksMessageSigner = (): FireblocksMessageSigner => {
   const [state, saveState] = useFireblocksState();
-  const {accessToken: existingAccessToken, setAccessToken} = useWeb3Context();
+  const getAccessToken = useFireblocksAccessToken();
 
   // return the fireblocks client signer
   return async (message: string, address?: string): Promise<string> => {
@@ -26,19 +29,7 @@ const useFireblocksSigner = (): FireblocksSigner => {
     }
 
     // retrieve an access token if required
-    let accessToken = existingAccessToken;
-    if (!accessToken) {
-      const jwtData = await getAccessToken(clientState.refreshToken, {
-        deviceId: clientState.deviceId,
-        state,
-        saveState,
-        setAccessToken,
-      });
-      if (!jwtData) {
-        throw new Error('error retrieving access token');
-      }
-      accessToken = jwtData.accessToken;
-    }
+    const accessToken = await getAccessToken();
 
     // retrieve a new client instance
     const client = await getFireBlocksClient(
@@ -63,10 +54,32 @@ const useFireblocksSigner = (): FireblocksSigner => {
       },
     );
 
+    // retrieve the asset associated with the optionally requested address,
+    // otherwise just retrieve the first first asset.
+    const asset =
+      clientState.assets.find(
+        a =>
+          a.blockchainAsset.blockchain.id.toLowerCase() ===
+            config.WALLETS.SIGNATURE_SYMBOL.split('/')[0].toLowerCase() &&
+          a.blockchainAsset.symbol.toLowerCase() ===
+            config.WALLETS.SIGNATURE_SYMBOL.split('/')[1].toLowerCase() &&
+          a.address.toLowerCase() === address?.toLowerCase(),
+      ) || clientState.assets[0];
+    if (!asset?.accountId) {
+      throw new Error('address not found in account');
+    }
+
     // request an MPC signature of the desired message string
-    const signatureResult = await getMessageSignature(
+    const signatureOp = await signAndWait(
       accessToken,
-      message,
+      async () => {
+        return await createSignatureOperation(
+          accessToken,
+          asset.accountId!,
+          asset.id,
+          message,
+        );
+      },
       async (txId: string) => {
         await client.signTransaction(txId);
       },
@@ -74,6 +87,9 @@ const useFireblocksSigner = (): FireblocksSigner => {
         address,
         onStatusChange: (m: string) => {
           notifyEvent(m, 'info', 'Wallet', 'Signature');
+        },
+        isComplete: (status: GetOperationStatusResponse) => {
+          return status?.result?.signature !== undefined;
         },
       },
     );
@@ -83,16 +99,16 @@ const useFireblocksSigner = (): FireblocksSigner => {
       meta: {
         address,
         message,
-        signature: signatureResult,
+        signatureOp,
       },
     });
 
     // validate and return the signature result
-    if (!signatureResult) {
+    if (!signatureOp?.result?.signature) {
       throw new Error('signature failed');
     }
-    return signatureResult;
+    return signatureOp.result.signature;
   };
 };
 
-export default useFireblocksSigner;
+export default useFireblocksMessageSigner;

@@ -20,7 +20,8 @@ export const DomainConfigContext = React.createContext<{
 
 const DomainConfigProvider: React.FC<Props> = ({children}) => {
   const [isOpen, setIsOpen] = useState<boolean>();
-  const {web3Deps, messageToSign, setMessageToSign} = useWeb3Context();
+  const {web3Deps, messageToSign, setMessageToSign, txToSign, setTxToSign} =
+    useWeb3Context();
   const [configTab, setConfigTab] = useState<DomainProfileTabType>(
     DomainProfileTabType.Profile,
   );
@@ -32,15 +33,24 @@ const DomainConfigProvider: React.FC<Props> = ({children}) => {
     setConfigTab,
   };
 
+  // handleClose ensures the messages are cleared from queue
+  const handleClose = () => {
+    setMessageToSign('');
+    setTxToSign(undefined);
+  };
+
+  // indicates that something is available for signing
+  const isMessage = messageToSign || txToSign;
+
   return (
     <DomainConfigContext.Provider value={value}>
       {children}
-      {web3Deps?.unstoppableWallet?.promptForSignatures && messageToSign && (
+      {web3Deps?.unstoppableWallet?.promptForSignatures && isMessage && (
         <AccessWalletModal
           prompt={true}
           address={web3Deps.address}
           open={true}
-          onClose={() => setMessageToSign('')}
+          onClose={handleClose}
         />
       )}
     </DomainConfigContext.Provider>

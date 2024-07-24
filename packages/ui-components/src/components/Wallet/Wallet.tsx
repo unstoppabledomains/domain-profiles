@@ -4,7 +4,9 @@ import React, {useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {isDomainValidForManagement} from '../../lib';
+import {AccessWalletModal} from '.';
+import {useWeb3Context} from '../../hooks';
+import {Web3Dependencies, isDomainValidForManagement} from '../../lib';
 import type {DomainProfileTabType} from '../Manage';
 import type {ManageTabProps} from '../Manage/common/types';
 import {Configuration} from './Configuration';
@@ -45,11 +47,23 @@ export const Wallet: React.FC<
   const {classes} = useStyles();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isFetching, setIsFetching] = useState<boolean>();
+  const [isWeb3DepsLoading, setIsWeb3DepsLoading] = useState(true);
   const [isHeaderClicked, setIsHeaderClicked] = useState(false);
   const [accessToken, setAccessToken] = useState<string>();
+  const {setWeb3Deps} = useWeb3Context();
 
   const handleWalletLoaded = (v: boolean) => {
     setIsLoaded(v);
+  };
+
+  const handleAccessWalletComplete = async (
+    web3Dependencies?: Web3Dependencies,
+  ) => {
+    // handle the provided deps if provided
+    if (web3Dependencies) {
+      setWeb3Deps(web3Dependencies);
+    }
+    setIsWeb3DepsLoading(false);
   };
 
   const handleAccessToken = (
@@ -90,6 +104,16 @@ export const Wallet: React.FC<
         setAuthAddress={setAuthAddress}
         disableInlineEducation={disableInlineEducation}
       />
+      {isLoaded && isWeb3DepsLoading && (
+        <AccessWalletModal
+          prompt={true}
+          address={address}
+          onComplete={deps => handleAccessWalletComplete(deps)}
+          open={isWeb3DepsLoading}
+          onClose={() => setIsWeb3DepsLoading(false)}
+          isMpcWallet={true}
+        />
+      )}
     </Box>
   );
 };

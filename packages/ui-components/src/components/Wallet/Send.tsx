@@ -11,7 +11,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {useFeatureFlags} from '../../actions';
 import {
   getAccountAssets,
-  getEstimateTransferResponse,
+  getTransferGasEstimate,
 } from '../../actions/fireBlocksActions';
 import {prepareRecipientWallet} from '../../actions/walletActions';
 import type {SerializedWalletBalance} from '../../lib';
@@ -209,7 +209,7 @@ const Send: React.FC<Props> = ({
     }
 
     // estimate the gas cost
-    const gasResponse = await getEstimateTransferResponse(
+    const gasResponse = await getTransferGasEstimate(
       assetToSend,
       accessToken,
       // Doesn't matter what the recipient and amount are, just need to get the fee estimate

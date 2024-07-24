@@ -10,6 +10,8 @@ const useWeb3Context = () => {
     setAccessToken,
     messageToSign,
     setMessageToSign,
+    txToSign,
+    setTxToSign,
     sessionKeyState,
     setSessionKeyState,
     persistentKeyState,
@@ -19,6 +21,7 @@ const useWeb3Context = () => {
     !setWeb3Deps ||
     !setAccessToken ||
     !setMessageToSign ||
+    !setTxToSign ||
     !setSessionKeyState ||
     !setPersistentKeyState
   ) {
@@ -33,6 +36,8 @@ const useWeb3Context = () => {
     setAccessToken,
     messageToSign,
     setMessageToSign,
+    txToSign,
+    setTxToSign,
     sessionKeyState,
     setSessionKeyState,
     persistentKeyState,

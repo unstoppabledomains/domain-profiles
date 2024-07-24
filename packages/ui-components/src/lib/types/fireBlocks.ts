@@ -12,6 +12,13 @@ export interface AccountAsset {
   accountId?: string;
 }
 
+export interface CreateTransaction {
+  chainId: number;
+  contractAddress: string;
+  data: string;
+  value?: string;
+}
+
 export interface AssetBalance {
   total: string;
   decimals: number;
@@ -20,6 +27,7 @@ export interface AssetBalance {
 export interface Blockchain {
   id: string;
   name: string;
+  networkId?: number;
 }
 
 export interface BlockchainAsset {

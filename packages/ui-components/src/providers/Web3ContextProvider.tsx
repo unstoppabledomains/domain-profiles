@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {useLocalStorage, useSessionStorage} from 'usehooks-ts';
 
-import {FireblocksStateKey} from '../lib/types/fireBlocks';
+import {CreateTransaction, FireblocksStateKey} from '../lib/types/fireBlocks';
 import type {Web3Dependencies} from '../lib/types/web3';
 
 type Props = {
@@ -15,6 +15,8 @@ export const Web3Context = React.createContext<{
   setAccessToken?: (v: string) => void;
   messageToSign?: string;
   setMessageToSign?: (v: string) => void;
+  txToSign?: CreateTransaction;
+  setTxToSign?: (v?: CreateTransaction) => void;
   sessionKeyState?: Record<string, Record<string, string>>;
   setSessionKeyState?: (state: Record<string, Record<string, string>>) => void;
   persistentKeyState?: Record<string, Record<string, string>>;
@@ -36,6 +38,7 @@ const Web3ContextProvider: React.FC<Props> = ({children}) => {
     Record<string, Record<string, string>>
   >(FireblocksStateKey, {});
   const [messageToSign, setMessageToSign] = useState<string>();
+  const [txToSign, setTxToSign] = useState<CreateTransaction>();
 
   const value = {
     web3Deps,
@@ -44,6 +47,8 @@ const Web3ContextProvider: React.FC<Props> = ({children}) => {
     setAccessToken,
     messageToSign,
     setMessageToSign,
+    txToSign,
+    setTxToSign,
     sessionKeyState,
     setSessionKeyState,
     persistentKeyState,

@@ -1,5 +1,7 @@
 import type {TEvent} from '@fireblocks/ncw-js-sdk';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -7,7 +9,9 @@ import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
+import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
@@ -121,6 +125,9 @@ const useStyles = makeStyles<{
   enableDescription: {
     color: theme.palette.neutralShades[600],
   },
+  passwordIcon: {
+    margin: theme.spacing(0.5),
+  },
 }));
 
 enum WalletConfigState {
@@ -163,6 +170,7 @@ export const Configuration: React.FC<
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [savingMessage, setSavingMessage] = useState<string>();
   const [configState, setConfigState] = useState(
     WalletConfigState.PasswordEntry,
@@ -901,7 +909,25 @@ export const Configuration: React.FC<
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 disabled={isSaving}
-                type="password"
+                type={passwordVisible ? undefined : 'password'}
+                endAdornment={
+                  <IconButton
+                    className={classes.passwordIcon}
+                    onClick={() => {
+                      setPasswordVisible(!passwordVisible);
+                    }}
+                  >
+                    {passwordVisible ? (
+                      <Tooltip title={t('common.passwordHide')}>
+                        <VisibilityOffOutlinedIcon />
+                      </Tooltip>
+                    ) : (
+                      <Tooltip title={t('common.passwordShow')}>
+                        <VisibilityOutlinedIcon />
+                      </Tooltip>
+                    )}
+                  </IconButton>
+                }
                 stacked={false}
               />
               {recoveryToken && (

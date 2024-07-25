@@ -16,6 +16,7 @@ import {
   DomainProfileKeys,
   Wallet,
   getSeoTags,
+  useFeatureFlags,
   useFireblocksState,
   useTranslationContext,
 } from '@unstoppabledomains/ui-components';
@@ -33,6 +34,7 @@ const WalletPage = () => {
   const {classes, cx} = useStyles({});
   const [t] = useTranslationContext();
   const {query: params} = useRouter();
+  const {data: featureFlags} = useFeatureFlags(false);
   const isMounted = useIsMounted();
   const [isLoaded, setIsLoaded] = useState(false);
   const [walletState] = useFireblocksState();
@@ -52,6 +54,10 @@ const WalletPage = () => {
     title: t('wallet.title'),
     description: t('manage.cryptoWalletDescriptionShort'),
   });
+
+  // indicates whether the wallet creation feature is enabled
+  const isCreateWalletEnabled =
+    featureFlags.variations?.profileServiceEnableWalletCreation === true;
 
   // sign the user out if recovery is requested
   useEffect(() => {
@@ -148,8 +154,14 @@ const WalletPage = () => {
   }, [isMounted, authComplete]);
 
   const handleGetLiteWallet = () => {
-    setGetWalletClicked(true);
-    setSignInClicked(true);
+    if (isCreateWalletEnabled) {
+      // open new wallet configuration page
+      setGetWalletClicked(true);
+      setSignInClicked(true);
+    } else {
+      // navigate to the wallet info page
+      window.open(config.WALLETS.LANDING_PAGE_URL, '_blank');
+    }
   };
 
   const handleSignIn = () => {
@@ -252,7 +264,9 @@ const WalletPage = () => {
                     className={classes.button}
                     onClick={handleGetLiteWallet}
                   >
-                    {t('wallet.getLiteWallet')}
+                    {isCreateWalletEnabled
+                      ? t('wallet.getLiteWallet')
+                      : t('common.learnMore')}
                   </Button>
                   <Button
                     fullWidth

@@ -198,6 +198,9 @@ export const Configuration: React.FC<
   const {classes} = useStyles({configState, mode});
   const [t] = useTranslationContext();
 
+  const isCreateWalletEnabled =
+    featureFlags.variations?.profileServiceEnableWalletCreation === true;
+
   useEffect(() => {
     setIsLoaded(false);
     setButtonComponent(<></>);
@@ -296,27 +299,28 @@ export const Configuration: React.FC<
                 </Button>
               </Box>
             )}
-            {[
-              WalletConfigState.PasswordEntry,
-              WalletConfigState.OnboardWithEmail,
-            ].includes(configState) && (
-              <Box mt={1} display="flex" justifyContent="center" width="100%">
-                <Button
-                  onClick={
-                    configState === WalletConfigState.PasswordEntry
-                      ? handleNeedWallet
-                      : handleBack
-                  }
-                  disabled={isSaving}
-                  variant="text"
-                  size="small"
-                >
-                  {configState === WalletConfigState.PasswordEntry
-                    ? t('wallet.needWallet')
-                    : t('wallet.alreadyHaveWallet')}
-                </Button>
-              </Box>
-            )}
+            {isCreateWalletEnabled &&
+              [
+                WalletConfigState.PasswordEntry,
+                WalletConfigState.OnboardWithEmail,
+              ].includes(configState) && (
+                <Box mt={1} display="flex" justifyContent="center" width="100%">
+                  <Button
+                    onClick={
+                      configState === WalletConfigState.PasswordEntry
+                        ? handleNeedWallet
+                        : handleBack
+                    }
+                    disabled={isSaving}
+                    variant="text"
+                    size="small"
+                  >
+                    {configState === WalletConfigState.PasswordEntry
+                      ? t('wallet.needWallet')
+                      : t('wallet.alreadyHaveWallet')}
+                  </Button>
+                </Box>
+              )}
           </>
         ) : (
           !errorMessage &&

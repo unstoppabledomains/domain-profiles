@@ -34,6 +34,8 @@ import {
   sendRecoveryEmail,
 } from '../../actions/fireBlocksActions';
 import {
+  createWallet,
+  createWalletOtp,
   getOnboardingStatus,
   getWalletPortfolio,
   syncIdentityConfig,
@@ -60,7 +62,7 @@ import type {ManageTabProps} from '../Manage/common/types';
 import {Client, MIN_CLIENT_HEIGHT} from './Client';
 import InlineEducation from './InlineEducation';
 import {OperationStatus} from './OperationStatus';
-import type {WalletMode} from './index';
+import {WalletMode} from './index';
 
 const EMAIL_PARAM = 'email';
 const WALLET_PASSWORD_MIN_LENGTH = 12;
@@ -127,11 +129,14 @@ const useStyles = makeStyles<{
   },
 }));
 
-enum WalletConfigState {
+export enum WalletConfigState {
   OtpEntry = 'otpEntry',
   PasswordEntry = 'passwordEntry',
   Complete = 'complete',
   NeedsOnboarding = 'needsOnboarding',
+  OnboardWithEmail = 'onboardWithEmail',
+  OnboardConfirmation = 'onboardConfirmation',
+  OnboardSuccess = 'onboardSuccess',
 }
 
 export const Configuration: React.FC<
@@ -144,6 +149,7 @@ export const Configuration: React.FC<
     isHeaderClicked: boolean;
     setIsHeaderClicked?: (v: boolean) => void;
     setAuthAddress?: (v: string) => void;
+    initialState?: WalletConfigState;
   }
 > = ({
   onUpdate,
@@ -156,6 +162,7 @@ export const Configuration: React.FC<
   mode = 'basic',
   emailAddress: initialEmailAddress,
   recoveryToken,
+  initialState,
 }) => {
   // component state variables
   const {query: params} = useRouter();
@@ -166,7 +173,7 @@ export const Configuration: React.FC<
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [savingMessage, setSavingMessage] = useState<string>();
   const [configState, setConfigState] = useState(
-    WalletConfigState.PasswordEntry,
+    initialState || WalletConfigState.PasswordEntry,
   );
   const [errorMessage, setErrorMessage] = useState<string>();
   const {enqueueSnackbar} = useSnackbar();
@@ -219,7 +226,11 @@ export const Configuration: React.FC<
     if (!isLoaded) {
       return;
     }
-    if (configState === WalletConfigState.Complete) {
+    if (
+      [WalletConfigState.Complete, WalletConfigState.OnboardSuccess].includes(
+        configState,
+      )
+    ) {
       setButtonComponent(<></>);
       return;
     }
@@ -230,7 +241,8 @@ export const Configuration: React.FC<
       : true;
     const isSaveEnabled =
       configState === WalletConfigState.NeedsOnboarding ||
-      (configState === WalletConfigState.PasswordEntry
+      (configState === WalletConfigState.PasswordEntry ||
+      configState === WalletConfigState.OnboardWithEmail
         ? isDirty &&
           emailAddress &&
           recoveryPhrase &&
@@ -258,15 +270,20 @@ export const Configuration: React.FC<
               fullWidth
             >
               {configState === WalletConfigState.NeedsOnboarding
-                ? t('wallet.onboardingButtonText')
+                ? t('wallet.createWallet')
                 : configState === WalletConfigState.PasswordEntry
                 ? t('wallet.beginSetup')
-                : configState === WalletConfigState.OtpEntry &&
-                  t('wallet.completeSetup')}
+                : configState === WalletConfigState.OtpEntry
+                ? t('wallet.completeSetup')
+                : configState === WalletConfigState.OnboardWithEmail
+                ? t('wallet.verifyEmail')
+                : configState === WalletConfigState.OnboardConfirmation &&
+                  t('wallet.createWallet')}
             </LoadingButton>
             {[
               WalletConfigState.OtpEntry,
               WalletConfigState.NeedsOnboarding,
+              WalletConfigState.OnboardConfirmation,
             ].includes(configState) && (
               <Box mt={1}>
                 <Button
@@ -276,6 +293,27 @@ export const Configuration: React.FC<
                   fullWidth
                 >
                   {t('common.back')}
+                </Button>
+              </Box>
+            )}
+            {[
+              WalletConfigState.PasswordEntry,
+              WalletConfigState.OnboardWithEmail,
+            ].includes(configState) && (
+              <Box mt={1} display="flex" justifyContent="center" width="100%">
+                <Button
+                  onClick={
+                    configState === WalletConfigState.PasswordEntry
+                      ? handleNeedWallet
+                      : handleBack
+                  }
+                  disabled={isSaving}
+                  variant="text"
+                  size="small"
+                >
+                  {configState === WalletConfigState.PasswordEntry
+                    ? t('wallet.needWallet')
+                    : t('wallet.alreadyHaveWallet')}
                 </Button>
               </Box>
             )}
@@ -486,6 +524,11 @@ export const Configuration: React.FC<
     setConfigState(WalletConfigState.PasswordEntry);
   };
 
+  const handleNeedWallet = () => {
+    setErrorMessage(undefined);
+    setConfigState(WalletConfigState.OnboardWithEmail);
+  };
+
   const handleLogout = () => {
     // clear input variables
     setBootstrapCode(undefined);
@@ -517,7 +560,11 @@ export const Configuration: React.FC<
     setIsDirty(false);
 
     if (configState === WalletConfigState.NeedsOnboarding) {
-      processOnboarding();
+      processNeedsOnboarding();
+    } else if (configState === WalletConfigState.OnboardWithEmail) {
+      await processOnboardWithEmail();
+    } else if (configState === WalletConfigState.OnboardConfirmation) {
+      await processOnboardConfirmation();
     } else if (configState === WalletConfigState.OtpEntry) {
       // submit the bootstrap code
       await processBootstrapCode();
@@ -540,8 +587,72 @@ export const Configuration: React.FC<
     setErrorMessage(undefined);
   };
 
-  const processOnboarding = () => {
-    window.open(config.WALLETS.GET_WALLET_URL, '_blank');
+  const processOnboardWithEmail = async () => {
+    // validate recovery phrase
+    if (!recoveryPhrase) {
+      setErrorMessage(t('common.enterValidPassword'));
+      return;
+    }
+
+    // validate the email address
+    if (!emailAddress || !isEmailValid(emailAddress)) {
+      setErrorMessage(t('common.enterValidEmail'));
+      return;
+    }
+
+    // check for onboarding
+    const isOnboarded = await getOnboardingStatus(emailAddress);
+    if (isOnboarded) {
+      setErrorMessage(t('wallet.alreadyExists'));
+      return;
+    }
+
+    // validate the two password fields match
+    if (recoveryPhrase !== recoveryPhraseConfirmation) {
+      setErrorMessage(t('wallet.resetPasswordMismatch'));
+      return;
+    }
+
+    // validate password strength
+    if (!isValidWalletPasswordFormat(recoveryPhrase)) {
+      setErrorMessage(t('wallet.resetPasswordStrength'));
+      return;
+    }
+
+    // send the email verification
+    const isSuccess = await createWalletOtp(emailAddress);
+    if (!isSuccess) {
+      setErrorMessage(t('wallet.alreadySentVerification', {emailAddress}));
+      return;
+    }
+
+    // message successfully sent
+    setErrorMessage(undefined);
+    setConfigState(WalletConfigState.OnboardConfirmation);
+  };
+
+  const processOnboardConfirmation = async () => {
+    if (!emailAddress || !bootstrapCode || !recoveryPhrase) {
+      return;
+    }
+
+    // request to create the wallet
+    const walletRequested = await createWallet(
+      emailAddress,
+      bootstrapCode,
+      recoveryPhrase,
+    );
+    if (!walletRequested) {
+      setErrorMessage(t('wallet.errorCreatingWallet'));
+      return;
+    }
+
+    // saving is complete
+    setConfigState(WalletConfigState.OnboardSuccess);
+  };
+
+  const processNeedsOnboarding = () => {
+    setConfigState(WalletConfigState.OnboardWithEmail);
   };
 
   const processPasswordEntry = async () => {
@@ -776,7 +887,9 @@ export const Configuration: React.FC<
   return (
     <Box className={classes.container}>
       {isLoaded &&
-      (configState !== WalletConfigState.Complete ||
+      (![WalletConfigState.Complete, WalletConfigState.OnboardSuccess].includes(
+        configState,
+      ) ||
         mode === 'basic' ||
         mpcWallets.length > 0) ? (
         isSaving || errorMessage ? (
@@ -802,11 +915,16 @@ export const Configuration: React.FC<
               </Markdown>
             </Typography>
           </Box>
-        ) : configState === WalletConfigState.OtpEntry && emailAddress ? (
+        ) : [
+            WalletConfigState.OtpEntry,
+            WalletConfigState.OnboardConfirmation,
+          ].includes(configState) && emailAddress ? (
           <Box>
             <Typography variant="body1" className={classes.infoContainer}>
               <Markdown>
-                {recoveryToken
+                {configState === WalletConfigState.OnboardConfirmation
+                  ? t('wallet.onboardConfirmationDescription', {emailAddress})
+                  : recoveryToken
                   ? t('wallet.resetPasswordConfirmation', {emailAddress})
                   : t('wallet.bootstrapCodeDescription', {emailAddress})}
               </Markdown>
@@ -822,43 +940,52 @@ export const Configuration: React.FC<
               stacked={true}
               disabled={isSaving}
             />
-            <Box className={classes.checkboxContainer}>
-              <FormGroup>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      onChange={handlePersistChange}
-                      className={classes.checkbox}
-                      checked={persistKeys}
-                      disabled={isSaving}
-                    />
-                  }
-                  label={
-                    <Box display="flex" flexDirection="column">
-                      <Typography variant="body1">
-                        {t('wallet.rememberOnThisDevice')}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        className={
-                          bootstrapCode && bootstrapCode.length > 0 && !isSaving
-                            ? classes.enableDescription
-                            : undefined
-                        }
-                      >
-                        {t('wallet.rememberOnThisDeviceDescription')}
-                      </Typography>
-                    </Box>
-                  }
-                />
-              </FormGroup>
-            </Box>
+            {configState === WalletConfigState.OtpEntry && (
+              <Box className={classes.checkboxContainer}>
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        onChange={handlePersistChange}
+                        className={classes.checkbox}
+                        checked={persistKeys}
+                        disabled={isSaving}
+                      />
+                    }
+                    label={
+                      <Box display="flex" flexDirection="column">
+                        <Typography variant="body1">
+                          {t('wallet.rememberOnThisDevice')}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          className={
+                            bootstrapCode &&
+                            bootstrapCode.length > 0 &&
+                            !isSaving
+                              ? classes.enableDescription
+                              : undefined
+                          }
+                        >
+                          {t('wallet.rememberOnThisDeviceDescription')}
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                </FormGroup>
+              </Box>
+            )}
           </Box>
-        ) : configState === WalletConfigState.PasswordEntry ? (
+        ) : [
+            WalletConfigState.PasswordEntry,
+            WalletConfigState.OnboardWithEmail,
+          ].includes(configState) ? (
           <Box>
             <Typography variant="body1" className={classes.infoContainer}>
               <Markdown>
-                {recoveryToken
+                {configState === WalletConfigState.OnboardWithEmail
+                  ? t('wallet.onboardWithEmailDescription')
+                  : recoveryToken
                   ? t('wallet.resetPasswordDescription')
                   : t('wallet.recoveryPhraseDescription')}
               </Markdown>
@@ -915,7 +1042,8 @@ export const Configuration: React.FC<
                 }
                 stacked={false}
               />
-              {recoveryToken && (
+              {(recoveryToken ||
+                configState === WalletConfigState.OnboardWithEmail) && (
                 <ManageInput
                   mt={2}
                   id="recoveryPhraseConfirmation"
@@ -925,25 +1053,60 @@ export const Configuration: React.FC<
                   onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
                   stacked={false}
-                  type="password"
+                  type={passwordVisible ? undefined : 'password'}
                   disabled={isSaving}
+                  endAdornment={
+                    <IconButton
+                      className={classes.passwordIcon}
+                      onClick={() => {
+                        setPasswordVisible(!passwordVisible);
+                      }}
+                    >
+                      {passwordVisible ? (
+                        <Tooltip title={t('common.passwordHide')}>
+                          <VisibilityOffOutlinedIcon />
+                        </Tooltip>
+                      ) : (
+                        <Tooltip title={t('common.passwordShow')}>
+                          <VisibilityOutlinedIcon />
+                        </Tooltip>
+                      )}
+                    </IconButton>
+                  }
                 />
               )}
             </Box>
           </Box>
         ) : (
-          configState === WalletConfigState.Complete &&
-          (mode === 'basic' ? (
+          [
+            WalletConfigState.Complete,
+            WalletConfigState.OnboardSuccess,
+          ].includes(configState) &&
+          (mode === 'basic' ||
+          configState === WalletConfigState.OnboardSuccess ? (
             <Box mt={5}>
-              <OperationStatus label={t('manage.allSet')} success={true}>
-                <Box mb={2}>
+              <OperationStatus
+                label={
+                  configState === WalletConfigState.Complete
+                    ? t('manage.allSet')
+                    : t('wallet.onboardSuccessTitle')
+                }
+                success={true}
+              >
+                <Box mb={3} display="flex" textAlign="center">
                   <Typography variant="body1">
-                    {t('wallet.successDescription')}
+                    {configState === WalletConfigState.Complete
+                      ? t('wallet.successDescription')
+                      : t('wallet.onboardSuccessDescription', {
+                          emailAddress: emailAddress!,
+                        })}
                   </Typography>
                 </Box>
-                <Button variant="outlined" onClick={handleLogout}>
-                  {t('header.signOut')}
-                </Button>
+                {configState === WalletConfigState.Complete && (
+                  <Button variant="outlined" onClick={handleLogout}>
+                    {t('header.signOut')}
+                  </Button>
+                )}
               </OperationStatus>
             </Box>
           ) : (

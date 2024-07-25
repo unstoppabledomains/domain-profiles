@@ -44,6 +44,7 @@ const WalletPage = () => {
   const [recoveryToken, setRecoveryToken] = useState<string>();
   const [emailAddress, setEmailAddress] = useState<string>();
   const [signInClicked, setSignInClicked] = useState(false);
+  const [getWalletClicked, setGetWalletClicked] = useState(false);
   const [isReloadChecked, setIsReloadChecked] = useState(false);
 
   // build default wallet page SEO tags
@@ -146,8 +147,9 @@ const WalletPage = () => {
     void loadWallet();
   }, [isMounted, authComplete]);
 
-  const handleLearnMore = () => {
-    window.open(config.WALLETS.LANDING_PAGE_URL, '_blank');
+  const handleGetLiteWallet = () => {
+    setGetWalletClicked(true);
+    setSignInClicked(true);
   };
 
   const handleSignIn = () => {
@@ -213,6 +215,7 @@ const WalletPage = () => {
                   }}
                   setAuthAddress={setAuthAddress}
                   setButtonComponent={setAuthButton}
+                  isNewUser={getWalletClicked}
                 />
                 {!authAddress && (
                   <Box
@@ -247,9 +250,9 @@ const WalletPage = () => {
                     fullWidth
                     variant="contained"
                     className={classes.button}
-                    onClick={handleLearnMore}
+                    onClick={handleGetLiteWallet}
                   >
-                    {t('common.learnMore')}
+                    {t('wallet.getLiteWallet')}
                   </Button>
                   <Button
                     fullWidth

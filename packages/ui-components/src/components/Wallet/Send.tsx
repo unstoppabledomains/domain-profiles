@@ -256,7 +256,6 @@ const Send: React.FC<Props> = ({
         accountAsset?.address,
         emailAddress,
         accessToken,
-        isCreateWalletEnabled,
       );
 
       // return the records if available

@@ -26,7 +26,9 @@ export const Wallet: React.FC<
     recoveryToken?: string;
     showMessages?: boolean;
     mode?: WalletMode;
+    disableInlineEducation?: boolean;
     setAuthAddress?: (v: string) => void;
+    onLogout?: () => void;
   }
 > = ({
   emailAddress,
@@ -36,7 +38,9 @@ export const Wallet: React.FC<
   recoveryToken,
   showMessages,
   mode = 'basic',
+  disableInlineEducation,
   onUpdate,
+  onLogout,
   setAuthAddress,
   setButtonComponent,
 }) => {
@@ -82,6 +86,7 @@ export const Wallet: React.FC<
         accessToken={accessToken}
         emailAddress={emailAddress}
         onHeaderClick={() => setIsHeaderClicked(true)}
+        onLogout={onLogout}
         domain={isDomainValidForManagement(domain) ? domain : undefined}
       />
       <Configuration
@@ -97,6 +102,7 @@ export const Wallet: React.FC<
         isHeaderClicked={isHeaderClicked}
         setIsHeaderClicked={setIsHeaderClicked}
         setAuthAddress={setAuthAddress}
+        disableInlineEducation={disableInlineEducation}
       />
       {isLoaded && isWeb3DepsLoading && (
         <AccessWalletModal

@@ -9,7 +9,10 @@ export const confirmRecordUpdate = async (
   domain: string,
   operationId: string,
   dependencyId: string,
-  signature: string,
+  data: {
+    signature?: string;
+    txHash?: string;
+  },
   auth: {
     expires: string;
     signature: string;
@@ -22,7 +25,8 @@ export const confirmRecordUpdate = async (
     body: JSON.stringify({
       operationId,
       dependencyId,
-      signature,
+      signature: data.signature,
+      txHash: data.txHash,
     }),
     headers: {
       Accept: 'application/json',
@@ -96,8 +100,10 @@ export const initiatePrimaryDomain = async (
       return {
         operationId: updateResponse.operation.id,
         dependencyId: updateResponse.operation.dependencies[0].id,
-        message:
-          updateResponse.operation.dependencies[0].transaction.messageToSign,
+        transaction: {
+          messageToSign:
+            updateResponse.operation.dependencies[0].transaction.messageToSign,
+        },
       };
     }
   }
@@ -139,8 +145,10 @@ export const initiateRecordUpdate = async (
       return {
         operationId: updateResponse.operation.id,
         dependencyId: updateResponse.operation.dependencies[0].id,
-        message:
-          updateResponse.operation.dependencies[0].transaction.messageToSign,
+        transaction: {
+          messageToSign:
+            updateResponse.operation.dependencies[0].transaction.messageToSign,
+        },
       };
     }
   }
@@ -180,12 +188,17 @@ export const initiateTransferDomain = async (
     updateResponse?.operation?.dependencies &&
     updateResponse.operation.dependencies.length > 0
   ) {
-    if (updateResponse.operation.dependencies[0].transaction?.messageToSign) {
+    if (updateResponse.operation.dependencies[0].transaction) {
       return {
         operationId: updateResponse.operation.id,
         dependencyId: updateResponse.operation.dependencies[0].id,
-        message:
-          updateResponse.operation.dependencies[0].transaction.messageToSign,
+        transaction: {
+          messageToSign:
+            updateResponse.operation.dependencies[0].transaction.messageToSign,
+          contractAddress:
+            updateResponse.operation.dependencies[0].transaction.to,
+          data: updateResponse.operation.dependencies[0].transaction.data,
+        },
       };
     }
   }

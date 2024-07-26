@@ -214,11 +214,22 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
     void loginWithAddress(web3Deps.address);
   }, [web3Deps]);
 
+  // determines if general onchain features should be shown
   const isOnchainSupported =
     !isExternalDomain(domain) &&
     (metadata.type as string)?.toLowerCase() === 'uns' &&
     (metadata.blockchain as string)?.toLowerCase() === 'matic';
+
+  // determines if transfer tab should be shown
+  const isTransferSupported =
+    isOnchainSupported || (metadata.type as string)?.toLowerCase() === 'ens';
+
+  // determines if web2 management features should be shown
   const isWeb2Supported = isOnchainSupported && isWeb2Domain(domain);
+
+  // TODO - work needs to be completed here to bring list for sale in sync
+  // with the new marketplace features
+  const isListForSaleSupported = false;
 
   const onUpdateWrapper = (
     tab: DomainProfileTabType,
@@ -436,18 +447,20 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                     value={DomainProfileTabType.Email}
                     disabled={!web3Deps?.address && !isOwner}
                   />
-                  <Tab
-                    icon={<SellOutlinedIcon />}
-                    iconPosition="top"
-                    label={
-                      <Box className={classes.tabLabel}>
-                        {t('manage.listForSale')}
-                      </Box>
-                    }
-                    value={DomainProfileTabType.ListForSale}
-                    disabled={!web3Deps?.address && !isOwner}
-                  />
-                  {isOnchainSupported && !isWeb2Supported && (
+                  {isListForSaleSupported && (
+                    <Tab
+                      icon={<SellOutlinedIcon />}
+                      iconPosition="top"
+                      label={
+                        <Box className={classes.tabLabel}>
+                          {t('manage.listForSale')}
+                        </Box>
+                      }
+                      value={DomainProfileTabType.ListForSale}
+                      disabled={!web3Deps?.address && !isOwner}
+                    />
+                  )}
+                  {isTransferSupported && (
                     <Tab
                       icon={<SendOutlinedIcon />}
                       iconPosition="top"
@@ -582,6 +595,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                 <TransferTab
                   address={address}
                   domain={domain}
+                  metadata={metadata}
                   onUpdate={onUpdateWrapper}
                   setButtonComponent={setButtonComponent}
                 />

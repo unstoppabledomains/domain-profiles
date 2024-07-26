@@ -163,7 +163,7 @@ export const createTransactionOperation = async (
         },
         host: config.WALLETS.HOST_URL,
         body: JSON.stringify({
-          destinationAddress: tx.contractAddress,
+          destinationAddress: tx.to,
           data: tx.data,
           value: tx.value,
         }),
@@ -396,148 +396,6 @@ export const getBootstrapToken = async (
   return undefined;
 };
 
-export const getTransactionGasEstimate = async (
-  asset: AccountAsset,
-  accessToken: string,
-  tx: CreateTransaction,
-) => {
-  return fetchApi<GetEstimateTransactionResponse>(
-    `/estimates/accounts/${asset.accountId}/assets/${asset.id}/transactions`,
-    {
-      method: 'POST',
-      mode: 'cors',
-      headers: {
-        'Access-Control-Allow-Credentials': 'true',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      host: config.WALLETS.HOST_URL,
-      body: JSON.stringify({
-        destinationAddress: tx.contractAddress,
-        data: tx.data,
-        value: tx.value,
-      }),
-    },
-  );
-};
-
-export const getTransferGasEstimate = async (
-  asset: AccountAsset,
-  accessToken: string,
-  destinationAddress: string,
-  amount: string,
-) => {
-  return fetchApi<GetEstimateTransactionResponse>(
-    `/estimates/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
-    {
-      method: 'POST',
-      mode: 'cors',
-      headers: {
-        'Access-Control-Allow-Credentials': 'true',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      host: config.WALLETS.HOST_URL,
-      body: JSON.stringify({
-        destinationAddress,
-        amount,
-      }),
-    },
-  );
-};
-
-export const signAndWait = async (
-  accessToken: string,
-  onGetOperation: () => Promise<GetOperationResponse | undefined>,
-  onSignTx: (txId: string) => Promise<void>,
-  opts?: {
-    address?: string;
-    onStatusChange?: (status: string) => void;
-    isComplete?: (status: GetOperationStatusResponse) => boolean;
-  },
-): Promise<GetOperationStatusResponse | undefined> => {
-  try {
-    // initialize a transaction to retrieve auth tokens
-    if (opts?.onStatusChange) {
-      opts.onStatusChange('starting signing operation');
-    }
-    const operationResponse = await onGetOperation();
-    if (!operationResponse) {
-      throw new Error('error requesting signing operation');
-    }
-
-    // wait for the signature TX to pass to the client
-    if (opts?.onStatusChange) {
-      opts.onStatusChange('waiting to sign with local key');
-    }
-    let signedWithClient = false;
-    for (let i = 0; i < FB_MAX_RETRY; i++) {
-      const operationStatus = await getOperationStatus(
-        accessToken,
-        operationResponse.operation.id,
-      );
-      if (!operationStatus) {
-        throw new Error('error requesting signature operation status');
-      }
-
-      // sign the Fireblocks transaction ID when requested
-      if (
-        !signedWithClient &&
-        operationStatus.status === 'SIGNATURE_REQUIRED' &&
-        operationStatus.transaction?.externalVendorTransactionId
-      ) {
-        // request for the client to sign the Tx string
-        if (opts?.onStatusChange) {
-          opts.onStatusChange('signing with local key');
-        }
-        await onSignTx(operationStatus.transaction.externalVendorTransactionId);
-        signedWithClient = true;
-
-        // indicate status change
-        if (opts?.onStatusChange) {
-          opts.onStatusChange('waiting for other signers');
-        }
-      }
-
-      // throw an error for failure states
-      if (
-        operationStatus.status === 'CANCELLED' ||
-        operationStatus.status === 'FAILED'
-      ) {
-        throw new Error(`signature ${operationStatus.status.toLowerCase()}`);
-      }
-
-      // return the completed signature
-      if (operationStatus.status === 'COMPLETED') {
-        if (opts?.onStatusChange) {
-          opts.onStatusChange('signature completed');
-        }
-        if (opts?.isComplete) {
-          if (opts.isComplete(operationStatus)) {
-            return operationStatus;
-          }
-        } else {
-          return operationStatus;
-        }
-      }
-
-      // wait for next interval
-      await sleep(FB_WAIT_TIME_MS);
-    }
-
-    // reaching this point means the signature was not successful
-    throw new Error('failed to sign');
-  } catch (e) {
-    if (opts?.onStatusChange) {
-      opts.onStatusChange('signature failed');
-    }
-    notifyEvent(e, 'error', 'Wallet', 'Signature', {
-      msg: 'error signing',
-    });
-  }
-  return undefined;
-};
-
 export const getOperationList = async (
   accessToken: string,
   accountId: string,
@@ -583,6 +441,56 @@ export const getOperationStatus = async (
     },
     host: config.WALLETS.HOST_URL,
   });
+};
+
+export const getTransactionGasEstimate = async (
+  asset: AccountAsset,
+  accessToken: string,
+  tx: CreateTransaction,
+) => {
+  return fetchApi<GetEstimateTransactionResponse>(
+    `/estimates/accounts/${asset.accountId}/assets/${asset.id}/transactions`,
+    {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        destinationAddress: tx.to,
+        data: tx.data,
+        value: tx.value,
+      }),
+    },
+  );
+};
+
+export const getTransferGasEstimate = async (
+  asset: AccountAsset,
+  accessToken: string,
+  destinationAddress: string,
+  amount: string,
+) => {
+  return fetchApi<GetEstimateTransactionResponse>(
+    `/estimates/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
+    {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        destinationAddress,
+        amount,
+      }),
+    },
+  );
 };
 
 export const getTransferOperationResponse = (
@@ -754,4 +662,96 @@ export const sendRpcMessage = async <T>(
     });
     throw e;
   }
+};
+
+export const signAndWait = async (
+  accessToken: string,
+  onGetOperation: () => Promise<GetOperationResponse | undefined>,
+  onSignTx: (txId: string) => Promise<void>,
+  opts?: {
+    address?: string;
+    onStatusChange?: (status: string) => void;
+    isComplete?: (status: GetOperationStatusResponse) => boolean;
+  },
+): Promise<GetOperationStatusResponse | undefined> => {
+  try {
+    // initialize a transaction to retrieve auth tokens
+    if (opts?.onStatusChange) {
+      opts.onStatusChange('starting signing operation');
+    }
+    const operationResponse = await onGetOperation();
+    if (!operationResponse) {
+      throw new Error('error requesting signing operation');
+    }
+
+    // wait for the signature TX to pass to the client
+    if (opts?.onStatusChange) {
+      opts.onStatusChange('waiting to sign with local key');
+    }
+    let signedWithClient = false;
+    for (let i = 0; i < FB_MAX_RETRY; i++) {
+      const operationStatus = await getOperationStatus(
+        accessToken,
+        operationResponse.operation.id,
+      );
+      if (!operationStatus) {
+        throw new Error('error requesting signature operation status');
+      }
+
+      // sign the Fireblocks transaction ID when requested
+      if (
+        !signedWithClient &&
+        operationStatus.status === 'SIGNATURE_REQUIRED' &&
+        operationStatus.transaction?.externalVendorTransactionId
+      ) {
+        // request for the client to sign the Tx string
+        if (opts?.onStatusChange) {
+          opts.onStatusChange('signing with local key');
+        }
+        await onSignTx(operationStatus.transaction.externalVendorTransactionId);
+        signedWithClient = true;
+
+        // indicate status change
+        if (opts?.onStatusChange) {
+          opts.onStatusChange('waiting for other signers');
+        }
+      }
+
+      // throw an error for failure states
+      if (
+        operationStatus.status === 'CANCELLED' ||
+        operationStatus.status === 'FAILED'
+      ) {
+        throw new Error(`signature ${operationStatus.status.toLowerCase()}`);
+      }
+
+      // return the completed signature
+      if (operationStatus.status === 'COMPLETED') {
+        if (opts?.onStatusChange) {
+          opts.onStatusChange('signature completed');
+        }
+        if (opts?.isComplete) {
+          if (opts.isComplete(operationStatus)) {
+            return operationStatus;
+          }
+        } else {
+          return operationStatus;
+        }
+      }
+
+      // wait for next interval
+      await sleep(FB_WAIT_TIME_MS);
+    }
+
+    // reaching this point means the signature was not successful
+    throw new Error('failed to sign');
+  } catch (e) {
+    if (opts?.onStatusChange) {
+      opts.onStatusChange('signature failed');
+    }
+    notifyEvent(e, 'error', 'Wallet', 'Signature', {
+      msg: 'error signing',
+    });
+  }
+  return undefined;
 };

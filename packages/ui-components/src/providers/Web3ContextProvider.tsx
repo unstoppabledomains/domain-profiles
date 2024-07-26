@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
 import {useLocalStorage, useSessionStorage} from 'usehooks-ts';
 
-import {CreateTransaction, FireblocksStateKey} from '../lib/types/fireBlocks';
+import type {CreateTransaction} from '../lib/types/fireBlocks';
+import { FireblocksStateKey} from '../lib/types/fireBlocks';
 import type {Web3Dependencies} from '../lib/types/web3';
 
 type Props = {

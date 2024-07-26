@@ -2,7 +2,7 @@ import {Mutex} from 'async-mutex';
 
 import {notifyEvent} from '../error';
 import {sleep} from '../sleep';
-import {CreateTransaction} from '../types/fireBlocks';
+import type {CreateTransaction} from '../types/fireBlocks';
 import type {signMessageProps} from '../wallet';
 
 const signingMutex = new Mutex();
@@ -137,7 +137,7 @@ export class ReactSigner {
     this.setTx(tx);
 
     // wait for the signature to be completed
-    const txKey = `${tx.chainId}:${tx.contractAddress}:${tx.data}`;
+    const txKey = `${tx.chainId}:${tx.to}:${tx.data}`;
     while (!this.signatures[txKey]) {
       if (UD_COMPLETED_SIGNATURE.length > 0) {
         const signature = UD_COMPLETED_SIGNATURE.pop();
@@ -170,7 +170,7 @@ export class ReactSigner {
     }
     return await this.signTxWithFireblocks(
       tx.chainId,
-      tx.contractAddress,
+      tx.to,
       tx.data,
       tx.value,
     );

@@ -22,13 +22,20 @@ import {
   registerWallet,
 } from '../../../actions/pav3Actions';
 import {useWeb3Context} from '../../../hooks';
-import {DomainFieldTypes, useTranslationContext} from '../../../lib';
+import type {CreateTransaction} from '../../../lib';
+import {
+  DomainFieldTypes,
+  isExternalDomain,
+  useTranslationContext,
+} from '../../../lib';
 import {notifyEvent} from '../../../lib/error';
+import type {RecordUpdateResponse} from '../../../lib/types/pav3';
 import {getAddressMetadata, isEthAddress} from '../../Chat/protocol/resolution';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import ManageInput from '../common/ManageInput';
 import {TabHeader} from '../common/TabHeader';
 import type {ManageTabProps} from '../common/types';
+import {getBlockchainName} from '../common/verification/types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -79,9 +86,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const Transfer: React.FC<ManageTabProps> = ({
+export const Transfer: React.FC<TransferTabProps> = ({
   address,
   domain,
+  metadata,
   setButtonComponent,
 }) => {
   const {classes} = useStyles();
@@ -102,6 +110,10 @@ export const Transfer: React.FC<ManageTabProps> = ({
   const [checkboxMap, setCheckboxMap] = useState<Record<string, boolean>>({});
   const [errorMessage, setErrorMessage] = useState<string>();
   const [t] = useTranslationContext();
+
+  // blockchain to display for transfer warning
+  const chainName = getBlockchainName(metadata.blockchain as string);
+  const isEns = (metadata.type as string)?.toLowerCase() === 'ens';
 
   useEffect(() => {
     // retrieve records and determine if there are pending transactions
@@ -220,29 +232,12 @@ export const Transfer: React.FC<ManageTabProps> = ({
         },
       );
       if (updateRequest) {
-        // retrieve confirmation signature
-        const txSignature = await getSignature(updateRequest.message);
-        if (txSignature) {
-          // submit confirmation signature to complete transaction
-          if (
-            await confirmRecordUpdate(
-              domain,
-              updateRequest.operationId,
-              updateRequest.dependencyId,
-              txSignature,
-              {
-                expires: expiry,
-                signature,
-              },
-            )
-          ) {
-            // record updates successful
-            setIsSaving(false);
-            setIsPendingTx(true);
-            return;
-          } else {
-            setErrorMessage('manage.recordSignatureError');
-          }
+        // transfer the domain using the required handler
+        const txResult = isEns
+          ? await handleEnsTransferRequest(updateRequest, signature, expiry)
+          : await handleUnsTransferRequest(updateRequest, signature, expiry);
+        if (!txResult) {
+          setErrorMessage(t('manage.recordSignatureError'));
         }
       } else {
         setErrorMessage(t('manage.transferRequestError'));
@@ -251,6 +246,82 @@ export const Transfer: React.FC<ManageTabProps> = ({
 
     // record update was not successful
     setIsSaving(false);
+  };
+
+  // handle transfer for UNS domains
+  const handleUnsTransferRequest = async (
+    updateRequest: RecordUpdateResponse,
+    signature: string,
+    expiry: string,
+  ): Promise<string | undefined> => {
+    if (updateRequest.transaction.messageToSign) {
+      const txSignature = await getSignature(
+        updateRequest.transaction.messageToSign,
+      );
+      if (txSignature) {
+        // submit confirmation signature to complete transaction
+        if (
+          await confirmRecordUpdate(
+            domain,
+            updateRequest.operationId,
+            updateRequest.dependencyId,
+            {signature: txSignature},
+            {
+              expires: expiry,
+              signature,
+            },
+          )
+        ) {
+          // record updates successful
+          setIsSaving(false);
+          setIsPendingTx(true);
+          return txSignature;
+        } else {
+          setErrorMessage(t('manage.recordSignatureError'));
+        }
+      }
+    }
+    return undefined;
+  };
+
+  // handle transfer for ENS domains
+  const handleEnsTransferRequest = async (
+    updateRequest: RecordUpdateResponse,
+    signature: string,
+    expiry: string,
+  ): Promise<string | undefined> => {
+    if (
+      updateRequest.transaction.contractAddress &&
+      updateRequest.transaction.data
+    ) {
+      const txSignature = await getTransaction(
+        updateRequest.transaction.contractAddress,
+        updateRequest.transaction.data,
+      );
+      if (txSignature) {
+        // submit confirmation signature to complete transaction
+        if (
+          await confirmRecordUpdate(
+            domain,
+            updateRequest.operationId,
+            updateRequest.dependencyId,
+            {txHash: txSignature},
+            {
+              expires: expiry,
+              signature,
+            },
+          )
+        ) {
+          // record updates successful
+          setIsSaving(false);
+          setIsPendingTx(true);
+          return txSignature;
+        } else {
+          setErrorMessage(t('manage.recordSignatureError'));
+        }
+      }
+    }
+    return undefined;
   };
 
   const validateWalletRegistration = async (
@@ -299,6 +370,32 @@ export const Transfer: React.FC<ManageTabProps> = ({
 
       // sign a message linking the domain and secondary wallet address
       return await web3Deps.signer.signMessage(msg);
+    } catch (signError) {
+      notifyEvent(signError, 'warning', 'Profile', 'Signature', {
+        msg: 'signature error',
+      });
+    }
+    return undefined;
+  };
+
+  // getTransaction prompts the user to sign a transaction
+  const getTransaction = async (
+    contractAddress: string,
+    data: string,
+  ): Promise<string | undefined> => {
+    try {
+      if (!web3Deps) {
+        return undefined;
+      }
+
+      // sign a message linking the domain and secondary wallet address
+      const txRequest: CreateTransaction = {
+        chainId: metadata.networkId as unknown as number,
+        to: contractAddress,
+        data,
+        value: '0',
+      };
+      return await web3Deps.signer.signTransaction(txRequest);
     } catch (signError) {
       notifyEvent(signError, 'warning', 'Profile', 'Signature', {
         msg: 'signature error',
@@ -358,26 +455,31 @@ export const Transfer: React.FC<ManageTabProps> = ({
             )}
             <Box className={classes.checkboxContainer}>
               <FormGroup>
-                {['1', '2', '3', '4'].map(key => (
-                  <FormControlLabel
-                    key={`checkbox-${key}`}
-                    disabled={isPendingTx}
-                    control={
-                      <Checkbox
-                        className={classes.checkbox}
-                        checked={checkboxMap[key]}
-                        onChange={e =>
-                          handleEnabledChange(key, e.target.checked)
-                        }
-                      />
-                    }
-                    label={
-                      <Typography variant="body1">
-                        {t(`manage.transferConfirmation${key}`)}
-                      </Typography>
-                    }
-                  />
-                ))}
+                {['1', '2', '3', '4'].map(key => {
+                  if (isExternalDomain(domain) && key === '4') {
+                    return;
+                  }
+                  return (
+                    <FormControlLabel
+                      key={`checkbox-${key}`}
+                      disabled={isPendingTx}
+                      control={
+                        <Checkbox
+                          className={classes.checkbox}
+                          checked={checkboxMap[key]}
+                          onChange={e =>
+                            handleEnabledChange(key, e.target.checked)
+                          }
+                        />
+                      }
+                      label={
+                        <Typography variant="body1">
+                          {t(`manage.transferConfirmation${key}`, {chainName})}
+                        </Typography>
+                      }
+                    />
+                  );
+                })}
               </FormGroup>
             </Box>
             <ProfileManager
@@ -395,4 +497,8 @@ export const Transfer: React.FC<ManageTabProps> = ({
       )}
     </Box>
   );
+};
+
+export type TransferTabProps = ManageTabProps & {
+  metadata: Record<string, string | boolean>;
 };

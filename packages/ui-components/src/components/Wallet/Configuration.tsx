@@ -273,7 +273,9 @@ export const Configuration: React.FC<
               fullWidth
             >
               {configState === WalletConfigState.NeedsOnboarding
-                ? t('wallet.createWallet')
+                ? isCreateWalletEnabled
+                  ? t('wallet.createWallet')
+                  : t('common.learnMore')
                 : configState === WalletConfigState.PasswordEntry
                 ? t('wallet.beginSetup')
                 : configState === WalletConfigState.OtpEntry
@@ -656,7 +658,11 @@ export const Configuration: React.FC<
   };
 
   const processNeedsOnboarding = () => {
-    setConfigState(WalletConfigState.OnboardWithEmail);
+    if (isCreateWalletEnabled) {
+      setConfigState(WalletConfigState.OnboardWithEmail);
+    } else {
+      window.open(config.WALLETS.LANDING_PAGE_URL, '_blank');
+    }
   };
 
   const processPasswordEntry = async () => {

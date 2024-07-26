@@ -10,7 +10,7 @@ import type {Web3Dependencies} from '../../lib';
 import { isDomainValidForManagement} from '../../lib';
 import type {DomainProfileTabType} from '../Manage';
 import type {ManageTabProps} from '../Manage/common/types';
-import {Configuration} from './Configuration';
+import {Configuration, WalletConfigState} from './Configuration';
 import {Header} from './Header';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -28,6 +28,7 @@ export const Wallet: React.FC<
     showMessages?: boolean;
     mode?: WalletMode;
     setAuthAddress?: (v: string) => void;
+    isNewUser?: boolean;
   }
 > = ({
   emailAddress,
@@ -37,6 +38,7 @@ export const Wallet: React.FC<
   recoveryToken,
   showMessages,
   mode = 'basic',
+  isNewUser,
   onUpdate,
   setAuthAddress,
   setButtonComponent,
@@ -98,6 +100,9 @@ export const Wallet: React.FC<
         isHeaderClicked={isHeaderClicked}
         setIsHeaderClicked={setIsHeaderClicked}
         setAuthAddress={setAuthAddress}
+        initialState={
+          isNewUser ? WalletConfigState.OnboardWithEmail : undefined
+        }
       />
       {isLoaded && isWeb3DepsLoading && (
         <AccessWalletModal

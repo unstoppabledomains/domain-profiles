@@ -167,8 +167,9 @@ const Send: React.FC<Props> = ({
     false,
     wallets?.find(w => isEthAddress(w.address))?.address,
   );
-  const isCreateWalletEnabled =
-    featureFlags.variations?.profileServiceEnableWalletCreation === true;
+  const isSendToEmailEnabled =
+    featureFlags.variations?.profileServiceEnableWalletCreation === true &&
+    featureFlags.variations?.profileServiceEnableWalletSendToEmail === true;
 
   const resetForm = () => {
     setResolvedDomain('');
@@ -250,13 +251,12 @@ const Send: React.FC<Props> = ({
     }
 
     // wait for wallet to begin resolving if wallet creation enabled
-    while (isCreateWalletEnabled) {
+    while (isSendToEmailEnabled) {
       // prepare the recipient wallet
       const recipientResult = await prepareRecipientWallet(
         accountAsset?.address,
         emailAddress,
         accessToken,
-        isCreateWalletEnabled,
       );
 
       // return the records if available
@@ -379,7 +379,7 @@ const Send: React.FC<Props> = ({
             <AddressInput
               label={t('wallet.recipient')}
               placeholder={t(
-                isCreateWalletEnabled
+                isSendToEmailEnabled
                   ? 'wallet.recipientDomainEmailOrWallet'
                   : 'wallet.recipientDomainOrAddress',
               )}
@@ -388,7 +388,7 @@ const Send: React.FC<Props> = ({
               onAddressChange={handleRecipientChange}
               onResolvedDomainChange={handleResolvedDomainChange}
               onInvitation={handleSendInvitation}
-              createWalletEnabled={isCreateWalletEnabled}
+              createWalletEnabled={isSendToEmailEnabled}
               asset={selectedToken}
             />
           </Box>

@@ -12,6 +12,7 @@ import QueryString from 'qs';
 import React, {useEffect, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
+import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableWalletIcon';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -279,7 +280,9 @@ export const Header: React.FC<Props> = ({
             )}
           >
             <Box className={classes.icon}>
-              <UnstoppableWalletIcon />
+              <IconPlate size={125} variant="info">
+                <UnstoppableWalletIcon />
+              </IconPlate>
             </Box>
           </Box>
         </Box>

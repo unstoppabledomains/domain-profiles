@@ -47,11 +47,49 @@ export const getWalletPortfolio = async (
   );
 };
 
+export const createWalletOtp = async (
+  emailAddress: string,
+): Promise<boolean> => {
+  const otpResult = await fetchApi<WalletAccountResponse>(`/user/wallet`, {
+    host: config.PROFILE.HOST_URL,
+    method: 'POST',
+    headers: {
+      'Content-type': 'application/json',
+    },
+    body: JSON.stringify({emailAddress}),
+  });
+  if (!otpResult?.emailAddress) {
+    return false;
+  }
+  return true;
+};
+
+export const createWallet = async (
+  emailAddress: string,
+  otp: string,
+  password: string,
+): Promise<boolean> => {
+  const createResult = await fetchApi<WalletAccountResponse>(
+    `/user/wallet/register`,
+    {
+      host: config.PROFILE.HOST_URL,
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json',
+      },
+      body: JSON.stringify({emailAddress, otp, password}),
+    },
+  );
+  if (!createResult?.emailAddress) {
+    return false;
+  }
+  return true;
+};
+
 export const prepareRecipientWallet = async (
   senderWalletAddress: string,
   recipientEmailAddress: string,
   accessToken: string,
-  createWallet?: boolean,
 ): Promise<WalletAccountResponse | undefined> => {
   try {
     const inviteStatus = await fetchApi<WalletAccountResponse>(
@@ -65,7 +103,6 @@ export const prepareRecipientWallet = async (
         },
         body: JSON.stringify({
           emailAddress: recipientEmailAddress,
-          createIfMissing: createWallet,
         }),
       },
     );

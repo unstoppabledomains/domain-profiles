@@ -7,6 +7,7 @@ export type LaunchDarklyBooleanKey =
   | 'ecommerce-service-users-public-profile-address-verified-check'
   | 'profile-service-enable-wallet-creation'
   | 'profile-service-enable-wallet-identity'
+  | 'profile-service-enable-wallet-send-to-email'
   | 'ud-me-service-domains-enable-social-verification'
   | 'ud-me-service-domains-enable-fireblocks'
   | 'ud-me-service-domains-enable-management';

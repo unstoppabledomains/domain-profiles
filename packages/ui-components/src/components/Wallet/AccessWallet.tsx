@@ -248,7 +248,7 @@ export const AccessWallet = (props: Props) => {
                     <>
                       <UnstoppableWalletTxSigner
                         chainId={txToSign.chainId}
-                        contractAddress={txToSign.contractAddress}
+                        contractAddress={txToSign.to}
                         data={txToSign.data}
                         value={txToSign.value}
                         onComplete={handleUdWalletSignature}

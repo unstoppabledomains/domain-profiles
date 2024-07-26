@@ -163,7 +163,7 @@ export const createTransactionOperation = async (
         },
         host: config.WALLETS.HOST_URL,
         body: JSON.stringify({
-          destinationAddress: tx.contractAddress,
+          destinationAddress: tx.to,
           data: tx.data,
           value: tx.value,
         }),
@@ -413,7 +413,7 @@ export const getTransactionGasEstimate = async (
       },
       host: config.WALLETS.HOST_URL,
       body: JSON.stringify({
-        destinationAddress: tx.contractAddress,
+        destinationAddress: tx.to,
         data: tx.data,
         value: tx.value,
       }),

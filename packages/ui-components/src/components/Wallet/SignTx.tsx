@@ -108,7 +108,7 @@ export const SignTx: React.FC<SignTxProps> = ({
       setGasEstimate(
         await getTransactionGasEstimate(asset, accessToken, {
           chainId,
-          contractAddress,
+          to: contractAddress,
           data,
           value,
         }),

@@ -79,7 +79,7 @@ const useFireblocksTxSigner = (): FireblocksTxSigner => {
           asset.id,
           {
             chainId,
-            contractAddress,
+            to: contractAddress,
             data,
             value,
           },

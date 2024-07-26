@@ -14,7 +14,7 @@ export interface AccountAsset {
 
 export interface CreateTransaction {
   chainId: number;
-  contractAddress: string;
+  to: string;
   data: string;
   value?: string;
 }

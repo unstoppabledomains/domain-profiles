@@ -9,7 +9,6 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {update} from 'lodash';
 import React, {useEffect, useState} from 'react';
 import {useDebounce} from 'usehooks-ts';
 
@@ -23,14 +22,14 @@ import {
   registerWallet,
 } from '../../../actions/pav3Actions';
 import {useWeb3Context} from '../../../hooks';
+import type {CreateTransaction} from '../../../lib';
 import {
-  CreateTransaction,
   DomainFieldTypes,
   isExternalDomain,
   useTranslationContext,
 } from '../../../lib';
 import {notifyEvent} from '../../../lib/error';
-import {RecordUpdateResponse} from '../../../lib/types/pav3';
+import type {RecordUpdateResponse} from '../../../lib/types/pav3';
 import {getAddressMetadata, isEthAddress} from '../../Chat/protocol/resolution';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import ManageInput from '../common/ManageInput';
@@ -86,10 +85,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     height: '50px',
   },
 }));
-
-export type TransferTabProps = ManageTabProps & {
-  metadata: Record<string, string | boolean>;
-};
 
 export const Transfer: React.FC<TransferTabProps> = ({
   address,
@@ -238,9 +233,12 @@ export const Transfer: React.FC<TransferTabProps> = ({
       );
       if (updateRequest) {
         // transfer the domain using the required handler
-        isEns
+        const txResult = isEns
           ? await handleEnsTransferRequest(updateRequest, signature, expiry)
           : await handleUnsTransferRequest(updateRequest, signature, expiry);
+        if (!txResult) {
+          setErrorMessage(t('manage.recordSignatureError'));
+        }
       } else {
         setErrorMessage(t('manage.transferRequestError'));
       }
@@ -277,7 +275,7 @@ export const Transfer: React.FC<TransferTabProps> = ({
           // record updates successful
           setIsSaving(false);
           setIsPendingTx(true);
-          return;
+          return txSignature;
         } else {
           setErrorMessage(t('manage.recordSignatureError'));
         }
@@ -317,7 +315,7 @@ export const Transfer: React.FC<TransferTabProps> = ({
           // record updates successful
           setIsSaving(false);
           setIsPendingTx(true);
-          return;
+          return txSignature;
         } else {
           setErrorMessage(t('manage.recordSignatureError'));
         }
@@ -499,4 +497,8 @@ export const Transfer: React.FC<TransferTabProps> = ({
       )}
     </Box>
   );
+};
+
+export type TransferTabProps = ManageTabProps & {
+  metadata: Record<string, string | boolean>;
 };

@@ -1,5 +1,6 @@
 export * from './domain';
 export * from './fetchApi';
+export * from './fireBlocks';
 export * from './formOpenseaLink';
 export * from './formSocialMediaLink';
 export * from './i18n';
@@ -8,5 +9,4 @@ export * from './resolution';
 export * from './seo';
 export * from './types';
 export * from './wallet';
-export * from './fireBlocks';
 export {default as useTranslationContext} from './i18n';

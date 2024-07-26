@@ -6,7 +6,8 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {AccessWalletModal} from '.';
 import {useWeb3Context} from '../../hooks';
-import {Web3Dependencies, isDomainValidForManagement} from '../../lib';
+import type {Web3Dependencies} from '../../lib';
+import { isDomainValidForManagement} from '../../lib';
 import type {DomainProfileTabType} from '../Manage';
 import type {ManageTabProps} from '../Manage/common/types';
 import {Configuration} from './Configuration';

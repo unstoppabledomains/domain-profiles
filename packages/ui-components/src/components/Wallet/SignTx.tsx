@@ -16,7 +16,7 @@ import useFireblocksAccessToken from '../../hooks/useFireblocksAccessToken';
 import useFireblocksTxSigner from '../../hooks/useFireblocksTxSigner';
 import {getBootstrapState, useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
-import {GetEstimateTransactionResponse} from '../../lib/types/fireBlocks';
+import type {GetEstimateTransactionResponse} from '../../lib/types/fireBlocks';
 import {getBlockchainSymbol} from '../Manage/common/verification/types';
 import {Header} from './Header';
 

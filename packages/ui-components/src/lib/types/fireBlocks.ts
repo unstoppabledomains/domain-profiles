@@ -12,13 +12,6 @@ export interface AccountAsset {
   accountId?: string;
 }
 
-export interface CreateTransaction {
-  chainId: number;
-  to: string;
-  data: string;
-  value?: string;
-}
-
 export interface AssetBalance {
   total: string;
   decimals: number;
@@ -46,7 +39,14 @@ export interface BootstrapState {
 }
 
 export const BootstrapStateCurrentKey = 'current';
+
 export const BootstrapStatePrefix = 'wallet-service-state';
+export interface CreateTransaction {
+  chainId: number;
+  to: string;
+  data: string;
+  value?: string;
+}
 export const FireblocksStateKey = 'fireblocks-state';
 
 export interface GetAccountAssetsResponse {

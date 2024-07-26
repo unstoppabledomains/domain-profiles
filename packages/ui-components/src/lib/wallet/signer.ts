@@ -3,7 +3,7 @@ import {utils} from 'ethers';
 import * as viemChains from 'viem/chains';
 import type {WalletClient} from 'wagmi';
 
-import {CreateTransaction} from '../types';
+import type {CreateTransaction} from '../types';
 
 const {...chains} = viemChains;
 

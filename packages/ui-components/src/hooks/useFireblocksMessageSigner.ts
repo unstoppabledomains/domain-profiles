@@ -7,7 +7,7 @@ import {
 import {notifyEvent} from '../lib/error';
 import {getFireBlocksClient} from '../lib/fireBlocks/client';
 import {getBootstrapState} from '../lib/fireBlocks/storage/state';
-import {GetOperationStatusResponse} from '../lib/types/fireBlocks';
+import type {GetOperationStatusResponse} from '../lib/types/fireBlocks';
 import useFireblocksAccessToken from './useFireblocksAccessToken';
 import useFireblocksState from './useFireblocksState';
 

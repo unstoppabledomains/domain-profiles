@@ -3,3 +3,4 @@ export * from './DomainWalletList';
 export * from './DomainWalletTransactions';
 export * from './TokensPortfolio';
 export * from './Wallet';
+export * from './MobileCta';

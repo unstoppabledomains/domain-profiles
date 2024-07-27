@@ -109,6 +109,12 @@ export default function getDefaultConfig(): Config {
         ],
         DOMAINS: ['ETH', 'MATIC'],
       },
+      MOBILE: {
+        ANDROID_URL:
+          'https://play.google.com/store/apps/details?id=com.unstoppabledomains.manager',
+        APPLE_URL:
+          'https://apps.apple.com/us/app/unstoppable-domains/id1544748602',
+      },
       SIGNATURE_SYMBOL: 'ETHEREUM/ETH',
     },
     PUSH: {

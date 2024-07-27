@@ -14,11 +14,13 @@ import config from '@unstoppabledomains/config';
 import type {DomainProfileTabType} from '@unstoppabledomains/ui-components';
 import {
   DomainProfileKeys,
+  MobileCta,
   Wallet,
   getSeoTags,
   useFeatureFlags,
   useFireblocksState,
   useTranslationContext,
+  useWeb3Context,
 } from '@unstoppabledomains/ui-components';
 import {
   getAddressMetadata,
@@ -33,6 +35,7 @@ import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableW
 const WalletPage = () => {
   const {classes, cx} = useStyles({});
   const [t] = useTranslationContext();
+  const {web3Deps} = useWeb3Context();
   const {query: params} = useRouter();
   const {data: featureFlags} = useFeatureFlags(false);
   const isMounted = useIsMounted();
@@ -280,6 +283,13 @@ const WalletPage = () => {
               </Box>
             )}
           </Grid>
+          {web3Deps?.unstoppableWallet && (
+            <Grid item xs={12}>
+              <Box mt={5}>
+                <MobileCta />
+              </Box>
+            </Grid>
+          )}
         </Grid>
       </Box>
       <Box className={classes.footerContainer}>

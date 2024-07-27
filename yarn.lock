@@ -1451,6 +1451,41 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fenderdigital/dom@npm:^1.0.6":
+  version: 1.0.7
+  resolution: "@fenderdigital/dom@npm:1.0.7"
+  checksum: b72c3ef85763981da969341baa7a040016423e1dcda4dec8cbecb6f4e3b0d0949e9ccef0c0f51c89204daaeff942b7627e4969bf654443562c823b36b14729e8
+  languageName: node
+  linkType: hard
+
+"@fenderdigital/react-app-store-button@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "@fenderdigital/react-app-store-button@npm:0.3.1"
+  dependencies:
+    "@fenderdigital/react-image": ^0.1.0-beta.11
+  peerDependencies:
+    css-utilities: "*"
+    icon-library: "*"
+    react: ">=16.x"
+    web-fonts: "*"
+  checksum: 52633f5f1ee1807906f8a034ff2e5bd6f26e6cec50c24d6663f8b9e7653f0d8fc5bc840b8866768b7d6773a945d4fc56dbd94e2ce0a3f1ba6d45f900e6a719a1
+  languageName: node
+  linkType: hard
+
+"@fenderdigital/react-image@npm:^0.1.0-beta.11":
+  version: 0.1.0-beta.11
+  resolution: "@fenderdigital/react-image@npm:0.1.0-beta.11"
+  dependencies:
+    "@fenderdigital/dom": ^1.0.6
+  peerDependencies:
+    css-utilities: "*"
+    icon-library: "*"
+    react: ">=16.x"
+    web-fonts: "*"
+  checksum: b089fa52a6779b87976ae2fb7e3166c67971e64d5c5fedf662ff680bfec2d35aa99cc4674ab68ff270344b4702982534a1b87f7643742dcbe86414299ecd2702
+  languageName: node
+  linkType: hard
+
 "@fireblocks/ncw-js-infra@npm:1.0.19":
   version: 1.0.19
   resolution: "@fireblocks/ncw-js-infra@npm:1.0.19"
@@ -5249,6 +5284,7 @@ __metadata:
   dependencies:
     "@braintree/sanitize-url": ^6.0.4
     "@emotion/server": ^11.4.0
+    "@fenderdigital/react-app-store-button": ^0.3.1
     "@fireblocks/ncw-js-sdk": ^12.2.0
     "@ipld/car": ^5.2.5
     "@mui/icons-material": 5.10.3

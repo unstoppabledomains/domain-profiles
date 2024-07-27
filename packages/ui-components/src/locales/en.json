@@ -864,7 +864,7 @@
     "enterRecoveryPhraseConfirmation": "Confirm your new password",
     "enterResetPassword": "Enter your new password",
     "errorCreatingWallet": "There was an error creating your wallet. Try again in a few minutes.",
-    "getLiteWallet": "Get Lite Wallet",
+    "getLiteWallet": "Create new wallet",
     "insufficientBalance": "Insufficient balance",
     "invalidEmailAddress": "Invalid email address",
     "invalidRecoveryAccount": "Invalid email address or password",

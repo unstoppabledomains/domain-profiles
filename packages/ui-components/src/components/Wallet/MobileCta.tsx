@@ -14,8 +14,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     textAlign: 'center',
   },
   button: {
-    marginLeft: theme.spacing(1),
     marginBottom: theme.spacing(-6),
+    marginLeft: theme.spacing(0.5),
+    marginRight: theme.spacing(0.5),
   },
 }));
 type Props = {

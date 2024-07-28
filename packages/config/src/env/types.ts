@@ -106,6 +106,10 @@ export type Config = {
       DOMAINS: string[];
     };
     SIGNATURE_SYMBOL: string;
+    MOBILE: {
+      ANDROID_URL: string;
+      APPLE_URL: string;
+    };
   };
   VERIFICATION_SUPPORTED: string[];
   PUSH: {

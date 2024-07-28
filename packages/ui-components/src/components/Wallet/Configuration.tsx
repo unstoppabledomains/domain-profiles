@@ -54,6 +54,7 @@ import {
   getBootstrapState,
   saveBootstrapState,
 } from '../../lib/fireBlocks/storage/state';
+import {sleep} from '../../lib/sleep';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileTabType} from '../Manage/DomainProfile';
@@ -62,7 +63,7 @@ import type {ManageTabProps} from '../Manage/common/types';
 import {Client, MIN_CLIENT_HEIGHT} from './Client';
 import InlineEducation from './InlineEducation';
 import {OperationStatus} from './OperationStatus';
-import {WalletMode} from './index';
+import type {WalletMode} from './index';
 
 const EMAIL_PARAM = 'email';
 const WALLET_PASSWORD_MIN_LENGTH = 12;
@@ -128,16 +129,6 @@ const useStyles = makeStyles<{
     margin: theme.spacing(0.5),
   },
 }));
-
-export enum WalletConfigState {
-  OtpEntry = 'otpEntry',
-  PasswordEntry = 'passwordEntry',
-  Complete = 'complete',
-  NeedsOnboarding = 'needsOnboarding',
-  OnboardWithEmail = 'onboardWithEmail',
-  OnboardConfirmation = 'onboardConfirmation',
-  OnboardSuccess = 'onboardSuccess',
-}
 
 export const Configuration: React.FC<
   ManageTabProps & {
@@ -215,7 +206,9 @@ export const Configuration: React.FC<
   }, [params]);
 
   useEffect(() => {
-    if (configState === WalletConfigState.Complete && accessToken) {
+    if (configState === WalletConfigState.OnboardSuccess) {
+      void waitForAccount();
+    } else if (configState === WalletConfigState.Complete && accessToken) {
       // update state
       onUpdate(DomainProfileTabType.Wallet, {accessToken});
       setIsLoaded(false);
@@ -366,6 +359,29 @@ export const Configuration: React.FC<
       },
     });
     setProgressPct(progressValue);
+  };
+
+  const waitForAccount = async () => {
+    // verify an email and password were already provided
+    if (!emailAddress || !recoveryPhrase) {
+      return;
+    }
+
+    // clear the one-time code used for email verification
+    setBootstrapCode(undefined);
+
+    // wait for the account status to be ready and then request a new one time
+    // code to automatically start the user's login process
+    while (true) {
+      const isOnboarded = await getOnboardingStatus(emailAddress);
+      if (isOnboarded) {
+        break;
+      }
+      await sleep(5000);
+    }
+
+    // request a one time code once the user account has been initialized
+    await processPasswordEntry();
   };
 
   const loadMpcWallets = async () => {
@@ -1087,36 +1103,36 @@ export const Configuration: React.FC<
               )}
             </Box>
           </Box>
+        ) : configState === WalletConfigState.OnboardSuccess ? (
+          <Box mt={5}>
+            <OperationStatus
+              icon={<LockOutlinedIcon />}
+              label={t('wallet.onboardSuccessTitle')}
+            >
+              <Box mt={3} display="flex" textAlign="center">
+                <Typography variant="body1">
+                  <Markdown>
+                    {t('wallet.onboardSuccessDescription', {
+                      emailAddress: emailAddress!,
+                    })}
+                  </Markdown>
+                </Typography>
+              </Box>
+            </OperationStatus>
+          </Box>
         ) : (
-          [
-            WalletConfigState.Complete,
-            WalletConfigState.OnboardSuccess,
-          ].includes(configState) &&
-          (mode === 'basic' ||
-          configState === WalletConfigState.OnboardSuccess ? (
+          configState === WalletConfigState.Complete &&
+          (mode === 'basic' ? (
             <Box mt={5}>
-              <OperationStatus
-                label={
-                  configState === WalletConfigState.Complete
-                    ? t('manage.allSet')
-                    : t('wallet.onboardSuccessTitle')
-                }
-                success={true}
-              >
+              <OperationStatus label={t('manage.allSet')} success={true}>
                 <Box mb={3} display="flex" textAlign="center">
                   <Typography variant="body1">
-                    {configState === WalletConfigState.Complete
-                      ? t('wallet.successDescription')
-                      : t('wallet.onboardSuccessDescription', {
-                          emailAddress: emailAddress!,
-                        })}
+                    {t('wallet.successDescription')}
                   </Typography>
                 </Box>
-                {configState === WalletConfigState.Complete && (
-                  <Button variant="outlined" onClick={handleLogout}>
-                    {t('header.signOut')}
-                  </Button>
-                )}
+                <Button variant="outlined" onClick={handleLogout}>
+                  {t('header.signOut')}
+                </Button>
               </OperationStatus>
             </Box>
           ) : (
@@ -1144,3 +1160,13 @@ export const Configuration: React.FC<
     </Box>
   );
 };
+
+export enum WalletConfigState {
+  OtpEntry = 'otpEntry',
+  PasswordEntry = 'passwordEntry',
+  Complete = 'complete',
+  NeedsOnboarding = 'needsOnboarding',
+  OnboardWithEmail = 'onboardWithEmail',
+  OnboardConfirmation = 'onboardConfirmation',
+  OnboardSuccess = 'onboardSuccess',
+}

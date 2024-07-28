@@ -7,12 +7,51 @@ import {fetchApi} from '../lib';
 import {notifyEvent} from '../lib/error';
 import type {SerializedIdentityResponse} from '../lib/types/identity';
 
+export const createWallet = async (
+  emailAddress: string,
+  otp: string,
+  password: string,
+): Promise<boolean> => {
+  const createResult = await fetchApi<WalletAccountResponse>(
+    `/user/wallet/register`,
+    {
+      host: config.PROFILE.HOST_URL,
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json',
+      },
+      body: JSON.stringify({emailAddress, otp, password}),
+    },
+  );
+  if (!createResult?.emailAddress) {
+    return false;
+  }
+  return true;
+};
+
+export const createWalletOtp = async (
+  emailAddress: string,
+): Promise<boolean> => {
+  const otpResult = await fetchApi<WalletAccountResponse>(`/user/wallet`, {
+    host: config.PROFILE.HOST_URL,
+    method: 'POST',
+    headers: {
+      'Content-type': 'application/json',
+    },
+    body: JSON.stringify({emailAddress}),
+  });
+  if (!otpResult?.emailAddress) {
+    return false;
+  }
+  return true;
+};
+
 export const getOnboardingStatus = async (
   emailAddress: string,
 ): Promise<boolean> => {
   try {
     const accountStatus = await fetchApi<WalletAccountResponse>(
-      `/user/${emailAddress}/wallet/account`,
+      `/user/${encodeURIComponent(emailAddress)}/wallet/account`,
       {
         method: 'POST',
         host: config.PROFILE.HOST_URL,
@@ -45,45 +84,6 @@ export const getWalletPortfolio = async (
       },
     },
   );
-};
-
-export const createWalletOtp = async (
-  emailAddress: string,
-): Promise<boolean> => {
-  const otpResult = await fetchApi<WalletAccountResponse>(`/user/wallet`, {
-    host: config.PROFILE.HOST_URL,
-    method: 'POST',
-    headers: {
-      'Content-type': 'application/json',
-    },
-    body: JSON.stringify({emailAddress}),
-  });
-  if (!otpResult?.emailAddress) {
-    return false;
-  }
-  return true;
-};
-
-export const createWallet = async (
-  emailAddress: string,
-  otp: string,
-  password: string,
-): Promise<boolean> => {
-  const createResult = await fetchApi<WalletAccountResponse>(
-    `/user/wallet/register`,
-    {
-      host: config.PROFILE.HOST_URL,
-      method: 'POST',
-      headers: {
-        'Content-type': 'application/json',
-      },
-      body: JSON.stringify({emailAddress, otp, password}),
-    },
-  );
-  if (!createResult?.emailAddress) {
-    return false;
-  }
-  return true;
 };
 
 export const prepareRecipientWallet = async (

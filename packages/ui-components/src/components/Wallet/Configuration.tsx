@@ -63,7 +63,7 @@ import type {ManageTabProps} from '../Manage/common/types';
 import {Client, MIN_CLIENT_HEIGHT} from './Client';
 import InlineEducation from './InlineEducation';
 import {OperationStatus} from './OperationStatus';
-import {WalletMode} from './index';
+import type {WalletMode} from './index';
 
 const EMAIL_PARAM = 'email';
 const WALLET_PASSWORD_MIN_LENGTH = 12;
@@ -129,16 +129,6 @@ const useStyles = makeStyles<{
     margin: theme.spacing(0.5),
   },
 }));
-
-export enum WalletConfigState {
-  OtpEntry = 'otpEntry',
-  PasswordEntry = 'passwordEntry',
-  Complete = 'complete',
-  NeedsOnboarding = 'needsOnboarding',
-  OnboardWithEmail = 'onboardWithEmail',
-  OnboardConfirmation = 'onboardConfirmation',
-  OnboardSuccess = 'onboardSuccess',
-}
 
 export const Configuration: React.FC<
   ManageTabProps & {
@@ -1170,3 +1160,13 @@ export const Configuration: React.FC<
     </Box>
   );
 };
+
+export enum WalletConfigState {
+  OtpEntry = 'otpEntry',
+  PasswordEntry = 'passwordEntry',
+  Complete = 'complete',
+  NeedsOnboarding = 'needsOnboarding',
+  OnboardWithEmail = 'onboardWithEmail',
+  OnboardConfirmation = 'onboardConfirmation',
+  OnboardSuccess = 'onboardSuccess',
+}

@@ -19,11 +19,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginRight: theme.spacing(0.5),
   },
 }));
-type Props = {
-  platform?: string;
-};
 
-export const MobileCta: React.FC<Props> = ({}) => {
+export const MobileCta: React.FC = () => {
   const {classes} = useStyles();
 
   return (

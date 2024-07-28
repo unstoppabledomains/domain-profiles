@@ -12,7 +12,7 @@ export const getOnboardingStatus = async (
 ): Promise<boolean> => {
   try {
     const accountStatus = await fetchApi<WalletAccountResponse>(
-      `/user/${emailAddress}/wallet/account`,
+      `/user/${encodeURIComponent(emailAddress)}/wallet/account`,
       {
         method: 'POST',
         host: config.PROFILE.HOST_URL,

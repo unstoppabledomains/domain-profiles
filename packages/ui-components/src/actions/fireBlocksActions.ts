@@ -725,8 +725,11 @@ export const signAndWait = async (
         throw new Error(`signature ${operationStatus.status.toLowerCase()}`);
       }
 
-      // return the completed signature
-      if (operationStatus.status === 'COMPLETED') {
+      // return the completed signature or a transaction ID is available
+      if (
+        operationStatus.status === 'COMPLETED' ||
+        operationStatus.transaction?.id?.startsWith('0x')
+      ) {
         if (opts?.onStatusChange) {
           opts.onStatusChange('signature completed');
         }

@@ -97,6 +97,7 @@ export const Transfer: React.FC<TransferTabProps> = ({
   const [saveClicked, setSaveClicked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [isPendingTx, setIsPendingTx] = useState<boolean>();
   const [recipientAddressInput, setRecipientAddressInput] =
@@ -114,12 +115,26 @@ export const Transfer: React.FC<TransferTabProps> = ({
   // blockchain to display for transfer warning
   const chainName = getBlockchainName(metadata.blockchain as string);
   const isEns = (metadata.type as string)?.toLowerCase() === 'ens';
+  const isErc1155 = (metadata.tokenType as string)?.toLowerCase() === 'erc1155';
 
   useEffect(() => {
-    // retrieve records and determine if there are pending transactions
+    // set page to initial loading state
     setIsLoading(true);
     setButtonComponent(<></>);
-    void loadRecords();
+
+    // determine if page is enabled
+    if (isEns && !isErc1155) {
+      setIsDisabled(true);
+      setErrorMessage(t('manage.transferDisabledForErc721'));
+    }
+
+    // check for pending records
+    if (metadata) {
+      setIsPendingTx(!!metadata.pending);
+    }
+
+    // loading completed
+    setIsLoading(false);
   }, [domain]);
 
   useEffect(() => {
@@ -135,6 +150,7 @@ export const Transfer: React.FC<TransferTabProps> = ({
           errorMessage !== undefined ||
           invalidAddress ||
           isPendingTx ||
+          isDisabled ||
           !isDirty ||
           !checkboxMap['1'] ||
           !checkboxMap['2'] ||
@@ -150,6 +166,7 @@ export const Transfer: React.FC<TransferTabProps> = ({
     invalidAddress,
     isPendingTx,
     isDirty,
+    isDisabled,
     isLoading,
     checkboxMap,
     errorMessage,
@@ -158,19 +175,6 @@ export const Transfer: React.FC<TransferTabProps> = ({
   useEffect(() => {
     void validateRecipientAddress(debouncedRecipientAddressInput);
   }, [debouncedRecipientAddressInput]);
-
-  const loadRecords = async () => {
-    const [profileData] = await Promise.all([
-      getProfileData(domain, [
-        DomainFieldTypes.Records,
-        DomainFieldTypes.CryptoVerifications,
-      ]),
-    ]);
-    if (profileData?.metadata) {
-      setIsPendingTx(!!profileData.metadata.pending);
-    }
-    setIsLoading(false);
-  };
 
   const handleSave = () => {
     setSaveClicked(true);
@@ -445,7 +449,7 @@ export const Transfer: React.FC<TransferTabProps> = ({
               error={invalidAddress}
               errorText={t('manage.enterValidRecipientAddress')}
               stacked={false}
-              disabled={isPendingTx}
+              disabled={isPendingTx || isDisabled}
             />
             {recipientAddress && !invalidAddress && (
               <Box display="flex" alignItems="center" mt={1} ml={16}>
@@ -462,7 +466,7 @@ export const Transfer: React.FC<TransferTabProps> = ({
                   return (
                     <FormControlLabel
                       key={`checkbox-${key}`}
-                      disabled={isPendingTx}
+                      disabled={isPendingTx || isDisabled}
                       control={
                         <Checkbox
                           className={classes.checkbox}

@@ -395,6 +395,7 @@
     "transferConfirmation3": "I'm transferring to a wallet address on the {{chainName}} network",
     "transferConfirmation4": "Clear records upon transfer (Optional)",
     "transferDescription": "Your domain can be transferred to another wallet. Make sure to read each item in the checklist carefully to ensure your domain is transferred safely.",
+    "transferDisabledForErc721": "Coming soon for unwrapped ENS domains",
     "transferRequestError": "Error requesting domain transfer",
     "transferWarning": "You must have the private key in order to manage your domain. If you transfer this domain to an exchange or any other custodial account where you do not control the private key, you will not be able to access your domain. Not your keys, not your domain.",
     "unblock": "Unblock",

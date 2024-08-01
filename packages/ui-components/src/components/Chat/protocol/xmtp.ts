@@ -217,6 +217,12 @@ export const isXmtpUser = async (address: string): Promise<boolean> => {
   return await Client.canMessage(address, xmtpOpts);
 };
 
+export const isAllowListed = (address: string) => {
+  return config.XMTP.CONVERSATION_ALLOW_LIST.map(a => a.toLowerCase()).includes(
+    address.toLowerCase(),
+  );
+};
+
 // loadConversationConsentState retrieves the consent state for this conversation
 export const loadConversationConsentState = async (
   xmtp: Client,

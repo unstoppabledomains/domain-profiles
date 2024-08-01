@@ -37,7 +37,7 @@ import useTranslationContext from '../../../../lib/i18n';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
 import {registerClientTopics} from '../../protocol/registration';
 import {getAddressMetadata} from '../../protocol/resolution';
-import {waitForXmtpMessages} from '../../protocol/xmtp';
+import {isAllowListed, waitForXmtpMessages} from '../../protocol/xmtp';
 import type {AddressResolution} from '../../types';
 import CallToAction from '../CallToAction';
 import {useConversationStyles} from '../styles';
@@ -331,23 +331,26 @@ export const Conversation: React.FC<ConversationProps> = ({
               transformOrigin={{horizontal: 'right', vertical: 'top'}}
               anchorOrigin={{horizontal: 'right', vertical: 'bottom'}}
             >
-              {authDomain && isDomainValidForManagement(authDomain) && (
-                <MenuItem
-                  onClick={() => {
-                    handleCloseMenu();
-                    void handleBlockClicked(!isBlocked());
-                  }}
-                >
-                  <ListItemIcon>
-                    <BlockOutlinedIcon fontSize="small" />
-                  </ListItemIcon>
-                  <Typography variant="body2">
-                    {isBlocked()
-                      ? t('manage.unblock')
-                      : t('push.blockAndReport')}
-                  </Typography>
-                </MenuItem>
-              )}
+              {authDomain &&
+                peerAddress &&
+                isDomainValidForManagement(authDomain) &&
+                !isAllowListed(peerAddress) && (
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseMenu();
+                      void handleBlockClicked(!isBlocked());
+                    }}
+                  >
+                    <ListItemIcon>
+                      <BlockOutlinedIcon fontSize="small" />
+                    </ListItemIcon>
+                    <Typography variant="body2">
+                      {isBlocked()
+                        ? t('manage.unblock')
+                        : t('push.blockAndReport')}
+                    </Typography>
+                  </MenuItem>
+                )}
               <MenuItem
                 onClick={() => {
                   handleCloseMenu();

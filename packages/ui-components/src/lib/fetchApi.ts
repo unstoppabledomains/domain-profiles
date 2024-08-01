@@ -43,17 +43,18 @@ export const fetchApi = async <T = any>(
 
   // prepare the abort controller to send a signal to fetch when the
   // request timeout has been exceeded
+  const requestTimeout = options.timeout || DEFAULT_TIMEOUT_MS;
   const cancelController = new AbortController();
   options.signal = cancelController.signal;
 
   // set a timer to fire at the requested timeout
   const cancelTimer = setTimeout(() => {
-    const cancelMsg = `request timeout after ${options.timeout}ms`;
+    const cancelMsg = `request timeout after ${requestTimeout}ms`;
     notifyEvent(new Error(cancelMsg), 'error', 'Request', 'Fetch', {
       meta: {url},
     });
     cancelController.abort(cancelMsg);
-  }, options.timeout || DEFAULT_TIMEOUT_MS);
+  }, requestTimeout);
 
   // make the request
   return fetch(url, options)

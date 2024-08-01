@@ -123,6 +123,7 @@ export type Config = {
     SUPPORT_WALLET_ADDRESS: string;
     SUPPORT_DOMAIN_NAME: string;
     SUPPORT_BUBBLE_SECONDS: number;
+    CONVERSATION_ALLOW_LIST: string[];
   };
   GATEWAY_API_KEY: string;
 };

@@ -128,6 +128,10 @@ export default function getDefaultConfig(): Config {
       SUPPORT_WALLET_ADDRESS: '0xf7Ef453121bF016e4441F0c06e0951223fdbbB01',
       SUPPORT_DOMAIN_NAME: 'support.crypto',
       SUPPORT_BUBBLE_SECONDS: 60,
+      CONVERSATION_ALLOW_LIST: [
+        '0xf7Ef453121bF016e4441F0c06e0951223fdbbB01',
+        '0xB6EB29d3C39a4bDC54F0E46dDa5903B7a5019Dd1',
+      ],
     },
     GATEWAY_API_KEY: process.env.GATEWAY_API_KEY || '',
   };

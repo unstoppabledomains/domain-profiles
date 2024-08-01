@@ -50,7 +50,11 @@ import Modal from '../../Modal';
 import {registerClientTopics} from '../protocol/registration';
 import {getAddressMetadata} from '../protocol/resolution';
 import type {ConversationMeta} from '../protocol/xmtp';
-import {getConversation, getConversations} from '../protocol/xmtp';
+import {
+  getConversation,
+  getConversations,
+  isAllowListed,
+} from '../protocol/xmtp';
 import type {AddressResolution, PayloadData} from '../types';
 import {TabType, getCaip10Address} from '../types';
 import CallToAction from './CallToAction';
@@ -315,12 +319,20 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     if (acceptedTopics.length === 0 && blockedTopics.length === 0) {
       setAcceptedTopics(
         conversations
-          .filter(c => c.consentState === 'allowed')
+          .filter(
+            c =>
+              c.consentState === 'allowed' ||
+              isAllowListed(c.conversation.peerAddress),
+          )
           .map(c => c.conversation.topic),
       );
       setBlockedTopics(
         conversations
-          .filter(c => c.consentState === 'denied')
+          .filter(
+            c =>
+              c.consentState === 'denied' &&
+              !isAllowListed(c.conversation.peerAddress),
+          )
           .map(c => c.conversation.topic),
       );
     }

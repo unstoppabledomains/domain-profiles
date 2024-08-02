@@ -110,6 +110,7 @@ export type Config = {
       ANDROID_URL: string;
       APPLE_URL: string;
     };
+    MAX_CLOCK_DRIFT_MS: number;
   };
   VERIFICATION_SUPPORTED: string[];
   PUSH: {

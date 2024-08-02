@@ -14,7 +14,6 @@ import {useDebounce} from 'usehooks-ts';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getProfileData} from '../../../actions';
 import {
   confirmRecordUpdate,
   getRegistrationMessage,
@@ -24,7 +23,6 @@ import {
 import {useWeb3Context} from '../../../hooks';
 import type {CreateTransaction} from '../../../lib';
 import {
-  DomainFieldTypes,
   isExternalDomain,
   useTranslationContext,
 } from '../../../lib';

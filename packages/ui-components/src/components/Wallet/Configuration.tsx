@@ -48,6 +48,7 @@ import {notifyEvent} from '../../lib/error';
 import {
   getFireBlocksClient,
   initializeClient,
+  isClockDrift,
   signTransaction,
 } from '../../lib/fireBlocks/client';
 import {
@@ -703,9 +704,20 @@ export const Configuration: React.FC<
     }
 
     // check for onboarding
-    const isOnboarded = await getOnboardingStatus(emailAddress);
-    if (!isOnboarded) {
+    const onboardStatus = await getOnboardingStatus(emailAddress);
+    if (!onboardStatus) {
       setConfigState(WalletConfigState.NeedsOnboarding);
+      return;
+    }
+
+    // check system clock synchronization
+    if (isClockDrift(onboardStatus.clock)) {
+      setErrorMessage(
+        t('wallet.clockDriftError', {
+          deviceTime: new Date().toLocaleString(),
+          expectedTime: new Date(onboardStatus.clock).toLocaleString(),
+        }),
+      );
       return;
     }
 

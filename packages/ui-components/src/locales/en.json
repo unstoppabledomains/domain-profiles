@@ -855,6 +855,7 @@
     "beginSetup": "Continue",
     "bootstrapCode": "One-time code",
     "bootstrapCodeDescription": "## Confirm login\nThe one-time code sent to **{{emailAddress}}** is required to access Unstoppable Lite Wallet on this device.",
+    "clockDriftError": "Device clock ({{deviceTime}}) is out of sync with wallet provider ({{expectedTime}}). Update your settings and try again.",
     "completeSetup": "Continue",
     "configuringWallet": "Configuring wallet...",
     "confirmRecoveryPhrase": "Confirm",

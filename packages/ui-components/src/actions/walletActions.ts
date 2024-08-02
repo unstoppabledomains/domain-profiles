@@ -48,7 +48,7 @@ export const createWalletOtp = async (
 
 export const getOnboardingStatus = async (
   emailAddress: string,
-): Promise<boolean> => {
+): Promise<WalletAccountResponse | undefined> => {
   try {
     const accountStatus = await fetchApi<WalletAccountResponse>(
       `/user/${encodeURIComponent(emailAddress)}/wallet/account`,
@@ -58,12 +58,12 @@ export const getOnboardingStatus = async (
       },
     );
     if (accountStatus?.active) {
-      return true;
+      return accountStatus;
     }
   } catch (e) {
     notifyEvent(e, 'warning', 'Wallet', 'Validation');
   }
-  return false;
+  return undefined;
 };
 
 export const getWalletPortfolio = async (

@@ -18,6 +18,7 @@ export type WagmiConnectorType =
 export interface WalletAccountResponse {
   emailAddress: string;
   active: boolean;
+  clock: number;
   records?: Record<string, string>;
 }
 

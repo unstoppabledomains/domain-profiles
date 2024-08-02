@@ -308,7 +308,6 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     }
 
     const onboardUser = async () => {
-      setIsSigning(true);
       await initChatAccounts({silent: true});
       handleCloseSetup();
     };
@@ -998,7 +997,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
           className={classes.messageButton}
           data-testid={'header-chat-button'}
           id="chat-button"
-          disabled={!messagingInitialized || isSigning}
+          disabled={!messagingInitialized || signatureType !== undefined}
           size={large ? 'large' : 'small'}
           sx={{
             '&.Mui-disabled': inheritStyle

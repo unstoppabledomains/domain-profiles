@@ -308,7 +308,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     }
 
     const onboardUser = async () => {
-      await initChatAccounts({silent: true});
+      await initChatAccounts({silent: true, skipPush: true});
       handleCloseSetup();
     };
     void onboardUser();

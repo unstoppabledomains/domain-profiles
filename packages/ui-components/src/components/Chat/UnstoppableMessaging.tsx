@@ -55,7 +55,7 @@ import {
 const useStyles = makeStyles<{inheritStyle?: boolean}>()(
   (theme: Theme, {inheritStyle}) => ({
     loadingIcon: {
-      color: 'white',
+      color: theme.palette.neutralShades[200],
       padding: theme.spacing(0.5),
     },
     messageButton: inheritStyle
@@ -876,11 +876,6 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     setChatOpen(false);
     setChatWalletConnected(false);
     setConfigState(ConfigurationState.Initial);
-
-    // clear web3deps in the case of UD wallet
-    if (web3Context.web3Deps?.unstoppableWallet) {
-      setWeb3Deps(undefined);
-    }
   };
 
   const handleCloseAccessWalletModal = () => {
@@ -1044,7 +1039,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
               placement="bottom"
               title={t('push.loading', {domain: chatUser})}
             >
-              {inheritStyle ? (
+              {inheritStyle && !signatureType ? (
                 messageReadyIcon
               ) : (
                 <CircularProgress size="30px" className={classes.loadingIcon} />

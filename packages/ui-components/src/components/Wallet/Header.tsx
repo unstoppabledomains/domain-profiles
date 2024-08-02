@@ -349,6 +349,7 @@ export const Header: React.FC<Props> = ({
           {showMessages && (
             <UnstoppableMessaging
               address={address}
+              silentOnboard={true}
               disableSupportBubble
               inheritStyle
             />

@@ -7,7 +7,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {AccessWalletModal} from '.';
 import {useWeb3Context} from '../../hooks';
 import type {Web3Dependencies} from '../../lib';
-import { isDomainValidForManagement} from '../../lib';
+import {isDomainValidForManagement} from '../../lib';
 import type {DomainProfileTabType} from '../Manage';
 import type {ManageTabProps} from '../Manage/common/types';
 import {Configuration, WalletConfigState} from './Configuration';
@@ -112,6 +112,7 @@ export const Wallet: React.FC<
           open={isWeb3DepsLoading}
           onClose={() => setIsWeb3DepsLoading(false)}
           isMpcWallet={true}
+          isMpcPromptDisabled={true}
         />
       )}
     </Box>

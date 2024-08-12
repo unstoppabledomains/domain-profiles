@@ -14,13 +14,16 @@ import config from '@unstoppabledomains/config';
 import type {DomainProfileTabType} from '@unstoppabledomains/ui-components';
 import {
   DomainProfileKeys,
+  MobileCta,
   Wallet,
   getAddressMetadata,
   getBootstrapState,
   getSeoTags,
   isEthAddress,
+  useFeatureFlags,
   useFireblocksState,
   useTranslationContext,
+  useWeb3Context,
 } from '@unstoppabledomains/ui-components';
 import InlineEducation from '@unstoppabledomains/ui-components/src/components/Wallet/InlineEducation';
 import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
@@ -30,7 +33,9 @@ import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableW
 const WalletPage = () => {
   const {classes, cx} = useStyles({});
   const [t] = useTranslationContext();
+  const {web3Deps} = useWeb3Context();
   const {query: params} = useRouter();
+  const {data: featureFlags} = useFeatureFlags(false);
   const isMounted = useIsMounted();
   const [isLoaded, setIsLoaded] = useState(false);
   const [walletState] = useFireblocksState();
@@ -42,6 +47,7 @@ const WalletPage = () => {
   const [recoveryToken, setRecoveryToken] = useState<string>();
   const [emailAddress, setEmailAddress] = useState<string>();
   const [signInClicked, setSignInClicked] = useState(false);
+  const [getWalletClicked, setGetWalletClicked] = useState(false);
   const [isReloadChecked, setIsReloadChecked] = useState(false);
 
   // build default wallet page SEO tags
@@ -49,6 +55,10 @@ const WalletPage = () => {
     title: t('wallet.title'),
     description: t('manage.cryptoWalletDescriptionShort'),
   });
+
+  // indicates whether the wallet creation feature is enabled
+  const isCreateWalletEnabled =
+    featureFlags.variations?.profileServiceEnableWalletCreation === true;
 
   // sign the user out if recovery is requested
   useEffect(() => {
@@ -144,8 +154,15 @@ const WalletPage = () => {
     void loadWallet();
   }, [isMounted, authComplete]);
 
-  const handleLearnMore = () => {
-    window.open(config.WALLETS.LANDING_PAGE_URL, '_blank');
+  const handleGetLiteWallet = () => {
+    if (isCreateWalletEnabled) {
+      // open new wallet configuration page
+      setGetWalletClicked(true);
+      setSignInClicked(true);
+    } else {
+      // navigate to the wallet info page
+      window.open(config.WALLETS.LANDING_PAGE_URL, '_blank');
+    }
   };
 
   const handleSignIn = () => {
@@ -211,6 +228,7 @@ const WalletPage = () => {
                   }}
                   setAuthAddress={setAuthAddress}
                   setButtonComponent={setAuthButton}
+                  isNewUser={getWalletClicked}
                 />
                 {!authAddress && (
                   <Box
@@ -245,9 +263,11 @@ const WalletPage = () => {
                     fullWidth
                     variant="contained"
                     className={classes.button}
-                    onClick={handleLearnMore}
+                    onClick={handleGetLiteWallet}
                   >
-                    {t('common.learnMore')}
+                    {isCreateWalletEnabled
+                      ? t('wallet.getLiteWallet')
+                      : t('common.learnMore')}
                   </Button>
                   <Button
                     fullWidth
@@ -261,6 +281,13 @@ const WalletPage = () => {
               </Box>
             )}
           </Grid>
+          {web3Deps?.unstoppableWallet && (
+            <Grid item xs={12}>
+              <Box mt={5}>
+                <MobileCta />
+              </Box>
+            </Grid>
+          )}
         </Grid>
       </Box>
       <Box className={classes.footerContainer}>

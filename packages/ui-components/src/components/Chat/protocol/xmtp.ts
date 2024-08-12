@@ -213,6 +213,12 @@ export const initXmtpAccount = async (address: string, signer: Signer) => {
   }
 };
 
+export const isAllowListed = (address: string) => {
+  return config.XMTP.CONVERSATION_ALLOW_LIST.map(a => a.toLowerCase()).includes(
+    address.toLowerCase(),
+  );
+};
+
 export const isXmtpUser = async (address: string): Promise<boolean> => {
   return await Client.canMessage(address, xmtpOpts);
 };

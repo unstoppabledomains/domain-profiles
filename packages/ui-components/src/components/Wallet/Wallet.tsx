@@ -6,10 +6,11 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {AccessWalletModal} from '.';
 import {useWeb3Context} from '../../hooks';
-import {Web3Dependencies, isDomainValidForManagement} from '../../lib';
+import type {Web3Dependencies} from '../../lib';
+import {isDomainValidForManagement} from '../../lib';
 import type {DomainProfileTabType} from '../Manage';
 import type {ManageTabProps} from '../Manage/common/types';
-import {Configuration} from './Configuration';
+import {Configuration, WalletConfigState} from './Configuration';
 import {Header} from './Header';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -29,6 +30,7 @@ export const Wallet: React.FC<
     disableInlineEducation?: boolean;
     setAuthAddress?: (v: string) => void;
     onLogout?: () => void;
+    isNewUser?: boolean;
   }
 > = ({
   emailAddress,
@@ -39,6 +41,7 @@ export const Wallet: React.FC<
   showMessages,
   mode = 'basic',
   disableInlineEducation,
+  isNewUser,
   onUpdate,
   onLogout,
   setAuthAddress,
@@ -103,6 +106,9 @@ export const Wallet: React.FC<
         setIsHeaderClicked={setIsHeaderClicked}
         setAuthAddress={setAuthAddress}
         disableInlineEducation={disableInlineEducation}
+        initialState={
+          isNewUser ? WalletConfigState.OnboardWithEmail : undefined
+        }
       />
       {isLoaded && isWeb3DepsLoading && (
         <AccessWalletModal
@@ -112,6 +118,7 @@ export const Wallet: React.FC<
           open={isWeb3DepsLoading}
           onClose={() => setIsWeb3DepsLoading(false)}
           isMpcWallet={true}
+          isMpcPromptDisabled={true}
         />
       )}
     </Box>

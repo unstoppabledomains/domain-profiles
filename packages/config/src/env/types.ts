@@ -106,6 +106,11 @@ export type Config = {
       DOMAINS: string[];
     };
     SIGNATURE_SYMBOL: string;
+    MOBILE: {
+      ANDROID_URL: string;
+      APPLE_URL: string;
+    };
+    MAX_CLOCK_DRIFT_MS: number;
   };
   VERIFICATION_SUPPORTED: string[];
   PUSH: {
@@ -119,6 +124,7 @@ export type Config = {
     SUPPORT_WALLET_ADDRESS: string;
     SUPPORT_DOMAIN_NAME: string;
     SUPPORT_BUBBLE_SECONDS: number;
+    CONVERSATION_ALLOW_LIST: string[];
   };
   GATEWAY_API_KEY: string;
 };

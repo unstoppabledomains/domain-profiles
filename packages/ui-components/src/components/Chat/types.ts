@@ -19,6 +19,7 @@ export enum ConfigurationState {
 export interface InitChatOptions {
   skipXmtp?: boolean;
   skipPush?: boolean;
+  silent?: boolean;
 }
 
 export enum MessagingSignatureType {

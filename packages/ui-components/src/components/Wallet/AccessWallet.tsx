@@ -36,6 +36,7 @@ import {Wallet as UnstoppableWalletConfig} from './Wallet';
 type Props = {
   address?: string;
   isMpcWallet?: boolean;
+  isMpcPromptDisabled?: boolean;
   message?: React.ReactNode;
   prompt?: boolean;
   onComplete?: (web3Deps?: Web3Dependencies) => void;
@@ -130,8 +131,9 @@ export const AccessWallet = (props: Props) => {
       return;
     }
 
-    // TODO - create an account or feature flag for this value
-    const promptForSignatures = true;
+    // determine whether to prompt for signatures based on access wallet param. Allows
+    // the logic calling for access wallet to determine if a prompt is necessary.
+    const promptForSignatures = !props.isMpcPromptDisabled;
 
     // initialize a react signature UX component that can be called back
     // by a signature request hook
@@ -248,7 +250,7 @@ export const AccessWallet = (props: Props) => {
                     <>
                       <UnstoppableWalletTxSigner
                         chainId={txToSign.chainId}
-                        contractAddress={txToSign.contractAddress}
+                        contractAddress={txToSign.to}
                         data={txToSign.data}
                         value={txToSign.value}
                         onComplete={handleUdWalletSignature}
@@ -321,6 +323,7 @@ export const AccessWalletModal = (props: ModalProps) => {
           prompt={props.prompt}
           message={props.message}
           isMpcWallet={props.isMpcWallet}
+          isMpcPromptDisabled={props.isMpcPromptDisabled}
         />
       </div>
     </ConnectWalletWrapper>

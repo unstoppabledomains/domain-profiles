@@ -6,6 +6,8 @@ import type {
 } from '@fireblocks/ncw-js-sdk';
 import {FireblocksNCWFactory} from '@fireblocks/ncw-js-sdk';
 
+import config from '@unstoppabledomains/config';
+
 import {
   sendJoinRequest,
   sendResetRequest,
@@ -144,6 +146,17 @@ export const initializeClient = async (
   }
 
   // the request to join was not successful
+  return false;
+};
+
+export const isClockDrift = (oracleMs: number): boolean => {
+  const clockDriftMs = Math.abs(new Date().getTime() - oracleMs);
+  if (clockDriftMs > config.WALLETS.MAX_CLOCK_DRIFT_MS) {
+    notifyEvent('detected clock drift', 'error', 'Wallet', 'Validation', {
+      meta: {oracleMs, clockDriftMs},
+    });
+    return true;
+  }
   return false;
 };
 

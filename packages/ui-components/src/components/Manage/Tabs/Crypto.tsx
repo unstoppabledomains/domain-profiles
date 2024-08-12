@@ -190,9 +190,11 @@ export const Crypto: React.FC<CryptoProps> = ({
           signature,
         },
       );
-      if (updateRequest) {
+      if (updateRequest?.transaction.messageToSign) {
         // retrieve confirmation signature
-        const txSignature = await getSignature(updateRequest.message);
+        const txSignature = await getSignature(
+          updateRequest.transaction.messageToSign,
+        );
         if (txSignature) {
           // submit confirmation signature to complete transaction
           if (
@@ -200,7 +202,7 @@ export const Crypto: React.FC<CryptoProps> = ({
               domain,
               updateRequest.operationId,
               updateRequest.dependencyId,
-              txSignature,
+              {signature: txSignature},
               {
                 expires: expiry,
                 signature,

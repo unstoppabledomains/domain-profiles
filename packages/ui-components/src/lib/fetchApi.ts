@@ -2,10 +2,14 @@ import config from '@unstoppabledomains/config';
 
 import {notifyEvent} from './error';
 
+// the default fetch timeout
+const DEFAULT_TIMEOUT_MS = 300 * 1000; // 5 minutes
+
 export interface FetchOptions extends RequestInit {
   host?: string;
   forceRefresh?: boolean;
   acceptStatusCodes?: number[];
+  timeout?: number;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -36,6 +40,21 @@ export const fetchApi = async <T = any>(
       ['X-Fastly-Force-Refresh']: 'true',
     };
   }
+
+  // prepare the abort controller to send a signal to fetch when the
+  // request timeout has been exceeded
+  const requestTimeout = options.timeout || DEFAULT_TIMEOUT_MS;
+  const cancelController = new AbortController();
+  options.signal = cancelController.signal;
+
+  // set a timer to fire at the requested timeout
+  const cancelTimer = setTimeout(() => {
+    const cancelMsg = `request timeout after ${requestTimeout}ms`;
+    notifyEvent(new Error(cancelMsg), 'error', 'Request', 'Fetch', {
+      meta: {url},
+    });
+    cancelController.abort(cancelMsg);
+  }, requestTimeout);
 
   // make the request
   return fetch(url, options)
@@ -71,5 +90,6 @@ export const fetchApi = async <T = any>(
         meta: {url},
       });
       return undefined;
-    });
+    })
+    .finally(() => clearTimeout(cancelTimer));
 };

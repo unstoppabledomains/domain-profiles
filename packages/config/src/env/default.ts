@@ -109,7 +109,14 @@ export default function getDefaultConfig(): Config {
         ],
         DOMAINS: ['ETH', 'MATIC'],
       },
+      MOBILE: {
+        ANDROID_URL:
+          'https://play.google.com/store/apps/details?id=com.unstoppabledomains.manager',
+        APPLE_URL:
+          'https://apps.apple.com/us/app/unstoppable-domains/id1544748602',
+      },
       SIGNATURE_SYMBOL: 'ETHEREUM/ETH',
+      MAX_CLOCK_DRIFT_MS: 2000, // 2 seconds
     },
     PUSH: {
       CHANNELS: ['eip155:5:0x0389246fB9191Dc41722e1f0D558dC8f82Be3C7A'],
@@ -122,6 +129,10 @@ export default function getDefaultConfig(): Config {
       SUPPORT_WALLET_ADDRESS: '0xf7Ef453121bF016e4441F0c06e0951223fdbbB01',
       SUPPORT_DOMAIN_NAME: 'support.crypto',
       SUPPORT_BUBBLE_SECONDS: 60,
+      CONVERSATION_ALLOW_LIST: [
+        '0xf7Ef453121bF016e4441F0c06e0951223fdbbB01',
+        '0xB6EB29d3C39a4bDC54F0E46dDa5903B7a5019Dd1',
+      ],
     },
     GATEWAY_API_KEY: process.env.GATEWAY_API_KEY || '',
   };

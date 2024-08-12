@@ -55,7 +55,7 @@ import {
 const useStyles = makeStyles<{inheritStyle?: boolean}>()(
   (theme: Theme, {inheritStyle}) => ({
     loadingIcon: {
-      color: 'white',
+      color: theme.palette.neutralShades[200],
       padding: theme.spacing(0.5),
     },
     messageButton: inheritStyle
@@ -113,6 +113,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
   label,
   domainRequired = false,
   disableSupportBubble = true,
+  silentOnboard = false,
   initCallback,
 }) => {
   const {classes} = useStyles({inheritStyle});
@@ -132,7 +133,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
   } = useUnstoppableMessaging();
   const [t] = useTranslationContext();
   const {enqueueSnackbar} = useSnackbar();
-  const {setWeb3Deps} = useWeb3Context();
+  const {web3Deps, setWeb3Deps} = useWeb3Context();
 
   // Messaging user state
   const [configState, setConfigState] = useState(ConfigurationState.Initial);
@@ -293,6 +294,25 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     }
     void initChatAccounts(initChatOptions || {skipPush: true});
   }, [signatureType, isSigning]);
+
+  // automatically onboard user if requested
+  useEffect(() => {
+    if (
+      !silentOnboard ||
+      !address ||
+      !messagingInitialized ||
+      xmtpKey ||
+      !web3Deps
+    ) {
+      return;
+    }
+
+    const onboardUser = async () => {
+      await initChatAccounts({silent: true, skipPush: true});
+      handleCloseSetup();
+    };
+    void onboardUser();
+  }, [silentOnboard, messagingInitialized, address, xmtpKey, web3Deps]);
 
   // handles the notification click event, either onboarding the new user to Push or
   // opening the Push app for an existing user.
@@ -455,7 +475,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         // open the configuration modal
         setSignatureType(MessagingSignatureType.NewUser);
         setInitChatOptions(opts);
-        if (!chatOpen) {
+        if (!chatOpen && !opts.silent) {
           setChatOpen(true);
         }
 
@@ -856,11 +876,6 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     setChatOpen(false);
     setChatWalletConnected(false);
     setConfigState(ConfigurationState.Initial);
-
-    // clear web3deps in the case of UD wallet
-    if (web3Context.web3Deps?.unstoppableWallet) {
-      setWeb3Deps(undefined);
-    }
   };
 
   const handleCloseAccessWalletModal = () => {
@@ -977,7 +992,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
           className={classes.messageButton}
           data-testid={'header-chat-button'}
           id="chat-button"
-          disabled={!messagingInitialized}
+          disabled={!messagingInitialized || signatureType !== undefined}
           size={large ? 'large' : 'small'}
           sx={{
             '&.Mui-disabled': inheritStyle
@@ -1024,7 +1039,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
               placement="bottom"
               title={t('push.loading', {domain: chatUser})}
             >
-              {inheritStyle ? (
+              {inheritStyle && !signatureType ? (
                 messageReadyIcon
               ) : (
                 <CircularProgress size="30px" className={classes.loadingIcon} />
@@ -1052,7 +1067,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
           signatureType === MessagingSignatureType.MissingChannels
         }
         configState={configState}
-        open={signatureType !== undefined}
+        open={signatureType !== undefined && !initChatOptions?.silent}
         onChat={handleOpenChat}
         onClose={handleCloseSetup}
         onConfirm={handleOpenSetup}
@@ -1107,5 +1122,6 @@ export type UnstoppableMessagingProps = {
   label?: string;
   disableSupportBubble?: boolean;
   domainRequired?: boolean;
+  silentOnboard?: boolean;
   initCallback?: () => void;
 };

@@ -106,8 +106,18 @@ const useStyles = makeStyles<{
         : undefined,
     alignItems: 'center',
   },
+  configuringStatusContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    height:
+      mode === 'portfolio'
+        ? `${getMinClientHeight(isMobile) - 125}px`
+        : undefined,
+    alignItems: 'center',
+  },
   infoContainer: {
     marginBottom: theme.spacing(3),
+    marginTop: theme.spacing(-2),
   },
   checkboxContainer: {
     marginTop: theme.spacing(3),
@@ -363,6 +373,7 @@ export const Configuration: React.FC<
     errorMessage,
     progressPct,
     isLoaded,
+    isCreateWalletEnabled,
     persistKeys,
   ]);
 
@@ -946,7 +957,7 @@ export const Configuration: React.FC<
         mode === 'basic' ||
         mpcWallets.length > 0) ? (
         isSaving || errorMessage ? (
-          <Box mt={5} textAlign="center">
+          <Box className={classes.configuringStatusContainer}>
             <OperationStatus
               label={errorMessage || t('wallet.configuringWallet')}
               icon={<LockOutlinedIcon />}

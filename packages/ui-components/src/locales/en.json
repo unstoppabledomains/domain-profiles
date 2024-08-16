@@ -267,7 +267,7 @@
     "terms": "Terms"
   },
   "header": {
-    "signIn": "Sign in",
+    "signIn": "Sign In",
     "signOut": "Sign Out"
   },
   "manage": {
@@ -856,7 +856,7 @@
     "availableUsd": "Available {{amount}} USD",
     "beginSetup": "Continue",
     "bootstrapCode": "One-time code",
-    "bootstrapCodeDescription": "## Confirm login\nThe one-time code sent to **{{emailAddress}}** is required to access Unstoppable Lite Wallet on this device.",
+    "bootstrapCodeDescription": "## Confirm Sign In\nThe one-time code sent to **{{emailAddress}}** is required to access Unstoppable Lite Wallet on this device.",
     "clockDriftError": "Device clock ({{deviceTime}}) is out of sync with wallet provider ({{expectedTime}}). Update your settings and try again.",
     "completeSetup": "Continue",
     "configuringWallet": "Configuring wallet...",
@@ -887,7 +887,7 @@
     "onboardingMessage": "## Let's get you a wallet...\nWe couldn't find a wallet account for **{{emailAddress}}**. Don't worry, creating a new wallet is easy!",
     "onboardSuccessDescription": "In a few moments we'll send an email to **{{emailAddress}}** with a new one-time code and your wallet recovery kit.",
     "onboardSuccessTitle": "Creating your wallet...",
-    "onboardWithEmailDescription": "## Create wallet\nEnter your email address and select a password for your new wallet. **Do note share your password with anyone**, including Unstoppable Domains staff.",
+    "onboardWithEmailDescription": "## Create wallet\nEnter your email address and select a password for your new wallet.",
     "receiveAddressCaption": "**Warning: Use supported tokens.** This address can only receive {{symbol}} on the {{blockchain}} network.",
     "receiveAddressCaptionWithDomains": "**Warning: Use supported tokens.** This address can only receive {{symbol}} and Unstoppable Domains NFTs on the {{blockchain}} network.",
     "recipient": "Recipient",
@@ -898,7 +898,7 @@
     "recoveryKitDescription": "Create a new recovery kit by verifying your password below. You will receive an email with the information needed to recover access to this wallet. **Do not share your recovery kit with anyone**. All previous kits will become inactive when a new one is created.",
     "recoveryKitError": "Invalid password",
     "recoveryPhrase": "Password",
-    "recoveryPhraseDescription": "##Login\nYour Unstoppable Lite Wallet credentials are required to unlock access on this device. **Do not share your password with anyone**, including Unstoppable Domains staff.",
+    "recoveryPhraseDescription": "##Sign In\nYour Unstoppable Lite Wallet credentials are required to unlock access on this device. **Do not share your password with anyone**, including Unstoppable Domains staff.",
     "refreshingData": "Refreshing wallet balances...",
     "reject": "Cancel",
     "rememberOnThisDevice": "Remember on this device",

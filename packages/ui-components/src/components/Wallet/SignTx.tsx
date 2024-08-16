@@ -1,4 +1,5 @@
 import CheckIcon from '@mui/icons-material/Check';
+import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -11,7 +12,7 @@ import React, {useEffect, useState} from 'react';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getTransactionGasEstimate} from '../../actions/fireBlocksActions';
-import {useFireblocksState} from '../../hooks';
+import {useFireblocksState, useWeb3Context} from '../../hooks';
 import useFireblocksAccessToken from '../../hooks/useFireblocksAccessToken';
 import useFireblocksTxSigner from '../../hooks/useFireblocksTxSigner';
 import {getBootstrapState, useTranslationContext} from '../../lib';
@@ -19,6 +20,8 @@ import {notifyEvent} from '../../lib/error';
 import type {GetEstimateTransactionResponse} from '../../lib/types/fireBlocks';
 import {getBlockchainSymbol} from '../Manage/common/verification/types';
 import {Header} from './Header';
+import {OperationStatus} from './OperationStatus';
+import {SignForDappHeader} from './SignForDappHeader';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -26,27 +29,30 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     justifyContent: 'space-between',
     height: '100%',
-  },
-  messageContainer: {
-    backgroundColor: theme.palette.neutralShades[100],
-    border: `1px solid ${theme.palette.neutralShades[400]}`,
-    borderRadius: theme.shape.borderRadius,
-    paddingLeft: theme.spacing(1),
-    paddingRight: theme.spacing(1),
-    marginBottom: theme.spacing(2),
-    marginTop: theme.spacing(1),
-    marginLeft: '1px',
-    marginRight: '1px',
-    fontFamily: 'monospace',
-    fontSize: '12px',
-    wordWrap: 'break-word',
-    maxWidth: '500px',
-    textAlign: 'left',
     width: '100%',
-    overflowWrap: 'break-word',
-    [theme.breakpoints.down('sm')]: {
-      maxWidth: 'calc(100vw - 50px)',
-    },
+  },
+  contentContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignContent: 'center',
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
   },
   button: {
     marginTop: theme.spacing(1),
@@ -56,6 +62,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 const MAX_DISPLAY_LENGTH = 12;
 
 export const SignTx: React.FC<SignTxProps> = ({
+  hideHeader,
   chainId,
   contractAddress,
   data,
@@ -64,6 +71,7 @@ export const SignTx: React.FC<SignTxProps> = ({
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const {web3Deps} = useWeb3Context();
   const [state] = useFireblocksState();
   const getAccessToken = useFireblocksAccessToken();
   const [isSigning, setIsSigning] = useState(false);
@@ -105,13 +113,18 @@ export const SignTx: React.FC<SignTxProps> = ({
     }
 
     const loadEstimate = async () => {
+      const gasEstimate = await getTransactionGasEstimate(asset, accessToken, {
+        chainId,
+        to: contractAddress,
+        data,
+        value,
+      });
       setGasEstimate(
-        await getTransactionGasEstimate(asset, accessToken, {
-          chainId,
-          to: contractAddress,
-          data,
-          value,
-        }),
+        gasEstimate || {
+          '@type': 'unstoppabledomains.com/wallets.v1.TransactionEstimate',
+          priority: 'medium',
+          status: 'ERROR',
+        },
       );
     };
     void loadEstimate();
@@ -168,51 +181,63 @@ export const SignTx: React.FC<SignTxProps> = ({
 
   return (
     <Box className={classes.container}>
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        alignContent="center"
-        justifyContent="center"
-        textAlign="center"
-      >
-        <Header mode="basic" address={asset.address} isLoaded={true} />
+      <Box className={classes.contentContainer}>
+        {hideHeader ? (
+          <Box mt={2} />
+        ) : (
+          <Header mode="basic" address={asset.address} isLoaded={true} />
+        )}
         {gasEstimate ? (
-          <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            alignContent="center"
-            justifyContent="center"
-            textAlign="center"
-          >
+          <Box className={classes.contentContainer}>
             <Typography variant="h4">{t('wallet.signMessage')}</Typography>
-            <Typography mt={3} variant="body2">
-              {t('wallet.signMessageDescription')}
-            </Typography>
+            {web3Deps?.unstoppableWallet?.connectedApp ? (
+              <SignForDappHeader
+                name={web3Deps.unstoppableWallet.connectedApp.name}
+                hostUrl={web3Deps.unstoppableWallet.connectedApp.hostUrl}
+                iconUrl={web3Deps.unstoppableWallet.connectedApp.iconUrl}
+                actionText={t('wallet.signTxAction')}
+              />
+            ) : (
+              <Typography mt={3} variant="body2">
+                {t('wallet.signMessageDescription')}
+              </Typography>
+            )}
             <Typography mt={3} variant="body1">
-              {t('common.smartContract')}
+              {t('common.smartContract')}:
             </Typography>
-            <Typography mt={1} variant="body1">
+            <Typography mt={1} variant="body2">
               <b>{contractAddress}</b>
             </Typography>
             <Typography mt={3} variant="body1">
               {t('wallet.networkFee')}:{' '}
             </Typography>
-            <Typography mt={1} variant="body1">
-              <b>{`${round(
-                parseFloat(gasEstimate.networkFee.amount),
-                maxDisplayLength,
-              )} ${getBlockchainSymbol(
-                asset.blockchainAsset.blockchain.id,
-              )}`}</b>
+            <Typography mt={1} variant="body2">
+              <b>
+                {gasEstimate.status === 'VALID' && gasEstimate?.networkFee
+                  ? `${round(
+                      parseFloat(gasEstimate.networkFee.amount),
+                      maxDisplayLength,
+                    )} ${getBlockchainSymbol(
+                      asset.blockchainAsset.blockchain.id,
+                    )}`
+                  : gasEstimate.status === 'INSUFFICIENT_FUNDS'
+                  ? t('wallet.txInsufficientFunds')
+                  : t('wallet.txEstimateError')}
+              </b>
             </Typography>
           </Box>
         ) : (
-          <CircularProgress />
+          <Box className={classes.loadingContainer}>
+            <OperationStatus
+              label={t('wallet.retrievingGasPrice', {
+                blockchain: asset.blockchainAsset.blockchain.name || '',
+              })}
+              icon={<MonitorHeartOutlinedIcon />}
+            />
+          </Box>
         )}
       </Box>
-      <Box display="flex" flexDirection="column">
+      <Box className={classes.buttonContainer}>
         <LoadingButton
           className={classes.button}
           fullWidth
@@ -223,16 +248,12 @@ export const SignTx: React.FC<SignTxProps> = ({
               <Box ml={1}>{t('manage.signing')}...</Box>
             </Box>
           }
-          disabled={isSuccess || gasEstimate?.status !== 'VALID'}
+          disabled={isSuccess || !gasEstimate?.status}
           variant="contained"
           onClick={handleClickApprove}
           startIcon={isSuccess ? <CheckIcon /> : undefined}
         >
-          {gasEstimate && gasEstimate.status !== 'VALID'
-            ? t('wallet.insufficientBalance')
-            : isSuccess
-            ? t('common.success')
-            : t('wallet.approve')}
+          {isSuccess ? t('common.success') : t('wallet.approve')}
         </LoadingButton>
         <Button
           className={classes.button}
@@ -249,6 +270,7 @@ export const SignTx: React.FC<SignTxProps> = ({
 };
 
 export interface SignTxProps {
+  hideHeader?: boolean;
   chainId: number;
   contractAddress: string;
   data: string;

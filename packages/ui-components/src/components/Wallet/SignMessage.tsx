@@ -10,10 +10,12 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {useWeb3Context} from '../../hooks';
 import useFireblocksMessageSigner from '../../hooks/useFireblocksMessageSigner';
 import {useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import {Header} from './Header';
+import {SignForDappHeader} from './SignForDappHeader';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -36,7 +38,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     fontSize: '12px',
     wordWrap: 'break-word',
     maxWidth: '500px',
-    textAlign: 'left',
+    textAlign: 'center',
     width: '100%',
     overflowWrap: 'break-word',
     [theme.breakpoints.down('sm')]: {
@@ -50,6 +52,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export const SignMessage: React.FC<SignMessageProps> = ({
   address,
+  hideHeader,
   message,
   onComplete,
 }) => {
@@ -57,6 +60,7 @@ export const SignMessage: React.FC<SignMessageProps> = ({
   const [t] = useTranslationContext();
   const [isSigning, setIsSigning] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const {web3Deps} = useWeb3Context();
   const fireblocksSigner = useFireblocksMessageSigner();
 
   // sign requested message when button is clicked and the Fireblocks
@@ -105,8 +109,12 @@ export const SignMessage: React.FC<SignMessageProps> = ({
 
   return (
     <Box className={classes.container}>
-      <Box display="flex" flexDirection="column" height="100%">
-        <Header mode="basic" address={address || ''} isLoaded={true} />
+      <Box display="flex" flexDirection="column">
+        {hideHeader ? (
+          <Box mt={2} />
+        ) : (
+          <Header mode="basic" address={address || ''} isLoaded={true} />
+        )}
         <Box
           display="flex"
           flexDirection="column"
@@ -116,8 +124,23 @@ export const SignMessage: React.FC<SignMessageProps> = ({
           textAlign="center"
         >
           <Typography variant="h4">{t('wallet.signMessage')}</Typography>
-          <Typography mt={3} variant="body2">
-            {t('wallet.signMessageDescription')}
+          {web3Deps?.unstoppableWallet?.connectedApp ? (
+            <SignForDappHeader
+              name={web3Deps.unstoppableWallet.connectedApp.name}
+              hostUrl={web3Deps.unstoppableWallet.connectedApp.hostUrl}
+              iconUrl={web3Deps.unstoppableWallet.connectedApp.iconUrl}
+              actionText={t('wallet.signMessageAction')}
+            />
+          ) : (
+            <Typography mt={3} variant="body2">
+              {t('wallet.signMessageDescription')}
+            </Typography>
+          )}
+          <Typography mt={3} variant="body1">
+            {t('auth.walletAddress')}:
+          </Typography>
+          <Typography variant="body2">
+            <b>{address}</b>
           </Typography>
           <Typography mt={3} variant="body1">
             {t('wallet.signMessageSubtitle')}:
@@ -163,4 +186,5 @@ export interface SignMessageProps {
   address?: string;
   message: string;
   onComplete: (signedMessage?: string) => void;
+  hideHeader?: boolean;
 }

@@ -37,6 +37,8 @@ type Props = {
   address?: string;
   isMpcWallet?: boolean;
   isMpcPromptDisabled?: boolean;
+  hideHeader?: boolean;
+  fullScreen?: boolean;
   message?: React.ReactNode;
   prompt?: boolean;
   onComplete?: (web3Deps?: Web3Dependencies) => void;
@@ -203,7 +205,7 @@ export const AccessWallet = (props: Props) => {
         )}
         {props.prompt && props.address && (
           <Typography align="center" className={classes.prompt} component="div">
-            {t('auth.walletAddress')}:
+            {t('auth.walletAddressRequired')}:
             <div className={classes.ethWalletAddress}>{props.address}</div>
           </Typography>
         )}
@@ -218,7 +220,13 @@ export const AccessWallet = (props: Props) => {
               setSelectedWallet={setSelectedWallet}
             />
           ) : (
-            <Grid item xs={12} display="flex" justifyContent="center">
+            <Grid
+              item
+              xs={12}
+              display="flex"
+              justifyContent="center"
+              height="100%"
+            >
               <Box className={classes.udConfigContainer}>
                 {(!messageToSign && !txToSign) || !udConfigSuccess ? (
                   <Box
@@ -241,6 +249,7 @@ export const AccessWallet = (props: Props) => {
                   <>
                     <UnstoppableWalletMessageSigner
                       address={props.address}
+                      hideHeader={props.hideHeader}
                       message={messageToSign}
                       onComplete={handleUdWalletSignature}
                     />
@@ -249,6 +258,7 @@ export const AccessWallet = (props: Props) => {
                   txToSign && (
                     <>
                       <UnstoppableWalletTxSigner
+                        hideHeader={props.hideHeader}
                         chainId={txToSign.chainId}
                         contractAddress={txToSign.to}
                         data={txToSign.data}
@@ -274,11 +284,11 @@ type ModalProps = Props & {
 };
 
 export const AccessWalletModal = (props: ModalProps) => {
-  const {classes, theme} = useAccessWalletStyles();
+  const {classes, cx, theme} = useAccessWalletStyles();
   const {web3Deps} = useWeb3Context();
   const [t] = useTranslationContext();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const ConnectWalletWrapper = isMobile ? Popover : Dialog;
+  const ConnectWalletWrapper = isMobile && !props.fullScreen ? Popover : Dialog;
 
   const onCloseWrapper = () => {
     if (web3Deps?.unstoppableWallet) {
@@ -291,8 +301,13 @@ export const AccessWalletModal = (props: ModalProps) => {
     <ConnectWalletWrapper
       open={props.open}
       onClose={onCloseWrapper}
+      fullScreen={props.fullScreen}
+      fullWidth={props.fullScreen}
       classes={{paper: classes.modalRoot}}
-      {...(isMobile
+      className={cx({
+        [classes.modalFullScreen]: props.fullScreen,
+      })}
+      {...(isMobile && !props.fullScreen
         ? {
             anchorOrigin: {
               vertical: 'bottom',
@@ -306,20 +321,26 @@ export const AccessWalletModal = (props: ModalProps) => {
           }
         : {})}
     >
-      <div className={classes.modalHeader} data-testid={'access-wallet-modal'}>
-        <Typography className={classes.modalTitle}>
-          {t('auth.accessWallet')}
-        </Typography>
-        <IconButton onClick={onCloseWrapper} size="medium">
-          <CloseIcon />
-        </IconButton>
-      </div>
+      {!props.hideHeader && (
+        <div
+          className={classes.modalHeader}
+          data-testid={'access-wallet-modal'}
+        >
+          <Typography className={classes.modalTitle}>
+            {t('auth.accessWallet')}
+          </Typography>
+          <IconButton onClick={onCloseWrapper} size="medium">
+            <CloseIcon />
+          </IconButton>
+        </div>
+      )}
       <div className={classes.modalContent}>
         <AccessWallet
           address={props.address}
           onComplete={props.onComplete}
           onReconnect={props.onReconnect}
           onClose={onCloseWrapper}
+          hideHeader={props.hideHeader}
           prompt={props.prompt}
           message={props.message}
           isMpcWallet={props.isMpcWallet}

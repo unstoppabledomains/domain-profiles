@@ -47,10 +47,13 @@ const DomainConfigProvider: React.FC<Props> = ({children}) => {
       {children}
       {web3Deps?.unstoppableWallet?.promptForSignatures && isMessage && (
         <AccessWalletModal
-          prompt={true}
+          prompt={false}
           address={web3Deps.address}
           open={true}
           onClose={handleClose}
+          isMpcWallet={true}
+          fullScreen={web3Deps.unstoppableWallet.fullScreenModal}
+          hideHeader={web3Deps.unstoppableWallet.fullScreenModal}
         />
       )}
     </DomainConfigContext.Provider>

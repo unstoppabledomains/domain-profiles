@@ -68,10 +68,10 @@ export interface GetBootstrapTokenResponse {
 }
 
 export interface GetEstimateTransactionResponse {
-  '@type': 'unstoppabledomains.com/wallets.v1.TransactionEstimate';
+  '@type': string;
   priority: string;
-  status: 'VALID' | 'INSUFFICIENT_FUNDS';
-  networkFee: {
+  status: 'VALID' | 'INSUFFICIENT_FUNDS' | 'ERROR';
+  networkFee?: {
     amount: string;
     asset: {
       '@type': string;

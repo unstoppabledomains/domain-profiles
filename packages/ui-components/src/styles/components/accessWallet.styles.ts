@@ -98,6 +98,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     ...theme.containers.modalContent,
     display: 'flex',
     justifyContent: 'center',
+    height: '100%',
   },
   column: {
     display: 'flex',
@@ -106,6 +107,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     maxWidth: '500px',
     width: '100%',
+    height: '100%',
   },
   prompt: {
     overflowWrap: 'break-word',
@@ -129,6 +131,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
       maxWidth: 'calc(100vw)',
     },
   },
+  modalFullScreen: {
+    '& .MuiDialog-container .MuiDialog-paper': {
+      margin: 0,
+      width: '100%',
+    },
+  },
   modalHeader: {
     width: '100%',
     display: 'flex',
@@ -144,6 +152,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   modalContent: {
     padding: theme.spacing(3),
     paddingTop: 0,
+    height: '100%',
   },
   udConfigContainer: {
     display: 'flex',

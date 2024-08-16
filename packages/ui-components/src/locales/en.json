@@ -24,8 +24,9 @@
     "moreInfo": "For more information please see this",
     "reconnect": "Reconnect",
     "retry": "Retry",
-    "walletAddress": "Required wallet address",
-    "walletAddressIncorrect": "Connected wallet **{{actual}}** does not match required wallet **{{expected}}**. Change your wallet's connected account and try again."
+    "walletAddress": "Wallet address",
+    "walletAddressIncorrect": "Connected wallet **{{actual}}** does not match required wallet **{{expected}}**. Change your wallet's connected account and try again.",
+    "walletAddressRequired": "Required wallet address"
   },
   "badge": {
     "badge": "Badge",
@@ -240,6 +241,7 @@
     "to": "To",
     "tryAgain": "Try again",
     "twitter": "Twitter (X)",
+    "unknown": "Unknown",
     "unstoppableMarketplace": "Unstoppable Marketplace",
     "view": "View",
     "visit": "Visit",
@@ -916,13 +918,18 @@
     "sendingForOtherNetworksAndTokens": "Sending {{symbol}} for other networks or other {{blockchain}} tokens is not yet supported and may result in a loss of funds.",
     "sendTransactionFailed": "{{amount}} {{sourceSymbol}} failed to send to {{recipientDomain}}",
     "sendTransactionSuccess": "{{amount}} {{sourceSymbol}} was successfully sent to {{recipientDomain}}",
+    "signDappOperationDescription": "**{{name}}** wants to **{{actionText}}** with Unstoppable Lite Wallet. Verify the application website and the requested wallet address before confirming.",
     "signMessage": "Confirmation",
+    "signMessageAction": "sign a message",
     "signMessageDescription": "Only confirm if you fully understand the content and trust the requesting site.",
     "signMessageSubtitle": "You are confirming",
+    "signTxAction": "sign a transaction",
     "successDescription": "Unstoppable Lite Wallet is ready to be used on this browser",
     "title": "Unstoppable Lite Wallet",
     "titleShort": "Lite Wallet",
     "totalCost": "Total cost",
+    "txEstimateError": "Unable to determine network fee",
+    "txInsufficientFunds": "Transaction may fail due to insufficient funds",
     "verifyEmail": "Verify email address",
     "viewTransaction": "View on blockchain"
   },

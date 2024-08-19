@@ -18,7 +18,7 @@ import React, {useContext, useEffect, useState} from 'react';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getProfileReverseResolution} from '../../actions';
+import {getProfileData, getProfileReverseResolution} from '../../actions';
 import {getNotificationConfigurations} from '../../actions/backendActions';
 import {getDomainBadges} from '../../actions/domainActions';
 import {isAddressSpam, joinBadgeGroupChat} from '../../actions/messageActions';
@@ -26,7 +26,7 @@ import {AccessWalletModal} from '../../components/Wallet/AccessWallet';
 import {parsePartnerMetadata} from '../../hooks/useFetchNotification';
 import useUnstoppableMessaging from '../../hooks/useUnstoppableMessaging';
 import useWeb3Context from '../../hooks/useWeb3Context';
-import {isDomainValidForManagement} from '../../lib';
+import {DomainFieldTypes, isDomainValidForManagement} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import useTranslationContext from '../../lib/i18n';
 import {sleep} from '../../lib/sleep';
@@ -136,6 +136,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
   const {web3Deps, setWeb3Deps} = useWeb3Context();
 
   // Messaging user state
+  const [isMpcWallet, setIsMpcWallet] = useState(false);
   const [configState, setConfigState] = useState(ConfigurationState.Initial);
   const [isSigning, setIsSigning] = useState(false);
   const [signatureType, setSignatureType] = useState<MessagingSignatureType>();
@@ -431,7 +432,19 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     }
 
     // retrieve profile data and notification preferences
-    const notificationConfig = await getNotificationConfigurations(chatUser);
+    const [notificationConfig, profileData] = await Promise.all([
+      getNotificationConfigurations(chatUser),
+      getProfileData(chatUser, [DomainFieldTypes.CryptoVerifications]),
+    ]);
+
+    // determine MPC wallet status
+    setIsMpcWallet(
+      profileData?.cryptoVerifications?.some(
+        v =>
+          v.address.toLowerCase() === chatAddress?.toLowerCase() &&
+          v.type === 'mpc',
+      ) || false,
+    );
 
     // set notification options for web UI
     if (notificationConfig && notificationConfig.length > 0) {
@@ -1055,6 +1068,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         open={walletModalIsOpen}
         onClose={handleCloseAccessWalletModal}
         onReconnect={handleReconnect}
+        isMpcWallet={isMpcWallet}
       />
       <SetupModal
         disabled={

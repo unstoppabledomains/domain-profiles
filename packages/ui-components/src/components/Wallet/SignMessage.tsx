@@ -177,6 +177,8 @@ export const SignMessage: React.FC<SignMessageProps> = ({
         >
           {t('wallet.reject')}
         </Button>
+        {web3Deps?.unstoppableWallet?.fullScreenModal &&
+          message.length > 90 && <Box mt={3} />}
       </Box>
     </Box>
   );

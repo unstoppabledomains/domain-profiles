@@ -17,20 +17,20 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'center',
     textAlign: 'center',
     width: '100%',
-    marginTop: theme.spacing(3),
+    marginTop: theme.spacing(2),
   },
   headerText: {
-    marginTop: theme.spacing(3),
+    marginTop: theme.spacing(2),
   },
   detailText: {
     fontWeight: 'bold',
   },
   descriptionText: {
-    marginTop: theme.spacing(3),
+    marginTop: theme.spacing(2),
   },
   icon: {
-    width: '75px',
-    height: '75px',
+    width: '65px',
+    height: '65px',
   },
 }));
 

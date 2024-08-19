@@ -73,16 +73,17 @@ export const AccessWallet = (props: Props) => {
           a => a.address.toLowerCase() === props.address?.toLowerCase(),
         )
       ) {
-        setSelectedWallet(WalletName.UnstoppableWallet);
+        setSelectedWallet(WalletName.UnstoppableWalletReact);
         void handleUdWalletConnected(DomainProfileTabType.Wallet);
       }
     }
   }, [state, props.address]);
 
-  // automatically select Unstoppable Wallet if the MPC flag is set
+  // automatically select the embedded Unstoppable Wallet if the MPC flag is set
+  // and the browser extension is not installed
   useEffect(() => {
-    if (props.isMpcWallet) {
-      setSelectedWallet(WalletName.UnstoppableWallet);
+    if (props.isMpcWallet && !window.unstoppable) {
+      setSelectedWallet(WalletName.UnstoppableWalletReact);
     }
   }, [props.isMpcWallet]);
 
@@ -210,9 +211,10 @@ export const AccessWallet = (props: Props) => {
           </Typography>
         )}
         <div className={classes.column}>
-          {selectedWallet !== WalletName.UnstoppableWallet ? (
+          {selectedWallet !== WalletName.UnstoppableWalletReact ? (
             <AccessEthereum
               address={props.address}
+              isMpcWallet={props.isMpcWallet}
               onComplete={handleWalletConnected}
               onReconnect={props.onReconnect}
               onClose={props.onClose}

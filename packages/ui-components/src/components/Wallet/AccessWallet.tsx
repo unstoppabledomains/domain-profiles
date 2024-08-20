@@ -53,6 +53,7 @@ export const AccessWallet = (props: Props) => {
 
   // selected wallet state
   const [selectedWallet, setSelectedWallet] = useState<WalletName>();
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // Unstoppable wallet signature state variables
   const [state] = useFireblocksState();
@@ -77,6 +78,7 @@ export const AccessWallet = (props: Props) => {
         void handleUdWalletConnected(DomainProfileTabType.Wallet);
       }
     }
+    setIsLoaded(true);
   }, [state, props.address]);
 
   // automatically select the embedded Unstoppable Wallet if the MPC flag is set
@@ -210,70 +212,72 @@ export const AccessWallet = (props: Props) => {
             <div className={classes.ethWalletAddress}>{props.address}</div>
           </Typography>
         )}
-        <div className={classes.column}>
-          {selectedWallet !== WalletName.UnstoppableWalletReact ? (
-            <AccessEthereum
-              address={props.address}
-              isMpcWallet={props.isMpcWallet}
-              onComplete={handleWalletConnected}
-              onReconnect={props.onReconnect}
-              onClose={props.onClose}
-              selectedWallet={selectedWallet}
-              setSelectedWallet={setSelectedWallet}
-            />
-          ) : (
-            <Grid
-              item
-              xs={12}
-              display="flex"
-              justifyContent="center"
-              height="100%"
-            >
-              <Box className={classes.udConfigContainer}>
-                {(!messageToSign && !txToSign) || !udConfigSuccess ? (
-                  <Box
-                    display="flex"
-                    flexDirection="column"
-                    justifyContent="space-between"
-                    height="100%"
-                  >
-                    <UnstoppableWalletConfig
-                      address={''}
-                      domain={''}
-                      onUpdate={handleUdWalletConnected}
-                      setButtonComponent={setUdConfigButton}
-                    />
-                    <Box width="100%" mt={2}>
-                      {udConfigButton}
+        {isLoaded && (
+          <div className={classes.column}>
+            {selectedWallet !== WalletName.UnstoppableWalletReact ? (
+              <AccessEthereum
+                address={props.address}
+                isMpcWallet={props.isMpcWallet}
+                onComplete={handleWalletConnected}
+                onReconnect={props.onReconnect}
+                onClose={props.onClose}
+                selectedWallet={selectedWallet}
+                setSelectedWallet={setSelectedWallet}
+              />
+            ) : (
+              <Grid
+                item
+                xs={12}
+                display="flex"
+                justifyContent="center"
+                height="100%"
+              >
+                <Box className={classes.udConfigContainer}>
+                  {(!messageToSign && !txToSign) || !udConfigSuccess ? (
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      justifyContent="space-between"
+                      height="100%"
+                    >
+                      <UnstoppableWalletConfig
+                        address={''}
+                        domain={''}
+                        onUpdate={handleUdWalletConnected}
+                        setButtonComponent={setUdConfigButton}
+                      />
+                      <Box width="100%" mt={2}>
+                        {udConfigButton}
+                      </Box>
                     </Box>
-                  </Box>
-                ) : messageToSign ? (
-                  <>
-                    <UnstoppableWalletMessageSigner
-                      address={props.address}
-                      hideHeader={props.hideHeader}
-                      message={messageToSign}
-                      onComplete={handleUdWalletSignature}
-                    />
-                  </>
-                ) : (
-                  txToSign && (
+                  ) : messageToSign ? (
                     <>
-                      <UnstoppableWalletTxSigner
+                      <UnstoppableWalletMessageSigner
+                        address={props.address}
                         hideHeader={props.hideHeader}
-                        chainId={txToSign.chainId}
-                        contractAddress={txToSign.to}
-                        data={txToSign.data}
-                        value={txToSign.value}
+                        message={messageToSign}
                         onComplete={handleUdWalletSignature}
                       />
                     </>
-                  )
-                )}
-              </Box>
-            </Grid>
-          )}
-        </div>
+                  ) : (
+                    txToSign && (
+                      <>
+                        <UnstoppableWalletTxSigner
+                          hideHeader={props.hideHeader}
+                          chainId={txToSign.chainId}
+                          contractAddress={txToSign.to}
+                          data={txToSign.data}
+                          value={txToSign.value}
+                          onComplete={handleUdWalletSignature}
+                        />
+                      </>
+                    )
+                  )}
+                </Box>
+              </Grid>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

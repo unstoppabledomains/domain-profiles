@@ -22,10 +22,7 @@ import {
 } from '../../../actions/pav3Actions';
 import {useWeb3Context} from '../../../hooks';
 import type {CreateTransaction} from '../../../lib';
-import {
-  isExternalDomain,
-  useTranslationContext,
-} from '../../../lib';
+import {isExternalDomain, useTranslationContext} from '../../../lib';
 import {notifyEvent} from '../../../lib/error';
 import type {RecordUpdateResponse} from '../../../lib/types/pav3';
 import {getAddressMetadata, isEthAddress} from '../../Chat/protocol/resolution';

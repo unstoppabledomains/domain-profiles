@@ -95,7 +95,8 @@ const useStyles = makeStyles<{
     minHeight:
       configState === WalletConfigState.Complete && mode === 'portfolio'
         ? `${getMinClientHeight(isMobile)}px`
-        : '100%',
+        : undefined,
+    height: '100%',
   },
   loadingContainer: {
     display: 'flex',
@@ -104,8 +105,6 @@ const useStyles = makeStyles<{
       configState === WalletConfigState.Complete && mode === 'portfolio'
         ? `${getMinClientHeight(isMobile) - 125}px`
         : '100%',
-    marginBottom: mode === 'portfolio' ? undefined : theme.spacing(5),
-    marginTop: mode === 'portfolio' ? undefined : theme.spacing(-5),
     alignItems: 'center',
   },
   infoContainer: {
@@ -210,7 +209,7 @@ export const Configuration: React.FC<
 
   useEffect(() => {
     setIsLoaded(false);
-    setButtonComponent(<></>);
+    setButtonComponent(<Box className={classes.continueActionContainer} />);
     void loadFromState();
   }, []);
 
@@ -250,7 +249,7 @@ export const Configuration: React.FC<
         configState,
       )
     ) {
-      setButtonComponent(<></>);
+      setButtonComponent(<Box className={classes.continueActionContainer} />);
       return;
     }
 

@@ -32,117 +32,124 @@ import type {WalletMode} from './index';
 
 const AVATAR_SIZE = 120;
 const AVATAR_PLACEHOLDER_SIZE = 132;
+const AVATAR_MOBILE_OFFSET = 50;
 const MAX_NAME_DISPLAY_CHARS = 30;
 const MAX_NAME_DISPLAY_CHARS_MOBILE = 15;
 
-const useStyles = makeStyles()((theme: Theme) => ({
-  root: {
-    position: 'relative',
-    minHeight: AVATAR_PLACEHOLDER_SIZE,
-  },
-  headerContainer: {
-    backgroundImage: `linear-gradient(to left, #192b55c0, #192B55)`,
-    borderTopRightRadius: theme.shape.borderRadius,
-    borderTopLeftRadius: theme.shape.borderRadius,
-    color: theme.palette.white,
-  },
-  iconContainer: {
-    position: 'absolute',
-    top: theme.spacing(-1),
-    left: theme.spacing(-1),
-    flexWrap: 'nowrap',
-    flexDirection: 'column',
-    [theme.breakpoints.up('sm')]: {
-      flexDirection: 'row',
+const useStyles = makeStyles<{isMobile: boolean}>()((
+  theme: Theme,
+  {isMobile},
+) => {
+  const avatarSizeOffset = isMobile ? AVATAR_MOBILE_OFFSET : 0;
+  return {
+    root: {
+      position: 'relative',
+      minHeight: AVATAR_PLACEHOLDER_SIZE - avatarSizeOffset,
     },
-  },
-  descriptionContainer: {
-    marginLeft: theme.spacing(16),
-    padding: theme.spacing(1),
-  },
-  portfolioHeaderContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    alignContent: 'center',
-    justifyContent: 'center',
-    marginBottom: theme.spacing(3),
-    position: 'relative',
-    width: '100%',
-  },
-  portfolioHeaderIcon: {
-    width: '20px',
-    height: '20px',
-  },
-  descriptionText: {
-    color: theme.palette.white,
-  },
-  round: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: '50%',
-    backgroundColor: theme.palette.white,
-    zIndex: 1,
-    [theme.breakpoints.up('sm')]: {
-      flex: '1 0 auto',
-    },
-  },
-  pictureContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-  },
-  imageWrapper: {
-    position: 'relative',
-    backgroundColor: theme.palette.secondary.main,
-    borderRadius: '50%',
-    border: `6px solid ${theme.palette.white}`,
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      borderRadius: '50%',
-      background: 'rgba(0, 0, 0, 0.16)',
-      opacity: 0,
-      transition: theme.transitions.create('opacity'),
-    },
-  },
-  imagePlaceholderWrapper: {
-    minWidth: AVATAR_PLACEHOLDER_SIZE,
-    maxWidth: AVATAR_PLACEHOLDER_SIZE,
-    height: AVATAR_PLACEHOLDER_SIZE,
-    overflow: 'hidden',
-  },
-  icon: {
-    '& > svg': {
-      width: AVATAR_SIZE,
-      height: AVATAR_SIZE,
-      padding: theme.spacing(2),
-      fill: theme.palette.white,
+    headerContainer: {
+      backgroundImage: `linear-gradient(to left, #192b55c0, #192B55)`,
+      borderTopRightRadius: theme.shape.borderRadius,
+      borderTopLeftRadius: theme.shape.borderRadius,
       color: theme.palette.white,
     },
-  },
-  logo: {
-    color: theme.palette.primary.main,
-  },
-  optionsContainer: {
-    display: 'flex',
-    position: 'absolute',
-    right: theme.spacing(-1.5),
-    top: theme.spacing(-0.5),
-  },
-  learnMoreLink: {
-    color: theme.palette.white,
-    fontSize: theme.typography.body2.fontSize,
-  },
-  clickable: {
-    cursor: 'pointer',
-  },
-}));
+    iconContainer: {
+      position: 'absolute',
+      top: theme.spacing(-1),
+      left: theme.spacing(-1),
+      flexWrap: 'nowrap',
+      flexDirection: 'column',
+      [theme.breakpoints.up('sm')]: {
+        flexDirection: 'row',
+      },
+    },
+    descriptionContainer: {
+      marginLeft: isMobile ? theme.spacing(10) : theme.spacing(16),
+      padding: theme.spacing(1),
+    },
+    portfolioHeaderContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      alignContent: 'center',
+      justifyContent: 'center',
+      marginBottom: theme.spacing(3),
+      position: 'relative',
+      width: '100%',
+    },
+    portfolioHeaderIcon: {
+      width: '20px',
+      height: '20px',
+    },
+    descriptionText: {
+      color: theme.palette.white,
+    },
+    round: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: AVATAR_SIZE - avatarSizeOffset,
+      height: AVATAR_SIZE - avatarSizeOffset,
+      borderRadius: '50%',
+      backgroundColor: theme.palette.white,
+      zIndex: 1,
+      [theme.breakpoints.up('sm')]: {
+        flex: '1 0 auto',
+      },
+    },
+    pictureContainer: {
+      display: 'flex',
+      justifyContent: 'center',
+    },
+    imageWrapper: {
+      position: 'relative',
+      backgroundColor: theme.palette.secondary.main,
+      borderRadius: '50%',
+      border: `6px solid ${theme.palette.white}`,
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        borderRadius: '50%',
+        background: 'rgba(0, 0, 0, 0.16)',
+        opacity: 0,
+        transition: theme.transitions.create('opacity'),
+      },
+    },
+    imagePlaceholderWrapper: {
+      minWidth: AVATAR_PLACEHOLDER_SIZE - avatarSizeOffset,
+      maxWidth: AVATAR_PLACEHOLDER_SIZE - avatarSizeOffset,
+      height: AVATAR_PLACEHOLDER_SIZE - avatarSizeOffset,
+      overflow: 'hidden',
+    },
+    icon: {
+      '& > svg': {
+        width: AVATAR_SIZE - avatarSizeOffset,
+        height: AVATAR_SIZE - avatarSizeOffset,
+        padding: theme.spacing(2),
+        fill: theme.palette.white,
+        color: theme.palette.white,
+      },
+    },
+    logo: {
+      color: theme.palette.primary.main,
+    },
+    optionsContainer: {
+      display: 'flex',
+      position: 'absolute',
+      right: theme.spacing(-1.5),
+      top: theme.spacing(-0.5),
+    },
+    learnMoreLink: {
+      color: theme.palette.white,
+      fontSize: theme.typography.body2.fontSize,
+    },
+    clickable: {
+      cursor: 'pointer',
+    },
+  };
+});
 
 type Props = {
   address: string;
@@ -171,14 +178,14 @@ export const Header: React.FC<Props> = ({
   onHeaderClick,
   onLogout,
 }) => {
-  const {classes, cx} = useStyles();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const {classes, cx} = useStyles({isMobile});
   const {setWeb3Deps} = useWeb3Context();
   const [t] = useTranslationContext();
   const {enqueueSnackbar} = useSnackbar();
 
   // Menu state
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Modal states
@@ -287,7 +294,12 @@ export const Header: React.FC<Props> = ({
             )}
           >
             <Box className={classes.icon}>
-              <IconPlate size={125} variant="info">
+              <IconPlate
+                size={
+                  isMobile ? AVATAR_SIZE - AVATAR_MOBILE_OFFSET : AVATAR_SIZE
+                }
+                variant="info"
+              >
                 <UnstoppableWalletIcon />
               </IconPlate>
             </Box>
@@ -297,15 +309,21 @@ export const Header: React.FC<Props> = ({
       <Box className={cx(classes.headerContainer)}>
         <Box className={classes.descriptionContainer}>
           <Typography variant="body2" className={classes.descriptionText}>
-            {t('manage.cryptoWalletDescription')}
+            {isMobile
+              ? `${t('wallet.title')}: ${t(
+                  'manage.cryptoWalletDescriptionShort',
+                ).toLowerCase()}`
+              : t('manage.cryptoWalletDescription')}
           </Typography>
-          <Link
-            className={classes.learnMoreLink}
-            external={true}
-            to={config.WALLETS.LANDING_PAGE_URL}
-          >
-            {t('profile.learnMore')}
-          </Link>
+          {!isMobile && (
+            <Link
+              className={classes.learnMoreLink}
+              external={true}
+              to={config.WALLETS.LANDING_PAGE_URL}
+            >
+              {t('profile.learnMore')}
+            </Link>
+          )}
         </Box>
       </Box>
     </Box>

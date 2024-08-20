@@ -898,7 +898,7 @@
     "recoveryKitDescription": "Create a new recovery kit by verifying your password below. You will receive an email with the information needed to recover access to this wallet. **Do not share your recovery kit with anyone**. All previous kits will become inactive when a new one is created.",
     "recoveryKitError": "Invalid password",
     "recoveryPhrase": "Password",
-    "recoveryPhraseDescription": "##Sign In\nYour Unstoppable Lite Wallet credentials are required to unlock access on this device. **Do not share your password with anyone**, including Unstoppable Domains staff.",
+    "recoveryPhraseDescription": "##Sign In\nYour credentials are required to unlock access on this device. **Do not share your password with anyone**, including Unstoppable Domains staff.",
     "refreshingData": "Refreshing wallet balances...",
     "reject": "Cancel",
     "rememberOnThisDevice": "Remember on this device",

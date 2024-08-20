@@ -95,7 +95,7 @@ const useStyles = makeStyles<{
     minHeight:
       configState === WalletConfigState.Complete && mode === 'portfolio'
         ? `${getMinClientHeight(isMobile)}px`
-        : undefined,
+        : '100%',
   },
   loadingContainer: {
     display: 'flex',
@@ -103,16 +103,9 @@ const useStyles = makeStyles<{
     height:
       configState === WalletConfigState.Complete && mode === 'portfolio'
         ? `${getMinClientHeight(isMobile) - 125}px`
-        : undefined,
-    alignItems: 'center',
-  },
-  configuringStatusContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    height:
-      mode === 'portfolio'
-        ? `${getMinClientHeight(isMobile) - 125}px`
-        : undefined,
+        : '100%',
+    marginBottom: mode === 'portfolio' ? undefined : theme.spacing(5),
+    marginTop: mode === 'portfolio' ? undefined : theme.spacing(-5),
     alignItems: 'center',
   },
   infoContainer: {
@@ -148,8 +141,10 @@ export const Configuration: React.FC<
   ManageTabProps & {
     mode?: WalletMode;
     emailAddress?: string;
+    recoveryPhrase?: string;
     recoveryToken?: string;
     onLoaded?: (v: boolean) => void;
+    onLoginInitiated?: (emailAddress: string, password: string) => void;
     setIsFetching?: (v?: boolean) => void;
     isHeaderClicked: boolean;
     setIsHeaderClicked?: (v: boolean) => void;
@@ -160,6 +155,7 @@ export const Configuration: React.FC<
 > = ({
   onUpdate,
   onLoaded,
+  onLoginInitiated,
   setButtonComponent,
   setIsFetching,
   setAuthAddress,
@@ -167,6 +163,7 @@ export const Configuration: React.FC<
   setIsHeaderClicked,
   mode = 'basic',
   emailAddress: initialEmailAddress,
+  recoveryPhrase: initialRecoveryPhrase,
   recoveryToken,
   disableInlineEducation,
   initialState,
@@ -195,9 +192,10 @@ export const Configuration: React.FC<
   // wallet recovery state variables
   const {accessToken, setAccessToken} = useWeb3Context();
   const [bootstrapCode, setBootstrapCode] = useState<string>();
-  const [recoveryPhrase, setRecoveryPhrase] = useState<string>();
-  const [recoveryPhraseConfirmation, setRecoveryPhraseConfirmation] =
-    useState<string>();
+  const [recoveryPhrase, setRecoveryPhrase] = useState(initialRecoveryPhrase);
+  const [recoveryPhraseConfirmation, setRecoveryPhraseConfirmation] = useState(
+    initialRecoveryPhrase,
+  );
   const [emailAddress, setEmailAddress] = useState(initialEmailAddress);
   const [paymentConfigStatus, setPaymentConfigStatus] =
     useState<SerializedIdentityResponse>();
@@ -509,6 +507,20 @@ export const Configuration: React.FC<
 
   const loadFromState = async () => {
     try {
+      // place the component into confirmation mode if an initial email
+      // address and password are provided
+      if (initialEmailAddress && initialRecoveryPhrase) {
+        // if an account exists, set state to login confirmation. Otherwise, set
+        // state to account create confirmation.
+        const onboardingStatus = await getOnboardingStatus(initialEmailAddress);
+        if (onboardingStatus?.active) {
+          setConfigState(WalletConfigState.OtpEntry);
+        } else {
+          setConfigState(WalletConfigState.OnboardConfirmation);
+        }
+        return;
+      }
+
       // retrieve existing state from session or local storage if available
       const existingState = getBootstrapState(state);
       if (!existingState) {
@@ -656,12 +668,6 @@ export const Configuration: React.FC<
       return;
     }
 
-    // validate the two password fields match
-    if (recoveryPhrase !== recoveryPhraseConfirmation) {
-      setErrorMessage(t('wallet.resetPasswordMismatch'));
-      return;
-    }
-
     // validate password strength
     if (!isValidWalletPasswordFormat(recoveryPhrase)) {
       setErrorMessage(t('wallet.resetPasswordStrength'));
@@ -673,6 +679,12 @@ export const Configuration: React.FC<
     if (!isSuccess) {
       setErrorMessage(t('wallet.alreadySentVerification', {emailAddress}));
       return;
+    }
+
+    // raise event for login initiated if requested, which may be required
+    // for state management in other parent components
+    if (onLoginInitiated) {
+      onLoginInitiated(emailAddress, recoveryPhrase);
     }
 
     // message successfully sent
@@ -745,6 +757,12 @@ export const Configuration: React.FC<
         }),
       );
       return;
+    }
+
+    // raise event for login initiated if requested, which may be required
+    // for state management in other parent components
+    if (onLoginInitiated) {
+      onLoginInitiated(emailAddress, recoveryPhrase);
     }
 
     // send the OTP
@@ -957,7 +975,7 @@ export const Configuration: React.FC<
         mode === 'basic' ||
         mpcWallets.length > 0) ? (
         isSaving || errorMessage ? (
-          <Box className={classes.configuringStatusContainer}>
+          <Box className={classes.loadingContainer}>
             <OperationStatus
               label={errorMessage || t('wallet.configuringWallet')}
               icon={<LockOutlinedIcon />}
@@ -1055,7 +1073,7 @@ export const Configuration: React.FC<
               </Markdown>
             </Typography>
             <Box mt={5}>
-              {!initialEmailAddress && (
+              {(!initialEmailAddress || initialRecoveryPhrase) && (
                 <ManageInput
                   mt={2}
                   id="emailAddress"
@@ -1106,8 +1124,7 @@ export const Configuration: React.FC<
                 }
                 stacked={false}
               />
-              {(recoveryToken ||
-                configState === WalletConfigState.OnboardWithEmail) && (
+              {recoveryToken && (
                 <ManageInput
                   mt={2}
                   id="recoveryPhraseConfirmation"

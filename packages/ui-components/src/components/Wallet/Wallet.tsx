@@ -17,6 +17,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
+    height: '100%',
   },
 }));
 
@@ -24,11 +25,13 @@ export const Wallet: React.FC<
   ManageTabProps & {
     emailAddress?: string;
     avatarUrl?: string;
+    recoveryPhrase?: string;
     recoveryToken?: string;
     showMessages?: boolean;
     mode?: WalletMode;
     disableInlineEducation?: boolean;
     setAuthAddress?: (v: string) => void;
+    onLoginInitiated?: (emailAddress: string, password: string) => void;
     onLogout?: () => void;
     isNewUser?: boolean;
   }
@@ -37,12 +40,14 @@ export const Wallet: React.FC<
   address,
   domain,
   avatarUrl,
+  recoveryPhrase,
   recoveryToken,
   showMessages,
   mode = 'basic',
   disableInlineEducation,
   isNewUser,
   onUpdate,
+  onLoginInitiated,
   onLogout,
   setAuthAddress,
   setButtonComponent,
@@ -95,10 +100,12 @@ export const Wallet: React.FC<
       <Configuration
         mode={mode}
         emailAddress={emailAddress}
+        recoveryPhrase={recoveryPhrase}
         address={address}
         domain={domain}
         recoveryToken={recoveryToken}
         onLoaded={handleWalletLoaded}
+        onLoginInitiated={onLoginInitiated}
         onUpdate={handleAccessToken}
         setButtonComponent={setButtonComponent}
         setIsFetching={setIsFetching}

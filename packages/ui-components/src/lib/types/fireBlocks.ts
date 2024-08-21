@@ -1,3 +1,5 @@
+export const EIP_712_KEY = 'EIP712Domain';
+
 export interface Account {
   '@type': string;
   id: string;

@@ -162,6 +162,7 @@ type Props = {
   isLoaded: boolean;
   isFetching?: boolean;
   onHeaderClick?: () => void;
+  onSettingsClick?: () => void;
   onLogout?: () => void;
 };
 
@@ -177,6 +178,7 @@ export const Header: React.FC<Props> = ({
   isFetching,
   onHeaderClick,
   onLogout,
+  onSettingsClick,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -391,6 +393,7 @@ export const Header: React.FC<Props> = ({
           marginTop={30}
           onGetDomainClicked={!isDomains ? handleGetDomainClick : undefined}
           onDomainsClicked={isDomains ? handleDomainsClick : undefined}
+          onSettingsClicked={onSettingsClick}
           onSupportClicked={handleSupportClick}
           onRecoveryLinkClicked={handleRecoveryKitClicked}
           onLogout={handleLogout}

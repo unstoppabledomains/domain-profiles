@@ -3,6 +3,7 @@ import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import Logout from '@mui/icons-material/Logout';
 import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import SupportOutlinedIcon from '@mui/icons-material/SupportOutlined';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import {Card, Typography} from '@mui/material/';
@@ -24,6 +25,7 @@ interface Props {
   onDomainsClicked?: () => void;
   onWalletClicked?: () => void;
   onRecoveryLinkClicked?: () => void;
+  onSettingsClicked?: () => void;
   onSupportClicked?: () => void;
   onLogout?: () => void;
   marginTop?: number;
@@ -63,6 +65,7 @@ const DropDownMenu: React.FC<Props> = ({
   onDomainsClicked,
   onWalletClicked,
   onRecoveryLinkClicked,
+  onSettingsClicked,
   onSupportClicked,
   onLogout,
 }) => {
@@ -164,6 +167,18 @@ const DropDownMenu: React.FC<Props> = ({
           <SupportOutlinedIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
             {t('wallet.recoveryKit')}
+          </Typography>
+        </div>
+      )}
+      {onSettingsClicked && (
+        <div
+          data-testid={`recovery-link-button`}
+          className={classes.container}
+          onClick={onSettingsClicked}
+        >
+          <SettingsOutlinedIcon className={classes.settingsIcon} />
+          <Typography className={cx(classes.font)} color="text.secondary">
+            {t('push.settings')}
           </Typography>
         </div>
       )}

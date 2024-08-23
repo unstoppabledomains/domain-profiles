@@ -1,5 +1,3 @@
-export const EIP_712_KEY = 'EIP712Domain';
-
 export interface Account {
   '@type': string;
   id: string;
@@ -43,12 +41,14 @@ export interface BootstrapState {
 export const BootstrapStateCurrentKey = 'current';
 
 export const BootstrapStatePrefix = 'wallet-service-state';
+
 export interface CreateTransaction {
   chainId: number;
   to: string;
   data: string;
   value?: string;
 }
+export const EIP_712_KEY = 'EIP712Domain';
 export const FireblocksStateKey = 'fireblocks-state';
 
 export interface GetAccountAssetsResponse {

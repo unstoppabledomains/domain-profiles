@@ -2,6 +2,8 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import {useTheme} from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import {MobileCta} from 'components/wallet/MobileCta';
 import {EMAIL_PARAM, RECOVERY_TOKEN_PARAM, SIGN_IN_PARAM} from 'lib/types';
 import {NextSeo} from 'next-seo';
@@ -37,6 +39,7 @@ const WalletPage = () => {
   const {query: params} = useRouter();
   const {data: featureFlags} = useFeatureFlags(false);
   const isMounted = useIsMounted();
+  const theme = useTheme();
   const [isLoaded, setIsLoaded] = useState(false);
   const [walletState] = useFireblocksState();
   const [authAddress, setAuthAddress] = useState<string>('');
@@ -49,6 +52,7 @@ const WalletPage = () => {
   const [signInClicked, setSignInClicked] = useState(false);
   const [getWalletClicked, setGetWalletClicked] = useState(false);
   const [isReloadChecked, setIsReloadChecked] = useState(false);
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // build default wallet page SEO tags
   const seoTags = getSeoTags({
@@ -229,6 +233,7 @@ const WalletPage = () => {
                   setAuthAddress={setAuthAddress}
                   setButtonComponent={setAuthButton}
                   isNewUser={getWalletClicked}
+                  fullScreenModals={isMobile}
                 />
                 {!authAddress && (
                   <Box

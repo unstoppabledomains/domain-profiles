@@ -148,6 +148,10 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
     clickable: {
       cursor: 'pointer',
     },
+    modalTitleStyle: {
+      color: 'inherit',
+      alignSelf: 'center',
+    },
   };
 });
 
@@ -161,6 +165,7 @@ type Props = {
   mode?: WalletMode;
   isLoaded: boolean;
   isFetching?: boolean;
+  fullScreenModals?: boolean;
   onHeaderClick?: () => void;
   onSettingsClick?: () => void;
   onLogout?: () => void;
@@ -176,6 +181,7 @@ export const Header: React.FC<Props> = ({
   mode,
   isLoaded,
   isFetching,
+  fullScreenModals,
   onHeaderClick,
   onLogout,
   onSettingsClick,
@@ -406,6 +412,7 @@ export const Header: React.FC<Props> = ({
           subtitle={t('manage.otherDomainsDescription')}
           retrieveDomains={handleRetrieveOwnerDomains}
           open={isDomainListModalOpen}
+          fullScreen={fullScreenModals}
           setWeb3Deps={setWeb3Deps}
           onClose={handleDomainsClose}
           onClick={handleDomainClick}
@@ -416,6 +423,7 @@ export const Header: React.FC<Props> = ({
           domain={domainToManage}
           address={address}
           open={true}
+          fullScreen={fullScreenModals}
           onClose={() => setDomainToManage(undefined)}
           onUpdate={handleUpdateSuccess}
         />
@@ -424,6 +432,8 @@ export const Header: React.FC<Props> = ({
         <Modal
           title={t('wallet.addDomain')}
           open={isDomainAddModalOpen}
+          fullScreen={fullScreenModals}
+          titleStyle={classes.modalTitleStyle}
           onClose={() => setIsDomainAddModalOpen(false)}
         >
           <ReceiveDomainModal />
@@ -433,6 +443,8 @@ export const Header: React.FC<Props> = ({
         <Modal
           title={t('wallet.recoveryKit')}
           open={isRecoveryModalOpen}
+          fullScreen={fullScreenModals}
+          titleStyle={classes.modalTitleStyle}
           onClose={() => setIsRecoveryModalOpen(false)}
         >
           <RecoverySetupModal accessToken={accessToken} />

@@ -150,6 +150,7 @@ export const Configuration: React.FC<
     setAuthAddress?: (v: string) => void;
     disableInlineEducation?: boolean;
     initialState?: WalletConfigState;
+    fullScreenModals?: boolean;
   }
 > = ({
   onUpdate,

@@ -30,6 +30,7 @@ export const Wallet: React.FC<
     showMessages?: boolean;
     mode?: WalletMode;
     disableInlineEducation?: boolean;
+    fullScreenModals?: boolean;
     setAuthAddress?: (v: string) => void;
     onLoginInitiated?: (emailAddress: string, password: string) => void;
     onLogout?: () => void;
@@ -47,6 +48,7 @@ export const Wallet: React.FC<
   mode = 'basic',
   disableInlineEducation,
   isNewUser,
+  fullScreenModals,
   onUpdate,
   onLoginInitiated,
   onLogout,
@@ -98,6 +100,7 @@ export const Wallet: React.FC<
         onHeaderClick={() => setIsHeaderClicked(true)}
         onLogout={onLogout}
         onSettingsClick={onSettingsClick}
+        fullScreenModals={fullScreenModals}
         domain={isDomainValidForManagement(domain) ? domain : undefined}
       />
       <Configuration
@@ -116,6 +119,7 @@ export const Wallet: React.FC<
         setIsHeaderClicked={setIsHeaderClicked}
         setAuthAddress={setAuthAddress}
         disableInlineEducation={disableInlineEducation}
+        fullScreenModals={fullScreenModals}
         initialState={
           isNewUser ? WalletConfigState.OnboardWithEmail : undefined
         }

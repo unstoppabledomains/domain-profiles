@@ -10,17 +10,19 @@ import Modal from '../../components/Modal';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import DomainProfileList from './DomainProfileList';
 
-const useStyles = makeStyles()((theme: Theme) => ({
-  titleStyle: {
-    color: 'inherit',
-    alignSelf: 'center',
-  },
-  contentContainer: {
-    marginTop: theme.spacing(2),
-    width: '100%',
-    height: '350px',
-  },
-}));
+const useStyles = makeStyles<{fullScreen?: boolean}>()(
+  (theme: Theme, {fullScreen}) => ({
+    titleStyle: {
+      color: 'inherit',
+      alignSelf: 'center',
+    },
+    contentContainer: {
+      marginTop: theme.spacing(2),
+      width: '100%',
+      height: fullScreen ? '500px' : '350px',
+    },
+  }),
+);
 
 type ModalProps = {
   id: string;
@@ -30,6 +32,7 @@ type ModalProps = {
   title: string;
   subtitle?: string;
   showNumber?: boolean;
+  fullScreen?: boolean;
   retrieveDomains: (
     cursor?: number | string,
   ) => Promise<{domains: string[]; cursor?: number | string}>;
@@ -37,7 +40,7 @@ type ModalProps = {
 };
 
 export const DomainListModal = (props: ModalProps) => {
-  const {classes} = useStyles();
+  const {classes} = useStyles({fullScreen: props.fullScreen});
   const [domains, setDomains] = useState<string[]>([]);
   const [cursor, setCursor] = useState<number | string>();
   const [isLoading, setIsLoading] = useState(true);
@@ -79,10 +82,11 @@ export const DomainListModal = (props: ModalProps) => {
       open={props.open}
       onClose={props.onClose}
       titleStyle={classes.titleStyle}
+      fullScreen={props.fullScreen}
       noContentPadding
     >
       {props.subtitle && (
-        <Box display="flex" width="100%" justifyItems="left" maxWidth="400px">
+        <Box display="flex" width="100%" justifyItems="left">
           <Typography variant="body2">{props.subtitle}</Typography>
         </Box>
       )}

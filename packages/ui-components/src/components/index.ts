@@ -16,3 +16,4 @@ export {default as CryptoAddresses} from './CryptoAddresses';
 export {default as CustomBadges} from './CustomBadges';
 export {default as ForSaleOnOpenSea} from './ForSaleOnOpenSea';
 export {default as Link} from './Link';
+export {default as Modal} from './Modal';

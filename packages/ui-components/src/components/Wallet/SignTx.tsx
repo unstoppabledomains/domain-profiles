@@ -113,14 +113,14 @@ export const SignTx: React.FC<SignTxProps> = ({
     }
 
     const loadEstimate = async () => {
-      const gasEstimate = await getTransactionGasEstimate(asset, accessToken, {
+      const estimate = await getTransactionGasEstimate(asset, accessToken, {
         chainId,
         to: contractAddress,
         data,
         value,
       });
       setGasEstimate(
-        gasEstimate || {
+        estimate || {
           '@type': 'unstoppabledomains.com/wallets.v1.TransactionEstimate',
           priority: 'medium',
           status: 'ERROR',

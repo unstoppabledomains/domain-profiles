@@ -35,6 +35,7 @@ import {WalletClientSigner} from '../../lib/wallet/signer';
 // declare the Lite Wallet extension EIP-1193 injected provider property
 declare global {
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     unstoppable?: any;
   }
 }
@@ -194,7 +195,10 @@ const AccessEthereumConnectors: React.FC<AccessEthereumProps> = ({
     }
 
     // select the UD wallet extension
-    handleClick(WalletName.UnstoppableWalletExtension, udExtensionConnector);
+    void handleClick(
+      WalletName.UnstoppableWalletExtension,
+      udExtensionConnector,
+    );
   }, [connectors, isMpcWallet]);
 
   useEffect(() => {

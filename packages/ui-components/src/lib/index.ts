@@ -9,4 +9,5 @@ export * from './resolution';
 export * from './seo';
 export * from './types';
 export * from './wallet';
+export * from './error';
 export {default as useTranslationContext} from './i18n';

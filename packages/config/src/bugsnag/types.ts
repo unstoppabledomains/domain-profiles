@@ -16,16 +16,20 @@ export enum BugsnagErrorContexts {
   'Profile',
   'TokenGallery',
   'Wallet',
+  'Extension',
 }
 
 export enum BugsnagErrorClasses {
   Authorization = 'Authorization',
+  Background = 'Background',
   Configuration = 'Configuration',
   Fetch = 'Fetch',
   Fireblocks = 'Fireblocks',
+  Popup = 'Popup',
   PushProtocol = 'Push Protocol',
   Resolution = 'Resolution',
   Signature = 'Signature',
+  Transaction = 'Transaction',
   Validation = 'Validation',
   XMTP = 'XMTP',
 }

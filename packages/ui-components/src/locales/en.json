@@ -271,8 +271,8 @@
     "signOut": "Sign Out"
   },
   "manage": {
-    "addAvatar": "Add avatar",
-    "addCover": "Add cover",
+    "addAvatar": "Avatar",
+    "addCover": "Banner",
     "addCurrency": "Add Currency",
     "addressNotVerified": "Your portfolio and collectibles associated with this address will not be displayed until it is verified.",
     "addressNotVerifiedNonOwner": "Ownership of this address has not been verified.",

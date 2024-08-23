@@ -180,6 +180,7 @@ export const Client: React.FC<ClientProps> = ({
   accessToken,
   wallets,
   paymentConfigStatus,
+  fullScreenModals,
   onRefresh,
   setIsHeaderClicked,
   isHeaderClicked,
@@ -561,6 +562,7 @@ export const Client: React.FC<ClientProps> = ({
           domain={domainToManage}
           address={address}
           open={true}
+          fullScreen={fullScreenModals}
           onClose={() => setDomainToManage(undefined)}
           onUpdate={handleDomainUpdate}
         />
@@ -573,6 +575,7 @@ export type ClientProps = {
   accessToken: string;
   wallets: SerializedWalletBalance[];
   paymentConfigStatus?: SerializedIdentityResponse;
+  fullScreenModals?: boolean;
   onRefresh: () => Promise<void>;
   isHeaderClicked: boolean;
   setIsHeaderClicked?: (v: boolean) => void;

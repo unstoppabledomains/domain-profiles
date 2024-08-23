@@ -162,6 +162,7 @@ export const Configuration: React.FC<
   isHeaderClicked,
   setIsHeaderClicked,
   mode = 'basic',
+  fullScreenModals,
   emailAddress: initialEmailAddress,
   recoveryPhrase: initialRecoveryPhrase,
   recoveryToken,
@@ -1197,6 +1198,7 @@ export const Configuration: React.FC<
                 wallets={mpcWallets}
                 paymentConfigStatus={paymentConfigStatus}
                 accessToken={accessToken}
+                fullScreenModals={fullScreenModals}
                 onRefresh={loadMpcWallets}
                 isHeaderClicked={isHeaderClicked}
                 setIsHeaderClicked={setIsHeaderClicked}

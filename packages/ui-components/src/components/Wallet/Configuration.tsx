@@ -136,6 +136,9 @@ const useStyles = makeStyles<{
   },
 }));
 
+// one hour in milliseconds
+const ONE_HOUR = 60 * 60 * 1000;
+
 export const Configuration: React.FC<
   ManageTabProps & {
     mode?: WalletMode;
@@ -410,7 +413,7 @@ export const Configuration: React.FC<
     await processPasswordEntry();
   };
 
-  const loadMpcWallets = async () => {
+  const loadMpcWallets = async (forceRefresh?: boolean) => {
     if (!accessToken) {
       return;
     }
@@ -441,29 +444,51 @@ export const Configuration: React.FC<
     const accountAddresses = [
       ...new Set(bootstrapState.assets?.map(a => a.address)),
     ];
-    const wallets: SerializedWalletBalance[] = [];
+
+    // wallets may be loaded into cached local storage for up to
+    // an hour, to improve loading UX
+    const walletCachePrefix = 'portfolio-state';
+    const walletCacheExpiry = localStorage.getItem(
+      `${walletCachePrefix}-expiry`,
+    );
+    const walletCacheData = forceRefresh
+      ? undefined
+      : localStorage.getItem(`${walletCachePrefix}-data`);
+    const walletCacheValid =
+      walletCacheData &&
+      walletCacheExpiry &&
+      Date.now() < parseInt(walletCacheExpiry);
+    const wallets: SerializedWalletBalance[] = walletCacheValid
+      ? JSON.parse(walletCacheData)
+      : [];
+
+    // load any required data depending on feature flags and cache
     const [paymentConfig] = await Promise.all([
+      // load payment configuration if feature enabled
       accountAddresses.length > 0 &&
       featureFlags?.variations?.profileServiceEnableWalletIdentity
         ? syncIdentityConfig(accountAddresses[0], accessToken)
         : undefined,
-      Bluebird.map(accountAddresses, async address => {
-        const addressPortfolio = await getWalletPortfolio(
-          address,
-          accessToken,
-          undefined,
-          true,
-        );
-        if (!addressPortfolio) {
-          missingAddresses.push(address);
-          return;
-        }
-        wallets.push(
-          ...addressPortfolio.filter(p =>
-            accountChains.includes(p.symbol.toLowerCase()),
-          ),
-        );
-      }),
+      // load wallet portfolio if required
+      forceRefresh || wallets.length === 0
+        ? Bluebird.map(accountAddresses, async address => {
+            const addressPortfolio = await getWalletPortfolio(
+              address,
+              accessToken,
+              undefined,
+              true,
+            );
+            if (!addressPortfolio) {
+              missingAddresses.push(address);
+              return;
+            }
+            wallets.push(
+              ...addressPortfolio.filter(p =>
+                accountChains.includes(p.symbol.toLowerCase()),
+              ),
+            );
+          })
+        : undefined,
     ]);
 
     // set authenticated address if applicable
@@ -495,6 +520,13 @@ export const Configuration: React.FC<
     setMpcWallets(wallets.sort((a, b) => a.name.localeCompare(b.name)));
     setIsLoaded(true);
 
+    // store rendered wallets in session memory
+    localStorage.setItem(`${walletCachePrefix}-data`, JSON.stringify(wallets));
+    localStorage.setItem(
+      `${walletCachePrefix}-expiry`,
+      String(Date.now() + ONE_HOUR),
+    );
+
     // set loaded flag if provided
     if (onLoaded) {
       onLoaded(true);
@@ -503,6 +535,12 @@ export const Configuration: React.FC<
     // clear fetching flag if provided
     if (setIsFetching) {
       setIsFetching(false);
+    }
+
+    // if data was retrieved from cache, call an async force refresh to ensure new
+    // portfolio data is shown soon
+    if (walletCacheValid) {
+      void loadMpcWallets(true);
     }
   };
 
@@ -1199,7 +1237,7 @@ export const Configuration: React.FC<
                 paymentConfigStatus={paymentConfigStatus}
                 accessToken={accessToken}
                 fullScreenModals={fullScreenModals}
-                onRefresh={loadMpcWallets}
+                onRefresh={async () => await loadMpcWallets(true)}
                 isHeaderClicked={isHeaderClicked}
                 setIsHeaderClicked={setIsHeaderClicked}
               />

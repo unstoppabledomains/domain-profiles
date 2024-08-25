@@ -37,6 +37,8 @@ type Props = {
   address?: string;
   isMpcWallet?: boolean;
   isMpcPromptDisabled?: boolean;
+  hideHeader?: boolean;
+  fullScreen?: boolean;
   message?: React.ReactNode;
   prompt?: boolean;
   onComplete?: (web3Deps?: Web3Dependencies) => void;
@@ -51,6 +53,7 @@ export const AccessWallet = (props: Props) => {
 
   // selected wallet state
   const [selectedWallet, setSelectedWallet] = useState<WalletName>();
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // Unstoppable wallet signature state variables
   const [state] = useFireblocksState();
@@ -71,16 +74,18 @@ export const AccessWallet = (props: Props) => {
           a => a.address.toLowerCase() === props.address?.toLowerCase(),
         )
       ) {
-        setSelectedWallet(WalletName.UnstoppableWallet);
+        setSelectedWallet(WalletName.UnstoppableWalletReact);
         void handleUdWalletConnected(DomainProfileTabType.Wallet);
       }
     }
+    setIsLoaded(true);
   }, [state, props.address]);
 
-  // automatically select Unstoppable Wallet if the MPC flag is set
+  // automatically select the embedded Unstoppable Wallet if the MPC flag is set
+  // and the browser extension is not installed
   useEffect(() => {
-    if (props.isMpcWallet) {
-      setSelectedWallet(WalletName.UnstoppableWallet);
+    if (props.isMpcWallet && !window.unstoppable) {
+      setSelectedWallet(WalletName.UnstoppableWalletReact);
     }
   }, [props.isMpcWallet]);
 
@@ -203,65 +208,76 @@ export const AccessWallet = (props: Props) => {
         )}
         {props.prompt && props.address && (
           <Typography align="center" className={classes.prompt} component="div">
-            {t('auth.walletAddress')}:
+            {t('auth.walletAddressRequired')}:
             <div className={classes.ethWalletAddress}>{props.address}</div>
           </Typography>
         )}
-        <div className={classes.column}>
-          {selectedWallet !== WalletName.UnstoppableWallet ? (
-            <AccessEthereum
-              address={props.address}
-              onComplete={handleWalletConnected}
-              onReconnect={props.onReconnect}
-              onClose={props.onClose}
-              selectedWallet={selectedWallet}
-              setSelectedWallet={setSelectedWallet}
-            />
-          ) : (
-            <Grid item xs={12} display="flex" justifyContent="center">
-              <Box className={classes.udConfigContainer}>
-                {(!messageToSign && !txToSign) || !udConfigSuccess ? (
-                  <Box
-                    display="flex"
-                    flexDirection="column"
-                    justifyContent="space-between"
-                    height="100%"
-                  >
-                    <UnstoppableWalletConfig
-                      address={''}
-                      domain={''}
-                      onUpdate={handleUdWalletConnected}
-                      setButtonComponent={setUdConfigButton}
-                    />
-                    <Box width="100%" mt={2}>
-                      {udConfigButton}
+        {isLoaded && (
+          <div className={classes.column}>
+            {selectedWallet !== WalletName.UnstoppableWalletReact ? (
+              <AccessEthereum
+                address={props.address}
+                isMpcWallet={props.isMpcWallet}
+                onComplete={handleWalletConnected}
+                onReconnect={props.onReconnect}
+                onClose={props.onClose}
+                selectedWallet={selectedWallet}
+                setSelectedWallet={setSelectedWallet}
+              />
+            ) : (
+              <Grid
+                item
+                xs={12}
+                display="flex"
+                justifyContent="center"
+                height="100%"
+              >
+                <Box className={classes.udConfigContainer}>
+                  {(!messageToSign && !txToSign) || !udConfigSuccess ? (
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      justifyContent="space-between"
+                      height="100%"
+                    >
+                      <UnstoppableWalletConfig
+                        address={''}
+                        domain={''}
+                        onUpdate={handleUdWalletConnected}
+                        setButtonComponent={setUdConfigButton}
+                      />
+                      <Box width="100%" mt={2}>
+                        {udConfigButton}
+                      </Box>
                     </Box>
-                  </Box>
-                ) : messageToSign ? (
-                  <>
-                    <UnstoppableWalletMessageSigner
-                      address={props.address}
-                      message={messageToSign}
-                      onComplete={handleUdWalletSignature}
-                    />
-                  </>
-                ) : (
-                  txToSign && (
+                  ) : messageToSign ? (
                     <>
-                      <UnstoppableWalletTxSigner
-                        chainId={txToSign.chainId}
-                        contractAddress={txToSign.to}
-                        data={txToSign.data}
-                        value={txToSign.value}
+                      <UnstoppableWalletMessageSigner
+                        address={props.address}
+                        hideHeader={props.hideHeader}
+                        message={messageToSign}
                         onComplete={handleUdWalletSignature}
                       />
                     </>
-                  )
-                )}
-              </Box>
-            </Grid>
-          )}
-        </div>
+                  ) : (
+                    txToSign && (
+                      <>
+                        <UnstoppableWalletTxSigner
+                          hideHeader={props.hideHeader}
+                          chainId={txToSign.chainId}
+                          contractAddress={txToSign.to}
+                          data={txToSign.data}
+                          value={txToSign.value}
+                          onComplete={handleUdWalletSignature}
+                        />
+                      </>
+                    )
+                  )}
+                </Box>
+              </Grid>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -274,11 +290,11 @@ type ModalProps = Props & {
 };
 
 export const AccessWalletModal = (props: ModalProps) => {
-  const {classes, theme} = useAccessWalletStyles();
+  const {classes, cx, theme} = useAccessWalletStyles();
   const {web3Deps} = useWeb3Context();
   const [t] = useTranslationContext();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const ConnectWalletWrapper = isMobile ? Popover : Dialog;
+  const ConnectWalletWrapper = isMobile && !props.fullScreen ? Popover : Dialog;
 
   const onCloseWrapper = () => {
     if (web3Deps?.unstoppableWallet) {
@@ -291,8 +307,13 @@ export const AccessWalletModal = (props: ModalProps) => {
     <ConnectWalletWrapper
       open={props.open}
       onClose={onCloseWrapper}
+      fullScreen={props.fullScreen}
+      fullWidth={props.fullScreen}
       classes={{paper: classes.modalRoot}}
-      {...(isMobile
+      className={cx({
+        [classes.modalFullScreen]: props.fullScreen,
+      })}
+      {...(isMobile && !props.fullScreen
         ? {
             anchorOrigin: {
               vertical: 'bottom',
@@ -306,20 +327,26 @@ export const AccessWalletModal = (props: ModalProps) => {
           }
         : {})}
     >
-      <div className={classes.modalHeader} data-testid={'access-wallet-modal'}>
-        <Typography className={classes.modalTitle}>
-          {t('auth.accessWallet')}
-        </Typography>
-        <IconButton onClick={onCloseWrapper} size="medium">
-          <CloseIcon />
-        </IconButton>
-      </div>
+      {!props.hideHeader && (
+        <div
+          className={classes.modalHeader}
+          data-testid={'access-wallet-modal'}
+        >
+          <Typography className={classes.modalTitle}>
+            {t('auth.accessWallet')}
+          </Typography>
+          <IconButton onClick={onCloseWrapper} size="medium">
+            <CloseIcon />
+          </IconButton>
+        </div>
+      )}
       <div className={classes.modalContent}>
         <AccessWallet
           address={props.address}
           onComplete={props.onComplete}
           onReconnect={props.onReconnect}
           onClose={onCloseWrapper}
+          hideHeader={props.hideHeader}
           prompt={props.prompt}
           message={props.message}
           isMpcWallet={props.isMpcWallet}

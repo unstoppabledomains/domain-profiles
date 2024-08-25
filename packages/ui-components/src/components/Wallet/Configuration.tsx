@@ -14,6 +14,8 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import Bluebird from 'bluebird';
 import Markdown from 'markdown-to-jsx';
 import {useRouter} from 'next/router';
@@ -61,7 +63,7 @@ import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileTabType} from '../Manage/DomainProfile';
 import ManageInput from '../Manage/common/ManageInput';
 import type {ManageTabProps} from '../Manage/common/types';
-import {Client, MIN_CLIENT_HEIGHT} from './Client';
+import {Client, getMinClientHeight} from './Client';
 import InlineEducation from './InlineEducation';
 import {OperationStatus} from './OperationStatus';
 import type {WalletMode} from './index';
@@ -85,26 +87,29 @@ const isValidWalletPasswordFormat = (password: string): boolean => {
 const useStyles = makeStyles<{
   configState: WalletConfigState;
   mode: WalletMode;
-}>()((theme: Theme, {configState, mode}) => ({
+  isMobile: boolean;
+}>()((theme: Theme, {configState, mode, isMobile}) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
     minHeight:
       configState === WalletConfigState.Complete && mode === 'portfolio'
-        ? `${MIN_CLIENT_HEIGHT}px`
+        ? `${getMinClientHeight(isMobile)}px`
         : undefined,
+    height: '100%',
   },
   loadingContainer: {
     display: 'flex',
     justifyContent: 'center',
     height:
       configState === WalletConfigState.Complete && mode === 'portfolio'
-        ? `${MIN_CLIENT_HEIGHT - 125}px`
-        : undefined,
+        ? `${getMinClientHeight(isMobile) - 125}px`
+        : '100%',
     alignItems: 'center',
   },
   infoContainer: {
     marginBottom: theme.spacing(3),
+    marginTop: theme.spacing(-2),
   },
   checkboxContainer: {
     marginTop: theme.spacing(3),
@@ -131,33 +136,46 @@ const useStyles = makeStyles<{
   },
 }));
 
+// one hour in milliseconds
+const ONE_HOUR = 60 * 60 * 1000;
+
 export const Configuration: React.FC<
   ManageTabProps & {
     mode?: WalletMode;
     emailAddress?: string;
+    recoveryPhrase?: string;
     recoveryToken?: string;
     onLoaded?: (v: boolean) => void;
+    onLoginInitiated?: (emailAddress: string, password: string) => void;
     setIsFetching?: (v?: boolean) => void;
     isHeaderClicked: boolean;
     setIsHeaderClicked?: (v: boolean) => void;
     setAuthAddress?: (v: string) => void;
+    disableInlineEducation?: boolean;
     initialState?: WalletConfigState;
+    fullScreenModals?: boolean;
   }
 > = ({
   onUpdate,
   onLoaded,
+  onLoginInitiated,
   setButtonComponent,
   setIsFetching,
   setAuthAddress,
   isHeaderClicked,
   setIsHeaderClicked,
   mode = 'basic',
+  fullScreenModals,
   emailAddress: initialEmailAddress,
+  recoveryPhrase: initialRecoveryPhrase,
   recoveryToken,
+  disableInlineEducation,
   initialState,
 }) => {
   // component state variables
-  const {query: params} = useRouter();
+  const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const {data: featureFlags} = useFeatureFlags();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -178,16 +196,17 @@ export const Configuration: React.FC<
   // wallet recovery state variables
   const {accessToken, setAccessToken} = useWeb3Context();
   const [bootstrapCode, setBootstrapCode] = useState<string>();
-  const [recoveryPhrase, setRecoveryPhrase] = useState<string>();
-  const [recoveryPhraseConfirmation, setRecoveryPhraseConfirmation] =
-    useState<string>();
+  const [recoveryPhrase, setRecoveryPhrase] = useState(initialRecoveryPhrase);
+  const [recoveryPhraseConfirmation, setRecoveryPhraseConfirmation] = useState(
+    initialRecoveryPhrase,
+  );
   const [emailAddress, setEmailAddress] = useState(initialEmailAddress);
   const [paymentConfigStatus, setPaymentConfigStatus] =
     useState<SerializedIdentityResponse>();
   const [mpcWallets, setMpcWallets] = useState<SerializedWalletBalance[]>([]);
 
   // style and translation
-  const {classes} = useStyles({configState, mode});
+  const {classes} = useStyles({configState, mode, isMobile});
   const [t] = useTranslationContext();
 
   const isCreateWalletEnabled =
@@ -195,16 +214,23 @@ export const Configuration: React.FC<
 
   useEffect(() => {
     setIsLoaded(false);
-    setButtonComponent(<></>);
+    setButtonComponent(<Box className={classes.continueActionContainer} />);
     void loadFromState();
   }, []);
 
   useEffect(() => {
-    // select email address if specified in parameter
-    if (params[EMAIL_PARAM] && typeof params[EMAIL_PARAM] === 'string') {
-      setEmailAddress(params[EMAIL_PARAM]);
+    if (!router?.query) {
+      return;
     }
-  }, [params]);
+
+    // select email address if specified in parameter
+    if (
+      router.query[EMAIL_PARAM] &&
+      typeof router.query[EMAIL_PARAM] === 'string'
+    ) {
+      setEmailAddress(router.query[EMAIL_PARAM]);
+    }
+  }, [router?.query]);
 
   useEffect(() => {
     if (configState === WalletConfigState.OnboardSuccess) {
@@ -228,7 +254,7 @@ export const Configuration: React.FC<
         configState,
       )
     ) {
-      setButtonComponent(<></>);
+      setButtonComponent(<Box className={classes.continueActionContainer} />);
       return;
     }
 
@@ -320,6 +346,7 @@ export const Configuration: React.FC<
           </>
         ) : (
           !errorMessage &&
+          !disableInlineEducation &&
           configState === WalletConfigState.OtpEntry && (
             <Box
               display="flex"
@@ -348,6 +375,7 @@ export const Configuration: React.FC<
     errorMessage,
     progressPct,
     isLoaded,
+    isCreateWalletEnabled,
     persistKeys,
   ]);
 
@@ -385,7 +413,7 @@ export const Configuration: React.FC<
     await processPasswordEntry();
   };
 
-  const loadMpcWallets = async () => {
+  const loadMpcWallets = async (forceRefresh?: boolean) => {
     if (!accessToken) {
       return;
     }
@@ -416,29 +444,51 @@ export const Configuration: React.FC<
     const accountAddresses = [
       ...new Set(bootstrapState.assets?.map(a => a.address)),
     ];
-    const wallets: SerializedWalletBalance[] = [];
+
+    // wallets may be loaded into cached local storage for up to
+    // an hour, to improve loading UX
+    const walletCachePrefix = 'portfolio-state';
+    const walletCacheExpiry = localStorage.getItem(
+      `${walletCachePrefix}-expiry`,
+    );
+    const walletCacheData = forceRefresh
+      ? undefined
+      : localStorage.getItem(`${walletCachePrefix}-data`);
+    const walletCacheValid =
+      walletCacheData &&
+      walletCacheExpiry &&
+      Date.now() < parseInt(walletCacheExpiry, 10);
+    const wallets: SerializedWalletBalance[] = walletCacheValid
+      ? JSON.parse(walletCacheData)
+      : [];
+
+    // load any required data depending on feature flags and cache
     const [paymentConfig] = await Promise.all([
+      // load payment configuration if feature enabled
       accountAddresses.length > 0 &&
       featureFlags?.variations?.profileServiceEnableWalletIdentity
         ? syncIdentityConfig(accountAddresses[0], accessToken)
         : undefined,
-      Bluebird.map(accountAddresses, async address => {
-        const addressPortfolio = await getWalletPortfolio(
-          address,
-          accessToken,
-          undefined,
-          true,
-        );
-        if (!addressPortfolio) {
-          missingAddresses.push(address);
-          return;
-        }
-        wallets.push(
-          ...addressPortfolio.filter(p =>
-            accountChains.includes(p.symbol.toLowerCase()),
-          ),
-        );
-      }),
+      // load wallet portfolio if required
+      forceRefresh || wallets.length === 0
+        ? Bluebird.map(accountAddresses, async address => {
+            const addressPortfolio = await getWalletPortfolio(
+              address,
+              accessToken,
+              undefined,
+              true,
+            );
+            if (!addressPortfolio) {
+              missingAddresses.push(address);
+              return;
+            }
+            wallets.push(
+              ...addressPortfolio.filter(p =>
+                accountChains.includes(p.symbol.toLowerCase()),
+              ),
+            );
+          })
+        : undefined,
     ]);
 
     // set authenticated address if applicable
@@ -470,6 +520,13 @@ export const Configuration: React.FC<
     setMpcWallets(wallets.sort((a, b) => a.name.localeCompare(b.name)));
     setIsLoaded(true);
 
+    // store rendered wallets in session memory
+    localStorage.setItem(`${walletCachePrefix}-data`, JSON.stringify(wallets));
+    localStorage.setItem(
+      `${walletCachePrefix}-expiry`,
+      String(Date.now() + ONE_HOUR),
+    );
+
     // set loaded flag if provided
     if (onLoaded) {
       onLoaded(true);
@@ -479,10 +536,30 @@ export const Configuration: React.FC<
     if (setIsFetching) {
       setIsFetching(false);
     }
+
+    // if data was retrieved from cache, call an async force refresh to ensure new
+    // portfolio data is shown soon
+    if (walletCacheValid) {
+      void loadMpcWallets(true);
+    }
   };
 
   const loadFromState = async () => {
     try {
+      // place the component into confirmation mode if an initial email
+      // address and password are provided
+      if (initialEmailAddress && initialRecoveryPhrase) {
+        // if an account exists, set state to login confirmation. Otherwise, set
+        // state to account create confirmation.
+        const onboardingStatus = await getOnboardingStatus(initialEmailAddress);
+        if (onboardingStatus?.active) {
+          setConfigState(WalletConfigState.OtpEntry);
+        } else {
+          setConfigState(WalletConfigState.OnboardConfirmation);
+        }
+        return;
+      }
+
       // retrieve existing state from session or local storage if available
       const existingState = getBootstrapState(state);
       if (!existingState) {
@@ -630,12 +707,6 @@ export const Configuration: React.FC<
       return;
     }
 
-    // validate the two password fields match
-    if (recoveryPhrase !== recoveryPhraseConfirmation) {
-      setErrorMessage(t('wallet.resetPasswordMismatch'));
-      return;
-    }
-
     // validate password strength
     if (!isValidWalletPasswordFormat(recoveryPhrase)) {
       setErrorMessage(t('wallet.resetPasswordStrength'));
@@ -647,6 +718,12 @@ export const Configuration: React.FC<
     if (!isSuccess) {
       setErrorMessage(t('wallet.alreadySentVerification', {emailAddress}));
       return;
+    }
+
+    // raise event for login initiated if requested, which may be required
+    // for state management in other parent components
+    if (onLoginInitiated) {
+      onLoginInitiated(emailAddress, recoveryPhrase);
     }
 
     // message successfully sent
@@ -719,6 +796,12 @@ export const Configuration: React.FC<
         }),
       );
       return;
+    }
+
+    // raise event for login initiated if requested, which may be required
+    // for state management in other parent components
+    if (onLoginInitiated) {
+      onLoginInitiated(emailAddress, recoveryPhrase);
     }
 
     // send the OTP
@@ -931,7 +1014,7 @@ export const Configuration: React.FC<
         mode === 'basic' ||
         mpcWallets.length > 0) ? (
         isSaving || errorMessage ? (
-          <Box mt={5} textAlign="center">
+          <Box className={classes.loadingContainer}>
             <OperationStatus
               label={errorMessage || t('wallet.configuringWallet')}
               icon={<LockOutlinedIcon />}
@@ -1029,7 +1112,7 @@ export const Configuration: React.FC<
               </Markdown>
             </Typography>
             <Box mt={5}>
-              {!initialEmailAddress && (
+              {(!initialEmailAddress || initialRecoveryPhrase) && (
                 <ManageInput
                   mt={2}
                   id="emailAddress"
@@ -1080,8 +1163,7 @@ export const Configuration: React.FC<
                 }
                 stacked={false}
               />
-              {(recoveryToken ||
-                configState === WalletConfigState.OnboardWithEmail) && (
+              {recoveryToken && (
                 <ManageInput
                   mt={2}
                   id="recoveryPhraseConfirmation"
@@ -1154,7 +1236,8 @@ export const Configuration: React.FC<
                 wallets={mpcWallets}
                 paymentConfigStatus={paymentConfigStatus}
                 accessToken={accessToken}
-                onRefresh={loadMpcWallets}
+                fullScreenModals={fullScreenModals}
+                onRefresh={async () => await loadMpcWallets(true)}
                 isHeaderClicked={isHeaderClicked}
                 setIsHeaderClicked={setIsHeaderClicked}
               />

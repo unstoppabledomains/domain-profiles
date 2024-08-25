@@ -8,5 +8,11 @@ export interface Web3Dependencies {
   unstoppableWallet?: {
     addresses: string[];
     promptForSignatures: boolean;
+    fullScreenModal?: boolean;
+    connectedApp?: {
+      name: string;
+      hostUrl: string;
+      iconUrl: string;
+    };
   };
 }

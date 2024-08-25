@@ -7,8 +7,6 @@ import React from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {useTranslationContext} from '../../lib';
-
 const useStyles = makeStyles()((theme: Theme) => ({
   fullWidth: {
     display: 'flex',
@@ -20,14 +18,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
 type Props = {
   onCancelClick: () => void;
   label: string;
+  variant?: 'h4' | 'h5';
 };
 
 export const TitleWithBackButton: React.FC<Props> = ({
   onCancelClick,
-
+  variant = 'h5',
   label,
 }) => {
-  const [t] = useTranslationContext();
   const {classes} = useStyles();
 
   return (
@@ -35,7 +33,7 @@ export const TitleWithBackButton: React.FC<Props> = ({
       <IconButton onClick={onCancelClick} data-testid={'back-button'}>
         <ArrowBackOutlinedIcon />
       </IconButton>
-      <Typography ml={1} variant="h5">
+      <Typography ml={1} variant={variant}>
         {label}
       </Typography>
     </Box>

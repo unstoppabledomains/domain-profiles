@@ -218,7 +218,7 @@ const Send: React.FC<Props> = ({
       // Use a small test amount to measure gas
       '0.0001',
     );
-    setGasFeeEstimate(gasResponse.networkFee.amount);
+    setGasFeeEstimate(gasResponse.networkFee?.amount || '0');
     setAccountAsset(assetToSend);
     setIsLoading(false);
   };

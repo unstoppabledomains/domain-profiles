@@ -2,6 +2,9 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import {useTheme} from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import {MobileCta} from 'components/wallet/MobileCta';
 import {EMAIL_PARAM, RECOVERY_TOKEN_PARAM, SIGN_IN_PARAM} from 'lib/types';
 import {NextSeo} from 'next-seo';
 import {useRouter} from 'next/router';
@@ -14,21 +17,18 @@ import config from '@unstoppabledomains/config';
 import type {DomainProfileTabType} from '@unstoppabledomains/ui-components';
 import {
   DomainProfileKeys,
-  MobileCta,
   Wallet,
+  getAddressMetadata,
+  getBootstrapState,
   getSeoTags,
+  isEthAddress,
   useFeatureFlags,
   useFireblocksState,
   useTranslationContext,
   useWeb3Context,
 } from '@unstoppabledomains/ui-components';
-import {
-  getAddressMetadata,
-  isEthAddress,
-} from '@unstoppabledomains/ui-components/src/components/Chat/protocol/resolution';
 import InlineEducation from '@unstoppabledomains/ui-components/src/components/Wallet/InlineEducation';
 import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
-import {getBootstrapState} from '@unstoppabledomains/ui-components/src/lib/fireBlocks/storage/state';
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableWalletIcon';
 
@@ -39,6 +39,7 @@ const WalletPage = () => {
   const {query: params} = useRouter();
   const {data: featureFlags} = useFeatureFlags(false);
   const isMounted = useIsMounted();
+  const theme = useTheme();
   const [isLoaded, setIsLoaded] = useState(false);
   const [walletState] = useFireblocksState();
   const [authAddress, setAuthAddress] = useState<string>('');
@@ -51,6 +52,7 @@ const WalletPage = () => {
   const [signInClicked, setSignInClicked] = useState(false);
   const [getWalletClicked, setGetWalletClicked] = useState(false);
   const [isReloadChecked, setIsReloadChecked] = useState(false);
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // build default wallet page SEO tags
   const seoTags = getSeoTags({
@@ -231,6 +233,7 @@ const WalletPage = () => {
                   setAuthAddress={setAuthAddress}
                   setButtonComponent={setAuthButton}
                   isNewUser={getWalletClicked}
+                  fullScreenModals={isMobile}
                 />
                 {!authAddress && (
                   <Box

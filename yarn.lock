@@ -1495,7 +1495,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fireblocks/ncw-js-sdk@npm:^12.4.1":
+"@fireblocks/ncw-js-sdk@npm:12.4.1":
   version: 12.4.1
   resolution: "@fireblocks/ncw-js-sdk@npm:12.4.1"
   dependencies:
@@ -5284,8 +5284,7 @@ __metadata:
   dependencies:
     "@braintree/sanitize-url": ^6.0.4
     "@emotion/server": ^11.4.0
-    "@fenderdigital/react-app-store-button": ^0.3.1
-    "@fireblocks/ncw-js-sdk": ^12.4.1
+    "@fireblocks/ncw-js-sdk": 12.4.1
     "@ipld/car": ^5.2.5
     "@mui/icons-material": 5.10.3
     "@mui/lab": 5.0.0-alpha.98
@@ -19007,6 +19006,7 @@ __metadata:
   dependencies:
     "@braintree/sanitize-url": ^6.0.4
     "@emotion/server": ^11.4.0
+    "@fenderdigital/react-app-store-button": ^0.3.1
     "@next/swc-linux-x64-gnu": ^12.2.5
     "@swc/cli": ^0.1.57
     "@swc/core": ^1.2.219

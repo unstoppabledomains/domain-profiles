@@ -4,8 +4,8 @@ import {useQuery} from 'react-query';
 import config, {getLaunchDarklyDefaults} from '@unstoppabledomains/config';
 import type {LaunchDarklyCamelFlagSet} from '@unstoppabledomains/config';
 
+import {fetchApi} from '../lib';
 import {notifyEvent} from '../lib/error';
-import {fetchApi} from '../lib/fetchApi';
 
 const BASE_QUERY_KEY = 'featureFlags';
 const queryKey = {
@@ -47,10 +47,10 @@ export const useFeatureFlags = (
   domainName: string = '',
 ) => {
   // retrieve domain name from path if possible
-  const {query: params} = useRouter();
+  const router = useRouter();
   const fallbackDomainName =
-    params.domain && typeof params.domain === 'string'
-      ? params.domain
+    router?.query?.domain && typeof router.query.domain === 'string'
+      ? router.query.domain
       : undefined;
   const domain = domainName || fallbackDomainName;
 

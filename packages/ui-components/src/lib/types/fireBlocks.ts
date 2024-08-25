@@ -41,12 +41,14 @@ export interface BootstrapState {
 export const BootstrapStateCurrentKey = 'current';
 
 export const BootstrapStatePrefix = 'wallet-service-state';
+
 export interface CreateTransaction {
   chainId: number;
   to: string;
   data: string;
   value?: string;
 }
+export const EIP_712_KEY = 'EIP712Domain';
 export const FireblocksStateKey = 'fireblocks-state';
 
 export interface GetAccountAssetsResponse {
@@ -68,10 +70,10 @@ export interface GetBootstrapTokenResponse {
 }
 
 export interface GetEstimateTransactionResponse {
-  '@type': 'unstoppabledomains.com/wallets.v1.TransactionEstimate';
+  '@type': string;
   priority: string;
-  status: 'VALID' | 'INSUFFICIENT_FUNDS';
-  networkFee: {
+  status: 'VALID' | 'INSUFFICIENT_FUNDS' | 'ERROR';
+  networkFee?: {
     amount: string;
     asset: {
       '@type': string;

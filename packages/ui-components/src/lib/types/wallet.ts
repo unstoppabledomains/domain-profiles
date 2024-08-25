@@ -32,15 +32,19 @@ export enum WalletName {
   Brave = 'Brave',
   Phantom = 'Phantom',
   Kresus = 'Kresus',
-  UnstoppableWallet = 'UnstoppableWallet',
+  UnstoppableWalletReact = 'UnstoppableWalletReact',
+  UnstoppableWalletExtension = 'UnstoppableWalletExtension',
 }
 
 export const WalletOptions: Record<WalletName, walletProps> = {
   [WalletName.Phantom]: {
     connectorType: 'metaMask',
   },
-  [WalletName.UnstoppableWallet]: {
+  [WalletName.UnstoppableWalletReact]: {
     connectorType: 'walletConnect',
+  },
+  [WalletName.UnstoppableWalletExtension]: {
+    connectorType: 'injected',
   },
   [WalletName.MetaMask]: {
     connectorType: 'metaMask',

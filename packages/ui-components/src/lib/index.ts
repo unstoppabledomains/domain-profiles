@@ -1,4 +1,5 @@
 export * from './domain';
+export * from './error';
 export * from './fetchApi';
 export * from './fireBlocks';
 export * from './formOpenseaLink';

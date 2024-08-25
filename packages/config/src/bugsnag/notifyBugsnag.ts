@@ -11,8 +11,23 @@ declare global {
   var bugsnag: BugsnagClient | undefined;
 }
 
-export const getBugsnag = (): BugsnagClient | undefined => {
-  if (!config.BUGSNAG.API_KEY) {
+interface BugsnagConfig {
+  api_key: string;
+  app_version: string;
+  app_env: string;
+}
+
+export const getBugsnag = (
+  altConfig?: BugsnagConfig,
+): BugsnagClient | undefined => {
+  const clientConfig: BugsnagConfig | undefined = config.BUGSNAG.API_KEY
+    ? {
+        api_key: config.BUGSNAG.API_KEY,
+        app_version: config.APP_VERSION,
+        app_env: config.APP_ENV,
+      }
+    : altConfig;
+  if (!clientConfig) {
     return undefined;
   }
   if (global.bugsnag) {
@@ -23,22 +38,25 @@ export const getBugsnag = (): BugsnagClient | undefined => {
   const bugsnagClient =
     global.bugsnag ??
     Bugsnag.start({
-      appVersion: config.APP_VERSION,
-      apiKey: config.BUGSNAG.API_KEY,
+      appVersion: clientConfig.app_version,
+      apiKey: clientConfig.api_key,
       plugins: [new BugsnagPluginReact(React)],
-      releaseStage: config.APP_ENV,
+      releaseStage: clientConfig.app_env,
       enabledReleaseStages: ['development', 'staging', 'production'],
       logger: null,
     });
   global.bugsnag = bugsnagClient;
 
   // start performance monitoring
-  BugsnagPerformance.start({apiKey: config.BUGSNAG.API_KEY});
+  BugsnagPerformance.start({apiKey: clientConfig.api_key});
   return bugsnagClient;
 };
 
-const notifyBugsnag = (errorObj: BugsnagError): boolean => {
-  const bugsnagClient = getBugsnag();
+const notifyBugsnag = (
+  errorObj: BugsnagError,
+  altConfig?: BugsnagConfig,
+): boolean => {
+  const bugsnagClient = getBugsnag(altConfig);
   if (!bugsnagClient) {
     return false;
   }

@@ -61,7 +61,12 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
     justifyContent: 'space-between',
   },
   containerWidth: {
+    display: 'flex',
     maxWidth: `calc(${width} - ${theme.spacing(5)})`,
+    [theme.breakpoints.down('sm')]: {
+      maxWidth: undefined,
+      width: '100%',
+    },
   },
   upperContainer: {
     display: 'flex',
@@ -75,6 +80,9 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
     marginBottom: theme.spacing(3),
     [theme.breakpoints.down('md')]: {
       marginRight: theme.spacing(3),
+    },
+    [theme.breakpoints.down('sm')]: {
+      marginRight: theme.spacing(0),
     },
   },
   actionContainer: {
@@ -136,6 +144,9 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
     maxWidth: `calc(${width} + ${theme.spacing(5)})`,
     [theme.breakpoints.down('md')]: {
       marginRight: theme.spacing(1),
+    },
+    [theme.breakpoints.down('sm')]: {
+      marginRight: theme.spacing(-3),
     },
   },
   ownerAddress: {

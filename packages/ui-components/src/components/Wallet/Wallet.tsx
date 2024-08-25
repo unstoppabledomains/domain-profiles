@@ -17,6 +17,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
+    height: '100%',
   },
 }));
 
@@ -24,10 +25,16 @@ export const Wallet: React.FC<
   ManageTabProps & {
     emailAddress?: string;
     avatarUrl?: string;
+    recoveryPhrase?: string;
     recoveryToken?: string;
     showMessages?: boolean;
     mode?: WalletMode;
+    disableInlineEducation?: boolean;
+    fullScreenModals?: boolean;
     setAuthAddress?: (v: string) => void;
+    onLoginInitiated?: (emailAddress: string, password: string) => void;
+    onLogout?: () => void;
+    onSettingsClick?: () => void;
     isNewUser?: boolean;
   }
 > = ({
@@ -35,11 +42,17 @@ export const Wallet: React.FC<
   address,
   domain,
   avatarUrl,
+  recoveryPhrase,
   recoveryToken,
   showMessages,
   mode = 'basic',
+  disableInlineEducation,
   isNewUser,
+  fullScreenModals,
   onUpdate,
+  onLoginInitiated,
+  onLogout,
+  onSettingsClick,
   setAuthAddress,
   setButtonComponent,
 }) => {
@@ -85,21 +98,28 @@ export const Wallet: React.FC<
         accessToken={accessToken}
         emailAddress={emailAddress}
         onHeaderClick={() => setIsHeaderClicked(true)}
+        onLogout={onLogout}
+        onSettingsClick={onSettingsClick}
+        fullScreenModals={fullScreenModals}
         domain={isDomainValidForManagement(domain) ? domain : undefined}
       />
       <Configuration
         mode={mode}
         emailAddress={emailAddress}
+        recoveryPhrase={recoveryPhrase}
         address={address}
         domain={domain}
         recoveryToken={recoveryToken}
         onLoaded={handleWalletLoaded}
+        onLoginInitiated={onLoginInitiated}
         onUpdate={handleAccessToken}
         setButtonComponent={setButtonComponent}
         setIsFetching={setIsFetching}
         isHeaderClicked={isHeaderClicked}
         setIsHeaderClicked={setIsHeaderClicked}
         setAuthAddress={setAuthAddress}
+        disableInlineEducation={disableInlineEducation}
+        fullScreenModals={fullScreenModals}
         initialState={
           isNewUser ? WalletConfigState.OnboardWithEmail : undefined
         }

@@ -489,15 +489,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.24.5":
-  version: 7.24.7
-  resolution: "@babel/runtime@npm:7.24.7"
-  dependencies:
-    regenerator-runtime: ^0.14.0
-  checksum: d17f29eed6f848ac15cdf4202a910b741facfb0419a9d79e5c7fa37df6362fc3227f1cc2e248cc6db5e53ddffb4caa6686c488e6e80ce3d29c36a4e74c8734ea
-  languageName: node
-  linkType: hard
-
 "@babel/template@npm:^7.12.13, @babel/template@npm:^7.22.15, @babel/template@npm:^7.3.3":
   version: 7.22.15
   resolution: "@babel/template@npm:7.22.15"
@@ -1495,24 +1486,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fireblocks/ncw-js-infra@npm:1.0.20-experimental.1":
-  version: 1.0.20-experimental.1
-  resolution: "@fireblocks/ncw-js-infra@npm:1.0.20-experimental.1"
+"@fireblocks/ncw-js-infra@npm:1.0.19":
+  version: 1.0.19
+  resolution: "@fireblocks/ncw-js-infra@npm:1.0.19"
   dependencies:
     "@types/emscripten": ^1.39.7
-  checksum: 360681a9896efd3a0bbea3e37c0faa5b18e70650bbba37bed602616a29af718959d4a6ca48b2b2c118d8a137d47c1a70cb19b9700562607a4f94fc326103d38e
+  checksum: 92f715348c8259b696228cfc27b94ccc81722548d06472610ce02126ae97d5ed1242a72909d3d426ea2cb7ab0052c790612af59de5138488018ba9942b31ff15
   languageName: node
   linkType: hard
 
-"@fireblocks/ncw-js-sdk@npm:12.1.3-experimental.1":
-  version: 12.1.3-experimental.1
-  resolution: "@fireblocks/ncw-js-sdk@npm:12.1.3-experimental.1"
+"@fireblocks/ncw-js-sdk@npm:12.4.1":
+  version: 12.4.1
+  resolution: "@fireblocks/ncw-js-sdk@npm:12.4.1"
   dependencies:
-    "@babel/runtime": ^7.24.5
-    "@fireblocks/ncw-js-infra": 1.0.20-experimental.1
+    "@fireblocks/ncw-js-infra": 1.0.19
     jwt-decode: ^3.1.2
     node-forge: ^1.3.1
-  checksum: a18ca219503bb098bf9eea323dd979ef5c2e74ed418c4b2cdff355370389b9b19144ed2013f3933956df7e3d7c7e73c799bd17b1b5a60fca3f2505853e699d92
+  checksum: 41786911a53cc730cf797fc61d04ef2486c2f02823fc9d5fc162e58e7c87ec3ad7d78cf568df59e0b329ff5126beba9bb8b8c0616120e2574d4848d12ed916fd
   languageName: node
   linkType: hard
 
@@ -5294,7 +5284,7 @@ __metadata:
   dependencies:
     "@braintree/sanitize-url": ^6.0.4
     "@emotion/server": ^11.4.0
-    "@fireblocks/ncw-js-sdk": 12.1.3-experimental.1
+    "@fireblocks/ncw-js-sdk": 12.4.1
     "@ipld/car": ^5.2.5
     "@mui/icons-material": 5.10.3
     "@mui/lab": 5.0.0-alpha.98

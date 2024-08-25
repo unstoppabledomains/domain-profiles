@@ -457,7 +457,7 @@ export const Configuration: React.FC<
     const walletCacheValid =
       walletCacheData &&
       walletCacheExpiry &&
-      Date.now() < parseInt(walletCacheExpiry);
+      Date.now() < parseInt(walletCacheExpiry, 10);
     const wallets: SerializedWalletBalance[] = walletCacheValid
       ? JSON.parse(walletCacheData)
       : [];

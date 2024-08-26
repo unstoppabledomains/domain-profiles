@@ -1,3 +1,6 @@
+import type {Eip712TypedData} from 'web3';
+import {utils as web3utils} from 'web3';
+
 import config from '@unstoppabledomains/config';
 
 import {
@@ -8,12 +11,14 @@ import {notifyEvent} from '../lib/error';
 import {getFireBlocksClient} from '../lib/fireBlocks/client';
 import {getBootstrapState} from '../lib/fireBlocks/storage/state';
 import type {GetOperationStatusResponse} from '../lib/types/fireBlocks';
+import {EIP_712_KEY} from '../lib/types/fireBlocks';
 import useFireblocksAccessToken from './useFireblocksAccessToken';
 import useFireblocksState from './useFireblocksState';
 
 export type FireblocksMessageSigner = (
   message: string,
   address?: string,
+  chainId?: number,
 ) => Promise<string>;
 
 const useFireblocksMessageSigner = (): FireblocksMessageSigner => {
@@ -21,7 +26,11 @@ const useFireblocksMessageSigner = (): FireblocksMessageSigner => {
   const getAccessToken = useFireblocksAccessToken();
 
   // return the fireblocks client signer
-  return async (message: string, address?: string): Promise<string> => {
+  return async (
+    message: string,
+    address?: string,
+    chainId?: number,
+  ): Promise<string> => {
     // retrieve and validate key state
     const clientState = getBootstrapState(state);
     if (!clientState) {
@@ -54,17 +63,54 @@ const useFireblocksMessageSigner = (): FireblocksMessageSigner => {
       },
     );
 
+    // determine if a specific chain ID should override based upon a typed
+    // EIP-712 message
+    const isTypedMessage = message.includes(EIP_712_KEY);
+    if (isTypedMessage) {
+      try {
+        const typedMessage: Eip712TypedData = JSON.parse(message);
+        if (typedMessage?.domain?.chainId) {
+          chainId =
+            typeof typedMessage.domain.chainId === 'string'
+              ? typedMessage.domain.chainId.startsWith('0x')
+                ? (web3utils.hexToNumber(typedMessage.domain.chainId) as number)
+                : parseInt(typedMessage.domain.chainId, 10)
+              : typedMessage.domain.chainId;
+        }
+      } catch (e) {
+        notifyEvent(e, 'warning', 'Wallet', 'Signature', {
+          msg: 'unable to parse typed message',
+        });
+      }
+    }
+
     // retrieve the asset associated with the optionally requested address,
     // otherwise just retrieve the first first asset.
+    notifyEvent(
+      'retrieving wallet asset for signature',
+      'info',
+      'Wallet',
+      'Signature',
+      {
+        meta: {chainId, default: config.WALLETS.SIGNATURE_SYMBOL},
+      },
+    );
     const asset =
-      clientState.assets.find(
-        a =>
+      clientState.assets.find(a => {
+        // use chain ID if provided
+        if (chainId) {
+          return a.blockchainAsset.blockchain.networkId === chainId;
+        }
+
+        // use default blockchain symbol
+        return (
           a.blockchainAsset.blockchain.id.toLowerCase() ===
             config.WALLETS.SIGNATURE_SYMBOL.split('/')[0].toLowerCase() &&
           a.blockchainAsset.symbol.toLowerCase() ===
             config.WALLETS.SIGNATURE_SYMBOL.split('/')[1].toLowerCase() &&
-          a.address.toLowerCase() === address?.toLowerCase(),
-      ) || clientState.assets[0];
+          a.address.toLowerCase() === address?.toLowerCase()
+        );
+      }) || clientState.assets[0];
     if (!asset?.accountId) {
       throw new Error('address not found in account');
     }
@@ -78,6 +124,7 @@ const useFireblocksMessageSigner = (): FireblocksMessageSigner => {
           asset.accountId!,
           asset.id,
           message,
+          isTypedMessage,
         );
       },
       async (txId: string) => {

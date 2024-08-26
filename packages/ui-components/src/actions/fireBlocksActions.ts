@@ -12,7 +12,6 @@ import {
   saveBootstrapState,
 } from '../lib/fireBlocks/storage/state';
 import {sleep} from '../lib/sleep';
-import {EIP_712_KEY} from '../lib/types/fireBlocks';
 import type {
   AccountAsset,
   CreateTransaction,
@@ -118,11 +117,9 @@ export const createSignatureOperation = async (
   accountId: string,
   assetId: string,
   message: string,
+  isTypedMessage?: boolean,
 ): Promise<GetOperationResponse | undefined> => {
   try {
-    // determine if this is a typed EIP-712 message
-    const isTypedMessage = message.includes(EIP_712_KEY);
-
     // call the signature endpoint
     return await fetchApi<GetOperationResponse>(
       `/accounts/${accountId}/assets/${assetId}/signatures`,

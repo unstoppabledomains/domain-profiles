@@ -1,3 +1,5 @@
+import {retryAsync} from 'ts-retry';
+
 import {
   createTransactionOperation,
   signAndWait,
@@ -5,7 +7,7 @@ import {
 import {notifyEvent} from '../lib/error';
 import {getFireBlocksClient} from '../lib/fireBlocks/client';
 import {getBootstrapState} from '../lib/fireBlocks/storage/state';
-import type {GetOperationStatusResponse} from '../lib/types/fireBlocks';
+import {GetOperationStatusResponse, MAX_RETRIES} from '../lib/types/fireBlocks';
 import useFireblocksAccessToken from './useFireblocksAccessToken';
 import useFireblocksState from './useFireblocksState';
 
@@ -20,8 +22,8 @@ const useFireblocksTxSigner = (): FireblocksTxSigner => {
   const [state, saveState] = useFireblocksState();
   const getAccessToken = useFireblocksAccessToken();
 
-  // return the fireblocks client signer
-  return async (
+  // define the fireblocks client signer
+  const signingFn = async (
     chainId: number,
     contractAddress: string,
     data: string,
@@ -99,6 +101,11 @@ const useFireblocksTxSigner = (): FireblocksTxSigner => {
       },
     );
 
+    // validate and return the signature result
+    if (!txOp?.transaction?.id) {
+      throw new Error('signature failed');
+    }
+
     // indicate complete with successful signature result
     notifyEvent('signature successful', 'info', 'Wallet', 'Signature', {
       meta: {
@@ -109,12 +116,31 @@ const useFireblocksTxSigner = (): FireblocksTxSigner => {
         txOp,
       },
     });
-
-    // validate and return the signature result
-    if (!txOp?.transaction?.id) {
-      throw new Error('signature failed');
-    }
     return txOp.transaction.id;
+  };
+
+  // wrap the signing function in retry logic to ensure it has a chance to
+  // succeed if there are intermittent failures
+  return async (
+    chainId: number,
+    contractAddress: string,
+    data: string,
+    value?: string,
+  ): Promise<string> => {
+    // wrap the signing function in retry logic
+    return retryAsync(
+      async () => await signingFn(chainId, contractAddress, data, value),
+      {
+        delay: 100,
+        maxTry: MAX_RETRIES,
+        onError: (err: Error, currentTry: number) => {
+          notifyEvent(err, 'warning', 'Wallet', 'Signature', {
+            msg: 'encountered transaction error in retry logic',
+            meta: {currentTry},
+          });
+        },
+      },
+    );
   };
 };
 

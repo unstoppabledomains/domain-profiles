@@ -1,3 +1,5 @@
+export const MAX_RETRIES = 5;
+
 export interface Account {
   '@type': string;
   id: string;

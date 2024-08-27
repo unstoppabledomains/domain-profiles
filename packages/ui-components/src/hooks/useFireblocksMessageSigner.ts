@@ -1,3 +1,4 @@
+import {retryAsync} from 'ts-retry';
 import type {Eip712TypedData} from 'web3';
 import {utils as web3utils} from 'web3';
 
@@ -11,7 +12,7 @@ import {notifyEvent} from '../lib/error';
 import {getFireBlocksClient} from '../lib/fireBlocks/client';
 import {getBootstrapState} from '../lib/fireBlocks/storage/state';
 import type {GetOperationStatusResponse} from '../lib/types/fireBlocks';
-import {EIP_712_KEY} from '../lib/types/fireBlocks';
+import {EIP_712_KEY, MAX_RETRIES} from '../lib/types/fireBlocks';
 import useFireblocksAccessToken from './useFireblocksAccessToken';
 import useFireblocksState from './useFireblocksState';
 
@@ -25,8 +26,8 @@ const useFireblocksMessageSigner = (): FireblocksMessageSigner => {
   const [state, saveState] = useFireblocksState();
   const getAccessToken = useFireblocksAccessToken();
 
-  // return the fireblocks client signer
-  return async (
+  // define the fireblocks client signer
+  const signingFn = async (
     message: string,
     address?: string,
     chainId?: number,
@@ -141,6 +142,11 @@ const useFireblocksMessageSigner = (): FireblocksMessageSigner => {
       },
     );
 
+    // validate and return the signature result
+    if (!signatureOp?.result?.signature) {
+      throw new Error('signature failed');
+    }
+
     // indicate complete with successful signature result
     notifyEvent('signature successful', 'info', 'Wallet', 'Signature', {
       meta: {
@@ -149,12 +155,27 @@ const useFireblocksMessageSigner = (): FireblocksMessageSigner => {
         signatureOp,
       },
     });
-
-    // validate and return the signature result
-    if (!signatureOp?.result?.signature) {
-      throw new Error('signature failed');
-    }
     return signatureOp.result.signature;
+  };
+
+  // wrap the signing function in retry logic to ensure it has a chance to
+  // succeed if there are intermittent failures
+  return async (
+    message: string,
+    address?: string,
+    chainId?: number,
+  ): Promise<string> => {
+    // wrap the signing function in retry logic
+    return retryAsync(async () => await signingFn(message, address, chainId), {
+      delay: 100,
+      maxTry: MAX_RETRIES,
+      onError: (err: Error, currentTry: number) => {
+        notifyEvent(err, 'warning', 'Wallet', 'Signature', {
+          msg: 'encountered signature error in retry logic',
+          meta: {currentTry},
+        });
+      },
+    });
   };
 };
 

@@ -5,6 +5,7 @@ import type {
   TEvent,
 } from '@fireblocks/ncw-js-sdk';
 import {FireblocksNCWFactory} from '@fireblocks/ncw-js-sdk';
+import {retryAsync} from 'ts-retry';
 
 import config from '@unstoppabledomains/config';
 
@@ -14,6 +15,7 @@ import {
 } from '../../actions/fireBlocksActions';
 import {notifyEvent} from '../error';
 import {sleep} from '../sleep';
+import {MAX_RETRIES} from '../types/fireBlocks';
 import {LogEventHandler} from './events/logHandler';
 import {RpcMessageProvider} from './messages/rpcHandler';
 import {StorageFactoryProvider} from './storage/factory';
@@ -78,7 +80,7 @@ export const initializeClient = async (
     recoveryToken?: string;
   },
 ): Promise<boolean> => {
-  try {
+  const initializeFn = async () => {
     // create a join request for this device
     let callbackPromise: Promise<boolean> | undefined;
     await client.requestJoinExistingWallet({
@@ -139,6 +141,23 @@ export const initializeClient = async (
       await sleep(FB_WAIT_TIME_MS);
     }
     throw new Error('fireblocks key status is not ready');
+  };
+
+  // handle initialization errors and return a simple boolean result
+  // for the bootstrapping process
+  try {
+    // wrap the signing function in retry logic so that intermittent
+    // backend errors do not result in failed login attempts
+    return await retryAsync(initializeFn, {
+      delay: 100,
+      maxTry: MAX_RETRIES,
+      onError: (err: Error, currentTry: number) => {
+        notifyEvent(err, 'warning', 'Wallet', 'Authorization', {
+          msg: 'encountered bootstrap error in retry logic',
+          meta: {currentTry},
+        });
+      },
+    });
   } catch (initError) {
     notifyEvent(initError, 'error', 'Wallet', 'Configuration', {
       msg: 'unable to initialize client',

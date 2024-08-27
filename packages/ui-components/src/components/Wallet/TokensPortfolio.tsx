@@ -1,6 +1,8 @@
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
@@ -8,6 +10,7 @@ import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import {CategoryScale} from 'chart.js';
 import Chart from 'chart.js/auto';
+import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -15,6 +18,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import type {CurrenciesType} from '../../lib';
 import {TokenType, WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
+import CopyToClipboard from '../CopyToClipboard';
 import {CryptoIcon} from '../Image';
 import type {TokenEntry} from './Token';
 import Token from './Token';
@@ -130,6 +134,11 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
       backgroundColor: 'rgba(255, 255, 255, 0.05)',
     },
   },
+  copyIcon: {
+    color: theme.palette.neutralShades[bgNeutralShade - 400],
+    width: '14px',
+    height: '14px',
+  },
 }));
 
 export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
@@ -145,6 +154,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
       ? theme.palette.primaryShades
       : theme.palette.neutralShades,
   });
+  const {enqueueSnackbar} = useSnackbar();
   const [filterAddress, setFilterAddress] = useState<SerializedWalletBalance>();
   const [groupedTokens, setGroupedTokens] = useState<TokenEntry[]>([]);
   const [t] = useTranslationContext();
@@ -316,6 +326,15 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
     window.open(link, '_blank');
   };
 
+  const handleCopyAddress = (wallet: SerializedWalletBalance) => {
+    enqueueSnackbar(
+      `${t('common.copied')} ${wallet.name} ${t('common.address')}`,
+      {
+        variant: 'success',
+      },
+    );
+  };
+
   const formatWalletAddress = (address: string) => {
     if (address.length > 10) {
       return `${address.slice(0, 6)}...${address.slice(address.length - 4)}`;
@@ -341,6 +360,16 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
             <Typography className={classes.walletAddress} variant="caption">
               {formatWalletAddress(wallet.address)}
             </Typography>
+            <CopyToClipboard
+              onCopy={() => handleCopyAddress(wallet)}
+              stringToCopy={wallet.address}
+            >
+              <Box ml={0.5} mr={-0.5}>
+                <IconButton size="small">
+                  <ContentCopyIcon className={classes.copyIcon} />
+                </IconButton>
+              </Box>
+            </CopyToClipboard>
           </>
         ) : (
           <Box>

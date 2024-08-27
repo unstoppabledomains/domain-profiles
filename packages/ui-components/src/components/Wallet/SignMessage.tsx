@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useState} from 'react';
+import type {Eip712TypedData} from 'web3';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -14,8 +15,10 @@ import {useWeb3Context} from '../../hooks';
 import useFireblocksMessageSigner from '../../hooks/useFireblocksMessageSigner';
 import {useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
+import {EIP_712_KEY} from '../../lib/types/fireBlocks';
 import {Header} from './Header';
 import {SignForDappHeader} from './SignForDappHeader';
+import {TypedMessage} from './TypedMessage';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -62,6 +65,26 @@ export const SignMessage: React.FC<SignMessageProps> = ({
   const [isSuccess, setIsSuccess] = useState(false);
   const {web3Deps} = useWeb3Context();
   const fireblocksSigner = useFireblocksMessageSigner();
+
+  // determine if a specific chain ID should override based upon a typed
+  // EIP-712 message
+  let typedData: Eip712TypedData | undefined = undefined;
+  if (message.includes(EIP_712_KEY)) {
+    try {
+      const maybeTypedData = JSON.parse(message);
+      if (
+        maybeTypedData?.message &&
+        maybeTypedData?.domain &&
+        maybeTypedData.primaryType
+      ) {
+        typedData = maybeTypedData;
+      }
+    } catch (e) {
+      notifyEvent(e, 'warning', 'Wallet', 'Signature', {
+        msg: 'unable to parse typed message',
+      });
+    }
+  }
 
   // sign requested message when button is clicked and the Fireblocks
   // client has been properly initialized
@@ -146,7 +169,13 @@ export const SignMessage: React.FC<SignMessageProps> = ({
             {t('wallet.signMessageSubtitle')}:
           </Typography>
           <Box className={classes.messageContainer}>
-            <Markdown>{message}</Markdown>
+            {typedData ? (
+              <Box mt={1} mb={1}>
+                <TypedMessage typedData={typedData} />
+              </Box>
+            ) : (
+              <Markdown>{message}</Markdown>
+            )}
           </Box>
         </Box>
       </Box>

@@ -30,6 +30,7 @@ export const Wallet: React.FC<
     showMessages?: boolean;
     mode?: WalletMode;
     disableInlineEducation?: boolean;
+    disableBasicHeader?: boolean;
     fullScreenModals?: boolean;
     setAuthAddress?: (v: string) => void;
     onLoginInitiated?: (emailAddress: string, password: string) => void;
@@ -47,6 +48,7 @@ export const Wallet: React.FC<
   showMessages,
   mode = 'basic',
   disableInlineEducation,
+  disableBasicHeader,
   isNewUser,
   fullScreenModals,
   onUpdate,
@@ -88,21 +90,23 @@ export const Wallet: React.FC<
 
   return (
     <Box className={classes.container}>
-      <Header
-        mode={mode}
-        isLoaded={isLoaded}
-        isFetching={isFetching}
-        avatarUrl={avatarUrl}
-        showMessages={showMessages}
-        address={address}
-        accessToken={accessToken}
-        emailAddress={emailAddress}
-        onHeaderClick={() => setIsHeaderClicked(true)}
-        onLogout={onLogout}
-        onSettingsClick={onSettingsClick}
-        fullScreenModals={fullScreenModals}
-        domain={isDomainValidForManagement(domain) ? domain : undefined}
-      />
+      {(mode !== 'basic' || !disableBasicHeader) && (
+        <Header
+          mode={mode}
+          isLoaded={isLoaded}
+          isFetching={isFetching}
+          avatarUrl={avatarUrl}
+          showMessages={showMessages}
+          address={address}
+          accessToken={accessToken}
+          emailAddress={emailAddress}
+          onHeaderClick={() => setIsHeaderClicked(true)}
+          onLogout={onLogout}
+          onSettingsClick={onSettingsClick}
+          fullScreenModals={fullScreenModals}
+          domain={isDomainValidForManagement(domain) ? domain : undefined}
+        />
+      )}
       <Configuration
         mode={mode}
         emailAddress={emailAddress}

@@ -79,7 +79,7 @@ export const SignMessage: React.FC<SignMessageProps> = ({
 
   // determine if a specific chain ID should override based upon a typed
   // EIP-712 message
-  let typedData: Eip712TypedData | undefined = undefined;
+  let typedData: Eip712TypedData | undefined;
   if (message.includes(EIP_712_KEY)) {
     try {
       const maybeTypedData = JSON.parse(message);

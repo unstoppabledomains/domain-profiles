@@ -1,4 +1,5 @@
 import CheckIcon from '@mui/icons-material/Check';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -17,6 +18,7 @@ import {useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import {EIP_712_KEY} from '../../lib/types/fireBlocks';
 import {Header} from './Header';
+import {OperationStatus} from './OperationStatus';
 import {SignForDappHeader} from './SignForDappHeader';
 import {TypedMessage} from './TypedMessage';
 
@@ -26,6 +28,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     justifyContent: 'space-between',
     height: '100%',
+  },
+  contentContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
   },
   messageContainer: {
     backgroundColor: theme.palette.neutralShades[100],
@@ -63,6 +73,7 @@ export const SignMessage: React.FC<SignMessageProps> = ({
   const [t] = useTranslationContext();
   const [isSigning, setIsSigning] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>();
   const {web3Deps} = useWeb3Context();
   const fireblocksSigner = useFireblocksMessageSigner();
 
@@ -98,6 +109,7 @@ export const SignMessage: React.FC<SignMessageProps> = ({
   // clear the success flag for new message
   useEffect(() => {
     setIsSuccess(false);
+    setErrorMessage(undefined);
   }, [message]);
 
   const handleSignature = async () => {
@@ -109,15 +121,17 @@ export const SignMessage: React.FC<SignMessageProps> = ({
     let signatureResult: string | undefined;
     try {
       signatureResult = await fireblocksSigner(message, address);
+      onComplete(signatureResult);
+      setIsSuccess(true);
+      return;
     } catch (e) {
       notifyEvent(e, 'error', 'Wallet', 'Signature', {
         msg: 'error signing message',
       });
     }
 
-    onComplete(signatureResult);
-    setIsSuccess(true);
-    setIsSigning(false);
+    // show error message
+    setErrorMessage(t('wallet.errorConfirming'));
   };
 
   const handleClickApprove = () => {
@@ -130,85 +144,91 @@ export const SignMessage: React.FC<SignMessageProps> = ({
     onComplete(undefined);
   };
 
+  // show standard screen when not signing
   return (
     <Box className={classes.container}>
-      <Box display="flex" flexDirection="column">
+      <Box className={classes.contentContainer}>
         {hideHeader ? (
           <Box mt={2} />
         ) : (
           <Header mode="basic" address={address || ''} isLoaded={true} />
         )}
-        <Box
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          alignContent="center"
-          justifyContent="center"
-          textAlign="center"
-        >
-          <Typography variant="h4">{t('wallet.signMessage')}</Typography>
-          {web3Deps?.unstoppableWallet?.connectedApp ? (
-            <SignForDappHeader
-              name={web3Deps.unstoppableWallet.connectedApp.name}
-              hostUrl={web3Deps.unstoppableWallet.connectedApp.hostUrl}
-              iconUrl={web3Deps.unstoppableWallet.connectedApp.iconUrl}
-              actionText={t('wallet.signMessageAction')}
+        {isSigning ? (
+          <Box className={classes.contentContainer}>
+            <OperationStatus
+              label={errorMessage || t('manage.signing')}
+              icon={<LockOutlinedIcon />}
+              error={errorMessage !== undefined}
             />
-          ) : (
-            <Typography mt={3} variant="body2">
-              {t('wallet.signMessageDescription')}
-            </Typography>
-          )}
-          <Typography mt={3} variant="body1">
-            {t('auth.walletAddress')}:
-          </Typography>
-          <Typography variant="body2">
-            <b>{address}</b>
-          </Typography>
-          <Typography mt={3} variant="body1">
-            {t('wallet.signMessageSubtitle')}:
-          </Typography>
-          <Box className={classes.messageContainer}>
-            {typedData ? (
-              <Box mt={1} mb={1}>
-                <TypedMessage typedData={typedData} />
-              </Box>
-            ) : (
-              <Markdown>{message}</Markdown>
-            )}
           </Box>
-        </Box>
-      </Box>
-      <Box display="flex" flexDirection="column">
-        <LoadingButton
-          className={classes.button}
-          fullWidth
-          loading={isSigning}
-          loadingIndicator={
-            <Box display="flex" alignItems="center">
-              <CircularProgress color="inherit" size={16} />
-              <Box ml={1}>{t('manage.signing')}...</Box>
+        ) : (
+          <Box className={classes.contentContainer}>
+            <Typography variant="h4">{t('wallet.signMessage')}</Typography>
+            {web3Deps?.unstoppableWallet?.connectedApp ? (
+              <SignForDappHeader
+                name={web3Deps.unstoppableWallet.connectedApp.name}
+                hostUrl={web3Deps.unstoppableWallet.connectedApp.hostUrl}
+                iconUrl={web3Deps.unstoppableWallet.connectedApp.iconUrl}
+                actionText={t('wallet.signMessageAction')}
+              />
+            ) : (
+              <Typography mt={3} variant="body2">
+                {t('wallet.signMessageDescription')}
+              </Typography>
+            )}
+            <Typography mt={3} variant="body1">
+              {t('auth.walletAddress')}:
+            </Typography>
+            <Typography variant="body2">
+              <b>{address}</b>
+            </Typography>
+            <Typography mt={3} variant="body1">
+              {t('wallet.signMessageSubtitle')}:
+            </Typography>
+            <Box className={classes.messageContainer}>
+              {typedData ? (
+                <Box mt={1} mb={1}>
+                  <TypedMessage typedData={typedData} />
+                </Box>
+              ) : (
+                <Markdown>{message}</Markdown>
+              )}
             </Box>
-          }
-          disabled={isSuccess}
-          variant="contained"
-          onClick={handleClickApprove}
-          startIcon={isSuccess ? <CheckIcon /> : undefined}
-        >
-          {isSuccess ? t('common.success') : t('wallet.approve')}
-        </LoadingButton>
-        <Button
-          className={classes.button}
-          fullWidth
-          disabled={isSigning}
-          variant="outlined"
-          onClick={handleClickReject}
-        >
-          {t('wallet.reject')}
-        </Button>
-        {web3Deps?.unstoppableWallet?.fullScreenModal &&
-          message.length > 90 && <Box mt={3} />}
+          </Box>
+        )}
       </Box>
+      {!isSigning && (
+        <Box display="flex" flexDirection="column">
+          <LoadingButton
+            className={classes.button}
+            fullWidth
+            loading={isSigning}
+            loadingIndicator={
+              <Box display="flex" alignItems="center">
+                <CircularProgress color="inherit" size={16} />
+                <Box ml={1}>{t('manage.signing')}...</Box>
+              </Box>
+            }
+            disabled={isSuccess}
+            variant="contained"
+            onClick={handleClickApprove}
+            startIcon={isSuccess ? <CheckIcon /> : undefined}
+          >
+            {isSuccess ? t('common.success') : t('wallet.approve')}
+          </LoadingButton>
+          <Button
+            className={classes.button}
+            fullWidth
+            disabled={isSigning}
+            variant="outlined"
+            onClick={handleClickReject}
+          >
+            {t('wallet.reject')}
+          </Button>
+          {web3Deps?.unstoppableWallet?.fullScreenModal &&
+            message.length > 90 && <Box mt={3} />}
+        </Box>
+      )}
     </Box>
   );
 };

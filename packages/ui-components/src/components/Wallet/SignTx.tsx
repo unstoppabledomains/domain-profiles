@@ -1,4 +1,5 @@
 import CheckIcon from '@mui/icons-material/Check';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
@@ -41,14 +42,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignContent: 'center',
     textAlign: 'center',
   },
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   buttonContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -76,6 +69,7 @@ export const SignTx: React.FC<SignTxProps> = ({
   const getAccessToken = useFireblocksAccessToken();
   const [isSigning, setIsSigning] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>();
   const [accessToken, setAccessToken] = useState<string>();
   const [gasEstimate, setGasEstimate] =
     useState<GetEstimateTransactionResponse>();
@@ -142,6 +136,7 @@ export const SignTx: React.FC<SignTxProps> = ({
   // clear the success flag for new tx
   useEffect(() => {
     setIsSuccess(false);
+    setErrorMessage(undefined);
   }, [contractAddress]);
 
   const handleSignature = async () => {
@@ -158,15 +153,17 @@ export const SignTx: React.FC<SignTxProps> = ({
         data,
         value,
       );
+      onComplete(signatureResult);
+      setIsSuccess(true);
+      return;
     } catch (e) {
       notifyEvent(e, 'error', 'Wallet', 'Signature', {
         msg: 'error signing message',
       });
     }
 
-    onComplete(signatureResult);
-    setIsSuccess(true);
-    setIsSigning(false);
+    // show error message
+    setErrorMessage(t('wallet.errorConfirming'));
   };
 
   const handleClickApprove = () => {
@@ -187,7 +184,15 @@ export const SignTx: React.FC<SignTxProps> = ({
         ) : (
           <Header mode="basic" address={asset.address} isLoaded={true} />
         )}
-        {gasEstimate ? (
+        {isSigning ? (
+          <Box className={classes.contentContainer}>
+            <OperationStatus
+              label={errorMessage || t('manage.signing')}
+              icon={<LockOutlinedIcon />}
+              error={errorMessage !== undefined}
+            />
+          </Box>
+        ) : gasEstimate ? (
           <Box className={classes.contentContainer}>
             <Typography variant="h4">{t('wallet.signMessage')}</Typography>
             {web3Deps?.unstoppableWallet?.connectedApp ? (
@@ -227,7 +232,7 @@ export const SignTx: React.FC<SignTxProps> = ({
             </Typography>
           </Box>
         ) : (
-          <Box className={classes.loadingContainer}>
+          <Box className={classes.contentContainer}>
             <OperationStatus
               label={t('wallet.retrievingGasPrice', {
                 blockchain: asset.blockchainAsset.blockchain.name || '',
@@ -237,34 +242,36 @@ export const SignTx: React.FC<SignTxProps> = ({
           </Box>
         )}
       </Box>
-      <Box className={classes.buttonContainer}>
-        <LoadingButton
-          className={classes.button}
-          fullWidth
-          loading={isSigning}
-          loadingIndicator={
-            <Box display="flex" alignItems="center">
-              <CircularProgress color="inherit" size={16} />
-              <Box ml={1}>{t('manage.signing')}...</Box>
-            </Box>
-          }
-          disabled={isSuccess || !gasEstimate?.status}
-          variant="contained"
-          onClick={handleClickApprove}
-          startIcon={isSuccess ? <CheckIcon /> : undefined}
-        >
-          {isSuccess ? t('common.success') : t('wallet.approve')}
-        </LoadingButton>
-        <Button
-          className={classes.button}
-          fullWidth
-          disabled={isSigning}
-          variant="outlined"
-          onClick={handleClickReject}
-        >
-          {t('wallet.reject')}
-        </Button>
-      </Box>
+      {!isSigning && (
+        <Box className={classes.buttonContainer}>
+          <LoadingButton
+            className={classes.button}
+            fullWidth
+            loading={isSigning}
+            loadingIndicator={
+              <Box display="flex" alignItems="center">
+                <CircularProgress color="inherit" size={16} />
+                <Box ml={1}>{t('manage.signing')}...</Box>
+              </Box>
+            }
+            disabled={isSuccess || !gasEstimate?.status}
+            variant="contained"
+            onClick={handleClickApprove}
+            startIcon={isSuccess ? <CheckIcon /> : undefined}
+          >
+            {isSuccess ? t('common.success') : t('wallet.approve')}
+          </LoadingButton>
+          <Button
+            className={classes.button}
+            fullWidth
+            disabled={isSigning}
+            variant="outlined"
+            onClick={handleClickReject}
+          >
+            {t('wallet.reject')}
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 };

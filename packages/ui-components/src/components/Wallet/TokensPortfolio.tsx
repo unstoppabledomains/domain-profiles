@@ -363,6 +363,9 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
             <CopyToClipboard
               onCopy={() => handleCopyAddress(wallet)}
               stringToCopy={wallet.address}
+              tooltip={`${t('common.copy')} ${wallet.name} ${t(
+                'common.address',
+              )}`}
             >
               <Box ml={0.5} mr={-0.5}>
                 <IconButton size="small">

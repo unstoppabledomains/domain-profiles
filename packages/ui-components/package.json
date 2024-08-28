@@ -108,6 +108,7 @@
     "title-case": "^3.0.3",
     "truncate-eth-address": "^1.0.2",
     "truncate-middle": "^1.0.6",
+    "ts-retry": "^5.0.1",
     "tss-react": "^4.0.0",
     "typescript": "5.0.4",
     "uns": "https://github.com/unstoppabledomains/uns#v0.8.35",

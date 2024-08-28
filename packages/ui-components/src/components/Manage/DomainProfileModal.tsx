@@ -80,7 +80,7 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
     <Dialog
       maxWidth="lg"
       open={open}
-      fullScreen
+      fullScreen={fullScreen}
       fullWidth={fullScreen}
       onClose={() => onClose()}
       className={cx({

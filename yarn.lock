@@ -5408,6 +5408,7 @@ __metadata:
     title-case: ^3.0.3
     truncate-eth-address: ^1.0.2
     truncate-middle: ^1.0.6
+    ts-retry: ^5.0.1
     tslib: ^2.6.2
     tss-react: ^4.0.0
     typescript: 5.0.4
@@ -20682,6 +20683,13 @@ __metadata:
     ts-node-transpile-only: dist/bin-transpile.js
     ts-script: dist/bin-script-deprecated.js
   checksum: 090adff1302ab20bd3486e6b4799e90f97726ed39e02b39e566f8ab674fd5bd5f727f43615debbfc580d33c6d9d1c6b1b3ce7d8e3cca3e20530a145ffa232c35
+  languageName: node
+  linkType: hard
+
+"ts-retry@npm:^5.0.1":
+  version: 5.0.1
+  resolution: "ts-retry@npm:5.0.1"
+  checksum: 8cf23a09cd260e18baa5775a8220c482445c50fad0450d4b1b3e88a472e4486014140939dc7009db1081cdc5a32041ca8fb07ac3d0d3eb6d5be6dcf8b6b47f4a
   languageName: node
   linkType: hard
 

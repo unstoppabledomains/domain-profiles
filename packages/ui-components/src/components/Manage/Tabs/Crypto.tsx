@@ -150,7 +150,6 @@ export const Crypto: React.FC<CryptoProps> = ({
         </LoadingButton>
       </Box>,
     );
-    console.log('AJQ records to update', JSON.stringify(records, undefined, 2));
   }, [isPendingTx, isSaving, isLoading, records]);
 
   const loadRecords = async () => {

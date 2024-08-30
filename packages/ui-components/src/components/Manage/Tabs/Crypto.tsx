@@ -3,7 +3,6 @@ import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlin
 import UpdateOutlinedIcon from '@mui/icons-material/UpdateOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -129,16 +128,17 @@ export const Crypto: React.FC<CryptoProps> = ({
     }
     setButtonComponent(
       <Box display="flex" flexDirection="column" width="100%">
-        <Button
+        <LoadingButton
           variant="outlined"
           onClick={handleOpenModal}
           disabled={isPendingTx}
           className={classes.button}
           startIcon={<AddIcon />}
+          loading={isModalOpened}
           fullWidth
         >
-          {t('manage.addCurrency')}
-        </Button>
+          {t('manage.addCurrency')} test
+        </LoadingButton>
         <LoadingButton
           variant="contained"
           onClick={handleSave}
@@ -150,7 +150,7 @@ export const Crypto: React.FC<CryptoProps> = ({
         </LoadingButton>
       </Box>,
     );
-  }, [isPendingTx, isSaving, isLoading, records]);
+  }, [isPendingTx, isSaving, isLoading, isModalOpened, records]);
 
   const loadRecords = async () => {
     const data = await getProfileData(domain, [
@@ -449,14 +449,12 @@ export const Crypto: React.FC<CryptoProps> = ({
             onSignature={handleRecordUpdate}
             forceWalletConnected={true}
           />
-          {isModalOpened && (
-            <AddCurrencyModal
-              open={isModalOpened}
-              onClose={handleCloseModal}
-              onAddNewAddress={handleAddNewAddress}
-              isEns={false}
-            />
-          )}
+          <AddCurrencyModal
+            open={isModalOpened}
+            onClose={handleCloseModal}
+            onAddNewAddress={handleAddNewAddress}
+            isEns={false}
+          />
         </>
       )}
     </Box>

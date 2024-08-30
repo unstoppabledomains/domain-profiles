@@ -363,7 +363,7 @@ const NftModal: React.FC<NftModalProps> = ({
                 )}
                 <CryptoIcon
                   currency={nft.symbol as CurrenciesType}
-                  classes={{root: classes.currencyIcon}}
+                  className={classes.currencyIcon}
                 />
               </Typography>
               <Typography variant="h4">

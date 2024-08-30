@@ -12,11 +12,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import useResolverKeys from '../../../hooks/useResolverKeys';
 import type {CurrenciesType, NewAddressRecord} from '../../../lib';
-import {
-  AllInitialCurrenciesEnum,
-  CurrencyToName,
-  useTranslationContext,
-} from '../../../lib';
+import {AllInitialCurrenciesEnum, useTranslationContext} from '../../../lib';
 import {CryptoIcon} from '../../Image';
 import FormError from './FormError';
 import {getAllAddressRecords} from './currencyRecords';
@@ -131,12 +127,11 @@ const AddCurrencyModal: React.FC<Props> = ({
   open,
   onClose,
   onAddNewAddress,
-  isEns,
 }) => {
-  const {unsResolverKeys: resolverKeys} = useResolverKeys();
-  const validCoins = getAllAddressRecords(resolverKeys).filter(
+  const {mappedResolverKeys} = useResolverKeys();
+  const validCoins = getAllAddressRecords(mappedResolverKeys).filter(
     key =>
-      !Object.keys(AllInitialCurrenciesEnum).includes(key.currency) &&
+      !Object.keys(AllInitialCurrenciesEnum).includes(key.shortName) &&
       key.versions.every(v => !v.deprecated),
   );
   const [t] = useTranslationContext();
@@ -168,34 +163,36 @@ const AddCurrencyModal: React.FC<Props> = ({
     }
 
     setFilteredCoins(
-      validCoins.filter(({currency}) => {
+      validCoins.filter(({shortName: currency, name}) => {
         const searchValue = searchQuery.toLowerCase();
 
         return (
           currency.toLowerCase().includes(searchValue) ||
-          CurrencyToName[currency]?.toLowerCase().includes(searchValue)
+          name?.toLowerCase().includes(searchValue)
         );
       }),
     );
   }, [searchQuery]);
 
-  const renderCoin = ({currency, versions}: NewAddressRecord) => (
+  const renderCoin = ({
+    shortName: currency,
+    name,
+    versions,
+  }: NewAddressRecord) => (
     <div
       key={versions.map(v => v.key).join()}
       className={classes.currencyItem}
-      onClick={() => handleSelectCoin({currency, versions})}
+      onClick={() => handleSelectCoin({shortName: currency, name, versions})}
     >
       <div className={classes.currencyTitleWrapper}>
         <div className={classes.currencyIconContainer}>
           <CryptoIcon
             currency={currency as CurrenciesType}
-            classes={{root: classes.currencyIcon}}
+            className={classes.currencyIcon}
           />
         </div>
         <div>
-          <div className={classes.currencyTitle}>
-            {CurrencyToName[currency] || currency}
-          </div>
+          <div className={classes.currencyTitle}>{name}</div>
           <div>
             {currency}
             {versions.length > 0 && versions.every(v => v.deprecated) && (

@@ -27,6 +27,7 @@ import type {
 } from '../../../lib';
 import {DomainFieldTypes, useTranslationContext} from '../../../lib';
 import {notifyEvent} from '../../../lib/error';
+import {getMappedRecordKeysForUpdate} from '../../../lib/types/resolverKeys';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import AddCurrencyModal from '../common/AddCurrencyModal';
 import CurrencyInput from '../common/CurrencyInput';
@@ -91,8 +92,11 @@ export const Crypto: React.FC<CryptoProps> = ({
 }) => {
   const {classes} = useStyles();
   const {web3Deps, setWeb3Deps} = useWeb3Context();
-  const {unsResolverKeys: resolverKeys, loading: resolverKeysLoading} =
-    useResolverKeys();
+  const {
+    unsResolverKeys: legacyResolverKeys,
+    mappedResolverKeys,
+    loading: resolverKeysLoading,
+  } = useResolverKeys();
   const [saveClicked, setSaveClicked] = useState(false);
   const [isSignatureSuccess, setIsSignatureSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -146,6 +150,7 @@ export const Crypto: React.FC<CryptoProps> = ({
         </LoadingButton>
       </Box>,
     );
+    console.log('AJQ records to update', JSON.stringify(records, undefined, 2));
   }, [isPendingTx, isSaving, isLoading, records]);
 
   const loadRecords = async () => {
@@ -224,16 +229,36 @@ export const Crypto: React.FC<CryptoProps> = ({
   };
 
   const handleInputChange = (id: string, value: string) => {
-    records[id] = value;
-    setFilteredRecords({
-      ...records,
+    // require mapped resolver keys to be initialized
+    if (!mappedResolverKeys) {
+      return;
+    }
+
+    // find the associated mapped resolver key for the provided ID
+    const keys = getMappedRecordKeysForUpdate(id, mappedResolverKeys);
+
+    keys.map(k => {
+      records[k] = value;
+      setFilteredRecords({
+        ...records,
+      });
     });
   };
 
   const handleInputDelete = (ids: string[]) => {
+    // require mapped resolver keys to be initialized
+    if (!mappedResolverKeys) {
+      return;
+    }
+
+    // iterate the deleted IDs
     ids.map(id => {
-      deletedRecords.push(id);
-      handleInputChange(id, '');
+      // find the associated mapped resolver key for the provided ID
+      const keys = getMappedRecordKeysForUpdate(id, mappedResolverKeys);
+      keys.map(k => {
+        deletedRecords.push(k);
+        handleInputChange(k, '');
+      });
     });
   };
 
@@ -326,13 +351,18 @@ export const Crypto: React.FC<CryptoProps> = ({
   };
 
   const renderMultiChainAddresses = () => {
-    const recordsToRender = getMultichainAddressRecords(records, resolverKeys);
+    const recordsToRender = getMultichainAddressRecords(
+      records,
+      legacyResolverKeys,
+      mappedResolverKeys,
+    );
 
     return recordsToRender.map(multiChainRecord => (
       <MultiChainInput
         key={multiChainRecord.currency}
         versions={multiChainRecord.versions}
         currency={multiChainRecord.currency as CurrenciesType}
+        name={multiChainRecord.name}
         domain={domain}
         ownerAddress={address}
         onDelete={handleInputDelete}
@@ -347,9 +377,17 @@ export const Crypto: React.FC<CryptoProps> = ({
   };
 
   const renderSingleChainAddresses = () => {
-    const recordsToRender = getSingleChainAddressRecords(records, resolverKeys);
+    const recordsToRender = getSingleChainAddressRecords(
+      records,
+      legacyResolverKeys,
+      mappedResolverKeys,
+    );
     return recordsToRender.map(singleChainAddressRecord => {
-      const {currency, key, value} = singleChainAddressRecord;
+      const {currency, key, value, mappedResolverKey} =
+        singleChainAddressRecord;
+      if (!mappedResolverKey) {
+        return;
+      }
       return (
         <CurrencyInput
           key={key}
@@ -357,7 +395,7 @@ export const Crypto: React.FC<CryptoProps> = ({
           domain={domain}
           ownerAddress={address}
           value={value}
-          recordKey={key}
+          mappedResolverKey={mappedResolverKey}
           onDelete={handleInputDelete}
           onChange={handleInputChange}
           uiDisabled={!!isPendingTx}

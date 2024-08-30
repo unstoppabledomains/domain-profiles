@@ -563,7 +563,9 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   address={address}
                   onUpdate={onUpdateWrapper}
                   setButtonComponent={setButtonComponent}
-                  filterFn={(k: string) => k.startsWith('crypto.')}
+                  filterFn={(k: string) =>
+                    k.startsWith('crypto.') || k.startsWith('token.')
+                  }
                 />
               </TabPanel>
               <TabPanel

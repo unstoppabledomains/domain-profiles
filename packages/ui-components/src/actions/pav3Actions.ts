@@ -1,7 +1,7 @@
 import config from '@unstoppabledomains/config';
 
 import {fetchApi} from '../lib';
-import type {RecordUpdateResponse} from '../lib/types/pav3';
+import type {MappedResolverKey, RecordUpdateResponse} from '../lib/types/pav3';
 
 // confirmRecordUpdate submits a transaction signature to allow a domain record
 // update to be processed on the blockchain
@@ -36,6 +36,22 @@ export const confirmRecordUpdate = async (
       'x-auth-signature': auth.signature,
     },
   });
+};
+
+export const getAllResolverKeys = async (): Promise<MappedResolverKey[]> => {
+  const keys = await fetchApi<MappedResolverKey[]>(`/resolve/keys`, {
+    method: 'GET',
+    mode: 'cors',
+    host: config.PROFILE.HOST_URL,
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+  });
+  if (keys && Array.isArray(keys)) {
+    return keys;
+  }
+  return [];
 };
 
 // getRegistrationMessage retrieve a message that must be signed before on-chain

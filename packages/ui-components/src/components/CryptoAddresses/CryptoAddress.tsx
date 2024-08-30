@@ -254,10 +254,7 @@ const CryptoAddress: React.FC<Props> = ({
         placement="bottom"
         arrow
       >
-        <CryptoIcon
-          currency={currency}
-          classes={{root: classes.currencyIcon}}
-        />
+        <CryptoIcon currency={currency} className={classes.currencyIcon} />
       </Tooltip>
       {chain && <span className={classes.chain}>{chain}</span>}
       <Typography className={classes.address}>

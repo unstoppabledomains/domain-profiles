@@ -13,10 +13,6 @@ import {
   Registry,
 } from '../../../lib/types/blockchain';
 import type {MappedResolverKey} from '../../../lib/types/pav3';
-import {
-  ADDRESS_REGEX,
-  MULTI_CHAIN_ADDRESS_REGEX,
-} from '../../../lib/types/records';
 import type {
   ResolverKeyName,
   ResolverKeys,
@@ -139,7 +135,7 @@ export const getMultichainAddressRecords = (
     )
     .forEach(mappedResolverKey => {
       // define output values
-      const currency = mappedResolverKey.shortName;
+      const currency = mappedResolverKey.name || mappedResolverKey.shortName;
       const directValue = records[mappedResolverKey.key as ResolverKeyName];
       const mappedRecordValue = mappedResolverKey?.mapping?.to
         ? records[mappedResolverKey.mapping.to as ResolverKeyName]
@@ -148,12 +144,12 @@ export const getMultichainAddressRecords = (
       const key = (mappedResolverKey?.mapping?.to ||
         mappedResolverKey.key) as ResolverKeyName;
 
-      // filter out single chain addresses
-      if (!key.match(MULTI_CHAIN_ADDRESS_REGEX)) {
+      // filter out missing currency value
+      if (!currency) {
         return;
       }
 
-      // filter out mapped keys with related entries
+      // filter out mapped keys without related entries
       if (
         !mappedResolverKey.related ||
         mappedResolverKey.related.length === 0
@@ -228,11 +224,9 @@ export const getSingleChainAddressRecords = (
       const key = (mappedResolverKey?.mapping?.to ||
         mappedResolverKey.key) as ResolverKeyName;
 
-      // filter out multichain addresses
-      if (!key.match(ADDRESS_REGEX)) {
-        if (mappedResolverKey.related && mappedResolverKey.related.length > 0) {
-          return;
-        }
+      // filter out chains with related entries
+      if (mappedResolverKey.related && mappedResolverKey.related.length > 0) {
+        return;
       }
 
       // filter mapped resolver already in list

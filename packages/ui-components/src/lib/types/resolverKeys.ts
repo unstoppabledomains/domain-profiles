@@ -85,7 +85,8 @@ export const getMappedResolverKey = (
       .find(
         k =>
           // matches the shortname
-          k.shortName.toLowerCase() === id.toLowerCase(),
+          k.shortName.toLowerCase() === id.toLowerCase() ||
+          (k.name && k.name.toLowerCase() === id.toLowerCase()),
       ) ||
     // find by matching token
     keys
@@ -93,7 +94,8 @@ export const getMappedResolverKey = (
       .find(
         k =>
           // matches the shortname
-          k.shortName.toLowerCase() === id.toLowerCase(),
+          k.shortName.toLowerCase() === id.toLowerCase() ||
+          (k.name && k.name.toLowerCase() === id.toLowerCase()),
       )
   );
 };

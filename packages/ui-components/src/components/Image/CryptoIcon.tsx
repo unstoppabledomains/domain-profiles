@@ -61,29 +61,29 @@ export const CryptoIcon: React.FC<Props> = ({currency, className}) => {
 
   const renderPlaceholder = () => (
     <Box className={classes.fallbackContainer}>
-      <Typography variant="body2" className={classes.fallbackText}>
-        {currency.slice(0, 1)}
-      </Typography>
+      <Tooltip title={title}>
+        <Typography variant="body2" className={classes.fallbackText}>
+          {currency.slice(0, 1)}
+        </Typography>
+      </Tooltip>
     </Box>
   );
 
   return (
-    <Tooltip title={title}>
-      <Avatar className={className}>
-        {isBroken || !iconUrl ? (
-          renderPlaceholder()
-        ) : (
-          <LazyLoadImage
-            className={
-              iconLoaded ? classes.innerImage : classes.fallbackContainer
-            }
-            src={iconUrl}
-            onError={handleError}
-            placeholder={renderPlaceholder()}
-            onLoad={() => setIconLoaded(true)}
-          />
-        )}
-      </Avatar>
-    </Tooltip>
+    <Avatar className={className}>
+      {isBroken || !iconUrl ? (
+        renderPlaceholder()
+      ) : (
+        <LazyLoadImage
+          className={
+            iconLoaded ? classes.innerImage : classes.fallbackContainer
+          }
+          src={iconUrl}
+          onError={handleError}
+          placeholder={renderPlaceholder()}
+          onLoad={() => setIconLoaded(true)}
+        />
+      )}
+    </Avatar>
   );
 };

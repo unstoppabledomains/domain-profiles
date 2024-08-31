@@ -18,7 +18,7 @@ export type UseResolverKeys = {
 };
 
 /**
- * Fetches UNS and ENS resolver keys
+ * Fetches mapped and legacy (UNS, ENS) resolver keys
  */
 const useResolverKeys = (): UseResolverKeys => {
   const [unsResolverKeys, setUnsResolverKeys] = useState(EMPTY_RESOLVER_KEYS);

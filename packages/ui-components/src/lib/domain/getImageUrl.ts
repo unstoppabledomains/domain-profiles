@@ -13,6 +13,10 @@ const normalizeImagePath = (path: string): string => {
   }
 };
 
+export const getDefaultCryptoIconUrl = (symbol: string) => {
+  return `https://images.unstoppabledomains.com/images/icons/${symbol}/icon.svg`;
+};
+
 export const getUnoptimizedImageUrl = (path: string): string => {
   if (isDataUri(path)) {
     return path;

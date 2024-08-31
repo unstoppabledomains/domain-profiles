@@ -9,6 +9,7 @@ import {LazyLoadImage} from 'react-lazy-load-image-component';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import useResolverKeys from '../../hooks/useResolverKeys';
+import {getDefaultCryptoIconUrl} from '../../lib';
 import {getMappedResolverKey} from '../../lib/types/resolverKeys';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -38,7 +39,9 @@ type Props = {
 export const CryptoIcon: React.FC<Props> = ({currency, className}) => {
   const {classes} = useStyles();
   const {mappedResolverKeys, loading} = useResolverKeys();
-  const [iconUrl, setIconUrl] = useState<string>();
+  const [iconUrl, setIconUrl] = useState<string>(
+    getDefaultCryptoIconUrl(currency),
+  );
   const [iconLoaded, setIconLoaded] = useState(false);
   const [title, setTitle] = useState<string>(currency);
   const [isBroken, setIsBroken] = useState(false);
@@ -51,7 +54,12 @@ export const CryptoIcon: React.FC<Props> = ({currency, className}) => {
 
     // find the currency icon URL
     const mappedKey = getMappedResolverKey(currency, mappedResolverKeys);
-    setIconUrl(mappedKey?.info?.iconUrl || mappedKey?.info?.logoUrl);
+    const mappedResolverUrl =
+      mappedKey?.info?.iconUrl || mappedKey?.info?.logoUrl;
+    if (mappedResolverUrl && mappedResolverUrl !== iconUrl) {
+      setIconUrl(mappedResolverUrl);
+    }
+
     setTitle(mappedKey?.name || currency);
   }, [loading]);
 

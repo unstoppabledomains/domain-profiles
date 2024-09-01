@@ -14,7 +14,7 @@ import {
   MULTI_CHAIN_ADDRESS_REGEX,
   TOKEN_FAMILY_REGEX,
 } from '../../lib/types/records';
-import {MappedResolverKey} from '../types/pav3';
+import type {MappedResolverKey} from '../types/pav3';
 import {getMappedResolverKey} from '../types/resolverKeys';
 
 export const mapMultiCoinAddresses = (

@@ -12,7 +12,7 @@ import type {
   Web3Dependencies,
 } from '../../../lib';
 import {AllInitialCurrenciesEnum, useTranslationContext} from '../../../lib';
-import {MappedResolverKey} from '../../../lib/types/pav3';
+import type {MappedResolverKey} from '../../../lib/types/pav3';
 import type {ResolverKeyName} from '../../../lib/types/resolverKeys';
 import {CryptoIcon} from '../../Image';
 import ManageInput from './ManageInput';

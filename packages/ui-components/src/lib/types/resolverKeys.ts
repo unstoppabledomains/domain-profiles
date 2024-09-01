@@ -65,6 +65,24 @@ export type ResolverKeys = {
 
 export type UnsResolverKey = keyof typeof UnsResolverKeysJson.keys;
 
+export const getMappedRecordKeysForUpdate = (
+  id: string,
+  keys: MappedResolverKey[],
+): string[] => {
+  // find the associated mapped resolver key for the provided ID
+  const mappedResolverKey = getMappedResolverKey(id, keys);
+  if (!mappedResolverKey) {
+    return [id];
+  }
+
+  // build list of keys to update
+  const expandedKeys = [mappedResolverKey.key];
+  if (mappedResolverKey.mapping?.to) {
+    expandedKeys.push(mappedResolverKey.mapping.to);
+  }
+  return expandedKeys;
+};
+
 export const getMappedResolverKey = (
   id: string,
   keys: MappedResolverKey[],
@@ -98,24 +116,6 @@ export const getMappedResolverKey = (
           (k.name && k.name.toLowerCase() === id.toLowerCase()),
       )
   );
-};
-
-export const getMappedRecordKeysForUpdate = (
-  id: string,
-  keys: MappedResolverKey[],
-): string[] => {
-  // find the associated mapped resolver key for the provided ID
-  const mappedResolverKey = getMappedResolverKey(id, keys);
-  if (!mappedResolverKey) {
-    return [id];
-  }
-
-  // build list of keys to update
-  const expandedKeys = [mappedResolverKey.key];
-  if (mappedResolverKey.mapping?.to) {
-    expandedKeys.push(mappedResolverKey.mapping.to);
-  }
-  return expandedKeys;
 };
 
 export const loadEnsResolverKeys = async (): Promise<ResolverKeys> => {

@@ -256,6 +256,21 @@ export const isTokenDeprecated = (
   return ResolverKey[key]?.deprecated ?? false;
 };
 
+export const isValidMappedResolverKeyValue = (
+  value: string = '',
+  key: MappedResolverKey,
+): boolean => {
+  if (!key.validation?.regexes) {
+    return true;
+  }
+  for (const regex of key.validation.regexes) {
+    if (new RegExp(regex.pattern).test(value)) {
+      return true;
+    }
+  }
+  return false;
+};
+
 /**
  * Validates a record value based on the resolver key. Works with all resolver keys.
  */
@@ -279,19 +294,4 @@ export const isValidRecordKeyValue = (
 
   const {validationRegex} = ResolverKey[key];
   return !validationRegex || new RegExp(validationRegex).test(value);
-};
-
-export const isValidMappedResolverKeyValue = (
-  value: string = '',
-  key: MappedResolverKey,
-): boolean => {
-  if (!key.validation?.regexes) {
-    return true;
-  }
-  for (const regex of key.validation.regexes) {
-    if (new RegExp(regex.pattern).test(value)) {
-      return true;
-    }
-  }
-  return false;
 };

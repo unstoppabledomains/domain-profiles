@@ -1,6 +1,6 @@
 import type {DnsRecordType} from '@unstoppabledomains/resolution';
 
-import {MappedResolverKey} from './pav3';
+import type {MappedResolverKey} from './pav3';
 import type {ResolverKeyName} from './resolverKeys';
 
 export enum AdditionalCurrenciesEnum {

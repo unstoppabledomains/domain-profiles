@@ -69,14 +69,18 @@ export const getAllAddressRecords = (
   const result: NewAddressRecord[] = [];
   mappedResolverKeys
     ?.filter(k => k.subType === 'CRYPTO_TOKEN' && k.shortName)
+    .sort((a, b) => b.shortName.localeCompare(a.shortName))
     .forEach(mappedResolverKey => {
       // define resolver key values
       const key = mappedResolverKey.mapping?.to || mappedResolverKey.key;
+      const name = mappedResolverKey.name;
       const shortName = mappedResolverKey.shortName;
       const deprecated = false;
 
       // update result
-      const record = result.find(r => r.shortName === shortName);
+      const record = result.find(
+        r => (r.name && r.name === name) || r.shortName === shortName,
+      );
       if (record && Array.isArray(record.versions)) {
         record.versions.push({
           key,

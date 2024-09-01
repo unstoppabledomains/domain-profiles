@@ -1,5 +1,6 @@
 const TICKER_REGEX = '[0-9A-Za-z*$-+]+';
 
+export const TOKEN_FAMILY_REGEX = new RegExp('^token\\..*');
 export const ADDRESS_REGEX = new RegExp(`crypto\\.${TICKER_REGEX}\\.address`);
 export type Addresses = Record<string, string>;
 export const MULTI_CHAIN_ADDRESS_REGEX = new RegExp(

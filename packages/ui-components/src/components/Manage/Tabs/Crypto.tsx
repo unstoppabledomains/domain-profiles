@@ -263,14 +263,17 @@ export const Crypto: React.FC<CryptoProps> = ({
 
   const handleAddNewAddress = ({versions}: NewAddressRecord) => {
     const newValidAddresses = versions.filter(v => !v.deprecated);
-    const newValidKeys = newValidAddresses.map(v => v.key);
+    const newValidKeys = newValidAddresses
+      .map(v => v.key)
+      // don't add keys that are already included in records
+      .filter(k => !Object.keys(records).includes(k));
     const newAddressRecords = newValidKeys.reduce(
       (acc, key) => ({...acc, [key]: ''}), // Adding new address records with empty values
       {},
     );
     setFilteredRecords({
-      ...records,
       ...newAddressRecords,
+      ...records,
     });
   };
 

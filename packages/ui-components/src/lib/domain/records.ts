@@ -12,7 +12,10 @@ import type {
 import {
   ADDRESS_REGEX,
   MULTI_CHAIN_ADDRESS_REGEX,
+  TOKEN_FAMILY_REGEX,
 } from '../../lib/types/records';
+import {MappedResolverKey} from '../types/pav3';
+import {getMappedResolverKey} from '../types/resolverKeys';
 
 export const mapMultiCoinAddresses = (
   records: Record<string, string> | null,
@@ -36,10 +39,16 @@ export const mapMultiCoinAddresses = (
 
 export const parseRecords = (
   records: Record<string, string>,
+  mappedResolverKeys?: MappedResolverKey[],
 ): ParsedRecords => {
   const addresses = mapKeys(
     pickBy(records, (v, k) => Boolean(v) && k.match(ADDRESS_REGEX)),
     (_v, k) => k.split('.')[1],
+  );
+
+  const tokenFamilyEntries = mapKeys(
+    pickBy(records, (v, k) => Boolean(v) && k.match(TOKEN_FAMILY_REGEX)),
+    (_v, k) => k,
   );
 
   // Remove null and empty addresses
@@ -48,6 +57,19 @@ export const parseRecords = (
       delete addresses[key];
     }
   }
+
+  // Remove duplicate token entries already present in
+  // address dictionary
+  if (mappedResolverKeys) {
+    for (const token in tokenFamilyEntries) {
+      const mappedToken = getMappedResolverKey(token, mappedResolverKeys);
+      if (mappedToken?.mapping?.to && records[mappedToken.mapping.to]) {
+        continue;
+      }
+      addresses[token] = tokenFamilyEntries[token];
+    }
+  }
+
   return {
     addresses,
     multicoinAddresses: mapMultiCoinAddresses(records),

@@ -114,6 +114,7 @@ import {
   getDomainConnections,
   getOwnerDomains,
 } from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
+import useResolverKeys from '@unstoppabledomains/ui-components/src/hooks/useResolverKeys';
 import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
 import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
@@ -143,6 +144,7 @@ const DomainProfile = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [imagePath, setImagePath] = useState<string>();
   const {enqueueSnackbar} = useSnackbar();
+  const {mappedResolverKeys} = useResolverKeys();
   const {isChatOpen, setOpenChat} = useUnstoppableMessaging();
   const {nfts, nftSymbolVisible, expanded: nftShowAll} = useTokenGallery();
   const [isLoaded, setIsLoaded] = useState(false);
@@ -227,7 +229,7 @@ const DomainProfile = ({
   );
 
   // retrieve on-chain record data
-  const addressRecords = parseRecords(records || {});
+  const addressRecords = parseRecords(records || {}, mappedResolverKeys);
   const domainSellerEmail = profileData?.profile?.publicDomainSellerEmail;
   const isForSale = Boolean(domainSellerEmail);
   const ipfsHash = records['ipfs.html.value'];

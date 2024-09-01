@@ -12,7 +12,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import useResolverKeys from '../../../hooks/useResolverKeys';
 import type {CurrenciesType, NewAddressRecord} from '../../../lib';
-import {AllInitialCurrenciesEnum, useTranslationContext} from '../../../lib';
+import {useTranslationContext} from '../../../lib';
 import {CryptoIcon} from '../../Image';
 import FormError from './FormError';
 import {getAllAddressRecords} from './currencyRecords';
@@ -129,10 +129,8 @@ const AddCurrencyModal: React.FC<Props> = ({
   onAddNewAddress,
 }) => {
   const {mappedResolverKeys} = useResolverKeys();
-  const validCoins = getAllAddressRecords(mappedResolverKeys).filter(
-    key =>
-      !Object.keys(AllInitialCurrenciesEnum).includes(key.shortName) &&
-      key.versions.every(v => !v.deprecated),
+  const validCoins = getAllAddressRecords(mappedResolverKeys).filter(key =>
+    key.versions.every(v => !v.deprecated),
   );
   const [t] = useTranslationContext();
   const [searchQuery, setSearchQuery] = useState('');
@@ -163,12 +161,13 @@ const AddCurrencyModal: React.FC<Props> = ({
     }
 
     setFilteredCoins(
-      validCoins.filter(({shortName: currency, name}) => {
+      validCoins.filter(({shortName: currency, name, versions}) => {
         const searchValue = searchQuery.toLowerCase();
 
         return (
           currency.toLowerCase().includes(searchValue) ||
-          name?.toLowerCase().includes(searchValue)
+          name?.toLowerCase().includes(searchValue) ||
+          versions.find(v => v.key.toLowerCase().includes(searchValue))
         );
       }),
     );

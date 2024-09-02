@@ -34,9 +34,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
 type Props = {
   currency: string;
   className?: string;
+  lazyLoad?: boolean;
 };
 
-export const CryptoIcon: React.FC<Props> = ({currency, className}) => {
+export const CryptoIcon: React.FC<Props> = ({
+  currency,
+  className,
+  lazyLoad,
+}) => {
   const {classes} = useStyles();
   const {mappedResolverKeys, loading} = useResolverKeys();
   const [iconUrl, setIconUrl] = useState<string>(
@@ -78,8 +83,8 @@ export const CryptoIcon: React.FC<Props> = ({currency, className}) => {
   );
 
   return (
-    <Avatar className={className}>
-      {isBroken || !iconUrl ? (
+    <Avatar className={className} src={lazyLoad ? undefined : iconUrl}>
+      {isBroken || !iconUrl || !lazyLoad ? (
         renderPlaceholder()
       ) : (
         <LazyLoadImage

@@ -188,6 +188,7 @@ const AddCurrencyModal: React.FC<Props> = ({
           <CryptoIcon
             currency={currency as CurrenciesType}
             className={classes.currencyIcon}
+            lazyLoad={true}
           />
         </div>
         <div>

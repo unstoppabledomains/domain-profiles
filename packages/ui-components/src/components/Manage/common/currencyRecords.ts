@@ -167,9 +167,7 @@ export const getMultichainAddressRecords = (
       }
 
       // find the parent network version type
-      const version = mappedResolverKey.parents.find(
-        p => p.subType === 'CRYPTO_NETWORK',
-      )?.shortName;
+      const version = getParentNetworkSymbol(mappedResolverKey);
       if (!version) {
         return;
       }
@@ -197,6 +195,13 @@ export const getMultichainAddressRecords = (
     });
 
   return result;
+};
+
+export const getParentNetworkSymbol = (
+  mappedResolverKey: MappedResolverKey,
+): string | undefined => {
+  return mappedResolverKey.parents?.find(p => p.subType === 'CRYPTO_NETWORK')
+    ?.shortName;
 };
 
 export const getSingleChainAddressRecords = (

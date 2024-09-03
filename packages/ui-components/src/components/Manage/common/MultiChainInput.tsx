@@ -20,6 +20,7 @@ import {CryptoIcon} from '../../Image';
 import {useStyles} from './CurrencyInput';
 import FormError from './FormError';
 import {
+  getParentNetworkSymbol,
   isTokenDeprecated,
   isValidMappedResolverKeyValue,
 } from './currencyRecords';
@@ -133,6 +134,8 @@ const MultiChainInput: React.FC<Props> = ({
                   }
                 };
 
+                const currencySymbol =
+                  getParentNetworkSymbol(mappedResolverKey) || currency;
                 const placeholder = t('manage.enterYourAddress', {
                   currency:
                     (MultichainKeyToLocaleKey[key] &&
@@ -165,7 +168,7 @@ const MultiChainInput: React.FC<Props> = ({
                             domain={domain}
                             ownerAddress={ownerAddress}
                             profileData={profileData}
-                            currency={currency}
+                            currency={currencySymbol}
                             setWeb3Deps={setWeb3Deps}
                             uiDisabled={false}
                             saveClicked={saveClicked}

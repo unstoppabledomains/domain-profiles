@@ -17,6 +17,7 @@ import type {ResolverKeyName} from '../../../lib/types/resolverKeys';
 import {CryptoIcon} from '../../Image';
 import ManageInput from './ManageInput';
 import {
+  getParentNetworkSymbol,
   isTokenDeprecated,
   isValidMappedResolverKeyValue,
 } from './currencyRecords';
@@ -247,6 +248,7 @@ const CurrencyInput: React.FC<Props> = ({
     resolverKeys,
   );
   const currencyName = mappedResolverKey.name || currency;
+  const currencySymbol = getParentNetworkSymbol(mappedResolverKey) || currency;
   const placeholder = t('manage.enterYourAddress', {currency: currencyName});
 
   const handleChange = (_key: string, newValue: string) => {
@@ -326,7 +328,7 @@ const CurrencyInput: React.FC<Props> = ({
             domain={domain}
             ownerAddress={ownerAddress}
             profileData={profileData}
-            currency={currency}
+            currency={currencySymbol}
             setWeb3Deps={setWeb3Deps}
             uiDisabled={false}
             saveClicked={saveClicked}

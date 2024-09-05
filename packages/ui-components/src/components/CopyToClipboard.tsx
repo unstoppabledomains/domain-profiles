@@ -43,7 +43,6 @@ const CopyToClipboard = ({
         display="inline"
         aria-label={tooltip || t('common.copy')}
         onClick={handleCopyClick}
-        zIndex={10000}
       >
         {children}
       </Box>

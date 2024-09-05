@@ -98,6 +98,7 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
   currencyIcon: {
     width: 35,
     height: 35,
+    backgroundColor: theme.palette.neutralShades[bgNeutralShade],
   },
   noActivity: {
     marginTop: theme.spacing(2),

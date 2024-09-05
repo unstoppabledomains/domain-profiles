@@ -12,10 +12,7 @@ import {
   AllInitialCurrenciesEnum,
   Registry,
 } from '../../../lib/types/blockchain';
-import {
-  ADDRESS_REGEX,
-  MULTI_CHAIN_ADDRESS_REGEX,
-} from '../../../lib/types/records';
+import type {MappedResolverKey} from '../../../lib/types/pav3';
 import type {
   ResolverKeyName,
   ResolverKeys,
@@ -46,34 +43,6 @@ export const EMPTY_DOMAIN_RECORDS: DomainRecords = {
 };
 
 /**
- * Extracts currency and version from a resolver key of any registry
- */
-const extractCurrencyAndVersion = (
-  key: ResolverKeyName,
-  resolverKeys: ResolverKeys,
-): {currency: string; version: string} | null => {
-  // UNS single-chain address: "crypto.BTC.address"
-  if (key.match(ADDRESS_REGEX)) {
-    const [_crypto, currency, _address] = key.split('.');
-    if (!currency) {
-      return null;
-    }
-    return {currency, version: currency};
-  }
-
-  // UNS multi-chain address: "crypto.MATIC.version.ERC20.address"
-  if (key.match(MULTI_CHAIN_ADDRESS_REGEX)) {
-    const [_crypto, currency, _version, version] = key.split('.');
-    if (!currency || !version) {
-      return null;
-    }
-    return {currency, version};
-  }
-
-  return null;
-};
-
-/**
  * Maps UNS and ENS resolver keys to initial currencies
  */
 export const InitialCurrencyToResolverKeys: Record<
@@ -95,29 +64,38 @@ export const InitialCurrencyToResolverKeys: Record<
  * Works with any registry.
  */
 export const getAllAddressRecords = (
-  resolverKeys: ResolverKeys,
+  mappedResolverKeys?: MappedResolverKey[],
 ): NewAddressRecord[] => {
-  const {ResolverKeys, ResolverKey} = resolverKeys;
   const result: NewAddressRecord[] = [];
+  mappedResolverKeys
+    ?.filter(k => k.subType === 'CRYPTO_TOKEN' && k.shortName)
+    .sort((a, b) => b.shortName.localeCompare(a.shortName))
+    .forEach(mappedResolverKey => {
+      // define resolver key values
+      const key = mappedResolverKey.mapping?.to || mappedResolverKey.key;
+      const name = mappedResolverKey.name;
+      const shortName = mappedResolverKey.shortName;
+      const deprecated = false;
 
-  ResolverKeys.forEach(key => {
-    const {currency, version} =
-      extractCurrencyAndVersion(key, resolverKeys) ?? {};
-    const deprecated = ResolverKey[key].deprecated;
+      // update result
+      const record = result.find(
+        r => (r.name && r.name === name) || r.shortName === shortName,
+      );
+      if (record && Array.isArray(record.versions)) {
+        record.versions.push({
+          key,
+          deprecated,
+        });
+      } else {
+        result.push({
+          shortName,
+          name: mappedResolverKey.name,
+          versions: [{key, deprecated}],
+        });
+      }
+    });
 
-    if (!currency || !version) {
-      return;
-    }
-
-    const record = result.find(r => r.currency === currency);
-    if (record && Array.isArray(record.versions)) {
-      record.versions.push({key, deprecated});
-    } else {
-      result.push({currency, versions: [{key, deprecated}]});
-    }
-  });
-
-  return result.sort((a, b) => a.currency.localeCompare(b.currency));
+  return result.sort((a, b) => a.shortName.localeCompare(b.shortName));
 };
 
 /**
@@ -138,97 +116,164 @@ export const getInitialAddressRecordKeys = (
 };
 
 /**
- * Only UNS resolver keys can be multi-chain. We're groupping them by currency
+ * Only UNS resolver keys can be multi-chain. We're grouping them by currency
  * to make it easier to display them in the UI.
  */
 export const getMultichainAddressRecords = (
   records: DomainRawRecords,
-  resolverKeys: ResolverKeys,
+  legacyResolverKeys: ResolverKeys,
+  mappedResolverKeys?: MappedResolverKey[],
 ): MultiChainAddressRecord[] => {
-  const {initialKeys, allKeys} = getInitialAddressRecordKeys(resolverKeys);
+  const {initialKeys} = getInitialAddressRecordKeys(legacyResolverKeys);
   const recordKeys = Object.keys(records) as ResolverKeyName[];
   const recordKeysWithInitial = uniq([...initialKeys, ...recordKeys]);
   const result: MultiChainAddressRecord[] = [];
+  mappedResolverKeys
+    ?.filter(
+      k =>
+        // is a token
+        k.subType === 'CRYPTO_TOKEN' &&
+        // is included in requested keys
+        (recordKeysWithInitial.includes(k.key as ResolverKeyName) ||
+          recordKeysWithInitial.includes(k.mapping?.to as ResolverKeyName)),
+    )
+    .forEach(mappedResolverKey => {
+      // define output values
+      const currency = mappedResolverKey.name || mappedResolverKey.shortName;
+      const directValue = records[mappedResolverKey.key as ResolverKeyName];
+      const mappedRecordValue = mappedResolverKey?.mapping?.to
+        ? records[mappedResolverKey.mapping.to as ResolverKeyName]
+        : '';
+      const value = directValue || mappedRecordValue || '';
+      const key = (mappedResolverKey?.mapping?.to ||
+        mappedResolverKey.key) as ResolverKeyName;
 
-  recordKeysWithInitial.forEach(key => {
-    if (!allKeys.includes(key)) {
-      return;
-    }
-    if (!key.match(MULTI_CHAIN_ADDRESS_REGEX)) {
-      return;
-    }
+      // filter out missing currency value
+      if (!currency) {
+        return;
+      }
 
-    // "crypto.MATIC.version.ERC20.address"
-    const [_crypto, currency, _version, version] = key.split('.');
-    if (!currency || !version) {
-      return;
-    }
-    const record = result.find(r => r.currency === currency);
-    const value = records[key] ?? '';
+      // filter out mapped keys without related entries
+      if (
+        !mappedResolverKey.related ||
+        mappedResolverKey.related.length === 0
+      ) {
+        return;
+      }
 
-    if (record) {
-      record.versions.push({version, value, key});
-    } else {
-      result.push({currency, versions: [{version, value, key}]});
-    }
-  });
+      // filter out records without parent
+      if (!mappedResolverKey.parents) {
+        return;
+      }
+
+      // find the parent network version type
+      const version = getParentNetworkSymbol(mappedResolverKey);
+      if (!version) {
+        return;
+      }
+
+      // update result list with the new version
+      const record = result.find(r => r.currency === currency);
+      if (record) {
+        // filter mapped resolver already in the version list
+        if (
+          record.versions.find(
+            v => v.mappedResolverKey?.key === mappedResolverKey.key,
+          )
+        ) {
+          return;
+        }
+
+        record.versions.push({version, value, key, mappedResolverKey});
+      } else {
+        result.push({
+          currency,
+          name: mappedResolverKey.name,
+          versions: [{version, value, key, mappedResolverKey}],
+        });
+      }
+    });
 
   return result;
+};
+
+export const getParentNetworkSymbol = (
+  mappedResolverKey: MappedResolverKey,
+): string | undefined => {
+  return mappedResolverKey.parents?.find(p => p.subType === 'CRYPTO_NETWORK')
+    ?.shortName;
 };
 
 export const getSingleChainAddressRecords = (
   records: DomainRawRecords,
-  resolverKeys: ResolverKeys,
+  legacyResolverKeys: ResolverKeys,
+  mappedResolverKeys?: MappedResolverKey[],
 ): SingleChainAddressRecord[] => {
-  const {ResolverKey} = resolverKeys;
-  const {initialKeys, allKeys} = getInitialAddressRecordKeys(resolverKeys);
+  const {initialKeys} = getInitialAddressRecordKeys(legacyResolverKeys);
   const recordKeys = Object.keys(records) as ResolverKeyName[];
   const recordKeysWithInitial = uniq([...initialKeys, ...recordKeys]);
   const result: SingleChainAddressRecord[] = [];
+  mappedResolverKeys
+    ?.filter(
+      k =>
+        // is a token
+        k.subType === 'CRYPTO_TOKEN' &&
+        // is included in requested keys
+        (recordKeysWithInitial.includes(k.key as ResolverKeyName) ||
+          recordKeysWithInitial.includes(k.mapping?.to as ResolverKeyName)),
+    )
+    .forEach(mappedResolverKey => {
+      // define output values
+      const currency = mappedResolverKey.shortName;
+      const directValue = records[mappedResolverKey.key as ResolverKeyName];
+      const mappedRecordValue = mappedResolverKey?.mapping?.to
+        ? records[mappedResolverKey.mapping.to as ResolverKeyName]
+        : '';
+      const value = directValue || mappedRecordValue || '';
+      const key = (mappedResolverKey?.mapping?.to ||
+        mappedResolverKey.key) as ResolverKeyName;
 
-  recordKeysWithInitial.forEach(key => {
-    if (!allKeys.includes(key)) {
-      return;
-    }
-    if (!key.match(ADDRESS_REGEX)) {
-      return;
-    }
+      // filter out chains with related entries
+      if (mappedResolverKey.related && mappedResolverKey.related.length > 0) {
+        return;
+      }
 
-    const currency = ResolverKey[key].symbol;
-    if (!currency) {
-      return;
-    }
+      // filter mapped resolver already in list
+      if (
+        result.find(r => r.mappedResolverKey?.key === mappedResolverKey.key)
+      ) {
+        return;
+      }
 
-    result.push({currency, value: records[key] ?? '', key});
-  });
+      // add to result list
+      result.push({currency, value, key, mappedResolverKey});
+    });
 
+  // return single record addresses
   return result;
-};
-
-export const getTotalCurrenciesCount = (
-  unsResolverKeys: ResolverKeys,
-): number => {
-  const addressRecords = getAllAddressRecords(unsResolverKeys);
-  return addressRecords.length;
-};
-
-export const hasErrors = (
-  newRecords: DomainRawRecords,
-  resolverKeys: ResolverKeys,
-): boolean => {
-  const newRecordKeys = Object.keys(newRecords) as ResolverKeyName[];
-  return newRecordKeys.some(key => {
-    const value = newRecords[key];
-    return !isValidRecordKeyValue(key, value, resolverKeys);
-  });
 };
 
 export const isTokenDeprecated = (
   key: ResolverKeyName,
-  resolverKeys: ResolverKeys,
+  legacyResolverKeys: ResolverKeys,
 ) => {
-  const {ResolverKey} = resolverKeys;
+  const {ResolverKey} = legacyResolverKeys;
   return ResolverKey[key]?.deprecated ?? false;
+};
+
+export const isValidMappedResolverKeyValue = (
+  value: string = '',
+  key: MappedResolverKey,
+): boolean => {
+  if (!key.validation?.regexes) {
+    return true;
+  }
+  for (const regex of key.validation.regexes) {
+    if (new RegExp(regex.pattern).test(value)) {
+      return true;
+    }
+  }
+  return false;
 };
 
 /**
@@ -237,9 +282,9 @@ export const isTokenDeprecated = (
 export const isValidRecordKeyValue = (
   key: ResolverKeyName,
   value: string = '',
-  resolverKeys: ResolverKeys,
+  legacyResolverKeys: ResolverKeys,
 ) => {
-  const {ResolverKey} = resolverKeys;
+  const {ResolverKey} = legacyResolverKeys;
 
   // If the key is not recognized, it's invalid.
   if (!ResolverKey[key]) {
@@ -254,11 +299,4 @@ export const isValidRecordKeyValue = (
 
   const {validationRegex} = ResolverKey[key];
   return !validationRegex || new RegExp(validationRegex).test(value);
-};
-
-export const validEthAddress = (
-  value: string,
-  unsResolverKeys: ResolverKeys,
-) => {
-  return isValidRecordKeyValue('crypto.ETH.address', value, unsResolverKeys);
 };

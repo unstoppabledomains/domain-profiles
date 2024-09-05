@@ -1,5 +1,6 @@
 import type {DnsRecordType} from '@unstoppabledomains/resolution';
 
+import type {MappedResolverKey} from './pav3';
 import type {ResolverKeyName} from './resolverKeys';
 
 export enum AdditionalCurrenciesEnum {
@@ -380,14 +381,19 @@ export enum Mirror {
  */
 export type MultiChainAddressRecord = {
   currency: string;
+  name: string;
   versions: MultiChainAddressVersion[];
 };
 
-export type MultiChainAddressVersion = DomainAddressRecord & {version: string};
+export type MultiChainAddressVersion = DomainAddressRecord & {
+  version: string;
+  mappedResolverKey?: MappedResolverKey;
+};
 
 export type NewAddressRecord = {
-  currency: string;
-  versions: {key: ResolverKeyName; deprecated: boolean}[];
+  name: string;
+  shortName: string;
+  versions: {key: string; deprecated: boolean}[];
 };
 
 export enum Registry {
@@ -401,4 +407,5 @@ export enum Registry {
  */
 export type SingleChainAddressRecord = DomainAddressRecord & {
   currency: string;
+  mappedResolverKey?: MappedResolverKey;
 };

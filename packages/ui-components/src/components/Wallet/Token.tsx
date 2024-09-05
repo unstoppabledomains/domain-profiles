@@ -64,6 +64,7 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
     borderRadius: '50%',
     width: '40px',
     height: '40px',
+    backgroundColor: palletteShade[bgNeutralShade],
   },
   tokenIconDefault: {
     borderRadius: '50%',

@@ -37,6 +37,7 @@ const useStyles = makeStyles<{marginTop?: number}>()(
       position: 'absolute',
       top: `${marginTop || '44'}px`,
       right: '0px',
+      zIndex: 100,
     },
     container: {
       display: 'flex',

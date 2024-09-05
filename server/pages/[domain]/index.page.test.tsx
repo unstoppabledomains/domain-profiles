@@ -16,6 +16,7 @@ import * as domainActions from '@unstoppabledomains/ui-components/src/actions/do
 import * as domainProfileActions from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
 import * as featureFlagActions from '@unstoppabledomains/ui-components/src/actions/featureFlagActions';
 import * as identityActions from '@unstoppabledomains/ui-components/src/actions/identityActions';
+import * as pav3Actions from '@unstoppabledomains/ui-components/src/actions/pav3Actions';
 import * as push from '@unstoppabledomains/ui-components/src/components/Chat/protocol/push';
 import * as chatStorage from '@unstoppabledomains/ui-components/src/components/Chat/storage';
 import * as nftImage from '@unstoppabledomains/ui-components/src/components/TokenGallery/NftImage';
@@ -212,6 +213,20 @@ describe('<DomainProfile />', () => {
       status: PersonaInquiryStatus.COMPLETED,
     });
     jest.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
+    jest.spyOn(pav3Actions, 'getAllResolverKeys').mockResolvedValue([
+      {
+        type: 'CRYPTO',
+        subType: 'CRYPTO_TOKEN',
+        name: 'Ether',
+        shortName: 'ETH',
+        key: 'token.EVM.ETH.ETH.address',
+        mapping: {
+          isPreferred: true,
+          from: ['crypto.ETH.address'],
+          to: 'crypto.ETH.address',
+        },
+      },
+    ]);
   });
 
   it('should display a basic domain profile page', async () => {

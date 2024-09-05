@@ -4,6 +4,7 @@ import reduce from 'lodash/reduce';
 
 import {NullAddress} from '@unstoppabledomains/resolution/build/types';
 
+import {getParentNetworkSymbol} from '../../components/Manage/common/currencyRecords';
 import type {
   MulticoinAddresses,
   MulticoinVersions,
@@ -41,6 +42,10 @@ export const parseRecords = (
   records: Record<string, string>,
   mappedResolverKeys?: MappedResolverKey[],
 ): ParsedRecords => {
+  // initial set of multichain addresses
+  const multicoinAddresses = mapMultiCoinAddresses(records);
+
+  // initial set of single chain addresses
   const addresses = mapKeys(
     pickBy(records, (v, k) => Boolean(v) && k.match(ADDRESS_REGEX)),
     (_v, k) => k.split('.')[1],
@@ -58,9 +63,10 @@ export const parseRecords = (
     }
   }
 
-  // Remove duplicate token entries already present in
-  // address dictionary
+  // special handling for mapped resolver keys
   if (mappedResolverKeys) {
+    // Remove duplicate token entries already present in
+    // address dictionary
     for (const token in tokenFamilyEntries) {
       const mappedToken = getMappedResolverKey(token, mappedResolverKeys);
       if (mappedToken?.mapping?.to && records[mappedToken.mapping.to]) {
@@ -68,10 +74,36 @@ export const parseRecords = (
       }
       addresses[token] = tokenFamilyEntries[token];
     }
+
+    // remove multichain addresses from single chain list and augment the
+    // multicoinAddresses list
+    for (const addressKey of Object.keys(addresses)) {
+      const mappedKey = getMappedResolverKey(addressKey, mappedResolverKeys);
+      if (mappedKey?.related && mappedKey.related.length > 0) {
+        // determine parent network
+        const parentNetwork = addressKey.includes('.')
+          ? getParentNetworkSymbol(mappedKey)
+          : addressKey;
+        if (!parentNetwork) {
+          continue;
+        }
+
+        // remove single chain
+        const addressValue = addresses[addressKey];
+        delete addresses[addressKey];
+
+        // add multichain
+        const multicoinKey = mappedKey.shortName;
+        if (!multicoinAddresses[multicoinKey]) {
+          multicoinAddresses[multicoinKey] = {};
+        }
+        multicoinAddresses[multicoinKey][parentNetwork] = addressValue;
+      }
+    }
   }
 
   return {
     addresses,
-    multicoinAddresses: mapMultiCoinAddresses(records),
+    multicoinAddresses,
   };
 };

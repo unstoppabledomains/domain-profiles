@@ -115,6 +115,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   menuActionIcon: {
     marginRight: theme.spacing(1),
+    height: '14px',
+    width: '14px',
   },
 }));
 
@@ -216,6 +218,7 @@ const CryptoAddress: React.FC<Props> = ({
       case 'ETH':
       case 'FTM':
       case 'AVAX':
+      case 'BASE':
         return isEthAddress(addr)
           ? `https://www.oklink.com/${symbol.toLowerCase()}/address/${addr}?channelId=uns001`
           : '';
@@ -328,6 +331,8 @@ const CryptoAddress: React.FC<Props> = ({
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleClose}
+            transformOrigin={{horizontal: 'right', vertical: 'top'}}
+            anchorOrigin={{horizontal: 'right', vertical: 'bottom'}}
             classes={{list: classes.menuList}}
           >
             {Object.keys(filteredVersions).map(version => (
@@ -335,6 +340,8 @@ const CryptoAddress: React.FC<Props> = ({
                 {getBlockScanUrl(currency, filteredVersions[version]) ? (
                   <Box
                     display="flex"
+                    alignItems="center"
+                    justifyContent="center"
                     onClick={() =>
                       handleSingleAddressClick(filteredVersions[version])
                     }
@@ -343,7 +350,7 @@ const CryptoAddress: React.FC<Props> = ({
                       titleAccess={t('profile.openAddress')}
                       className={classes.menuActionIcon}
                     />
-                    <Typography>{version}</Typography>
+                    <Typography variant="body2">{version}</Typography>
                   </Box>
                 ) : (
                   <CopyToClipboard
@@ -362,7 +369,7 @@ const CryptoAddress: React.FC<Props> = ({
                         titleAccess={t('profile.copyAddress')}
                         className={classes.menuActionIcon}
                       />
-                      <Typography>{version}</Typography>
+                      <Typography variant="body2">{version}</Typography>
                     </Box>
                   </CopyToClipboard>
                 )}

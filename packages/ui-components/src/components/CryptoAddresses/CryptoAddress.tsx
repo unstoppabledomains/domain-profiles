@@ -335,46 +335,48 @@ const CryptoAddress: React.FC<Props> = ({
             anchorOrigin={{horizontal: 'right', vertical: 'bottom'}}
             classes={{list: classes.menuList}}
           >
-            {Object.keys(filteredVersions).map(version => (
-              <MenuItem className={classes.menuItem} onClick={handleClose}>
-                {getBlockScanUrl(currency, filteredVersions[version]) ? (
-                  <Box
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    onClick={() =>
-                      handleSingleAddressClick(filteredVersions[version])
-                    }
-                  >
-                    <LaunchOutlinedIcon
-                      titleAccess={t('profile.openAddress')}
-                      className={classes.menuActionIcon}
-                    />
-                    <Typography variant="body2">{version}</Typography>
-                  </Box>
-                ) : (
-                  <CopyToClipboard
-                    key={`${currency}_${version}`}
-                    onCopy={
-                      showTooltip && isOwner
-                        ? undefined
-                        : handleCryptoAddressCopied
-                    }
-                    stringToCopy={
-                      showTooltip && isOwner ? '' : filteredVersions[version]
-                    }
-                  >
-                    <Box display="flex">
-                      <CopyContentIcon
-                        titleAccess={t('profile.copyAddress')}
+            {Object.keys(filteredVersions)
+              .sort((a, b) => a.localeCompare(b))
+              .map(version => (
+                <MenuItem className={classes.menuItem} onClick={handleClose}>
+                  {getBlockScanUrl(currency, filteredVersions[version]) ? (
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      onClick={() =>
+                        handleSingleAddressClick(filteredVersions[version])
+                      }
+                    >
+                      <LaunchOutlinedIcon
+                        titleAccess={t('profile.openAddress')}
                         className={classes.menuActionIcon}
                       />
                       <Typography variant="body2">{version}</Typography>
                     </Box>
-                  </CopyToClipboard>
-                )}
-              </MenuItem>
-            ))}
+                  ) : (
+                    <CopyToClipboard
+                      key={`${currency}_${version}`}
+                      onCopy={
+                        showTooltip && isOwner
+                          ? undefined
+                          : handleCryptoAddressCopied
+                      }
+                      stringToCopy={
+                        showTooltip && isOwner ? '' : filteredVersions[version]
+                      }
+                    >
+                      <Box display="flex">
+                        <CopyContentIcon
+                          titleAccess={t('profile.copyAddress')}
+                          className={classes.menuActionIcon}
+                        />
+                        <Typography variant="body2">{version}</Typography>
+                      </Box>
+                    </CopyToClipboard>
+                  )}
+                </MenuItem>
+              ))}
           </Menu>
         </>
       ) : isSingleAddressWithLink ? (

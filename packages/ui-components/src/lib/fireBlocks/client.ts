@@ -4,7 +4,10 @@ import type {
   ITransactionSignature,
   TEvent,
 } from '@fireblocks/ncw-js-sdk';
-import {FireblocksNCWFactory} from '@fireblocks/ncw-js-sdk';
+import {
+  FireblocksNCWFactory,
+  getFireblocksNCWInstance,
+} from '@fireblocks/ncw-js-sdk';
 import {retryAsync} from 'ts-retry';
 
 import config from '@unstoppabledomains/config';
@@ -17,7 +20,10 @@ import {notifyEvent} from '../error';
 import {sleep} from '../sleep';
 import {MAX_RETRIES} from '../types/fireBlocks';
 import {LogEventHandler} from './events/logHandler';
-import {RpcMessageProvider} from './messages/rpcHandler';
+import {
+  RpcMessageProvider,
+  setRpcMessageProviderJwt,
+} from './messages/rpcHandler';
 import {StorageFactoryProvider} from './storage/factory';
 import {MemoryDeviceStoreProvider} from './storage/provider/memoryDeviceStore';
 import {ReactDeviceStoreProvider} from './storage/provider/reactDeviceStore';
@@ -37,6 +43,13 @@ export const getFireBlocksClient = async (
     onEventCallback?: (event: TEvent) => void;
   },
 ): Promise<IFireblocksNCW> => {
+  // check if an instance exists for this device ID
+  const existingInstance = getFireblocksNCWInstance(deviceId);
+  if (existingInstance) {
+    setRpcMessageProviderJwt(jwt);
+    return existingInstance;
+  }
+
   // initialize storage
   const storageFactory = new StorageFactoryProvider(
     new MemoryDeviceStoreProvider(),

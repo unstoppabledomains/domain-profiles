@@ -1,6 +1,6 @@
 {
   "name": "@unstoppabledomains/ui-components",
-  "version": "0.0.43",
+  "version": "0.0.44",
   "private": true,
   "description": "An open and reusable suite of Unstoppable Domains management components",
   "keywords": [
@@ -26,7 +26,7 @@
   "dependencies": {
     "@braintree/sanitize-url": "^6.0.4",
     "@emotion/server": "^11.4.0",
-    "@fireblocks/ncw-js-sdk": "12.4.1",
+    "@fireblocks/ncw-js-sdk": "12.5.0",
     "@ipld/car": "^5.2.5",
     "@mui/icons-material": "5.10.3",
     "@mui/lab": "5.0.0-alpha.98",

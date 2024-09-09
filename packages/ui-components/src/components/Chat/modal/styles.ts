@@ -298,7 +298,7 @@ export const useConversationStyles = makeStyles<{
     overscrollBehavior: 'contain',
     height: '430px',
     [theme.breakpoints.down('sm')]: {
-      height: 'calc(100vh - 300px)',
+      height: 'calc(100vh - 210px)',
     },
   },
   composeContainer: {

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import ChatIcon from '@mui/icons-material/ChatOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
@@ -16,6 +17,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import CircularProgress from '@mui/material/CircularProgress';
+import IconButton from '@mui/material/IconButton';
 import Tab from '@mui/material/Tab';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
@@ -81,6 +83,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     padding: theme.spacing(1),
     border: 'none',
     backgroundColor: 'transparent',
+    [theme.breakpoints.down('sm')]: {
+      padding: 0,
+    },
   },
   chatMobileContainer: {
     width: '100%',
@@ -119,6 +124,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     color: theme.palette.neutralShades[600],
   },
+  headerTitleContainer: {
+    display: 'flex',
+    width: '100%',
+    alignItems: 'center',
+  },
   newChatIcon: {
     marginRight: theme.spacing(0.7),
     color: theme.palette.primary.main,
@@ -140,7 +150,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     overscrollBehavior: 'contain',
     height: '425px',
     [theme.breakpoints.down('sm')]: {
-      height: 'calc(100vh - 200px)',
+      height: 'calc(100vh - 110px)',
     },
   },
   tabList: {
@@ -808,7 +818,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         open={open}
         onClose={onClose}
         noModalHeader={true}
+        noContentMargin={true}
         noContentPadding={true}
+        fullScreen={true}
         dialogPaperStyle={classes.chatMobilePaper}
       >
         <Box className={classes.chatMobileContainer}>{children}</Box>
@@ -878,7 +890,18 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         variant="outlined"
       >
         <CardHeader
-          title={t('push.messages')}
+          title={
+            isMobile ? (
+              <Box className={classes.headerTitleContainer}>
+                <IconButton onClick={onClose}>
+                  <ArrowBackOutlinedIcon />
+                </IconButton>
+                <Box ml={1}>{t('push.messages')}</Box>
+              </Box>
+            ) : (
+              t('push.messages')
+            )
+          }
           action={
             <Box className={classes.headerActionContainer}>
               <Tooltip title={t('push.chatNew')}>
@@ -899,12 +922,14 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                   </Tooltip>
                 </Badge>
               )}
-              <Tooltip title={t('common.close')}>
-                <CloseIcon
-                  className={classes.headerActionIcon}
-                  onClick={onClose}
-                />
-              </Tooltip>
+              {!isMobile && (
+                <Tooltip title={t('common.close')}>
+                  <CloseIcon
+                    className={classes.headerActionIcon}
+                    onClick={onClose}
+                  />
+                </Tooltip>
+              )}
             </Box>
           }
         />
@@ -1017,6 +1042,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                           }
                           searchTerm={searchValue}
                           acceptedTopics={acceptedTopics}
+                          skipObserver={isMobile}
                           conversation={c}
                         />
                       ))

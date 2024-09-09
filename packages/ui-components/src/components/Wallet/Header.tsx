@@ -17,7 +17,7 @@ import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableW
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getOwnerDomains} from '../../actions';
-import {useWeb3Context} from '../../hooks';
+import {useUnstoppableMessaging, useWeb3Context} from '../../hooks';
 import {useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import {UnstoppableMessaging} from '../Chat';
@@ -191,6 +191,7 @@ export const Header: React.FC<Props> = ({
   const {classes, cx} = useStyles({isMobile});
   const {setWeb3Deps} = useWeb3Context();
   const [t] = useTranslationContext();
+  const {setOpenChat} = useUnstoppableMessaging();
   const {enqueueSnackbar} = useSnackbar();
 
   // Menu state
@@ -236,6 +237,11 @@ export const Header: React.FC<Props> = ({
 
   const handleGetDomainClick = () => {
     setIsDomainAddModalOpen(true);
+    setIsMenuOpen(false);
+  };
+
+  const handleMessagingClicked = () => {
+    setOpenChat(t('push.messages'));
     setIsMenuOpen(false);
   };
 
@@ -383,6 +389,7 @@ export const Header: React.FC<Props> = ({
             <UnstoppableMessaging
               address={address}
               silentOnboard={true}
+              hideIcon={true}
               disableSupportBubble
               inheritStyle
             />
@@ -397,6 +404,7 @@ export const Header: React.FC<Props> = ({
           isOwner={true}
           authDomain={domain}
           marginTop={30}
+          onMessagingClicked={showMessages ? handleMessagingClicked : undefined}
           onGetDomainClicked={!isDomains ? handleGetDomainClick : undefined}
           onDomainsClicked={isDomains ? handleDomainsClick : undefined}
           onSettingsClicked={onSettingsClick}

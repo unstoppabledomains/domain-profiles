@@ -79,8 +79,6 @@ export const useSubmitTransaction = ({
         notifyEvent(e, 'warning', 'Wallet', 'Signature', {
           msg: 'error managing in progress transactions',
         });
-      } finally {
-        await client.dispose();
       }
 
       // check the recipient wallet to determine if it needs to be created
@@ -163,7 +161,6 @@ export const useSubmitTransaction = ({
           await client.signTransaction(
             operationStatus.transaction.externalVendorTransactionId,
           );
-          await client.dispose();
           return {success: true};
         }
         return {success: false};

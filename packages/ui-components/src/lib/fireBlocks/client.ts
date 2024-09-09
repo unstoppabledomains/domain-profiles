@@ -79,6 +79,7 @@ export const getFireBlocksClient = async (
     eventsHandler,
     secureStorageProvider: secureKeyStorageProvider,
     storageProvider: unsecureStorageProvider,
+    logger: config.APP_ENV !== 'production' ? console : undefined,
     env: 'production',
   };
 

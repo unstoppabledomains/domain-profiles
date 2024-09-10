@@ -106,16 +106,14 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
       marginBottom: theme.spacing(-1),
     },
   },
+  domainTitle: {
+    marginLeft: theme.spacing(1),
+  },
   clickableDomainTitle: {
-    display: 'inline',
-    paddingLeft: theme.spacing(1),
+    display: 'flex',
     cursor: 'pointer',
-    border: '1px solid white',
-    borderRadius: theme.shape.borderRadius,
-    '&:hover': {
-      border: `1px solid ${theme.palette.neutralShades[400]}`,
-      boxShadow: theme.shadows[2],
-    },
+    alignItems: 'center',
+    alignContent: 'center',
   },
   tabList: {
     overflow: 'hidden',
@@ -323,7 +321,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
               >
                 <Typography
                   variant="h4"
-                  className={cx({
+                  className={cx(classes.domainTitle, {
                     [classes.clickableDomainTitle]: isOtherDomains,
                   })}
                   onClick={handleOtherDomainsModalOpen}

@@ -10,7 +10,10 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useTranslationContext} from '../../lib';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
-import {getBlockchainSymbol} from '../Manage/common/verification/types';
+import {
+  getBlockchainDisplaySymbol,
+  getBlockchainSymbol,
+} from '../Manage/common/verification/types';
 import {TitleWithBackButton} from './TitleWithBackButton';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -108,7 +111,7 @@ export const SendConfirm: React.FC<Props> = ({
           width="100%"
         >
           <Typography variant="h4" textAlign="center">
-            {amount} {symbol}
+            {amount} {getBlockchainDisplaySymbol(symbol)}
           </Typography>
           <Typography variant="subtitle1">{amountInDollars}</Typography>
           <Box className={classes.contentContainer} mt={3}>
@@ -149,8 +152,8 @@ export const SendConfirm: React.FC<Props> = ({
                   `${round(
                     parseFloat(gasFee),
                     maxDisplayLength,
-                  )} ${getBlockchainSymbol(
-                    asset.blockchainAsset.blockchain.id,
+                  )} ${getBlockchainDisplaySymbol(
+                    getBlockchainSymbol(asset.blockchainAsset.blockchain.id),
                   )}`
                 )}
               </Typography>
@@ -160,15 +163,17 @@ export const SendConfirm: React.FC<Props> = ({
               {assetSymbol === gasSymbol ? (
                 <Typography variant="subtitle1">
                   {round(Number(amount) + Number(gasFee), maxDisplayLength)}{' '}
-                  {assetSymbol}
+                  {getBlockchainDisplaySymbol(assetSymbol)}
                 </Typography>
               ) : (
                 <Box display="flex" flexDirection="column" textAlign="right">
                   <Typography variant="subtitle1">
-                    {round(Number(amount), maxDisplayLength)} {assetSymbol}
+                    {round(Number(amount), maxDisplayLength)}{' '}
+                    {getBlockchainDisplaySymbol(assetSymbol)}
                   </Typography>
                   <Typography variant="subtitle1">
-                    {round(Number(gasFee), maxDisplayLength)} {gasSymbol}
+                    {round(Number(gasFee), maxDisplayLength)}{' '}
+                    {getBlockchainDisplaySymbol(gasSymbol)}
                   </Typography>
                 </Box>
               )}

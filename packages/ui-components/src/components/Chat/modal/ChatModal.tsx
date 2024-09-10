@@ -150,7 +150,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     overscrollBehavior: 'contain',
     height: '425px',
     [theme.breakpoints.down('sm')]: {
-      height: 'calc(100vh - 110px)',
+      height: 'calc(100vh - 70px)',
     },
   },
   tabList: {

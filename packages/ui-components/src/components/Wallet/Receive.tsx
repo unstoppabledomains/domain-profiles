@@ -16,6 +16,7 @@ import type {SerializedWalletBalance} from '../../lib';
 import {useTranslationContext} from '../../lib';
 import Link from '../Link';
 import ManageInput from '../Manage/common/ManageInput';
+import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 import {SelectAsset} from './SelectAsset';
 import {TitleWithBackButton} from './TitleWithBackButton';
 import type {TokenEntry} from './Token';
@@ -153,7 +154,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
         onCancelClick={handleBackClick}
         label={t('wallet.actionOnBlockchainTitle', {
           action: t('common.receive'),
-          symbol: asset.ticker,
+          symbol: getBlockchainDisplaySymbol(asset.ticker),
           blockchain: asset.walletName,
         })}
       />
@@ -205,13 +206,13 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
                       ? 'wallet.receiveAddressCaptionWithDomains'
                       : 'wallet.receiveAddressCaption',
                     {
-                      symbol: asset.ticker,
+                      symbol: getBlockchainDisplaySymbol(asset.ticker),
                       blockchain: asset.walletName,
                     },
                   )}
                 </Markdown>{' '}
                 {t('wallet.sendingForOtherNetworksAndTokens', {
-                  symbol: asset.ticker,
+                  symbol: getBlockchainDisplaySymbol(asset.ticker),
                   blockchain: asset.walletName,
                 })}{' '}
                 <Link

@@ -13,7 +13,10 @@ import {SendCryptoStatusMessage} from '../../actions/fireBlocksActions';
 import {Status, useSubmitTransaction} from '../../hooks/useSubmitTransaction';
 import {useTranslationContext} from '../../lib';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
-import {getBlockchainSymbol} from '../Manage/common/verification/types';
+import {
+  getBlockchainDisplaySymbol,
+  getBlockchainSymbol,
+} from '../Manage/common/verification/types';
 import {OperationStatus} from './OperationStatus';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -114,7 +117,9 @@ export const SubmitTransaction: React.FC<Props> = ({
                 }`,
                 {
                   amount,
-                  sourceSymbol: asset.blockchainAsset.symbol,
+                  sourceSymbol: getBlockchainDisplaySymbol(
+                    asset.blockchainAsset.symbol,
+                  ),
                   status,
                   recipientDomain: recipientDomain
                     ? ` ${recipientDomain}`

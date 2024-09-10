@@ -18,18 +18,26 @@ export const getBlockchainName = (symbol: string): string => {
       return 'Polygon';
     case 'AVAX':
       return 'Avalanche';
+    case 'BTC':
+      return 'Bitcoin';
+    case 'SOL':
+      return 'Solana';
     default:
       return symbol;
   }
 };
 
-export const getBlockchainSymbol = (name: string): string => {
+export const getBlockchainSymbol = (
+  name: string,
+  noMatchEmpty?: boolean,
+): string => {
   switch (name.toUpperCase()) {
     case 'ETHEREUM':
     case 'ETH':
       return 'ETH';
     case 'POLYGON':
     case 'MATIC':
+    case 'POL':
       return 'MATIC';
     case 'BASE':
       return 'BASE';
@@ -40,7 +48,16 @@ export const getBlockchainSymbol = (name: string): string => {
     case 'SOL':
       return 'SOL';
     default:
-      return name.toUpperCase();
+      return noMatchEmpty ? '' : name.toUpperCase();
+  }
+};
+
+export const getBlockchainDisplaySymbol = (symbol: string): string => {
+  switch (symbol.toUpperCase()) {
+    case 'MATIC':
+      return 'POL';
+    default:
+      return symbol.toUpperCase();
   }
 };
 

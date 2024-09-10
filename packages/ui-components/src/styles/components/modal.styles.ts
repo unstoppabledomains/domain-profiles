@@ -31,6 +31,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     height: '100%',
+    padding: 0,
   },
   contentContainer: {
     display: 'flex',

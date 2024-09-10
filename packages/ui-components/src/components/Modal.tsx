@@ -114,7 +114,7 @@ const Modal: React.FC<ModalProps> = ({
         )}
         <div
           className={
-            noContentPadding && !fullScreen
+            noContentPadding
               ? classes.contentContainerNoPadding
               : classes.contentContainer
           }

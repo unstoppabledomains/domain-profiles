@@ -138,8 +138,11 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
     optionsContainer: {
       display: 'flex',
       position: 'absolute',
-      right: theme.spacing(-1.5),
+      right: theme.spacing(-3.5),
       top: theme.spacing(-0.5),
+      [theme.breakpoints.up('sm')]: {
+        right: theme.spacing(-1.5),
+      },
     },
     learnMoreLink: {
       color: theme.palette.white,

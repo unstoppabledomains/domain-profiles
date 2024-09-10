@@ -103,15 +103,21 @@ export const SubmitTransaction: React.FC<Props> = ({
   return (
     <Box className={classes.sendLoadingContainer}>
       <OperationStatus
-        label={statusMessage}
+        label={
+          transactionId
+            ? statusMessage
+            : `${statusMessage.replace('...', '. ')}${t(
+                'wallet.leaveWindowOpen',
+              )}`
+        }
         icon={<SendOutlinedIcon />}
         success={status === Status.Success}
         error={status === Status.Failed}
       >
         <Box className={classes.transactionStatusContainer} mt={2}>
-          <Typography variant="caption">
-            {[Status.Success, Status.Failed].includes(status) &&
-              t(
+          {[Status.Success, Status.Failed].includes(status) && (
+            <Typography variant="caption">
+              {t(
                 `wallet.sendTransaction${
                   status === Status.Success ? 'Success' : 'Failed'
                 }`,
@@ -126,7 +132,8 @@ export const SubmitTransaction: React.FC<Props> = ({
                     : ` ${recipientAddress}`,
                 },
               )}
-          </Typography>
+            </Typography>
+          )}
           {transactionId && (
             <Button
               variant="text"

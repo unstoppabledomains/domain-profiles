@@ -879,6 +879,7 @@
     "inviteInProgress": "Creating your wallet. Leave this window open until complete...",
     "inviteSendError": "Error sending invite. Try again in a few moments",
     "inviteSent": "Sent invitation to {{emailAddress}}",
+    "leaveWindowOpen": "Leave window open until complete...",
     "loadingError": "Unable to load balances for **{{address}}**. Try again in a few moments.",
     "loadingWallet": "Loading wallet...",
     "needWallet": "Need a wallet?",

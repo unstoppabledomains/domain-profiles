@@ -1,6 +1,6 @@
 {
   "name": "@unstoppabledomains/ui-components",
-  "version": "0.0.45-browser-extension.7",
+  "version": "0.0.47",
   "private": true,
   "description": "An open and reusable suite of Unstoppable Domains management components",
   "keywords": [

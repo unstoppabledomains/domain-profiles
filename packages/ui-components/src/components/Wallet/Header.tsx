@@ -225,11 +225,6 @@ export const Header: React.FC<Props> = ({
     setDomainToManage(v);
   };
 
-  const handleSupportClick = () => {
-    window.open(`${config.WALLETS.DOCUMENTATION_URL}`, '_blank');
-    setIsMenuOpen(false);
-  };
-
   const handleRecoveryKitClicked = () => {
     setIsRecoveryModalOpen(true);
     setIsMenuOpen(false);
@@ -408,7 +403,6 @@ export const Header: React.FC<Props> = ({
           onGetDomainClicked={!isDomains ? handleGetDomainClick : undefined}
           onDomainsClicked={isDomains ? handleDomainsClick : undefined}
           onSettingsClicked={onSettingsClick}
-          onSupportClicked={handleSupportClick}
           onRecoveryLinkClicked={handleRecoveryKitClicked}
           onLogout={handleLogout}
         />

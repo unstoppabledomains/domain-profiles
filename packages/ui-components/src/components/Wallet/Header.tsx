@@ -191,7 +191,7 @@ export const Header: React.FC<Props> = ({
   const {classes, cx} = useStyles({isMobile});
   const {setWeb3Deps} = useWeb3Context();
   const [t] = useTranslationContext();
-  const {setOpenChat} = useUnstoppableMessaging();
+  const {setOpenChat, isChatReady} = useUnstoppableMessaging();
   const {enqueueSnackbar} = useSnackbar();
 
   // Menu state
@@ -399,7 +399,9 @@ export const Header: React.FC<Props> = ({
           isOwner={true}
           authDomain={domain}
           marginTop={30}
-          onMessagingClicked={showMessages ? handleMessagingClicked : undefined}
+          onMessagingClicked={
+            showMessages && isChatReady ? handleMessagingClicked : undefined
+          }
           onGetDomainClicked={!isDomains ? handleGetDomainClick : undefined}
           onDomainsClicked={isDomains ? handleDomainsClick : undefined}
           onSettingsClicked={onSettingsClick}

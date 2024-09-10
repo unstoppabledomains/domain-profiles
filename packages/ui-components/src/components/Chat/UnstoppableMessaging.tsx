@@ -111,6 +111,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
   inheritStyle,
   large,
   label,
+  hideIcon = false,
   domainRequired = false,
   disableSupportBubble = true,
   silentOnboard = false,
@@ -1000,66 +1001,71 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
           {label}
         </Button>
       ) : (
-        <IconButton
-          onClick={() => handleChatClicked()}
-          className={classes.messageButton}
-          data-testid={'header-chat-button'}
-          id="chat-button"
-          disabled={!messagingInitialized || signatureType !== undefined}
-          size={large ? 'large' : 'small'}
-          sx={{
-            '&.Mui-disabled': inheritStyle
-              ? {}
-              : {
-                  color: '#dddddd',
-                  backgroundColor: 'rgba(128,128,128, 0.4)',
-                },
-          }}
-        >
-          {!chatUser ? (
-            <Tooltip
-              PopperProps={tooltipProps}
-              placement="bottom"
-              title={t('push.configure', {
-                domain: domainRequired
-                  ? t('push.setup.oneOfYourDomains')
-                  : t('push.setup.yourWallet'),
-              })}
-            >
-              {messageConfigureIcon}
-            </Tooltip>
-          ) : xmtpKey ? (
-            <Tooltip
-              PopperProps={tooltipProps}
-              placement="bottom"
-              title={t(chatWindowOpen ? 'push.hide' : 'push.open', {
-                domain: chatUser,
-              })}
-            >
-              {isNewMessage ? messageUnreadIcon : messageReadyIcon}
-            </Tooltip>
-          ) : messagingInitialized && !signatureType ? (
-            <Tooltip
-              PopperProps={tooltipProps}
-              placement="bottom"
-              title={t('push.configure', {domain: chatUser})}
-            >
-              {messageConfigureIcon}
-            </Tooltip>
-          ) : (
-            <Tooltip
-              PopperProps={tooltipProps}
-              placement="bottom"
-              title={t('push.loading', {domain: chatUser})}
-            >
-              {inheritStyle && !signatureType ? (
-                messageReadyIcon
-              ) : (
-                <CircularProgress size="30px" className={classes.loadingIcon} />
-              )}
-            </Tooltip>
-          )}
-        </IconButton>
+        !hideIcon && (
+          <IconButton
+            onClick={() => handleChatClicked()}
+            className={classes.messageButton}
+            data-testid={'header-chat-button'}
+            id="chat-button"
+            disabled={!messagingInitialized || signatureType !== undefined}
+            size={large ? 'large' : 'small'}
+            sx={{
+              '&.Mui-disabled': inheritStyle
+                ? {}
+                : {
+                    color: '#dddddd',
+                    backgroundColor: 'rgba(128,128,128, 0.4)',
+                  },
+            }}
+          >
+            {!chatUser ? (
+              <Tooltip
+                PopperProps={tooltipProps}
+                placement="bottom"
+                title={t('push.configure', {
+                  domain: domainRequired
+                    ? t('push.setup.oneOfYourDomains')
+                    : t('push.setup.yourWallet'),
+                })}
+              >
+                {messageConfigureIcon}
+              </Tooltip>
+            ) : xmtpKey ? (
+              <Tooltip
+                PopperProps={tooltipProps}
+                placement="bottom"
+                title={t(chatWindowOpen ? 'push.hide' : 'push.open', {
+                  domain: chatUser,
+                })}
+              >
+                {isNewMessage ? messageUnreadIcon : messageReadyIcon}
+              </Tooltip>
+            ) : messagingInitialized && !signatureType ? (
+              <Tooltip
+                PopperProps={tooltipProps}
+                placement="bottom"
+                title={t('push.configure', {domain: chatUser})}
+              >
+                {messageConfigureIcon}
+              </Tooltip>
+            ) : (
+              <Tooltip
+                PopperProps={tooltipProps}
+                placement="bottom"
+                title={t('push.loading', {domain: chatUser})}
+              >
+                {inheritStyle && !signatureType ? (
+                  messageReadyIcon
+                ) : (
+                  <CircularProgress
+                    size="30px"
+                    className={classes.loadingIcon}
+                  />
+                )}
+              </Tooltip>
+            )}
+          </IconButton>
+        )
       )}
       <AccessWalletModal
         prompt={true}
@@ -1137,5 +1143,6 @@ export type UnstoppableMessagingProps = {
   disableSupportBubble?: boolean;
   domainRequired?: boolean;
   silentOnboard?: boolean;
+  hideIcon?: boolean;
   initCallback?: () => void;
 };

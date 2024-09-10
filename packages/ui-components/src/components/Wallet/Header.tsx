@@ -17,7 +17,7 @@ import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableW
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getOwnerDomains} from '../../actions';
-import {useWeb3Context} from '../../hooks';
+import {useUnstoppableMessaging, useWeb3Context} from '../../hooks';
 import {useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import {UnstoppableMessaging} from '../Chat';
@@ -138,8 +138,11 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
     optionsContainer: {
       display: 'flex',
       position: 'absolute',
-      right: theme.spacing(-1.5),
+      right: theme.spacing(-3.5),
       top: theme.spacing(-0.5),
+      [theme.breakpoints.up('sm')]: {
+        right: theme.spacing(-1.5),
+      },
     },
     learnMoreLink: {
       color: theme.palette.white,
@@ -191,6 +194,7 @@ export const Header: React.FC<Props> = ({
   const {classes, cx} = useStyles({isMobile});
   const {setWeb3Deps} = useWeb3Context();
   const [t] = useTranslationContext();
+  const {setOpenChat, isChatReady} = useUnstoppableMessaging();
   const {enqueueSnackbar} = useSnackbar();
 
   // Menu state
@@ -224,11 +228,6 @@ export const Header: React.FC<Props> = ({
     setDomainToManage(v);
   };
 
-  const handleSupportClick = () => {
-    window.open(`${config.WALLETS.DOCUMENTATION_URL}`, '_blank');
-    setIsMenuOpen(false);
-  };
-
   const handleRecoveryKitClicked = () => {
     setIsRecoveryModalOpen(true);
     setIsMenuOpen(false);
@@ -236,6 +235,11 @@ export const Header: React.FC<Props> = ({
 
   const handleGetDomainClick = () => {
     setIsDomainAddModalOpen(true);
+    setIsMenuOpen(false);
+  };
+
+  const handleMessagingClicked = () => {
+    setOpenChat(t('push.messages'));
     setIsMenuOpen(false);
   };
 
@@ -383,6 +387,7 @@ export const Header: React.FC<Props> = ({
             <UnstoppableMessaging
               address={address}
               silentOnboard={true}
+              hideIcon={true}
               disableSupportBubble
               inheritStyle
             />
@@ -397,10 +402,12 @@ export const Header: React.FC<Props> = ({
           isOwner={true}
           authDomain={domain}
           marginTop={30}
+          onMessagingClicked={
+            showMessages && isChatReady ? handleMessagingClicked : undefined
+          }
           onGetDomainClicked={!isDomains ? handleGetDomainClick : undefined}
           onDomainsClicked={isDomains ? handleDomainsClick : undefined}
           onSettingsClicked={onSettingsClick}
-          onSupportClicked={handleSupportClick}
           onRecoveryLinkClicked={handleRecoveryKitClicked}
           onLogout={handleLogout}
         />

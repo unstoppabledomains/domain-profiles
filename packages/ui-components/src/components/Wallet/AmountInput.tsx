@@ -9,6 +9,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useTranslationContext} from '../../lib';
 import ManageInput from '../Manage/common/ManageInput';
+import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 import type {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -114,7 +115,7 @@ const AmountInput: React.FC<Props> = ({
           value={showFiat ? fiatAmount : tokenAmount}
           label={t('wallet.amount')}
           placeholder={t('wallet.amountInSymbol', {
-            symbol: showFiat ? 'USD' : token.ticker,
+            symbol: showFiat ? 'USD' : getBlockchainDisplaySymbol(token.ticker),
           })}
           onChange={handleAmountChange}
           stacked={true}
@@ -144,7 +145,9 @@ const AmountInput: React.FC<Props> = ({
           >
             {!showFiat
               ? `~$${parseFloat(fiatAmount).toFixed(2)}`
-              : `${parseFloat(tokenAmount).toFixed(5)} ${token.ticker}`}
+              : `${parseFloat(tokenAmount).toFixed(
+                  5,
+                )} ${getBlockchainDisplaySymbol(token.ticker)}`}
             <SwapVertIcon className={classes.swapIcon} />
           </Typography>
           <Typography variant="subtitle1" className={classes.availableBalance}>
@@ -156,7 +159,7 @@ const AmountInput: React.FC<Props> = ({
                 })
               : t('wallet.availableAmount', {
                   amount: MaxAvailableAmount.toFixed(5),
-                  symbol: token.ticker,
+                  symbol: getBlockchainDisplaySymbol(token.ticker),
                 })}
           </Typography>
         </Box>

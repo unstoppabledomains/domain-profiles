@@ -24,6 +24,7 @@ export type ModalProps = {
    */
   isConfirmation?: boolean;
   noContentPadding?: boolean;
+  noContentMargin?: boolean;
   titleStyle?: string;
   dialogPaperStyle?: string;
   includeHeaderPadding?: boolean;
@@ -43,6 +44,7 @@ const Modal: React.FC<ModalProps> = ({
   children,
   isConfirmation = false,
   centerHeader = false,
+  noContentMargin = false,
   noContentPadding = false,
   includeHeaderPadding = false,
   noModalHeader = false,
@@ -75,7 +77,12 @@ const Modal: React.FC<ModalProps> = ({
         [classes.fullScreen]: fullScreen,
       })}
     >
-      <div className={classes.modalContent} data-testid={`${title}-modal`}>
+      <div
+        className={cx(classes.modalContent, {
+          [classes.modalContentNoMargin]: noContentMargin,
+        })}
+        data-testid={`${title}-modal`}
+      >
         {!noModalHeader && (
           <div
             className={cx(classes.modalHeader, {
@@ -107,7 +114,7 @@ const Modal: React.FC<ModalProps> = ({
         )}
         <div
           className={
-            noContentPadding && !fullScreen
+            noContentPadding
               ? classes.contentContainerNoPadding
               : classes.contentContainer
           }

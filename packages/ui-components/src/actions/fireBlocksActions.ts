@@ -4,6 +4,7 @@ import QueryString from 'qs';
 
 import config from '@unstoppabledomains/config';
 
+import {getBlockchainSymbol} from '../components/Manage/common/verification/types';
 import {fetchApi} from '../lib';
 import {notifyEvent} from '../lib/error';
 import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../lib/fireBlocks/client';
@@ -249,7 +250,13 @@ export const getAccountAssets = async (
     await Bluebird.map(accounts.items, async account => {
       const assets = await getAssets(accessToken, account.id, balance);
       return (assets?.items || []).map(asset => {
+        // normalize the asset format
         asset.accountId = account.id;
+        asset.blockchainAsset.symbol =
+          getBlockchainSymbol(asset.blockchainAsset.name, true) ||
+          asset.blockchainAsset.symbol;
+
+        // add to the asset list
         accountAssets.push(asset);
       });
     });

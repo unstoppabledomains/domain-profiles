@@ -19,6 +19,7 @@ import {useTranslationContext} from '../../lib';
 import {sleep} from '../../lib/sleep';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {isEthAddress} from '../Chat/protocol/resolution';
+import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 import AddressInput from './AddressInput';
 import AmountInput from './AmountInput';
 import {OperationStatus} from './OperationStatus';
@@ -331,7 +332,7 @@ const Send: React.FC<Props> = ({
         <TitleWithBackButton
           label={t('wallet.actionOnBlockchainTitle', {
             action: t('common.send'),
-            symbol: selectedToken.ticker,
+            symbol: getBlockchainDisplaySymbol(selectedToken.ticker),
             blockchain: selectedToken.walletName,
           })}
           onCancelClick={onCancelClick}
@@ -366,7 +367,7 @@ const Send: React.FC<Props> = ({
         onCancelClick={handleBackClick}
         label={t('wallet.actionOnBlockchainTitle', {
           action: t('common.send'),
-          symbol: selectedToken.ticker,
+          symbol: getBlockchainDisplaySymbol(selectedToken.ticker),
           blockchain: selectedToken.walletName,
         })}
       />

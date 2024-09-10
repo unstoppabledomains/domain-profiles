@@ -19,11 +19,19 @@ const useStyles = makeStyles()((theme: Theme) => ({
     overflow: 'hidden',
     height: '100%',
   },
+  modalContentNoMargin: {
+    margin: 0,
+    padding: 0,
+    [theme.breakpoints.down('sm')]: {
+      padding: 0,
+    },
+  },
   contentContainerNoPadding: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     height: '100%',
+    padding: 0,
   },
   contentContainer: {
     display: 'flex',

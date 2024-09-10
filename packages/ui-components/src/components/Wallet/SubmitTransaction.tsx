@@ -13,7 +13,10 @@ import {SendCryptoStatusMessage} from '../../actions/fireBlocksActions';
 import {Status, useSubmitTransaction} from '../../hooks/useSubmitTransaction';
 import {useTranslationContext} from '../../lib';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
-import {getBlockchainSymbol} from '../Manage/common/verification/types';
+import {
+  getBlockchainDisplaySymbol,
+  getBlockchainSymbol,
+} from '../Manage/common/verification/types';
 import {OperationStatus} from './OperationStatus';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -100,28 +103,37 @@ export const SubmitTransaction: React.FC<Props> = ({
   return (
     <Box className={classes.sendLoadingContainer}>
       <OperationStatus
-        label={statusMessage}
+        label={
+          transactionId
+            ? statusMessage
+            : `${statusMessage.replace('...', '. ')}${t(
+                'wallet.leaveWindowOpen',
+              )}`
+        }
         icon={<SendOutlinedIcon />}
         success={status === Status.Success}
         error={status === Status.Failed}
       >
         <Box className={classes.transactionStatusContainer} mt={2}>
-          <Typography variant="caption">
-            {[Status.Success, Status.Failed].includes(status) &&
-              t(
+          {[Status.Success, Status.Failed].includes(status) && (
+            <Typography variant="caption">
+              {t(
                 `wallet.sendTransaction${
                   status === Status.Success ? 'Success' : 'Failed'
                 }`,
                 {
                   amount,
-                  sourceSymbol: asset.blockchainAsset.symbol,
+                  sourceSymbol: getBlockchainDisplaySymbol(
+                    asset.blockchainAsset.symbol,
+                  ),
                   status,
                   recipientDomain: recipientDomain
                     ? ` ${recipientDomain}`
                     : ` ${recipientAddress}`,
                 },
               )}
-          </Typography>
+            </Typography>
+          )}
           {transactionId && (
             <Button
               variant="text"

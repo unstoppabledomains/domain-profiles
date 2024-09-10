@@ -193,7 +193,9 @@ describe('<Send />', () => {
 
     await waitFor(() => {
       expect(
-        getByText(SendCryptoStatusMessage.CHECKING_QUEUE),
+        getByText(
+          'Checking queued transfers. Leave window open until complete...',
+        ),
       ).toBeInTheDocument();
     });
   });

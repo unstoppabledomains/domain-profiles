@@ -27,6 +27,7 @@ import {TokenType, WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
 import {CryptoIcon} from '../Image';
+import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 
 const bgNeutralShade = 800;
 
@@ -375,7 +376,9 @@ export const DomainWalletTransactions: React.FC<
                 >
                   {isSender ? '-' : '+'}
                   {numeral(Math.abs(tx.value)).format('0,0.[0000]')}{' '}
-                  {isErc20 ? tx.method.toUpperCase() : tx.symbol}
+                  {isErc20
+                    ? tx.method.toUpperCase()
+                    : tx.symbol && getBlockchainDisplaySymbol(tx.symbol)}
                 </Typography>
               )}
               {!isNft && gasFee && gasFee.toLowerCase() !== 'nan' && (

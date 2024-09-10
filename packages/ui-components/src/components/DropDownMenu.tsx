@@ -1,5 +1,6 @@
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
+import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import Logout from '@mui/icons-material/Logout';
 import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
@@ -27,6 +28,7 @@ interface Props {
   onRecoveryLinkClicked?: () => void;
   onSettingsClicked?: () => void;
   onSupportClicked?: () => void;
+  onMessagingClicked?: () => void;
   onLogout?: () => void;
   marginTop?: number;
 }
@@ -68,6 +70,7 @@ const DropDownMenu: React.FC<Props> = ({
   onRecoveryLinkClicked,
   onSettingsClicked,
   onSupportClicked,
+  onMessagingClicked,
   onLogout,
 }) => {
   const [isLoggingOut, setLoggingOut] = useState<boolean>(false);
@@ -132,6 +135,14 @@ const DropDownMenu: React.FC<Props> = ({
           <ListOutlinedIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
             {t('profile.viewMyDomains')}
+          </Typography>
+        </div>
+      )}
+      {onMessagingClicked && (
+        <div className={classes.container} onClick={onMessagingClicked}>
+          <ChatOutlinedIcon className={classes.settingsIcon} />
+          <Typography className={cx(classes.font)} color="text.secondary">
+            {t('push.messages')}
           </Typography>
         </div>
       )}

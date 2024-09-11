@@ -154,6 +154,7 @@ export const Configuration: React.FC<
     disableInlineEducation?: boolean;
     initialState?: WalletConfigState;
     fullScreenModals?: boolean;
+    forceRememberOnDevice?: boolean;
   }
 > = ({
   onUpdate,
@@ -166,6 +167,7 @@ export const Configuration: React.FC<
   setIsHeaderClicked,
   mode = 'basic',
   fullScreenModals,
+  forceRememberOnDevice = false,
   emailAddress: initialEmailAddress,
   recoveryPhrase: initialRecoveryPhrase,
   recoveryToken,
@@ -189,7 +191,7 @@ export const Configuration: React.FC<
   const {enqueueSnackbar} = useSnackbar();
 
   // wallet key management state
-  const [persistKeys, setPersistKeys] = useState(false);
+  const [persistKeys, setPersistKeys] = useState(forceRememberOnDevice);
   const [state, saveState] = useFireblocksState(persistKeys);
   const [progressPct, setProgressPct] = useState(0);
 
@@ -632,7 +634,7 @@ export const Configuration: React.FC<
   const handleLogout = () => {
     // clear input variables
     setBootstrapCode(undefined);
-    setPersistKeys(false);
+    setPersistKeys(forceRememberOnDevice);
     setEmailAddress(undefined);
     setRecoveryPhrase(undefined);
     setRecoveryPhraseConfirmation(undefined);
@@ -1061,41 +1063,42 @@ export const Configuration: React.FC<
               stacked={true}
               disabled={isSaving}
             />
-            {configState === WalletConfigState.OtpEntry && (
-              <Box className={classes.checkboxContainer}>
-                <FormGroup>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        onChange={handlePersistChange}
-                        className={classes.checkbox}
-                        checked={persistKeys}
-                        disabled={isSaving}
-                      />
-                    }
-                    label={
-                      <Box display="flex" flexDirection="column">
-                        <Typography variant="body1">
-                          {t('wallet.rememberOnThisDevice')}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          className={
-                            bootstrapCode &&
-                            bootstrapCode.length > 0 &&
-                            !isSaving
-                              ? classes.enableDescription
-                              : undefined
-                          }
-                        >
-                          {t('wallet.rememberOnThisDeviceDescription')}
-                        </Typography>
-                      </Box>
-                    }
-                  />
-                </FormGroup>
-              </Box>
-            )}
+            {configState === WalletConfigState.OtpEntry &&
+              !forceRememberOnDevice && (
+                <Box className={classes.checkboxContainer}>
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          onChange={handlePersistChange}
+                          className={classes.checkbox}
+                          checked={persistKeys}
+                          disabled={isSaving}
+                        />
+                      }
+                      label={
+                        <Box display="flex" flexDirection="column">
+                          <Typography variant="body1">
+                            {t('wallet.rememberOnThisDevice')}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            className={
+                              bootstrapCode &&
+                              bootstrapCode.length > 0 &&
+                              !isSaving
+                                ? classes.enableDescription
+                                : undefined
+                            }
+                          >
+                            {t('wallet.rememberOnThisDeviceDescription')}
+                          </Typography>
+                        </Box>
+                      }
+                    />
+                  </FormGroup>
+                </Box>
+              )}
           </Box>
         ) : [
             WalletConfigState.PasswordEntry,

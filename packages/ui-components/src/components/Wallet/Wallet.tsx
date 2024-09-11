@@ -32,6 +32,7 @@ export const Wallet: React.FC<
     disableInlineEducation?: boolean;
     disableBasicHeader?: boolean;
     fullScreenModals?: boolean;
+    forceRememberOnDevice?: boolean;
     setAuthAddress?: (v: string) => void;
     onLoginInitiated?: (emailAddress: string, password: string) => void;
     onLogout?: () => void;
@@ -51,6 +52,7 @@ export const Wallet: React.FC<
   disableBasicHeader,
   isNewUser,
   fullScreenModals,
+  forceRememberOnDevice,
   onUpdate,
   onLoginInitiated,
   onLogout,
@@ -124,6 +126,7 @@ export const Wallet: React.FC<
         setAuthAddress={setAuthAddress}
         disableInlineEducation={disableInlineEducation}
         fullScreenModals={fullScreenModals}
+        forceRememberOnDevice={forceRememberOnDevice}
         initialState={
           isNewUser ? WalletConfigState.OnboardWithEmail : undefined
         }

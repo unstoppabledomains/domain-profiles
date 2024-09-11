@@ -48,7 +48,7 @@ export const SignForDappHeader: React.FC<SignForDappHeaderProps> = ({
       <Box>
         <img className={classes.icon} src={iconUrl} />
       </Box>
-      <Typography className={classes.descriptionText}>
+      <Typography className={classes.descriptionText} component="div">
         <Markdown>
           {t('wallet.signDappOperationDescription', {name, actionText})}
         </Markdown>

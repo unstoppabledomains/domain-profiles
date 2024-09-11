@@ -88,7 +88,11 @@ const InlineEducationCard: React.FC<Props> = ({title, content, icon}) => {
           {title}
         </Typography>
       </Box>
-      <Typography variant="caption" className={classes.educationCardContent}>
+      <Typography
+        variant="caption"
+        className={classes.educationCardContent}
+        component="div"
+      >
         <Markdown>{content}</Markdown>
       </Typography>
     </Box>

@@ -197,7 +197,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
               <Box mr={1}>
                 <InfoIcon className={classes.infoIcon} color="error" />
               </Box>
-              <Typography variant="caption" color="error">
+              <Typography variant="caption" color="error" component="div">
                 <Markdown>
                   {t(
                     config.WALLETS.CHAINS.DOMAINS.map(s =>

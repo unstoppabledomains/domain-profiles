@@ -897,7 +897,7 @@
     "recipientDomainOrAddress": "Recipient domain or wallet address",
     "recoveryError": "Unable to access wallet",
     "recoveryKit": "Recovery kit",
-    "recoveryKitDescription": "Create a new recovery kit by verifying your password below. You will receive an email with the information needed to recover access to this wallet. **Do not share your recovery kit with anyone**. All previous kits will become inactive when a new one is created.",
+    "recoveryKitDescription": "Create a new recovery kit by verifying your current password in the field below. You will receive an email with the information needed to recover access to this wallet.\n\n- **Do not share your recovery kit with anyone**\n\n- All previous recovery kits will become inactive when a new one is created",
     "recoveryKitError": "Invalid password",
     "recoveryPhrase": "Password",
     "recoveryPhraseDescription": "##Sign In\nYour credentials are required to unlock access on this device. **Do not share your password with anyone**, including Unstoppable Domains staff.",

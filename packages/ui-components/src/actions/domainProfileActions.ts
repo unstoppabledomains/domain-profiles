@@ -125,6 +125,12 @@ export const getOwnerDomains = async (
   strict?: boolean,
   forceRefresh?: boolean,
 ): Promise<SerializedDomainListData | undefined> => {
+  // validate the provided address
+  if (!address) {
+    return undefined;
+  }
+
+  // fetch the owner domains
   const domainProfileUrl = `/user/${address.toLowerCase()}/domains?${QueryString.stringify(
     {
       take: DOMAIN_LIST_PAGE_SIZE,

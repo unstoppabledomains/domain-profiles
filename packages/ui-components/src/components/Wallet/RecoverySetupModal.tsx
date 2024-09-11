@@ -85,57 +85,60 @@ const RecoverySetupModal: React.FC<Props> = ({accessToken}) => {
 
   return (
     <Box className={classes.container}>
-      <Typography variant="body2" mb={1}>
-        <Markdown>{t('wallet.recoveryKitDescription')}</Markdown>
-      </Typography>
-      <ManageInput
-        id="password"
-        type={passwordVisible ? undefined : 'password'}
-        label={t('wallet.recoveryPhrase')}
-        placeholder={t('wallet.enterRecoveryPhrase')}
-        value={password}
-        onChange={handleValueChanged}
-        stacked={true}
-        disabled={isSaving}
-        onKeyDown={handleKeyDown}
-        endAdornment={
-          <IconButton
-            className={classes.passwordIcon}
-            onClick={() => {
-              setPasswordVisible(!passwordVisible);
-            }}
-          >
-            {passwordVisible ? (
-              <Tooltip title={t('common.passwordHide')}>
-                <VisibilityOffOutlinedIcon />
-              </Tooltip>
-            ) : (
-              <Tooltip title={t('common.passwordShow')}>
-                <VisibilityOutlinedIcon />
-              </Tooltip>
-            )}
-          </IconButton>
-        }
-      />
-      <LoadingButton
-        variant="contained"
-        fullWidth
-        loading={isSaving}
-        onClick={handleGenerateKit}
-        className={classes.button}
-        disabled={isSaving || !isDirty}
-      >
-        {isSuccess ? (
-          <Box display="flex" alignItems="center">
-            <CheckIcon />
-            <Typography ml={1}>{t('common.success')}</Typography>
-          </Box>
-        ) : isSuccess === false ? (
-          t('wallet.recoveryKitError')
-        ) : (
-          t('common.continue')
-        )}
-      </LoadingButton>
+      <form>
+        <Typography variant="body2" mb={1} mt={-2} component="div">
+          <Markdown>{t('wallet.recoveryKitDescription')}</Markdown>
+        </Typography>
+        <ManageInput
+          id="password"
+          type={passwordVisible ? undefined : 'password'}
+          autoComplete="current-password"
+          label={t('wallet.recoveryPhrase')}
+          placeholder={t('wallet.enterRecoveryPhrase')}
+          value={password}
+          onChange={handleValueChanged}
+          stacked={true}
+          disabled={isSaving}
+          onKeyDown={handleKeyDown}
+          endAdornment={
+            <IconButton
+              className={classes.passwordIcon}
+              onClick={() => {
+                setPasswordVisible(!passwordVisible);
+              }}
+            >
+              {passwordVisible ? (
+                <Tooltip title={t('common.passwordHide')}>
+                  <VisibilityOffOutlinedIcon />
+                </Tooltip>
+              ) : (
+                <Tooltip title={t('common.passwordShow')}>
+                  <VisibilityOutlinedIcon />
+                </Tooltip>
+              )}
+            </IconButton>
+          }
+        />
+        <LoadingButton
+          variant="contained"
+          fullWidth
+          loading={isSaving}
+          onClick={handleGenerateKit}
+          className={classes.button}
+          disabled={isSaving || !isDirty}
+        >
+          {isSuccess ? (
+            <Box display="flex" alignItems="center">
+              <CheckIcon />
+              <Typography ml={1}>{t('common.success')}</Typography>
+            </Box>
+          ) : isSuccess === false ? (
+            t('wallet.recoveryKitError')
+          ) : (
+            t('common.continue')
+          )}
+        </LoadingButton>
+      </form>
     </Box>
   );
 };

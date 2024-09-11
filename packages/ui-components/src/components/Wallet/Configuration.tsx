@@ -1032,7 +1032,11 @@ export const Configuration: React.FC<
         ) : configState === WalletConfigState.NeedsOnboarding &&
           emailAddress ? (
           <Box>
-            <Typography variant="body1" className={classes.infoContainer}>
+            <Typography
+              variant="body1"
+              className={classes.infoContainer}
+              component="div"
+            >
               <Markdown>
                 {t('wallet.onboardingMessage', {emailAddress})}
               </Markdown>
@@ -1043,7 +1047,11 @@ export const Configuration: React.FC<
             WalletConfigState.OnboardConfirmation,
           ].includes(configState) && emailAddress ? (
           <Box>
-            <Typography variant="body1" className={classes.infoContainer}>
+            <Typography
+              variant="body1"
+              className={classes.infoContainer}
+              component="div"
+            >
               <Markdown>
                 {configState === WalletConfigState.OnboardConfirmation
                   ? t('wallet.onboardConfirmationDescription', {emailAddress})
@@ -1056,6 +1064,7 @@ export const Configuration: React.FC<
               mt={2}
               id="bootstrapCode"
               value={bootstrapCode}
+              autoComplete="one-time-code"
               label={t('wallet.bootstrapCode')}
               placeholder={t('wallet.enterBootstrapCode')}
               onChange={handleInputChange}
@@ -1105,7 +1114,11 @@ export const Configuration: React.FC<
             WalletConfigState.OnboardWithEmail,
           ].includes(configState) ? (
           <Box>
-            <Typography variant="body1" className={classes.infoContainer}>
+            <Typography
+              variant="body1"
+              className={classes.infoContainer}
+              component="div"
+            >
               <Markdown>
                 {configState === WalletConfigState.OnboardWithEmail
                   ? t('wallet.onboardWithEmailDescription')
@@ -1115,69 +1128,40 @@ export const Configuration: React.FC<
               </Markdown>
             </Typography>
             <Box mt={5}>
-              {(!initialEmailAddress || initialRecoveryPhrase) && (
+              <form>
+                {(!initialEmailAddress || initialRecoveryPhrase) && (
+                  <ManageInput
+                    mt={2}
+                    id="emailAddress"
+                    value={emailAddress}
+                    autoComplete="username"
+                    label={t('wallet.emailAddress')}
+                    placeholder={t('common.enterYourEmail')}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    stacked={false}
+                    disabled={isSaving}
+                  />
+                )}
                 <ManageInput
                   mt={2}
-                  id="emailAddress"
-                  value={emailAddress}
-                  label={t('wallet.emailAddress')}
-                  placeholder={t('common.enterYourEmail')}
+                  id="recoveryPhrase"
+                  value={recoveryPhrase}
+                  label={
+                    recoveryToken
+                      ? t('wallet.resetPassword')
+                      : t('wallet.recoveryPhrase')
+                  }
+                  placeholder={
+                    recoveryToken
+                      ? t('wallet.enterResetPassword')
+                      : t('wallet.enterRecoveryPhrase')
+                  }
                   onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
-                  stacked={false}
                   disabled={isSaving}
-                />
-              )}
-              <ManageInput
-                mt={2}
-                id="recoveryPhrase"
-                value={recoveryPhrase}
-                label={
-                  recoveryToken
-                    ? t('wallet.resetPassword')
-                    : t('wallet.recoveryPhrase')
-                }
-                placeholder={
-                  recoveryToken
-                    ? t('wallet.enterResetPassword')
-                    : t('wallet.enterRecoveryPhrase')
-                }
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                disabled={isSaving}
-                type={passwordVisible ? undefined : 'password'}
-                endAdornment={
-                  <IconButton
-                    className={classes.passwordIcon}
-                    onClick={() => {
-                      setPasswordVisible(!passwordVisible);
-                    }}
-                  >
-                    {passwordVisible ? (
-                      <Tooltip title={t('common.passwordHide')}>
-                        <VisibilityOffOutlinedIcon />
-                      </Tooltip>
-                    ) : (
-                      <Tooltip title={t('common.passwordShow')}>
-                        <VisibilityOutlinedIcon />
-                      </Tooltip>
-                    )}
-                  </IconButton>
-                }
-                stacked={false}
-              />
-              {recoveryToken && (
-                <ManageInput
-                  mt={2}
-                  id="recoveryPhraseConfirmation"
-                  value={recoveryPhraseConfirmation}
-                  label={t('wallet.confirmRecoveryPhrase')}
-                  placeholder={t('wallet.enterRecoveryPhraseConfirmation')}
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyDown}
-                  stacked={false}
                   type={passwordVisible ? undefined : 'password'}
-                  disabled={isSaving}
+                  autoComplete="current-password"
                   endAdornment={
                     <IconButton
                       className={classes.passwordIcon}
@@ -1196,8 +1180,42 @@ export const Configuration: React.FC<
                       )}
                     </IconButton>
                   }
+                  stacked={false}
                 />
-              )}
+                {recoveryToken && (
+                  <ManageInput
+                    mt={2}
+                    id="recoveryPhraseConfirmation"
+                    value={recoveryPhraseConfirmation}
+                    label={t('wallet.confirmRecoveryPhrase')}
+                    placeholder={t('wallet.enterRecoveryPhraseConfirmation')}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    stacked={false}
+                    type={passwordVisible ? undefined : 'password'}
+                    autoComplete="current-password"
+                    disabled={isSaving}
+                    endAdornment={
+                      <IconButton
+                        className={classes.passwordIcon}
+                        onClick={() => {
+                          setPasswordVisible(!passwordVisible);
+                        }}
+                      >
+                        {passwordVisible ? (
+                          <Tooltip title={t('common.passwordHide')}>
+                            <VisibilityOffOutlinedIcon />
+                          </Tooltip>
+                        ) : (
+                          <Tooltip title={t('common.passwordShow')}>
+                            <VisibilityOutlinedIcon />
+                          </Tooltip>
+                        )}
+                      </IconButton>
+                    }
+                  />
+                )}
+              </form>
             </Box>
           </Box>
         ) : configState === WalletConfigState.OnboardSuccess ? (
@@ -1207,7 +1225,7 @@ export const Configuration: React.FC<
               label={t('wallet.onboardSuccessTitle')}
             >
               <Box mt={3} display="flex" textAlign="center">
-                <Typography variant="body1">
+                <Typography variant="body1" component="div">
                   <Markdown>
                     {t('wallet.onboardSuccessDescription', {
                       emailAddress: emailAddress!,

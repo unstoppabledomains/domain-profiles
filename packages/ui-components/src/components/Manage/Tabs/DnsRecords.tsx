@@ -55,7 +55,7 @@ export const DnsRecords: React.FC<ManageTabProps> = ({
       <Box className={classes.content}>
         <SettingsSuggestOutlinedIcon className={classes.icon} />
         <Typography variant="h5">{t('common.comingSoon')}</Typography>
-        <Typography variant="body1">
+        <Typography variant="body1" component="div">
           <Markdown>
             {t('manage.dnsManagementComingSoon', {
               domain,

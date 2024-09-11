@@ -81,7 +81,7 @@ const ReceiveDomainModal: React.FC<Props> = ({
       <Typography variant="body1" mb={1}>
         {t('wallet.addDomainDescription')}
       </Typography>
-      <Typography variant="body2" mb={1}>
+      <Typography variant="body2" mb={1} component="div">
         <Markdown>{t('wallet.addDomainInstructions')}</Markdown>
       </Typography>
       <Box>

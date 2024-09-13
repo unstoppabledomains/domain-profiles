@@ -920,7 +920,7 @@
     "sendingForOtherNetworksAndTokens": "Sending {{symbol}} for other networks or other {{blockchain}} tokens is not yet supported and may result in a loss of funds.",
     "sendTransactionFailed": "{{amount}} {{sourceSymbol}} failed to send to {{recipientDomain}}",
     "sendTransactionSuccess": "{{amount}} {{sourceSymbol}} was successfully sent to {{recipientDomain}}",
-    "signDappOperationDescription": "**{{name}}** wants to **{{actionText}}** with Unstoppable Lite Wallet. Verify the application website and the requested wallet address before confirming.",
+    "signDappOperationDescription": "**{{name}}** wants to **{{actionText}}**. Verify the following details before confirming.",
     "signMessage": "Confirmation",
     "signMessageAction": "sign a message",
     "signMessageDescription": "Only confirm if you fully understand the content and trust the requesting site.",

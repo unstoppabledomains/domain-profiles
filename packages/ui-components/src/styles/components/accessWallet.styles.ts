@@ -160,6 +160,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
     maxWidth: '505px',
     minHeight: '485px',
+    height: '100%',
     [theme.breakpoints.down('sm')]: {
       maxWidth: 'calc(100vw)',
     },

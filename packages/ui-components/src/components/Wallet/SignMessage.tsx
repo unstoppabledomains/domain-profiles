@@ -56,6 +56,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     overflowWrap: 'break-word',
     [theme.breakpoints.down('sm')]: {
       maxWidth: 'calc(100vw - 50px)',
+      maxHeight: '100px',
+      overflow: 'auto',
     },
   },
   button: {

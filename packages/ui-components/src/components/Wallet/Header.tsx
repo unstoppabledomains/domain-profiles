@@ -1,4 +1,5 @@
 import MoreVertOutlinedIcon from '@mui/icons-material/MoreVertOutlined';
+import Badge, {BadgeProps} from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
@@ -6,6 +7,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
+import {styled} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import {useSnackbar} from 'notistack';
 import QueryString from 'qs';
@@ -138,7 +140,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
     optionsContainer: {
       display: 'flex',
       position: 'absolute',
-      right: theme.spacing(-3.5),
+      right: theme.spacing(-3),
       top: theme.spacing(-0.5),
       [theme.breakpoints.up('sm')]: {
         right: theme.spacing(-1.5),
@@ -158,6 +160,12 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
   };
 });
 
+const StyledBadge = styled(Badge)<BadgeProps>(({theme}) => ({
+  '& .MuiBadge-badge': {
+    border: `1px solid ${theme.palette.background.paper}`,
+  },
+}));
+
 type Props = {
   address: string;
   domain?: string;
@@ -172,6 +180,7 @@ type Props = {
   onHeaderClick?: () => void;
   onSettingsClick?: () => void;
   onLogout?: () => void;
+  onDisconnect?: () => void;
 };
 
 export const Header: React.FC<Props> = ({
@@ -187,6 +196,7 @@ export const Header: React.FC<Props> = ({
   fullScreenModals,
   onHeaderClick,
   onLogout,
+  onDisconnect,
   onSettingsClick,
 }) => {
   const theme = useTheme();
@@ -216,6 +226,13 @@ export const Header: React.FC<Props> = ({
 
   const handleOptionsClick = () => {
     setIsMenuOpen(prev => !prev && !isMenuOpen);
+  };
+
+  const handleDisconnect = () => {
+    if (onDisconnect) {
+      onDisconnect();
+    }
+    setIsMenuOpen(false);
   };
 
   const handleDomainsClick = () => {
@@ -355,16 +372,43 @@ export const Header: React.FC<Props> = ({
             />
           </Tooltip>
         ) : avatarUrl && domain ? (
-          <Tooltip title={domain}>
-            <img
-              className={cx(classes.round, classes.portfolioHeaderIcon)}
-              src={avatarUrl}
-            />
+          <Tooltip
+            title={
+              onDisconnect ? t('header.domainConnected', {domain}) : domain
+            }
+          >
+            <StyledBadge
+              color="success"
+              variant="dot"
+              overlap="circular"
+              invisible={onDisconnect === undefined}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+            >
+              <img
+                className={cx(classes.round, classes.portfolioHeaderIcon)}
+                src={avatarUrl}
+              />
+            </StyledBadge>
           </Tooltip>
         ) : (
-          <UnstoppableWalletIcon
-            className={cx(classes.portfolioHeaderIcon, classes.logo)}
-          />
+          <Tooltip title={onDisconnect ? t('header.connected') : ''}>
+            <StyledBadge
+              color="success"
+              variant="dot"
+              invisible={onDisconnect === undefined}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+            >
+              <UnstoppableWalletIcon
+                className={cx(classes.portfolioHeaderIcon, classes.logo)}
+              />
+            </StyledBadge>
+          </Tooltip>
         )}
       </Box>
       <Box
@@ -410,6 +454,7 @@ export const Header: React.FC<Props> = ({
           onSettingsClicked={onSettingsClick}
           onRecoveryLinkClicked={handleRecoveryKitClicked}
           onLogout={handleLogout}
+          onDisconnect={onDisconnect ? handleDisconnect : undefined}
         />
       )}
       {isDomainListModalOpen && (

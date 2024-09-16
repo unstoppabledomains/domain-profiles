@@ -30,6 +30,7 @@ interface Props {
   onSupportClicked?: () => void;
   onMessagingClicked?: () => void;
   onLogout?: () => void;
+  onDisconnect?: () => void;
   marginTop?: number;
 }
 
@@ -71,6 +72,7 @@ const DropDownMenu: React.FC<Props> = ({
   onSettingsClicked,
   onSupportClicked,
   onMessagingClicked,
+  onDisconnect,
   onLogout,
 }) => {
   const [isLoggingOut, setLoggingOut] = useState<boolean>(false);
@@ -96,6 +98,12 @@ const DropDownMenu: React.FC<Props> = ({
   const handleManageProfileClick = (href: string) => {
     if (!isLoggingOut) {
       window.open(href);
+    }
+  };
+
+  const handleDisconnect = () => {
+    if (onDisconnect) {
+      onDisconnect();
     }
   };
 
@@ -209,14 +217,14 @@ const DropDownMenu: React.FC<Props> = ({
       <div
         data-testid={`signout-button`}
         className={classes.container}
-        onClick={handleLogout}
+        onClick={onDisconnect ? handleDisconnect : handleLogout}
       >
         <Logout className={cx(classes.settingsIcon, classes.red)} />
         <Typography
           className={cx(classes.font, classes.red)}
           color="text.secondary"
         >
-          {t('header.signOut')}
+          {onDisconnect ? t('header.disconnect') : t('header.signOut')}
         </Typography>
       </div>
     </Card>

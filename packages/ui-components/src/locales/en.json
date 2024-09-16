@@ -267,6 +267,9 @@
     "terms": "Terms"
   },
   "header": {
+    "connected": "Connected to app",
+    "disconnect": "Disconnect",
+    "domainConnected": "{{domain}} is connected to app",
     "signIn": "Sign In",
     "signOut": "Sign Out"
   },
@@ -854,14 +857,14 @@
     "approve": "Confirm",
     "availableAmount": "Available {{amount}} {{symbol}}",
     "availableUsd": "Available {{amount}} USD",
-    "beginSetup": "Continue",
+    "beginSetup": "Sign in",
     "bootstrapCode": "One-time code",
     "bootstrapCodeDescription": "## Confirm Sign In\nThe one-time code sent to **{{emailAddress}}** is required to access Unstoppable Lite Wallet on this device.",
     "clockDriftError": "Device clock ({{deviceTime}}) is out of sync with wallet provider ({{expectedTime}}). Update your settings and try again.",
-    "completeSetup": "Continue",
+    "completeSetup": "Confirm",
     "configuringWallet": "Configuring your wallet. Leave this window open until complete...",
     "confirmRecoveryPhrase": "Confirm",
-    "createWallet": "Create wallet",
+    "createWallet": "Create a new wallet",
     "emailAddress": "Email address",
     "enterBootstrapCode": "Enter Unstoppable Lite Wallet one-time code",
     "enterRecoveryPhrase": "Enter your password",

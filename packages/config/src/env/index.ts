@@ -29,8 +29,8 @@ function getAppEnv(): AppEnv {
   return 'development';
 }
 
-function getEnvConfigOverrides(): ConfigOverride {
-  const appEnv = getAppEnv();
+function getEnvConfigOverrides(env?: AppEnv): ConfigOverride {
+  const appEnv = env || getAppEnv();
   switch (appEnv) {
     case 'development':
       return getDevelopmentConfigOverrides();
@@ -48,8 +48,8 @@ function getEnvConfigOverrides(): ConfigOverride {
   }
 }
 
-function getConfig(): ImmutableConfig {
-  return merge(getDefaultConfig(), getEnvConfigOverrides());
+export function getConfig(env?: AppEnv): ImmutableConfig {
+  return merge(getDefaultConfig(), getEnvConfigOverrides(env));
 }
 
 export default getConfig();

@@ -299,13 +299,15 @@ export const Configuration: React.FC<
                   ? t('wallet.createWallet')
                   : t('common.learnMore')
                 : configState === WalletConfigState.PasswordEntry
-                ? t('wallet.beginSetup')
+                ? recoveryToken
+                  ? t('common.continue')
+                  : t('wallet.beginSetup')
                 : configState === WalletConfigState.OtpEntry
                 ? t('wallet.completeSetup')
                 : configState === WalletConfigState.OnboardWithEmail
-                ? t('wallet.verifyEmail')
+                ? t('wallet.createWallet')
                 : configState === WalletConfigState.OnboardConfirmation &&
-                  t('wallet.createWallet')}
+                  t('wallet.completeSetup')}
             </LoadingButton>
             {[
               WalletConfigState.OtpEntry,
@@ -324,6 +326,7 @@ export const Configuration: React.FC<
               </Box>
             )}
             {isCreateWalletEnabled &&
+              !recoveryToken &&
               [
                 WalletConfigState.PasswordEntry,
                 WalletConfigState.OnboardWithEmail,
@@ -374,6 +377,7 @@ export const Configuration: React.FC<
     emailAddress,
     recoveryPhrase,
     recoveryPhraseConfirmation,
+    recoveryToken,
     errorMessage,
     progressPct,
     isLoaded,

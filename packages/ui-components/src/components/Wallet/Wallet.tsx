@@ -36,6 +36,7 @@ export const Wallet: React.FC<
     setAuthAddress?: (v: string) => void;
     onLoginInitiated?: (emailAddress: string, password: string) => void;
     onLogout?: () => void;
+    onDisconnect?: () => void;
     onSettingsClick?: () => void;
     isNewUser?: boolean;
   }
@@ -56,6 +57,7 @@ export const Wallet: React.FC<
   onUpdate,
   onLoginInitiated,
   onLogout,
+  onDisconnect,
   onSettingsClick,
   setAuthAddress,
   setButtonComponent,
@@ -104,6 +106,7 @@ export const Wallet: React.FC<
           emailAddress={emailAddress}
           onHeaderClick={() => setIsHeaderClicked(true)}
           onLogout={onLogout}
+          onDisconnect={onDisconnect}
           onSettingsClick={onSettingsClick}
           fullScreenModals={fullScreenModals}
           domain={isDomainValidForManagement(domain) ? domain : undefined}

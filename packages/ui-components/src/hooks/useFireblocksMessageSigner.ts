@@ -100,7 +100,11 @@ const useFireblocksMessageSigner = (): FireblocksMessageSigner => {
       clientState.assets.find(a => {
         // use chain ID if provided
         if (chainId) {
-          return a.blockchainAsset.blockchain.networkId === chainId;
+          return (
+            a.blockchainAsset.name.toLowerCase() ===
+              a.blockchainAsset.blockchain.name.toLowerCase() &&
+            a.blockchainAsset.blockchain.networkId === chainId
+          );
         }
 
         // use default blockchain symbol

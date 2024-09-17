@@ -261,6 +261,28 @@
     "saveSuccess": "Your preference updated successfully",
     "show": "Show"
   },
+  "extension": {
+    "version":"Version",
+    "welcomeToVersion":"Welcome to version {{version}}!",
+    "enableWallet":"Enable Wallet Features",
+    "continueWithoutWallet":"Continue without wallet",
+    "compatibilityMode": "Compatibility Mode",
+    "compatibilityModeCta": "Enable compatibility mode? This extension can override other wallets like MetaMask for enhanced functionality. You can update your preference from the settings menu.",
+    "compatibilityModeDescription": "Unstoppable Lite Wallet can override MetaMask in apps to ensure maximum compatibility. Enabling this setting may interfere with other extensions.",
+    "compatibilityModeEnabled": "Compatibility mode is enabled, but will not take effect on open tabs until you refresh the page.",
+    "connect": "connect to Unstoppable Lite Wallet",
+    "connectRequest": "request permission to view your wallet and prompt for transactions",
+    "connectToChain": "connect to {{chainName}}",
+    "decentralizedBrowsing": "Decentralized Browsing",
+    "decentralizedBrowsingDescription": "Level up your browser by resolving onchain domains. Names like lisa.x or sandy.nft can be looked up using the DNS alternatives configured below.",
+    "noWalletConnections": "No authorized connections",
+    "refreshNow": "Refresh now",
+    "sherlockAssistant": "Sherlock Assistant",
+    "sherlockAssistantDescription": "Gain insight into apps by automatically detecting wallet addresses associated with onchain domains. Augments apps in this browser with rich identity details.",
+    "unsupportedChain": "Cannot connect to unsupported network ({{originalChainId}}). The Unstoppable Lite Wallet browser extension supports Ethereum, Polygon and Base networks.",
+    "walletConnections": "Wallet Connections",
+    "walletConnectionsDescription": "You have authorized the following websites to connect to Unstoppable Lite Wallet."
+  },
   "footer": {
     "copyright": "© Unstoppable Domains Inc. All Rights Reserved.",
     "privacyPolicy": "Privacy Policy",
@@ -269,6 +291,7 @@
   "header": {
     "connected": "Connected to app",
     "disconnect": "Disconnect",
+    "disconnectAll": "Disconnect all",
     "domainConnected": "{{domain}} is connected to app",
     "signIn": "Sign In",
     "signOut": "Sign Out"
@@ -687,6 +710,7 @@
     "communitiesRequireADomain": "To start discovering groups you need to add a Web3 domain to this wallet.",
     "configure": "Enable Unstoppable Messaging on this device for {{domain}}",
     "decrypting": "Loading message...",
+    "description": "Chat securely with friends using Unstoppable Messaging, powered by XMTP and Push Protocol.",
     "domainRequiredUpload": "A domain is required to upload attachments",
     "dropToUpload": "Drop file to upload...",
     "emptyNotifications": "No App Notifications",

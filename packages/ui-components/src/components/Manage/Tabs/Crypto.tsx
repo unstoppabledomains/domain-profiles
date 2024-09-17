@@ -137,7 +137,7 @@ export const Crypto: React.FC<CryptoProps> = ({
           loading={isModalOpened}
           fullWidth
         >
-          {t('manage.addCurrency')} test
+          {t('manage.addCurrency')}
         </LoadingButton>
         <LoadingButton
           variant="contained"

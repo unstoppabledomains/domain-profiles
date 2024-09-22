@@ -20,6 +20,7 @@ import Typography from '@mui/material/Typography';
 import {styled} from '@mui/material/styles';
 import type {GroupDTO, IMessageIPFS} from '@pushprotocol/restapi';
 import Bluebird from 'bluebird';
+import copyToClipboard from 'clipboard-copy';
 import {useSnackbar} from 'notistack';
 import type {MouseEvent} from 'react';
 import React, {useEffect, useState} from 'react';
@@ -214,16 +215,11 @@ export const Community: React.FC<CommunityProps> = ({
   };
 
   const handleShareInvite = () => {
-    void (import('clipboard-copy') as Promise<CopyModule>).then(
-      (mod: CopyModule) => {
-        mod
-          .default(
-            `${config.UD_ME_BASE_URL}/${authDomain}?openBadgeCode=${badge.code}&action=invite`,
-          )
-          .then(handleClickToCopy)
-          .catch(noop);
-      },
-    );
+    void copyToClipboard(
+      `${config.UD_ME_BASE_URL}/${authDomain}?openBadgeCode=${badge.code}&action=invite`,
+    )
+      .then(handleClickToCopy)
+      .catch(noop);
   };
 
   const handleLeaveChat = async () => {

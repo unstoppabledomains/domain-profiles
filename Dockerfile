@@ -21,7 +21,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 ENV YARN_IGNORE_NODE 1
 
 # Prepare dependencies
-RUN yarn set version 3.2.0
+#RUN yarn set version 3.2.0
 
 # Copy project files
 WORKDIR /app

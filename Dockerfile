@@ -41,7 +41,7 @@ RUN rm -rf .yarn/cache
 ###########################################################
 # Runtime container
 ###########################################################
-FROM launcher.gcr.io/google/nodejs
+FROM node:16
 
 # Runtime environment variables
 ARG service
@@ -49,7 +49,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 ENV YARN_IGNORE_NODE 1
 
 # Runtime dependencies
-RUN install_node v16.13.0
+# RUN install_node v16.13.0
 RUN yarn set version 3.2.0
 
 # Copy project files

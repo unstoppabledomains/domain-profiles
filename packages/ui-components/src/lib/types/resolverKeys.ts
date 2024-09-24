@@ -102,7 +102,7 @@ export const getMappedResolverKey = (
       k =>
         k.shortName?.toLowerCase() === id.toLowerCase() &&
         k.parents
-          ?.filter(k => k.subType === 'CRYPTO_NETWORK')
+          ?.filter(p => p.subType === 'CRYPTO_NETWORK')
           .find(
             p =>
               // matches the shortname

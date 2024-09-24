@@ -1,5 +1,5 @@
 import type {Web3Dependencies} from '../../../../lib';
-import {MappedResolverKey} from '../../../../lib/types/pav3';
+import type {MappedResolverKey} from '../../../../lib/types/pav3';
 import {getMappedResolverKey} from '../../../../lib/types/resolverKeys';
 
 export type VerificationProps = {
@@ -9,6 +9,15 @@ export type VerificationProps = {
   domain: string;
   setVerified: React.Dispatch<React.SetStateAction<string>>;
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;
+};
+
+export const getBlockchainDisplaySymbol = (symbol: string): string => {
+  switch (symbol.toUpperCase()) {
+    case 'MATIC':
+      return 'POL';
+    default:
+      return symbol.toUpperCase();
+  }
 };
 
 export const getBlockchainName = (symbol: string): string => {
@@ -50,15 +59,6 @@ export const getBlockchainSymbol = (
       return 'SOL';
     default:
       return noMatchEmpty ? '' : name.toUpperCase();
-  }
-};
-
-export const getBlockchainDisplaySymbol = (symbol: string): string => {
-  switch (symbol.toUpperCase()) {
-    case 'MATIC':
-      return 'POL';
-    default:
-      return symbol.toUpperCase();
   }
 };
 

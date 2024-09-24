@@ -82,7 +82,8 @@ const AddressInput: React.FC<Props> = ({
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [error, setError] = useState<boolean>(false);
   const {classes} = useStyles();
-  const {mappedResolverKeys} = useResolverKeys();
+  const {mappedResolverKeys, loading: mappedResolverKeysLoading} =
+    useResolverKeys();
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -222,6 +223,12 @@ const AddressInput: React.FC<Props> = ({
     }
   };
 
+  // wait for the resolver keys to load
+  if (mappedResolverKeysLoading || !mappedResolverKeys) {
+    return null;
+  }
+
+  // show the address input
   return (
     <Box>
       <ManageInput

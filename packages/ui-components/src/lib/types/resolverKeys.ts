@@ -97,15 +97,19 @@ export const getMappedResolverKey = (
     keys.find(k =>
       k.mapping?.from?.find(f => f.toLowerCase() === id.toLowerCase()),
     ) ||
-    // find by matching network
-    keys
-      .filter(k => k.subType === 'CRYPTO_NETWORK')
-      .find(
-        k =>
-          // matches the shortname
-          k.shortName.toLowerCase() === id.toLowerCase() ||
-          (k.name && k.name.toLowerCase() === id.toLowerCase()),
-      ) ||
+    // find by matching parent network gas currency
+    keys.find(
+      k =>
+        k.shortName?.toLowerCase() === id.toLowerCase() &&
+        k.parents
+          ?.filter(p => p.subType === 'CRYPTO_NETWORK')
+          .find(
+            p =>
+              // matches the shortname
+              p.shortName?.toLowerCase() === id.toLowerCase() ||
+              (p.name && p.name.toLowerCase() === id.toLowerCase()),
+          ),
+    ) ||
     // find by matching token
     keys
       .filter(k => k.subType === 'CRYPTO_TOKEN')

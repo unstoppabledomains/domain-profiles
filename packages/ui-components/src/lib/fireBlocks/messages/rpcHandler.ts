@@ -5,10 +5,6 @@ import {notifyEvent} from '../../error';
 
 let RPC_MESSAGE_PROVIDER_JWT: string = '';
 
-export const setRpcMessageProviderJwt = (jwt: string): void => {
-  RPC_MESSAGE_PROVIDER_JWT = jwt;
-};
-
 export class RpcMessageProvider implements IMessagesHandler {
   constructor(jwt: string) {
     setRpcMessageProviderJwt(jwt);
@@ -30,3 +26,7 @@ export class RpcMessageProvider implements IMessagesHandler {
     }
   }
 }
+
+export const setRpcMessageProviderJwt = (jwt: string): void => {
+  RPC_MESSAGE_PROVIDER_JWT = jwt;
+};

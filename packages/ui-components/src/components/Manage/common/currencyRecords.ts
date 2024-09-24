@@ -275,28 +275,3 @@ export const isValidMappedResolverKeyValue = (
   }
   return false;
 };
-
-/**
- * Validates a record value based on the resolver key. Works with all resolver keys.
- */
-export const isValidRecordKeyValue = (
-  key: ResolverKeyName,
-  value: string = '',
-  legacyResolverKeys: ResolverKeys,
-) => {
-  const {ResolverKey} = legacyResolverKeys;
-
-  // If the key is not recognized, it's invalid.
-  if (!ResolverKey[key]) {
-    return false;
-  }
-
-  // Empty value is always valid because this is how the record is removed:
-  // we pass an empty value to the backend.
-  if (!value) {
-    return true;
-  }
-
-  const {validationRegex} = ResolverKey[key];
-  return !validationRegex || new RegExp(validationRegex).test(value);
-};

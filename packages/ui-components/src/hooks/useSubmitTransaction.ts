@@ -9,7 +9,7 @@ import {
 } from '../actions/fireBlocksActions';
 import {
   getBlockchainSymbol,
-  getRecordKey,
+  getRecordKeys,
 } from '../components/Manage/common/verification/types';
 import {isEmailValid} from '../lib';
 import {notifyEvent} from '../lib/error';
@@ -17,6 +17,7 @@ import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../lib/fireBlocks/client';
 import {pollForSuccess} from '../lib/poll';
 import type {AccountAsset, GetOperationResponse} from '../lib/types/fireBlocks';
 import {OperationStatusType} from '../lib/types/fireBlocks';
+import useResolverKeys from './useResolverKeys';
 
 export type Params = {
   accessToken: string;
@@ -43,6 +44,7 @@ export const useSubmitTransaction = ({
   getClient,
   onInvitation,
 }: Params) => {
+  const {mappedResolverKeys} = useResolverKeys();
   const [transactionId, setTransactionId] = useState('');
   const [status, setStatus] = useState(Status.Pending);
   const [statusMessage, setStatusMessage] = useState<SendCryptoStatusMessage>(
@@ -83,28 +85,26 @@ export const useSubmitTransaction = ({
 
       // check the recipient wallet to determine if it needs to be created
       let recipientAddress = initialRecipientAddress;
-      if (isEmailValid(recipientAddress)) {
+      if (isEmailValid(recipientAddress) && mappedResolverKeys) {
         setStatusMessage(SendCryptoStatusMessage.CREATING_WALLET);
         const records = await onInvitation(recipientAddress);
         const resolvedAddress =
           records && Object.keys(records).length > 0
-            ? records[getRecordKey(asset.blockchainAsset.symbol)] ||
-              records[getRecordKey(asset.blockchainAsset.symbol, 'ERC20')] ||
-              records[
-                getRecordKey(
-                  getBlockchainSymbol(asset.blockchainAsset.blockchain.id),
-                )
-              ] ||
-              records[
-                getRecordKey(
-                  getBlockchainSymbol(asset.blockchainAsset.blockchain.id),
-                  'ERC20',
-                )
-              ] ||
-              getBlockchainSymbol(asset.blockchainAsset.blockchain.id) ===
-                'BASE'
-              ? records[getRecordKey('MATIC', 'ERC20')]
-              : undefined
+            ? getRecordKeys(asset.blockchainAsset.symbol, mappedResolverKeys)
+                .map(k => records[k])
+                .find(k => k) ||
+              getRecordKeys(
+                asset.blockchainAsset.blockchain.id,
+                mappedResolverKeys,
+              )
+                .map(k => records[k])
+                .find(k => k) ||
+              (getBlockchainSymbol(asset.blockchainAsset.blockchain.id) ===
+              'BASE'
+                ? getRecordKeys('MATIC', mappedResolverKeys)
+                    .map(k => records[k])
+                    .find(k => k)
+                : undefined)
             : undefined;
         if (!resolvedAddress) {
           throw new Error('Wallet not created');

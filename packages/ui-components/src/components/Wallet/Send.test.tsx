@@ -1,9 +1,8 @@
 import {act, fireEvent, waitFor} from '@testing-library/react';
 import React from 'react';
 
-import {SendCryptoStatusMessage} from '../../actions/fireBlocksActions';
 import * as fireBlocksActions from '../../actions/fireBlocksActions';
-import useResolverKeys from '../../hooks/useResolverKeys';
+import * as pav3Actions from '../../actions/pav3Actions';
 import type {GetEstimateTransactionResponse} from '../../lib/types/fireBlocks';
 import {VALID_ETH_ADDRESS} from '../../tests/common';
 import {
@@ -21,8 +20,6 @@ const defaultProps = {
   wallets: mockWallets(),
 };
 
-jest.mock('../../hooks/useResolverKeys', () => jest.fn());
-
 describe('<Send />', () => {
   jest.spyOn(fireBlocksActions, 'getTransferGasEstimate').mockResolvedValue({
     networkFee: {amount: '0.0000001'},
@@ -32,16 +29,30 @@ describe('<Send />', () => {
     .mockResolvedValue([mockAccountAsset()]);
 
   beforeAll(() => {
-    (useResolverKeys as jest.Mock).mockReturnValue({
-      unsResolverKeys: {
-        ResolverKey: {
-          'crypto.ETH.address': {
-            validationRegex: '^0x[a-fA-F0-9]{40}$',
-          },
+    jest.spyOn(pav3Actions, 'getAllResolverKeys').mockResolvedValue([
+      {
+        type: 'CRYPTO',
+        subType: 'CRYPTO_TOKEN',
+        name: 'Ether',
+        shortName: 'ETH',
+        key: 'token.EVM.ETH.ETH.address',
+        mapping: {
+          isPreferred: true,
+          from: ['crypto.ETH.address'],
+          to: 'crypto.ETH.address',
+        },
+        validation: {
+          regexes: [
+            {
+              name: 'ETH',
+              pattern: '^0x[a-fA-F0-9]{40}$',
+            },
+          ],
         },
       },
-    });
+    ]);
   });
+
   it('renders the SelectAsset if no asset is selected', () => {
     const {getByTestId} = customRender(<Send {...defaultProps} />);
     expect(getByTestId('select-asset-container')).toBeInTheDocument();

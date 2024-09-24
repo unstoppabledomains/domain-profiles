@@ -1,5 +1,6 @@
 import type {Web3Dependencies} from '../../../../lib';
-import type {ResolverKeyName} from '../../../../lib/types/resolverKeys';
+import {MappedResolverKey} from '../../../../lib/types/pav3';
+import {getMappedResolverKey} from '../../../../lib/types/resolverKeys';
 
 export type VerificationProps = {
   ownerAddress: string;
@@ -61,16 +62,19 @@ export const getBlockchainDisplaySymbol = (symbol: string): string => {
   }
 };
 
-export const getRecordKey = (
+// getRecordKeys retrieves ordered list of keys for provided symbol
+export const getRecordKeys = (
   symbol: string,
-  multichainVersion?: string,
-): ResolverKeyName => {
-  if (symbol === 'MATIC') {
-    return `crypto.MATIC.version.${(
-      multichainVersion || 'MATIC'
-    ).toUpperCase()}.address` as ResolverKeyName;
+  mappedResolverKeys: MappedResolverKey[],
+): string[] => {
+  const mappedKey = getMappedResolverKey(symbol, mappedResolverKeys);
+  if (!mappedKey) {
+    return [];
   }
-  return multichainVersion
-    ? (`crypto.${symbol.toUpperCase()}.version.${multichainVersion.toUpperCase()}.address` as ResolverKeyName)
-    : (`crypto.${symbol.toUpperCase()}.address` as ResolverKeyName);
+  return [
+    mappedKey.key,
+    mappedKey.mapping?.to || '',
+    mappedKey.parents?.find(p => p.subType === 'CRYPTO_NETWORK')?.key || '',
+    mappedKey.parents?.find(p => p.subType === 'CRYPTO_FAMILY')?.key || '',
+  ].filter(k => k);
 };

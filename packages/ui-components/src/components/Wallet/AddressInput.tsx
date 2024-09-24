@@ -17,10 +17,11 @@ import {
   isValidIdentity,
   useTranslationContext,
 } from '../../lib';
+import {getMappedResolverKey} from '../../lib/types/resolverKeys';
 import {getAddressMetadata} from '../Chat/protocol/resolution';
 import ManageInput from '../Manage/common/ManageInput';
-import {isValidRecordKeyValue} from '../Manage/common/currencyRecords';
-import {getRecordKey} from '../Manage/common/verification/types';
+import {isValidMappedResolverKeyValue} from '../Manage/common/currencyRecords';
+import {getRecordKeys} from '../Manage/common/verification/types';
 import type {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -81,7 +82,7 @@ const AddressInput: React.FC<Props> = ({
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [error, setError] = useState<boolean>(false);
   const {classes} = useStyles();
-  const {unsResolverKeys} = useResolverKeys();
+  const {mappedResolverKeys} = useResolverKeys();
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -96,22 +97,38 @@ const AddressInput: React.FC<Props> = ({
     addressOrDomain: string,
     symbol: string,
   ): Promise<string> => {
+    if (!mappedResolverKeys) {
+      return '';
+    }
+
+    // retrieve the domain onchain records
     const profileData = await getProfileData(addressOrDomain, [
       DomainFieldTypes.Records,
       DomainFieldTypes.CryptoVerifications,
     ]);
-    const recordValue = profileData?.records
-      ? profileData?.records[getRecordKey(symbol)] ||
-        profileData?.records[getRecordKey(symbol, 'ERC20')]
+
+    // determine if the onchain key for requested symbol is present
+    const recordKeys = getRecordKeys(symbol, mappedResolverKeys);
+    return profileData?.records
+      ? recordKeys.map(k => profileData.records![k]).find(k => k) || ''
       : '';
-    return recordValue;
   };
 
   const validateAddress = (value: string) => {
+    if (!mappedResolverKeys) {
+      return false;
+    }
     const validationSymbols = [asset.ticker, asset.symbol];
     for (const symbol of validationSymbols) {
-      const recordKey = getRecordKey(symbol);
-      const isValid = isValidRecordKeyValue(recordKey, value, unsResolverKeys);
+      const recordKeys = getRecordKeys(symbol, mappedResolverKeys);
+      if (recordKeys.length === 0) {
+        return false;
+      }
+      const mappedKey = getMappedResolverKey(recordKeys[0], mappedResolverKeys);
+      if (!mappedKey) {
+        return false;
+      }
+      const isValid = isValidMappedResolverKeyValue(value, mappedKey);
       onAddressChange(isValid ? value : '');
       setError(!isValid);
       if (isValid) {

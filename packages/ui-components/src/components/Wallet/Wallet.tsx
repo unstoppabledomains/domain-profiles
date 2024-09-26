@@ -38,6 +38,7 @@ export const Wallet: React.FC<
     onLogout?: () => void;
     onDisconnect?: () => void;
     onSettingsClick?: () => void;
+    onMessagesClick?: () => void;
     isNewUser?: boolean;
   }
 > = ({
@@ -59,6 +60,7 @@ export const Wallet: React.FC<
   onLogout,
   onDisconnect,
   onSettingsClick,
+  onMessagesClick,
   setAuthAddress,
   setButtonComponent,
 }) => {
@@ -108,6 +110,7 @@ export const Wallet: React.FC<
           onLogout={onLogout}
           onDisconnect={onDisconnect}
           onSettingsClick={onSettingsClick}
+          onMessagesClick={onMessagesClick}
           fullScreenModals={fullScreenModals}
           domain={isDomainValidForManagement(domain) ? domain : undefined}
         />

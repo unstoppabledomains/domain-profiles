@@ -7,7 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {useTheme,styled} from '@mui/material/styles';
+import {styled, useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import {useSnackbar} from 'notistack';
 import QueryString from 'qs';
@@ -179,6 +179,7 @@ type Props = {
   fullScreenModals?: boolean;
   onHeaderClick?: () => void;
   onSettingsClick?: () => void;
+  onMessagesClick?: () => void;
   onLogout?: () => void;
   onDisconnect?: () => void;
 };
@@ -198,6 +199,7 @@ export const Header: React.FC<Props> = ({
   onLogout,
   onDisconnect,
   onSettingsClick,
+  onMessagesClick,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -256,7 +258,11 @@ export const Header: React.FC<Props> = ({
   };
 
   const handleMessagingClicked = () => {
-    setOpenChat(t('push.messages'));
+    if (onMessagesClick) {
+      onMessagesClick();
+    } else {
+      setOpenChat(t('push.messages'));
+    }
     setIsMenuOpen(false);
   };
 

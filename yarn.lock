@@ -6437,21 +6437,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"abitype@npm:1.0.0":
-  version: 1.0.0
-  resolution: "abitype@npm:1.0.0"
-  peerDependencies:
-    typescript: ">=5.0.4"
-    zod: ^3 >=3.22.0
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-    zod:
-      optional: true
-  checksum: ea2c0548c3ba58c37a6de7483d63389074da498e63d803b742bbe94eb4eaa1f51a35d000c424058b2583aef56698cf07c696eb3bc4dd0303bc20c6f0826a241a
-  languageName: node
-  linkType: hard
-
 "abort-controller@npm:^3.0.0":
   version: 3.0.0
   resolution: "abort-controller@npm:3.0.0"
@@ -21799,16 +21784,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:2.7.15":
-  version: 2.7.15
-  resolution: "viem@npm:2.7.15"
+"viem@npm:2.7.15, viem@npm:^1.20.3":
+  version: 1.21.4
+  resolution: "viem@npm:1.21.4"
   dependencies:
     "@adraffy/ens-normalize": 1.10.0
     "@noble/curves": 1.2.0
     "@noble/hashes": 1.3.2
     "@scure/bip32": 1.3.2
     "@scure/bip39": 1.2.1
-    abitype: 1.0.0
+    abitype: 0.9.8
     isows: 1.0.3
     ws: 8.13.0
   peerDependencies:
@@ -21816,7 +21801,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: d0d3a9b48fcf64298c08d57dd782fdf6f21538c6472ebc87953928d860f5fd6296a7e22f46f230d68b667df6505fa472414cc3d8e7a041ea2a7f1fd45bc013de
+  checksum: c351fdea2d53d2d781ac73c964348b3b9fc5dd46f9eb53903e867705fc9e30a893cb9f2c8d7a00acdcdeca27d14eeebf976eed9f948c28c47018dc9211369117
   languageName: node
   linkType: hard
 
@@ -21838,27 +21823,6 @@ __metadata:
     typescript:
       optional: true
   checksum: 2f116cad184cfc7a9584073451549edfb23c3847b1784f092b80a279b848fe011a054bc4141c923b5bcce1d8493db98284db65416ce72e8ba522225d02786a9a
-  languageName: node
-  linkType: hard
-
-"viem@npm:^1.20.3":
-  version: 1.21.4
-  resolution: "viem@npm:1.21.4"
-  dependencies:
-    "@adraffy/ens-normalize": 1.10.0
-    "@noble/curves": 1.2.0
-    "@noble/hashes": 1.3.2
-    "@scure/bip32": 1.3.2
-    "@scure/bip39": 1.2.1
-    abitype: 0.9.8
-    isows: 1.0.3
-    ws: 8.13.0
-  peerDependencies:
-    typescript: ">=5.0.4"
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-  checksum: c351fdea2d53d2d781ac73c964348b3b9fc5dd46f9eb53903e867705fc9e30a893cb9f2c8d7a00acdcdeca27d14eeebf976eed9f948c28c47018dc9211369117
   languageName: node
   linkType: hard
 

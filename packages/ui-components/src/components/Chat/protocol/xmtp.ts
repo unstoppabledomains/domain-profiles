@@ -7,6 +7,7 @@ import {
   ContentTypeRemoteAttachment,
   RemoteAttachmentCodec,
 } from '@xmtp/content-type-remote-attachment';
+import {ContentTypeText} from '@xmtp/content-type-text';
 import type {signature} from '@xmtp/proto';
 import {fetcher} from '@xmtp/proto';
 import type {
@@ -15,12 +16,7 @@ import type {
   DecodedMessage,
   SignedPublicKeyBundle,
 } from '@xmtp/xmtp-js';
-import {
-  Client,
-  ContentTypeText,
-  SortDirection,
-  StaticKeystoreProvider,
-} from '@xmtp/xmtp-js';
+import {Client, SortDirection, StaticKeystoreProvider} from '@xmtp/xmtp-js';
 import Bluebird from 'bluebird';
 import type {Signer} from 'ethers';
 import {sha256} from 'ethers/lib/utils';

@@ -25,11 +25,11 @@ import type {Theme} from '@mui/material/styles';
 import {styled, useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import type {IMessageIPFS} from '@pushprotocol/restapi';
+import {ContentTypeText} from '@xmtp/content-type-text';
 import type {
   DecodedMessage,
   Conversation as XmtpConversation,
 } from '@xmtp/xmtp-js';
-import {ContentTypeText} from '@xmtp/xmtp-js';
 import React, {useEffect, useState} from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
@@ -150,7 +150,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     overscrollBehavior: 'contain',
     height: '425px',
     [theme.breakpoints.down('sm')]: {
-      height: 'calc(100vh - 70px)',
+      height: 'calc(100vh - 175px)',
     },
   },
   tabList: {

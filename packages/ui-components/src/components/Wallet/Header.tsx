@@ -182,6 +182,7 @@ type Props = {
   onMessagesClick?: () => void;
   onLogout?: () => void;
   onDisconnect?: () => void;
+  onMessagePopoutClick?: (address?: string) => void;
 };
 
 export const Header: React.FC<Props> = ({
@@ -200,6 +201,7 @@ export const Header: React.FC<Props> = ({
   onDisconnect,
   onSettingsClick,
   onMessagesClick,
+  onMessagePopoutClick,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -438,6 +440,7 @@ export const Header: React.FC<Props> = ({
               address={address}
               silentOnboard={true}
               hideIcon={true}
+              onPopoutClick={onMessagePopoutClick}
               disableSupportBubble
               inheritStyle
             />

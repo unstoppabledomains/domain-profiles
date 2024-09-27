@@ -3,6 +3,7 @@ import BlockOutlinedIcon from '@mui/icons-material/BlockOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import LaunchIcon from '@mui/icons-material/Launch';
 import MoreVertOutlinedIcon from '@mui/icons-material/MoreVertOutlined';
 import Avatar from '@mui/material/Avatar';
 import Badge from '@mui/material/Badge';
@@ -64,6 +65,7 @@ export const Conversation: React.FC<ConversationProps> = ({
   onNewMessage,
   onBack,
   onClose,
+  onPopoutClick,
 }) => {
   const [t] = useTranslationContext();
   const [isLoading, setIsLoading] = useState(true);
@@ -331,6 +333,19 @@ export const Conversation: React.FC<ConversationProps> = ({
               transformOrigin={{horizontal: 'right', vertical: 'top'}}
               anchorOrigin={{horizontal: 'right', vertical: 'bottom'}}
             >
+              {onPopoutClick && (
+                <MenuItem
+                  onClick={() => {
+                    handleCloseMenu();
+                    onPopoutClick(conversation?.peerAddress);
+                  }}
+                >
+                  <ListItemIcon>
+                    <LaunchIcon fontSize="small" />
+                  </ListItemIcon>
+                  <Typography variant="body2">{t('common.popOut')}</Typography>
+                </MenuItem>
+              )}
               {authDomain &&
                 peerAddress &&
                 isDomainValidForManagement(authDomain) &&
@@ -490,6 +505,7 @@ export type ConversationProps = {
   onNewMessage: (msg: DecodedMessage) => void;
   onBack: () => void;
   onClose: () => void;
+  onPopoutClick?: (address?: string) => void;
 };
 
 export default Conversation;

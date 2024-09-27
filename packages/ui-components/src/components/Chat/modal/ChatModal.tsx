@@ -198,6 +198,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   setWeb3Deps,
   onClose,
   onInitPushAccount,
+  onPopoutClick,
   setActiveChat,
   setActiveCommunity,
 }) => {
@@ -861,6 +862,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         }
         onBack={handleCloseChat}
         onClose={onClose}
+        onPopoutClick={onPopoutClick}
       />
     ) : pushAccount && pushKey && activeCommunity?.groupChatId ? (
       <Community
@@ -1176,6 +1178,7 @@ export type ChatModalProps = {
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;
   onClose(): void;
   onInitPushAccount(): void;
+  onPopoutClick?: (address?: string) => void;
   setActiveChat: (v?: string) => void;
   setActiveCommunity: (v?: SerializedCryptoWalletBadge) => void;
 };

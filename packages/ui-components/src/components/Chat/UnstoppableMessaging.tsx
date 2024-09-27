@@ -116,6 +116,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
   disableSupportBubble = true,
   silentOnboard = false,
   initCallback,
+  onPopoutClick,
 }) => {
   const {classes} = useStyles({inheritStyle});
   const web3Context = useContext(Web3Context);
@@ -1115,6 +1116,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
             blockedTopics={blockedTopics}
             setBlockedTopics={setBlockedTopics}
             setWeb3Deps={setWeb3Deps}
+            onPopoutClick={onPopoutClick}
             onClose={handleClosePush}
             onInitPushAccount={() => {
               return initChatAccounts({
@@ -1145,4 +1147,5 @@ export type UnstoppableMessagingProps = {
   silentOnboard?: boolean;
   hideIcon?: boolean;
   initCallback?: () => void;
+  onPopoutClick?: (address?: string) => void;
 };

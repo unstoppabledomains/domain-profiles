@@ -306,7 +306,7 @@ export const useConversationStyles = makeStyles<{
     marginRight: theme.spacing(1),
   },
   avatar: {
-    backgroundColor: 'white',
+    backgroundColor: theme.palette.primary.main,
     color: 'white',
     height: 35,
     width: 35,

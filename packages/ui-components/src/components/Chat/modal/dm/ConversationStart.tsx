@@ -17,6 +17,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {getDomainConnections} from '../../../../actions';
 import {SerializedRecommendation} from '../../../../lib';
 import useTranslationContext from '../../../../lib/i18n';
+import ChipControlButton from '../../../ChipControlButton';
 import {getAddressMetadata, isEthAddress} from '../../protocol/resolution';
 import {isXmtpUser} from '../../protocol/xmtp';
 import type {AddressResolution} from '../../types';
@@ -64,10 +65,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   recommendedCard: {
     display: 'flex',
-    width: '100%',
-    padding: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-    cursor: 'pointer',
   },
   headerActionContainer: {
     display: 'flex',
@@ -249,13 +246,29 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
                 ? `${t('common.recommended')} ${t('common.connections')}`
                 : t('push.chatNew')
             }
-            subTitle={suggestions ? undefined : t('push.chatNewDescription')}
+            subTitle={
+              suggestions
+                ? t('push.chatNewRecommendations')
+                : t('push.chatNewDescription')
+            }
           >
             <Box className={classes.recommendedContainer}>
               {suggestions
                 ? suggestions.slice(0, 3).map(s => (
-                    <Card
-                      className={classes.recommendedCard}
+                    <ChipControlButton
+                      variant="outlined"
+                      color="default"
+                      sx={{
+                        height: 'auto',
+                        whitespace: 'normal',
+                        paddingLeft: 0.5,
+                        paddingRight: 0.5,
+                        paddingTop: 1,
+                        paddingBottom: 1,
+                        justifyContent: 'left',
+                        textAlign: 'left',
+                      }}
+                      size="small"
                       onClick={() =>
                         handleSelect({
                           address: s.address,
@@ -263,25 +276,30 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
                           avatarUrl: s.imageUrl,
                         })
                       }
-                    >
-                      <Avatar src={s.imageUrl} className={classes.avatar} />
-                      <Box className={classes.resultStatus}>
-                        <Typography variant="subtitle2">
-                          {s.domain || s.address}
-                        </Typography>
-                        <Box
-                          className={cx(
-                            classes.chatAvailability,
-                            classes.chatReady,
-                          )}
-                        >
-                          <CheckIcon className={classes.chatAvailableIcon} />
-                          <Typography variant="caption">
-                            {s.reasons.map(v => v.description).join(', ')}
-                          </Typography>
+                      label={
+                        <Box className={classes.recommendedCard}>
+                          <Avatar src={s.imageUrl} className={classes.avatar} />
+                          <Box className={classes.resultStatus}>
+                            <Typography variant="subtitle2">
+                              {s.domain || s.address}
+                            </Typography>
+                            <Box
+                              className={cx(
+                                classes.chatAvailability,
+                                classes.chatReady,
+                              )}
+                            >
+                              <CheckIcon
+                                className={classes.chatAvailableIcon}
+                              />
+                              <Typography variant="caption">
+                                {s.reasons.map(v => v.description).join(', ')}
+                              </Typography>
+                            </Box>
+                          </Box>
                         </Box>
-                      </Box>
-                    </Card>
+                      }
+                    />
                   ))
                 : isSuggestionsLoading && (
                     <Box className={classes.recommendedLoadingContainer}>

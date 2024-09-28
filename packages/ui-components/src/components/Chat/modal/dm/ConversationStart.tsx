@@ -10,10 +10,12 @@ import CardHeader from '@mui/material/CardHeader';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {getDomainConnections} from '../../../../actions';
+import {SerializedRecommendation} from '../../../../lib';
 import useTranslationContext from '../../../../lib/i18n';
 import {getAddressMetadata, isEthAddress} from '../../protocol/resolution';
 import {isXmtpUser} from '../../protocol/xmtp';
@@ -49,6 +51,24 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
     marginBottom: theme.spacing(4),
   },
+  recommendedLoadingContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recommendedContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    marginTop: theme.spacing(2),
+  },
+  recommendedCard: {
+    display: 'flex',
+    width: '100%',
+    padding: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+    cursor: 'pointer',
+  },
   headerActionContainer: {
     display: 'flex',
     color: theme.palette.neutralShades[600],
@@ -70,6 +90,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   resultStatus: {
     display: 'flex',
     flexDirection: 'column',
+    textAlign: 'left',
   },
   chatAvailability: {
     display: 'flex',
@@ -113,7 +134,23 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
   const [t] = useTranslationContext();
   const [loading, setLoading] = useState(false);
   const [isAvailable, setIsAvailable] = useState<boolean>();
+  const [isSuggestionsLoading, setIsSuggestionsLoading] = useState(false);
   const [selectedPeer, setSelectedPeer] = useState<AddressResolution>();
+  const [suggestions, setSuggestions] = useState<SerializedRecommendation[]>();
+
+  useEffect(() => {
+    const loadSuggestions = async () => {
+      setIsSuggestionsLoading(true);
+      setSuggestions(
+        await getDomainConnections(address, {
+          recommendationsOnly: false,
+          xmtpOnly: true,
+        }),
+      );
+      setIsSuggestionsLoading(false);
+    };
+    void loadSuggestions();
+  }, []);
 
   const handleSearch = async (searchTerm: string) => {
     // wait for a valid search term
@@ -132,12 +169,12 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
     }
   };
 
-  const handleSelect = () => {
-    if (!selectedPeer) {
+  const handleSelect = (peer?: AddressResolution) => {
+    if (!peer && !selectedPeer) {
       return;
     }
     setLoading(true);
-    selectedCallback(selectedPeer);
+    selectedCallback(peer || selectedPeer!);
   };
 
   return (
@@ -177,7 +214,7 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
               classes.resultContainer,
               isAvailable ? classes.available : classes.notAvailable,
             )}
-            onClick={isAvailable ? handleSelect : undefined}
+            onClick={isAvailable ? () => handleSelect() : undefined}
           >
             {selectedPeer.avatarUrl && (
               <Avatar src={selectedPeer.avatarUrl} className={classes.avatar} />
@@ -207,9 +244,58 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
         {!selectedPeer && !loading && (
           <CallToAction
             icon={'ForumOutlinedIcon'}
-            title={t('push.chatNew')}
-            subTitle={t('push.chatNewDescription')}
-          />
+            title={
+              suggestions
+                ? `${t('common.recommended')} ${t('common.connections')}`
+                : t('push.chatNew')
+            }
+            subTitle={suggestions ? undefined : t('push.chatNewDescription')}
+          >
+            <Box className={classes.recommendedContainer}>
+              {suggestions
+                ? suggestions.slice(0, 3).map(s => (
+                    <Card
+                      className={classes.recommendedCard}
+                      onClick={() =>
+                        handleSelect({
+                          address: s.address,
+                          name: s.domain,
+                          avatarUrl: s.imageUrl,
+                        })
+                      }
+                    >
+                      <Avatar src={s.imageUrl} className={classes.avatar} />
+                      <Box className={classes.resultStatus}>
+                        <Typography variant="subtitle2">
+                          {s.domain || s.address}
+                        </Typography>
+                        <Box
+                          className={cx(
+                            classes.chatAvailability,
+                            classes.chatReady,
+                          )}
+                        >
+                          <CheckIcon className={classes.chatAvailableIcon} />
+                          <Typography variant="caption">
+                            {s.reasons.map(v => v.description).join(', ')}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Card>
+                  ))
+                : isSuggestionsLoading && (
+                    <Box className={classes.recommendedLoadingContainer}>
+                      <CircularProgress
+                        size="15px"
+                        className={classes.loadingSpinner}
+                      />
+                      <Typography ml={1} variant="caption">
+                        {t('push.searchingForConnections')}
+                      </Typography>
+                    </Box>
+                  )}
+            </Box>
+          </CallToAction>
         )}
       </CardContent>
     </Card>

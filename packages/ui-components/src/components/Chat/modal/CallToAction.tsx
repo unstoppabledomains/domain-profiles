@@ -48,6 +48,7 @@ export const CallToAction: React.FC<CallToActionProps> = ({
   subTitle,
   buttonText,
   loading,
+  children,
   handleButtonClick,
 }) => {
   const {classes} = useStyles();
@@ -75,6 +76,7 @@ export const CallToAction: React.FC<CallToActionProps> = ({
       <Typography mt={1} variant="body2">
         {subTitle}
       </Typography>
+      {children}
       {buttonText && handleButtonClick ? (
         <Button
           variant="contained"
@@ -106,6 +108,7 @@ export type CallToActionProps = {
   buttonText?: string;
   loading?: boolean;
   handleButtonClick?: () => void;
+  children?: React.ReactNode;
 };
 
 export default CallToAction;

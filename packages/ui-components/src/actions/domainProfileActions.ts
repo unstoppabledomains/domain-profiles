@@ -84,8 +84,16 @@ export const followDomainProfile = async (
 
 export const getDomainConnections = async (
   domain: string,
+  opts?: {
+    xmtpOnly?: boolean;
+    recommendationsOnly?: boolean;
+  },
 ): Promise<SerializedRecommendation[]> => {
-  const domainProfileUrl = `/public/${domain}/connections`;
+  const queryStringParams = QueryString.stringify({
+    xmtpOnly: opts?.xmtpOnly,
+    recommendationsOnly: opts?.recommendationsOnly,
+  });
+  const domainProfileUrl = `/public/${domain}/connections?${queryStringParams}`;
   return await fetchApi(domainProfileUrl, {host: config.PROFILE.HOST_URL});
 };
 

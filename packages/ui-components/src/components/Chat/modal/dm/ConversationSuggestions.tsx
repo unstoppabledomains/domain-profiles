@@ -2,9 +2,11 @@ import CheckIcon from '@mui/icons-material/Check';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
+import truncateEthAddress from 'truncate-eth-address';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -15,6 +17,12 @@ import ChipControlButton from '../../../ChipControlButton';
 import type {AddressResolution} from '../../types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    marginTop: theme.spacing(2),
+  },
   loadingSpinner: {
     color: 'inherit',
   },
@@ -22,12 +30,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-    marginTop: theme.spacing(2),
   },
   card: {
     display: 'flex',
@@ -83,47 +85,50 @@ export const ConversationSuggestions: React.FC<
   }, []);
 
   return (
-    <Box className={classes.container}>
+    <Grid container gap={1} className={classes.container}>
       {suggestions
         ? suggestions.slice(0, 3).map(s => (
-            <ChipControlButton
-              variant="outlined"
-              color="default"
-              sx={{
-                height: 'auto',
-                whitespace: 'normal',
-                paddingLeft: 0.5,
-                paddingRight: 0.5,
-                paddingTop: 1,
-                paddingBottom: 1,
-                justifyContent: 'left',
-                textAlign: 'left',
-              }}
-              size="small"
-              onClick={() =>
-                onSelect({
-                  address: s.address,
-                  name: s.domain,
-                  avatarUrl: s.imageUrl,
-                })
-              }
-              label={
-                <Box className={classes.card}>
-                  <Avatar src={s.imageUrl} className={classes.avatar} />
-                  <Box className={classes.detailsContainer}>
-                    <Typography variant="subtitle2">
-                      {s.domain || s.address}
-                    </Typography>
-                    <Box className={cx(classes.reasonsContainer)}>
-                      <CheckIcon className={classes.icon} />
-                      <Typography variant="caption">
-                        {s.reasons.map(v => v.description).join(', ')}
+            <Grid item xs={12}>
+              <ChipControlButton
+                variant="outlined"
+                color="default"
+                sx={{
+                  height: 'auto',
+                  whitespace: 'normal',
+                  paddingLeft: 0.5,
+                  paddingRight: 0.5,
+                  paddingTop: 1,
+                  paddingBottom: 1,
+                  justifyContent: 'left',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
+                size="small"
+                onClick={() =>
+                  onSelect({
+                    address: s.address,
+                    name: s.domain,
+                    avatarUrl: s.imageUrl,
+                  })
+                }
+                label={
+                  <Box className={classes.card}>
+                    <Avatar src={s.imageUrl} className={classes.avatar} />
+                    <Box className={classes.detailsContainer}>
+                      <Typography variant="subtitle2">
+                        {s.domain || truncateEthAddress(s.address)}
                       </Typography>
+                      <Box className={cx(classes.reasonsContainer)}>
+                        <CheckIcon className={classes.icon} />
+                        <Typography variant="caption">
+                          {s.reasons.map(v => v.description).join(', ')}
+                        </Typography>
+                      </Box>
                     </Box>
                   </Box>
-                </Box>
-              }
-            />
+                }
+              />
+            </Grid>
           ))
         : isSuggestionsLoading && (
             <Box className={classes.loadingContainer}>
@@ -136,7 +141,7 @@ export const ConversationSuggestions: React.FC<
               </Typography>
             </Box>
           )}
-    </Box>
+    </Grid>
   );
 };
 

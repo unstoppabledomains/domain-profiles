@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import ChatIcon from '@mui/icons-material/ChatOutlined';
 import CloseIcon from '@mui/icons-material/Close';
-import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import GroupsIcon from '@mui/icons-material/GroupOutlined';
 import AppsIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import SmsOutlinedIcon from '@mui/icons-material/SmsOutlined';
@@ -918,16 +918,14 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                 />
               </Tooltip>
               {(!authDomain || !isDomainValidForManagement(authDomain)) && (
-                <Badge color="warning" variant="dot">
-                  <Tooltip title={t('push.getAnIdentity')}>
-                    <FingerprintIcon
-                      className={classes.headerActionIcon}
-                      onClick={handleIdentityClick}
-                      color="warning"
-                      id="identity-button"
-                    />
-                  </Tooltip>
-                </Badge>
+                <Tooltip title={t('push.getAnIdentity')}>
+                  <AddHomeOutlinedIcon
+                    className={classes.headerActionIcon}
+                    onClick={handleIdentityClick}
+                    color="warning"
+                    id="identity-button"
+                  />
+                </Tooltip>
               )}
               {!isMobile && (
                 <Tooltip title={t('common.close')}>

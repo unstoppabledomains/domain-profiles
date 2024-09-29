@@ -1,5 +1,5 @@
+import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
-import FingerprintOutlinedIcon from '@mui/icons-material/FingerprintOutlined';
 import SwapHorizOutlinedIcon from '@mui/icons-material/SwapHorizOutlined';
 import UpdateOutlinedIcon from '@mui/icons-material/UpdateOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -303,9 +303,7 @@ export const Reverse: React.FC<ManageTabProps> = ({
               </Box>
             ) : (
               <Box>
-                <FingerprintOutlinedIcon
-                  className={classes.iconNotConfigured}
-                />
+                <AddHomeOutlinedIcon className={classes.iconNotConfigured} />
                 <Typography variant="h5">
                   {t('manage.setupReverseResolution')}
                 </Typography>

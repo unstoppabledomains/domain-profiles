@@ -10,20 +10,19 @@ import CardHeader from '@mui/material/CardHeader';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getDomainConnections} from '../../../../actions';
 import {SerializedRecommendation} from '../../../../lib';
 import useTranslationContext from '../../../../lib/i18n';
-import ChipControlButton from '../../../ChipControlButton';
 import {getAddressMetadata, isEthAddress} from '../../protocol/resolution';
 import {isXmtpUser} from '../../protocol/xmtp';
 import type {AddressResolution} from '../../types';
 import {TabType} from '../../types';
 import CallToAction from '../CallToAction';
 import Search from '../Search';
+import ConversationSuggestions from './ConversationSuggestions';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   cardContainer: {
@@ -51,20 +50,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     color: theme.palette.neutralShades[600],
     alignItems: 'center',
     marginBottom: theme.spacing(4),
-  },
-  recommendedLoadingContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  recommendedContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-    marginTop: theme.spacing(2),
-  },
-  recommendedCard: {
-    display: 'flex',
   },
   headerActionContainer: {
     display: 'flex',
@@ -131,23 +116,8 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
   const [t] = useTranslationContext();
   const [loading, setLoading] = useState(false);
   const [isAvailable, setIsAvailable] = useState<boolean>();
-  const [isSuggestionsLoading, setIsSuggestionsLoading] = useState(false);
   const [selectedPeer, setSelectedPeer] = useState<AddressResolution>();
   const [suggestions, setSuggestions] = useState<SerializedRecommendation[]>();
-
-  useEffect(() => {
-    const loadSuggestions = async () => {
-      setIsSuggestionsLoading(true);
-      setSuggestions(
-        await getDomainConnections(address, {
-          recommendationsOnly: false,
-          xmtpOnly: true,
-        }),
-      );
-      setIsSuggestionsLoading(false);
-    };
-    void loadSuggestions();
-  }, []);
 
   const handleSearch = async (searchTerm: string) => {
     // wait for a valid search term
@@ -252,67 +222,11 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
                 : t('push.chatNewDescription')
             }
           >
-            <Box className={classes.recommendedContainer}>
-              {suggestions
-                ? suggestions.slice(0, 3).map(s => (
-                    <ChipControlButton
-                      variant="outlined"
-                      color="default"
-                      sx={{
-                        height: 'auto',
-                        whitespace: 'normal',
-                        paddingLeft: 0.5,
-                        paddingRight: 0.5,
-                        paddingTop: 1,
-                        paddingBottom: 1,
-                        justifyContent: 'left',
-                        textAlign: 'left',
-                      }}
-                      size="small"
-                      onClick={() =>
-                        handleSelect({
-                          address: s.address,
-                          name: s.domain,
-                          avatarUrl: s.imageUrl,
-                        })
-                      }
-                      label={
-                        <Box className={classes.recommendedCard}>
-                          <Avatar src={s.imageUrl} className={classes.avatar} />
-                          <Box className={classes.resultStatus}>
-                            <Typography variant="subtitle2">
-                              {s.domain || s.address}
-                            </Typography>
-                            <Box
-                              className={cx(
-                                classes.chatAvailability,
-                                classes.chatReady,
-                              )}
-                            >
-                              <CheckIcon
-                                className={classes.chatAvailableIcon}
-                              />
-                              <Typography variant="caption">
-                                {s.reasons.map(v => v.description).join(', ')}
-                              </Typography>
-                            </Box>
-                          </Box>
-                        </Box>
-                      }
-                    />
-                  ))
-                : isSuggestionsLoading && (
-                    <Box className={classes.recommendedLoadingContainer}>
-                      <CircularProgress
-                        size="15px"
-                        className={classes.loadingSpinner}
-                      />
-                      <Typography ml={1} variant="caption">
-                        {t('push.searchingForConnections')}
-                      </Typography>
-                    </Box>
-                  )}
-            </Box>
+            <ConversationSuggestions
+              address={address}
+              onSelect={handleSelect}
+              onSuggestionsLoaded={setSuggestions}
+            />
           </CallToAction>
         )}
       </CardContent>

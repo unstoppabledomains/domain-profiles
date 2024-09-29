@@ -46,7 +46,10 @@ import {fetchApi, isDomainValidForManagement} from '../../../lib';
 import {notifyEvent} from '../../../lib/error';
 import useTranslationContext from '../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../lib/types/badge';
-import type {SerializedUserDomainProfileData} from '../../../lib/types/domain';
+import type {
+  SerializedRecommendation,
+  SerializedUserDomainProfileData,
+} from '../../../lib/types/domain';
 import type {Web3Dependencies} from '../../../lib/types/web3';
 import Modal from '../../Modal';
 import {registerClientTopics} from '../protocol/registration';
@@ -64,6 +67,7 @@ import Search from './Search';
 import Conversation from './dm/Conversation';
 import ConversationPreview from './dm/ConversationPreview';
 import ConversationStart from './dm/ConversationStart';
+import ConversationSuggestions from './dm/ConversationSuggestions';
 import Community from './group/Community';
 import CommunityList from './group/CommunityList';
 import NotificationPreview from './notification/NotificationPreview';
@@ -232,6 +236,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   const [notifications, setNotifications] = useState<PayloadData[]>([]);
   const [notificationsAvailable, setNotificationsAvailable] = useState(true);
   const [notificationsPage, setNotificationsPage] = useState(1);
+  const [suggestions, setSuggestions] = useState<SerializedRecommendation[]>();
   const [userProfile, setUserProfile] =
     useState<SerializedUserDomainProfileData>();
   const {fetchNotifications, loading: notificationsLoading} =
@@ -1053,15 +1058,29 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                         icon="ForumOutlinedIcon"
                         title={
                           requestCount === 0
-                            ? t('push.chatNew')
+                            ? suggestions
+                              ? `${t('common.recommended')} ${t(
+                                  'common.connections',
+                                )}`
+                              : t('push.chatNew')
                             : t('push.chatNewRequest')
                         }
                         subTitle={
                           requestCount === 0
-                            ? t('push.chatNewDescription')
+                            ? suggestions
+                              ? t('push.chatNewRecommendations')
+                              : t('push.chatNewDescription')
                             : t('push.chatNewRequestDescription')
                         }
-                      />
+                      >
+                        {requestCount === 0 && (
+                          <ConversationSuggestions
+                            address={xmtpAddress}
+                            onSelect={handleOpenChatFromAddress}
+                            onSuggestionsLoaded={setSuggestions}
+                          />
+                        )}
+                      </CallToAction>
                     )}
                   </Box>
                 )}

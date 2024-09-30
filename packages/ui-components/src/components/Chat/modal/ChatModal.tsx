@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import AddCommentOutlinedIcon from '@mui/icons-material/AddCommentOutlined';
+import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import ChatIcon from '@mui/icons-material/ChatOutlined';
 import CloseIcon from '@mui/icons-material/Close';
-import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import GroupsIcon from '@mui/icons-material/GroupOutlined';
 import AppsIcon from '@mui/icons-material/NotificationsActiveOutlined';
-import SmsOutlinedIcon from '@mui/icons-material/SmsOutlined';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
@@ -46,7 +46,10 @@ import {fetchApi, isDomainValidForManagement} from '../../../lib';
 import {notifyEvent} from '../../../lib/error';
 import useTranslationContext from '../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../lib/types/badge';
-import type {SerializedUserDomainProfileData} from '../../../lib/types/domain';
+import type {
+  SerializedRecommendation,
+  SerializedUserDomainProfileData,
+} from '../../../lib/types/domain';
 import type {Web3Dependencies} from '../../../lib/types/web3';
 import Modal from '../../Modal';
 import {registerClientTopics} from '../protocol/registration';
@@ -64,6 +67,7 @@ import Search from './Search';
 import Conversation from './dm/Conversation';
 import ConversationPreview from './dm/ConversationPreview';
 import ConversationStart from './dm/ConversationStart';
+import ConversationSuggestions from './dm/ConversationSuggestions';
 import Community from './group/Community';
 import CommunityList from './group/CommunityList';
 import NotificationPreview from './notification/NotificationPreview';
@@ -123,6 +127,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   headerActionContainer: {
     display: 'flex',
     color: theme.palette.neutralShades[600],
+    marginRight: theme.spacing(1),
   },
   headerTitleContainer: {
     display: 'flex',
@@ -130,8 +135,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
   },
   newChatIcon: {
-    marginRight: theme.spacing(0.7),
     color: theme.palette.primary.main,
+    transform: 'rotateY(180deg)',
+    marginTop: '2px',
   },
   headerActionIcon: {
     marginLeft: theme.spacing(1),
@@ -232,6 +238,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   const [notifications, setNotifications] = useState<PayloadData[]>([]);
   const [notificationsAvailable, setNotificationsAvailable] = useState(true);
   const [notificationsPage, setNotificationsPage] = useState(1);
+  const [suggestions, setSuggestions] = useState<SerializedRecommendation[]>();
   const [userProfile, setUserProfile] =
     useState<SerializedUserDomainProfileData>();
   const {fetchNotifications, loading: notificationsLoading} =
@@ -841,6 +848,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     conversationSearch ? (
       <ConversationStart
         address={xmtpAddress}
+        conversations={conversations}
         onClose={onClose}
         onBack={handleCloseSearch}
         selectedCallback={handleOpenChatFromAddress}
@@ -907,22 +915,20 @@ export const ChatModal: React.FC<ChatModalProps> = ({
           action={
             <Box className={classes.headerActionContainer}>
               <Tooltip title={t('push.chatNew')}>
-                <SmsOutlinedIcon
+                <AddCommentOutlinedIcon
                   className={cx(classes.headerActionIcon, classes.newChatIcon)}
                   onClick={handleNewChat}
                 />
               </Tooltip>
               {(!authDomain || !isDomainValidForManagement(authDomain)) && (
-                <Badge color="warning" variant="dot">
-                  <Tooltip title={t('push.getAnIdentity')}>
-                    <FingerprintIcon
-                      className={classes.headerActionIcon}
-                      onClick={handleIdentityClick}
-                      color="warning"
-                      id="identity-button"
-                    />
-                  </Tooltip>
-                </Badge>
+                <Tooltip title={t('push.getAnIdentity')}>
+                  <AddHomeOutlinedIcon
+                    className={classes.headerActionIcon}
+                    onClick={handleIdentityClick}
+                    color="warning"
+                    id="identity-button"
+                  />
+                </Tooltip>
               )}
               {!isMobile && (
                 <Tooltip title={t('common.close')}>
@@ -1053,15 +1059,30 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                         icon="ForumOutlinedIcon"
                         title={
                           requestCount === 0
-                            ? t('push.chatNew')
+                            ? suggestions
+                              ? `${t('common.recommended')} ${t(
+                                  'common.connections',
+                                )}`
+                              : t('push.chatNew')
                             : t('push.chatNewRequest')
                         }
                         subTitle={
                           requestCount === 0
-                            ? t('push.chatNewDescription')
+                            ? suggestions
+                              ? t('push.chatNewRecommendations')
+                              : t('push.chatNewDescription')
                             : t('push.chatNewRequestDescription')
                         }
-                      />
+                      >
+                        {requestCount === 0 && (
+                          <ConversationSuggestions
+                            address={xmtpAddress}
+                            conversations={conversations}
+                            onSelect={handleOpenChatFromAddress}
+                            onSuggestionsLoaded={setSuggestions}
+                          />
+                        )}
+                      </CallToAction>
                     )}
                   </Box>
                 )}

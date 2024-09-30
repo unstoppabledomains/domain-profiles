@@ -1,12 +1,11 @@
+import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import BlockOutlinedIcon from '@mui/icons-material/BlockOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
-import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LaunchIcon from '@mui/icons-material/Launch';
 import MoreVertOutlinedIcon from '@mui/icons-material/MoreVertOutlined';
 import Avatar from '@mui/material/Avatar';
-import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -32,7 +31,11 @@ import truncateEthAddress from 'truncate-eth-address';
 
 import config from '@unstoppabledomains/config';
 
-import {isDomainValidForManagement} from '../../../../lib';
+import {
+  CurrenciesType,
+  getBlockScanUrl,
+  isDomainValidForManagement,
+} from '../../../../lib';
 import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
@@ -224,6 +227,16 @@ export const Conversation: React.FC<ConversationProps> = ({
     }
   };
 
+  const handleOpenExplorer = () => {
+    if (conversation) {
+      const url = getBlockScanUrl(
+        'MATIC' as CurrenciesType,
+        conversation.peerAddress,
+      );
+      window.open(url, '_blank');
+    }
+  };
+
   const handleBlockClicked = async (blockedValue: boolean) => {
     // prepare the blocked topics
     if (!authDomain || !conversation) {
@@ -297,27 +310,31 @@ export const Conversation: React.FC<ConversationProps> = ({
         }
         action={
           <Box className={classes.headerActionContainer}>
-            {displayName && (
-              <Tooltip title={t('profile.viewProfile')}>
+            <Box display="flex" alignItems="center" mr={-1}>
+              <Tooltip
+                title={t(
+                  displayName
+                    ? 'profile.viewProfile'
+                    : 'verifiedWallets.viewExplorer',
+                )}
+              >
                 <InfoOutlinedIcon
                   className={classes.headerCloseIcon}
-                  onClick={handleOpenProfile}
+                  onClick={displayName ? handleOpenProfile : handleOpenExplorer}
                 />
               </Tooltip>
-            )}
-            {!authDomain ||
-              (!isDomainValidForManagement(authDomain) && (
-                <Badge color="warning" variant="dot">
+              {!authDomain ||
+                (!isDomainValidForManagement(authDomain) && (
                   <Tooltip title={t('push.getAnIdentity')}>
-                    <FingerprintIcon
+                    <AddHomeOutlinedIcon
                       className={classes.headerCloseIcon}
                       onClick={handleIdentityClick}
                       color="warning"
                       id="identity-button"
                     />
                   </Tooltip>
-                </Badge>
-              ))}
+                ))}
+            </Box>
             <Tooltip title={t('common.options')}>
               <IconButton
                 onClick={handleOpenMenu}

@@ -18,12 +18,12 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import CopyToClipboard from '../../components/CopyToClipboard';
 import {CryptoIcon} from '../../components/Image/CryptoIcon';
 import {useDomainConfig} from '../../hooks';
+import {getBlockScanUrl} from '../../lib';
 import {displayShortCryptoAddress} from '../../lib/displayCryptoAddress';
 import useTranslationContext from '../../lib/i18n';
 import type {CurrenciesType} from '../../lib/types/blockchain';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import type {MulticoinVersions} from '../../lib/types/records';
-import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileTabType} from '../Manage';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -211,28 +211,6 @@ const CryptoAddress: React.FC<Props> = ({
   const handleVerifyClick = () => {
     setConfigTab(DomainProfileTabType.Crypto);
     setConfigOpen(true);
-  };
-
-  const getBlockScanUrl = (symbol: CurrenciesType, addr: string) => {
-    switch (symbol) {
-      case 'ETH':
-      case 'FTM':
-      case 'AVAX':
-      case 'BASE':
-        return isEthAddress(addr)
-          ? `https://www.oklink.com/${symbol.toLowerCase()}/address/${addr}?channelId=uns001`
-          : '';
-      case 'MATIC':
-        return isEthAddress(addr)
-          ? `https://www.oklink.com/polygon/address/${addr}?channelId=uns001`
-          : '';
-      case 'BTC':
-        return `https://www.oklink.com/${symbol.toLowerCase()}/address/${addr}?channelId=uns001`;
-      case 'SOL':
-        return `https://www.oklink.com/sol/account/${addr}?channelId=uns001`;
-      default:
-        return '';
-    }
   };
 
   const showTooltip = showWarning && !isVerified && isSupported(currency);

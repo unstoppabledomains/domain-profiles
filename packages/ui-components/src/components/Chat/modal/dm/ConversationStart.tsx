@@ -18,7 +18,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {SerializedRecommendation} from '../../../../lib';
 import useTranslationContext from '../../../../lib/i18n';
 import {getAddressMetadata, isEthAddress} from '../../protocol/resolution';
-import {isXmtpUser} from '../../protocol/xmtp';
+import {ConversationMeta, isXmtpUser} from '../../protocol/xmtp';
 import type {AddressResolution} from '../../types';
 import {TabType} from '../../types';
 import CallToAction from '../CallToAction';
@@ -108,6 +108,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export const ConversationStart: React.FC<ConversationStartProps> = ({
   address,
+  conversations,
   onBack,
   onClose,
   selectedCallback,
@@ -226,6 +227,7 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
           >
             <ConversationSuggestions
               address={address}
+              conversations={conversations}
               onSelect={handleSelect}
               onSuggestionsLoaded={setSuggestions}
             />
@@ -238,6 +240,7 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
 
 export type ConversationStartProps = {
   address: string;
+  conversations?: ConversationMeta[];
   onBack: () => void;
   onClose: () => void;
   selectedCallback: (peerAddress: AddressResolution) => void;

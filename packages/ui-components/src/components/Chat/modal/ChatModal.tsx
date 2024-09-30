@@ -848,6 +848,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     conversationSearch ? (
       <ConversationStart
         address={xmtpAddress}
+        conversations={conversations}
         onClose={onClose}
         onBack={handleCloseSearch}
         selectedCallback={handleOpenChatFromAddress}
@@ -1076,6 +1077,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                         {requestCount === 0 && (
                           <ConversationSuggestions
                             address={xmtpAddress}
+                            conversations={conversations}
                             onSelect={handleOpenChatFromAddress}
                             onSuggestionsLoaded={setSuggestions}
                           />

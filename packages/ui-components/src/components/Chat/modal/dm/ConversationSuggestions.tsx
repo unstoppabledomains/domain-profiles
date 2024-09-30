@@ -14,6 +14,7 @@ import {getDomainConnections} from '../../../../actions';
 import {SerializedRecommendation} from '../../../../lib';
 import useTranslationContext from '../../../../lib/i18n';
 import ChipControlButton from '../../../ChipControlButton';
+import {ConversationMeta} from '../../protocol/xmtp';
 import type {AddressResolution} from '../../types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -61,7 +62,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export const ConversationSuggestions: React.FC<
   ConversationSuggestionsProps
-> = ({address, onSelect, onSuggestionsLoaded}) => {
+> = ({address, conversations, onSelect, onSuggestionsLoaded}) => {
   const {cx, classes} = useStyles();
   const [t] = useTranslationContext();
   const [isSuggestionsLoading, setIsSuggestionsLoading] = useState(false);
@@ -70,24 +71,36 @@ export const ConversationSuggestions: React.FC<
   useEffect(() => {
     const loadSuggestions = async () => {
       setIsSuggestionsLoading(true);
-      const v = await getDomainConnections(address, {
+
+      // retrieve suggestions
+      const allSuggestions = await getDomainConnections(address, {
         recommendationsOnly: false,
         xmtpOnly: true,
       });
-      if (v.length > 0) {
+
+      // filter out existing conversations from suggestion list
+      const visibleSuggestions = allSuggestions?.filter(
+        s =>
+          !conversations
+            ?.map(c => c.conversation.peerAddress.toLowerCase())
+            .includes(s.address.toLowerCase()),
+      );
+
+      // set the suggestion values to render
+      if (visibleSuggestions && visibleSuggestions.length > 0) {
         if (onSuggestionsLoaded) {
-          onSuggestionsLoaded(v);
+          onSuggestionsLoaded(visibleSuggestions);
         }
-        setSuggestions(v);
+        setSuggestions(visibleSuggestions);
       }
       setIsSuggestionsLoading(false);
     };
     void loadSuggestions();
-  }, []);
+  }, [conversations]);
 
   return (
     <Grid container gap={1} className={classes.container}>
-      {suggestions
+      {suggestions && suggestions.length > 0
         ? suggestions.slice(0, 3).map(s => (
             <Grid item xs={12}>
               <ChipControlButton
@@ -151,6 +164,7 @@ export const ConversationSuggestions: React.FC<
 
 export type ConversationSuggestionsProps = {
   address: string;
+  conversations?: ConversationMeta[];
   onSelect: (peer: AddressResolution) => void;
   onSuggestionsLoaded?: (v?: SerializedRecommendation[]) => void;
 };

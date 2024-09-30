@@ -11,6 +11,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useState} from 'react';
+import truncateEthAddress from 'truncate-eth-address';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -183,12 +184,13 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
             )}
             onClick={isAvailable ? () => handleSelect() : undefined}
           >
-            {selectedPeer.avatarUrl && (
-              <Avatar src={selectedPeer.avatarUrl} className={classes.avatar} />
-            )}
+            <Avatar src={selectedPeer.avatarUrl} className={classes.avatar} />
             <Box className={classes.resultStatus}>
               <Typography variant="subtitle2">
-                {selectedPeer.name || selectedPeer.address}
+                {selectedPeer.name ||
+                  `${t('common.wallet')} ${truncateEthAddress(
+                    selectedPeer.address,
+                  )}`}
               </Typography>
               <Box
                 className={cx(

@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import AddCommentOutlinedIcon from '@mui/icons-material/AddCommentOutlined';
 import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import ChatIcon from '@mui/icons-material/ChatOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import GroupsIcon from '@mui/icons-material/GroupOutlined';
 import AppsIcon from '@mui/icons-material/NotificationsActiveOutlined';
-import SmsOutlinedIcon from '@mui/icons-material/SmsOutlined';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
@@ -127,6 +127,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   headerActionContainer: {
     display: 'flex',
     color: theme.palette.neutralShades[600],
+    marginRight: theme.spacing(1),
   },
   headerTitleContainer: {
     display: 'flex',
@@ -134,8 +135,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
   },
   newChatIcon: {
-    marginRight: theme.spacing(0.7),
     color: theme.palette.primary.main,
+    transform: 'rotateY(180deg)',
+    marginTop: '2px',
   },
   headerActionIcon: {
     marginLeft: theme.spacing(1),
@@ -912,7 +914,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
           action={
             <Box className={classes.headerActionContainer}>
               <Tooltip title={t('push.chatNew')}>
-                <SmsOutlinedIcon
+                <AddCommentOutlinedIcon
                   className={cx(classes.headerActionIcon, classes.newChatIcon)}
                   onClick={handleNewChat}
                 />

@@ -1,4 +1,4 @@
-import CheckIcon from '@mui/icons-material/Check';
+import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -38,6 +38,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     textAlign: 'left',
+    justifyContent: 'center',
   },
   reasonsContainer: {
     display: 'flex',
@@ -116,10 +117,13 @@ export const ConversationSuggestions: React.FC<
                     <Avatar src={s.imageUrl} className={classes.avatar} />
                     <Box className={classes.detailsContainer}>
                       <Typography variant="subtitle2">
-                        {s.domain || truncateEthAddress(s.address)}
+                        {s.domain ||
+                          `${t('common.wallet')} ${truncateEthAddress(
+                            s.address,
+                          )}`}
                       </Typography>
                       <Box className={cx(classes.reasonsContainer)}>
-                        <CheckIcon className={classes.icon} />
+                        <ShareOutlinedIcon className={classes.icon} />
                         <Typography variant="caption">
                           {s.reasons.map(v => v.description).join(', ')}
                         </Typography>

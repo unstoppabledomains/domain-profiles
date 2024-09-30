@@ -31,7 +31,11 @@ import truncateEthAddress from 'truncate-eth-address';
 
 import config from '@unstoppabledomains/config';
 
-import {isDomainValidForManagement} from '../../../../lib';
+import {
+  CurrenciesType,
+  getBlockScanUrl,
+  isDomainValidForManagement,
+} from '../../../../lib';
 import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
@@ -223,6 +227,16 @@ export const Conversation: React.FC<ConversationProps> = ({
     }
   };
 
+  const handleOpenExplorer = () => {
+    if (conversation) {
+      const url = getBlockScanUrl(
+        'MATIC' as CurrenciesType,
+        conversation.peerAddress,
+      );
+      window.open(url, '_blank');
+    }
+  };
+
   const handleBlockClicked = async (blockedValue: boolean) => {
     // prepare the blocked topics
     if (!authDomain || !conversation) {
@@ -297,14 +311,18 @@ export const Conversation: React.FC<ConversationProps> = ({
         action={
           <Box className={classes.headerActionContainer}>
             <Box display="flex" alignItems="center" mr={-1}>
-              {displayName && (
-                <Tooltip title={t('profile.viewProfile')}>
-                  <InfoOutlinedIcon
-                    className={classes.headerCloseIcon}
-                    onClick={handleOpenProfile}
-                  />
-                </Tooltip>
-              )}
+              <Tooltip
+                title={t(
+                  displayName
+                    ? 'profile.viewProfile'
+                    : 'verifiedWallets.viewExplorer',
+                )}
+              >
+                <InfoOutlinedIcon
+                  className={classes.headerCloseIcon}
+                  onClick={displayName ? handleOpenProfile : handleOpenExplorer}
+                />
+              </Tooltip>
               {!authDomain ||
                 (!isDomainValidForManagement(authDomain) && (
                   <Tooltip title={t('push.getAnIdentity')}>

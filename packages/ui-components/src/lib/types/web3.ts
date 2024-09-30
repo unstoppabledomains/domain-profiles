@@ -1,5 +1,8 @@
 import type {Signer} from 'ethers';
 
+import {isEthAddress} from '../../components/Chat/protocol/resolution';
+import {CurrenciesType} from './blockchain';
+
 export interface Web3Dependencies {
   address: string;
   signer: Signer;
@@ -16,3 +19,25 @@ export interface Web3Dependencies {
     };
   };
 }
+
+export const getBlockScanUrl = (symbol: CurrenciesType, addr: string) => {
+  switch (symbol) {
+    case 'ETH':
+    case 'FTM':
+    case 'AVAX':
+    case 'BASE':
+      return isEthAddress(addr)
+        ? `https://www.oklink.com/${symbol.toLowerCase()}/address/${addr}?channelId=uns001`
+        : '';
+    case 'MATIC':
+      return isEthAddress(addr)
+        ? `https://www.oklink.com/polygon/address/${addr}?channelId=uns001`
+        : '';
+    case 'BTC':
+      return `https://www.oklink.com/${symbol.toLowerCase()}/address/${addr}?channelId=uns001`;
+    case 'SOL':
+      return `https://www.oklink.com/sol/account/${addr}?channelId=uns001`;
+    default:
+      return '';
+  }
+};

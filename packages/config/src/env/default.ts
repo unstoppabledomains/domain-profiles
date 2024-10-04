@@ -143,5 +143,6 @@ export default function getDefaultConfig(): Config {
       ],
     },
     GATEWAY_API_KEY: process.env.GATEWAY_API_KEY || '',
+    RUNTIME: process.env.CUSTOM_RUNTIME || 'browser',
   };
 }

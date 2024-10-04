@@ -127,6 +127,7 @@ export type Config = {
     CONVERSATION_ALLOW_LIST: string[];
   };
   GATEWAY_API_KEY: string;
+  RUNTIME: string;
 };
 
 export type ConfigOverride = DeepPartial<Config>;

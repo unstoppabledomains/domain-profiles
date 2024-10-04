@@ -1,8 +1,11 @@
 import React, {useState} from 'react';
 import {useLocalStorage, useSessionStorage} from 'usehooks-ts';
 
+import config from '@unstoppabledomains/config';
+
+import useChromeStorage from '../hooks/useChromeStorage';
 import type {CreateTransaction} from '../lib/types/fireBlocks';
-import { FireblocksStateKey} from '../lib/types/fireBlocks';
+import {FireblocksStateKey} from '../lib/types/fireBlocks';
 import type {Web3Dependencies} from '../lib/types/web3';
 
 type Props = {
@@ -30,14 +33,32 @@ const Web3ContextProvider: React.FC<Props> = ({children}) => {
   // used as common source for web3 deps
   const [web3Deps, setWeb3Deps] = useState<Web3Dependencies>();
 
+  console.log('AJQ config', JSON.stringify(config));
+
   // used as common source for Unstoppable Wallet state
   const [accessToken, setAccessToken] = useState<string>();
-  const [sessionKeyState, setSessionKeyState] = useSessionStorage<
-    Record<string, Record<string, string>>
-  >(FireblocksStateKey, {});
-  const [persistentKeyState, setPersistentKeyState] = useLocalStorage<
-    Record<string, Record<string, string>>
-  >(FireblocksStateKey, {});
+  const [sessionKeyState, setSessionKeyState] =
+    config.RUNTIME === 'extension'
+      ? useChromeStorage<Record<string, Record<string, string>>>(
+          FireblocksStateKey,
+          {},
+          'session',
+        )
+      : useSessionStorage<Record<string, Record<string, string>>>(
+          FireblocksStateKey,
+          {},
+        );
+  const [persistentKeyState, setPersistentKeyState] =
+    config.RUNTIME === 'extension'
+      ? useChromeStorage<Record<string, Record<string, string>>>(
+          FireblocksStateKey,
+          {},
+          'local',
+        )
+      : useLocalStorage<Record<string, Record<string, string>>>(
+          FireblocksStateKey,
+          {},
+        );
   const [messageToSign, setMessageToSign] = useState<string>();
   const [txToSign, setTxToSign] = useState<CreateTransaction>();
 

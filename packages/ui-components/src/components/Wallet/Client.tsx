@@ -323,7 +323,9 @@ export const Client: React.FC<ClientProps> = ({
             DomainFieldTypes.Portfolio,
           ]);
           setDomainsValue(
-            (marketData?.portfolio?.account?.valueAmt || 0) / 100,
+            (marketData?.portfolio?.wallet?.valueAmt ||
+              marketData?.portfolio?.account?.valueAmt ||
+              0) / 100,
           );
         }
       }

@@ -19,6 +19,7 @@ import useFireblocksTxSigner from '../../hooks/useFireblocksTxSigner';
 import {getBootstrapState, useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import type {GetEstimateTransactionResponse} from '../../lib/types/fireBlocks';
+import {getAsset} from '../../lib/wallet/asset';
 import {getBlockchainSymbol} from '../Manage/common/verification/types';
 import {Header} from './Header';
 import {OperationStatus} from './OperationStatus';
@@ -82,9 +83,7 @@ export const SignTx: React.FC<SignTxProps> = ({
   }
 
   // find asset by provided chain ID
-  const asset = clientState.assets.find(
-    a => a.blockchainAsset.blockchain.networkId === chainId,
-  );
+  const asset = getAsset(clientState.assets, {chainId});
   if (!asset?.accountId) {
     throw new Error('asset not found to sign Tx');
   }

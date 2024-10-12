@@ -8,7 +8,8 @@ import {notifyEvent} from '../lib/error';
 import {getFireBlocksClient} from '../lib/fireBlocks/client';
 import {getBootstrapState} from '../lib/fireBlocks/storage/state';
 import type {GetOperationStatusResponse} from '../lib/types/fireBlocks';
-import { MAX_RETRIES} from '../lib/types/fireBlocks';
+import {MAX_RETRIES} from '../lib/types/fireBlocks';
+import {getAsset} from '../lib/wallet/asset';
 import useFireblocksAccessToken from './useFireblocksAccessToken';
 import useFireblocksState from './useFireblocksState';
 
@@ -65,9 +66,7 @@ const useFireblocksTxSigner = (): FireblocksTxSigner => {
     );
 
     // find asset by provided chain ID
-    const asset = clientState.assets.find(
-      a => a.blockchainAsset.blockchain.networkId === chainId,
-    );
+    const asset = getAsset(clientState.assets, {chainId});
     if (!asset?.accountId) {
       throw new Error('asset not found to sign Tx');
     }

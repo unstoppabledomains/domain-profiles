@@ -17,7 +17,6 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {CurrenciesType} from '../../lib';
 import {
-  TokenType,
   WALLET_CARD_HEIGHT,
   getSortedTokens,
   useTranslationContext,

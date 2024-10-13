@@ -481,7 +481,10 @@ export const Configuration: React.FC<
             const addressPortfolio = await getWalletPortfolio(
               address,
               accessToken,
-              undefined,
+              // request all fields except for NFT data, since this is
+              // not required in a wallet for domainers. The domains tab
+              // is populated directly from resolution API in other logic.
+              ['native', 'price', 'token', 'tx'],
               true,
             );
             if (!addressPortfolio) {

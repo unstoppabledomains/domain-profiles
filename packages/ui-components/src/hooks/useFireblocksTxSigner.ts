@@ -68,7 +68,12 @@ const useFireblocksTxSigner = (): FireblocksTxSigner => {
     // find asset by provided chain ID
     const asset = getAsset(clientState.assets, {chainId});
     if (!asset?.accountId) {
-      throw new Error('asset not found to sign Tx');
+      throw new Error(
+        `asset not found to sign Tx. ${JSON.stringify({
+          chainId,
+          assets: clientState.assets,
+        })}`,
+      );
     }
 
     const txOp = await signAndWait(

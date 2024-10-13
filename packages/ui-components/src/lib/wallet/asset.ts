@@ -2,7 +2,8 @@ import config from '@unstoppabledomains/config';
 
 import {TokenEntry} from '../../components/Wallet/Token';
 import {notifyEvent} from '../error';
-import {AccountAsset, BootstrapState} from '../types/fireBlocks';
+import {SUPPORTED_SIGNING_SYMBOLS} from '../types';
+import {AccountAsset} from '../types/fireBlocks';
 
 export const getAsset = (
   assets: AccountAsset[],
@@ -22,9 +23,9 @@ export const getAsset = (
     // use chain ID if provided
     if (opts?.chainId) {
       return (
-        a.blockchainAsset.name.toLowerCase() ===
-          a.blockchainAsset.blockchain.name.toLowerCase() &&
-        a.blockchainAsset.blockchain.networkId === opts.chainId
+        SUPPORTED_SIGNING_SYMBOLS.includes(
+          a.blockchainAsset.symbol.toUpperCase(),
+        ) && a.blockchainAsset.blockchain.networkId === opts.chainId
       );
     }
 

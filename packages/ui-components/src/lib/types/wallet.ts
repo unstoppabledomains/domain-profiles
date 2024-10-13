@@ -3,6 +3,8 @@ export interface LoginResult {
   domain: string;
 }
 
+export const SUPPORTED_SIGNING_SYMBOLS = ['ETH', 'MATIC', 'POL', 'SOL', 'BTC'];
+
 export const WALLET_CARD_HEIGHT = 275;
 
 interface walletProps {

@@ -84,8 +84,13 @@ export const SignTx: React.FC<SignTxProps> = ({
 
   // find asset by provided chain ID
   const asset = getAsset(clientState.assets, {chainId});
-  if (!asset?.accountId) {
-    throw new Error('asset not found to sign Tx');
+  if (!asset) {
+    throw new Error(
+      `asset not found to display Tx for signing. ${JSON.stringify({
+        chainId,
+        assets: clientState.assets,
+      })}`,
+    );
   }
 
   const maxDisplayLength = asset.balance?.decimals

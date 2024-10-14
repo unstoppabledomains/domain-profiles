@@ -27,7 +27,10 @@ import {TokenType, WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
 import {CryptoIcon} from '../Image';
-import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
+import {
+  getBlockchainDisplaySymbol,
+  getBlockchainGasSymbol,
+} from '../Manage/common/verification/types';
 
 const bgNeutralShade = 800;
 
@@ -268,6 +271,7 @@ export const DomainWalletTransactions: React.FC<
       ).length > 0;
     const isNft = tx.type === TokenType.Nft;
     const isErc20 = tx.type === TokenType.Erc20;
+    const isNative = tx.type === TokenType.Native;
     const isXfer = Math.abs(tx.value) > 0;
     const actionName =
       isSender && isXfer
@@ -378,7 +382,12 @@ export const DomainWalletTransactions: React.FC<
                   {numeral(Math.abs(tx.value)).format('0,0.[0000]')}{' '}
                   {isErc20
                     ? tx.method.toUpperCase()
-                    : tx.symbol && getBlockchainDisplaySymbol(tx.symbol)}
+                    : tx.symbol &&
+                      getBlockchainDisplaySymbol(
+                        isNative
+                          ? getBlockchainGasSymbol(tx.symbol)
+                          : tx.symbol,
+                      )}
                 </Typography>
               )}
               {!isNft && gasFee && gasFee.toLowerCase() !== 'nan' && (

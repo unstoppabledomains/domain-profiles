@@ -37,6 +37,22 @@ export const getBlockchainName = (symbol: string): string => {
   }
 };
 
+export const getBlockchainGasSymbol = (symbol: string): string => {
+  switch (symbol.toLowerCase()) {
+    case 'eth':
+    case 'base':
+      return 'ETH';
+    case 'polygon':
+    case 'matic':
+    case 'pol':
+      return 'MATIC';
+    case 'sol':
+    case 'solana':
+      return 'SOL';
+  }
+  return symbol.toUpperCase();
+};
+
 export const getBlockchainSymbol = (
   name: string,
   noMatchEmpty?: boolean,

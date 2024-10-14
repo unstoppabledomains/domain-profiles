@@ -18,6 +18,7 @@ import type {SerializedWalletBalance} from '../../lib';
 import {useTranslationContext} from '../../lib';
 import {sleep} from '../../lib/sleep';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
+import {getAsset} from '../../lib/wallet/asset';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 import AddressInput from './AddressInput';
@@ -204,13 +205,9 @@ const Send: React.FC<Props> = ({
     if (!assets) {
       throw new Error('Assets not found');
     }
-    const assetToSend = assets.find(
-      a =>
-        a.blockchainAsset.blockchain.name.toLowerCase() ===
-          token.walletName.toLowerCase() &&
-        a.blockchainAsset.symbol.toLowerCase() === token.ticker.toLowerCase() &&
-        a.address.toLowerCase() === token.walletAddress.toLowerCase(),
-    );
+    const assetToSend = getAsset(assets, {
+      token,
+    });
     if (!assetToSend) {
       throw new Error('Asset not found');
     }

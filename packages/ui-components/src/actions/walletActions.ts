@@ -74,7 +74,7 @@ export const getWalletPortfolio = async (
 ): Promise<SerializedWalletBalance[] | undefined> => {
   return await fetchApi(
     `/user/${address}/wallets?${QueryString.stringify({
-      fields: fields && fields.length > 0 ? fields.join(',') : undefined,
+      walletFields: fields && fields.length > 0 ? fields.join(',') : undefined,
       forceRefresh: forceRefresh ? Date.now() : undefined,
     })}`,
     {

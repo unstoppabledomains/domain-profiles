@@ -12,6 +12,7 @@ import {useTranslationContext} from '../../lib';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {
   getBlockchainDisplaySymbol,
+  getBlockchainGasSymbol,
   getBlockchainSymbol,
 } from '../Manage/common/verification/types';
 import {TitleWithBackButton} from './TitleWithBackButton';
@@ -88,8 +89,8 @@ export const SendConfirm: React.FC<Props> = ({
     ? Math.min(MAX_DISPLAY_LENGTH, asset.balance.decimals)
     : MAX_DISPLAY_LENGTH;
   const assetSymbol = asset.blockchainAsset.symbol.toUpperCase();
-  const gasSymbol = getBlockchainSymbol(
-    asset.blockchainAsset.blockchain.id,
+  const gasSymbol = getBlockchainGasSymbol(
+    getBlockchainSymbol(asset.blockchainAsset.blockchain.id),
   ).toUpperCase();
 
   return (
@@ -113,7 +114,7 @@ export const SendConfirm: React.FC<Props> = ({
           <Typography variant="h4" textAlign="center">
             {amount} {getBlockchainDisplaySymbol(symbol)}
           </Typography>
-          <Typography variant="subtitle1">{amountInDollars}</Typography>
+          <Typography variant="body2">{amountInDollars}</Typography>
           <Box className={classes.contentContainer} mt={3}>
             <Box
               display="flex"
@@ -122,7 +123,7 @@ export const SendConfirm: React.FC<Props> = ({
               justifyContent="space-between"
             >
               <Typography variant="h6">{t('common.to')}</Typography>
-              <Typography variant="subtitle1">
+              <Typography variant="body2">
                 {resolvedDomain ? <b>{resolvedDomain} </b> : ''}
                 {resolvedDomain !== recipientAddress && (
                   <>({truncateAddress(recipientAddress)})</>
@@ -136,7 +137,7 @@ export const SendConfirm: React.FC<Props> = ({
               justifyContent="space-between"
             >
               <Typography variant="h6">{t('common.network')}</Typography>
-              <Typography variant="subtitle1">{blockchainName}</Typography>
+              <Typography variant="body2">{blockchainName}</Typography>
             </Box>
             <Box
               display="flex"
@@ -145,7 +146,7 @@ export const SendConfirm: React.FC<Props> = ({
               justifyContent="space-between"
             >
               <Typography variant="h6">{t('wallet.networkFee')}</Typography>
-              <Typography variant="subtitle1">
+              <Typography variant="body2">
                 {!gasFee ? (
                   <CircularProgress size={20} />
                 ) : (
@@ -161,17 +162,17 @@ export const SendConfirm: React.FC<Props> = ({
             <Box display="flex" width="100%" justifyContent="space-between">
               <Typography variant="h6">{t('wallet.totalCost')}</Typography>
               {assetSymbol === gasSymbol ? (
-                <Typography variant="subtitle1">
+                <Typography variant="body2">
                   {round(Number(amount) + Number(gasFee), maxDisplayLength)}{' '}
                   {getBlockchainDisplaySymbol(assetSymbol)}
                 </Typography>
               ) : (
                 <Box display="flex" flexDirection="column" textAlign="right">
-                  <Typography variant="subtitle1">
+                  <Typography variant="body2">
                     {round(Number(amount), maxDisplayLength)}{' '}
                     {getBlockchainDisplaySymbol(assetSymbol)}
                   </Typography>
-                  <Typography variant="subtitle1">
+                  <Typography variant="body2">
                     {round(Number(gasFee), maxDisplayLength)}{' '}
                     {getBlockchainDisplaySymbol(gasSymbol)}
                   </Typography>

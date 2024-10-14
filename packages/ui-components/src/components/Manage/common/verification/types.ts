@@ -12,6 +12,9 @@ export type VerificationProps = {
 };
 
 export const getBlockchainDisplaySymbol = (symbol: string): string => {
+  if (!symbol) {
+    return '';
+  }
   switch (symbol.toUpperCase()) {
     case 'MATIC':
       return 'POL';
@@ -21,6 +24,9 @@ export const getBlockchainDisplaySymbol = (symbol: string): string => {
 };
 
 export const getBlockchainName = (symbol: string): string => {
+  if (!symbol) {
+    return '';
+  }
   switch (symbol.toUpperCase()) {
     case 'ETH':
       return 'Ethereum';
@@ -38,6 +44,9 @@ export const getBlockchainName = (symbol: string): string => {
 };
 
 export const getBlockchainGasSymbol = (symbol: string): string => {
+  if (!symbol) {
+    return '';
+  }
   switch (symbol.toLowerCase()) {
     case 'eth':
     case 'base':

@@ -475,7 +475,7 @@ export const Client: React.FC<ClientProps> = ({
                     variant={isMobile ? 'caption' : 'body1'}
                     className={classes.actionText}
                   >
-                    {t('common.buy')}
+                    {t(cryptoValue >= 15 ? 'common.buySell' : 'common.buy')}
                   </Typography>
                 </Box>
               </Box>

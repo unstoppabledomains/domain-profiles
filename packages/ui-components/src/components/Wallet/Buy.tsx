@@ -27,11 +27,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 type Props = {
+  isSellEnabled?: boolean;
   onCancelClick: () => void;
   wallets: SerializedWalletBalance[];
 };
 
-const Buy: React.FC<Props> = ({onCancelClick, wallets}) => {
+const Buy: React.FC<Props> = ({isSellEnabled, onCancelClick, wallets}) => {
   const [t] = useTranslationContext();
   const {classes} = useStyles();
 
@@ -107,7 +108,11 @@ const Buy: React.FC<Props> = ({onCancelClick, wallets}) => {
         onSelectAsset={handleBuyRedirect}
         wallets={wallets}
         onCancelClick={onCancelClick}
-        label={t('wallet.selectAssetToBuy')}
+        label={t(
+          isSellEnabled
+            ? 'wallet.selectAssetToBuySell'
+            : 'wallet.selectAssetToBuy',
+        )}
         supportedTokenList={config.WALLETS.CHAINS.BUY}
       />
     </Box>

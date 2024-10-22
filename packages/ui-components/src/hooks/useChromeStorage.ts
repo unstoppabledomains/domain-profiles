@@ -5,8 +5,12 @@ import {notifyEvent} from '../lib';
 type chromeStorageType = 'local' | 'session' | 'sync';
 
 export const isChromeStorageSupported = (type: chromeStorageType) => {
-  if (chrome?.storage?.[type]) {
-    return true;
+  try {
+    if (chrome?.storage?.[type]) {
+      return true;
+    }
+  } catch (e) {
+    // ignore
   }
   return false;
 };

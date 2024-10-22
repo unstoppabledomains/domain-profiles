@@ -50,9 +50,11 @@ const useChromeStorage = <T>(
       await setChromeStorage(existingValue);
 
       // remove existing data
-      type === 'local'
-        ? localStorage.removeItem(key)
-        : sessionStorage.removeItem(key);
+      if (type === 'local') {
+        localStorage.removeItem(key);
+        return;
+      }
+      sessionStorage.removeItem(key);
     } catch (e) {
       notifyEvent(e, 'error', 'Wallet', 'Configuration', {
         msg: 'error migrating to chrome storage',

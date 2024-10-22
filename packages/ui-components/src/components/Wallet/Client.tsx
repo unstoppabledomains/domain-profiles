@@ -245,7 +245,7 @@ export const Client: React.FC<ClientProps> = ({
       ...state.config,
       identityState: paymentConfigStatus.status,
     };
-    saveState({
+    void saveState({
       ...state,
     });
     enqueueSnackbar(

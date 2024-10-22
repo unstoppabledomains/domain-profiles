@@ -13,40 +13,6 @@ export const getCacheKey = (prefix: string, address: string): string => {
   return `${DomainProfileKeys.Messaging}-${prefix}-${address}`;
 };
 
-export class localStorageWrapper {
-  static async getItem(k: string): Promise<string | null> {
-    return isChromeStorageSupported('local')
-      ? await localStorageWrapper.getChromeStorage(k)
-      : localStorage.getItem(k);
-  }
-
-  static async setItem(k: string, v: string): Promise<void> {
-    isChromeStorageSupported('local')
-      ? await chrome.storage.local.set({[k]: v})
-      : localStorage.setItem(k, v);
-  }
-
-  static async removeItem(k: string): Promise<void> {
-    isChromeStorageSupported('local')
-      ? await chrome.storage.local.remove(k)
-      : localStorage.removeItem(k);
-  }
-
-  static async clear(): Promise<void> {
-    isChromeStorageSupported('local')
-      ? await chrome.storage.local.clear()
-      : localStorage.clear();
-  }
-
-  private static async getChromeStorage(k: string): Promise<string | null> {
-    const v = await chrome.storage.local.get(k);
-    if (v[k]) {
-      return v[k];
-    }
-    return null;
-  }
-}
-
 export const getCachedResolution = async (
   address: string,
 ): Promise<AddressResolution | undefined> => {
@@ -91,6 +57,46 @@ export const getXmtpLocalKey = async (
   }
   return;
 };
+
+export class localStorageWrapper {
+  static async getItem(k: string): Promise<string | null> {
+    return isChromeStorageSupported('local')
+      ? await localStorageWrapper.getChromeStorage(k)
+      : localStorage.getItem(k);
+  }
+
+  static async setItem(k: string, v: string): Promise<void> {
+    if (isChromeStorageSupported('local')) {
+      await chrome.storage.local.set({[k]: v});
+      return;
+    }
+    localStorage.setItem(k, v);
+  }
+
+  static async removeItem(k: string): Promise<void> {
+    if (isChromeStorageSupported('local')) {
+      await chrome.storage.local.remove(k);
+      return;
+    }
+    localStorage.removeItem(k);
+  }
+
+  static async clear(): Promise<void> {
+    if (isChromeStorageSupported('local')) {
+      await chrome.storage.local.clear();
+      return;
+    }
+    localStorage.clear();
+  }
+
+  private static async getChromeStorage(k: string): Promise<string | null> {
+    const v = await chrome.storage.local.get(k);
+    if (v[k]) {
+      return v[k];
+    }
+    return null;
+  }
+}
 
 export const setCachedResolution = async (
   resolution: AddressResolution,

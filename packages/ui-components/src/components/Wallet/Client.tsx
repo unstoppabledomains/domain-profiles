@@ -200,6 +200,7 @@ export const Client: React.FC<ClientProps> = ({
   const cryptoValue = wallets
     .map(w => w.totalValueUsdAmt || 0)
     .reduce((p, c) => p + c, 0);
+  const isSellEnabled = cryptoValue >= 15;
 
   // component state variables
   const [isSend, setIsSend] = useState(false);
@@ -323,7 +324,9 @@ export const Client: React.FC<ClientProps> = ({
             DomainFieldTypes.Portfolio,
           ]);
           setDomainsValue(
-            (marketData?.portfolio?.account?.valueAmt || 0) / 100,
+            (marketData?.portfolio?.wallet?.valueAmt ||
+              marketData?.portfolio?.account?.valueAmt ||
+              0) / 100,
           );
         }
       }
@@ -417,7 +420,11 @@ export const Client: React.FC<ClientProps> = ({
           </Box>
         ) : isBuy ? (
           <Box className={classes.panelContainer}>
-            <Buy onCancelClick={handleCancel} wallets={wallets} />
+            <Buy
+              onCancelClick={handleCancel}
+              isSellEnabled={isSellEnabled}
+              wallets={wallets}
+            />
           </Box>
         ) : (
           <TabContext value={tabValue as ClientTabType}>
@@ -473,7 +480,7 @@ export const Client: React.FC<ClientProps> = ({
                     variant={isMobile ? 'caption' : 'body1'}
                     className={classes.actionText}
                   >
-                    {t('common.buy')}
+                    {t(isSellEnabled ? 'common.buySell' : 'common.buy')}
                   </Typography>
                 </Box>
               </Box>

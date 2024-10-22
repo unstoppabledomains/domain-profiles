@@ -13,6 +13,7 @@ import {getFireBlocksClient} from '../lib/fireBlocks/client';
 import {getBootstrapState} from '../lib/fireBlocks/storage/state';
 import type {GetOperationStatusResponse} from '../lib/types/fireBlocks';
 import {EIP_712_KEY, MAX_RETRIES} from '../lib/types/fireBlocks';
+import {getAsset} from '../lib/wallet/asset';
 import useFireblocksAccessToken from './useFireblocksAccessToken';
 import useFireblocksState from './useFireblocksState';
 
@@ -96,26 +97,7 @@ const useFireblocksMessageSigner = (): FireblocksMessageSigner => {
         meta: {chainId, default: config.WALLETS.SIGNATURE_SYMBOL},
       },
     );
-    const asset =
-      clientState.assets.find(a => {
-        // use chain ID if provided
-        if (chainId) {
-          return (
-            a.blockchainAsset.name.toLowerCase() ===
-              a.blockchainAsset.blockchain.name.toLowerCase() &&
-            a.blockchainAsset.blockchain.networkId === chainId
-          );
-        }
-
-        // use default blockchain symbol
-        return (
-          a.blockchainAsset.blockchain.id.toLowerCase() ===
-            config.WALLETS.SIGNATURE_SYMBOL.split('/')[0].toLowerCase() &&
-          a.blockchainAsset.symbol.toLowerCase() ===
-            config.WALLETS.SIGNATURE_SYMBOL.split('/')[1].toLowerCase() &&
-          a.address.toLowerCase() === address?.toLowerCase()
-        );
-      }) || clientState.assets[0];
+    const asset = getAsset(clientState.assets, {address, chainId});
     if (!asset?.accountId) {
       throw new Error('address not found in account');
     }

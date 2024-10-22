@@ -1644,6 +1644,7 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         DomainFieldTypes.Records,
         DomainFieldTypes.Market,
         DomainFieldTypes.Portfolio,
+        DomainFieldTypes.IsListedForSale,
       ]),
       getHumanityCheckStatus({name: domain}),
     ]);

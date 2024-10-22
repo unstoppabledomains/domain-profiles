@@ -22,6 +22,7 @@ import {DomainProfileKeys} from '../../../../lib/types/domain';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
 import {sendMessage, sendRemoteAttachment} from '../../protocol/push';
 import {formatFileSize} from '../../protocol/xmtp';
+import {localStorageWrapper} from '../../storage';
 import {useConversationComposeStyles} from '../styles';
 
 export const CommunityCompose: React.FC<CommunityComposeProps> = ({
@@ -51,7 +52,12 @@ export const CommunityCompose: React.FC<CommunityComposeProps> = ({
 
   // set the primary domain and wallet address at page load time
   useEffect(() => {
-    setAuthDomain(localStorage.getItem(DomainProfileKeys.AuthDomain));
+    const loadAuth = async () => {
+      setAuthDomain(
+        await localStorageWrapper.getItem(DomainProfileKeys.AuthDomain),
+      );
+    };
+    void loadAuth();
   }, [address]);
 
   // detect if user clicks outside the compose textbox

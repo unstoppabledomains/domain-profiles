@@ -60,6 +60,7 @@ import {
 import {sleep} from '../../lib/sleep';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {isEthAddress} from '../Chat/protocol/resolution';
+import {localStorageWrapper} from '../Chat/storage';
 import {DomainProfileTabType} from '../Manage/DomainProfile';
 import ManageInput from '../Manage/common/ManageInput';
 import type {ManageTabProps} from '../Manage/common/types';
@@ -454,12 +455,12 @@ export const Configuration: React.FC<
     // wallets may be loaded into cached local storage for up to
     // an hour, to improve loading UX
     const walletCachePrefix = 'portfolio-state';
-    const walletCacheExpiry = localStorage.getItem(
+    const walletCacheExpiry = await localStorageWrapper.getItem(
       `${walletCachePrefix}-expiry`,
     );
     const walletCacheData = forceRefresh
       ? undefined
-      : localStorage.getItem(`${walletCachePrefix}-data`);
+      : await localStorageWrapper.getItem(`${walletCachePrefix}-data`);
     const walletCacheValid =
       walletCacheData &&
       walletCacheExpiry &&
@@ -530,8 +531,11 @@ export const Configuration: React.FC<
     setIsLoaded(true);
 
     // store rendered wallets in session memory
-    localStorage.setItem(`${walletCachePrefix}-data`, JSON.stringify(wallets));
-    localStorage.setItem(
+    await localStorageWrapper.setItem(
+      `${walletCachePrefix}-data`,
+      JSON.stringify(wallets),
+    );
+    await localStorageWrapper.setItem(
       `${walletCachePrefix}-expiry`,
       String(Date.now() + ONE_HOUR),
     );
@@ -638,7 +642,7 @@ export const Configuration: React.FC<
     setConfigState(WalletConfigState.OnboardWithEmail);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     // clear input variables
     setBootstrapCode(undefined);
     setPersistKeys(forceRememberOnDevice);
@@ -652,7 +656,7 @@ export const Configuration: React.FC<
     }
 
     // clear all storage state
-    saveState({});
+    await saveState({});
 
     // reset configuration state
     setConfigState(WalletConfigState.PasswordEntry);

@@ -99,6 +99,7 @@ import {
   getSeoTags,
   isDomainValidForManagement,
   isExternalDomain,
+  localStorageWrapper,
   loginWithAddress,
   parseRecords,
   useDomainConfig,
@@ -430,27 +431,31 @@ const DomainProfile = ({
     );
 
     // set state from local storage
-    const localAuthAddress =
-      localStorage.getItem(DomainProfileKeys.AuthAddress) || '';
-    const localAuthDomain =
-      localStorage.getItem(DomainProfileKeys.AuthDomain) || '';
-    let isAuthorized = false;
-    if (localAuthAddress && localAuthDomain) {
-      // set local state for logged in user
-      setAuthAddress(localAuthAddress);
-      setAuthDomain(localAuthDomain);
-      isAuthorized =
-        ownerAddress.toLowerCase() === localAuthAddress.toLowerCase();
+    const loadAuth = async () => {
+      const localAuthAddress =
+        (await localStorageWrapper.getItem(DomainProfileKeys.AuthAddress)) ||
+        '';
+      const localAuthDomain =
+        (await localStorageWrapper.getItem(DomainProfileKeys.AuthDomain)) || '';
+      let isAuthorized = false;
+      if (localAuthAddress && localAuthDomain) {
+        // set local state for logged in user
+        setAuthAddress(localAuthAddress);
+        setAuthDomain(localAuthDomain);
+        isAuthorized =
+          ownerAddress.toLowerCase() === localAuthAddress.toLowerCase();
 
-      // determine if logged in user is an MPC wallet
-      setIsMpcWallet(Object.keys(state).length > 0);
+        // determine if logged in user is an MPC wallet
+        setIsMpcWallet(Object.keys(state).length > 0);
 
-      // check for a new resolved domain name
-      void loginWithAddress(localAuthAddress).then(r =>
-        setAuthDomain(r.domain),
-      );
-    }
-    setIsOwner(isAuthorized);
+        // check for a new resolved domain name
+        void loginWithAddress(localAuthAddress).then(r =>
+          setAuthDomain(r.domain),
+        );
+      }
+      setIsOwner(isAuthorized);
+    };
+    void loadAuth();
   }, [isMounted, isFeatureFlagSuccess, featureFlags, ownerAddress]);
 
   useEffect(() => {

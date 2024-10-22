@@ -60,6 +60,7 @@ import {
   getConversations,
   isAllowListed,
 } from '../protocol/xmtp';
+import {localStorageWrapper} from '../storage';
 import type {AddressResolution, PayloadData} from '../types';
 import {TabType, getCaip10Address} from '../types';
 import CallToAction from './CallToAction';
@@ -455,10 +456,10 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
     try {
       // retrieve optional signature data
-      const authExpiry = localStorage.getItem(
+      const authExpiry = await localStorageWrapper.getItem(
         getDomainSignatureExpiryKey(authDomain!),
       );
-      const authSignature = localStorage.getItem(
+      const authSignature = await localStorageWrapper.getItem(
         getDomainSignatureValueKey(authDomain!),
       );
 

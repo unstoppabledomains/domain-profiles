@@ -9,6 +9,7 @@ import {
   getDomainSignatureExpiryKey,
   getDomainSignatureValueKey,
 } from '../../Wallet/ProfileManager';
+import {localStorageWrapper} from '../storage';
 
 export const uploadAttachment = async (
   domain: string,
@@ -17,8 +18,12 @@ export const uploadAttachment = async (
 ): Promise<string | undefined> => {
   try {
     // retrieve local signature information for this domain
-    const sigExpiry = localStorage.getItem(getDomainSignatureExpiryKey(domain));
-    const sigContent = localStorage.getItem(getDomainSignatureValueKey(domain));
+    const sigExpiry = await localStorageWrapper.getItem(
+      getDomainSignatureExpiryKey(domain),
+    );
+    const sigContent = await localStorageWrapper.getItem(
+      getDomainSignatureValueKey(domain),
+    );
     if (!sigExpiry || !sigContent) {
       notifyEvent(
         new Error('upload auth required'),

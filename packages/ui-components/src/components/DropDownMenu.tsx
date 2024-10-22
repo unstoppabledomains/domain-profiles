@@ -17,6 +17,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import useFireblocksState from '../hooks/useFireblocksState';
 import {isDomainValidForManagement} from '../lib';
 import useTranslationContext from '../lib/i18n';
+import {localStorageWrapper} from './Chat/storage';
 
 interface Props {
   domain?: string;
@@ -107,9 +108,9 @@ const DropDownMenu: React.FC<Props> = ({
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setLoggingOut(prev => !prev);
-    localStorage.clear();
+    await localStorageWrapper.clear();
     sessionStorage.clear();
     if (onLogout) {
       onLogout();

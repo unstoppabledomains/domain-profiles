@@ -39,7 +39,9 @@ export const getFireBlocksClient = async (
   opts?: {
     pin?: string;
     state: Record<string, Record<string, string>>;
-    saveState: (state: Record<string, Record<string, string>>) => void;
+    saveState: (
+      state: Record<string, Record<string, string>>,
+    ) => void | Promise<void>;
     onEventCallback?: (event: TEvent) => void;
   },
 ): Promise<IFireblocksNCW> => {

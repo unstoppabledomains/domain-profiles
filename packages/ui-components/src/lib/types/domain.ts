@@ -74,6 +74,7 @@ export enum DomainFieldTypes {
   Market = 'market',
   Portfolio = 'portfolio',
   WalletBalances = 'walletBalances',
+  IsListedForSale = 'isListedForSale',
 }
 
 export enum DomainProfileKeys {
@@ -374,6 +375,7 @@ export type SerializedPublicDomainProfileData = {
   messaging?: MessagingAttributes;
   market?: SerializedDomainMarket;
   portfolio?: SerializedPortfolioSummary;
+  isListedForSale?: boolean;
 };
 
 export type SerializedRecommendation = {

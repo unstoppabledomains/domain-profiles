@@ -439,7 +439,7 @@ export const Header: React.FC<Props> = ({
           {showMessages && (
             <UnstoppableMessaging
               address={address}
-              silentOnboard={!isChromeStorageSupported('local')}
+              silentOnboard={true}
               hideIcon={true}
               onPopoutClick={onMessagePopoutClick}
               disableSupportBubble

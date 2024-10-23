@@ -19,12 +19,12 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import CopyToClipboard from '../../components/CopyToClipboard';
 import {CryptoIcon} from '../../components/Image/CryptoIcon';
 import {useDomainConfig} from '../../hooks';
+import {getBlockScanUrl} from '../../lib';
 import {displayShortCryptoAddress} from '../../lib/displayCryptoAddress';
 import useTranslationContext from '../../lib/i18n';
 import type {CurrenciesType} from '../../lib/types/blockchain';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import type {MulticoinVersions} from '../../lib/types/records';
-import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileTabType} from '../Manage/common/types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -116,6 +116,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   menuActionIcon: {
     marginRight: theme.spacing(1),
+    height: '14px',
+    width: '14px',
   },
 }));
 
@@ -212,27 +214,6 @@ const CryptoAddress: React.FC<Props> = ({
     setConfigOpen(true);
   };
 
-  const getBlockScanUrl = (symbol: CurrenciesType, addr: string) => {
-    switch (symbol) {
-      case 'ETH':
-      case 'FTM':
-      case 'AVAX':
-        return isEthAddress(addr)
-          ? `https://www.oklink.com/${symbol.toLowerCase()}/address/${addr}?channelId=uns001`
-          : '';
-      case 'MATIC':
-        return isEthAddress(addr)
-          ? `https://www.oklink.com/polygon/address/${addr}?channelId=uns001`
-          : '';
-      case 'BTC':
-        return `https://www.oklink.com/${symbol.toLowerCase()}/address/${addr}?channelId=uns001`;
-      case 'SOL':
-        return `https://www.oklink.com/sol/account/${addr}?channelId=uns001`;
-      default:
-        return '';
-    }
-  };
-
   const showTooltip = showWarning && !isVerified && isSupported(currency);
   const isSingleAddress = Object.keys(filteredVersions || []).length <= 1;
   const isSingleAddressWithLink =
@@ -255,10 +236,7 @@ const CryptoAddress: React.FC<Props> = ({
         placement="bottom"
         arrow
       >
-        <CryptoIcon
-          currency={currency}
-          classes={{root: classes.currencyIcon}}
-        />
+        <CryptoIcon currency={currency} className={classes.currencyIcon} />
       </Tooltip>
       {chain && <span className={classes.chain}>{chain}</span>}
       <Typography className={classes.address}>
@@ -332,46 +310,52 @@ const CryptoAddress: React.FC<Props> = ({
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleClose}
+            transformOrigin={{horizontal: 'right', vertical: 'top'}}
+            anchorOrigin={{horizontal: 'right', vertical: 'bottom'}}
             classes={{list: classes.menuList}}
           >
-            {Object.keys(filteredVersions).map(version => (
-              <MenuItem className={classes.menuItem} onClick={handleClose}>
-                {getBlockScanUrl(currency, filteredVersions[version]) ? (
-                  <Box
-                    display="flex"
-                    onClick={() =>
-                      handleSingleAddressClick(filteredVersions[version])
-                    }
-                  >
-                    <LaunchOutlinedIcon
-                      titleAccess={t('profile.openAddress')}
-                      className={classes.menuActionIcon}
-                    />
-                    <Typography>{version}</Typography>
-                  </Box>
-                ) : (
-                  <CopyToClipboard
-                    key={`${currency}_${version}`}
-                    onCopy={
-                      showTooltip && isOwner
-                        ? undefined
-                        : handleCryptoAddressCopied
-                    }
-                    stringToCopy={
-                      showTooltip && isOwner ? '' : filteredVersions[version]
-                    }
-                  >
-                    <Box display="flex">
-                      <CopyContentIcon
-                        titleAccess={t('profile.copyAddress')}
+            {Object.keys(filteredVersions)
+              .sort((a, b) => a.localeCompare(b))
+              .map(version => (
+                <MenuItem className={classes.menuItem} onClick={handleClose}>
+                  {getBlockScanUrl(currency, filteredVersions[version]) ? (
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      onClick={() =>
+                        handleSingleAddressClick(filteredVersions[version])
+                      }
+                    >
+                      <LaunchOutlinedIcon
+                        titleAccess={t('profile.openAddress')}
                         className={classes.menuActionIcon}
                       />
-                      <Typography>{version}</Typography>
+                      <Typography variant="body2">{version}</Typography>
                     </Box>
-                  </CopyToClipboard>
-                )}
-              </MenuItem>
-            ))}
+                  ) : (
+                    <CopyToClipboard
+                      key={`${currency}_${version}`}
+                      onCopy={
+                        showTooltip && isOwner
+                          ? undefined
+                          : handleCryptoAddressCopied
+                      }
+                      stringToCopy={
+                        showTooltip && isOwner ? '' : filteredVersions[version]
+                      }
+                    >
+                      <Box display="flex">
+                        <CopyContentIcon
+                          titleAccess={t('profile.copyAddress')}
+                          className={classes.menuActionIcon}
+                        />
+                        <Typography variant="body2">{version}</Typography>
+                      </Box>
+                    </CopyToClipboard>
+                  )}
+                </MenuItem>
+              ))}
           </Menu>
         </>
       ) : isSingleAddressWithLink ? (

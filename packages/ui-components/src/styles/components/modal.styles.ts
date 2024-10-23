@@ -17,17 +17,28 @@ const useStyles = makeStyles()((theme: Theme) => ({
       padding: theme.spacing(1.5),
     },
     overflow: 'hidden',
+    height: '100%',
+  },
+  modalContentNoMargin: {
+    margin: 0,
+    padding: 0,
+    [theme.breakpoints.down('sm')]: {
+      padding: 0,
+    },
   },
   contentContainerNoPadding: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    height: '100%',
+    padding: 0,
   },
   contentContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     padding: theme.spacing(2),
+    height: '100%',
   },
   modalHeader: {
     width: '100%',
@@ -44,6 +55,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
   bold: {
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  fullScreen: {
+    '& .MuiDialog-container .MuiDialog-paper': {
+      margin: 0,
+      width: '100%',
+    },
   },
 }));
 export default useStyles;

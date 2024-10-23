@@ -1,7 +1,8 @@
 import type config from '@unstoppabledomains/config';
 
 import type {Web3Dependencies} from '../../../../lib';
-import type {ResolverKeyName} from '../../../../lib/types/resolverKeys';
+import type {MappedResolverKey} from '../../../../lib/types/pav3';
+import {getMappedResolverKey} from '../../../../lib/types/resolverKeys';
 
 export type VerificationProps = {
   ownerAddress: string;
@@ -12,7 +13,22 @@ export type VerificationProps = {
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;
 };
 
+export const getBlockchainDisplaySymbol = (symbol: string): string => {
+  if (!symbol) {
+    return '';
+  }
+  switch (symbol.toUpperCase()) {
+    case 'MATIC':
+      return 'POL';
+    default:
+      return symbol.toUpperCase();
+  }
+};
+
 export const getBlockchainName = (symbol: string): string => {
+  if (!symbol) {
+    return '';
+  }
   switch (symbol.toUpperCase()) {
     case 'ETH':
       return 'Ethereum';
@@ -20,19 +36,45 @@ export const getBlockchainName = (symbol: string): string => {
       return 'Polygon';
     case 'AVAX':
       return 'Avalanche';
+    case 'BTC':
+      return 'Bitcoin';
+    case 'SOL':
+      return 'Solana';
     default:
       return symbol;
   }
 };
 
-type BLOCKCHAIN = keyof typeof config.BLOCKCHAINS;
-export const getBlockchainSymbol = (name: string): BLOCKCHAIN => {
+export const getBlockchainGasSymbol = (symbol: string): string => {
+  if (!symbol) {
+    return '';
+  }
+  switch (symbol.toLowerCase()) {
+    case 'eth':
+    case 'base':
+      return 'ETH';
+    case 'polygon':
+    case 'matic':
+    case 'pol':
+      return 'MATIC';
+    case 'sol':
+    case 'solana':
+      return 'SOL';
+  }
+  return symbol.toUpperCase();
+};
+
+export const getBlockchainSymbol = (
+  name: string,
+  noMatchEmpty?: boolean,
+): string => {
   switch (name.toUpperCase()) {
     case 'ETHEREUM':
     case 'ETH':
       return 'ETH';
     case 'POLYGON':
     case 'MATIC':
+    case 'POL':
       return 'MATIC';
     case 'BASE':
       return 'BASE';
@@ -43,20 +85,23 @@ export const getBlockchainSymbol = (name: string): BLOCKCHAIN => {
     case 'SOL':
       return 'SOL';
     default:
-      throw new Error(`Unknown blockchain name: ${name}`);
+      return noMatchEmpty ? '' : name.toUpperCase();
   }
 };
 
-export const getRecordKey = (
+// getRecordKeys retrieves ordered list of keys for provided symbol
+export const getRecordKeys = (
   symbol: string,
-  multichainVersion?: string,
-): ResolverKeyName => {
-  if (symbol === 'MATIC') {
-    return `crypto.MATIC.version.${(
-      multichainVersion || 'MATIC'
-    ).toUpperCase()}.address` as ResolverKeyName;
+  mappedResolverKeys: MappedResolverKey[],
+): string[] => {
+  const mappedKey = getMappedResolverKey(symbol, mappedResolverKeys);
+  if (!mappedKey) {
+    return [];
   }
-  return multichainVersion
-    ? (`crypto.${symbol.toUpperCase()}.version.${multichainVersion.toUpperCase()}.address` as ResolverKeyName)
-    : (`crypto.${symbol.toUpperCase()}.address` as ResolverKeyName);
+  return [
+    mappedKey.key,
+    mappedKey.mapping?.to || '',
+    mappedKey.parents?.find(p => p.subType === 'CRYPTO_NETWORK')?.key || '',
+    mappedKey.parents?.find(p => p.subType === 'CRYPTO_FAMILY')?.key || '',
+  ].filter(k => k);
 };

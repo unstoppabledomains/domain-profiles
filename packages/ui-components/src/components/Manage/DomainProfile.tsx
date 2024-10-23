@@ -62,7 +62,12 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
     justifyContent: 'space-between',
   },
   containerWidth: {
+    display: 'flex',
     maxWidth: `calc(${width} - ${theme.spacing(5)})`,
+    [theme.breakpoints.down('sm')]: {
+      maxWidth: undefined,
+      width: '100%',
+    },
   },
   upperContainer: {
     display: 'flex',
@@ -76,6 +81,9 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
     marginBottom: theme.spacing(3),
     [theme.breakpoints.down('md')]: {
       marginRight: theme.spacing(3),
+    },
+    [theme.breakpoints.down('sm')]: {
+      marginRight: theme.spacing(0),
     },
   },
   actionContainer: {
@@ -99,16 +107,14 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
       marginBottom: theme.spacing(-1),
     },
   },
+  domainTitle: {
+    marginLeft: theme.spacing(1),
+  },
   clickableDomainTitle: {
-    display: 'inline',
-    paddingLeft: theme.spacing(1),
+    display: 'flex',
     cursor: 'pointer',
-    border: '1px solid white',
-    borderRadius: theme.shape.borderRadius,
-    '&:hover': {
-      border: `1px solid ${theme.palette.neutralShades[400]}`,
-      boxShadow: theme.shadows[2],
-    },
+    alignItems: 'center',
+    alignContent: 'center',
   },
   tabList: {
     overflow: 'hidden',
@@ -137,6 +143,9 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
     maxWidth: `calc(${width} + ${theme.spacing(5)})`,
     [theme.breakpoints.down('md')]: {
       marginRight: theme.spacing(1),
+    },
+    [theme.breakpoints.down('sm')]: {
+      marginRight: theme.spacing(-3),
     },
   },
   ownerAddress: {
@@ -215,11 +224,22 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
     void loginWithAddress(web3Deps.address);
   }, [web3Deps]);
 
+  // determines if general onchain features should be shown
   const isOnchainSupported =
     !isExternalDomain(domain) &&
     (metadata.type as string)?.toLowerCase() === 'uns' &&
     (metadata.blockchain as string)?.toLowerCase() === 'matic';
+
+  // determines if transfer tab should be shown
+  const isTransferSupported =
+    isOnchainSupported || (metadata.type as string)?.toLowerCase() === 'ens';
+
+  // determines if web2 management features should be shown
   const isWeb2Supported = isOnchainSupported && isWeb2Domain(domain);
+
+  // TODO - work needs to be completed here to bring list for sale in sync
+  // with the new marketplace features
+  const isListForSaleSupported = false;
 
   const onUpdateWrapper = (
     tab: DomainProfileTabType,
@@ -302,7 +322,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
               >
                 <Typography
                   variant="h4"
-                  className={cx({
+                  className={cx(classes.domainTitle, {
                     [classes.clickableDomainTitle]: isOtherDomains,
                   })}
                   onClick={handleOtherDomainsModalOpen}
@@ -437,18 +457,20 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                     value={DomainProfileTabType.Email}
                     disabled={!web3Deps?.address && !isOwner}
                   />
-                  <Tab
-                    icon={<SellOutlinedIcon />}
-                    iconPosition="top"
-                    label={
-                      <Box className={classes.tabLabel}>
-                        {t('manage.listForSale')}
-                      </Box>
-                    }
-                    value={DomainProfileTabType.ListForSale}
-                    disabled={!web3Deps?.address && !isOwner}
-                  />
-                  {isOnchainSupported && !isWeb2Supported && (
+                  {isListForSaleSupported && (
+                    <Tab
+                      icon={<SellOutlinedIcon />}
+                      iconPosition="top"
+                      label={
+                        <Box className={classes.tabLabel}>
+                          {t('manage.listForSale')}
+                        </Box>
+                      }
+                      value={DomainProfileTabType.ListForSale}
+                      disabled={!web3Deps?.address && !isOwner}
+                    />
+                  )}
+                  {isTransferSupported && (
                     <Tab
                       icon={<SendOutlinedIcon />}
                       iconPosition="top"
@@ -540,7 +562,9 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   address={address}
                   onUpdate={onUpdateWrapper}
                   setButtonComponent={setButtonComponent}
-                  filterFn={(k: string) => k.startsWith('crypto.')}
+                  filterFn={(k: string) =>
+                    k.startsWith('crypto.') || k.startsWith('token.')
+                  }
                 />
               </TabPanel>
               <TabPanel
@@ -583,6 +607,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                 <TransferTab
                   address={address}
                   domain={domain}
+                  metadata={metadata}
                   onUpdate={onUpdateWrapper}
                   setButtonComponent={setButtonComponent}
                 />

@@ -106,11 +106,7 @@ const nextConfig = {
         source: '/favicon.ico',
         destination:
           'https://storage.googleapis.com/unstoppable-client-assets/images/favicon/favicon.ico',
-      },
-      {
-        source: '/robots.txt',
-        destination: '/api/robots',
-      },
+      }
     ];
   },
   async headers() {

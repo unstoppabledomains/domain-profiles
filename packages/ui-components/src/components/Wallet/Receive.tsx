@@ -16,6 +16,7 @@ import type {SerializedWalletBalance} from '../../lib';
 import {useTranslationContext} from '../../lib';
 import Link from '../Link';
 import ManageInput from '../Manage/common/ManageInput';
+import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 import {SelectAsset} from './SelectAsset';
 import {TitleWithBackButton} from './TitleWithBackButton';
 import type {TokenEntry} from './Token';
@@ -26,6 +27,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     width: '100%',
+    [theme.breakpoints.down('sm')]: {
+      width: '346px',
+      marginLeft: theme.spacing(-1),
+      marginRight: theme.spacing(-1),
+    },
+    height: '100%',
   },
   selectAssetContainer: {
     display: 'flex',
@@ -153,7 +160,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
         onCancelClick={handleBackClick}
         label={t('wallet.actionOnBlockchainTitle', {
           action: t('common.receive'),
-          symbol: asset.ticker,
+          symbol: getBlockchainDisplaySymbol(asset.ticker),
           blockchain: asset.walletName,
         })}
       />
@@ -196,7 +203,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
               <Box mr={1}>
                 <InfoIcon className={classes.infoIcon} color="error" />
               </Box>
-              <Typography variant="caption" color="error">
+              <Typography variant="caption" color="error" component="div">
                 <Markdown>
                   {t(
                     config.WALLETS.CHAINS.DOMAINS.map(s =>
@@ -205,13 +212,13 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
                       ? 'wallet.receiveAddressCaptionWithDomains'
                       : 'wallet.receiveAddressCaption',
                     {
-                      symbol: asset.ticker,
+                      symbol: getBlockchainDisplaySymbol(asset.ticker),
                       blockchain: asset.walletName,
                     },
                   )}
                 </Markdown>{' '}
                 {t('wallet.sendingForOtherNetworksAndTokens', {
-                  symbol: asset.ticker,
+                  symbol: getBlockchainDisplaySymbol(asset.ticker),
                   blockchain: asset.walletName,
                 })}{' '}
                 <Link

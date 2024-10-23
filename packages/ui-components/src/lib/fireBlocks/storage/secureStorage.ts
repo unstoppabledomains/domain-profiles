@@ -15,13 +15,16 @@ export class SecureKeyStorageProvider implements ISecureStorageProvider {
     private readonly deviceId: string,
     private readonly storageProvider: IDeviceStore,
     private readonly pin?: string,
+    private readonly releaseAfterAccess?: boolean,
   ) {
     this.encKey = this.pin || deviceId;
   }
 
   async getAccess(): Promise<TReleaseSecureStorageCallback> {
     return async () => {
-      await this.release();
+      if (this.releaseAfterAccess) {
+        await this.release();
+      }
     };
   }
 

@@ -8,7 +8,7 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import * as isIPFS from 'is-ipfs';
+import {base32cid, cid, multihash} from 'is-ipfs';
 import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -169,10 +169,7 @@ export const Website: React.FC<ManageTabProps> = ({
 
     // validate the IPFS format
     const isValid =
-      value.length === 0 ||
-      isIPFS.multihash(value) ||
-      isIPFS.cid(value) ||
-      isIPFS.base32cid(value);
+      value.length === 0 || multihash(value) || cid(value) || base32cid(value);
     setIsInvalidHash(!isValid);
   };
 
@@ -197,9 +194,11 @@ export const Website: React.FC<ManageTabProps> = ({
           signature,
         },
       );
-      if (updateRequest) {
+      if (updateRequest?.transaction.messageToSign) {
         // retrieve confirmation signature
-        const txSignature = await getSignature(updateRequest.message);
+        const txSignature = await getSignature(
+          updateRequest.transaction.messageToSign,
+        );
         if (txSignature) {
           // submit confirmation signature to complete transaction
           if (
@@ -207,7 +206,7 @@ export const Website: React.FC<ManageTabProps> = ({
               domain,
               updateRequest.operationId,
               updateRequest.dependencyId,
-              txSignature,
+              {signature: txSignature},
               {
                 expires: expiry,
                 signature,

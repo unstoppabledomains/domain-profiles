@@ -70,6 +70,7 @@ interface ManageInputProps {
     }>
   >;
   inputRef?: React.RefObject<HTMLInputElement>;
+  autoComplete?: string;
 }
 
 const ManageInput: React.FC<ManageInputProps> = ({
@@ -100,6 +101,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
   setPublicVisibilityValues,
   isCardOpen,
   setIsCardOpen,
+  autoComplete,
 }) => {
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
@@ -246,6 +248,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
                 className: !endAdornment && error ? classes.error : '',
                 maxLength,
               }}
+              autoComplete={autoComplete}
               multiline={multiline}
               placeholder={placeholder}
               onChange={handleChange}

@@ -3,6 +3,7 @@ import type EnsResolverKeysJson from 'uns/ens-resolver-keys.json';
 import type UnsResolverKeysJson from 'uns/resolver-keys.json';
 
 import type {CurrenciesType} from './blockchain';
+import type {MappedResolverKey} from './pav3';
 import {ADDRESS_REGEX, MULTI_CHAIN_ADDRESS_REGEX} from './records';
 
 /**
@@ -72,6 +73,63 @@ export type ResolverKeys = {
 };
 
 export type UnsResolverKey = keyof typeof UnsResolverKeysJson.keys;
+
+export const getMappedRecordKeysForUpdate = (
+  id: string,
+  keys: MappedResolverKey[],
+): string[] => {
+  // find the associated mapped resolver key for the provided ID
+  const mappedResolverKey = getMappedResolverKey(id, keys);
+  if (!mappedResolverKey) {
+    return [id];
+  }
+
+  // build list of keys to update
+  const expandedKeys = [mappedResolverKey.key];
+  if (mappedResolverKey.mapping?.to) {
+    expandedKeys.push(mappedResolverKey.mapping.to);
+  }
+  return expandedKeys;
+};
+
+export const getMappedResolverKey = (
+  id: string,
+  keys: MappedResolverKey[],
+): MappedResolverKey | undefined => {
+  // search for matching keys
+  return (
+    // find by exact match
+    keys.find(k => k.key.toLowerCase() === id.toLowerCase()) ||
+    // find by mapping "to" match
+    keys.find(k => k.mapping?.to.toLowerCase() === id.toLowerCase()) ||
+    // find by mapping "from" match
+    keys.find(k =>
+      k.mapping?.from?.find(f => f.toLowerCase() === id.toLowerCase()),
+    ) ||
+    // find by matching parent network gas currency
+    keys.find(
+      k =>
+        k.shortName?.toLowerCase() === id.toLowerCase() &&
+        k.parents
+          ?.filter(p => p.subType === 'CRYPTO_NETWORK')
+          .find(
+            p =>
+              // matches the shortname
+              p.shortName?.toLowerCase() === id.toLowerCase() ||
+              (p.name && p.name.toLowerCase() === id.toLowerCase()),
+          ),
+    ) ||
+    // find by matching token
+    keys
+      .filter(k => k.subType === 'CRYPTO_TOKEN')
+      .find(
+        k =>
+          // matches the shortname
+          k.shortName.toLowerCase() === id.toLowerCase() ||
+          (k.name && k.name.toLowerCase() === id.toLowerCase()),
+      )
+  );
+};
 
 export const loadEnsResolverKeys = async (): Promise<ResolverKeys> => {
   if (!cachedEnsResolverKeys) {

@@ -22,6 +22,7 @@ export const getVerificationProvider = (
         ></SolanaVerificationButton>
       );
     case 'ETH':
+    case 'BASE':
     case 'MATIC':
     case 'FTM':
     case 'AVAX':

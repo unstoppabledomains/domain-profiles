@@ -21,18 +21,16 @@ function getAppEnv(): AppEnv {
   ) {
     return appEnv;
   }
-  // To support Jest plugins (e.g. for Jest VSCode extension running tests in the background)
-  // https://jestjs.io/docs/environment-variables
-  if (process.env.NODE_ENV === 'test') {
-    return 'test';
+
+  // in plain node.js, default to development if no env specified
+  if (process.env.NODE_ENV) {
+    return process.env.NODE_ENV as AppEnv;
   }
-  throw new Error(
-    'APP_ENV must be set to development, test, e2e, staging, or production',
-  );
+  return 'development';
 }
 
-function getEnvConfigOverrides(): ConfigOverride {
-  const appEnv = getAppEnv();
+function getEnvConfigOverrides(env?: AppEnv): ConfigOverride {
+  const appEnv = env || getAppEnv();
   switch (appEnv) {
     case 'development':
       return getDevelopmentConfigOverrides();
@@ -45,12 +43,13 @@ function getEnvConfigOverrides(): ConfigOverride {
     case 'production':
       return getProductionConfigOverrides();
     default:
-      throw new Error(`Unexpected APP_ENV "${appEnv}"`);
+      // default to development
+      return getDevelopmentConfigOverrides();
   }
 }
 
-function getConfig(): ImmutableConfig {
-  return merge(getDefaultConfig(), getEnvConfigOverrides());
+export function getConfig(env?: AppEnv): ImmutableConfig {
+  return merge(getDefaultConfig(), getEnvConfigOverrides(env));
 }
 
 export default getConfig();

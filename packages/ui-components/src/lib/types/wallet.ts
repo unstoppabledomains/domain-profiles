@@ -3,6 +3,8 @@ export interface LoginResult {
   domain: string;
 }
 
+export const SUPPORTED_SIGNING_SYMBOLS = ['ETH', 'MATIC', 'POL', 'SOL', 'BTC'];
+
 export const WALLET_CARD_HEIGHT = 275;
 
 interface walletProps {
@@ -18,6 +20,7 @@ export type WagmiConnectorType =
 export interface WalletAccountResponse {
   emailAddress: string;
   active: boolean;
+  clock: number;
   records?: Record<string, string>;
 }
 
@@ -31,15 +34,19 @@ export enum WalletName {
   Brave = 'Brave',
   Phantom = 'Phantom',
   Kresus = 'Kresus',
-  UnstoppableWallet = 'UnstoppableWallet',
+  UnstoppableWalletReact = 'UnstoppableWalletReact',
+  UnstoppableWalletExtension = 'UnstoppableWalletExtension',
 }
 
 export const WalletOptions: Record<WalletName, walletProps> = {
   [WalletName.Phantom]: {
     connectorType: 'metaMask',
   },
-  [WalletName.UnstoppableWallet]: {
+  [WalletName.UnstoppableWalletReact]: {
     connectorType: 'walletConnect',
+  },
+  [WalletName.UnstoppableWalletExtension]: {
+    connectorType: 'injected',
   },
   [WalletName.MetaMask]: {
     connectorType: 'metaMask',

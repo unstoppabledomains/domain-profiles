@@ -2,6 +2,9 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import {useTheme} from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import {MobileCta} from 'components/wallet/MobileCta';
 import {EMAIL_PARAM, RECOVERY_TOKEN_PARAM, SIGN_IN_PARAM} from 'lib/types';
 import {NextSeo} from 'next-seo';
 import {useRouter} from 'next/router';
@@ -15,25 +18,28 @@ import type {DomainProfileTabType} from '@unstoppabledomains/ui-components';
 import {
   DomainProfileKeys,
   Wallet,
+  getAddressMetadata,
+  getBootstrapState,
   getSeoTags,
+  isEthAddress,
+  useFeatureFlags,
   useFireblocksState,
   useTranslationContext,
+  useWeb3Context,
 } from '@unstoppabledomains/ui-components';
-import {
-  getAddressMetadata,
-  isEthAddress,
-} from '@unstoppabledomains/ui-components/src/components/Chat/protocol/resolution';
 import InlineEducation from '@unstoppabledomains/ui-components/src/components/Wallet/InlineEducation';
 import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
-import {getBootstrapState} from '@unstoppabledomains/ui-components/src/lib/fireBlocks/storage/state';
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableWalletIcon';
 
 const WalletPage = () => {
   const {classes, cx} = useStyles({});
   const [t] = useTranslationContext();
+  const {web3Deps} = useWeb3Context();
   const {query: params} = useRouter();
+  const {data: featureFlags} = useFeatureFlags(false);
   const isMounted = useIsMounted();
+  const theme = useTheme();
   const [isLoaded, setIsLoaded] = useState(false);
   const [walletState] = useFireblocksState();
   const [authAddress, setAuthAddress] = useState<string>('');
@@ -44,13 +50,19 @@ const WalletPage = () => {
   const [recoveryToken, setRecoveryToken] = useState<string>();
   const [emailAddress, setEmailAddress] = useState<string>();
   const [signInClicked, setSignInClicked] = useState(false);
+  const [getWalletClicked, setGetWalletClicked] = useState(false);
   const [isReloadChecked, setIsReloadChecked] = useState(false);
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // build default wallet page SEO tags
   const seoTags = getSeoTags({
     title: t('wallet.title'),
     description: t('manage.cryptoWalletDescriptionShort'),
   });
+
+  // indicates whether the wallet creation feature is enabled
+  const isCreateWalletEnabled =
+    featureFlags.variations?.profileServiceEnableWalletCreation === true;
 
   // sign the user out if recovery is requested
   useEffect(() => {
@@ -146,8 +158,15 @@ const WalletPage = () => {
     void loadWallet();
   }, [isMounted, authComplete]);
 
-  const handleLearnMore = () => {
-    window.open(config.WALLETS.LANDING_PAGE_URL, '_blank');
+  const handleGetLiteWallet = () => {
+    if (isCreateWalletEnabled) {
+      // open new wallet configuration page
+      setGetWalletClicked(true);
+      setSignInClicked(true);
+    } else {
+      // navigate to the wallet info page
+      window.open(config.WALLETS.LANDING_PAGE_URL, '_blank');
+    }
   };
 
   const handleSignIn = () => {
@@ -213,6 +232,8 @@ const WalletPage = () => {
                   }}
                   setAuthAddress={setAuthAddress}
                   setButtonComponent={setAuthButton}
+                  isNewUser={getWalletClicked}
+                  fullScreenModals={isMobile}
                 />
                 {!authAddress && (
                   <Box
@@ -247,9 +268,11 @@ const WalletPage = () => {
                     fullWidth
                     variant="contained"
                     className={classes.button}
-                    onClick={handleLearnMore}
+                    onClick={handleGetLiteWallet}
                   >
-                    {t('common.learnMore')}
+                    {isCreateWalletEnabled
+                      ? t('wallet.getLiteWallet')
+                      : t('common.learnMore')}
                   </Button>
                   <Button
                     fullWidth
@@ -263,6 +286,13 @@ const WalletPage = () => {
               </Box>
             )}
           </Grid>
+          {web3Deps?.unstoppableWallet && (
+            <Grid item xs={12}>
+              <Box mt={5}>
+                <MobileCta />
+              </Box>
+            </Grid>
+          )}
         </Grid>
       </Box>
       <Box className={classes.footerContainer}>

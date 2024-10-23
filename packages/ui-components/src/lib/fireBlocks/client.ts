@@ -4,7 +4,13 @@ import type {
   ITransactionSignature,
   TEvent,
 } from '@fireblocks/ncw-js-sdk';
-import {FireblocksNCWFactory} from '@fireblocks/ncw-js-sdk';
+import {
+  FireblocksNCWFactory,
+  getFireblocksNCWInstance,
+} from '@fireblocks/ncw-js-sdk';
+import {retryAsync} from 'ts-retry';
+
+import config from '@unstoppabledomains/config';
 
 import {
   sendJoinRequest,
@@ -12,8 +18,12 @@ import {
 } from '../../actions/fireBlocksActions';
 import {notifyEvent} from '../error';
 import {sleep} from '../sleep';
+import {MAX_RETRIES} from '../types/fireBlocks';
 import {LogEventHandler} from './events/logHandler';
-import {RpcMessageProvider} from './messages/rpcHandler';
+import {
+  RpcMessageProvider,
+  setRpcMessageProviderJwt,
+} from './messages/rpcHandler';
 import {StorageFactoryProvider} from './storage/factory';
 import {MemoryDeviceStoreProvider} from './storage/provider/memoryDeviceStore';
 import {ReactDeviceStoreProvider} from './storage/provider/reactDeviceStore';
@@ -33,6 +43,13 @@ export const getFireBlocksClient = async (
     onEventCallback?: (event: TEvent) => void;
   },
 ): Promise<IFireblocksNCW> => {
+  // check if an instance exists for this device ID
+  const existingInstance = getFireblocksNCWInstance(deviceId);
+  if (existingInstance) {
+    setRpcMessageProviderJwt(jwt);
+    return existingInstance;
+  }
+
   // initialize storage
   const storageFactory = new StorageFactoryProvider(
     new MemoryDeviceStoreProvider(),
@@ -62,6 +79,7 @@ export const getFireBlocksClient = async (
     eventsHandler,
     secureStorageProvider: secureKeyStorageProvider,
     storageProvider: unsecureStorageProvider,
+    logger: config.APP_ENV !== 'production' ? console : undefined,
     env: 'production',
   };
 
@@ -76,7 +94,7 @@ export const initializeClient = async (
     recoveryToken?: string;
   },
 ): Promise<boolean> => {
-  try {
+  const initializeFn = async () => {
     // create a join request for this device
     let callbackPromise: Promise<boolean> | undefined;
     await client.requestJoinExistingWallet({
@@ -137,6 +155,23 @@ export const initializeClient = async (
       await sleep(FB_WAIT_TIME_MS);
     }
     throw new Error('fireblocks key status is not ready');
+  };
+
+  // handle initialization errors and return a simple boolean result
+  // for the bootstrapping process
+  try {
+    // wrap the signing function in retry logic so that intermittent
+    // backend errors do not result in failed login attempts
+    return await retryAsync(initializeFn, {
+      delay: 100,
+      maxTry: MAX_RETRIES,
+      onError: (err: Error, currentTry: number) => {
+        notifyEvent(err, 'warning', 'Wallet', 'Authorization', {
+          msg: 'encountered bootstrap error in retry logic',
+          meta: {currentTry},
+        });
+      },
+    });
   } catch (initError) {
     notifyEvent(initError, 'error', 'Wallet', 'Configuration', {
       msg: 'unable to initialize client',
@@ -144,6 +179,17 @@ export const initializeClient = async (
   }
 
   // the request to join was not successful
+  return false;
+};
+
+export const isClockDrift = (oracleMs: number): boolean => {
+  const clockDriftMs = Math.abs(new Date().getTime() - oracleMs);
+  if (clockDriftMs > config.WALLETS.MAX_CLOCK_DRIFT_MS) {
+    notifyEvent('detected clock drift', 'error', 'Wallet', 'Validation', {
+      meta: {oracleMs, clockDriftMs},
+    });
+    return true;
+  }
   return false;
 };
 

@@ -1,8 +1,10 @@
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
+import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import Logout from '@mui/icons-material/Logout';
 import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import SupportOutlinedIcon from '@mui/icons-material/SupportOutlined';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import {Card, Typography} from '@mui/material/';
@@ -24,8 +26,11 @@ interface Props {
   onDomainsClicked?: () => void;
   onWalletClicked?: () => void;
   onRecoveryLinkClicked?: () => void;
+  onSettingsClicked?: () => void;
   onSupportClicked?: () => void;
-  onReload?: () => void;
+  onMessagingClicked?: () => void;
+  onLogout?: () => void;
+  onDisconnect?: () => void;
   marginTop?: number;
 }
 
@@ -35,6 +40,7 @@ const useStyles = makeStyles<{marginTop?: number}>()(
       position: 'absolute',
       top: `${marginTop || '44'}px`,
       right: '0px',
+      zIndex: 100,
     },
     container: {
       display: 'flex',
@@ -63,8 +69,11 @@ const DropDownMenu: React.FC<Props> = ({
   onDomainsClicked,
   onWalletClicked,
   onRecoveryLinkClicked,
+  onSettingsClicked,
   onSupportClicked,
-  onReload,
+  onMessagingClicked,
+  onDisconnect,
+  onLogout,
 }) => {
   const [isLoggingOut, setLoggingOut] = useState<boolean>(false);
   const [t] = useTranslationContext();
@@ -88,15 +97,22 @@ const DropDownMenu: React.FC<Props> = ({
 
   const handleManageProfileClick = (href: string) => {
     if (!isLoggingOut) {
-      window.location.href = href;
+      window.open(href);
     }
   };
+
+  const handleDisconnect = () => {
+    if (onDisconnect) {
+      onDisconnect();
+    }
+  };
+
   const handleLogout = () => {
     setLoggingOut(prev => !prev);
     localStorage.clear();
     sessionStorage.clear();
-    if (onReload) {
-      onReload();
+    if (onLogout) {
+      onLogout();
     } else {
       window.location.reload();
     }
@@ -127,6 +143,14 @@ const DropDownMenu: React.FC<Props> = ({
           <ListOutlinedIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
             {t('profile.viewMyDomains')}
+          </Typography>
+        </div>
+      )}
+      {onMessagingClicked && (
+        <div className={classes.container} onClick={onMessagingClicked}>
+          <ChatOutlinedIcon className={classes.settingsIcon} />
+          <Typography className={cx(classes.font)} color="text.secondary">
+            {t('push.messages')}
           </Typography>
         </div>
       )}
@@ -166,6 +190,18 @@ const DropDownMenu: React.FC<Props> = ({
           </Typography>
         </div>
       )}
+      {onSettingsClicked && (
+        <div
+          data-testid={`recovery-link-button`}
+          className={classes.container}
+          onClick={onSettingsClicked}
+        >
+          <SettingsOutlinedIcon className={classes.settingsIcon} />
+          <Typography className={cx(classes.font)} color="text.secondary">
+            {t('push.settings')}
+          </Typography>
+        </div>
+      )}
       {onSupportClicked && (
         <div
           data-testid={`support-button`}
@@ -181,14 +217,14 @@ const DropDownMenu: React.FC<Props> = ({
       <div
         data-testid={`signout-button`}
         className={classes.container}
-        onClick={handleLogout}
+        onClick={onDisconnect ? handleDisconnect : handleLogout}
       >
         <Logout className={cx(classes.settingsIcon, classes.red)} />
         <Typography
           className={cx(classes.font, classes.red)}
           color="text.secondary"
         >
-          {t('header.signOut')}
+          {onDisconnect ? t('header.disconnect') : t('header.signOut')}
         </Typography>
       </div>
     </Card>

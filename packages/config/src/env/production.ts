@@ -63,6 +63,10 @@ export default function getProductionConfig(): ConfigOverride {
       ENVIRONMENT: 'production',
       SUPPORT_WALLET_ADDRESS: '0x9B4Ed628640A73154895e369AE39a93732535924',
       SUPPORT_DOMAIN_NAME: 'support.unstoppable.x',
+      CONVERSATION_ALLOW_LIST: [
+        '0x9B4Ed628640A73154895e369AE39a93732535924',
+        '0x66cB02a8C85De1cdEABF8D88B4045F59720b8Ede',
+      ],
     },
   };
 }

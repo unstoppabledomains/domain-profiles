@@ -317,7 +317,7 @@ const NftCard = ({domain, address, nft, compact, placeholder}: Props) => {
                 {nft.symbol && (
                   <CryptoIcon
                     currency={nft.symbol as CurrenciesType}
-                    classes={{root: classes.currencyIcon}}
+                    className={classes.currencyIcon}
                   />
                 )}
                 {nft.name ? (

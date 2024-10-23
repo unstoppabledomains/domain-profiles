@@ -7,24 +7,63 @@ import {fetchApi} from '../lib';
 import {notifyEvent} from '../lib/error';
 import type {SerializedIdentityResponse} from '../lib/types/identity';
 
-export const getOnboardingStatus = async (
+export const createWallet = async (
+  emailAddress: string,
+  otp: string,
+  password: string,
+): Promise<boolean> => {
+  const createResult = await fetchApi<WalletAccountResponse>(
+    `/user/wallet/register`,
+    {
+      host: config.PROFILE.HOST_URL,
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json',
+      },
+      body: JSON.stringify({emailAddress, otp, password}),
+    },
+  );
+  if (!createResult?.emailAddress) {
+    return false;
+  }
+  return true;
+};
+
+export const createWalletOtp = async (
   emailAddress: string,
 ): Promise<boolean> => {
+  const otpResult = await fetchApi<WalletAccountResponse>(`/user/wallet`, {
+    host: config.PROFILE.HOST_URL,
+    method: 'POST',
+    headers: {
+      'Content-type': 'application/json',
+    },
+    body: JSON.stringify({emailAddress}),
+  });
+  if (!otpResult?.emailAddress) {
+    return false;
+  }
+  return true;
+};
+
+export const getOnboardingStatus = async (
+  emailAddress: string,
+): Promise<WalletAccountResponse | undefined> => {
   try {
     const accountStatus = await fetchApi<WalletAccountResponse>(
-      `/user/${emailAddress}/wallet/account`,
+      `/user/${encodeURIComponent(emailAddress)}/wallet/account`,
       {
         method: 'POST',
         host: config.PROFILE.HOST_URL,
       },
     );
     if (accountStatus?.active) {
-      return true;
+      return accountStatus;
     }
   } catch (e) {
     notifyEvent(e, 'warning', 'Wallet', 'Validation');
   }
-  return false;
+  return undefined;
 };
 
 export const getWalletPortfolio = async (
@@ -35,7 +74,7 @@ export const getWalletPortfolio = async (
 ): Promise<SerializedWalletBalance[] | undefined> => {
   return await fetchApi(
     `/user/${address}/wallets?${QueryString.stringify({
-      fields: fields && fields.length > 0 ? fields.join(',') : undefined,
+      walletFields: fields && fields.length > 0 ? fields.join(',') : undefined,
       forceRefresh: forceRefresh ? Date.now() : undefined,
     })}`,
     {
@@ -51,7 +90,6 @@ export const prepareRecipientWallet = async (
   senderWalletAddress: string,
   recipientEmailAddress: string,
   accessToken: string,
-  createWallet?: boolean,
 ): Promise<WalletAccountResponse | undefined> => {
   try {
     const inviteStatus = await fetchApi<WalletAccountResponse>(
@@ -65,7 +103,6 @@ export const prepareRecipientWallet = async (
         },
         body: JSON.stringify({
           emailAddress: recipientEmailAddress,
-          createIfMissing: createWallet,
         }),
       },
     );

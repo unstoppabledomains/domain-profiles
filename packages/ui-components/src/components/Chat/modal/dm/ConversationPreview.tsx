@@ -82,6 +82,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
   conversation,
   acceptedTopics,
+  skipObserver,
   selectedCallback,
   searchTermCallback,
   searchTerm,
@@ -99,7 +100,7 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
   // determine if conversation is visible on screen
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const nodeObserver = useIntersectionObserver(nodeRef, {});
-  const nodeOnScreen = !!nodeObserver?.isIntersecting;
+  const nodeOnScreen = skipObserver || !!nodeObserver?.isIntersecting;
 
   useEffect(() => {
     if (!conversation || !nodeOnScreen || isLoaded) {
@@ -205,6 +206,7 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
 export type ConversationPreviewProps = {
   conversation: ConversationMeta;
   acceptedTopics: string[];
+  skipObserver?: boolean;
   selectedCallback: (conversation: Conversation) => void;
   searchTermCallback: (visible: boolean) => void;
   searchTerm?: string;

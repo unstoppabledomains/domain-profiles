@@ -13,7 +13,7 @@ import type {
   SerializedPublicDomainProfileData,
   Web3Dependencies,
 } from '../../../lib';
-import {CurrencyToName, useTranslationContext} from '../../../lib';
+import {useTranslationContext} from '../../../lib';
 import type {
   MultichainKeyToLocaleKeyKeys,
   ResolverKeyName,
@@ -22,11 +22,16 @@ import {MultichainKeyToLocaleKey} from '../../../lib/types/resolverKeys';
 import {CryptoIcon} from '../../Image';
 import {useStyles} from './CurrencyInput';
 import FormError from './FormError';
-import {isTokenDeprecated, isValidRecordKeyValue} from './currencyRecords';
+import {
+  getParentNetworkSymbol,
+  isTokenDeprecated,
+  isValidMappedResolverKeyValue,
+} from './currencyRecords';
 import VerifyAdornment from './verification/VerifyAdornment';
 
 type Props = {
   currency: CurrenciesType;
+  name: string;
   domain: string;
   ownerAddress: string;
   versions: MultiChainAddressVersion[];
@@ -41,6 +46,7 @@ type Props = {
 
 const MultiChainInput: React.FC<Props> = ({
   currency,
+  name,
   domain,
   ownerAddress,
   onChange,
@@ -84,13 +90,10 @@ const MultiChainInput: React.FC<Props> = ({
               <div className={classes.currencyIconContainer}>
                 <CryptoIcon
                   currency={currency}
-                  classes={{root: classes.currencyIcon}}
+                  className={classes.currencyIcon}
                 />
               </div>
-              <span className={classes.currency}>
-                {(CurrencyToName as Record<CurrenciesType, string>)[currency] ||
-                  currency}
-              </span>
+              <span className={classes.currency}>{name || currency}</span>
             </div>
 
             <div className={classes.removeButtonContainer}>
@@ -111,7 +114,11 @@ const MultiChainInput: React.FC<Props> = ({
         <Grid item xs={12}>
           <div className={classes.rightControlWrapper}>
             <div className={classes.inputWrapper}>
-              {versions.map(({key, version, value = ''}) => {
+              {versions.map(({key, version, value = '', mappedResolverKey}) => {
+                if (!mappedResolverKey) {
+                  return;
+                }
+
                 const isDeprecated = isTokenDeprecated(key, unsResolverKeys);
 
                 const handleChange = ({
@@ -120,7 +127,7 @@ const MultiChainInput: React.FC<Props> = ({
                   const newValue = target.value.trim();
                   const isValid =
                     !newValue ||
-                    isValidRecordKeyValue(key, newValue, unsResolverKeys);
+                    isValidMappedResolverKeyValue(newValue, mappedResolverKey);
 
                   setValues({...values, [key]: newValue});
                   setErrors({...errors, [key]: !isValid});
@@ -130,14 +137,13 @@ const MultiChainInput: React.FC<Props> = ({
                   }
                 };
 
-                const _key = key as MultichainKeyToLocaleKeyKeys;
+                const currencySymbol =
+                  getParentNetworkSymbol(mappedResolverKey) || currency;
                 const placeholder = t('manage.enterYourAddress', {
                   currency:
-                    (MultichainKeyToLocaleKey[_key] &&
-                      t(MultichainKeyToLocaleKey[_key])) ||
-                    (CurrencyToName as Record<CurrenciesType, string>)[
-                      currency
-                    ] ||
+                    (MultichainKeyToLocaleKey[key] &&
+                      t(MultichainKeyToLocaleKey[key])) ||
+                    mappedResolverKey.name ||
                     currency,
                 });
 
@@ -165,7 +171,7 @@ const MultiChainInput: React.FC<Props> = ({
                             domain={domain}
                             ownerAddress={ownerAddress}
                             profileData={profileData}
-                            currency={currency}
+                            currency={currencySymbol}
                             setWeb3Deps={setWeb3Deps}
                             uiDisabled={false}
                             saveClicked={saveClicked}

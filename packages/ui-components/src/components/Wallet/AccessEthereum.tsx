@@ -24,7 +24,6 @@ import {publicProvider} from 'wagmi/providers/public';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {useFeatureFlags} from '../../actions';
 import WalletButton from '../../components/Wallet/WalletButton';
 import useTranslationContext from '../../lib/i18n';
 import {sleep} from '../../lib/sleep';
@@ -33,6 +32,13 @@ import {WalletName, WalletOptions} from '../../lib/types/wallet';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import {WalletClientSigner} from '../../lib/wallet/signer';
 
+// declare the Lite Wallet extension EIP-1193 injected provider property
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    unstoppable?: any;
+  }
+}
 export interface AccessEthereumProps {
   address?: string;
   onComplete: (web3Deps?: Web3Dependencies) => void;
@@ -41,6 +47,7 @@ export interface AccessEthereumProps {
   onClose?: () => void;
   selectedWallet?: WalletName;
   setSelectedWallet: (w: WalletName) => void;
+  isMpcWallet?: boolean;
 }
 
 export const useStyles = makeStyles()((theme: Theme) => ({
@@ -66,6 +73,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
 
 const AccessEthereum: React.FC<AccessEthereumProps> = ({
   address,
+  isMpcWallet,
   onComplete,
   onError,
   selectedWallet,
@@ -108,10 +116,18 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
           appName: 'wagmi',
         },
       }),
+      // an injected provider to connect to the Unstoppable Domains Lite Wallet
+      // browser extension, injected info DOM with window.unstoppable property
+      // as EIP-1193 Ethereum provider.
       new InjectedConnector({
         chains,
         options: {
           shimDisconnect: true,
+          getProvider: () => {
+            return typeof window !== 'undefined'
+              ? window.unstoppable
+              : undefined;
+          },
         },
       }),
     ],
@@ -127,12 +143,14 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
         onError={onError}
         selectedWallet={selectedWallet}
         setSelectedWallet={setSelectedWallet}
+        isMpcWallet={isMpcWallet}
       />
     </WagmiConfig>
   );
 };
 
 const AccessEthereumConnectors: React.FC<AccessEthereumProps> = ({
+  isMpcWallet,
   onComplete,
   onError,
   selectedWallet,
@@ -140,7 +158,6 @@ const AccessEthereumConnectors: React.FC<AccessEthereumProps> = ({
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
-  const {data: featureFlags} = useFeatureFlags();
   const [selectedConnector, setSelectedConnector] = useState<Connector>();
 
   // wagmi hooks
@@ -158,6 +175,31 @@ const AccessEthereumConnectors: React.FC<AccessEthereumProps> = ({
       disconnect();
     } catch (e) {}
   }, []);
+
+  useEffect(() => {
+    // only proceed for lite wallet connections when the extension
+    // is already installed
+    if (
+      !isMpcWallet ||
+      !window.unstoppable ||
+      !connectors ||
+      connectors.length === 0
+    ) {
+      return;
+    }
+
+    // find the UD wallet extension
+    const udExtensionConnector = getConnector('injected');
+    if (!udExtensionConnector) {
+      return;
+    }
+
+    // select the UD wallet extension
+    void handleClick(
+      WalletName.UnstoppableWalletExtension,
+      udExtensionConnector,
+    );
+  }, [connectors, isMpcWallet]);
 
   useEffect(() => {
     if (!connectedSigner) {
@@ -183,7 +225,7 @@ const AccessEthereumConnectors: React.FC<AccessEthereumProps> = ({
     setSelectedWallet(walletName);
 
     // alternative connector logic for Unstoppable Wallet
-    if (walletName === WalletName.UnstoppableWallet) {
+    if (walletName === WalletName.UnstoppableWalletReact) {
       return;
     }
 
@@ -247,11 +289,23 @@ const AccessEthereumConnectors: React.FC<AccessEthereumProps> = ({
         <Grid container className={classes.listContainer}>
           {Object.keys(WalletOptions)
             .filter(k => {
-              const isUdWalletEnabled =
-                featureFlags.variations?.udMeServiceDomainsEnableFireblocks;
-              if (k === WalletName.UnstoppableWallet && !isUdWalletEnabled) {
+              // hide the integrated Lite Wallet button if the extension is installed
+              if (
+                k === WalletName.UnstoppableWalletReact &&
+                window.unstoppable !== undefined
+              ) {
                 return false;
               }
+
+              // hide the Lite Wallet extension button if it is not installed
+              if (
+                k === WalletName.UnstoppableWalletExtension &&
+                window.unstoppable === undefined
+              ) {
+                return false;
+              }
+
+              // show the button
               return true;
             })
             .slice(0, 9)

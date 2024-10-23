@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import AddCommentOutlinedIcon from '@mui/icons-material/AddCommentOutlined';
+import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
+import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import ChatIcon from '@mui/icons-material/ChatOutlined';
 import CloseIcon from '@mui/icons-material/Close';
-import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import GroupsIcon from '@mui/icons-material/GroupOutlined';
 import AppsIcon from '@mui/icons-material/NotificationsActiveOutlined';
-import SmsOutlinedIcon from '@mui/icons-material/SmsOutlined';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
@@ -16,6 +17,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import CircularProgress from '@mui/material/CircularProgress';
+import IconButton from '@mui/material/IconButton';
 import Tab from '@mui/material/Tab';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
@@ -23,11 +25,11 @@ import type {Theme} from '@mui/material/styles';
 import {styled, useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import type {IMessageIPFS} from '@pushprotocol/restapi';
+import {ContentTypeText} from '@xmtp/content-type-text';
 import type {
   DecodedMessage,
   Conversation as XmtpConversation,
 } from '@xmtp/xmtp-js';
-import {ContentTypeText} from '@xmtp/xmtp-js';
 import React, {useEffect, useState} from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
@@ -44,13 +46,20 @@ import {fetchApi, isDomainValidForManagement} from '../../../lib';
 import {notifyEvent} from '../../../lib/error';
 import useTranslationContext from '../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../lib/types/badge';
-import type {SerializedUserDomainProfileData} from '../../../lib/types/domain';
+import type {
+  SerializedRecommendation,
+  SerializedUserDomainProfileData,
+} from '../../../lib/types/domain';
 import type {Web3Dependencies} from '../../../lib/types/web3';
 import Modal from '../../Modal';
 import {registerClientTopics} from '../protocol/registration';
 import {getAddressMetadata} from '../protocol/resolution';
 import type {ConversationMeta} from '../protocol/xmtp';
-import {getConversation, getConversations} from '../protocol/xmtp';
+import {
+  getConversation,
+  getConversations,
+  isAllowListed,
+} from '../protocol/xmtp';
 import type {AddressResolution, PayloadData} from '../types';
 import {TabType, getCaip10Address} from '../types';
 import CallToAction from './CallToAction';
@@ -58,6 +67,7 @@ import Search from './Search';
 import Conversation from './dm/Conversation';
 import ConversationPreview from './dm/ConversationPreview';
 import ConversationStart from './dm/ConversationStart';
+import ConversationSuggestions from './dm/ConversationSuggestions';
 import Community from './group/Community';
 import CommunityList from './group/CommunityList';
 import NotificationPreview from './notification/NotificationPreview';
@@ -77,6 +87,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     padding: theme.spacing(1),
     border: 'none',
     backgroundColor: 'transparent',
+    [theme.breakpoints.down('sm')]: {
+      padding: 0,
+    },
   },
   chatMobileContainer: {
     width: '100%',
@@ -114,10 +127,17 @@ const useStyles = makeStyles()((theme: Theme) => ({
   headerActionContainer: {
     display: 'flex',
     color: theme.palette.neutralShades[600],
+    marginRight: theme.spacing(1),
+  },
+  headerTitleContainer: {
+    display: 'flex',
+    width: '100%',
+    alignItems: 'center',
   },
   newChatIcon: {
-    marginRight: theme.spacing(0.7),
     color: theme.palette.primary.main,
+    transform: 'rotateY(180deg)',
+    marginTop: '2px',
   },
   headerActionIcon: {
     marginLeft: theme.spacing(1),
@@ -136,7 +156,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     overscrollBehavior: 'contain',
     height: '425px',
     [theme.breakpoints.down('sm')]: {
-      height: 'calc(100vh - 200px)',
+      height: 'calc(100vh - 175px)',
     },
   },
   tabList: {
@@ -184,6 +204,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   setWeb3Deps,
   onClose,
   onInitPushAccount,
+  onPopoutClick,
   setActiveChat,
   setActiveCommunity,
 }) => {
@@ -217,6 +238,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   const [notifications, setNotifications] = useState<PayloadData[]>([]);
   const [notificationsAvailable, setNotificationsAvailable] = useState(true);
   const [notificationsPage, setNotificationsPage] = useState(1);
+  const [suggestions, setSuggestions] = useState<SerializedRecommendation[]>();
   const [userProfile, setUserProfile] =
     useState<SerializedUserDomainProfileData>();
   const {fetchNotifications, loading: notificationsLoading} =
@@ -315,12 +337,20 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     if (acceptedTopics.length === 0 && blockedTopics.length === 0) {
       setAcceptedTopics(
         conversations
-          .filter(c => c.consentState === 'allowed')
+          .filter(
+            c =>
+              c.consentState === 'allowed' ||
+              isAllowListed(c.conversation.peerAddress),
+          )
           .map(c => c.conversation.topic),
       );
       setBlockedTopics(
         conversations
-          .filter(c => c.consentState === 'denied')
+          .filter(
+            c =>
+              c.consentState === 'denied' &&
+              !isAllowListed(c.conversation.peerAddress),
+          )
           .map(c => c.conversation.topic),
       );
     }
@@ -796,7 +826,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         open={open}
         onClose={onClose}
         noModalHeader={true}
+        noContentMargin={true}
         noContentPadding={true}
+        fullScreen={true}
         dialogPaperStyle={classes.chatMobilePaper}
       >
         <Box className={classes.chatMobileContainer}>{children}</Box>
@@ -816,6 +848,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     conversationSearch ? (
       <ConversationStart
         address={xmtpAddress}
+        conversations={conversations}
         onClose={onClose}
         onBack={handleCloseSearch}
         selectedCallback={handleOpenChatFromAddress}
@@ -837,6 +870,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         }
         onBack={handleCloseChat}
         onClose={onClose}
+        onPopoutClick={onPopoutClick}
       />
     ) : pushAccount && pushKey && activeCommunity?.groupChatId ? (
       <Community
@@ -866,33 +900,44 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         variant="outlined"
       >
         <CardHeader
-          title={t('push.messages')}
+          title={
+            isMobile ? (
+              <Box className={classes.headerTitleContainer}>
+                <IconButton onClick={onClose}>
+                  <ArrowBackOutlinedIcon />
+                </IconButton>
+                <Box ml={1}>{t('push.messages')}</Box>
+              </Box>
+            ) : (
+              t('push.messages')
+            )
+          }
           action={
             <Box className={classes.headerActionContainer}>
               <Tooltip title={t('push.chatNew')}>
-                <SmsOutlinedIcon
+                <AddCommentOutlinedIcon
                   className={cx(classes.headerActionIcon, classes.newChatIcon)}
                   onClick={handleNewChat}
                 />
               </Tooltip>
               {(!authDomain || !isDomainValidForManagement(authDomain)) && (
-                <Badge color="warning" variant="dot">
-                  <Tooltip title={t('push.getAnIdentity')}>
-                    <FingerprintIcon
-                      className={classes.headerActionIcon}
-                      onClick={handleIdentityClick}
-                      color="warning"
-                      id="identity-button"
-                    />
-                  </Tooltip>
-                </Badge>
+                <Tooltip title={t('push.getAnIdentity')}>
+                  <AddHomeOutlinedIcon
+                    className={classes.headerActionIcon}
+                    onClick={handleIdentityClick}
+                    color="warning"
+                    id="identity-button"
+                  />
+                </Tooltip>
               )}
-              <Tooltip title={t('common.close')}>
-                <CloseIcon
-                  className={classes.headerActionIcon}
-                  onClick={onClose}
-                />
-              </Tooltip>
+              {!isMobile && (
+                <Tooltip title={t('common.close')}>
+                  <CloseIcon
+                    className={classes.headerActionIcon}
+                    onClick={onClose}
+                  />
+                </Tooltip>
+              )}
             </Box>
           }
         />
@@ -1005,6 +1050,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                           }
                           searchTerm={searchValue}
                           acceptedTopics={acceptedTopics}
+                          skipObserver={isMobile}
                           conversation={c}
                         />
                       ))
@@ -1013,15 +1059,30 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                         icon="ForumOutlinedIcon"
                         title={
                           requestCount === 0
-                            ? t('push.chatNew')
+                            ? suggestions
+                              ? `${t('common.recommended')} ${t(
+                                  'common.connections',
+                                )}`
+                              : t('push.chatNew')
                             : t('push.chatNewRequest')
                         }
                         subTitle={
                           requestCount === 0
-                            ? t('push.chatNewDescription')
+                            ? suggestions
+                              ? t('push.chatNewRecommendations')
+                              : t('push.chatNewDescription')
                             : t('push.chatNewRequestDescription')
                         }
-                      />
+                      >
+                        {requestCount === 0 && (
+                          <ConversationSuggestions
+                            address={xmtpAddress}
+                            conversations={conversations}
+                            onSelect={handleOpenChatFromAddress}
+                            onSuggestionsLoaded={setSuggestions}
+                          />
+                        )}
+                      </CallToAction>
                     )}
                   </Box>
                 )}
@@ -1138,6 +1199,7 @@ export type ChatModalProps = {
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;
   onClose(): void;
   onInitPushAccount(): void;
+  onPopoutClick?: (address?: string) => void;
   setActiveChat: (v?: string) => void;
   setActiveCommunity: (v?: SerializedCryptoWalletBadge) => void;
 };

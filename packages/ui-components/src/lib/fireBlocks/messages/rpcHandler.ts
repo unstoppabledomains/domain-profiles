@@ -3,20 +3,17 @@ import type {IMessagesHandler} from '@fireblocks/ncw-js-sdk';
 import {sendRpcMessage} from '../../../actions/fireBlocksActions';
 import {notifyEvent} from '../../error';
 
+let RPC_MESSAGE_PROVIDER_JWT: string = '';
+
 export class RpcMessageProvider implements IMessagesHandler {
-  private jwt: string;
-
   constructor(jwt: string) {
-    this.jwt = jwt;
+    setRpcMessageProviderJwt(jwt);
   }
 
-  setAuthentication(jwt: string): void {
-    this.jwt = jwt;
-  }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async handleOutgoingMessage(message: string): Promise<any> {
     try {
-      return await sendRpcMessage(message, this.jwt);
+      return await sendRpcMessage(message, RPC_MESSAGE_PROVIDER_JWT);
     } catch (e) {
       notifyEvent(e, 'error', 'Wallet', 'Fetch', {
         msg: 'error sending RPC message',
@@ -29,3 +26,7 @@ export class RpcMessageProvider implements IMessagesHandler {
     }
   }
 }
+
+export const setRpcMessageProviderJwt = (jwt: string): void => {
+  RPC_MESSAGE_PROVIDER_JWT = jwt;
+};

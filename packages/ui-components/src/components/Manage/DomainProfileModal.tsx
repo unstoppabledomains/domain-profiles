@@ -23,6 +23,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
     backgroundColor: theme.palette.white,
     zIndex: 100,
   },
+  modalFullScreen: {
+    '& .MuiDialog-container .MuiDialog-paper': {
+      margin: 0,
+      width: '100%',
+    },
+  },
 }));
 
 export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
@@ -31,9 +37,10 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
   address,
   domain,
   metadata,
+  fullScreen,
   open,
 }) => {
-  const {classes} = useStyles();
+  const {classes, cx} = useStyles();
   const [resolvedAddress, setResolvedAddress] = useState(address);
   const [resolvedMetadata, setResolvedMetadata] = useState(metadata);
 
@@ -70,7 +77,16 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
   };
 
   return resolvedAddress && resolvedMetadata ? (
-    <Dialog maxWidth="lg" open={open} onClose={() => onClose()}>
+    <Dialog
+      maxWidth="lg"
+      open={open}
+      fullScreen={fullScreen}
+      fullWidth={fullScreen}
+      onClose={() => onClose()}
+      className={cx({
+        [classes.modalFullScreen]: fullScreen,
+      })}
+    >
       <Box className={classes.container}>
         <DomainProfile
           address={resolvedAddress}
@@ -90,6 +106,7 @@ export type DomainProfileModalProps = {
   domain: string;
   open: boolean;
   metadata?: Record<string, string | boolean>;
+  fullScreen?: boolean;
   onClose(): void;
   onUpdate(
     tab: DomainProfileTabType,

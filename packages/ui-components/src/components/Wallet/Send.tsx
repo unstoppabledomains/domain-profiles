@@ -11,14 +11,16 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {useFeatureFlags} from '../../actions';
 import {
   getAccountAssets,
-  getEstimateTransferResponse,
+  getTransferGasEstimate,
 } from '../../actions/fireBlocksActions';
 import {prepareRecipientWallet} from '../../actions/walletActions';
 import type {SerializedWalletBalance} from '../../lib';
 import {useTranslationContext} from '../../lib';
 import {sleep} from '../../lib/sleep';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
+import {getAsset} from '../../lib/wallet/asset';
 import {isEthAddress} from '../Chat/protocol/resolution';
+import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 import AddressInput from './AddressInput';
 import AmountInput from './AmountInput';
 import {OperationStatus} from './OperationStatus';
@@ -34,6 +36,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     width: '100%',
+    [theme.breakpoints.down('sm')]: {
+      width: '346px',
+      marginLeft: theme.spacing(-1),
+      marginRight: theme.spacing(-1),
+    },
     height: '100%',
   },
   fullWidth: {
@@ -167,8 +174,9 @@ const Send: React.FC<Props> = ({
     false,
     wallets?.find(w => isEthAddress(w.address))?.address,
   );
-  const isCreateWalletEnabled =
-    featureFlags.variations?.profileServiceEnableWalletCreation === true;
+  const isSendToEmailEnabled =
+    featureFlags.variations?.profileServiceEnableWalletCreation === true &&
+    featureFlags.variations?.profileServiceEnableWalletSendToEmail === true;
 
   const resetForm = () => {
     setResolvedDomain('');
@@ -197,19 +205,15 @@ const Send: React.FC<Props> = ({
     if (!assets) {
       throw new Error('Assets not found');
     }
-    const assetToSend = assets.find(
-      a =>
-        a.blockchainAsset.blockchain.name.toLowerCase() ===
-          token.walletName.toLowerCase() &&
-        a.blockchainAsset.symbol.toLowerCase() === token.ticker.toLowerCase() &&
-        a.address.toLowerCase() === token.walletAddress.toLowerCase(),
-    );
+    const assetToSend = getAsset(assets, {
+      token,
+    });
     if (!assetToSend) {
       throw new Error('Asset not found');
     }
 
     // estimate the gas cost
-    const gasResponse = await getEstimateTransferResponse(
+    const gasResponse = await getTransferGasEstimate(
       assetToSend,
       accessToken,
       // Doesn't matter what the recipient and amount are, just need to get the fee estimate
@@ -217,7 +221,7 @@ const Send: React.FC<Props> = ({
       // Use a small test amount to measure gas
       '0.0001',
     );
-    setGasFeeEstimate(gasResponse.networkFee.amount);
+    setGasFeeEstimate(gasResponse.networkFee?.amount || '0');
     setAccountAsset(assetToSend);
     setIsLoading(false);
   };
@@ -250,13 +254,12 @@ const Send: React.FC<Props> = ({
     }
 
     // wait for wallet to begin resolving if wallet creation enabled
-    while (isCreateWalletEnabled) {
+    while (isSendToEmailEnabled) {
       // prepare the recipient wallet
       const recipientResult = await prepareRecipientWallet(
         accountAsset?.address,
         emailAddress,
         accessToken,
-        isCreateWalletEnabled,
       );
 
       // return the records if available
@@ -331,7 +334,7 @@ const Send: React.FC<Props> = ({
         <TitleWithBackButton
           label={t('wallet.actionOnBlockchainTitle', {
             action: t('common.send'),
-            symbol: selectedToken.ticker,
+            symbol: getBlockchainDisplaySymbol(selectedToken.ticker),
             blockchain: selectedToken.walletName,
           })}
           onCancelClick={onCancelClick}
@@ -366,7 +369,7 @@ const Send: React.FC<Props> = ({
         onCancelClick={handleBackClick}
         label={t('wallet.actionOnBlockchainTitle', {
           action: t('common.send'),
-          symbol: selectedToken.ticker,
+          symbol: getBlockchainDisplaySymbol(selectedToken.ticker),
           blockchain: selectedToken.walletName,
         })}
       />
@@ -379,7 +382,7 @@ const Send: React.FC<Props> = ({
             <AddressInput
               label={t('wallet.recipient')}
               placeholder={t(
-                isCreateWalletEnabled
+                isSendToEmailEnabled
                   ? 'wallet.recipientDomainEmailOrWallet'
                   : 'wallet.recipientDomainOrAddress',
               )}
@@ -388,7 +391,7 @@ const Send: React.FC<Props> = ({
               onAddressChange={handleRecipientChange}
               onResolvedDomainChange={handleResolvedDomainChange}
               onInvitation={handleSendInvitation}
-              createWalletEnabled={isCreateWalletEnabled}
+              createWalletEnabled={isSendToEmailEnabled}
               asset={selectedToken}
             />
           </Box>

@@ -20,6 +20,7 @@ export interface AssetBalance {
 export interface Blockchain {
   id: string;
   name: string;
+  networkId?: number;
 }
 
 export interface BlockchainAsset {
@@ -38,9 +39,18 @@ export interface BootstrapState {
 }
 
 export const BootstrapStateCurrentKey = 'current';
-export const BootstrapStatePrefix = 'wallet-service-state';
-export const FireblocksStateKey = 'fireblocks-state';
 
+export const BootstrapStatePrefix = 'wallet-service-state';
+
+export interface CreateTransaction {
+  chainId: number;
+  to: string;
+  data: string;
+  value?: string;
+}
+
+export const EIP_712_KEY = 'EIP712Domain';
+export const FireblocksStateKey = 'fireblocks-state';
 export interface GetAccountAssetsResponse {
   items: AccountAsset[];
 }
@@ -60,10 +70,10 @@ export interface GetBootstrapTokenResponse {
 }
 
 export interface GetEstimateTransactionResponse {
-  '@type': 'unstoppabledomains.com/wallets.v1.TransactionEstimate';
+  '@type': string;
   priority: string;
-  status: 'VALID' | 'INSUFFICIENT_FUNDS';
-  networkFee: {
+  status: 'VALID' | 'INSUFFICIENT_FUNDS' | 'ERROR';
+  networkFee?: {
     amount: string;
     asset: {
       '@type': string;
@@ -86,11 +96,11 @@ export interface GetEstimateTransactionResponse {
     };
   };
 }
+
 export interface GetOperationListResponse {
   '@type': string;
   items: Operation[];
 }
-
 export interface GetOperationResponse {
   '@type': string;
   operation: Operation;
@@ -109,19 +119,21 @@ export interface GetOperationStatusResponse {
     externalVendorTransactionId?: string;
   };
 }
+
 export interface GetTokenResponse {
   code?: 'SUCCESS' | 'PROCESSING';
   accessToken: string;
   refreshToken: string;
   bootstrapToken: string;
 }
-
 export interface IDeviceStore {
   get(deviceId: string, key: string): Promise<string | null>;
   set(deviceId: string, key: string, value: string): Promise<void>;
   clear(deviceId: string, key: string): Promise<void>;
   getAllKeys(deviceId: string): Promise<string[]>;
 }
+
+export const MAX_RETRIES = 5;
 
 export interface Operation {
   '@type': string;

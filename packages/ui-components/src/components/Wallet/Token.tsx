@@ -15,6 +15,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import type {CurrenciesType, SerializedPriceHistory} from '../../lib';
 import {TokenType} from '../../lib';
 import {CryptoIcon} from '../Image';
+import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 
 type StyleProps = {
   palletteShade: Record<number, string>;
@@ -64,6 +65,7 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
     borderRadius: '50%',
     width: '40px',
     height: '40px',
+    backgroundColor: palletteShade[bgNeutralShade],
   },
   tokenIconDefault: {
     borderRadius: '50%',
@@ -182,7 +184,7 @@ const Token: React.FC<Props> = ({
             {!hideBalance && numeral(token.balance).format('0.[000000]')}{' '}
             {token.type === TokenType.Nft
               ? `NFT${token.balance === 1 ? '' : 's'}`
-              : token.ticker}
+              : getBlockchainDisplaySymbol(token.ticker)}
           </Typography>
         </Box>
       </Grid>

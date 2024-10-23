@@ -12,11 +12,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import useResolverKeys from '../../../hooks/useResolverKeys';
 import type {CurrenciesType, NewAddressRecord} from '../../../lib';
-import {
-  AllInitialCurrenciesEnum,
-  CurrencyToName,
-  useTranslationContext,
-} from '../../../lib';
+import {useTranslationContext} from '../../../lib';
 import {CryptoIcon} from '../../Image';
 import FormError from './FormError';
 import {getAllAddressRecords} from './currencyRecords';
@@ -131,13 +127,10 @@ const AddCurrencyModal: React.FC<Props> = ({
   open,
   onClose,
   onAddNewAddress,
-  isEns,
 }) => {
-  const {unsResolverKeys: resolverKeys} = useResolverKeys();
-  const validCoins = getAllAddressRecords(resolverKeys).filter(
-    key =>
-      !Object.keys(AllInitialCurrenciesEnum).includes(key.currency) &&
-      key.versions.every(v => !v.deprecated),
+  const {mappedResolverKeys} = useResolverKeys();
+  const validCoins = getAllAddressRecords(mappedResolverKeys).filter(key =>
+    key.versions.every(v => !v.deprecated),
   );
   const [t] = useTranslationContext();
   const [searchQuery, setSearchQuery] = useState('');
@@ -168,37 +161,38 @@ const AddCurrencyModal: React.FC<Props> = ({
     }
 
     setFilteredCoins(
-      validCoins.filter(({currency}) => {
+      validCoins.filter(({shortName: currency, name, versions}) => {
         const searchValue = searchQuery.toLowerCase();
 
         return (
           currency.toLowerCase().includes(searchValue) ||
-          (CurrencyToName as Record<CurrenciesType, string>)[currency]
-            ?.toLowerCase()
-            .includes(searchValue)
+          name?.toLowerCase().includes(searchValue) ||
+          versions.find(v => v.key.toLowerCase().includes(searchValue))
         );
       }),
     );
   }, [searchQuery]);
 
-  const renderCoin = ({currency, versions}: NewAddressRecord) => (
+  const renderCoin = ({
+    shortName: currency,
+    name,
+    versions,
+  }: NewAddressRecord) => (
     <div
       key={versions.map(v => v.key).join()}
       className={classes.currencyItem}
-      onClick={() => handleSelectCoin({currency, versions})}
+      onClick={() => handleSelectCoin({shortName: currency, name, versions})}
     >
       <div className={classes.currencyTitleWrapper}>
         <div className={classes.currencyIconContainer}>
           <CryptoIcon
             currency={currency as CurrenciesType}
-            classes={{root: classes.currencyIcon}}
+            className={classes.currencyIcon}
+            lazyLoad={true}
           />
         </div>
         <div>
-          <div className={classes.currencyTitle}>
-            {(CurrencyToName as Record<CurrenciesType, string>)[currency] ||
-              currency}
-          </div>
+          <div className={classes.currencyTitle}>{name}</div>
           <div>
             {currency}
             {versions.length > 0 && versions.every(v => v.deprecated) && (

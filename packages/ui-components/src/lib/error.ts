@@ -19,36 +19,40 @@ export const notifyEvent = (
   metadata?: ErrorMetadata,
   forceSend?: boolean,
 ) => {
-  let sendToBugsnag = forceSend || false;
-  const logData = [
-    event?.message ? event.message : event || 'event',
-    metadata
-      ? JSON.stringify({
-          metadata,
-        })
-      : undefined,
-  ].filter(d => d !== undefined);
-  switch (severity) {
-    case 'info':
-      // eslint-disable-next-line no-console
-      console.info(...logData);
-      break;
-    case 'warning':
-      // eslint-disable-next-line no-console
-      console.warn(...logData);
-      break;
-    default:
-      // eslint-disable-next-line no-console
-      console.error(...logData);
-      sendToBugsnag = true;
-  }
-  if (sendToBugsnag) {
-    notifyBugsnag({
-      error: event,
-      appContext,
-      errorClass,
-      severity,
-      metadata,
-    });
+  try {
+    let sendToBugsnag = forceSend || false;
+    const logData = [
+      event?.message ? event.message : event || 'event',
+      metadata
+        ? JSON.stringify({
+            metadata,
+          })
+        : undefined,
+    ].filter(d => d !== undefined);
+    switch (severity) {
+      case 'info':
+        // eslint-disable-next-line no-console
+        console.info(...logData);
+        break;
+      case 'warning':
+        // eslint-disable-next-line no-console
+        console.warn(...logData);
+        break;
+      default:
+        // eslint-disable-next-line no-console
+        console.error(...logData);
+        sendToBugsnag = true;
+    }
+    if (sendToBugsnag) {
+      notifyBugsnag({
+        error: event,
+        appContext,
+        errorClass,
+        severity,
+        metadata,
+      });
+    }
+  } catch (e) {
+    // gracefully handle exception
   }
 };

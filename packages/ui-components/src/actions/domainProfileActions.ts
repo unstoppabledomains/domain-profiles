@@ -84,8 +84,16 @@ export const followDomainProfile = async (
 
 export const getDomainConnections = async (
   domain: string,
+  opts?: {
+    xmtpOnly?: boolean;
+    recommendationsOnly?: boolean;
+  },
 ): Promise<SerializedRecommendation[]> => {
-  const domainProfileUrl = `/public/${domain}/connections`;
+  const queryStringParams = QueryString.stringify({
+    xmtpOnly: opts?.xmtpOnly,
+    recommendationsOnly: opts?.recommendationsOnly,
+  });
+  const domainProfileUrl = `/public/${domain}/connections?${queryStringParams}`;
   return await fetchApi(domainProfileUrl, {host: config.PROFILE.HOST_URL});
 };
 
@@ -125,6 +133,12 @@ export const getOwnerDomains = async (
   strict?: boolean,
   forceRefresh?: boolean,
 ): Promise<SerializedDomainListData | undefined> => {
+  // validate the provided address
+  if (!address) {
+    return undefined;
+  }
+
+  // fetch the owner domains
   const domainProfileUrl = `/user/${address.toLowerCase()}/domains?${QueryString.stringify(
     {
       take: DOMAIN_LIST_PAGE_SIZE,

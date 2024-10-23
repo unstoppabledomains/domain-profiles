@@ -2,6 +2,7 @@ import {Mutex} from 'async-mutex';
 
 import {notifyEvent} from '../error';
 import {sleep} from '../sleep';
+import type {CreateTransaction} from '../types/fireBlocks';
 import type {signMessageProps} from '../wallet';
 
 const signingMutex = new Mutex();
@@ -11,23 +12,39 @@ const signingMutex = new Mutex();
 export class ReactSigner {
   address: string;
   signWithFireblocks?: (message: string, address?: string) => Promise<string>;
+  signTxWithFireblocks?: (
+    chainId: number,
+    contractAddress: string,
+    data: string,
+    value?: string,
+  ) => Promise<string>;
   setMessage?: (v: string) => void;
+  setTx?: (v?: CreateTransaction) => void;
   signatures: Record<string, string | undefined> = {};
 
   // build an object that wraps a Wagmi WalletClient and a given address
   constructor(
     address: string,
     opts: {
-      signWithFireblocks?: (
+      signMessageWithFireblocks?: (
         message: string,
         address?: string,
       ) => Promise<string>;
+      signTxWithFireblocks?: (
+        chainId: number,
+        contractAddress: string,
+        data: string,
+        value?: string,
+      ) => Promise<string>;
       setMessage?: (v: string) => void;
+      setTx?: (v?: CreateTransaction) => void;
     },
   ) {
     this.address = address;
-    this.signWithFireblocks = opts?.signWithFireblocks;
+    this.signWithFireblocks = opts?.signMessageWithFireblocks;
+    this.signTxWithFireblocks = opts?.signTxWithFireblocks;
     this.setMessage = opts?.setMessage;
+    this.setTx = opts?.setTx;
   }
 
   // getAddress retrieves the address that will be creating the signature
@@ -62,6 +79,27 @@ export class ReactSigner {
     }
   }
 
+  async signTransaction(tx: CreateTransaction): Promise<string> {
+    const signingMutexUnlock = await signingMutex.acquire();
+    try {
+      // clear any unhandled signatures
+      UD_COMPLETED_SIGNATURE.length = 0;
+
+      // use the requested signing approach
+      return this.setTx
+        ? await this.promptAndWaitForTx(tx)
+        : await this.submitForTx(tx);
+    } catch (e) {
+      notifyEvent(e, 'warning', 'Wallet', 'Signature');
+      throw e;
+    } finally {
+      if (this.setTx) {
+        this.setTx(undefined);
+      }
+      signingMutexUnlock();
+    }
+  }
+
   async promptAndWaitForSignature(message: string): Promise<string> {
     // validate prerequisites
     if (!this.setMessage) {
@@ -89,12 +127,53 @@ export class ReactSigner {
     throw new Error('failed to sign message');
   }
 
+  async promptAndWaitForTx(tx: CreateTransaction): Promise<string> {
+    // validate prerequisites
+    if (!this.setTx) {
+      throw new Error('invalid react signer configuration');
+    }
+
+    // callback to initiate the signature prompt
+    this.setTx(tx);
+
+    // wait for the signature to be completed
+    const txKey = `${tx.chainId}:${tx.to}:${tx.data}`;
+    while (!this.signatures[txKey]) {
+      if (UD_COMPLETED_SIGNATURE.length > 0) {
+        const signature = UD_COMPLETED_SIGNATURE.pop();
+        if (!signature) {
+          throw new Error('message not signed');
+        }
+        this.signatures[txKey] = signature;
+        return signature;
+      }
+      await sleep(500);
+    }
+    if (this.signatures[txKey]) {
+      return this.signatures[txKey]!;
+    }
+    throw new Error('failed to sign message');
+  }
+
   async submitForSignature(message: string): Promise<string> {
     // validate prerequisites
     if (!this.signWithFireblocks) {
       throw new Error('invalid fireblocks signer configuration');
     }
     return await this.signWithFireblocks(message, this.address);
+  }
+
+  async submitForTx(tx: CreateTransaction): Promise<string> {
+    // validate prerequisites
+    if (!this.signTxWithFireblocks) {
+      throw new Error('invalid fireblocks signer configuration');
+    }
+    return await this.signTxWithFireblocks(
+      tx.chainId,
+      tx.to,
+      tx.data,
+      tx.value,
+    );
   }
 }
 

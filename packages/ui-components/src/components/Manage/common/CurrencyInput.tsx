@@ -11,25 +11,26 @@ import type {
   SerializedPublicDomainProfileData,
   Web3Dependencies,
 } from '../../../lib';
-import {
-  AllInitialCurrenciesEnum,
-  CurrencyToName,
-  useTranslationContext,
-} from '../../../lib';
+import {AllInitialCurrenciesEnum, useTranslationContext} from '../../../lib';
+import type {MappedResolverKey} from '../../../lib/types/pav3';
 import type {ResolverKeyName} from '../../../lib/types/resolverKeys';
 import {CryptoIcon} from '../../Image';
 import ManageInput from './ManageInput';
-import {isTokenDeprecated, isValidRecordKeyValue} from './currencyRecords';
+import {
+  getParentNetworkSymbol,
+  isTokenDeprecated,
+  isValidMappedResolverKeyValue,
+} from './currencyRecords';
 import VerifyAdornment from './verification/VerifyAdornment';
 
 export interface Props {
   currency: CurrenciesType;
   domain: string;
   ownerAddress: string;
-  onChange: (key: ResolverKeyName, value: string) => void;
-  onDelete: (keys: ResolverKeyName[]) => void;
+  onChange: (key: string, value: string) => void;
+  onDelete: (keys: string[]) => void;
   value: string;
-  recordKey: ResolverKeyName;
+  mappedResolverKey: MappedResolverKey;
   uiDisabled: boolean;
   profileData?: SerializedPublicDomainProfileData;
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;
@@ -227,7 +228,7 @@ const CurrencyInput: React.FC<Props> = ({
   onChange,
   onDelete,
   value,
-  recordKey,
+  mappedResolverKey,
   uiDisabled,
   profileData,
   setWeb3Deps,
@@ -238,17 +239,21 @@ const CurrencyInput: React.FC<Props> = ({
   const {classes} = useStyles();
   const [address, setAddress] = useState(value);
   const [isError, setIsError] = useState(false);
-  const initial = currency in AllInitialCurrenciesEnum;
-  const {unsResolverKeys, ensResolverKeys} = useResolverKeys();
+  const initial = Boolean(AllInitialCurrenciesEnum[currency]);
+  const {unsResolverKeys} = useResolverKeys();
   const resolverKeys = unsResolverKeys;
-  const isDeprecated = isTokenDeprecated(recordKey, resolverKeys);
-  const currencyName =
-    (CurrencyToName as Record<CurrenciesType, string>)[currency] || currency;
+  const recordKey = mappedResolverKey.mapping?.to || mappedResolverKey.key;
+  const isDeprecated = isTokenDeprecated(
+    recordKey as ResolverKeyName,
+    resolverKeys,
+  );
+  const currencyName = mappedResolverKey.name || currency;
+  const currencySymbol = getParentNetworkSymbol(mappedResolverKey) || currency;
   const placeholder = t('manage.enterYourAddress', {currency: currencyName});
 
   const handleChange = (_key: string, newValue: string) => {
     const isValid =
-      !newValue || isValidRecordKeyValue(recordKey, newValue, resolverKeys);
+      !newValue || isValidMappedResolverKeyValue(newValue, mappedResolverKey);
     setAddress(newValue);
     setIsError(!isValid);
     // Allowing empty values to delete the record
@@ -280,7 +285,7 @@ const CurrencyInput: React.FC<Props> = ({
             <div className={classes.currencyIconContainer}>
               <CryptoIcon
                 currency={currency as CurrenciesType}
-                classes={{root: classes.currencyIcon}}
+                className={classes.currencyIcon}
               />
             </div>
             <span className={classes.currency} title={currencyName}>
@@ -323,7 +328,7 @@ const CurrencyInput: React.FC<Props> = ({
             domain={domain}
             ownerAddress={ownerAddress}
             profileData={profileData}
-            currency={currency}
+            currency={currencySymbol}
             setWeb3Deps={setWeb3Deps}
             uiDisabled={false}
             saveClicked={saveClicked}

@@ -264,6 +264,7 @@ export const Email: React.FC<ManageTabProps> = ({
                     <Typography
                       variant="caption"
                       className={classes.enableDescription}
+                      component="div"
                     >
                       <Markdown>
                         {t('manage.enableEmailForAddressDescription', {

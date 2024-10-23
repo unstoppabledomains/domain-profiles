@@ -35,7 +35,7 @@ import LeftBarContentCollapse from 'components/LeftBarContentCollapse';
 import {format, isPast} from 'date-fns';
 import {normalizeIpfsHash} from 'lib/ipfs';
 import {shuffle} from 'lodash';
-import type {GetServerSideProps} from 'next';
+import type {GetServerSidePropsContext} from 'next';
 import {NextSeo} from 'next-seo';
 import {useRouter} from 'next/router';
 import {useSnackbar} from 'notistack';
@@ -114,11 +114,12 @@ import {
   getDomainConnections,
   getOwnerDomains,
 } from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
+import useResolverKeys from '@unstoppabledomains/ui-components/src/hooks/useResolverKeys';
 import type {SerializedPartialDomainProfileSocialAccountsUserInfo} from '@unstoppabledomains/ui-components/src/lib';
 import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
 import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
-type DomainProfileServerSideProps = GetServerSideProps & {
+type DomainProfileServerSideProps = GetServerSidePropsContext & {
   params: {
     domain: string;
   };
@@ -144,6 +145,7 @@ const DomainProfile = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [imagePath, setImagePath] = useState<string>();
   const {enqueueSnackbar} = useSnackbar();
+  const {mappedResolverKeys} = useResolverKeys();
   const {isChatOpen, setOpenChat} = useUnstoppableMessaging();
   const {nfts, nftSymbolVisible, expanded: nftShowAll} = useTokenGallery();
   const [isLoaded, setIsLoaded] = useState(false);
@@ -229,7 +231,7 @@ const DomainProfile = ({
   );
 
   // retrieve on-chain record data
-  const addressRecords = parseRecords(records || {});
+  const addressRecords = parseRecords(records || {}, mappedResolverKeys);
   const domainSellerEmail = profileData?.profile?.publicDomainSellerEmail;
   const isForSale = Boolean(domainSellerEmail);
   const ipfsHash = records['ipfs.html.value'];
@@ -1609,7 +1611,9 @@ const DomainProfile = ({
 };
 
 export async function getServerSideProps(props: DomainProfileServerSideProps) {
-  const {params} = props;
+  const {params, req} = props;
+  const host = req.headers.host;
+
   const profileServiceUrl = config.PROFILE.HOST_URL;
   const domain = params.domain.toLowerCase();
   const redirectToSearch = {
@@ -1620,6 +1624,13 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         searchTerm: domain,
         searchRef: 'domainprofile',
       })}`,
+      permanent: false,
+    },
+  };
+
+  const redirectToListingPage = {
+    redirect: {
+      destination: `${config.UNSTOPPABLE_WEBSITE_URL}/d/${domain}`,
       permanent: false,
     },
   };
@@ -1635,6 +1646,7 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         DomainFieldTypes.Records,
         DomainFieldTypes.Market,
         DomainFieldTypes.Portfolio,
+        DomainFieldTypes.IsListedForSale,
       ]),
       getHumanityCheckStatus({name: domain}),
     ]);
@@ -1646,6 +1658,16 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         : null;
   } catch (e) {
     console.error(`error loading domain profile for ${domain}`, String(e));
+  }
+
+  const udMeHostname = new URL(config.UD_ME_BASE_URL).hostname;
+  // Redirect to the listing page if domain is listed for sale and the host is not ud.me
+  if (
+    typeof host === 'string' &&
+    host !== udMeHostname &&
+    profileData?.isListedForSale
+  ) {
+    return redirectToListingPage;
   }
 
   // Redirecting to /search if the domain isn't purchased yet, trying to increase conversion

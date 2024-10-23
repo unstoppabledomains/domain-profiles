@@ -20,7 +20,7 @@ const TranslationProvider: any = (props: Props) => {
   const router = useRouter();
   const [ready, setReady] = useState(true);
   const [locale, setLocale] = useState<AvailableLocales>(
-    (router.locale?.toLowerCase() as AvailableLocales) || DEFAULT_LOCALE,
+    (router?.locale?.toLowerCase() as AvailableLocales) || DEFAULT_LOCALE,
   );
   const prevLocale = usePrevious(locale, false);
   const t: T = (key, interpolate = {}, _locale, isLowerCase) => {
@@ -39,7 +39,7 @@ const TranslationProvider: any = (props: Props) => {
         category: 'essential',
       });
     }
-  }, [locale, prevLocale, router.pathname, router.asPath]);
+  }, [locale, prevLocale, router?.pathname, router?.asPath]);
 
   // make sure preferred locale is loaded
   useEffect(() => {

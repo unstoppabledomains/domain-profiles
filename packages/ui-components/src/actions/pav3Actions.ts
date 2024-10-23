@@ -1,7 +1,7 @@
 import config from '@unstoppabledomains/config';
 
 import {fetchApi} from '../lib';
-import type {RecordUpdateResponse} from '../lib/types/pav3';
+import type {MappedResolverKey, RecordUpdateResponse} from '../lib/types/pav3';
 
 // confirmRecordUpdate submits a transaction signature to allow a domain record
 // update to be processed on the blockchain
@@ -9,7 +9,10 @@ export const confirmRecordUpdate = async (
   domain: string,
   operationId: string,
   dependencyId: string,
-  signature: string,
+  data: {
+    signature?: string;
+    txHash?: string;
+  },
   auth: {
     expires: string;
     signature: string;
@@ -22,7 +25,8 @@ export const confirmRecordUpdate = async (
     body: JSON.stringify({
       operationId,
       dependencyId,
-      signature,
+      signature: data.signature,
+      txHash: data.txHash,
     }),
     headers: {
       Accept: 'application/json',
@@ -32,6 +36,22 @@ export const confirmRecordUpdate = async (
       'x-auth-signature': auth.signature,
     },
   });
+};
+
+export const getAllResolverKeys = async (): Promise<MappedResolverKey[]> => {
+  const keys = await fetchApi<MappedResolverKey[]>(`/resolve/keys`, {
+    method: 'GET',
+    mode: 'cors',
+    host: config.PROFILE.HOST_URL,
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+  });
+  if (keys && Array.isArray(keys)) {
+    return keys;
+  }
+  return [];
 };
 
 // getRegistrationMessage retrieve a message that must be signed before on-chain
@@ -96,8 +116,10 @@ export const initiatePrimaryDomain = async (
       return {
         operationId: updateResponse.operation.id,
         dependencyId: updateResponse.operation.dependencies[0].id,
-        message:
-          updateResponse.operation.dependencies[0].transaction.messageToSign,
+        transaction: {
+          messageToSign:
+            updateResponse.operation.dependencies[0].transaction.messageToSign,
+        },
       };
     }
   }
@@ -139,8 +161,10 @@ export const initiateRecordUpdate = async (
       return {
         operationId: updateResponse.operation.id,
         dependencyId: updateResponse.operation.dependencies[0].id,
-        message:
-          updateResponse.operation.dependencies[0].transaction.messageToSign,
+        transaction: {
+          messageToSign:
+            updateResponse.operation.dependencies[0].transaction.messageToSign,
+        },
       };
     }
   }
@@ -180,12 +204,17 @@ export const initiateTransferDomain = async (
     updateResponse?.operation?.dependencies &&
     updateResponse.operation.dependencies.length > 0
   ) {
-    if (updateResponse.operation.dependencies[0].transaction?.messageToSign) {
+    if (updateResponse.operation.dependencies[0].transaction) {
       return {
         operationId: updateResponse.operation.id,
         dependencyId: updateResponse.operation.dependencies[0].id,
-        message:
-          updateResponse.operation.dependencies[0].transaction.messageToSign,
+        transaction: {
+          messageToSign:
+            updateResponse.operation.dependencies[0].transaction.messageToSign,
+          contractAddress:
+            updateResponse.operation.dependencies[0].transaction.to,
+          data: updateResponse.operation.dependencies[0].transaction.data,
+        },
       };
     }
   }

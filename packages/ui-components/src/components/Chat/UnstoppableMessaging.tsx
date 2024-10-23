@@ -18,7 +18,7 @@ import React, {useContext, useEffect, useState} from 'react';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getProfileReverseResolution} from '../../actions';
+import {getProfileData, getProfileReverseResolution} from '../../actions';
 import {getNotificationConfigurations} from '../../actions/backendActions';
 import {getDomainBadges} from '../../actions/domainActions';
 import {isAddressSpam, joinBadgeGroupChat} from '../../actions/messageActions';
@@ -26,7 +26,7 @@ import {AccessWalletModal} from '../../components/Wallet/AccessWallet';
 import {parsePartnerMetadata} from '../../hooks/useFetchNotification';
 import useUnstoppableMessaging from '../../hooks/useUnstoppableMessaging';
 import useWeb3Context from '../../hooks/useWeb3Context';
-import {isDomainValidForManagement} from '../../lib';
+import {DomainFieldTypes, isDomainValidForManagement} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import useTranslationContext from '../../lib/i18n';
 import {sleep} from '../../lib/sleep';
@@ -55,7 +55,7 @@ import {
 const useStyles = makeStyles<{inheritStyle?: boolean}>()(
   (theme: Theme, {inheritStyle}) => ({
     loadingIcon: {
-      color: 'white',
+      color: theme.palette.neutralShades[200],
       padding: theme.spacing(0.5),
     },
     messageButton: inheritStyle
@@ -111,9 +111,12 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
   inheritStyle,
   large,
   label,
+  hideIcon = false,
   domainRequired = false,
   disableSupportBubble = true,
+  silentOnboard = false,
   initCallback,
+  onPopoutClick,
 }) => {
   const {classes} = useStyles({inheritStyle});
   const web3Context = useContext(Web3Context);
@@ -132,9 +135,10 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
   } = useUnstoppableMessaging();
   const [t] = useTranslationContext();
   const {enqueueSnackbar} = useSnackbar();
-  const {setWeb3Deps} = useWeb3Context();
+  const {web3Deps, setWeb3Deps} = useWeb3Context();
 
   // Messaging user state
+  const [isMpcWallet, setIsMpcWallet] = useState(false);
   const [configState, setConfigState] = useState(ConfigurationState.Initial);
   const [isSigning, setIsSigning] = useState(false);
   const [signatureType, setSignatureType] = useState<MessagingSignatureType>();
@@ -294,6 +298,25 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     void initChatAccounts(initChatOptions || {skipPush: true});
   }, [signatureType, isSigning]);
 
+  // automatically onboard user if requested
+  useEffect(() => {
+    if (
+      !silentOnboard ||
+      !address ||
+      !messagingInitialized ||
+      xmtpKey ||
+      !web3Deps
+    ) {
+      return;
+    }
+
+    const onboardUser = async () => {
+      await initChatAccounts({silent: true, skipPush: true});
+      handleCloseSetup();
+    };
+    void onboardUser();
+  }, [silentOnboard, messagingInitialized, address, xmtpKey, web3Deps]);
+
   // handles the notification click event, either onboarding the new user to Push or
   // opening the Push app for an existing user.
   useEffect(() => {
@@ -411,7 +434,19 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     }
 
     // retrieve profile data and notification preferences
-    const notificationConfig = await getNotificationConfigurations(chatUser);
+    const [notificationConfig, profileData] = await Promise.all([
+      getNotificationConfigurations(chatUser),
+      getProfileData(chatUser, [DomainFieldTypes.CryptoVerifications]),
+    ]);
+
+    // determine MPC wallet status
+    setIsMpcWallet(
+      profileData?.cryptoVerifications?.some(
+        v =>
+          v.address.toLowerCase() === chatAddress?.toLowerCase() &&
+          v.type === 'mpc',
+      ) || false,
+    );
 
     // set notification options for web UI
     if (notificationConfig && notificationConfig.length > 0) {
@@ -455,7 +490,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         // open the configuration modal
         setSignatureType(MessagingSignatureType.NewUser);
         setInitChatOptions(opts);
-        if (!chatOpen) {
+        if (!chatOpen && !opts.silent) {
           setChatOpen(true);
         }
 
@@ -856,11 +891,6 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     setChatOpen(false);
     setChatWalletConnected(false);
     setConfigState(ConfigurationState.Initial);
-
-    // clear web3deps in the case of UD wallet
-    if (web3Context.web3Deps?.unstoppableWallet) {
-      setWeb3Deps(undefined);
-    }
   };
 
   const handleCloseAccessWalletModal = () => {
@@ -972,66 +1002,71 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
           {label}
         </Button>
       ) : (
-        <IconButton
-          onClick={() => handleChatClicked()}
-          className={classes.messageButton}
-          data-testid={'header-chat-button'}
-          id="chat-button"
-          disabled={!messagingInitialized}
-          size={large ? 'large' : 'small'}
-          sx={{
-            '&.Mui-disabled': inheritStyle
-              ? {}
-              : {
-                  color: '#dddddd',
-                  backgroundColor: 'rgba(128,128,128, 0.4)',
-                },
-          }}
-        >
-          {!chatUser ? (
-            <Tooltip
-              PopperProps={tooltipProps}
-              placement="bottom"
-              title={t('push.configure', {
-                domain: domainRequired
-                  ? t('push.setup.oneOfYourDomains')
-                  : t('push.setup.yourWallet'),
-              })}
-            >
-              {messageConfigureIcon}
-            </Tooltip>
-          ) : xmtpKey ? (
-            <Tooltip
-              PopperProps={tooltipProps}
-              placement="bottom"
-              title={t(chatWindowOpen ? 'push.hide' : 'push.open', {
-                domain: chatUser,
-              })}
-            >
-              {isNewMessage ? messageUnreadIcon : messageReadyIcon}
-            </Tooltip>
-          ) : messagingInitialized && !signatureType ? (
-            <Tooltip
-              PopperProps={tooltipProps}
-              placement="bottom"
-              title={t('push.configure', {domain: chatUser})}
-            >
-              {messageConfigureIcon}
-            </Tooltip>
-          ) : (
-            <Tooltip
-              PopperProps={tooltipProps}
-              placement="bottom"
-              title={t('push.loading', {domain: chatUser})}
-            >
-              {inheritStyle ? (
-                messageReadyIcon
-              ) : (
-                <CircularProgress size="30px" className={classes.loadingIcon} />
-              )}
-            </Tooltip>
-          )}
-        </IconButton>
+        !hideIcon && (
+          <IconButton
+            onClick={() => handleChatClicked()}
+            className={classes.messageButton}
+            data-testid={'header-chat-button'}
+            id="chat-button"
+            disabled={!messagingInitialized || signatureType !== undefined}
+            size={large ? 'large' : 'small'}
+            sx={{
+              '&.Mui-disabled': inheritStyle
+                ? {}
+                : {
+                    color: '#dddddd',
+                    backgroundColor: 'rgba(128,128,128, 0.4)',
+                  },
+            }}
+          >
+            {!chatUser ? (
+              <Tooltip
+                PopperProps={tooltipProps}
+                placement="bottom"
+                title={t('push.configure', {
+                  domain: domainRequired
+                    ? t('push.setup.oneOfYourDomains')
+                    : t('push.setup.yourWallet'),
+                })}
+              >
+                {messageConfigureIcon}
+              </Tooltip>
+            ) : xmtpKey ? (
+              <Tooltip
+                PopperProps={tooltipProps}
+                placement="bottom"
+                title={t(chatWindowOpen ? 'push.hide' : 'push.open', {
+                  domain: chatUser,
+                })}
+              >
+                {isNewMessage ? messageUnreadIcon : messageReadyIcon}
+              </Tooltip>
+            ) : messagingInitialized && !signatureType ? (
+              <Tooltip
+                PopperProps={tooltipProps}
+                placement="bottom"
+                title={t('push.configure', {domain: chatUser})}
+              >
+                {messageConfigureIcon}
+              </Tooltip>
+            ) : (
+              <Tooltip
+                PopperProps={tooltipProps}
+                placement="bottom"
+                title={t('push.loading', {domain: chatUser})}
+              >
+                {inheritStyle && !signatureType ? (
+                  messageReadyIcon
+                ) : (
+                  <CircularProgress
+                    size="30px"
+                    className={classes.loadingIcon}
+                  />
+                )}
+              </Tooltip>
+            )}
+          </IconButton>
+        )
       )}
       <AccessWalletModal
         prompt={true}
@@ -1040,6 +1075,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
         open={walletModalIsOpen}
         onClose={handleCloseAccessWalletModal}
         onReconnect={handleReconnect}
+        isMpcWallet={isMpcWallet}
       />
       <SetupModal
         disabled={
@@ -1052,7 +1088,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
           signatureType === MessagingSignatureType.MissingChannels
         }
         configState={configState}
-        open={signatureType !== undefined}
+        open={signatureType !== undefined && !initChatOptions?.silent}
         onChat={handleOpenChat}
         onClose={handleCloseSetup}
         onConfirm={handleOpenSetup}
@@ -1080,6 +1116,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
             blockedTopics={blockedTopics}
             setBlockedTopics={setBlockedTopics}
             setWeb3Deps={setWeb3Deps}
+            onPopoutClick={onPopoutClick}
             onClose={handleClosePush}
             onInitPushAccount={() => {
               return initChatAccounts({
@@ -1107,5 +1144,8 @@ export type UnstoppableMessagingProps = {
   label?: string;
   disableSupportBubble?: boolean;
   domainRequired?: boolean;
+  silentOnboard?: boolean;
+  hideIcon?: boolean;
   initCallback?: () => void;
+  onPopoutClick?: (address?: string) => void;
 };

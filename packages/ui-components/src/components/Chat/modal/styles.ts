@@ -298,7 +298,7 @@ export const useConversationStyles = makeStyles<{
     overscrollBehavior: 'contain',
     height: '430px',
     [theme.breakpoints.down('sm')]: {
-      height: 'calc(100vh - 300px)',
+      height: 'calc(100vh - 170px)',
     },
   },
   composeContainer: {
@@ -306,7 +306,7 @@ export const useConversationStyles = makeStyles<{
     marginRight: theme.spacing(1),
   },
   avatar: {
-    backgroundColor: 'white',
+    backgroundColor: theme.palette.primary.main,
     color: 'white',
     height: 35,
     width: 35,

@@ -1,13 +1,19 @@
 import Bluebird from 'bluebird';
 import {utils as EthersUtils} from 'ethers';
 import QueryString from 'qs';
+import type {Eip712TypedData} from 'web3';
+import {utils as web3utils} from 'web3';
 
 import config from '@unstoppabledomains/config';
 
 import {getBlockchainSymbol} from '../components/Manage/common/verification/types';
 import {fetchApi} from '../lib';
 import {notifyEvent} from '../lib/error';
-import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../lib/fireBlocks/client';
+import {
+  FB_MAX_RETRY,
+  FB_WAIT_TIME_MS,
+  getFireBlocksClient,
+} from '../lib/fireBlocks/client';
 import {
   getBootstrapState,
   saveBootstrapState,
@@ -24,8 +30,11 @@ import type {
   GetOperationListResponse,
   GetOperationResponse,
   GetOperationStatusResponse,
-  GetTokenResponse,
+  GetTokenResponse} from '../lib/types/fireBlocks';
+import {
+  EIP_712_KEY
 } from '../lib/types/fireBlocks';
+import {getAsset} from '../lib/wallet/asset';
 
 export enum OperationStatus {
   QUEUED = 'QUEUED',
@@ -767,4 +776,129 @@ export const signAndWait = async (
     });
   }
   return undefined;
+};
+
+export const signMessage = async (
+  message: string,
+  auth: {
+    accessToken: string;
+    state: Record<string, Record<string, string>>;
+    saveState: (
+      state: Record<string, Record<string, string>>,
+    ) => void | Promise<void>;
+  },
+  opts: {
+    address?: string;
+    chainId?: number;
+  } = {},
+): Promise<string> => {
+  // retrieve and validate key state
+  const clientState = getBootstrapState(auth.state);
+  if (!clientState) {
+    throw new Error('invalid configuration');
+  }
+
+  // retrieve a new client instance
+  const client = await getFireBlocksClient(
+    clientState.deviceId,
+    auth.accessToken,
+    {
+      state: auth.state,
+      saveState: auth.saveState,
+    },
+  );
+
+  notifyEvent(
+    'signing message with fireblocks client',
+    'info',
+    'Wallet',
+    'Signature',
+    {
+      meta: {
+        deviceId: client.getPhysicalDeviceId(),
+        message,
+      },
+    },
+  );
+
+  // determine if a specific chain ID should override based upon a typed
+  // EIP-712 message
+  const isTypedMessage = message.includes(EIP_712_KEY);
+  if (isTypedMessage) {
+    try {
+      const typedMessage: Eip712TypedData = JSON.parse(message);
+      if (typedMessage?.domain?.chainId) {
+        opts.chainId =
+          typeof typedMessage.domain.chainId === 'string'
+            ? typedMessage.domain.chainId.startsWith('0x')
+              ? (web3utils.hexToNumber(typedMessage.domain.chainId) as number)
+              : parseInt(typedMessage.domain.chainId, 10)
+            : typedMessage.domain.chainId;
+      }
+    } catch (e) {
+      notifyEvent(e, 'warning', 'Wallet', 'Signature', {
+        msg: 'unable to parse typed message',
+      });
+    }
+  }
+
+  // retrieve the asset associated with the optionally requested address,
+  // otherwise just retrieve the first first asset.
+  notifyEvent(
+    'retrieving wallet asset for signature',
+    'info',
+    'Wallet',
+    'Signature',
+    {
+      meta: {opts, default: config.WALLETS.SIGNATURE_SYMBOL},
+    },
+  );
+  const asset = getAsset(clientState.assets, {
+    address: opts.address,
+    chainId: opts.chainId,
+  });
+  if (!asset?.accountId) {
+    throw new Error('address not found in account');
+  }
+
+  // request an MPC signature of the desired message string
+  const signatureOp = await signAndWait(
+    auth.accessToken,
+    async () => {
+      return await createSignatureOperation(
+        auth.accessToken,
+        asset.accountId!,
+        asset.id,
+        message,
+        isTypedMessage,
+      );
+    },
+    async (txId: string) => {
+      await client.signTransaction(txId);
+    },
+    {
+      address: opts.address,
+      onStatusChange: (m: string) => {
+        notifyEvent(m, 'info', 'Wallet', 'Signature');
+      },
+      isComplete: (status: GetOperationStatusResponse) => {
+        return status?.result?.signature !== undefined;
+      },
+    },
+  );
+
+  // validate and return the signature result
+  if (!signatureOp?.result?.signature) {
+    throw new Error('signature failed');
+  }
+
+  // indicate complete with successful signature result
+  notifyEvent('signature successful', 'info', 'Wallet', 'Signature', {
+    meta: {
+      opts,
+      message,
+      signatureOp,
+    },
+  });
+  return signatureOp.result.signature;
 };

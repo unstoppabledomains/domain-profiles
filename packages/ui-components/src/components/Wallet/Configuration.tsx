@@ -2,6 +2,7 @@ import type {TEvent} from '@fireblocks/ncw-js-sdk';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import Alert from '@mui/lab/Alert';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -1223,14 +1224,20 @@ export const Configuration: React.FC<
               icon={<LockOutlinedIcon />}
               label={t('wallet.onboardSuccessTitle')}
             >
-              <Box mt={3} display="flex" textAlign="center">
-                <Typography variant="body1" component="div">
+              <Box
+                mt={3}
+                display="flex"
+                alignItems="center"
+                textAlign="center"
+                justifyContent="center"
+              >
+                <Alert severity="info">
                   <Markdown>
                     {t('wallet.onboardSuccessDescription', {
                       emailAddress: emailAddress!,
                     })}
                   </Markdown>
-                </Typography>
+                </Alert>
               </Box>
             </OperationStatus>
           </Box>

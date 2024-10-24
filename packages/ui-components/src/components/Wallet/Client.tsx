@@ -41,8 +41,10 @@ import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileList} from '../Domain';
 import {DomainProfileModal} from '../Manage';
+import Modal from '../Modal';
 import Buy from './Buy';
 import Receive from './Receive';
+import ReceiveDomainModal from './ReceiveDomainModal';
 import Send from './Send';
 import {TokensPortfolio} from './TokensPortfolio';
 
@@ -172,6 +174,10 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
     identitySnackbar: {
       display: 'flex',
       maxWidth: '300px',
+    },
+    modalTitleStyle: {
+      color: 'inherit',
+      alignSelf: 'center',
     },
   }),
 );
@@ -501,19 +507,31 @@ export const Client: React.FC<ClientProps> = ({
                   value={ClientTabType.Domains}
                   className={classes.tabContentItem}
                 >
-                  <Box className={classes.domainListContainer}>
-                    <DomainProfileList
-                      id={'wallet-domain-list'}
-                      domains={domains}
-                      isLoading={isLoading}
-                      withInfiniteScroll={true}
-                      setWeb3Deps={setWeb3Deps}
-                      onLastPage={handleLoadDomains}
-                      hasMore={!retrievedAll}
-                      onClick={handleDomainClick}
-                      rowStyle={classes.domainRow}
-                    />
-                  </Box>
+                  {domains.length > 0 ? (
+                    <Box className={classes.domainListContainer}>
+                      <DomainProfileList
+                        id={'wallet-domain-list'}
+                        domains={domains}
+                        isLoading={isLoading}
+                        withInfiniteScroll={true}
+                        setWeb3Deps={setWeb3Deps}
+                        onLastPage={handleLoadDomains}
+                        hasMore={!retrievedAll}
+                        onClick={handleDomainClick}
+                        rowStyle={classes.domainRow}
+                      />
+                    </Box>
+                  ) : (
+                    <Modal
+                      title={t('wallet.addDomain')}
+                      open={true}
+                      fullScreen={fullScreenModals}
+                      titleStyle={classes.modalTitleStyle}
+                      onClose={() => setTabValue(ClientTabType.Portfolio)}
+                    >
+                      <ReceiveDomainModal />
+                    </Modal>
+                  )}
                 </TabPanel>
                 <TabPanel
                   value={ClientTabType.Transactions}
@@ -548,7 +566,6 @@ export const Client: React.FC<ClientProps> = ({
                   value={ClientTabType.Domains}
                   label={t('common.domains')}
                   iconPosition="start"
-                  disabled={domains.length === 0}
                 />
                 <Tab
                   icon={<HistoryIcon />}

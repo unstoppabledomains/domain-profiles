@@ -2,8 +2,8 @@ import config from '@unstoppabledomains/config';
 
 import type {TokenEntry} from '../../components/Wallet/Token';
 import {notifyEvent} from '../error';
-import {SUPPORTED_SIGNING_SYMBOLS} from '../types';
 import type {AccountAsset} from '../types/fireBlocks';
+import {SUPPORTED_SIGNING_SYMBOLS} from '../types/wallet';
 
 export const getAsset = (
   assets: AccountAsset[],

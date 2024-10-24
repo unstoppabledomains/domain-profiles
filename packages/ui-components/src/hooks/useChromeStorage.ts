@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 
-import {notifyEvent} from '../lib';
+import {notifyEvent} from '../lib/error';
 
 type chromeStorageType = 'local' | 'session' | 'sync';
 

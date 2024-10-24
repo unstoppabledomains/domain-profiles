@@ -23,10 +23,10 @@ import {filesize} from 'filesize';
 
 import config from '@unstoppabledomains/config';
 
-import {getUnstoppableConsents} from '../../../actions';
-import type {ConsentPreferences} from '../../../lib';
+import {getUnstoppableConsents} from '../../../actions/messageActions';
 import {notifyEvent} from '../../../lib/error';
 import {sleep} from '../../../lib/sleep';
+import type {ConsentPreferences} from '../../../lib/types/message';
 import {getXmtpLocalKey, setXmtpLocalKey} from '../storage';
 import {registerClientTopics} from './registration';
 import {uploadAttachment} from './upload';

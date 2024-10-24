@@ -3,7 +3,7 @@ import {Mutex} from 'async-mutex';
 import {notifyEvent} from '../error';
 import {sleep} from '../sleep';
 import type {CreateTransaction} from '../types/fireBlocks';
-import type {signMessageProps} from '../wallet';
+import type {signMessageProps} from '../wallet/signer';
 
 const signingMutex = new Mutex();
 

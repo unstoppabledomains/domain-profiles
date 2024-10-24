@@ -1,6 +1,6 @@
-import type {Web3Dependencies} from '../../../../lib';
 import type {MappedResolverKey} from '../../../../lib/types/pav3';
 import {getMappedResolverKey} from '../../../../lib/types/resolverKeys';
+import type {Web3Dependencies} from '../../../../lib/types/web3';
 
 export type VerificationProps = {
   ownerAddress: string;

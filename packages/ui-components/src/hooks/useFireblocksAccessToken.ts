@@ -1,8 +1,12 @@
 import {Mutex} from 'async-mutex';
 
-import {getAccessToken, getAccountAssets} from '../actions/fireBlocksActions';
-import {localStorageWrapper} from '../components';
-import {getBootstrapState, notifyEvent} from '../lib';
+import {
+  getAccessTokenInternal,
+  getAccounts,
+} from '../actions/fireBlocksActions';
+import {localStorageWrapper} from '../components/Chat/storage';
+import {notifyEvent} from '../lib/error';
+import {getBootstrapState} from '../lib/fireBlocks/storage/state';
 import {isChromeStorageSupported} from './useChromeStorage';
 import useFireblocksState from './useFireblocksState';
 import useWeb3Context from './useWeb3Context';
@@ -31,21 +35,19 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
         : undefined;
 
       // default access token definition
-      let accessToken = existingAccessToken || existingLocalAccessToken;
+      let accessToken: string | undefined;
 
       // test the local token for validity
       if (existingLocalAccessToken) {
-        const accounts = await getAccountAssets(existingLocalAccessToken);
+        const accounts = await getAccounts(existingLocalAccessToken);
         if (accounts) {
           accessToken = existingLocalAccessToken;
-        } else {
-          existingLocalAccessToken = undefined;
         }
       }
 
       // test the context token for validity
-      if (existingAccessToken) {
-        const accounts = await getAccountAssets(existingAccessToken);
+      if (!accessToken && existingAccessToken) {
+        const accounts = await getAccounts(existingAccessToken);
         if (accounts) {
           accessToken = existingAccessToken;
         } else {
@@ -55,7 +57,7 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
 
       // retrieve an access token if required
       if (!accessToken) {
-        const jwtData = await getAccessToken(clientState.refreshToken, {
+        const jwtData = await getAccessTokenInternal(clientState.refreshToken, {
           deviceId: clientState.deviceId,
           state,
           saveState,
@@ -78,6 +80,7 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
       if (isChromeExtension) {
         await localStorageWrapper.setItem('localAccessToken', accessToken);
       }
+      setAccessToken(accessToken);
       return accessToken;
     });
   };

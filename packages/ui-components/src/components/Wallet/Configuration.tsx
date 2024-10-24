@@ -29,7 +29,6 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {useFeatureFlags} from '../../actions';
 import {
   confirmAuthorizationTokenTx,
-  getAccessToken,
   getAuthorizationTokenTx,
   getBootstrapToken,
   sendBootstrapCode,
@@ -42,7 +41,7 @@ import {
   getWalletPortfolio,
   syncIdentityConfig,
 } from '../../actions/walletActions';
-import {useWeb3Context} from '../../hooks';
+import {useFireblocksAccessToken, useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
 import type {SerializedWalletBalance} from '../../lib';
 import {isEmailValid, loginWithAddress, useTranslationContext} from '../../lib';
@@ -194,6 +193,7 @@ export const Configuration: React.FC<
   // wallet key management state
   const [persistKeys, setPersistKeys] = useState(forceRememberOnDevice);
   const [state, saveState] = useFireblocksState(persistKeys);
+  const getAccessToken = useFireblocksAccessToken();
   const [progressPct, setProgressPct] = useState(0);
 
   // wallet recovery state variables
@@ -588,23 +588,11 @@ export const Configuration: React.FC<
         return;
       }
 
-      // check state for device ID and refresh token
-      if (
-        !accessToken &&
-        existingState?.deviceId &&
-        existingState?.refreshToken
-      ) {
-        const tokens = await getAccessToken(existingState.refreshToken, {
-          deviceId: existingState.deviceId,
-          state,
-          saveState,
-          setAccessToken,
-        });
-        if (tokens) {
-          // successfully retrieved access token
-          setAccessToken(tokens.accessToken);
-          return;
-        }
+      // retrieve a new access token
+      const newAccessToken = await getAccessToken();
+      if (newAccessToken) {
+        setAccessToken(newAccessToken);
+        return;
       }
 
       // unable to retrieve access token, so revert back to configuration

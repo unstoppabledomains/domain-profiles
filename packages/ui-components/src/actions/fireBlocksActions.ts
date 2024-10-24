@@ -7,8 +7,8 @@ import {utils as web3utils} from 'web3';
 import config from '@unstoppabledomains/config';
 
 import {getBlockchainSymbol} from '../components/Manage/common/verification/types';
-import {fetchApi} from '../lib';
 import {notifyEvent} from '../lib/error';
+import {fetchApi} from '../lib/fetchApi';
 import {
   FB_MAX_RETRY,
   FB_WAIT_TIME_MS,
@@ -30,10 +30,9 @@ import type {
   GetOperationListResponse,
   GetOperationResponse,
   GetOperationStatusResponse,
-  GetTokenResponse} from '../lib/types/fireBlocks';
-import {
-  EIP_712_KEY
+  GetTokenResponse,
 } from '../lib/types/fireBlocks';
+import {EIP_712_KEY} from '../lib/types/fireBlocks';
 import {getAsset} from '../lib/wallet/asset';
 
 export enum OperationStatus {
@@ -190,7 +189,9 @@ export const createTransactionOperation = async (
   return undefined;
 };
 
-export const getAccessToken = async (
+// getAccessTokenInternal called by useFireblocksAccessToken hook. This method should
+// not be called directly.
+export const getAccessTokenInternal = async (
   refreshToken: string,
   opts?: {
     deviceId: string;

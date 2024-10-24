@@ -5,12 +5,16 @@ import React, {useEffect, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 
-import {getProfileData} from '../../actions';
+import {getProfileData} from '../../actions/domainProfileActions';
 import {AccessWalletModal} from '../../components/Wallet/AccessWallet';
-import {useWeb3Context} from '../../hooks';
-import {fetchApi} from '../../lib';
+import useWeb3Context from '../../hooks/useWeb3Context';
+import {fetchApi} from '../../lib/fetchApi';
 import {sleep} from '../../lib/sleep';
-import {DomainFieldTypes, DomainProfileKeys} from '../../lib/types/domain';
+import {
+  DomainFieldTypes,
+  getDomainSignatureExpiryKey,
+  getDomainSignatureValueKey,
+} from '../../lib/types/domain';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import {signMessage as signPushMessage} from '../Chat/protocol/push';
 import {signMessage as signXmtpMessage} from '../Chat/protocol/xmtp';
@@ -284,18 +288,9 @@ const Manager: React.FC<ManagerProps> = ({
   );
 };
 
-export const getDomainSignatureExpiryKey = (domain: string): string => {
-  return `${DomainProfileKeys.Signature}-expiry-${domain}`;
-};
-
 interface MessageResponse {
   message: string;
   headers: {
     ['x-auth-expires']: number;
   };
 }
-
-// milliseconds in a week
-export const getDomainSignatureValueKey = (domain: string): string => {
-  return `${DomainProfileKeys.Signature}-value-${domain}`;
-};

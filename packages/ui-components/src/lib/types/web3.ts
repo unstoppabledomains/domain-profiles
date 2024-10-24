@@ -1,7 +1,7 @@
 import type {Signer} from 'ethers';
 
 import {isEthAddress} from '../../components/Chat/protocol/resolution';
-import {CurrenciesType} from './blockchain';
+import type {CurrenciesType} from './blockchain';
 
 export interface Web3Dependencies {
   address: string;

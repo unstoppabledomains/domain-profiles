@@ -15,6 +15,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {useUnstoppableMessaging, useWeb3Context} from '../../hooks';
 import type {SerializedRecommendation} from '../../lib';
 import {DomainProfileKeys, useTranslationContext} from '../../lib';
+import {localStorageWrapper} from '../Chat/storage';
 import {DomainPreview} from './DomainPreview';
 import FollowButton from './FollowButton';
 
@@ -64,12 +65,17 @@ const Connections: React.FC<Props> = ({domain, connections}) => {
 
   // read from local storage on page load
   useEffect(() => {
-    setAuthAddress(
-      localStorage.getItem(DomainProfileKeys.AuthAddress) || undefined,
-    );
-    setAuthDomain(
-      localStorage.getItem(DomainProfileKeys.AuthDomain) || undefined,
-    );
+    const loadAuth = async () => {
+      setAuthAddress(
+        (await localStorageWrapper.getItem(DomainProfileKeys.AuthAddress)) ||
+          undefined,
+      );
+      setAuthDomain(
+        (await localStorageWrapper.getItem(DomainProfileKeys.AuthDomain)) ||
+          undefined,
+      );
+    };
+    void loadAuth();
   }, []);
 
   const renderTag = (tag: Tag, fontSize: number, _color: string) => {

@@ -1,4 +1,5 @@
 import {getAccountAssets} from '../../../actions/fireBlocksActions';
+import {notifyEvent} from '../../error';
 import type {BootstrapState} from '../../types/fireBlocks';
 import {
   BootstrapStateCurrentKey,
@@ -19,21 +20,31 @@ export const getBootstrapState = (
 export const saveBootstrapState = async (
   values: BootstrapState,
   state: Record<string, Record<string, string>>,
-  setState: (state: Record<string, Record<string, string>>) => void,
+  saveState: (
+    state: Record<string, Record<string, string>>,
+  ) => void | Promise<void>,
   accessToken: string,
 ): Promise<BootstrapState> => {
-  // saturate values if required
-  if (!values.assets || values.assets.length === 0) {
-    values.assets = (await getAccountAssets(accessToken)) || [];
+  try {
+    // saturate values if required
+    if (!values.assets || values.assets.length === 0) {
+      values.assets = (await getAccountAssets(accessToken)) || [];
+    }
+
+    // save the state values
+    state[`${BootstrapStatePrefix}-${values.deviceId}`] =
+      values as unknown as Record<string, string>;
+    state[`${BootstrapStatePrefix}-${BootstrapStateCurrentKey}`] =
+      values as unknown as Record<string, string>;
+    await saveState({...state});
+
+    // return the resulting state
+    return values;
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Configuration', {
+      msg: 'error saving bootstrap state',
+      meta: {values},
+    });
+    throw e;
   }
-
-  // save the state values
-  state[`${BootstrapStatePrefix}-${values.deviceId}`] =
-    values as unknown as Record<string, string>;
-  state[`${BootstrapStatePrefix}-${BootstrapStateCurrentKey}`] =
-    values as unknown as Record<string, string>;
-  setState({...state});
-
-  // return the resulting state
-  return values;
 };

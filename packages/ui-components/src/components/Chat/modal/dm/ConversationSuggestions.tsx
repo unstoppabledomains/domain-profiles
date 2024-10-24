@@ -11,10 +11,10 @@ import truncateEthAddress from 'truncate-eth-address';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getDomainConnections} from '../../../../actions';
-import {SerializedRecommendation} from '../../../../lib';
+import type {SerializedRecommendation} from '../../../../lib';
 import useTranslationContext from '../../../../lib/i18n';
 import ChipControlButton from '../../../ChipControlButton';
-import {ConversationMeta} from '../../protocol/xmtp';
+import type {ConversationMeta} from '../../protocol/xmtp';
 import type {AddressResolution} from '../../types';
 
 const useStyles = makeStyles()((theme: Theme) => ({

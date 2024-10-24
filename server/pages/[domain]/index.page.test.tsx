@@ -1374,7 +1374,7 @@ describe('Owner operations', () => {
     // mock XMTP endpoints
     const mockXmtpUser = jest
       .spyOn(chatStorage, 'getXmtpLocalKey')
-      .mockReturnValue(undefined);
+      .mockResolvedValue(undefined);
 
     // render a domain other than the logged in user domain
     customRender(

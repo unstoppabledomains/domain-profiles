@@ -9,7 +9,6 @@ import {
 } from '@xmtp/content-type-remote-attachment';
 import {ContentTypeText} from '@xmtp/content-type-text';
 import type {signature} from '@xmtp/proto';
-import {fetcher} from '@xmtp/proto';
 import type {
   ConsentState,
   Conversation,
@@ -24,10 +23,10 @@ import {filesize} from 'filesize';
 
 import config from '@unstoppabledomains/config';
 
-import {getUnstoppableConsents} from '../../../actions';
-import type {ConsentPreferences} from '../../../lib';
+import {getUnstoppableConsents} from '../../../actions/messageActions';
 import {notifyEvent} from '../../../lib/error';
 import {sleep} from '../../../lib/sleep';
+import type {ConsentPreferences} from '../../../lib/types/message';
 import {getXmtpLocalKey, setXmtpLocalKey} from '../storage';
 import {registerClientTopics} from './registration';
 import {uploadAttachment} from './upload';
@@ -133,14 +132,6 @@ export const getConversations = async (
   );
 };
 
-export const getEncodedPrivateKey = (address: string): string | undefined => {
-  const xmtpKey = getXmtpLocalKey(address);
-  if (!xmtpKey) {
-    return;
-  }
-  return fetcher.b64Encode(xmtpKey, 0, xmtpKey.length);
-};
-
 export const getRemoteAttachment = async (
   message: DecodedMessage,
 ): Promise<Attachment | undefined> => {
@@ -172,13 +163,13 @@ export const getXmtpClient = async (
   signer?: Signer,
 ): Promise<Client> => {
   // established local encryption keys
-  let xmtpKey = getXmtpLocalKey(address);
+  let xmtpKey = await getXmtpLocalKey(address);
   if (!xmtpKey) {
     if (!signer) {
       throw new Error('signer is required to create a new account');
     }
     xmtpKey = await Client.getKeys(signer, xmtpOpts);
-    setXmtpLocalKey(address, xmtpKey);
+    await setXmtpLocalKey(address, xmtpKey);
   }
 
   // return existing client if available

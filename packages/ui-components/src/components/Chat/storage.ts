@@ -2,6 +2,7 @@ import type * as PushAPI from '@pushprotocol/restapi';
 import {fetcher} from '@xmtp/proto';
 import {compress, decompress} from 'compress-json';
 
+import {isChromeStorageSupported} from '../../hooks/useChromeStorage';
 import {DomainProfileKeys} from '../../lib/types/domain';
 import type {AddressResolution} from './types';
 
@@ -12,10 +13,10 @@ export const getCacheKey = (prefix: string, address: string): string => {
   return `${DomainProfileKeys.Messaging}-${prefix}-${address}`;
 };
 
-export const getCachedResolution = (
+export const getCachedResolution = async (
   address: string,
-): AddressResolution | undefined => {
-  const cachedResolution = localStorage.getItem(
+): Promise<AddressResolution | undefined> => {
+  const cachedResolution = await localStorageWrapper.getItem(
     getCacheKey(DomainProfileKeys.Resolution, address.toLowerCase()),
   );
   if (cachedResolution) {
@@ -24,8 +25,8 @@ export const getCachedResolution = (
   return;
 };
 
-export const getLocalKey = <T>(key: string) => {
-  const cachedDataStr = localStorage.getItem(
+export const getLocalKey = async <T>(key: string) => {
+  const cachedDataStr = await localStorageWrapper.getItem(
     getCacheKey(DomainProfileKeys.GenericKeyValue, ''),
   );
   if (!cachedDataStr) {
@@ -35,8 +36,8 @@ export const getLocalKey = <T>(key: string) => {
   return cachedData[key];
 };
 
-export const getPushLocalKey = (address: string): string => {
-  const cachedKey = localStorage.getItem(
+export const getPushLocalKey = async (address: string): Promise<string> => {
+  const cachedKey = await localStorageWrapper.getItem(
     getCacheKey('pushKey', address.toLowerCase()),
   );
   if (cachedKey) {
@@ -45,8 +46,10 @@ export const getPushLocalKey = (address: string): string => {
   return '';
 };
 
-export const getXmtpLocalKey = (address: string): Uint8Array | undefined => {
-  const cachedKey = localStorage.getItem(
+export const getXmtpLocalKey = async (
+  address: string,
+): Promise<Uint8Array | undefined> => {
+  const cachedKey = await localStorageWrapper.getItem(
     getCacheKey('xmtpKey', address.toLowerCase()),
   );
   if (cachedKey) {
@@ -55,18 +58,60 @@ export const getXmtpLocalKey = (address: string): Uint8Array | undefined => {
   return;
 };
 
-export const setCachedResolution = (resolution: AddressResolution): void => {
-  localStorage.setItem(
+export class localStorageWrapper {
+  static async getItem(k: string): Promise<string | null> {
+    return isChromeStorageSupported('local')
+      ? await localStorageWrapper.getChromeStorage(k)
+      : localStorage.getItem(k);
+  }
+
+  static async setItem(k: string, v: string): Promise<void> {
+    if (isChromeStorageSupported('local')) {
+      await chrome.storage.local.set({[k]: v});
+      return;
+    }
+    localStorage.setItem(k, v);
+  }
+
+  static async removeItem(k: string): Promise<void> {
+    if (isChromeStorageSupported('local')) {
+      await chrome.storage.local.remove(k);
+      return;
+    }
+    localStorage.removeItem(k);
+  }
+
+  static async clear(): Promise<void> {
+    if (isChromeStorageSupported('local')) {
+      await chrome.storage.local.clear();
+      return;
+    }
+    localStorage.clear();
+  }
+
+  private static async getChromeStorage(k: string): Promise<string | null> {
+    const v = await chrome.storage.local.get(k);
+    if (v[k]) {
+      return v[k];
+    }
+    return null;
+  }
+}
+
+export const setCachedResolution = async (
+  resolution: AddressResolution,
+): Promise<void> => {
+  await localStorageWrapper.setItem(
     getCacheKey(DomainProfileKeys.Resolution, resolution.address.toLowerCase()),
     JSON.stringify(resolution),
   );
 };
 
-export const setLocalKey = <T>(key: string, msg: T) => {
+export const setLocalKey = async <T>(key: string, msg: T) => {
   if (!key) {
     return;
   }
-  const cachedDataStr = localStorage.getItem(
+  const cachedDataStr = await localStorageWrapper.getItem(
     getCacheKey(DomainProfileKeys.GenericKeyValue, ''),
   );
   const cachedData: Record<string, T> = cachedDataStr
@@ -74,24 +119,26 @@ export const setLocalKey = <T>(key: string, msg: T) => {
     : {};
   cachedData[key] = msg;
   try {
-    localStorage.setItem(
+    await localStorageWrapper.setItem(
       getCacheKey(DomainProfileKeys.GenericKeyValue, ''),
       JSON.stringify(compress(cachedData)),
     );
   } catch (e) {
-    localStorage.removeItem(getCacheKey(DomainProfileKeys.GenericKeyValue, ''));
+    await localStorageWrapper.removeItem(
+      getCacheKey(DomainProfileKeys.GenericKeyValue, ''),
+    );
   }
 };
 
-export const setPushLocalKey = (address: string, key: string) => {
-  localStorage.setItem(
+export const setPushLocalKey = async (address: string, key: string) => {
+  await localStorageWrapper.setItem(
     getCacheKey('pushKey', address.toLowerCase()),
     Buffer.from(key, 'utf8').toString('base64'),
   );
 };
 
-export const setXmtpLocalKey = (address: string, key: Uint8Array) => {
-  localStorage.setItem(
+export const setXmtpLocalKey = async (address: string, key: Uint8Array) => {
+  await localStorageWrapper.setItem(
     getCacheKey('xmtpKey', address.toLowerCase()),
     fetcher.b64Encode(key, 0, key.length),
   );

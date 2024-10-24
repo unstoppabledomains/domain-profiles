@@ -1,4 +1,4 @@
-import type UAuth from '@uauth/js';
+import UAuth from '@uauth/js';
 
 import config from '@unstoppabledomains/config';
 
@@ -17,8 +17,7 @@ export async function getUAuth({
   humanityCheck,
 }: GetUAuthOptions = {}): Promise<UAuth> {
   if (!uauth) {
-    const UAuth = (await import('@uauth/js')).default;
-    const udResolution = await loadUnstoppableDomainsResolution();
+    const udResolution = loadUnstoppableDomainsResolution();
     let fallbackIssuer =
       config.APP_ENV !== 'production'
         ? 'https://auth.ud-staging.com'

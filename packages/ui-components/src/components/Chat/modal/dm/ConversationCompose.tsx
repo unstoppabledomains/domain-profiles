@@ -20,6 +20,7 @@ import type {SerializedUserDomainProfileData} from '../../../../lib/types/domain
 import {DomainProfileKeys} from '../../../../lib/types/domain';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
 import {formatFileSize, sendRemoteAttachment} from '../../protocol/xmtp';
+import {localStorageWrapper} from '../../storage';
 import {useConversationComposeStyles} from '../styles';
 
 export const Compose: React.FC<ComposeProps> = ({
@@ -47,8 +48,13 @@ export const Compose: React.FC<ComposeProps> = ({
 
   // set the primary domain and wallet address at page load time
   useEffect(() => {
-    setAuthDomain(localStorage.getItem(DomainProfileKeys.AuthDomain));
-    setAuthAddress(conversation?.clientAddress.toLowerCase());
+    const loadConversation = async () => {
+      setAuthDomain(
+        await localStorageWrapper.getItem(DomainProfileKeys.AuthDomain),
+      );
+      setAuthAddress(conversation?.clientAddress.toLowerCase());
+    };
+    void loadConversation();
   }, [conversation]);
 
   // detect if user clicks outside the compose textbox

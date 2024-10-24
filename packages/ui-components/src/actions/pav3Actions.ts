@@ -1,6 +1,6 @@
 import config from '@unstoppabledomains/config';
 
-import {fetchApi} from '../lib';
+import {fetchApi} from '../lib/fetchApi';
 import type {MappedResolverKey, RecordUpdateResponse} from '../lib/types/pav3';
 
 // confirmRecordUpdate submits a transaction signature to allow a domain record

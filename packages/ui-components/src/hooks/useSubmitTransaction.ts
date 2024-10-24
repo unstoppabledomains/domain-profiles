@@ -11,9 +11,9 @@ import {
   getBlockchainSymbol,
   getRecordKeys,
 } from '../components/Manage/common/verification/types';
-import {isEmailValid} from '../lib';
 import {notifyEvent} from '../lib/error';
 import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../lib/fireBlocks/client';
+import {isEmailValid} from '../lib/isEmailValid';
 import {pollForSuccess} from '../lib/poll';
 import type {AccountAsset, GetOperationResponse} from '../lib/types/fireBlocks';
 import {OperationStatusType} from '../lib/types/fireBlocks';

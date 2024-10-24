@@ -5,16 +5,24 @@ import React, {useEffect, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 
-import {getProfileData} from '../../actions';
+import {getProfileData} from '../../actions/domainProfileActions';
 import {AccessWalletModal} from '../../components/Wallet/AccessWallet';
-import {useWeb3Context} from '../../hooks';
-import {fetchApi} from '../../lib';
+import useWeb3Context from '../../hooks/useWeb3Context';
+import {fetchApi} from '../../lib/fetchApi';
 import {sleep} from '../../lib/sleep';
-import {DomainFieldTypes, DomainProfileKeys} from '../../lib/types/domain';
+import {
+  DomainFieldTypes,
+  getDomainSignatureExpiryKey,
+  getDomainSignatureValueKey,
+} from '../../lib/types/domain';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import {signMessage as signPushMessage} from '../Chat/protocol/push';
 import {signMessage as signXmtpMessage} from '../Chat/protocol/xmtp';
-import {getPushLocalKey, getXmtpLocalKey} from '../Chat/storage';
+import {
+  getPushLocalKey,
+  getXmtpLocalKey,
+  localStorageWrapper,
+} from '../Chat/storage';
 
 export type ManagerProps = {
   domain: string;
@@ -125,8 +133,14 @@ const Manager: React.FC<ManagerProps> = ({
     }
 
     // store signature value on local device
-    localStorage.setItem(getDomainSignatureValueKey(domain), signature);
-    localStorage.setItem(getDomainSignatureExpiryKey(domain), expiry);
+    void localStorageWrapper.setItem(
+      getDomainSignatureValueKey(domain),
+      signature,
+    );
+    void localStorageWrapper.setItem(
+      getDomainSignatureExpiryKey(domain),
+      expiry,
+    );
   }, [signature, expiry, web3Deps]);
 
   // handlePrepareSignature retrieves the message that must be signed for the profile
@@ -147,10 +161,10 @@ const Manager: React.FC<ManagerProps> = ({
     }
 
     // check whether the domain signature is stored on local device
-    const localSignature = localStorage.getItem(
+    const localSignature = await localStorageWrapper.getItem(
       getDomainSignatureValueKey(domain),
     );
-    const localExpiry = localStorage.getItem(
+    const localExpiry = await localStorageWrapper.getItem(
       getDomainSignatureExpiryKey(domain),
     );
     if (
@@ -182,7 +196,7 @@ const Manager: React.FC<ManagerProps> = ({
     }
 
     // sign with locally stored XMTP key if available
-    const localXmtpKey = getXmtpLocalKey(ownerAddress);
+    const localXmtpKey = await getXmtpLocalKey(ownerAddress);
     if (localXmtpKey && useLocalXmtpKey) {
       const xmtpSignatureBytes = new Signature(
         await signXmtpMessage(ownerAddress, responseBody.message),
@@ -198,7 +212,7 @@ const Manager: React.FC<ManagerProps> = ({
     }
 
     // sign with a locally stored Push Protocol key if available
-    const localPushKey = getPushLocalKey(ownerAddress);
+    const localPushKey = await getPushLocalKey(ownerAddress);
     if (localPushKey && useLocalPushKey) {
       const pushSignature = await signPushMessage(
         responseBody.message,
@@ -274,18 +288,9 @@ const Manager: React.FC<ManagerProps> = ({
   );
 };
 
-export const getDomainSignatureExpiryKey = (domain: string): string => {
-  return `${DomainProfileKeys.Signature}-expiry-${domain}`;
-};
-
 interface MessageResponse {
   message: string;
   headers: {
     ['x-auth-expires']: number;
   };
 }
-
-// milliseconds in a week
-export const getDomainSignatureValueKey = (domain: string): string => {
-  return `${DomainProfileKeys.Signature}-value-${domain}`;
-};

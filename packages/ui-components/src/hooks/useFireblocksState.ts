@@ -4,7 +4,7 @@ const useFireblocksState = (
   initWithPersistence?: boolean,
 ): [
   Record<string, Record<string, string>>,
-  (state: Record<string, Record<string, string>>) => void,
+  (state: Record<string, Record<string, string>>) => void | Promise<void>,
 ] => {
   // retrieve state from web3 context
   const {

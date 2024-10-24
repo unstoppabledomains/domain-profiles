@@ -20,6 +20,7 @@ import Typography from '@mui/material/Typography';
 import {styled} from '@mui/material/styles';
 import type {GroupDTO, IMessageIPFS} from '@pushprotocol/restapi';
 import Bluebird from 'bluebird';
+import CopyModule from 'clipboard-copy';
 import {useSnackbar} from 'notistack';
 import type {MouseEvent} from 'react';
 import React, {useEffect, useState} from 'react';
@@ -32,8 +33,6 @@ import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../../lib/types/badge';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
-import type {CopyModule} from '../../../CopyToClipboard';
-import {noop} from '../../../CopyToClipboard';
 import {DomainListModal} from '../../../Domain';
 import {
   PUSH_PAGE_SIZE,
@@ -213,17 +212,11 @@ export const Community: React.FC<CommunityProps> = ({
     setAnchorEl(null);
   };
 
-  const handleShareInvite = () => {
-    void (import('clipboard-copy') as Promise<CopyModule>).then(
-      (mod: CopyModule) => {
-        mod
-          .default(
-            `${config.UD_ME_BASE_URL}/${authDomain}?openBadgeCode=${badge.code}&action=invite`,
-          )
-          .then(handleClickToCopy)
-          .catch(noop);
-      },
+  const handleShareInvite = async () => {
+    await CopyModule(
+      `${config.UD_ME_BASE_URL}/${authDomain}?openBadgeCode=${badge.code}&action=invite`,
     );
+    handleClickToCopy();
   };
 
   const handleLeaveChat = async () => {
@@ -437,11 +430,7 @@ export const Community: React.FC<CommunityProps> = ({
                   </Typography>
                 </MenuItem>
               )}
-              <MenuItem
-                onClick={() => {
-                  handleShareInvite();
-                }}
-              >
+              <MenuItem onClick={handleShareInvite}>
                 <ListItemIcon>
                   <ShareOutlinedIcon fontSize="small" />
                 </ListItemIcon>

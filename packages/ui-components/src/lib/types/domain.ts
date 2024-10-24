@@ -558,6 +558,14 @@ export type YoutubeUserInfo = {
   subscriberCount: number;
 } | null;
 
+export const getDomainSignatureExpiryKey = (domain: string): string => {
+  return `${DomainProfileKeys.Signature}-expiry-${domain}`;
+};
+
+export const getDomainSignatureValueKey = (domain: string): string => {
+  return `${DomainProfileKeys.Signature}-value-${domain}`;
+};
+
 export const isValidIdentity = (maybeIdentity: string): boolean => {
   return isEmailValid(maybeIdentity);
 };

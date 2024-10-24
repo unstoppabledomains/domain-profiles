@@ -22,6 +22,7 @@ import {
   getBootstrapState,
   getSeoTags,
   isEthAddress,
+  localStorageWrapper,
   useFeatureFlags,
   useFireblocksState,
   useTranslationContext,
@@ -70,7 +71,7 @@ const WalletPage = () => {
       return;
     }
     if (Object.keys(walletState).length > 0) {
-      localStorage.clear();
+      void localStorageWrapper.clear();
       sessionStorage.clear();
       window.location.reload();
       return;
@@ -132,7 +133,7 @@ const WalletPage = () => {
           return;
         }
         setAuthAddress(accountEvmAddresses[0]);
-        localStorage.setItem(
+        await localStorageWrapper.setItem(
           DomainProfileKeys.AuthAddress,
           accountEvmAddresses[0],
         );
@@ -141,7 +142,7 @@ const WalletPage = () => {
         const resolution = await getAddressMetadata(accountEvmAddresses[0]);
         if (resolution?.name) {
           setAuthDomain(resolution.name);
-          localStorage.setItem(
+          await localStorageWrapper.setItem(
             DomainProfileKeys.AuthDomain,
             resolution.name.toLowerCase(),
           );

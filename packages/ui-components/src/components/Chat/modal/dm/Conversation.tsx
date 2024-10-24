@@ -31,8 +31,9 @@ import truncateEthAddress from 'truncate-eth-address';
 
 import config from '@unstoppabledomains/config';
 
+import type {
+  CurrenciesType} from '../../../../lib';
 import {
-  CurrenciesType,
   getBlockScanUrl,
   isDomainValidForManagement,
 } from '../../../../lib';

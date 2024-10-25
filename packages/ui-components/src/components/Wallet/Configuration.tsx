@@ -490,7 +490,12 @@ export const Configuration: React.FC<
               true,
             );
             if (!addressPortfolio) {
-              missingAddresses.push(address);
+              const existingWallet = mpcWallets.find(
+                w => w.address.toLowerCase() === address.toLowerCase(),
+              );
+              if (!existingWallet) {
+                missingAddresses.push(address);
+              }
               return;
             }
             wallets.push(
@@ -514,7 +519,7 @@ export const Configuration: React.FC<
     setPaymentConfigStatus(paymentConfig);
 
     // show error message if any wallet data is missing
-    if (missingAddresses.length > 0) {
+    if (missingAddresses.length > 0 && mpcWallets.length > 0) {
       enqueueSnackbar(
         <Markdown>
           {t('wallet.loadingError', {

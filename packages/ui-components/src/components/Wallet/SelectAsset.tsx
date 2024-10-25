@@ -1,5 +1,6 @@
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
@@ -156,9 +157,9 @@ export const SelectAsset: React.FC<Props> = ({
           allTokens.length > 0 &&
           filteredTokens.length === 0 && (
             <Box className={classes.noTokensContainer}>
-              <Typography variant="body1" className={classes.noTokensText}>
+              <Alert severity="info" className={classes.noTokensText}>
                 {t('wallet.noTokensAvailableForSend')}
-              </Typography>
+              </Alert>
               {onClickReceive && onClickBuy && (
                 <Grid container spacing={1}>
                   <Grid item xs={6}>

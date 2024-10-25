@@ -2,7 +2,6 @@
 import uniq from 'lodash/uniq';
 
 import type {
-  CurrenciesType,
   DomainRawRecords,
   DomainRecords,
   MultiChainAddressRecord,

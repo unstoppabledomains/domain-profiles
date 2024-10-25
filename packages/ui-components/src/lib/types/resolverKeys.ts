@@ -33,18 +33,10 @@ export const EMPTY_RESOLVER_KEYS: ResolverKeys = {
 
 export type EnsResolverKey = keyof typeof EnsResolverKeysJson.keys;
 
-export const MultichainKeyToLocaleKey: Record<
-  MultichainKeyToLocaleKeyKeys,
-  string
-> = {
+export const MultichainKeyToLocaleKey = {
   'crypto.ELA.version.ELA.address': 'multichainKeyToName.elaEla',
   'crypto.ELA.version.ESC.address': 'multichainKeyToName.elaEsc',
-};
-
-export type MultichainKeyToLocaleKeyKeys = keyof Pick<
-  typeof UnsResolverKeysJson.keys,
-  'crypto.ELA.version.ELA.address' | 'crypto.ELA.version.ESC.address'
->;
+} as const;
 
 let cachedUnsResolverKeys: typeof UnsResolverKeysJson;
 let cachedEnsResolverKeys: typeof EnsResolverKeysJson;

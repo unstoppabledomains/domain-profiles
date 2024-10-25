@@ -14,10 +14,7 @@ import type {
   Web3Dependencies,
 } from '../../../lib';
 import {useTranslationContext} from '../../../lib';
-import type {
-  MultichainKeyToLocaleKeyKeys,
-  ResolverKeyName,
-} from '../../../lib/types/resolverKeys';
+import type {ResolverKeyName} from '../../../lib/types/resolverKeys';
 import {MultichainKeyToLocaleKey} from '../../../lib/types/resolverKeys';
 import {CryptoIcon} from '../../Image';
 import {useStyles} from './CurrencyInput';
@@ -141,8 +138,14 @@ const MultiChainInput: React.FC<Props> = ({
                   getParentNetworkSymbol(mappedResolverKey) || currency;
                 const placeholder = t('manage.enterYourAddress', {
                   currency:
-                    (MultichainKeyToLocaleKey[key] &&
-                      t(MultichainKeyToLocaleKey[key])) ||
+                    (MultichainKeyToLocaleKey[
+                      key as keyof typeof MultichainKeyToLocaleKey
+                    ] &&
+                      t(
+                        MultichainKeyToLocaleKey[
+                          key as keyof typeof MultichainKeyToLocaleKey
+                        ],
+                      )) ||
                     mappedResolverKey.name ||
                     currency,
                 });

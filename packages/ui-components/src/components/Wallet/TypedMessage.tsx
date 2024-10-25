@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React from 'react';
+import type {CSSObject} from 'tss-react';
 import type {Eip712TypedData} from 'web3';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -27,7 +28,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   text: {
     marginBottom: theme.spacing(0.5),
     ...theme.typography.body2,
-  },
+  } as CSSObject, // Ensuring the type compatibility "typography.body2" from @mui with "CSSObject"
   objectKey: {
     fontWeight: 'bold',
   },

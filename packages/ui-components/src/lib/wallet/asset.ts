@@ -1,9 +1,9 @@
 import config from '@unstoppabledomains/config';
 
-import {TokenEntry} from '../../components/Wallet/Token';
+import type {TokenEntry} from '../../components/Wallet/Token';
 import {notifyEvent} from '../error';
 import {SUPPORTED_SIGNING_SYMBOLS} from '../types';
-import {AccountAsset} from '../types/fireBlocks';
+import type {AccountAsset} from '../types/fireBlocks';
 
 export const getAsset = (
   assets: AccountAsset[],
@@ -15,7 +15,9 @@ export const getAsset = (
 ): AccountAsset | undefined => {
   // determine if any asset options are specified
   const isOptSpecified = opts
-    ? Object.keys(opts).find(k => opts[k] !== undefined) !== undefined
+    ? (Object.keys(opts) as Array<keyof typeof opts>).find(
+        k => opts[k] !== undefined,
+      ) !== undefined
     : false;
 
   // find the requested asset

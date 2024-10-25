@@ -1,10 +1,9 @@
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import Alert from '@mui/material/Alert';
+import Alert from '@mui/lab/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React from 'react';
 

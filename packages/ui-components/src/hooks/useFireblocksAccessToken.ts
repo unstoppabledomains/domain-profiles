@@ -30,7 +30,7 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
 
       // retrieve from chrome storage if available
       const isChromeExtension = isChromeStorageSupported('local');
-      let existingLocalAccessToken = isChromeExtension
+      const existingLocalAccessToken = isChromeExtension
         ? await localStorageWrapper.getItem('localAccessToken')
         : undefined;
 

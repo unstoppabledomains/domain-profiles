@@ -11,7 +11,7 @@ import type {ImmutableArray} from '@unstoppabledomains/config/build/src/env/type
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance} from '../../lib';
-import {TokenType, useTranslationContext} from '../../lib';
+import {TokenType, WalletPaletteOwner, useTranslationContext} from '../../lib';
 import {filterWallets} from '../../lib/wallet/filter';
 import {TitleWithBackButton} from './TitleWithBackButton';
 import type {TokenEntry} from './Token';
@@ -33,7 +33,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
   },
   asset: {
-    backgroundImage: 'linear-gradient(#0655DD, #043893)',
+    backgroundImage: `linear-gradient(${WalletPaletteOwner.background.gradient.start}, ${WalletPaletteOwner.background.gradient.end})`,
     borderRadius: 9,
     padding: 12,
     width: '100%',
@@ -196,7 +196,7 @@ export const SelectAsset: React.FC<Props> = ({
               key={`${token.type}/${token.symbol}/${token.ticker}/${token.walletAddress}`}
             >
               <Token
-                primaryShade
+                isOwner
                 token={token}
                 onClick={handleClick}
                 hideBalance={hideBalance}

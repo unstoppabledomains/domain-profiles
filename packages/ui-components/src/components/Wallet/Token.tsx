@@ -12,16 +12,20 @@ import {Line} from 'react-chartjs-2';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import type {CurrenciesType, SerializedPriceHistory} from '../../lib';
-import {TokenType} from '../../lib';
+import type {
+  CurrenciesType,
+  SerializedPriceHistory,
+  WalletPalette,
+} from '../../lib';
+import {TokenType, WalletPaletteOwner, WalletPalettePublic} from '../../lib';
 import {CryptoIcon} from '../Image';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 
 type StyleProps = {
-  palletteShade: Record<number, string>;
+  palette: WalletPalette;
 };
 
-const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
+const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
   chartContainer: {
     height: '40px',
     display: 'flex',
@@ -34,27 +38,27 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
   },
   txTitle: {
     fontWeight: 'bold',
-    color: theme.palette.white,
+    color: palette.text.primary,
   },
   txBalance: {
     fontWeight: 'bold',
-    color: theme.palette.white,
+    color: palette.text.primary,
     whiteSpace: 'nowrap',
   },
   txSubTitle: {
-    color: palletteShade[bgNeutralShade - 600],
+    color: palette.text.secondary,
   },
   txLink: {
     cursor: 'pointer',
   },
   txPctChangeDown: {
-    color: palletteShade[bgNeutralShade - 400],
+    color: palette.chart.down,
   },
   txPctChangeNeutral: {
-    color: palletteShade[bgNeutralShade - 400],
+    color: palette.chart.down,
   },
   txPctChangeUp: {
-    color: theme.palette.success.main,
+    color: palette.chart.up,
   },
   nftCollectionIcon: {
     borderRadius: theme.shape.borderRadius,
@@ -65,19 +69,19 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
     borderRadius: '50%',
     width: '40px',
     height: '40px',
-    backgroundColor: palletteShade[bgNeutralShade],
+    backgroundColor: palette.background.main,
   },
   tokenIconDefault: {
     borderRadius: '50%',
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.white,
+    backgroundColor: palette.background.main,
+    color: palette.text.primary,
     width: '40px',
     height: '40px',
   },
   chainIcon: {
-    color: theme.palette.common.black,
-    backgroundColor: palletteShade[bgNeutralShade],
-    border: `1px solid black`,
+    color: palette.background.main,
+    backgroundColor: palette.background.main,
+    border: `1px solid ${palette.background.main}`,
     borderRadius: '50%',
     width: '17px',
     height: '17px',
@@ -104,26 +108,22 @@ export type TokenEntry = {
 type Props = {
   token: TokenEntry;
   onClick: () => void;
-  primaryShade: boolean;
+  isOwner?: boolean;
   showGraph?: boolean;
   hideBalance?: boolean;
 };
 
-const bgNeutralShade = 800;
-
 const Token: React.FC<Props> = ({
   token,
   onClick,
-  primaryShade,
+  isOwner,
   showGraph,
   hideBalance,
 }) => {
   const theme = useTheme();
 
   const {classes, cx} = useStyles({
-    palletteShade: primaryShade
-      ? theme.palette.primaryShades
-      : theme.palette.neutralShades,
+    palette: isOwner ? WalletPaletteOwner : WalletPalettePublic,
   });
   return (
     <Grid
@@ -202,12 +202,12 @@ const Token: React.FC<Props> = ({
                     pointBorderColor: 'rgba(0, 0, 0, 0)',
                     backgroundColor:
                       (token.pctChange || 0) > 0
-                        ? theme.palette.success.main
-                        : theme.palette.neutralShades[bgNeutralShade - 400],
+                        ? WalletPaletteOwner.chart.up
+                        : WalletPaletteOwner.chart.down,
                     borderColor:
                       (token.pctChange || 0) > 0
-                        ? theme.palette.success.main
-                        : theme.palette.neutralShades[bgNeutralShade - 400],
+                        ? WalletPaletteOwner.chart.up
+                        : WalletPaletteOwner.chart.down,
                     fill: false,
                   },
                 ],

@@ -32,6 +32,7 @@ import type {SerializedWalletBalance} from '../../lib';
 import {
   DomainFieldTypes,
   WALLET_CARD_HEIGHT,
+  WalletPaletteOwner,
   useTranslationContext,
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
@@ -47,8 +48,6 @@ import Receive from './Receive';
 import ReceiveDomainModal from './ReceiveDomainModal';
 import Send from './Send';
 import {TokensPortfolio} from './TokensPortfolio';
-
-const bgNeutralShade = 800;
 
 const useStyles = makeStyles<{isMobile: boolean}>()(
   (theme: Theme, {isMobile}) => ({
@@ -93,13 +92,10 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       },
     },
     domainListContainer: {
-      color: theme.palette.primaryShades[bgNeutralShade - 600],
+      color: WalletPaletteOwner.text.primary,
       display: 'flex',
-      backgroundImage: `linear-gradient(${
-        theme.palette.primaryShades[bgNeutralShade - 200]
-      }, ${theme.palette.primaryShades[bgNeutralShade]})`,
+      backgroundImage: `linear-gradient(${WalletPaletteOwner.background.gradient.start}, ${WalletPaletteOwner.background.gradient.end})`,
       borderRadius: theme.shape.borderRadius,
-      border: `1px solid ${theme.palette.primaryShades[bgNeutralShade - 600]}`,
       padding: theme.spacing(2),
       height: `${WALLET_CARD_HEIGHT + 2}px`,
       marginBottom: theme.spacing(2),
@@ -113,16 +109,16 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       cursor: 'pointer',
       paddingTop: theme.spacing(1),
       paddingBottom: theme.spacing(1),
-      color: theme.palette.white,
+      color: WalletPaletteOwner.text.primary,
       '&:visited': {
-        color: theme.palette.white,
+        color: WalletPaletteOwner.text.primary,
       },
       '&:hover': {
         '& p': {
-          color: theme.palette.white,
+          color: WalletPaletteOwner.text.primary,
         },
         '& svg': {
-          color: theme.palette.white,
+          color: WalletPaletteOwner.text.primary,
         },
       },
     },

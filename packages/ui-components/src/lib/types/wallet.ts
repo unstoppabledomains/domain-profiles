@@ -7,10 +7,6 @@ export const SUPPORTED_SIGNING_SYMBOLS = ['ETH', 'MATIC', 'POL', 'SOL', 'BTC'];
 
 export const WALLET_CARD_HEIGHT = 275;
 
-interface walletProps {
-  connectorType: WagmiConnectorType;
-}
-
 export type WagmiConnectorType =
   | 'injected'
   | 'metaMask'
@@ -36,6 +32,10 @@ export enum WalletName {
   Kresus = 'Kresus',
   UnstoppableWalletReact = 'UnstoppableWalletReact',
   UnstoppableWalletExtension = 'UnstoppableWalletExtension',
+}
+
+interface walletProps {
+  connectorType: WagmiConnectorType;
 }
 
 export const WalletOptions: Record<WalletName, walletProps> = {
@@ -71,5 +71,94 @@ export const WalletOptions: Record<WalletName, walletProps> = {
   },
   [WalletName.Kresus]: {
     connectorType: 'walletConnect',
+  },
+};
+
+export interface WalletPalette {
+  background: {
+    main: string;
+    gradient: {
+      start: string;
+      end: string;
+    };
+  };
+  card: {
+    text: string;
+    gradient: {
+      start: string;
+      end: string;
+    };
+    selected: {
+      background: string;
+      text: string;
+    };
+  };
+  text: {
+    primary: string;
+    secondary: string;
+  };
+  chart: {
+    up: string;
+    down: string;
+  };
+}
+
+// From https://m2.material.io/inline-tools/color/
+export const WalletPaletteOwner: WalletPalette = {
+  background: {
+    main: '#fafafa', //100
+    gradient: {
+      start: '#f5f5f5', //200
+      end: '#fafafa', //100
+    },
+  },
+  card: {
+    text: '#606060', //800
+    selected: {
+      background: '#fafafa', //100
+      text: '#606060', //800
+    },
+    gradient: {
+      start: '#dedede', //400
+      end: '#f0f0f0', //300
+    },
+  },
+  text: {
+    primary: '#606060', //800
+    secondary: '#979797', //600
+  },
+  chart: {
+    up: '#15b64c',
+    down: '#9f9fa7',
+  },
+};
+
+// Currently the same as owner palette, but can be customized
+export const WalletPalettePublic: WalletPalette = {
+  background: {
+    main: '#fafafa', //100
+    gradient: {
+      start: '#f5f5f5', //200
+      end: '#fafafa', //100
+    },
+  },
+  card: {
+    text: '#606060', //800
+    selected: {
+      background: '#fafafa', //100
+      text: '#606060', //800
+    },
+    gradient: {
+      start: '#dedede', //400
+      end: '#f0f0f0', //300
+    },
+  },
+  text: {
+    primary: '#606060', //800
+    secondary: '#979797', //600
+  },
+  chart: {
+    up: '#15b64c',
+    down: '#9f9fa7',
   },
 };

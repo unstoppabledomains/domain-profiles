@@ -465,6 +465,7 @@ export const Header: React.FC<Props> = ({
           onRecoveryLinkClicked={handleRecoveryKitClicked}
           onLogout={handleLogout}
           onDisconnect={onDisconnect ? handleDisconnect : undefined}
+          onHideMenu={() => setIsMenuOpen(false)}
         />
       )}
       {isDomainListModalOpen && (

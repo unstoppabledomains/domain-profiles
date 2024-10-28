@@ -36,6 +36,8 @@ import {
   getBlockchainDisplaySymbol,
   getBlockchainGasSymbol,
 } from '../Manage/common/verification/types';
+import Modal from '../Modal';
+import FundWalletModal from './FundWalletModal';
 
 type StyleProps = {
   palette: WalletPalette;
@@ -169,11 +171,27 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
   txIconInteract: {
     backgroundColor: palette.chart.down,
   },
+  modalTitleStyle: {
+    color: 'inherit',
+    alignSelf: 'center',
+  },
 }));
 
 export const DomainWalletTransactions: React.FC<
   DomainWalletTransactionsProps
-> = ({id, accessToken, domain, isOwner, wallets, isError, verified}) => {
+> = ({
+  id,
+  accessToken,
+  domain,
+  isOwner,
+  wallets,
+  isError,
+  verified,
+  fullScreenModals,
+  onBack,
+  onBuyClicked,
+  onReceiveClicked,
+}) => {
   const {classes, cx} = useStyles({
     palette: isOwner ? WalletPaletteOwner : WalletPalettePublic,
   });
@@ -419,7 +437,32 @@ export const DomainWalletTransactions: React.FC<
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
     );
 
-  // render the wallet list
+  // show CTA if there are no transactions
+  if (
+    isOwner &&
+    txns &&
+    txns.length === 0 &&
+    onBack &&
+    onBuyClicked &&
+    onReceiveClicked
+  ) {
+    return (
+      <Modal
+        title={t('activity.title')}
+        open={true}
+        fullScreen={fullScreenModals}
+        titleStyle={classes.modalTitleStyle}
+        onClose={onBack}
+      >
+        <FundWalletModal
+          onBuyClicked={onBuyClicked}
+          onReceiveClicked={onReceiveClicked}
+        />
+      </Modal>
+    );
+  }
+
+  // render the transaction list
   return (
     <Box className={classes.walletContainer}>
       {domain && (
@@ -509,4 +552,8 @@ export type DomainWalletTransactionsProps = {
   minCount?: number;
   maxCount?: number;
   verified: boolean;
+  fullScreenModals?: boolean;
+  onBack?: () => void;
+  onReceiveClicked?: () => void;
+  onBuyClicked?: () => void;
 };

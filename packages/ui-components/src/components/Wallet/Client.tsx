@@ -538,7 +538,11 @@ export const Client: React.FC<ClientProps> = ({
                     wallets={wallets}
                     isOwner={true}
                     verified={true}
+                    fullScreenModals={fullScreenModals}
                     accessToken={accessToken}
+                    onBack={() => setTabValue(ClientTabType.Portfolio)}
+                    onBuyClicked={handleClickedBuy}
+                    onReceiveClicked={handleClickedReceive}
                   />
                 </TabPanel>
               </Grid>
@@ -568,9 +572,6 @@ export const Client: React.FC<ClientProps> = ({
                   value={ClientTabType.Transactions}
                   label={t('activity.title')}
                   iconPosition="start"
-                  disabled={
-                    !wallets?.some(w => w.txns?.data && w.txns.data.length > 0)
-                  }
                 />
               </TabList>
             </Box>

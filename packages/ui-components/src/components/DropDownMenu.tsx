@@ -9,7 +9,7 @@ import SupportOutlinedIcon from '@mui/icons-material/SupportOutlined';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import {Card, Typography} from '@mui/material/';
 import type {Theme} from '@mui/material/styles';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -32,6 +32,7 @@ interface Props {
   onMessagingClicked?: () => void;
   onLogout?: () => void;
   onDisconnect?: () => void;
+  onHideMenu: () => void;
   marginTop?: number;
 }
 
@@ -75,7 +76,9 @@ const DropDownMenu: React.FC<Props> = ({
   onMessagingClicked,
   onDisconnect,
   onLogout,
+  onHideMenu,
 }) => {
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const [isLoggingOut, setLoggingOut] = useState<boolean>(false);
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles({marginTop});
@@ -88,6 +91,22 @@ const DropDownMenu: React.FC<Props> = ({
   useEffect(() => {
     void handleLoadWallet();
   }, []);
+
+  // detect if user clicks outside the menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // hide the menu if the target is outside the menu
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setTimeout(onHideMenu, 150);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [menuRef]);
 
   const handleLoadWallet = async () => {
     // retrieve and validate key state
@@ -120,7 +139,7 @@ const DropDownMenu: React.FC<Props> = ({
   };
 
   return (
-    <Card className={classes.cardBody} data-testid={'dropdown'}>
+    <Card ref={menuRef} className={classes.cardBody} data-testid={'dropdown'}>
       {authDomain && isDomainValidForManagement(authDomain) && (
         <div
           data-testid={`manage-profile-button`}

@@ -146,6 +146,7 @@ export const Configuration: React.FC<
     emailAddress?: string;
     recoveryPhrase?: string;
     recoveryToken?: string;
+    onError?: () => void;
     onLoaded?: (v: boolean) => void;
     onLoginInitiated?: (emailAddress: string, password: string) => void;
     setIsFetching?: (v?: boolean) => void;
@@ -159,6 +160,7 @@ export const Configuration: React.FC<
   }
 > = ({
   onUpdate,
+  onError,
   onLoaded,
   onLoginInitiated,
   setButtonComponent,
@@ -235,6 +237,13 @@ export const Configuration: React.FC<
       setEmailAddress(router.query[EMAIL_PARAM]);
     }
   }, [router?.query]);
+
+  useEffect(() => {
+    if (!errorMessage || !onError) {
+      return;
+    }
+    onError();
+  }, [errorMessage]);
 
   useEffect(() => {
     if (configState === WalletConfigState.OnboardSuccess) {

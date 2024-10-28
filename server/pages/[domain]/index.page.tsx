@@ -1665,6 +1665,9 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
     host !== udMeHostname &&
     profileData?.isListedForSale
   ) {
+    notifyEvent('redirect_to_listing_page', 'info', 'Profile', 'Resolution', {
+      msg: `host value: ${host}, udMeHostname value: ${udMeHostname}`,
+    });
     return redirectToListingPage;
   }
 

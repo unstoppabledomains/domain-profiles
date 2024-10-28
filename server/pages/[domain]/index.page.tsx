@@ -1670,6 +1670,10 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
     host !== udMeHostname &&
     profileData?.isListedForSale
   ) {
+    console.log(
+      'Redirecting to domain listing lander',
+      JSON.stringify({host, udMeHostname}),
+    );
     return redirectToListingPage;
   }
 

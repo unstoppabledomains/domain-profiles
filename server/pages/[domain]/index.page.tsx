@@ -142,7 +142,7 @@ const DomainProfile = ({
     if (
       initialProfileData?.isListedForSale &&
       typeof window !== 'undefined' && // Make sure we're on client side
-      window.location.hostname !== udMeHostname
+      window.location.hostname.toLowerCase() !== udMeHostname.toLowerCase()
     ) {
       window.location.replace(`${config.UNSTOPPABLE_WEBSITE_URL}/d/${domain}`);
     }

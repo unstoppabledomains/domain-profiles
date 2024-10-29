@@ -1671,11 +1671,19 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
       'Profile page getServerSideProps output:',
       JSON.stringify(
         {
-          resolvedUrl: props.resolvedUrl,
-          query: props.query,
+          props: {
+            resolvedUrl: props.resolvedUrl,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            pathname: (props as any).pathname,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            asPath: (props as any).asPath,
+            query: props.query,
+            params: props.params,
+          },
           headers: {
             ...req.headers,
           },
+          url: req.url,
         },
         null,
         2,

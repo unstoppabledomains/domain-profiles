@@ -25,6 +25,7 @@ import {
   Web2SuffixesList,
 } from '../../lib/types/domain';
 import type {Web3Dependencies} from '../../lib/types/web3';
+import {localStorageWrapper} from '../Chat/storage';
 import ChipControlButton from '../ChipControlButton';
 import FollowButton from './FollowButton';
 
@@ -117,12 +118,17 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
 
   // read from local storage on page load
   useEffect(() => {
-    setAuthAddress(
-      localStorage.getItem(DomainProfileKeys.AuthAddress) || undefined,
-    );
-    setAuthDomain(
-      localStorage.getItem(DomainProfileKeys.AuthDomain) || undefined,
-    );
+    const loadAuth = async () => {
+      setAuthAddress(
+        (await localStorageWrapper.getItem(DomainProfileKeys.AuthAddress)) ||
+          undefined,
+      );
+      setAuthDomain(
+        (await localStorageWrapper.getItem(DomainProfileKeys.AuthDomain)) ||
+          undefined,
+      );
+    };
+    void loadAuth();
   }, []);
 
   // fetch profile data only when popup is requested

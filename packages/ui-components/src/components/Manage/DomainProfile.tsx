@@ -42,6 +42,7 @@ import {
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import {getAddressMetadata} from '../Chat/protocol/resolution';
+import {localStorageWrapper} from '../Chat/storage';
 import {DomainListModal} from '../Domain';
 import {Badges as BadgesTab} from './Tabs/Badges';
 import {Crypto as CryptoTab} from './Tabs/Crypto';
@@ -206,11 +207,15 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
   }, [selectedDomain]);
 
   useEffect(() => {
-    setTabValue(DomainProfileTabType.Profile);
-    setIsOwner(
-      localStorage.getItem(DomainProfileKeys.AuthAddress)?.toLowerCase() ===
-        address.toLowerCase(),
-    );
+    const loadAuth = async () => {
+      setTabValue(DomainProfileTabType.Profile);
+      setIsOwner(
+        (
+          await localStorageWrapper.getItem(DomainProfileKeys.AuthAddress)
+        )?.toLowerCase() === address.toLowerCase(),
+      );
+    };
+    void loadAuth();
     if (!isOtherDomains) {
       void handleRetrieveOwnerDomains();
     }

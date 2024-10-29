@@ -178,6 +178,7 @@ export const AccountButton: React.FC<AccountButtonProps> = ({
           domain={domain}
           authDomain={authDomain}
           onWalletClicked={() => setIsMpcWalletOpen(true)}
+          onHideMenu={() => setDropDownShown(false)}
         />
       )}
       {isMpcWalletOpen && (

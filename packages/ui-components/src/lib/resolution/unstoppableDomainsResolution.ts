@@ -1,13 +1,10 @@
 import config from '@unstoppabledomains/config';
-import type {Resolution, SourceConfig} from '@unstoppabledomains/resolution';
+import type {SourceConfig} from '@unstoppabledomains/resolution';
+import {Resolution} from '@unstoppabledomains/resolution';
 
-export const loadUnstoppableDomainsResolution =
-  async (): Promise<Resolution> => {
-    const {default: Resolution} = await import(
-      '@unstoppabledomains/resolution'
-    );
-    return new Resolution({sourceConfig: unstoppableDomainsResolutionConfig});
-  };
+export const loadUnstoppableDomainsResolution = (): Resolution => {
+  return new Resolution({sourceConfig: unstoppableDomainsResolutionConfig});
+};
 
 export const unstoppableDomainsResolutionConfig: SourceConfig = {
   uns: {

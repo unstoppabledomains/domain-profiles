@@ -1,6 +1,6 @@
-import type {Web3Dependencies} from '../../../../lib';
 import type {MappedResolverKey} from '../../../../lib/types/pav3';
 import {getMappedResolverKey} from '../../../../lib/types/resolverKeys';
+import type {Web3Dependencies} from '../../../../lib/types/web3';
 
 export type VerificationProps = {
   ownerAddress: string;
@@ -23,6 +23,25 @@ export const getBlockchainDisplaySymbol = (symbol: string): string => {
   }
 };
 
+export const getBlockchainGasSymbol = (symbol: string): string => {
+  if (!symbol) {
+    return '';
+  }
+  switch (symbol.toLowerCase()) {
+    case 'eth':
+    case 'base':
+      return 'ETH';
+    case 'polygon':
+    case 'matic':
+    case 'pol':
+      return 'MATIC';
+    case 'sol':
+    case 'solana':
+      return 'SOL';
+  }
+  return symbol.toUpperCase();
+};
+
 export const getBlockchainName = (symbol: string): string => {
   if (!symbol) {
     return '';
@@ -41,25 +60,6 @@ export const getBlockchainName = (symbol: string): string => {
     default:
       return symbol;
   }
-};
-
-export const getBlockchainGasSymbol = (symbol: string): string => {
-  if (!symbol) {
-    return '';
-  }
-  switch (symbol.toLowerCase()) {
-    case 'eth':
-    case 'base':
-      return 'ETH';
-    case 'polygon':
-    case 'matic':
-    case 'pol':
-      return 'MATIC';
-    case 'sol':
-    case 'solana':
-      return 'SOL';
-  }
-  return symbol.toUpperCase();
 };
 
 export const getBlockchainSymbol = (

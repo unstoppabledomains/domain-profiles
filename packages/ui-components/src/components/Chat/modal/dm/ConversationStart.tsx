@@ -15,10 +15,11 @@ import truncateEthAddress from 'truncate-eth-address';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {SerializedRecommendation} from '../../../../lib';
+import type {SerializedRecommendation} from '../../../../lib';
 import useTranslationContext from '../../../../lib/i18n';
 import {getAddressMetadata, isEthAddress} from '../../protocol/resolution';
-import {ConversationMeta, isXmtpUser} from '../../protocol/xmtp';
+import type {ConversationMeta} from '../../protocol/xmtp';
+import { isXmtpUser} from '../../protocol/xmtp';
 import type {AddressResolution} from '../../types';
 import {TabType} from '../../types';
 import CallToAction from '../CallToAction';

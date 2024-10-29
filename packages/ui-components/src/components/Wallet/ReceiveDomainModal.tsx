@@ -21,6 +21,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
+    height: '100%',
+    justifyContent: 'space-between',
+  },
+  content: {
+    display: 'flex',
+    flexDirection: 'column',
     width: '450px',
     [theme.breakpoints.down('sm')]: {
       width: '100%',
@@ -78,27 +84,29 @@ const ReceiveDomainModal: React.FC<Props> = ({
 
   return (
     <Box className={classes.container}>
-      <Typography variant="body1" mb={1}>
-        {t('wallet.addDomainDescription')}
-      </Typography>
-      <Typography variant="body2" mb={1} component="div">
-        <Markdown>{t('wallet.addDomainInstructions')}</Markdown>
-      </Typography>
-      <Box>
-        <ManageInput
-          placeholder=""
-          onChange={() => null}
-          id="receive"
-          value={address}
-          stacked={true}
-          disabled
-          multiline
-          endAdornment={
-            <Button onClick={handleCopyClick}>
-              {copied ? <CheckIcon color="success" /> : <CopyIcon />}
-            </Button>
-          }
-        />
+      <Box className={classes.content}>
+        <Typography variant="body1" mb={1}>
+          {t('wallet.addDomainDescription')}
+        </Typography>
+        <Typography variant="body2" mb={1} component="div">
+          <Markdown>{t('wallet.addDomainInstructions')}</Markdown>
+        </Typography>
+        <Box>
+          <ManageInput
+            placeholder=""
+            onChange={() => null}
+            id="receive"
+            value={address}
+            stacked={true}
+            disabled
+            multiline
+            endAdornment={
+              <Button onClick={handleCopyClick}>
+                {copied ? <CheckIcon color="success" /> : <CopyIcon />}
+              </Button>
+            }
+          />
+        </Box>
       </Box>
       <Button
         variant="contained"

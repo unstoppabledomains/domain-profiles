@@ -2,13 +2,15 @@ import {fetcher} from '@xmtp/proto';
 
 import config from '@unstoppabledomains/config';
 
-import type {SerializedAttachmentResponse} from '../../../lib';
-import {fetchApi} from '../../../lib';
 import {notifyEvent} from '../../../lib/error';
+import {fetchApi} from '../../../lib/fetchApi';
+import type {
+  SerializedAttachmentResponse} from '../../../lib/types/domain';
 import {
   getDomainSignatureExpiryKey,
   getDomainSignatureValueKey,
-} from '../../Wallet/ProfileManager';
+} from '../../../lib/types/domain';
+import {localStorageWrapper} from '../storage';
 
 export const uploadAttachment = async (
   domain: string,
@@ -17,8 +19,12 @@ export const uploadAttachment = async (
 ): Promise<string | undefined> => {
   try {
     // retrieve local signature information for this domain
-    const sigExpiry = localStorage.getItem(getDomainSignatureExpiryKey(domain));
-    const sigContent = localStorage.getItem(getDomainSignatureValueKey(domain));
+    const sigExpiry = await localStorageWrapper.getItem(
+      getDomainSignatureExpiryKey(domain),
+    );
+    const sigContent = await localStorageWrapper.getItem(
+      getDomainSignatureValueKey(domain),
+    );
     if (!sigExpiry || !sigContent) {
       notifyEvent(
         new Error('upload auth required'),

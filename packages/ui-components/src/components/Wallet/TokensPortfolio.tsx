@@ -7,7 +7,6 @@ import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {useTheme} from '@mui/material/styles';
 import {CategoryScale} from 'chart.js';
 import Chart from 'chart.js/auto';
 import {useSnackbar} from 'notistack';
@@ -15,9 +14,11 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import type {CurrenciesType} from '../../lib';
+import type {CurrenciesType, WalletPalette} from '../../lib';
 import {
   WALLET_CARD_HEIGHT,
+  WalletPaletteOwner,
+  WalletPalettePublic,
   getSortedTokens,
   useTranslationContext,
 } from '../../lib';
@@ -29,12 +30,10 @@ import Token from './Token';
 
 Chart.register(CategoryScale);
 
-const bgNeutralShade = 800;
-
 type StyleProps = {
-  palletteShade: Record<number, string>;
+  palette: WalletPalette;
 };
-const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
+const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
   portfolioContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -48,32 +47,32 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
     },
   },
   walletContainer: {
-    color: palletteShade[bgNeutralShade - 600],
+    color: palette.card.text,
     cursor: 'pointer',
     display: 'flex',
     background: `repeating-linear-gradient(
       -45deg,
-      ${palletteShade[bgNeutralShade]},
-      ${palletteShade[bgNeutralShade]} 5px,
-      ${palletteShade[bgNeutralShade - 100]} 5px,
-      ${palletteShade[bgNeutralShade - 100]} 6px
+      ${palette.card.gradient.start},
+      ${palette.card.gradient.start} 5px,
+      ${palette.card.gradient.end} 5px,
+      ${palette.card.gradient.end} 6px
     )`,
     alignItems: 'center',
-    border: `2px solid ${palletteShade[bgNeutralShade]}`,
+    border: `2px solid ${palette.card.gradient.start}`,
     borderRadius: theme.shape.borderRadius,
     paddingRight: theme.spacing(0.5),
     marginRight: theme.spacing(1),
     height: '100%',
   },
   walletContainerSelected: {
-    background: theme.palette.white,
-    border: `2px solid ${theme.palette.white}`,
-    color: palletteShade[bgNeutralShade],
+    background: palette.card.selected.background,
+    border: `2px solid ${palette.card.selected.background}`,
+    color: palette.card.selected.text,
   },
   walletIcon: {
     marginRight: theme.spacing(0.5),
-    color: theme.palette.common.black,
-    backgroundColor: palletteShade[bgNeutralShade],
+    color: palette.card.text,
+    backgroundColor: palette.background.main,
     borderRadius: '50%',
     width: '25px',
     height: '25px',
@@ -102,11 +101,11 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
     lineHeight: 1.4,
   },
   totalValue: {
-    color: palletteShade[600],
+    color: palette.text.primary,
     marginLeft: theme.spacing(1),
   },
   headerIcon: {
-    color: palletteShade[600],
+    color: palette.text.primary,
     marginRight: theme.spacing(1),
   },
   scrollableContainer: {
@@ -115,18 +114,15 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
     overscrollBehavior: 'contain',
     height: `${WALLET_CARD_HEIGHT + 2}px`,
     width: '100%',
-    backgroundImage: `linear-gradient(${palletteShade[bgNeutralShade - 200]}, ${
-      palletteShade[bgNeutralShade]
-    })`,
+    backgroundImage: `linear-gradient(${palette.background.gradient.start}, ${palette.background.gradient.end})`,
     borderRadius: theme.shape.borderRadius,
-    border: `1px solid ${palletteShade[bgNeutralShade - 600]}`,
     padding: theme.spacing(2),
     ['::-webkit-scrollbar']: {
       display: 'none',
     },
   },
   noActivity: {
-    color: palletteShade[bgNeutralShade - 600],
+    color: palette.text.secondary,
   },
   tokenContainer: {
     display: 'flex',
@@ -135,11 +131,11 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
     backgroundColor: 'transparent',
     padding: theme.spacing(0.5),
     '&:hover': {
-      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      backgroundColor: palette.background.main,
     },
   },
   copyIcon: {
-    color: theme.palette.neutralShades[bgNeutralShade - 400],
+    color: palette.card.text,
     width: '14px',
     height: '14px',
   },
@@ -152,11 +148,8 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   isOwner,
   verified,
 }) => {
-  const theme = useTheme();
   const {classes, cx} = useStyles({
-    palletteShade: isOwner
-      ? theme.palette.primaryShades
-      : theme.palette.neutralShades,
+    palette: isOwner ? WalletPaletteOwner : WalletPalettePublic,
   });
   const {enqueueSnackbar} = useSnackbar();
   const [filterAddress, setFilterAddress] = useState<SerializedWalletBalance>();
@@ -304,7 +297,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
                 >
                   <Box className={classes.tokenContainer}>
                     <Token
-                      primaryShade={!!isOwner}
+                      isOwner
                       token={token}
                       onClick={() => handleClick(token.walletBlockChainLink)}
                       showGraph

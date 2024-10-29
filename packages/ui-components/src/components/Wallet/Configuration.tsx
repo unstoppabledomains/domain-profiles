@@ -2,6 +2,7 @@ import type {TEvent} from '@fireblocks/ncw-js-sdk';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import Alert from '@mui/lab/Alert';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -29,7 +30,6 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {useFeatureFlags} from '../../actions';
 import {
   confirmAuthorizationTokenTx,
-  getAccessToken,
   getAuthorizationTokenTx,
   getBootstrapToken,
   sendBootstrapCode,
@@ -42,7 +42,7 @@ import {
   getWalletPortfolio,
   syncIdentityConfig,
 } from '../../actions/walletActions';
-import {useWeb3Context} from '../../hooks';
+import {useFireblocksAccessToken, useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
 import type {SerializedWalletBalance} from '../../lib';
 import {isEmailValid, loginWithAddress, useTranslationContext} from '../../lib';
@@ -60,6 +60,7 @@ import {
 import {sleep} from '../../lib/sleep';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {isEthAddress} from '../Chat/protocol/resolution';
+import {localStorageWrapper} from '../Chat/storage';
 import {DomainProfileTabType} from '../Manage/DomainProfile';
 import ManageInput from '../Manage/common/ManageInput';
 import type {ManageTabProps} from '../Manage/common/types';
@@ -145,6 +146,7 @@ export const Configuration: React.FC<
     emailAddress?: string;
     recoveryPhrase?: string;
     recoveryToken?: string;
+    onError?: () => void;
     onLoaded?: (v: boolean) => void;
     onLoginInitiated?: (emailAddress: string, password: string) => void;
     setIsFetching?: (v?: boolean) => void;
@@ -158,6 +160,7 @@ export const Configuration: React.FC<
   }
 > = ({
   onUpdate,
+  onError,
   onLoaded,
   onLoginInitiated,
   setButtonComponent,
@@ -193,6 +196,7 @@ export const Configuration: React.FC<
   // wallet key management state
   const [persistKeys, setPersistKeys] = useState(forceRememberOnDevice);
   const [state, saveState] = useFireblocksState(persistKeys);
+  const getAccessToken = useFireblocksAccessToken();
   const [progressPct, setProgressPct] = useState(0);
 
   // wallet recovery state variables
@@ -233,6 +237,13 @@ export const Configuration: React.FC<
       setEmailAddress(router.query[EMAIL_PARAM]);
     }
   }, [router?.query]);
+
+  useEffect(() => {
+    if (!errorMessage || !onError) {
+      return;
+    }
+    onError();
+  }, [errorMessage]);
 
   useEffect(() => {
     if (configState === WalletConfigState.OnboardSuccess) {
@@ -454,12 +465,12 @@ export const Configuration: React.FC<
     // wallets may be loaded into cached local storage for up to
     // an hour, to improve loading UX
     const walletCachePrefix = 'portfolio-state';
-    const walletCacheExpiry = localStorage.getItem(
+    const walletCacheExpiry = await localStorageWrapper.getItem(
       `${walletCachePrefix}-expiry`,
     );
     const walletCacheData = forceRefresh
       ? undefined
-      : localStorage.getItem(`${walletCachePrefix}-data`);
+      : await localStorageWrapper.getItem(`${walletCachePrefix}-data`);
     const walletCacheValid =
       walletCacheData &&
       walletCacheExpiry &&
@@ -488,7 +499,12 @@ export const Configuration: React.FC<
               true,
             );
             if (!addressPortfolio) {
-              missingAddresses.push(address);
+              const existingWallet = mpcWallets.find(
+                w => w.address.toLowerCase() === address.toLowerCase(),
+              );
+              if (!existingWallet) {
+                missingAddresses.push(address);
+              }
               return;
             }
             wallets.push(
@@ -512,7 +528,7 @@ export const Configuration: React.FC<
     setPaymentConfigStatus(paymentConfig);
 
     // show error message if any wallet data is missing
-    if (missingAddresses.length > 0) {
+    if (missingAddresses.length > 0 && mpcWallets.length > 0) {
       enqueueSnackbar(
         <Markdown>
           {t('wallet.loadingError', {
@@ -530,8 +546,11 @@ export const Configuration: React.FC<
     setIsLoaded(true);
 
     // store rendered wallets in session memory
-    localStorage.setItem(`${walletCachePrefix}-data`, JSON.stringify(wallets));
-    localStorage.setItem(
+    await localStorageWrapper.setItem(
+      `${walletCachePrefix}-data`,
+      JSON.stringify(wallets),
+    );
+    await localStorageWrapper.setItem(
       `${walletCachePrefix}-expiry`,
       String(Date.now() + ONE_HOUR),
     );
@@ -584,28 +603,16 @@ export const Configuration: React.FC<
         return;
       }
 
-      // check state for device ID and refresh token
-      if (
-        !accessToken &&
-        existingState?.deviceId &&
-        existingState?.refreshToken
-      ) {
-        const tokens = await getAccessToken(existingState.refreshToken, {
-          deviceId: existingState.deviceId,
-          state,
-          saveState,
-          setAccessToken,
-        });
-        if (tokens) {
-          // successfully retrieved access token
-          setAccessToken(tokens.accessToken);
-          return;
-        }
+      // retrieve a new access token
+      const newAccessToken = await getAccessToken();
+      if (newAccessToken) {
+        setAccessToken(newAccessToken);
+        return;
       }
 
       // unable to retrieve access token, so revert back to configuration
       // state before returning
-      handleLogout();
+      await handleLogout();
     } finally {
       setIsLoaded(true);
     }
@@ -638,7 +645,7 @@ export const Configuration: React.FC<
     setConfigState(WalletConfigState.OnboardWithEmail);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     // clear input variables
     setBootstrapCode(undefined);
     setPersistKeys(forceRememberOnDevice);
@@ -652,7 +659,7 @@ export const Configuration: React.FC<
     }
 
     // clear all storage state
-    saveState({});
+    await saveState({});
 
     // reset configuration state
     setConfigState(WalletConfigState.PasswordEntry);
@@ -1231,14 +1238,20 @@ export const Configuration: React.FC<
               icon={<LockOutlinedIcon />}
               label={t('wallet.onboardSuccessTitle')}
             >
-              <Box mt={3} display="flex" textAlign="center">
-                <Typography variant="body1" component="div">
+              <Box
+                mt={3}
+                display="flex"
+                alignItems="center"
+                textAlign="center"
+                justifyContent="center"
+              >
+                <Alert severity="info">
                   <Markdown>
                     {t('wallet.onboardSuccessDescription', {
                       emailAddress: emailAddress!,
                     })}
                   </Markdown>
-                </Typography>
+                </Alert>
               </Box>
             </OperationStatus>
           </Box>

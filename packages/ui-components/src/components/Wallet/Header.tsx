@@ -20,6 +20,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getOwnerDomains} from '../../actions';
 import {useUnstoppableMessaging, useWeb3Context} from '../../hooks';
+import {isChromeStorageSupported} from '../../hooks/useChromeStorage';
 import {useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import {UnstoppableMessaging} from '../Chat';
@@ -438,7 +439,7 @@ export const Header: React.FC<Props> = ({
           {showMessages && (
             <UnstoppableMessaging
               address={address}
-              silentOnboard={true}
+              silentOnboard={!isChromeStorageSupported('local')}
               hideIcon={true}
               onPopoutClick={onMessagePopoutClick}
               disableSupportBubble
@@ -464,6 +465,7 @@ export const Header: React.FC<Props> = ({
           onRecoveryLinkClicked={handleRecoveryKitClicked}
           onLogout={handleLogout}
           onDisconnect={onDisconnect ? handleDisconnect : undefined}
+          onHideMenu={() => setIsMenuOpen(false)}
         />
       )}
       {isDomainListModalOpen && (

@@ -1,9 +1,4 @@
-import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React from 'react';
 
@@ -11,8 +6,9 @@ import type {ImmutableArray} from '@unstoppabledomains/config/build/src/env/type
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance} from '../../lib';
-import {TokenType, useTranslationContext} from '../../lib';
+import {TokenType, WalletPaletteOwner, useTranslationContext} from '../../lib';
 import {filterWallets} from '../../lib/wallet/filter';
+import FundWalletModal from './FundWalletModal';
 import {TitleWithBackButton} from './TitleWithBackButton';
 import type {TokenEntry} from './Token';
 import Token from './Token';
@@ -24,32 +20,29 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
     minHeight: '250px',
     width: '100%',
+    height: '100%',
   },
   assetsContainer: {
     width: '100%',
+    height: '100%',
     display: 'flex',
     flexDirection: 'column',
     gap: 5,
     alignItems: 'center',
   },
   asset: {
-    backgroundImage: 'linear-gradient(#0655DD, #043893)',
+    backgroundImage: `linear-gradient(${WalletPaletteOwner.background.gradient.start}, ${WalletPaletteOwner.background.gradient.end})`,
     borderRadius: 9,
     padding: 12,
     width: '100%',
     marginBottom: theme.spacing(0.5),
-  },
-  fundButton: {
-    width: '100%',
   },
   icon: {
     fontSize: '60px',
   },
   noTokensContainer: {
     textAlign: 'center',
-  },
-  noTokensText: {
-    marginBottom: theme.spacing(3),
+    height: '100%',
   },
 }));
 
@@ -154,35 +147,14 @@ export const SelectAsset: React.FC<Props> = ({
       <Box className={classes.assetsContainer} mt={2}>
         {requireBalance &&
           allTokens.length > 0 &&
-          filteredTokens.length === 0 && (
+          filteredTokens.length === 0 &&
+          onClickBuy &&
+          onClickReceive && (
             <Box className={classes.noTokensContainer}>
-              <Typography variant="body1" className={classes.noTokensText}>
-                {t('wallet.noTokensAvailableForSend')}
-              </Typography>
-              {onClickReceive && onClickBuy && (
-                <Grid container spacing={1}>
-                  <Grid item xs={6}>
-                    <Button
-                      onClick={onClickReceive}
-                      variant="contained"
-                      startIcon={<AddOutlinedIcon />}
-                      className={classes.fundButton}
-                    >
-                      {t('common.receive')}
-                    </Button>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Button
-                      onClick={onClickBuy}
-                      variant="contained"
-                      startIcon={<AttachMoneyIcon />}
-                      className={classes.fundButton}
-                    >
-                      {t('common.buy')}
-                    </Button>
-                  </Grid>
-                </Grid>
-              )}
+              <FundWalletModal
+                onBuyClicked={onClickBuy}
+                onReceiveClicked={onClickReceive}
+              />
             </Box>
           )}
         {filteredTokens.map(token => {
@@ -196,7 +168,7 @@ export const SelectAsset: React.FC<Props> = ({
               key={`${token.type}/${token.symbol}/${token.ticker}/${token.walletAddress}`}
             >
               <Token
-                primaryShade
+                isOwner
                 token={token}
                 onClick={handleClick}
                 hideBalance={hideBalance}

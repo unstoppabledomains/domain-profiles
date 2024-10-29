@@ -4,8 +4,7 @@ import {useQuery} from 'react-query';
 import config from '@unstoppabledomains/config';
 
 import type {AddressResolution} from '../components/Chat/types';
-import type {NftResponse} from '../lib';
-import {NftPageSize, isDomainValidForManagement} from '../lib';
+import {isDomainValidForManagement} from '../lib/domain/format';
 import {fetchApi} from '../lib/fetchApi';
 import type {
   DomainFieldTypes,
@@ -19,6 +18,8 @@ import type {
   SerializedUserDomainProfileData,
 } from '../lib/types/domain';
 import {DomainProfileSocialMedia} from '../lib/types/domain';
+import type {NftResponse} from '../lib/types/nfts';
+import {NftPageSize} from '../lib/types/nfts';
 
 export const DOMAIN_LIST_PAGE_SIZE = 8;
 

@@ -4,8 +4,8 @@ import {useQuery} from 'react-query';
 import config, {getLaunchDarklyDefaults} from '@unstoppabledomains/config';
 import type {LaunchDarklyCamelFlagSet} from '@unstoppabledomains/config';
 
-import {fetchApi} from '../lib';
 import {notifyEvent} from '../lib/error';
+import {fetchApi} from '../lib/fetchApi';
 
 const BASE_QUERY_KEY = 'featureFlags';
 const queryKey = {

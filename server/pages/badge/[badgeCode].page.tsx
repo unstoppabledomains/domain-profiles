@@ -32,6 +32,7 @@ import {
   getDomainRankings,
   getImageUrl,
   getSponsorRankings,
+  localStorageWrapper,
   useFeatureFlags,
   useTranslationContext,
 } from '@unstoppabledomains/ui-components';
@@ -150,14 +151,18 @@ const BadgePage = ({
     }
 
     // set state from local storage
-    const localAuthAddress =
-      localStorage.getItem(DomainProfileKeys.AuthAddress) || '';
-    const localAuthDomain =
-      localStorage.getItem(DomainProfileKeys.AuthDomain) || '';
-    if (localAuthAddress && localAuthDomain) {
-      setAuthAddress(localAuthAddress);
-      setAuthDomain(localAuthDomain);
-    }
+    const loadAuth = async () => {
+      const localAuthAddress =
+        (await localStorageWrapper.getItem(DomainProfileKeys.AuthAddress)) ||
+        '';
+      const localAuthDomain =
+        (await localStorageWrapper.getItem(DomainProfileKeys.AuthDomain)) || '';
+      if (localAuthAddress && localAuthDomain) {
+        setAuthAddress(localAuthAddress);
+        setAuthDomain(localAuthDomain);
+      }
+    };
+    void loadAuth();
   }, [isMounted, isFeatureFlagSuccess, featureFlags]);
 
   const handleGetBadgeClick = () => {

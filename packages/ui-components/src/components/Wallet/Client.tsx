@@ -32,6 +32,7 @@ import type {SerializedWalletBalance} from '../../lib';
 import {
   DomainFieldTypes,
   WALLET_CARD_HEIGHT,
+  WalletPaletteOwner,
   useTranslationContext,
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
@@ -41,12 +42,12 @@ import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileList} from '../Domain';
 import {DomainProfileModal} from '../Manage';
+import Modal from '../Modal';
 import Buy from './Buy';
 import Receive from './Receive';
+import ReceiveDomainModal from './ReceiveDomainModal';
 import Send from './Send';
 import {TokensPortfolio} from './TokensPortfolio';
-
-const bgNeutralShade = 800;
 
 const useStyles = makeStyles<{isMobile: boolean}>()(
   (theme: Theme, {isMobile}) => ({
@@ -91,13 +92,10 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       },
     },
     domainListContainer: {
-      color: theme.palette.primaryShades[bgNeutralShade - 600],
+      color: WalletPaletteOwner.text.primary,
       display: 'flex',
-      backgroundImage: `linear-gradient(${
-        theme.palette.primaryShades[bgNeutralShade - 200]
-      }, ${theme.palette.primaryShades[bgNeutralShade]})`,
+      backgroundImage: `linear-gradient(${WalletPaletteOwner.background.gradient.start}, ${WalletPaletteOwner.background.gradient.end})`,
       borderRadius: theme.shape.borderRadius,
-      border: `1px solid ${theme.palette.primaryShades[bgNeutralShade - 600]}`,
       padding: theme.spacing(2),
       height: `${WALLET_CARD_HEIGHT + 2}px`,
       marginBottom: theme.spacing(2),
@@ -111,16 +109,16 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       cursor: 'pointer',
       paddingTop: theme.spacing(1),
       paddingBottom: theme.spacing(1),
-      color: theme.palette.white,
+      color: WalletPaletteOwner.text.primary,
       '&:visited': {
-        color: theme.palette.white,
+        color: WalletPaletteOwner.text.primary,
       },
       '&:hover': {
         '& p': {
-          color: theme.palette.white,
+          color: WalletPaletteOwner.text.primary,
         },
         '& svg': {
-          color: theme.palette.white,
+          color: WalletPaletteOwner.text.primary,
         },
       },
     },
@@ -172,6 +170,10 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
     identitySnackbar: {
       display: 'flex',
       maxWidth: '300px',
+    },
+    modalTitleStyle: {
+      color: 'inherit',
+      alignSelf: 'center',
     },
   }),
 );
@@ -245,7 +247,7 @@ export const Client: React.FC<ClientProps> = ({
       ...state.config,
       identityState: paymentConfigStatus.status,
     };
-    saveState({
+    void saveState({
       ...state,
     });
     enqueueSnackbar(
@@ -501,19 +503,31 @@ export const Client: React.FC<ClientProps> = ({
                   value={ClientTabType.Domains}
                   className={classes.tabContentItem}
                 >
-                  <Box className={classes.domainListContainer}>
-                    <DomainProfileList
-                      id={'wallet-domain-list'}
-                      domains={domains}
-                      isLoading={isLoading}
-                      withInfiniteScroll={true}
-                      setWeb3Deps={setWeb3Deps}
-                      onLastPage={handleLoadDomains}
-                      hasMore={!retrievedAll}
-                      onClick={handleDomainClick}
-                      rowStyle={classes.domainRow}
-                    />
-                  </Box>
+                  {domains.length > 0 ? (
+                    <Box className={classes.domainListContainer}>
+                      <DomainProfileList
+                        id={'wallet-domain-list'}
+                        domains={domains}
+                        isLoading={isLoading}
+                        withInfiniteScroll={true}
+                        setWeb3Deps={setWeb3Deps}
+                        onLastPage={handleLoadDomains}
+                        hasMore={!retrievedAll}
+                        onClick={handleDomainClick}
+                        rowStyle={classes.domainRow}
+                      />
+                    </Box>
+                  ) : (
+                    <Modal
+                      title={t('wallet.addDomain')}
+                      open={true}
+                      fullScreen={fullScreenModals}
+                      titleStyle={classes.modalTitleStyle}
+                      onClose={() => setTabValue(ClientTabType.Portfolio)}
+                    >
+                      <ReceiveDomainModal />
+                    </Modal>
+                  )}
                 </TabPanel>
                 <TabPanel
                   value={ClientTabType.Transactions}
@@ -524,7 +538,11 @@ export const Client: React.FC<ClientProps> = ({
                     wallets={wallets}
                     isOwner={true}
                     verified={true}
+                    fullScreenModals={fullScreenModals}
                     accessToken={accessToken}
+                    onBack={() => setTabValue(ClientTabType.Portfolio)}
+                    onBuyClicked={handleClickedBuy}
+                    onReceiveClicked={handleClickedReceive}
                   />
                 </TabPanel>
               </Grid>
@@ -548,16 +566,12 @@ export const Client: React.FC<ClientProps> = ({
                   value={ClientTabType.Domains}
                   label={t('common.domains')}
                   iconPosition="start"
-                  disabled={domains.length === 0}
                 />
                 <Tab
                   icon={<HistoryIcon />}
                   value={ClientTabType.Transactions}
                   label={t('activity.title')}
                   iconPosition="start"
-                  disabled={
-                    !wallets?.some(w => w.txns?.data && w.txns.data.length > 0)
-                  }
                 />
               </TabList>
             </Box>

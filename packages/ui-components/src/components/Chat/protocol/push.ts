@@ -64,7 +64,7 @@ export const decryptMessage = async (
   msg: IMessageIPFS,
 ): Promise<IMessageIPFS | undefined> => {
   if (msg.link) {
-    const cachedMsg = getLocalKey<IMessageIPFS>(msg.link);
+    const cachedMsg = await getLocalKey<IMessageIPFS>(msg.link);
     if (cachedMsg) {
       return cachedMsg;
     }
@@ -83,7 +83,7 @@ export const decryptMessage = async (
     );
 
     if (msg.link && decryptedMessage) {
-      setLocalKey<IMessageIPFS>(msg.link, decryptedMessage);
+      await setLocalKey<IMessageIPFS>(msg.link, decryptedMessage);
       return decryptedMessage;
     }
   } catch (e) {
@@ -232,7 +232,7 @@ export const getPushUser = async (
   address: string,
 ): Promise<PushAPI.IUser | undefined> => {
   // attempt to retrieve user from cache
-  const cachedUser = getLocalKey<PushAPI.IUser>(address);
+  const cachedUser = await getLocalKey<PushAPI.IUser>(address);
   if (cachedUser) {
     return cachedUser;
   }
@@ -244,7 +244,7 @@ export const getPushUser = async (
       env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
     });
     if (pushUser) {
-      setLocalKey(address, pushUser);
+      await setLocalKey(address, pushUser);
       return pushUser;
     }
   } catch (e) {
@@ -386,7 +386,7 @@ export const updateBlockedList = async (
 
   // update the protocol list with blocked users and update the
   // cached push user in local storage
-  setLocalKey(
+  await setLocalKey(
     address,
     await PushAPI.user.profile.update({
       account: getAddressAccount(address),

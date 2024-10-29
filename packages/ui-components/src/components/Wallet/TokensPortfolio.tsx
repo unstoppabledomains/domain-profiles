@@ -139,7 +139,10 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
     },
   },
   copyIcon: {
-    color: theme.palette.neutralShades[bgNeutralShade - 400],
+    color:
+      theme.palette.neutralShades[
+        (bgNeutralShade - 400) as keyof typeof theme.palette.neutralShades
+      ],
     width: '14px',
     height: '14px',
   },

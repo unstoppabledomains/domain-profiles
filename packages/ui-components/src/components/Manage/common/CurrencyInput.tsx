@@ -239,7 +239,9 @@ const CurrencyInput: React.FC<Props> = ({
   const {classes} = useStyles();
   const [address, setAddress] = useState(value);
   const [isError, setIsError] = useState(false);
-  const initial = Boolean(AllInitialCurrenciesEnum[currency]);
+  const initial = Boolean(
+    AllInitialCurrenciesEnum[currency as keyof typeof AllInitialCurrenciesEnum],
+  );
   const {unsResolverKeys} = useResolverKeys();
   const resolverKeys = unsResolverKeys;
   const recordKey = mappedResolverKey.mapping?.to || mappedResolverKey.key;

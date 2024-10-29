@@ -19,7 +19,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {useDomainConfig} from '../../hooks';
 import {WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
-import {DomainProfileTabType} from '../Manage';
+import {DomainProfileTabType} from '../Manage/common/types';
 import {DomainWallet} from './DomainWallet';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -76,13 +76,13 @@ const swiperCss = `
      width: 32px;
      height: 32px;
      background: rgba(255, 255, 255, 0.8);
-  
+
      border: 1px solid #DDDDDF;
      backdrop-filter: blur(2px);
- 
+
      border-radius: 50%;
-  } 
-  .swiper-wrapper { 
+  }
+  .swiper-wrapper {
   padding-bottom: 1rem;
  }
 `;

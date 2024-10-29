@@ -1,3 +1,5 @@
+import type config from '@unstoppabledomains/config';
+
 import type {Web3Dependencies} from '../../../../lib';
 import type {MappedResolverKey} from '../../../../lib/types/pav3';
 import {getMappedResolverKey} from '../../../../lib/types/resolverKeys';

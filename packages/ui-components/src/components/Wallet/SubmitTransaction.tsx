@@ -141,7 +141,9 @@ export const SubmitTransaction: React.FC<Props> = ({
                 window.open(
                   `${
                     config.BLOCKCHAINS[
-                      getBlockchainSymbol(asset.blockchainAsset.blockchain.id)
+                      getBlockchainSymbol(
+                        asset.blockchainAsset.blockchain.id,
+                      ) as keyof typeof config.BLOCKCHAINS
                     ].BLOCK_EXPLORER_TX_URL
                   }${transactionId}`,
                   '_blank',

@@ -1,5 +1,5 @@
 import type {
-  SerializedDomainProfileSocialAccountsUserInfo,
+  SerializedPartialDomainProfileSocialAccountsUserInfo,
   SerializedPublicDomainProfileData,
 } from './domain';
 
@@ -10,7 +10,7 @@ export type GetSeoTagsProps = {
   title: string;
   description?: string;
   profileData?: SerializedPublicDomainProfileData | null | undefined;
-  socialsInfo?: SerializedDomainProfileSocialAccountsUserInfo;
+  socialsInfo?: SerializedPartialDomainProfileSocialAccountsUserInfo;
   domainAvatar?: string | null;
 };
 

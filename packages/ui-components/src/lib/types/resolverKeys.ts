@@ -2,13 +2,14 @@ import cloneDeep from 'lodash/cloneDeep';
 import type EnsResolverKeysJson from 'uns/ens-resolver-keys.json';
 import type UnsResolverKeysJson from 'uns/resolver-keys.json';
 
+import type {CurrenciesType} from './blockchain';
 import type {MappedResolverKey} from './pav3';
 import {ADDRESS_REGEX, MULTI_CHAIN_ADDRESS_REGEX} from './records';
 
 /**
  * Currency symbol as in `AllCurrenciesType`, i.e. "BTC"
  */
-type ResolverKeySymbol = string | null;
+type ResolverKeySymbol = CurrenciesType | null;
 
 /**
  * Regex string based on which the value of the record will be validated,
@@ -46,7 +47,7 @@ const getUnsResolverKeySymbol = (key: ResolverKeyName): ResolverKeySymbol => {
   if (key.match(ADDRESS_REGEX) || key.match(MULTI_CHAIN_ADDRESS_REGEX)) {
     const [, ticker] = key.split('.');
     if (ticker) {
-      symbol = ticker;
+      symbol = ticker as CurrenciesType;
     }
   }
 
@@ -135,7 +136,11 @@ export const loadEnsResolverKeys = async (): Promise<ResolverKeys> => {
     const {symbol, validationRegex} = props;
     const deprecated = symbol ? /_LEGACY/.test(symbol) : false;
     ResolverKeys.push(key);
-    ResolverKey[key] = {deprecated, symbol, validationRegex};
+    ResolverKey[key] = {
+      deprecated,
+      symbol: symbol as CurrenciesType,
+      validationRegex,
+    };
   }
 
   return {ResolverKeys, ResolverKey};

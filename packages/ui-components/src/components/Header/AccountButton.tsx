@@ -7,13 +7,13 @@ import React, {useEffect, useState} from 'react';
 import ProfilePlaceholder from '@unstoppabledomains/ui-kit/icons/ProfilePlaceholder';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import type {DomainProfileTabType} from '..';
 import {getProfileData} from '../../actions/domainProfileActions';
 import DropDownMenu from '../../components/DropDownMenu';
 import getImageUrl from '../../lib/domain/getImageUrl';
 import {notifyEvent} from '../../lib/error';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import {DomainFieldTypes} from '../../lib/types/domain';
+import type {DomainProfileTabType} from '../Manage/common/types';
 import Modal from '../Modal';
 import {Wallet} from '../Wallet/Wallet';
 

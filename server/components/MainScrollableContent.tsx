@@ -14,7 +14,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     position: 'relative',
     backgroundImage: `linear-gradient(${
-      theme.palette.neutralShades[gradientBase - 200]
+      theme.palette.neutralShades[
+        (gradientBase - 200) as keyof typeof theme.palette.neutralShades
+      ]
     }, ${theme.palette.neutralShades[gradientBase]})`,
     height: '400px',
   },

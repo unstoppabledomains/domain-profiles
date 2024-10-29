@@ -136,6 +136,18 @@ const DomainProfile = ({
   profileData: initialProfileData,
   identity,
 }: DomainProfilePageProps) => {
+  // Redirect to listing page if domain is listed for sale and the host is not ud.me
+  useEffect(() => {
+    const udMeHostname = new URL(config.UD_ME_BASE_URL).hostname;
+    if (
+      initialProfileData?.isListedForSale &&
+      typeof window !== 'undefined' && // Make sure we're on client side
+      window.location.hostname.toLowerCase() !== udMeHostname.toLowerCase()
+    ) {
+      window.location.replace(`${config.UNSTOPPABLE_WEBSITE_URL}/d/${domain}`);
+    }
+  }, [initialProfileData]);
+
   // hooks
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
@@ -1614,11 +1626,7 @@ const DomainProfile = ({
 };
 
 export async function getServerSideProps(props: DomainProfileServerSideProps) {
-  const {params, req} = props;
-  const forwardedHost = Array.isArray(req.headers['x-forwarded-host'])
-    ? req.headers['x-forwarded-host'][0]?.trim()
-    : req.headers['x-forwarded-host']?.split(',')[0]?.trim();
-  const host = forwardedHost || req.headers.host;
+  const {params} = props;
   const profileServiceUrl = config.PROFILE.HOST_URL;
   const domain = params.domain.toLowerCase();
   const redirectToSearch = {
@@ -1629,13 +1637,6 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         searchTerm: domain,
         searchRef: 'domainprofile',
       })}`,
-      permanent: false,
-    },
-  };
-
-  const redirectToListingPage = {
-    redirect: {
-      destination: `${config.UNSTOPPABLE_WEBSITE_URL}/d/${domain}`,
       permanent: false,
     },
   };
@@ -1663,40 +1664,6 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         : null;
   } catch (e) {
     console.error(`error loading domain profile for ${domain}`, String(e));
-  }
-
-  const udMeHostname = new URL(config.UD_ME_BASE_URL).hostname;
-  if (domain === 'testingdotcom.com' || domain === '0xtesting.nft') {
-    console.log(
-      'Profile page getServerSideProps output:',
-      JSON.stringify(
-        {
-          props: {
-            resolvedUrl: props.resolvedUrl,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            pathname: (props as any).pathname,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            asPath: (props as any).asPath,
-            query: props.query,
-            params: props.params,
-          },
-          headers: {
-            ...req.headers,
-          },
-          url: req.url,
-        },
-        null,
-        2,
-      ),
-    );
-  }
-  // Redirect to the listing page if domain is listed for sale and the host is not ud.me
-  if (
-    typeof host === 'string' &&
-    host !== udMeHostname &&
-    profileData?.isListedForSale
-  ) {
-    return redirectToListingPage;
   }
 
   // Redirecting to /search if the domain isn't purchased yet, trying to increase conversion

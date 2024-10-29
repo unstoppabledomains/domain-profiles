@@ -1615,8 +1615,10 @@ const DomainProfile = ({
 
 export async function getServerSideProps(props: DomainProfileServerSideProps) {
   const {params, req} = props;
-  const host = req.headers.host;
-
+  const forwardedHost = Array.isArray(req.headers['x-forwarded-host'])
+    ? req.headers['x-forwarded-host'][0]?.trim()
+    : req.headers['x-forwarded-host']?.split(',')[0]?.trim();
+  const host = forwardedHost || req.headers.host;
   const profileServiceUrl = config.PROFILE.HOST_URL;
   const domain = params.domain.toLowerCase();
   const redirectToSearch = {

@@ -1667,7 +1667,28 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
 
   const udMeHostname = new URL(config.UD_ME_BASE_URL).hostname;
   if (domain === 'testingdotcom.com' || domain === '0xtesting.nft') {
-    console.log('Domain profile headers output:', JSON.stringify({headers: req.headers}));
+    console.log(
+      'Profile page getServerSideProps output:',
+      JSON.stringify(
+        {
+          props: {
+            resolvedUrl: props.resolvedUrl,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            pathname: (props as any).pathname,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            asPath: (props as any).asPath,
+            query: props.query,
+            params: props.params,
+          },
+          headers: {
+            ...req.headers,
+          },
+          url: req.url,
+        },
+        null,
+        2,
+      ),
+    );
   }
   // Redirect to the listing page if domain is listed for sale and the host is not ud.me
   if (

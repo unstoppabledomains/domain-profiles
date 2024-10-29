@@ -1666,16 +1666,15 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
   }
 
   const udMeHostname = new URL(config.UD_ME_BASE_URL).hostname;
+  if (domain === 'testingdotcom.com' || domain === '0xtesting.nft') {
+    console.log('Domain profile headers output:', JSON.stringify({headers: req.headers}));
+  }
   // Redirect to the listing page if domain is listed for sale and the host is not ud.me
   if (
     typeof host === 'string' &&
     host !== udMeHostname &&
     profileData?.isListedForSale
   ) {
-    console.log(
-      'Redirecting to domain listing lander',
-      JSON.stringify({host, udMeHostname}),
-    );
     return redirectToListingPage;
   }
 

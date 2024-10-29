@@ -155,7 +155,7 @@ const DomainProfile = ({
     typeof window !== 'undefined' &&
     window.location.hostname.toLowerCase() !== udMeHostname.toLowerCase()
   ) {
-    return null; // or return a loading spinner
+    return null;
   }
 
   // hooks

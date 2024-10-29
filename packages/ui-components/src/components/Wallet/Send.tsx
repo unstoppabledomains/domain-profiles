@@ -274,7 +274,20 @@ const Send: React.FC<Props> = ({
   };
 
   const handleAmountChange = (value: string) => {
-    setAmount(value);
+    // validate an asset is selected
+    if (!accountAsset) {
+      return;
+    }
+
+    // normalize asset decimals if present
+    const normalizedValue = accountAsset.balance?.decimals
+      ? `0.${value
+          .replaceAll('0.', '')
+          .slice(0, accountAsset.balance.decimals)}`
+      : value;
+
+    // use normalized value
+    setAmount(normalizedValue);
   };
 
   if (isLoading) {

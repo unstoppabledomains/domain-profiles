@@ -5,7 +5,6 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {useTheme} from '@mui/material/styles';
 import numeral from 'numeral';
 import React from 'react';
 import {Line} from 'react-chartjs-2';
@@ -120,8 +119,6 @@ const Token: React.FC<Props> = ({
   showGraph,
   hideBalance,
 }) => {
-  const theme = useTheme();
-
   const {classes, cx} = useStyles({
     palette: isOwner ? WalletPaletteOwner : WalletPalettePublic,
   });

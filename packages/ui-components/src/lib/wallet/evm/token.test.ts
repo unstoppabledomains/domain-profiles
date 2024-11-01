@@ -1,14 +1,20 @@
 import {createErc20TransferTx} from './token';
+import * as web3 from './web3';
 
 describe('token transactions', () => {
-  it('should create an erc20 transfer tx', () => {
-    const tx = createErc20TransferTx(
-      80002,
-      '0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582',
-      '0xCD0DAdAb45bAF9a06ce1279D1342EcC3F44845af',
-      '0x8ee1E1d88EBE2B44eAD162777DE787Ef6A2dC2F2',
-      1,
-    );
+  it('should create an erc20 transfer tx', async () => {
+    // mock the contract decimals
+    jest.spyOn(web3, 'getContractDecimals').mockResolvedValue(6);
+
+    // create the transaction
+    const tx = await createErc20TransferTx({
+      chainId: 80002,
+      providerUrl: 'https://mock-provider-url',
+      tokenAddress: '0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582',
+      fromAddress: '0xCD0DAdAb45bAF9a06ce1279D1342EcC3F44845af',
+      toAddress: '0x8ee1E1d88EBE2B44eAD162777DE787Ef6A2dC2F2',
+      amount: 0.000001,
+    });
     expect(tx).toMatchObject({
       chainId: 80002,
       to: '0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582',

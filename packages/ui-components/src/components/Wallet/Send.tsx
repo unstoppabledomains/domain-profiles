@@ -20,6 +20,7 @@ import {TokenType, useTranslationContext} from '../../lib';
 import {sleep} from '../../lib/sleep';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {getAsset} from '../../lib/wallet/asset';
+import {getProviderUrl} from '../../lib/wallet/evm/provider';
 import {createErc20TransferTx} from '../../lib/wallet/evm/token';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
@@ -217,13 +218,16 @@ const Send: React.FC<Props> = ({
     // depending on the type of token, estimate the required gas
     if (token.type === TokenType.Erc20 && token.address) {
       // retrieve gas for a transaction
-      const transferTx = await createErc20TransferTx(
-        assetToSend.blockchainAsset.blockchain.networkId,
-        token.address,
-        token.walletAddress,
-        token.walletAddress,
-        0.0001,
-      );
+      const transferTx = await createErc20TransferTx({
+        chainId: assetToSend.blockchainAsset.blockchain.networkId,
+        providerUrl: getProviderUrl(
+          assetToSend.blockchainAsset.blockchain.networkId,
+        ),
+        tokenAddress: token.address,
+        fromAddress: token.walletAddress,
+        toAddress: token.walletAddress,
+        amount: 0.000001,
+      });
       const transferTxGas = await getTransactionGasEstimate(
         assetToSend,
         accessToken,

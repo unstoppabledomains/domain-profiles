@@ -1,35 +1,35 @@
-import {erc20Abi} from 'abitype/abis';
-
 import type {CreateTransaction} from '../../types';
-import {getWeb3} from './web3';
+import {getContract, getContractDecimals} from './web3';
 
-export const createErc20TransferTx = async (
-  chainId: number,
-  tokenAddress: string,
-  fromAddress: string,
-  toAddress: string,
-  amount: number,
-): Promise<CreateTransaction> => {
-  // retrieve a web3 provider for requested chain ID
-  const web3 = getWeb3(chainId);
-  if (!web3) {
-    throw new Error(`Chain ID not supported: ${chainId}`);
-  }
-
+export const createErc20TransferTx = async (opts: {
+  chainId: number;
+  providerUrl: string;
+  tokenAddress: string;
+  fromAddress: string;
+  toAddress: string;
+  amount: number;
+}): Promise<CreateTransaction> => {
   // ERC-20 contract instance for sending a specific token
-  const erc20Contract = new web3.eth.Contract(erc20Abi, tokenAddress, {
-    from: fromAddress,
-  });
+  const erc20Contract = getContract(
+    opts.providerUrl,
+    opts.tokenAddress,
+    opts.fromAddress,
+  );
 
   // retrieve the contract decimals to represent the amount
-  const decimals = await erc20Contract.methods.decimals.call([]).call();
-  const normalizedAmt = Math.floor(amount * Math.pow(10, Number(decimals)));
+  const decimals = await getContractDecimals(
+    opts.providerUrl,
+    opts.tokenAddress,
+  );
+  const normalizedAmt = Math.floor(opts.amount * Math.pow(10, decimals));
 
   // create the transaction that should be signed to execute ERC-20 transfer
   return {
-    chainId,
-    to: tokenAddress,
-    data: erc20Contract.methods.transfer(toAddress, normalizedAmt).encodeABI(),
+    chainId: opts.chainId,
+    to: opts.tokenAddress,
+    data: erc20Contract.methods
+      .transfer(opts.toAddress, normalizedAmt)
+      .encodeABI(),
     value: '0',
   };
 };

@@ -20,6 +20,7 @@ import {isEmailValid} from '../lib/isEmailValid';
 import {pollForSuccess} from '../lib/poll';
 import type {AccountAsset, GetOperationResponse} from '../lib/types/fireBlocks';
 import {OperationStatusType} from '../lib/types/fireBlocks';
+import {getProviderUrl} from '../lib/wallet/evm/provider';
 import {createErc20TransferTx} from '../lib/wallet/evm/token';
 import useResolverKeys from './useResolverKeys';
 
@@ -124,13 +125,16 @@ export const useSubmitTransaction = ({
         asset.blockchainAsset.blockchain.networkId &&
         token.address &&
         token.type === TokenType.Erc20
-          ? await createErc20TransferTx(
-              asset.blockchainAsset.blockchain.networkId,
-              token.address,
-              token.walletAddress,
-              recipientAddress,
-              parseFloat(amount),
-            )
+          ? await createErc20TransferTx({
+              chainId: asset.blockchainAsset.blockchain.networkId,
+              providerUrl: getProviderUrl(
+                asset.blockchainAsset.blockchain.networkId,
+              ),
+              tokenAddress: token.address,
+              fromAddress: token.walletAddress,
+              toAddress: recipientAddress,
+              amount: parseFloat(amount),
+            })
           : undefined;
 
       // create new transfer request, depending on token type

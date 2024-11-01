@@ -16,7 +16,7 @@ import {
   getBlockchainSymbol,
 } from '../Manage/common/verification/types';
 import {TitleWithBackButton} from './TitleWithBackButton';
-import {TokenEntry} from './Token';
+import type {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   fullWidth: {

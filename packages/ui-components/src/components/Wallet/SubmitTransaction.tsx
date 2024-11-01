@@ -18,7 +18,7 @@ import {
   getBlockchainSymbol,
 } from '../Manage/common/verification/types';
 import {OperationStatus} from './OperationStatus';
-import {TokenEntry} from './Token';
+import type {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   fullWidth: {

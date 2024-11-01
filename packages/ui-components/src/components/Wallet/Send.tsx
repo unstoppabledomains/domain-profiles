@@ -306,7 +306,7 @@ const Send: React.FC<Props> = ({
     }
 
     // normalize asset decimals if present
-    const normalizedBase = parseInt(value);
+    const normalizedBase = parseInt(value, 10);
     const normalizedValue =
       value.includes('.') && accountAsset.balance?.decimals
         ? `${normalizedBase}.${value

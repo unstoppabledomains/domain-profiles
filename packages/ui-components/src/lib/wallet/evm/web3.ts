@@ -1,10 +1,6 @@
 import {erc20Abi} from 'abitype/abis';
 import {Web3} from 'web3';
 
-export const getWeb3 = (providerUrl: string): Web3 => {
-  return new Web3(providerUrl);
-};
-
 export const getContract = (
   providerUrl: string,
   tokenAddress: string,
@@ -24,4 +20,8 @@ export const getContractDecimals = async (
   const erc20Contract = getContract(providerUrl, address);
   const decimals = await erc20Contract.methods.decimals.call([]).call();
   return Number(decimals);
+};
+
+export const getWeb3 = (providerUrl: string): Web3 => {
+  return new Web3(providerUrl);
 };

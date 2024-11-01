@@ -137,7 +137,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
           wallets={wallets}
           onCancelClick={handleBackClick}
           label={t('wallet.selectAssetToReceive')}
-          supportedTokenList={config.WALLETS.CHAINS.RECEIVE}
+          supportedAssetList={config.WALLETS.CHAINS.RECEIVE}
         />
       </Box>
     );

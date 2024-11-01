@@ -16,6 +16,7 @@ import {
   getBlockchainSymbol,
 } from '../Manage/common/verification/types';
 import {TitleWithBackButton} from './TitleWithBackButton';
+import {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   fullWidth: {
@@ -62,6 +63,7 @@ type Props = {
   amount: string;
   symbol: string;
   asset: AccountAsset;
+  token: TokenEntry;
   gasFee: string;
   amountInDollars: string;
   blockchainName: string;
@@ -76,6 +78,7 @@ export const SendConfirm: React.FC<Props> = ({
   recipientAddress,
   resolvedDomain,
   asset,
+  token,
   amount,
   symbol,
   amountInDollars,
@@ -88,7 +91,7 @@ export const SendConfirm: React.FC<Props> = ({
   const maxDisplayLength = asset.balance?.decimals
     ? Math.min(MAX_DISPLAY_LENGTH, asset.balance.decimals)
     : MAX_DISPLAY_LENGTH;
-  const assetSymbol = asset.blockchainAsset.symbol.toUpperCase();
+  const assetSymbol = token.ticker;
   const gasSymbol = getBlockchainGasSymbol(
     getBlockchainSymbol(asset.blockchainAsset.blockchain.id),
   ).toUpperCase();

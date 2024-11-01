@@ -44,13 +44,18 @@ export type MaticBlockchainConfig = BaseBlockchainConfig & {
     | 'https://www.oklink.com/polygon/tx/';
 };
 
-export type BitcoinBlockchainConfig = {
+export type BitcoinBlockchainConfig = BaseBlockchainConfig & {
+  CHAIN_ID: 0;
   BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/btc/tx/';
 };
-export type SolanaBlockchainConfig = {
+
+export type SolanaBlockchainConfig = BaseBlockchainConfig & {
+  CHAIN_ID: 0;
   BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/sol/tx/';
 };
-export type BaseChainBlockchainConfig = {
+
+export type BaseChainBlockchainConfig = BaseBlockchainConfig & {
+  CHAIN_ID: 8453;
   BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/base/tx/';
 };
 

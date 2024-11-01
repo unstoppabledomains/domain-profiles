@@ -4,6 +4,7 @@ import {useEffect, useRef, useState} from 'react';
 import {
   SendCryptoStatusMessage,
   cancelPendingOperations,
+  createTransactionOperation,
   getOperationStatus,
   getTransferOperationResponse,
 } from '../actions/fireBlocksActions';
@@ -11,17 +12,21 @@ import {
   getBlockchainSymbol,
   getRecordKeys,
 } from '../components/Manage/common/verification/types';
+import {TokenEntry} from '../components/Wallet/Token';
+import {TokenType} from '../lib';
 import {notifyEvent} from '../lib/error';
 import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../lib/fireBlocks/client';
 import {isEmailValid} from '../lib/isEmailValid';
 import {pollForSuccess} from '../lib/poll';
 import type {AccountAsset, GetOperationResponse} from '../lib/types/fireBlocks';
 import {OperationStatusType} from '../lib/types/fireBlocks';
+import {createErc20TransferTx} from '../lib/wallet/evm/token';
 import useResolverKeys from './useResolverKeys';
 
 export type Params = {
   accessToken: string;
   asset: AccountAsset;
+  token: TokenEntry;
   recipientAddress: string;
   amount: string;
   getClient: () => Promise<IFireblocksNCW>;
@@ -39,6 +44,7 @@ export enum Status {
 export const useSubmitTransaction = ({
   accessToken,
   asset,
+  token,
   recipientAddress: initialRecipientAddress,
   amount,
   getClient,
@@ -112,14 +118,37 @@ export const useSubmitTransaction = ({
         recipientAddress = resolvedAddress;
       }
 
-      // create new transfer request
+      // create a transfer transaction if we are working with
+      // an ERC-20 token
+      const transferTx =
+        asset.blockchainAsset.blockchain.networkId &&
+        token.address &&
+        token.type === TokenType.Erc20
+          ? await createErc20TransferTx(
+              asset.blockchainAsset.blockchain.networkId,
+              token.address,
+              token.walletAddress,
+              recipientAddress,
+              parseFloat(amount),
+            )
+          : undefined;
+
+      // create new transfer request, depending on token type
       setStatusMessage(SendCryptoStatusMessage.STARTING_TRANSACTION);
-      const operationResponse = await getTransferOperationResponse(
-        asset,
-        accessToken,
-        recipientAddress,
-        parseFloat(amount),
-      );
+      const operationResponse =
+        transferTx && asset.accountId
+          ? await createTransactionOperation(
+              accessToken,
+              asset.accountId,
+              asset.id,
+              transferTx,
+            )
+          : await getTransferOperationResponse(
+              asset,
+              accessToken,
+              recipientAddress,
+              parseFloat(amount),
+            );
       if (!operationResponse) {
         throw new Error('Error starting transaction');
       }

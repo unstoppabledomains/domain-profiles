@@ -211,18 +211,20 @@ const Send: React.FC<Props> = ({
     const assetToSend = getAsset(assets, {
       token,
     });
-    if (!assetToSend?.blockchainAsset.blockchain.networkId) {
+    if (!assetToSend) {
       throw new Error('Asset not found');
     }
 
     // depending on the type of token, estimate the required gas
-    if (token.type === TokenType.Erc20 && token.address) {
+    if (
+      assetToSend.blockchainAsset.blockchain.networkId &&
+      token.type === TokenType.Erc20 &&
+      token.address
+    ) {
       // retrieve gas for a transaction
       const transferTx = await createErc20TransferTx({
         chainId: assetToSend.blockchainAsset.blockchain.networkId,
-        providerUrl: getProviderUrl(
-          assetToSend.blockchainAsset.blockchain.networkId,
-        ),
+        providerUrl: getProviderUrl(assetToSend.blockchainAsset.blockchain.id),
         tokenAddress: token.address,
         fromAddress: token.walletAddress,
         toAddress: token.walletAddress,
@@ -397,12 +399,24 @@ const Send: React.FC<Props> = ({
     );
   }
 
-  const insufficientBalance = parseFloat(amount) > selectedToken.balance;
+  // determine how much balance for gas token
+  const gasTokenBalance =
+    wallets.find(
+      w =>
+        w.address.toLowerCase() === selectedToken.walletAddress.toLowerCase() &&
+        w.symbol.toLowerCase() === selectedToken.symbol.toLowerCase(),
+    )?.balanceAmt || 0;
+
+  // determine insufficient gas or token balance
+  const insufficientBalance =
+    parseFloat(amount) > selectedToken.balance ||
+    parseFloat(gasFeeEstimate || '0') > gasTokenBalance;
 
   const canSend = Boolean(
     !insufficientBalance &&
       recipientAddress &&
       !transactionSubmitted &&
+      gasTokenBalance !== 0 &&
       parseFloat(amount) !== 0 &&
       !isNaN(parseFloat(amount)),
   );
@@ -440,7 +454,11 @@ const Send: React.FC<Props> = ({
             />
           </Box>
           <AmountInput
-            gasFeeEstimate={gasFeeEstimate}
+            gasFeeEstimate={
+              selectedToken.symbol === selectedToken.ticker
+                ? gasFeeEstimate
+                : '0'
+            }
             amountInputRef={amountInputRef}
             token={selectedToken}
             initialAmount={amount}

@@ -127,9 +127,7 @@ export const useSubmitTransaction = ({
         token.type === TokenType.Erc20
           ? await createErc20TransferTx({
               chainId: asset.blockchainAsset.blockchain.networkId,
-              providerUrl: getProviderUrl(
-                asset.blockchainAsset.blockchain.networkId,
-              ),
+              providerUrl: getProviderUrl(asset.blockchainAsset.blockchain.id),
               tokenAddress: token.address,
               fromAddress: token.walletAddress,
               toAddress: recipientAddress,

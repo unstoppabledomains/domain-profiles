@@ -123,11 +123,11 @@ const AddressInput: React.FC<Props> = ({
     for (const symbol of validationSymbols) {
       const recordKeys = getRecordKeys(symbol, mappedResolverKeys);
       if (recordKeys.length === 0) {
-        return false;
+        continue;
       }
       const mappedKey = getMappedResolverKey(recordKeys[0], mappedResolverKeys);
       if (!mappedKey) {
-        return false;
+        continue;
       }
       const isValid = isValidMappedResolverKeyValue(value, mappedKey);
       onAddressChange(isValid ? value : '');

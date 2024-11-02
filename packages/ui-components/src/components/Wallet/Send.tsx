@@ -11,14 +11,17 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {useFeatureFlags} from '../../actions';
 import {
   getAccountAssets,
+  getTransactionGasEstimate,
   getTransferGasEstimate,
 } from '../../actions/fireBlocksActions';
 import {prepareRecipientWallet} from '../../actions/walletActions';
 import type {SerializedWalletBalance} from '../../lib';
-import {useTranslationContext} from '../../lib';
+import {TokenType, useTranslationContext} from '../../lib';
 import {sleep} from '../../lib/sleep';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {getAsset} from '../../lib/wallet/asset';
+import {getProviderUrl} from '../../lib/wallet/evm/provider';
+import {createErc20TransferTx} from '../../lib/wallet/evm/token';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 import AddressInput from './AddressInput';
@@ -212,16 +215,41 @@ const Send: React.FC<Props> = ({
       throw new Error('Asset not found');
     }
 
-    // estimate the gas cost
-    const gasResponse = await getTransferGasEstimate(
-      assetToSend,
-      accessToken,
-      // Doesn't matter what the recipient and amount are, just need to get the fee estimate
-      assetToSend.address,
-      // Use a small test amount to measure gas
-      '0.0001',
-    );
-    setGasFeeEstimate(gasResponse.networkFee?.amount || '0');
+    // depending on the type of token, estimate the required gas
+    if (
+      assetToSend.blockchainAsset.blockchain.networkId &&
+      token.type === TokenType.Erc20 &&
+      token.address
+    ) {
+      // retrieve gas for a transaction
+      const transferTx = await createErc20TransferTx({
+        chainId: assetToSend.blockchainAsset.blockchain.networkId,
+        providerUrl: getProviderUrl(assetToSend.blockchainAsset.blockchain.id),
+        tokenAddress: token.address,
+        fromAddress: token.walletAddress,
+        toAddress: token.walletAddress,
+        amount: 0.000001,
+      });
+      const transferTxGas = await getTransactionGasEstimate(
+        assetToSend,
+        accessToken,
+        transferTx,
+      );
+      setGasFeeEstimate(transferTxGas.networkFee?.amount || '0');
+    } else {
+      // retrieve gas for a transfer
+      const transferGas = await getTransferGasEstimate(
+        assetToSend,
+        accessToken,
+        // Doesn't matter what the recipient and amount are, just need to get the fee estimate
+        assetToSend.address,
+        // Use a small test amount to measure gas
+        '0.0001',
+      );
+      setGasFeeEstimate(transferGas.networkFee?.amount || '0');
+    }
+
+    // save the asset entry to be sent
     setAccountAsset(assetToSend);
     setIsLoading(false);
   };
@@ -280,11 +308,13 @@ const Send: React.FC<Props> = ({
     }
 
     // normalize asset decimals if present
-    const normalizedValue = accountAsset.balance?.decimals
-      ? `0.${value
-          .replaceAll('0.', '')
-          .slice(0, accountAsset.balance.decimals)}`
-      : value;
+    const normalizedBase = parseInt(value, 10);
+    const normalizedValue =
+      value.includes('.') && accountAsset.balance?.decimals
+        ? `${normalizedBase}.${value
+            .replaceAll(`${normalizedBase}.`, '')
+            .slice(0, accountAsset.balance.decimals)}`
+        : value;
 
     // use normalized value
     setAmount(normalizedValue);
@@ -314,7 +344,8 @@ const Send: React.FC<Props> = ({
           onClickReceive={onClickReceive}
           label={t('wallet.selectAssetToSend')}
           requireBalance={true}
-          supportedTokenList={config.WALLETS.CHAINS.SEND}
+          supportedAssetList={config.WALLETS.CHAINS.SEND}
+          supportErc20={true}
         />
       </Box>
     );
@@ -326,6 +357,7 @@ const Send: React.FC<Props> = ({
         <SendConfirm
           gasFee={gasFeeEstimate}
           asset={accountAsset}
+          token={selectedToken}
           onBackClick={handleBackClick}
           onSendClick={handleSubmitTransaction}
           recipientAddress={recipientAddress}
@@ -357,6 +389,7 @@ const Send: React.FC<Props> = ({
           onInvitation={handleSendInvitation}
           accessToken={accessToken}
           asset={accountAsset}
+          token={selectedToken}
           recipientAddress={recipientAddress}
           recipientDomain={resolvedDomain}
           amount={amount}
@@ -366,12 +399,24 @@ const Send: React.FC<Props> = ({
     );
   }
 
-  const insufficientBalance = parseFloat(amount) > selectedToken.balance;
+  // determine how much balance for gas token
+  const gasTokenBalance =
+    wallets.find(
+      w =>
+        w.address.toLowerCase() === selectedToken.walletAddress.toLowerCase() &&
+        w.symbol.toLowerCase() === selectedToken.symbol.toLowerCase(),
+    )?.balanceAmt || 0;
+
+  // determine insufficient gas or token balance
+  const insufficientBalance =
+    parseFloat(amount) > selectedToken.balance ||
+    parseFloat(gasFeeEstimate || '0') > gasTokenBalance;
 
   const canSend = Boolean(
     !insufficientBalance &&
       recipientAddress &&
       !transactionSubmitted &&
+      gasTokenBalance !== 0 &&
       parseFloat(amount) !== 0 &&
       !isNaN(parseFloat(amount)),
   );
@@ -409,7 +454,11 @@ const Send: React.FC<Props> = ({
             />
           </Box>
           <AmountInput
-            gasFeeEstimate={gasFeeEstimate}
+            gasFeeEstimate={
+              selectedToken.symbol === selectedToken.ticker
+                ? gasFeeEstimate
+                : '0'
+            }
             amountInputRef={amountInputRef}
             token={selectedToken}
             initialAmount={amount}

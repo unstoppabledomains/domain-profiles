@@ -22,7 +22,6 @@ export const mockAccountAsset = (): AccountAsset => {
       blockchain: {
         id: 'ETH',
         name: 'Ethereum',
-        networkId: 1,
       },
     },
     accountId: '',

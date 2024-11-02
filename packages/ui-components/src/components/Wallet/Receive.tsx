@@ -33,7 +33,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
       marginRight: theme.spacing(-1),
     },
     height: '100%',
-    justifyContent: 'space-between',
   },
   selectAssetContainer: {
     display: 'flex',
@@ -60,40 +59,36 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '60px',
     borderRadius: '50%',
     overflow: 'hidden',
+    marginTop: theme.spacing(1),
   },
   contentWrapper: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     minHeight: '250px',
-    width: '100%',
   },
   receiveAssetContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    marginTop: theme.spacing(3),
   },
   receiveContentContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    width: '100%',
   },
   copyButton: {},
   addressWrapper: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    width: '100%',
   },
   captionContainer: {
     display: 'flex',
     backgroundColor: '#EEF0F3',
     padding: 10,
     borderRadius: 9,
-  },
-  input: {
-    fontSize: '12px',
   },
   infoIcon: {
     fontSize: 15,
@@ -142,7 +137,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
           wallets={wallets}
           onCancelClick={handleBackClick}
           label={t('wallet.selectAssetToReceive')}
-          supportedAssetList={config.WALLETS.CHAINS.RECEIVE}
+          supportedTokenList={config.WALLETS.CHAINS.RECEIVE}
         />
       </Box>
     );
@@ -176,7 +171,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
           </Box>
           <QRCode
             value={`${asset.walletName}:${asset.walletAddress}`}
-            size={125}
+            size={110}
             logoOpacity={0.5}
             logoHeight={60}
             logoWidth={60}
@@ -195,7 +190,6 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
               stacked={true}
               disabled
               multiline
-              classes={{input: classes.input}}
               endAdornment={
                 <Button
                   onClick={handleCopyClick}
@@ -205,39 +199,39 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
                 </Button>
               }
             />
+            <Box mt={3} className={classes.captionContainer}>
+              <Box mr={1}>
+                <InfoIcon className={classes.infoIcon} color="error" />
+              </Box>
+              <Typography variant="caption" color="error" component="div">
+                <Markdown>
+                  {t(
+                    config.WALLETS.CHAINS.DOMAINS.map(s =>
+                      s.toLowerCase(),
+                    ).includes(asset.symbol.toLowerCase())
+                      ? 'wallet.receiveAddressCaptionWithDomains'
+                      : 'wallet.receiveAddressCaption',
+                    {
+                      symbol: getBlockchainDisplaySymbol(asset.ticker),
+                      blockchain: asset.walletName,
+                    },
+                  )}
+                </Markdown>{' '}
+                {t('wallet.sendingForOtherNetworksAndTokens', {
+                  symbol: getBlockchainDisplaySymbol(asset.ticker),
+                  blockchain: asset.walletName,
+                })}{' '}
+                <Link
+                  href={config.WALLETS.LANDING_PAGE_URL}
+                  target="_blank"
+                  className={classes.learnMoreLink}
+                >
+                  <Typography variant={'caption'}>Learn More</Typography>
+                </Link>
+              </Typography>
+            </Box>
           </Box>
         </Box>
-      </Box>
-      <Box mb={1} className={classes.captionContainer}>
-        <Box mr={1}>
-          <InfoIcon className={classes.infoIcon} color="error" />
-        </Box>
-        <Typography variant="caption" color="error" component="div">
-          <Markdown>
-            {t(
-              config.WALLETS.CHAINS.DOMAINS.map(s => s.toLowerCase()).includes(
-                asset.symbol.toLowerCase(),
-              )
-                ? 'wallet.receiveAddressCaptionWithDomains'
-                : 'wallet.receiveAddressCaption',
-              {
-                symbol: getBlockchainDisplaySymbol(asset.ticker),
-                blockchain: asset.walletName,
-              },
-            )}
-          </Markdown>{' '}
-          {t('wallet.sendingForOtherNetworksAndTokens', {
-            symbol: getBlockchainDisplaySymbol(asset.ticker),
-            blockchain: asset.walletName,
-          })}{' '}
-          <Link
-            href={config.WALLETS.LANDING_PAGE_URL}
-            target="_blank"
-            className={classes.learnMoreLink}
-          >
-            <Typography variant={'caption'}>Learn More</Typography>
-          </Link>
-        </Typography>
       </Box>
     </Box>
   );

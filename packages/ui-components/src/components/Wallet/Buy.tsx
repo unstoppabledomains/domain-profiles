@@ -113,7 +113,7 @@ const Buy: React.FC<Props> = ({isSellEnabled, onCancelClick, wallets}) => {
             ? 'wallet.selectAssetToBuySell'
             : 'wallet.selectAssetToBuy',
         )}
-        supportedTokenList={config.WALLETS.CHAINS.BUY}
+        supportedAssetList={config.WALLETS.CHAINS.BUY}
       />
     </Box>
   );

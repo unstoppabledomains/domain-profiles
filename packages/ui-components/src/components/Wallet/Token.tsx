@@ -88,6 +88,7 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
 }));
 
 export type TokenEntry = {
+  address?: string;
   type: TokenType;
   symbol: string;
   name: string;

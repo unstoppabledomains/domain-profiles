@@ -20,8 +20,8 @@ export default function getDefaultConfig(): Config {
         CHAIN_ID: 5,
         NETWORK_NAME: 'goerli', // testnet
         JSON_RPC_API_URL: `https://goerli.infura.io/v3/a58ebb0c76a64c149e35145f85f82382`,
-        BLOCK_EXPLORER_NAME: 'etherscan',
-        BLOCK_EXPLORER_BASE_URL: 'https://goerli.etherscan.io',
+        BLOCK_EXPLORER_NAME: 'oklink',
+        BLOCK_EXPLORER_BASE_URL: 'https://www.oklink.com/sepolia-test',
         BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/sepolia-test/tx/',
         DISABLE_CONTRACTS_CACHE: true,
         PROXY_READER_ADDRESS: '0xFc5f608149f4D9e2Ed0733efFe9DD57ee24BCF68',
@@ -33,21 +33,40 @@ export default function getDefaultConfig(): Config {
         NETWORK_NAME: 'amoy', // testnet
         JSON_RPC_API_URL:
           'https://polygon-amoy.infura.io/v3/a58ebb0c76a64c149e35145f85f82382',
-        BLOCK_EXPLORER_NAME: 'polygonscan',
-        BLOCK_EXPLORER_BASE_URL: 'https://amoy.polygonscan.com',
+        BLOCK_EXPLORER_NAME: 'oklink',
+        BLOCK_EXPLORER_BASE_URL: 'https://www.oklink.com/amoy',
         BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/amoy/tx/',
         DISABLE_CONTRACTS_CACHE: true,
         PROXY_READER_ADDRESS: '0x332A8191905fA8E6eeA7350B5799F225B8ed30a9',
         OPEN_SEA_BASE_URL: 'https://testnets.opensea.io/assets/amoy/',
       },
       BASE: {
+        CHAIN_ID: 8453,
+        NETWORK_NAME: 'base',
+        JSON_RPC_API_URL:
+          'https://base-mainnet.infura.io/v3/a58ebb0c76a64c149e35145f85f82382',
         BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/base/tx/',
+        BLOCK_EXPLORER_NAME: 'oklink',
+        BLOCK_EXPLORER_BASE_URL: 'https://www.oklink.com/base',
+        DISABLE_CONTRACTS_CACHE: true,
       },
       BTC: {
+        CHAIN_ID: 0,
+        NETWORK_NAME: 'bitcoin',
+        JSON_RPC_API_URL: '',
         BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/btc/tx/',
+        BLOCK_EXPLORER_NAME: 'oklink',
+        BLOCK_EXPLORER_BASE_URL: 'https://www.oklink.com/btc',
+        DISABLE_CONTRACTS_CACHE: true,
       },
       SOL: {
+        CHAIN_ID: 0,
+        NETWORK_NAME: 'solana',
+        JSON_RPC_API_URL: '',
         BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/sol/tx/',
+        BLOCK_EXPLORER_NAME: 'oklink',
+        BLOCK_EXPLORER_BASE_URL: 'https://www.oklink.com/sol',
+        DISABLE_CONTRACTS_CACHE: true,
       },
     },
     UD_LOGO_URL:
@@ -99,23 +118,9 @@ export default function getDefaultConfig(): Config {
       LANDING_PAGE_URL: 'https://unstoppabledomains.com/products/wallet',
       CHAINS: {
         BUY: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'ETH/ETH'],
-        RECEIVE: [
-          'BTC/BTC',
-          'MATIC/MATIC',
-          'MATIC/USDC',
-          'SOL/SOL',
-          'BASE/ETH',
-          'ETH/ETH',
-        ],
-        SEND: [
-          'BTC/BTC',
-          'MATIC/MATIC',
-          'MATIC/USDC',
-          'SOL/SOL',
-          'BASE/ETH',
-          'ETH/ETH',
-        ],
-        DOMAINS: ['ETH', 'MATIC'],
+        RECEIVE: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'BASE/ETH', 'ETH/ETH'],
+        SEND: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'BASE/ETH', 'ETH/ETH'],
+        DOMAINS: ['ETH', 'MATIC', 'BASE'],
       },
       MOBILE: {
         ANDROID_URL:

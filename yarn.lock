@@ -5393,6 +5393,7 @@ __metadata:
     "@xmtp/content-type-text": ^1.0.0
     "@xmtp/proto": ^3.62.1
     "@xmtp/xmtp-js": 12.1.0
+    abitype: ^1.0.6
     bip322-js: ^1.1.0
     bitcoin-address-validation: ^2.2.3
     bluebird: ^3.7.2
@@ -6468,6 +6469,21 @@ __metadata:
     zod:
       optional: true
   checksum: d7d887f29d6821e3f7a400de9620511b80ead3f85c5c87308aaec97965d3493e6687ed816e88722b4f512249bd66dee9e69231b49af0e1db8f69400a62c87cf6
+  languageName: node
+  linkType: hard
+
+"abitype@npm:^1.0.6":
+  version: 1.0.6
+  resolution: "abitype@npm:1.0.6"
+  peerDependencies:
+    typescript: ">=5.0.4"
+    zod: ^3 >=3.22.0
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+    zod:
+      optional: true
+  checksum: 0bf6ed5ec785f372746c3ec5d6c87bf4d8cf0b6db30867b8d24e86fbc66d9f6599ae3d463ccd49817e67eedec6deba7cdae317bcf4da85b02bc48009379b9f84
   languageName: node
   linkType: hard
 

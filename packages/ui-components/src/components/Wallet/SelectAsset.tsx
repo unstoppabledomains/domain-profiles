@@ -6,7 +6,7 @@ import type {ImmutableArray} from '@unstoppabledomains/config/build/src/env/type
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance} from '../../lib';
-import {TokenType, WalletPaletteOwner, useTranslationContext} from '../../lib';
+import {TokenType, WalletPaletteOwner} from '../../lib';
 import {filterWallets} from '../../lib/wallet/filter';
 import FundWalletModal from './FundWalletModal';
 import {TitleWithBackButton} from './TitleWithBackButton';
@@ -56,7 +56,8 @@ type Props = {
   requireBalance?: boolean;
   onClickReceive?: () => void;
   onClickBuy?: () => void;
-  supportedTokenList: ImmutableArray<string>;
+  supportedAssetList: ImmutableArray<string>;
+  supportErc20?: boolean;
 };
 
 export const SelectAsset: React.FC<Props> = ({
@@ -69,11 +70,11 @@ export const SelectAsset: React.FC<Props> = ({
   requireBalance,
   onClickReceive,
   onClickBuy,
-  supportedTokenList,
+  supportedAssetList,
+  supportErc20,
 }) => {
   const {classes} = useStyles();
-  const [t] = useTranslationContext();
-  const wallets = filterWallets(initialWallets, supportedTokenList);
+  const wallets = filterWallets(initialWallets, supportedAssetList);
 
   const serializeNativeTokens = (wallet: SerializedWalletBalance) => {
     if (
@@ -111,7 +112,8 @@ export const SelectAsset: React.FC<Props> = ({
     ...(wallets || []).flatMap(wallet =>
       (wallet?.tokens || []).map(walletToken => {
         return {
-          type: 'Token' as never,
+          address: walletToken.address,
+          type: walletToken.type,
           name: walletToken.name,
           value: walletToken.value?.walletUsdAmt || 0,
           balance: walletToken.balanceAmt || 0,
@@ -134,10 +136,12 @@ export const SelectAsset: React.FC<Props> = ({
   ];
   const filteredTokens: TokenEntry[] = allTokens
     .filter(token => !requireBalance || token.balance > 0)
-    .filter(token =>
-      supportedTokenList.includes(
-        `${token.symbol.toUpperCase()}/${token.ticker.toUpperCase()}`,
-      ),
+    .filter(
+      token =>
+        (token.type === TokenType.Erc20 && supportErc20) ||
+        supportedAssetList.includes(
+          `${token.symbol.toUpperCase()}/${token.ticker.toUpperCase()}`,
+        ),
     )
     .sort((a, b) => b.value - a.value || b.balance - a.balance);
 

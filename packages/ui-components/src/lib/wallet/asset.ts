@@ -2,6 +2,7 @@ import config from '@unstoppabledomains/config';
 
 import type {TokenEntry} from '../../components/Wallet/Token';
 import {notifyEvent} from '../error';
+import {TokenType} from '../types';
 import type {AccountAsset} from '../types/fireBlocks';
 import {SUPPORTED_SIGNING_SYMBOLS} from '../types/wallet';
 
@@ -35,7 +36,9 @@ export const getAsset = (
         a.blockchainAsset.blockchain.name.toLowerCase() ===
           opts.token.walletName.toLowerCase() &&
         a.blockchainAsset.symbol.toLowerCase() ===
-          opts.token.ticker.toLowerCase() &&
+          (opts.token.type === TokenType.Erc20
+            ? opts.token.symbol.toLowerCase()
+            : opts.token.ticker.toLowerCase()) &&
         a.address.toLowerCase() === opts.token.walletAddress.toLowerCase()
       );
     }

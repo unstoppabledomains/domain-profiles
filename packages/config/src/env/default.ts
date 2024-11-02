@@ -120,7 +120,7 @@ export default function getDefaultConfig(): Config {
         BUY: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'ETH/ETH'],
         RECEIVE: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'BASE/ETH', 'ETH/ETH'],
         SEND: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'BASE/ETH', 'ETH/ETH'],
-        DOMAINS: ['ETH', 'MATIC'],
+        DOMAINS: ['ETH', 'MATIC', 'BASE'],
       },
       MOBILE: {
         ANDROID_URL:

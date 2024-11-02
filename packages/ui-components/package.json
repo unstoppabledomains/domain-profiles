@@ -1,6 +1,6 @@
 {
   "name": "@unstoppabledomains/ui-components",
-  "version": "0.0.51-browser-extension.7",
+  "version": "0.0.51-browser-extension.6",
   "private": true,
   "description": "An open and reusable suite of Unstoppable Domains management components",
   "keywords": [
@@ -63,7 +63,6 @@
     "@xmtp/content-type-text": "^1.0.0",
     "@xmtp/proto": "^3.62.1",
     "@xmtp/xmtp-js": "12.1.0",
-    "abitype": "^1.0.6",
     "bip322-js": "^1.1.0",
     "bitcoin-address-validation": "^2.2.3",
     "bluebird": "^3.7.2",

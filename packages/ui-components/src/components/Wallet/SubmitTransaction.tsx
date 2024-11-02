@@ -18,7 +18,6 @@ import {
   getBlockchainSymbol,
 } from '../Manage/common/verification/types';
 import {OperationStatus} from './OperationStatus';
-import type {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   fullWidth: {
@@ -61,7 +60,6 @@ type Props = {
   ) => Promise<Record<string, string> | undefined>;
   accessToken: string;
   asset: AccountAsset;
-  token: TokenEntry;
   recipientAddress: string;
   recipientDomain?: string;
   amount: string;
@@ -73,7 +71,6 @@ export const SubmitTransaction: React.FC<Props> = ({
   onInvitation,
   accessToken,
   asset,
-  token,
   recipientAddress,
   recipientDomain,
   amount,
@@ -84,7 +81,6 @@ export const SubmitTransaction: React.FC<Props> = ({
   const {transactionId, status, statusMessage} = useSubmitTransaction({
     accessToken,
     asset,
-    token,
     recipientAddress,
     amount,
     getClient,
@@ -127,7 +123,9 @@ export const SubmitTransaction: React.FC<Props> = ({
                 }`,
                 {
                   amount,
-                  sourceSymbol: getBlockchainDisplaySymbol(token.ticker),
+                  sourceSymbol: getBlockchainDisplaySymbol(
+                    asset.blockchainAsset.symbol,
+                  ),
                   status,
                   recipientDomain: recipientDomain
                     ? ` ${recipientDomain}`

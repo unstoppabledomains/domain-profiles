@@ -20,7 +20,7 @@ export default function getProductionConfig(): ConfigOverride {
         CHAIN_ID: 1,
         NETWORK_NAME: 'mainnet',
         JSON_RPC_API_URL:
-          'https://mainnet.infura.io/v3/4458cf4d1689497b9a38b1d6bbf05e78',
+          'https://mainnet.infura.io/v3/467fd78247874d7e87d34c04fdd09bbb',
         BLOCK_EXPLORER_BASE_URL: 'https://etherscan.io',
         PROXY_READER_ADDRESS: '0xc3C2BAB5e3e52DBF311b2aAcEf2e40344f19494E',
         OPEN_SEA_BASE_URL: 'https://opensea.io/assets/',
@@ -30,7 +30,7 @@ export default function getProductionConfig(): ConfigOverride {
         CHAIN_ID: 137,
         NETWORK_NAME: 'polygon-mainnet',
         JSON_RPC_API_URL:
-          'https://polygon-mainnet.infura.io/v3/4458cf4d1689497b9a38b1d6bbf05e78',
+          'https://polygon-mainnet.infura.io/v3/467fd78247874d7e87d34c04fdd09bbb',
         BLOCK_EXPLORER_BASE_URL: 'https://polygonscan.com',
         PROXY_READER_ADDRESS: '0xA3f32c8cd786dc089Bd1fC175F2707223aeE5d00',
         OPEN_SEA_BASE_URL: 'https://opensea.io/assets/matic/',

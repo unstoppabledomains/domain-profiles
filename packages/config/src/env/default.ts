@@ -17,9 +17,9 @@ export default function getDefaultConfig(): Config {
         DISABLE_CONTRACTS_CACHE: true,
       },
       ETH: {
-        CHAIN_ID: 5,
-        NETWORK_NAME: 'goerli', // testnet
-        JSON_RPC_API_URL: `https://goerli.infura.io/v3/a58ebb0c76a64c149e35145f85f82382`,
+        CHAIN_ID: 11155111,
+        NETWORK_NAME: 'sepolia', // testnet
+        JSON_RPC_API_URL: `https://sepolia.infura.io/v3/467fd78247874d7e87d34c04fdd09bbb`,
         BLOCK_EXPLORER_NAME: 'oklink',
         BLOCK_EXPLORER_BASE_URL: 'https://www.oklink.com/sepolia-test',
         BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/sepolia-test/tx/',
@@ -32,7 +32,7 @@ export default function getDefaultConfig(): Config {
         CHAIN_ID: 80002,
         NETWORK_NAME: 'amoy', // testnet
         JSON_RPC_API_URL:
-          'https://polygon-amoy.infura.io/v3/a58ebb0c76a64c149e35145f85f82382',
+          'https://polygon-amoy.infura.io/v3/467fd78247874d7e87d34c04fdd09bbb',
         BLOCK_EXPLORER_NAME: 'oklink',
         BLOCK_EXPLORER_BASE_URL: 'https://www.oklink.com/amoy',
         BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/amoy/tx/',
@@ -44,7 +44,7 @@ export default function getDefaultConfig(): Config {
         CHAIN_ID: 8453,
         NETWORK_NAME: 'base',
         JSON_RPC_API_URL:
-          'https://base-mainnet.infura.io/v3/a58ebb0c76a64c149e35145f85f82382',
+          'https://base-mainnet.infura.io/v3/467fd78247874d7e87d34c04fdd09bbb',
         BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/base/tx/',
         BLOCK_EXPLORER_NAME: 'oklink',
         BLOCK_EXPLORER_BASE_URL: 'https://www.oklink.com/base',

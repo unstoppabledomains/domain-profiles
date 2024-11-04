@@ -19,8 +19,8 @@ export type ZilliqaBlockchainConfig = BaseBlockchainConfig & {
 };
 
 export type EthereumBlockchainConfig = BaseBlockchainConfig & {
-  CHAIN_ID: 5 | 1 | 1337;
-  NETWORK_NAME: 'goerli' | 'mainnet' | 'local';
+  CHAIN_ID: 5 | 1 | 1337 | 11155111;
+  NETWORK_NAME: 'goerli' | 'sepolia' | 'mainnet' | 'local';
   PROXY_READER_ADDRESS: string;
   ENS_CONTRACT_ADDRESS: string;
   OPEN_SEA_BASE_URL:

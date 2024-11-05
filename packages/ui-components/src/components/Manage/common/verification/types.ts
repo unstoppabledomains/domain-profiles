@@ -1,3 +1,4 @@
+import {notifyEvent} from '../../../../lib';
 import type {MappedResolverKey} from '../../../../lib/types/pav3';
 import {getMappedResolverKey} from '../../../../lib/types/resolverKeys';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
@@ -91,7 +92,37 @@ export const getBlockchainSymbol = (
 export const getRecordKeys = (
   symbol: string,
   mappedResolverKeys: MappedResolverKey[],
+  records?: Record<string, string>,
 ): string[] => {
+  // scan available records if provided
+  if (records) {
+    for (const recordKey of Object.keys(records)) {
+      // find possible resolver key associated with record
+      const mappedKey = getMappedResolverKey(
+        recordKey,
+        mappedResolverKeys as MappedResolverKey[],
+      );
+      if (!mappedKey) {
+        continue;
+      }
+
+      // look for potential matches of requested symbol
+      for (const shortName of [symbol, getBlockchainDisplaySymbol(symbol)]) {
+        if (mappedKey.shortName.toLowerCase() === shortName.toLowerCase()) {
+          notifyEvent('resolved record key', 'info', 'Wallet', 'Resolution', {
+            meta: {
+              symbol,
+              recordKey,
+              recordValue: records[recordKey],
+            },
+          });
+          return [recordKey];
+        }
+      }
+    }
+  }
+
+  // fallback to a key based search
   const mappedKey = getMappedResolverKey(symbol, mappedResolverKeys);
   if (!mappedKey) {
     return [];

@@ -8,10 +8,7 @@ import {
   getOperationStatus,
   getTransferOperationResponse,
 } from '../actions/fireBlocksActions';
-import {
-  getBlockchainSymbol,
-  getRecordKeys,
-} from '../components/Manage/common/verification/types';
+import {getRecordKeys} from '../components/Manage/common/verification/types';
 import type {TokenEntry} from '../components/Wallet/Token';
 import {TokenType} from '../lib';
 import {notifyEvent} from '../lib/error';
@@ -97,21 +94,20 @@ export const useSubmitTransaction = ({
         const records = await onInvitation(recipientAddress);
         const resolvedAddress =
           records && Object.keys(records).length > 0
-            ? getRecordKeys(asset.blockchainAsset.symbol, mappedResolverKeys)
+            ? getRecordKeys(
+                asset.blockchainAsset.symbol,
+                mappedResolverKeys,
+                records,
+              )
                 .map(k => records[k])
                 .find(k => k) ||
               getRecordKeys(
                 asset.blockchainAsset.blockchain.id,
                 mappedResolverKeys,
+                records,
               )
                 .map(k => records[k])
-                .find(k => k) ||
-              (getBlockchainSymbol(asset.blockchainAsset.blockchain.id) ===
-              'BASE'
-                ? getRecordKeys('MATIC', mappedResolverKeys)
-                    .map(k => records[k])
-                    .find(k => k)
-                : undefined)
+                .find(k => k)
             : undefined;
         if (!resolvedAddress) {
           throw new Error('Wallet not created');

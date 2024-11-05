@@ -156,9 +156,7 @@ export const SendConfirm: React.FC<Props> = ({
                   `${round(
                     parseFloat(gasFee),
                     maxDisplayLength,
-                  )} ${getBlockchainDisplaySymbol(
-                    getBlockchainSymbol(asset.blockchainAsset.blockchain.id),
-                  )}`
+                  )} ${getBlockchainDisplaySymbol(gasSymbol)}`
                 )}
               </Typography>
             </Box>

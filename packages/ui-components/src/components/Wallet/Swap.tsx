@@ -1,6 +1,6 @@
 import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
+import Alert from '@mui/lab/Alert';
 import LoadingButton from '@mui/lab/LoadingButton';
-import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControl from '@mui/material/FormControl';
@@ -116,14 +116,14 @@ const Swap: React.FC<Props> = ({
 
   const handleSourceChange = (event: SelectChangeEvent) => {
     setErrorMessage(undefined);
-    setSourceToken(filteredTokens.find(t => t.symbol === event.target.value));
+    setSourceToken(filteredTokens.find(v => v.symbol === event.target.value));
   };
 
   const handleDestinationChange = async (event: SelectChangeEvent) => {
     setQuotes(undefined);
     setIsGettingQuote(true);
     setErrorMessage(undefined);
-    setDestinationToken(allTokens.find(t => t.symbol === event.target.value));
+    setDestinationToken(allTokens.find(v => v.symbol === event.target.value));
   };
 
   const handleGetQuote = async () => {
@@ -295,9 +295,9 @@ const Swap: React.FC<Props> = ({
               label="Select source crypto"
               onChange={handleSourceChange}
             >
-              {filteredTokens.map(t => (
-                <MenuItem value={t.symbol}>
-                  {getBlockchainDisplaySymbol(t.ticker)} on {t.name}
+              {filteredTokens.map(v => (
+                <MenuItem value={v.symbol}>
+                  {getBlockchainDisplaySymbol(v.ticker)} on {v.name}
                 </MenuItem>
               ))}
             </Select>
@@ -320,10 +320,10 @@ const Swap: React.FC<Props> = ({
               onChange={handleDestinationChange}
             >
               {allTokens
-                .filter(t => t.symbol !== sourceToken?.symbol)
-                .map(t => (
-                  <MenuItem value={t.symbol}>
-                    {getBlockchainDisplaySymbol(t.ticker)} on {t.name}
+                .filter(v => v.symbol !== sourceToken?.symbol)
+                .map(v => (
+                  <MenuItem value={v.symbol}>
+                    {getBlockchainDisplaySymbol(v.ticker)} on {v.name}
                   </MenuItem>
                 ))}
             </Select>

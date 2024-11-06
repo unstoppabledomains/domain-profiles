@@ -60,6 +60,13 @@ export default function getProductionConfig(): ConfigOverride {
       HOST_URL: 'https://api.unstoppabledomains.com/wallet/v1',
       GET_WALLET_URL:
         'https://unstoppabledomains.com/cart?product=unstoppable-wallet',
+      SWAP: {
+        HOST_URL:
+          'https://platform.swing.xyz/api/v1/projects/unstoppable-domains',
+        API_KEY: 'swing-37b05c4c-0b6d-43a8-ad54-7bd7168af0ee',
+        ENVIRONMENT: 'production',
+        PROJECT_ID: 'unstoppable-domains',
+      },
     },
     XMTP: {
       ENVIRONMENT: 'production',

@@ -108,7 +108,14 @@ export type Config = {
       BUY: string[];
       RECEIVE: string[];
       SEND: string[];
+      SWAP: string[];
       DOMAINS: string[];
+    };
+    SWAP: {
+      HOST_URL: string;
+      API_KEY: string;
+      ENVIRONMENT: string;
+      PROJECT_ID: string;
     };
     SIGNATURE_SYMBOL: string;
     MOBILE: {

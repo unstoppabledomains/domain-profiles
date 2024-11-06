@@ -4,6 +4,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import SendIcon from '@mui/icons-material/Send';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
@@ -47,6 +48,7 @@ import Buy from './Buy';
 import Receive from './Receive';
 import ReceiveDomainModal from './ReceiveDomainModal';
 import Send from './Send';
+import Swap from './Swap';
 import {TokensPortfolio} from './TokensPortfolio';
 
 const useStyles = makeStyles<{isMobile: boolean}>()(
@@ -85,7 +87,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       padding: theme.spacing(1),
       borderRadius: theme.shape.borderRadius,
       marginRight: theme.spacing(2),
-      width: '100px',
+      width: '85px',
       cursor: 'pointer',
       [theme.breakpoints.down('sm')]: {
         width: '70px',
@@ -208,6 +210,7 @@ export const Client: React.FC<ClientProps> = ({
   const [isSend, setIsSend] = useState(false);
   const [isReceive, setIsReceive] = useState(false);
   const [isBuy, setIsBuy] = useState(false);
+  const [isSwap, setIsSwap] = useState(false);
   const [tabValue, setTabValue] = useState(ClientTabType.Portfolio);
 
   // domain list state
@@ -378,18 +381,28 @@ export const Client: React.FC<ClientProps> = ({
     setIsSend(true);
     setIsReceive(false);
     setIsBuy(false);
+    setIsSwap(false);
+  };
+
+  const handleClickedSwap = () => {
+    setIsSwap(true);
+    setIsBuy(false);
+    setIsSend(false);
+    setIsReceive(false);
   };
 
   const handleClickedBuy = () => {
     setIsBuy(true);
     setIsSend(false);
     setIsReceive(false);
+    setIsSwap(false);
   };
 
   const handleClickedReceive = () => {
     setIsReceive(true);
     setIsSend(false);
     setIsBuy(false);
+    setIsSwap(false);
   };
 
   const handleCancel = async () => {
@@ -397,6 +410,7 @@ export const Client: React.FC<ClientProps> = ({
     setIsSend(false);
     setIsReceive(false);
     setIsBuy(false);
+    setIsSwap(false);
 
     // refresh portfolio data
     await onRefresh();
@@ -408,6 +422,17 @@ export const Client: React.FC<ClientProps> = ({
         {isSend ? (
           <Box className={classes.panelContainer}>
             <Send
+              getClient={getClient}
+              accessToken={accessToken}
+              onCancelClick={handleCancel}
+              onClickBuy={handleClickedBuy}
+              onClickReceive={handleClickedReceive}
+              wallets={wallets}
+            />
+          </Box>
+        ) : isSwap ? (
+          <Box className={classes.panelContainer}>
+            <Swap
               getClient={getClient}
               accessToken={accessToken}
               onCancelClick={handleCancel}
@@ -454,7 +479,7 @@ export const Client: React.FC<ClientProps> = ({
               >
                 <SendIcon className={classes.actionIcon} />
                 <Typography
-                  variant={isMobile ? 'caption' : 'body1'}
+                  variant={isMobile ? 'caption' : 'body2'}
                   className={classes.actionText}
                 >
                   {t('common.send')}
@@ -466,10 +491,22 @@ export const Client: React.FC<ClientProps> = ({
               >
                 <AddOutlinedIcon className={classes.actionIcon} />
                 <Typography
-                  variant={isMobile ? 'caption' : 'body1'}
+                  variant={isMobile ? 'caption' : 'body2'}
                   className={classes.actionText}
                 >
                   {t('common.receive')}
+                </Typography>
+              </Box>
+              <Box
+                className={classes.actionContainer}
+                onClick={handleClickedSwap}
+              >
+                <SwapHorizIcon className={classes.actionIcon} />
+                <Typography
+                  variant={isMobile ? 'caption' : 'body2'}
+                  className={classes.actionText}
+                >
+                  {t('swap.title')}
                 </Typography>
               </Box>
               <Box mr={-2}>
@@ -479,7 +516,7 @@ export const Client: React.FC<ClientProps> = ({
                 >
                   <AttachMoneyIcon className={classes.actionIcon} />
                   <Typography
-                    variant={isMobile ? 'caption' : 'body1'}
+                    variant={isMobile ? 'caption' : 'body2'}
                     className={classes.actionText}
                   >
                     {t(isSellEnabled ? 'common.buySell' : 'common.buy')}

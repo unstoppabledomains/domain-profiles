@@ -145,7 +145,7 @@
     "blockchain": "Blockchain",
     "bulkSave": "Bulk Save",
     "buy": "Buy",
-    "buySell": "Buy / Sell",
+    "buySell": "In / Out",
     "cancel": "Cancel",
     "cart": "Cart",
     "claim": "Claim",
@@ -828,6 +828,10 @@
     "searchResultsFor": "Profiles matching \"{{searchTerm}}\"",
     "tryAnotherSearch": "Try another domain or wallet address"
   },
+  "swap": {
+    "description": "Swap your crypto",
+    "title": "Swap"
+  },
   "tokensPortfolio": {
     "all": "All",
     "crypto": "Crypto",
@@ -947,8 +951,8 @@
     "resolutionError": "Could not find recipient wallet address",
     "resolvedDomain": "Wallet found for {{resolvedDomain}}",
     "retrievingGasPrice": "Checking {{blockchain}} network health...",
-    "selectAssetToBuy": "Select crypto to buy",
-    "selectAssetToBuySell": "Select crypto to buy or sell",
+    "selectAssetToBuy": "Select crypto to buy using a bank account",
+    "selectAssetToBuySell": "Select crypto to buy or sell with a bank account",
     "selectAssetToReceive": "Select crypto to receive",
     "selectAssetToSend": "Select crypto to send",
     "sendByEmail": "Send to email address",

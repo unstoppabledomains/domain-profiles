@@ -7,7 +7,8 @@ import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import Select, {SelectChangeEvent} from '@mui/material/Select';
+import type {SelectChangeEvent} from '@mui/material/Select';
+import Select from '@mui/material/Select';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
@@ -19,7 +20,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {getSwapQuote, getSwapToken} from '../../actions/swapActions';
 import type {SerializedWalletBalance} from '../../lib';
 import {TokenType, useTranslationContext} from '../../lib';
-import {Route} from '../../lib/types/swingXyz';
+import type {Route} from '../../lib/types/swingXyz';
 import {
   getBlockchainDisplaySymbol,
   getBlockchainName,
@@ -233,8 +234,6 @@ const Swap: React.FC<Props> = ({
           Math.pow(10, quotesResponse.routes[0].quote.decimals),
       )}** ${getBlockchainDisplaySymbol(destinationToken.ticker)}`,
     );
-
-    console.log('AJQ quote', JSON.stringify(quotesResponse, undefined, 2));
   };
 
   const getQuoteDescription = (q: Route) => {

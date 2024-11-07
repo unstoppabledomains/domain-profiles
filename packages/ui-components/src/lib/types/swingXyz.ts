@@ -1,10 +1,11 @@
-export interface SwingToken {
-  symbol: string;
-  address: string;
-  chain: string;
-  decimals: number;
-  logo: string;
-  price: number;
+export interface Route {
+  duration: number;
+
+  gas: string;
+  quote: Quote;
+  route: RouteStep[];
+  distribution: {[key: string]: number};
+  gasUSD: string;
 }
 
 export interface SwingQuoteRequest {
@@ -36,14 +37,13 @@ export interface SwingQuoteResponse {
   toChain: Chain;
 }
 
-export interface Route {
-  duration: number;
-
-  gas: string;
-  quote: Quote;
-  route: RouteStep[];
-  distribution: {[key: string]: number};
-  gasUSD: string;
+export interface SwingToken {
+  symbol: string;
+  address: string;
+  chain: string;
+  decimals: number;
+  logo: string;
+  price: number;
 }
 
 interface Quote {

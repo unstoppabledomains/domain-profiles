@@ -14,7 +14,7 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import type {CurrenciesType, WalletPalette} from '../../lib';
+import type {CurrenciesType, TokenEntry, WalletPalette} from '../../lib';
 import {
   WALLET_CARD_HEIGHT,
   WalletPaletteOwner,
@@ -25,7 +25,6 @@ import {
 import type {SerializedWalletBalance} from '../../lib/types/domain';
 import CopyToClipboard from '../CopyToClipboard';
 import {CryptoIcon} from '../Image';
-import type {TokenEntry} from './Token';
 import Token from './Token';
 
 Chart.register(CategoryScale);

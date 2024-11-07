@@ -1,10 +1,7 @@
-import type {TokenEntry} from '../../../components/Wallet/Token';
-import type {
-  CreateTransaction,
-  SerializedWalletBalance} from '../../types';
-import {
-  TokenType,
-} from '../../types';
+import type {SerializedWalletBalance} from '../../types/domain';
+import {TokenType} from '../../types/domain';
+import type {CreateTransaction} from '../../types/fireBlocks';
+import type {TokenEntry} from '../../types/wallet';
 import {getContract, getContractDecimals} from './web3';
 
 export const createErc20TransferTx = async (opts: {

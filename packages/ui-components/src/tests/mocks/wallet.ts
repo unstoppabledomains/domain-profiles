@@ -1,6 +1,6 @@
 import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
 
-import type {TokenEntry} from '../../components/Wallet/Token';
+import type {TokenEntry} from '../../lib/types';
 import type {
   SerializedPublicDomainProfileData,
   SerializedWalletBalance,

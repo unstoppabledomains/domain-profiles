@@ -5,13 +5,12 @@ import React from 'react';
 import type {ImmutableArray} from '@unstoppabledomains/config/build/src/env/types';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import type {SerializedWalletBalance} from '../../lib';
+import type {SerializedWalletBalance, TokenEntry} from '../../lib';
 import {TokenType, WalletPaletteOwner} from '../../lib';
 import {getAllTokens} from '../../lib/wallet/evm/token';
 import {filterWallets} from '../../lib/wallet/filter';
 import FundWalletModal from './FundWalletModal';
 import {TitleWithBackButton} from './TitleWithBackButton';
-import type {TokenEntry} from './Token';
 import Token from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({

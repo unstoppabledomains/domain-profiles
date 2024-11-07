@@ -10,6 +10,8 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getProfileData} from '../../actions';
 import useResolverKeys from '../../hooks/useResolverKeys';
+import type {
+  TokenEntry} from '../../lib';
 import {
   DomainFieldTypes,
   isDomainValidForManagement,
@@ -22,7 +24,6 @@ import {getAddressMetadata} from '../Chat/protocol/resolution';
 import ManageInput from '../Manage/common/ManageInput';
 import {isValidMappedResolverKeyValue} from '../Manage/common/currencyRecords';
 import {getRecordKeys} from '../Manage/common/verification/types';
-import type {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   loader: {

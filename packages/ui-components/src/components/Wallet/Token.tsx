@@ -13,7 +13,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {
   CurrenciesType,
-  SerializedPriceHistory,
+  TokenEntry,
   WalletPalette,
 } from '../../lib';
 import {TokenType, WalletPaletteOwner, WalletPalettePublic} from '../../lib';
@@ -86,24 +86,6 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
     height: '17px',
   },
 }));
-
-export type TokenEntry = {
-  address?: string;
-  type: TokenType;
-  symbol: string;
-  name: string;
-  ticker: string;
-  value: number;
-  tokenConversionUsd: number;
-  balance: number;
-  pctChange?: number;
-  imageUrl?: string;
-  history?: SerializedPriceHistory[];
-  walletAddress: string;
-  walletBlockChainLink: string;
-  walletName: string;
-  walletType?: string;
-};
 
 type Props = {
   token: TokenEntry;

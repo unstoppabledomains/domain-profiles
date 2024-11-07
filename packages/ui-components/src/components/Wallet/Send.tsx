@@ -15,7 +15,7 @@ import {
   getTransferGasEstimate,
 } from '../../actions/fireBlocksActions';
 import {prepareRecipientWallet} from '../../actions/walletActions';
-import type {SerializedWalletBalance} from '../../lib';
+import type {SerializedWalletBalance, TokenEntry} from '../../lib';
 import {TokenType, useTranslationContext} from '../../lib';
 import {sleep} from '../../lib/sleep';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
@@ -31,7 +31,6 @@ import {SelectAsset} from './SelectAsset';
 import SendConfirm from './SendConfirm';
 import SubmitTransaction from './SubmitTransaction';
 import {TitleWithBackButton} from './TitleWithBackButton';
-import type {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   flexColCenterAligned: {

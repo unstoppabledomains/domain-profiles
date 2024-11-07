@@ -12,14 +12,13 @@ import {QRCode} from 'react-qrcode-logo';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import type {SerializedWalletBalance} from '../../lib';
+import type {SerializedWalletBalance, TokenEntry} from '../../lib';
 import {useTranslationContext} from '../../lib';
 import Link from '../Link';
 import ManageInput from '../Manage/common/ManageInput';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 import {SelectAsset} from './SelectAsset';
 import {TitleWithBackButton} from './TitleWithBackButton';
-import type {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   flexColCenterAligned: {

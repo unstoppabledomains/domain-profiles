@@ -7,10 +7,10 @@ import React, {useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {useTranslationContext} from '../../lib';
+import type {TokenEntry} from '../../lib';
+import { useTranslationContext} from '../../lib';
 import ManageInput from '../Manage/common/ManageInput';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
-import type {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {

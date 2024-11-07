@@ -1,3 +1,5 @@
+import qs from 'qs';
+
 import config from '@unstoppabledomains/config';
 
 import {notifyEvent} from '../lib';
@@ -12,7 +14,7 @@ export const getSwapToken = async (chain: string, token: string) => {
   try {
     const tokens = await fetchApi<SwingToken[]>(`/tokens?chain=${chain}`, {
       mode: 'cors',
-      host: config.WALLETS.SWAP.HOST_URL,
+      host: config.WALLETS.SWAP.PLATFORM_HOST_URL,
       headers: {
         Accept: 'application/json',
         'x-swing-environment': config.WALLETS.SWAP.ENVIRONMENT,
@@ -31,17 +33,21 @@ export const getSwapToken = async (chain: string, token: string) => {
 
 export const getSwapQuote = async (opts: SwingQuoteRequest) => {
   try {
-    return await fetchApi<SwingQuoteResponse>(`/quote`, {
-      method: 'POST',
-      mode: 'cors',
-      host: config.WALLETS.SWAP.HOST_URL,
-      body: JSON.stringify(opts),
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        'x-swing-environment': config.WALLETS.SWAP.ENVIRONMENT,
+    // inject project ID and fee from config
+    opts.projectId = config.WALLETS.SWAP.PROJECT_ID;
+    opts.fee = config.WALLETS.SWAP.FEE_BPS;
+
+    // request the quote
+    return await fetchApi<SwingQuoteResponse>(
+      `/transfer/quote?${qs.stringify(opts)}`,
+      {
+        mode: 'cors',
+        host: config.WALLETS.SWAP.EXCHANGE_HOST_URL,
+        headers: {
+          Accept: 'application/json',
+        },
       },
-    });
+    );
   } catch (e) {
     notifyEvent(e, 'warning', 'Wallet', 'Transaction', {
       msg: 'error fetching quote',

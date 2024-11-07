@@ -10,6 +10,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select, {SelectChangeEvent} from '@mui/material/Select';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
@@ -18,7 +19,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {getSwapQuote, getSwapToken} from '../../actions/swapActions';
 import type {SerializedWalletBalance} from '../../lib';
 import {TokenType, useTranslationContext} from '../../lib';
-import {SwingQuote} from '../../lib/types/swingXyz';
+import {Route} from '../../lib/types/swingXyz';
 import {
   getBlockchainDisplaySymbol,
   getBlockchainName,
@@ -69,6 +70,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   button: {
     marginBottom: theme.spacing(1),
   },
+  tokenAmount: {
+    color: theme.palette.primary.main,
+  },
 }));
 
 type Props = {
@@ -95,15 +99,19 @@ const Swap: React.FC<Props> = ({
   const [isGettingQuote, setIsGettingQuote] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>();
-  const [amtUsdStr, setAmtUsdStr] = useState('100');
+  const [amtUsd, setAmtUsd] = useState('100');
   const [sourceToken, setSourceToken] = useState<TokenEntry>();
+  const [sourceTokenDescription, setSourceTokenDescription] =
+    useState<string>();
   const [destinationToken, setDestinationToken] = useState<TokenEntry>();
-  const [quotes, setQuotes] = useState<SwingQuote[]>();
+  const [destinationTokenDescription, setDestinationTokenDescription] =
+    useState<string>();
+  const [quotes, setQuotes] = useState<Route[]>();
   const isDisabled =
     !!errorMessage ||
     !sourceToken ||
     !destinationToken ||
-    !amtUsdStr ||
+    !amtUsd ||
     !quotes ||
     quotes.length === 0;
 
@@ -116,7 +124,9 @@ const Swap: React.FC<Props> = ({
 
   const handleSourceChange = (event: SelectChangeEvent) => {
     setErrorMessage(undefined);
-    setSourceToken(filteredTokens.find(v => v.symbol === event.target.value));
+    setSourceToken(sourceTokens.find(v => v.symbol === event.target.value));
+    setSourceTokenDescription(undefined);
+    setDestinationTokenDescription(undefined);
   };
 
   const handleDestinationChange = async (event: SelectChangeEvent) => {
@@ -124,6 +134,8 @@ const Swap: React.FC<Props> = ({
     setIsGettingQuote(true);
     setErrorMessage(undefined);
     setDestinationToken(allTokens.find(v => v.symbol === event.target.value));
+    setSourceTokenDescription(undefined);
+    setDestinationTokenDescription(undefined);
   };
 
   const handleGetQuote = async () => {
@@ -133,60 +145,107 @@ const Swap: React.FC<Props> = ({
       return;
     }
 
-    // retrieve source token
-    const swapToken = await getSwapToken(
-      getBlockchainName(sourceToken.symbol).toLowerCase(),
-      getBlockchainDisplaySymbol(sourceToken.symbol),
-    );
-    if (!swapToken) {
+    // reset state
+    setIsGettingQuote(true);
+    setErrorMessage(undefined);
+    setSourceTokenDescription(undefined);
+    setDestinationTokenDescription(undefined);
+
+    // retrieve swap token definitions
+    const [swapTokenSource, swapTokenDestination] = await Promise.all([
+      getSwapToken(
+        getBlockchainName(sourceToken.symbol).toLowerCase(),
+        getBlockchainDisplaySymbol(sourceToken.ticker),
+      ),
+      getSwapToken(
+        getBlockchainName(destinationToken.symbol).toLowerCase(),
+        getBlockchainDisplaySymbol(destinationToken.ticker),
+      ),
+    ]);
+    if (!swapTokenSource || !swapTokenDestination) {
       setErrorMessage('Error retrieving token details');
       return;
     }
 
     // determine amount based on market price and token decimals
-    const amountInDecimals = Math.floor(
-      (parseFloat(amtUsdStr) / swapToken.price) *
-        Math.pow(10, swapToken.decimals),
+    const sourceAmt = parseFloat(amtUsd) / swapTokenSource.price;
+    const sourceAmountInDecimals = Math.floor(
+      sourceAmt * Math.pow(10, swapTokenSource.decimals),
     );
 
     // retrieve the quote
-    setIsGettingQuote(true);
-    setErrorMessage(undefined);
     const quotesResponse = await getSwapQuote({
-      type: 'swap',
-      source: {
-        chain: getBlockchainName(sourceToken.symbol).toLowerCase(),
-        token: getBlockchainDisplaySymbol(sourceToken.ticker),
-        wallet: sourceToken.walletAddress,
-        amount: String(amountInDecimals),
-      },
-      destination: {
-        chain: getBlockchainName(destinationToken.symbol).toLowerCase(),
-        token: getBlockchainDisplaySymbol(destinationToken.ticker),
-        wallet: destinationToken.walletAddress,
-      },
+      // information about source token
+      fromChain: getBlockchainName(sourceToken.symbol).toLowerCase(),
+      fromChainDecimal: swapTokenSource.decimals,
+      fromTokenAddress: swapTokenSource.address,
+      fromUserAddress: sourceToken.walletAddress,
+      tokenSymbol: getBlockchainDisplaySymbol(sourceToken.ticker),
+      tokenAmount: String(sourceAmountInDecimals),
+
+      // information about destination token
+      toChain: getBlockchainName(destinationToken.symbol).toLowerCase(),
+      toChainDecimal: swapTokenDestination.decimals,
+      toTokenAddress: swapTokenDestination.address,
+      toTokenSymbol: getBlockchainDisplaySymbol(destinationToken.ticker),
+      toUserAddress: destinationToken.walletAddress,
     });
     setIsGettingQuote(false);
 
     // validate result
-    if (!quotesResponse || quotesResponse.length === 0) {
+    if (!quotesResponse?.routes || quotesResponse.routes.length === 0) {
       setErrorMessage('Unable to find quote');
       return;
     }
 
-    // store quotes sorted by time
-    setQuotes(quotesResponse.sort((a, b) => a.duration - b.duration));
+    // store quotes sorted by time, price impact and fees
+    quotesResponse.routes = quotesResponse.routes.sort((a, b) => {
+      return (
+        // lowest duration
+        a.duration - b.duration ||
+        // lowest price impact
+        parseFloat(b.quote.priceImpact || '0') -
+          parseFloat(a.quote.priceImpact || '0') ||
+        // lowest fee
+        a.quote.fees
+          .map(f => parseFloat(f.amountUSD))
+          .reduce((c, d) => c + d, 0) -
+          b.quote.fees
+            .map(f => parseFloat(f.amountUSD))
+            .reduce((c, d) => c + d, 0)
+      );
+    });
+    setQuotes(quotesResponse.routes);
+
+    // set quote amounts for each token
+    setSourceTokenDescription(
+      `Sell ~**${new Intl.NumberFormat('en-US', {
+        maximumSignificantDigits: 6,
+      }).format(sourceAmt)}** ${getBlockchainDisplaySymbol(
+        sourceToken.ticker,
+      )}`,
+    );
+    setDestinationTokenDescription(
+      `Receive ~**${new Intl.NumberFormat('en-US', {
+        maximumSignificantDigits: 6,
+      }).format(
+        parseFloat(quotesResponse.routes[0].quote.amount) /
+          Math.pow(10, quotesResponse.routes[0].quote.decimals),
+      )}** ${getBlockchainDisplaySymbol(destinationToken.ticker)}`,
+    );
+
+    console.log('AJQ quote', JSON.stringify(quotesResponse, undefined, 2));
   };
 
-  const getQuoteDescription = (q: SwingQuote) => {
-    const quoteFee =
-      parseFloat(q.fees.bridge.amountUSD) +
-      parseFloat(q.fees.gas.amountUSD) +
-      parseFloat(q.fees.partner.amountUSD);
+  const getQuoteDescription = (q: Route) => {
+    const quoteFee = q.quote.fees
+      .map(f => parseFloat(f.amountUSD))
+      .reduce((a, b) => a + b, 0);
+
     return `${quoteFee.toLocaleString('en-US', {
       style: 'currency',
       currency: 'USD',
-    })} fee / ${q.duration} minute${q.duration > 1 ? 's' : ''}`;
+    })} network fee / ${q.duration} minute${q.duration > 1 ? 's' : ''}`;
   };
 
   const serializeNativeTokens = (wallet: SerializedWalletBalance) => {
@@ -250,13 +309,16 @@ const Swap: React.FC<Props> = ({
     .filter(
       token =>
         (supportErc20 && token.type === TokenType.Erc20) ||
-        config.WALLETS.CHAINS.SWAP.includes(
-          `${token.symbol.toUpperCase()}/${token.ticker.toUpperCase()}`,
-        ),
+        token.type === TokenType.Native,
     )
     .sort((a, b) => a.name.localeCompare(b.name));
-  const filteredTokens: TokenEntry[] = allTokens
+  const sourceTokens: TokenEntry[] = allTokens
     .filter(token => token.balance > 0)
+    .filter(token =>
+      config.WALLETS.CHAINS.SWAP.includes(
+        `${token.symbol.toUpperCase()}/${token.ticker.toUpperCase()}`,
+      ),
+    )
     .sort((a, b) => b.value - a.value || b.balance - a.balance);
 
   return (
@@ -268,7 +330,7 @@ const Swap: React.FC<Props> = ({
       <Box className={classes.container}>
         <Box className={classes.content}>
           {allTokens.length > 0 &&
-            filteredTokens.length === 0 &&
+            sourceTokens.length === 0 &&
             onClickBuy &&
             onClickReceive && (
               <Box className={classes.noTokensContainer}>
@@ -285,24 +347,22 @@ const Swap: React.FC<Props> = ({
             className={classes.dropDown}
             disabled={isGettingQuote || isSwapping}
           >
-            <InputLabel id="source-token-label">
-              Select source crypto
-            </InputLabel>
+            <InputLabel id="source-token-label">Select source token</InputLabel>
             <Select
               labelId="source-token-label"
               id="source-token"
               value={sourceToken?.symbol}
-              label="Select source crypto"
+              label="Select source token"
               onChange={handleSourceChange}
             >
-              {filteredTokens.map(v => (
+              {sourceTokens.map(v => (
                 <MenuItem value={v.symbol}>
                   {getBlockchainDisplaySymbol(v.ticker)} on {v.name}
                 </MenuItem>
               ))}
             </Select>
-            <FormHelperText>
-              Convert this token to something else
+            <FormHelperText className={classes.tokenAmount}>
+              <Markdown>{sourceTokenDescription || ''}</Markdown>
             </FormHelperText>
           </FormControl>
           <FormControl
@@ -310,13 +370,13 @@ const Swap: React.FC<Props> = ({
             disabled={!sourceToken || isGettingQuote || isSwapping}
           >
             <InputLabel id="destination-token-label">
-              Select destination crypto
+              Select destination token
             </InputLabel>
             <Select
               labelId="destination-token-label"
               id="destination-token"
               value={destinationToken?.symbol}
-              label="Select destination crypto"
+              label="Select destination token"
               onChange={handleDestinationChange}
             >
               {allTokens
@@ -327,7 +387,9 @@ const Swap: React.FC<Props> = ({
                   </MenuItem>
                 ))}
             </Select>
-            <FormHelperText>The token you want to end up with</FormHelperText>
+            <FormHelperText className={classes.tokenAmount}>
+              <Markdown>{destinationTokenDescription || ''}</Markdown>
+            </FormHelperText>
           </FormControl>
         </Box>
         <LoadingButton
@@ -356,7 +418,7 @@ const Swap: React.FC<Props> = ({
                 ? errorMessage
                 : isDisabled
                 ? 'Select tokens to swap'
-                : `Swap ${parseFloat(amtUsdStr)
+                : `Swap ${parseFloat(amtUsd)
                     .toLocaleString('en-US', {
                       style: 'currency',
                       currency: 'USD',

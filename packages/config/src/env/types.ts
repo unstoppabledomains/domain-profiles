@@ -112,10 +112,12 @@ export type Config = {
       DOMAINS: string[];
     };
     SWAP: {
-      HOST_URL: string;
+      PLATFORM_HOST_URL: string;
+      EXCHANGE_HOST_URL: string;
       API_KEY: string;
       ENVIRONMENT: string;
       PROJECT_ID: string;
+      FEE_BPS?: number;
     };
     SIGNATURE_SYMBOL: string;
     MOBILE: {

@@ -59,6 +59,12 @@ export type BaseChainBlockchainConfig = BaseBlockchainConfig & {
   BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/base/tx/';
 };
 
+export interface SwapConfig {
+  description: string;
+  swing: {chain: string; symbol: string; type: 'erc20' | 'native'};
+  walletType: string;
+}
+
 export type Config = {
   APP_ENV: AppEnv;
   APP_VERSION: string;
@@ -108,7 +114,6 @@ export type Config = {
       BUY: string[];
       RECEIVE: string[];
       SEND: string[];
-      SWAP: string[];
       DOMAINS: string[];
     };
     SWAP: {
@@ -118,6 +123,10 @@ export type Config = {
       ENVIRONMENT: string;
       PROJECT_ID: string;
       FEE_BPS?: number;
+      SUPPORTED_TOKENS: {
+        SOURCE: SwapConfig[];
+        DESTINATION: SwapConfig[];
+      };
     };
     SIGNATURE_SYMBOL: string;
     MOBILE: {

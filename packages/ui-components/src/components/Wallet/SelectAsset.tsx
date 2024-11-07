@@ -7,6 +7,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance} from '../../lib';
 import {TokenType, WalletPaletteOwner} from '../../lib';
+import {getAllTokens} from '../../lib/wallet/evm/token';
 import {filterWallets} from '../../lib/wallet/filter';
 import FundWalletModal from './FundWalletModal';
 import {TitleWithBackButton} from './TitleWithBackButton';
@@ -75,65 +76,7 @@ export const SelectAsset: React.FC<Props> = ({
 }) => {
   const {classes} = useStyles();
   const wallets = filterWallets(initialWallets, supportedAssetList);
-
-  const serializeNativeTokens = (wallet: SerializedWalletBalance) => {
-    if (
-      wallet.value?.history &&
-      wallet.value.history.length > 0 &&
-      wallet.value.history[wallet.value.history.length - 1].value !==
-        wallet.value.marketUsdAmt
-    ) {
-      wallet.value.history.push({
-        timestamp: new Date(),
-        value: wallet.value.marketUsdAmt || 0,
-      });
-    }
-    return {
-      type: TokenType.Native,
-      name: wallet.name,
-      value: wallet.value?.walletUsdAmt || 0,
-      tokenConversionUsd: wallet.value?.marketUsdAmt || 0,
-      balance: wallet.balanceAmt || 0,
-      pctChange: wallet.value?.marketPctChange24Hr,
-      history: wallet.value?.history?.sort(
-        (a, b) =>
-          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-      ),
-      symbol: wallet.symbol,
-      ticker: wallet.gasCurrency,
-      walletAddress: wallet.address,
-      walletBlockChainLink: wallet.blockchainScanUrl,
-      walletName: wallet.name,
-      imageUrl: wallet.logoUrl,
-    };
-  };
-  const allTokens: TokenEntry[] = [
-    ...wallets.flatMap(serializeNativeTokens),
-    ...(wallets || []).flatMap(wallet =>
-      (wallet?.tokens || []).map(walletToken => {
-        return {
-          address: walletToken.address,
-          type: walletToken.type,
-          name: walletToken.name,
-          value: walletToken.value?.walletUsdAmt || 0,
-          balance: walletToken.balanceAmt || 0,
-          pctChange: walletToken.value?.marketPctChange24Hr,
-          tokenConversionUsd: walletToken.value?.marketUsdAmt || 0,
-          history: walletToken.value?.history?.sort(
-            (a, b) =>
-              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-          ),
-          ticker: walletToken.symbol,
-          symbol: wallet.symbol,
-          walletAddress: wallet.address,
-          walletBlockChainLink: wallet.blockchainScanUrl,
-          walletName: wallet.name,
-          walletType: wallet.walletType,
-          imageUrl: walletToken.logoUrl,
-        };
-      }),
-    ),
-  ];
+  const allTokens = getAllTokens(wallets);
   const filteredTokens: TokenEntry[] = allTokens
     .filter(token => !requireBalance || token.balance > 0)
     .filter(

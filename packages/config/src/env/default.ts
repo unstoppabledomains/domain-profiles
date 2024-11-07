@@ -120,7 +120,6 @@ export default function getDefaultConfig(): Config {
         BUY: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'ETH/ETH'],
         RECEIVE: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'BASE/ETH', 'ETH/ETH'],
         SEND: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'BASE/ETH', 'ETH/ETH'],
-        SWAP: ['MATIC/MATIC', 'BASE/ETH', 'ETH/ETH'],
         DOMAINS: ['ETH', 'MATIC', 'BASE'],
       },
       SWAP: {
@@ -128,9 +127,42 @@ export default function getDefaultConfig(): Config {
         PLATFORM_HOST_URL:
           'https://platform.swing.xyz/api/v1/projects/unstoppable-domains-staging',
         API_KEY: 'swing-8faf57ed-6f1d-4dbc-94a0-00c28bd1a277',
-        ENVIRONMENT: 'production',
+        ENVIRONMENT: 'testnet',
         PROJECT_ID: 'unstoppable-domains-staging',
         FEE_BPS: 100, // 1%
+        SUPPORTED_TOKENS: {
+          SOURCE: [
+            {
+              description: 'ETH on Ethereum',
+              swing: {
+                chain: 'sepolia',
+                symbol: 'ETH',
+                type: 'native',
+              },
+              walletType: 'ETH',
+            },
+          ],
+          DESTINATION: [
+            {
+              description: 'ETH on Ethereum',
+              swing: {
+                chain: 'sepolia',
+                symbol: 'ETH',
+                type: 'native',
+              },
+              walletType: 'ETH',
+            },
+            {
+              description: 'ETH on Arbitrum',
+              swing: {
+                chain: 'arbitrum-sepolia',
+                symbol: 'ETH',
+                type: 'native',
+              },
+              walletType: 'ETH',
+            },
+          ],
+        },
       },
       MOBILE: {
         ANDROID_URL:

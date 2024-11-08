@@ -139,7 +139,6 @@ type Props = {
   getClient: () => Promise<IFireblocksNCW>;
   accessToken: string;
   wallets: SerializedWalletBalance[];
-  supportErc20?: boolean;
 };
 
 const Swap: React.FC<Props> = ({
@@ -149,7 +148,6 @@ const Swap: React.FC<Props> = ({
   getClient,
   accessToken,
   wallets,
-  supportErc20,
 }) => {
   // page state
   const [t] = useTranslationContext();
@@ -203,9 +201,7 @@ const Swap: React.FC<Props> = ({
 
   // build list of all available wallet tokens
   const allTokens = getAllTokens(wallets).filter(
-    token =>
-      (supportErc20 && token.type === TokenType.Erc20) ||
-      token.type === TokenType.Native,
+    token => token.type === TokenType.Erc20 || token.type === TokenType.Native,
   );
 
   const getTokenEntry = (
@@ -215,7 +211,7 @@ const Swap: React.FC<Props> = ({
     const entry = allTokens.find(
       token =>
         token.walletName === swapConfig.chainName &&
-        token.symbol === swapConfig.tokenSymbol,
+        token.ticker === swapConfig.tokenSymbol,
     );
     if (entry) {
       return entry;
@@ -263,11 +259,17 @@ const Swap: React.FC<Props> = ({
         walletAddress: wallets.find(w => w.symbol === configToken.walletType)!
           .address,
       };
-    }).filter(
-      v =>
-        `${v.swing.chain}/${v.swing.symbol}` !==
-        `${sourceToken?.swing.chain}/${sourceToken?.swing.symbol}`,
-    );
+    })
+      .filter(
+        v =>
+          `${v.swing.chain}/${v.swing.symbol}` !==
+          `${sourceToken?.swing.chain}/${sourceToken?.swing.symbol}`,
+      )
+      .sort(
+        (a, b) =>
+          a.chainName.localeCompare(b.chainName) ||
+          a.tokenSymbol.localeCompare(b.tokenSymbol),
+      );
 
   useEffect(() => {
     // determine swap intro visibility
@@ -762,13 +764,17 @@ const Swap: React.FC<Props> = ({
                   <Box>
                     {t('swap.balance')}:{' '}
                     <b>
-                      {getTokenEntry(sourceToken)?.value.toLocaleString(
-                        'en-US',
-                        {
-                          style: 'currency',
-                          currency: 'USD',
-                        },
-                      )}
+                      {getTokenEntry(sourceToken)?.value
+                        ? getTokenEntry(sourceToken)?.value.toLocaleString(
+                            'en-US',
+                            {
+                              style: 'currency',
+                              currency: 'USD',
+                            },
+                          )
+                        : numeral(getTokenEntry(sourceToken)?.balance).format(
+                            '0.0000',
+                          )}
                     </b>
                   </Box>
                 )}

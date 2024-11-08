@@ -158,6 +158,19 @@ export default function getDefaultConfig(): Config {
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/MATIC/icon.svg',
             },
+            {
+              swing: {
+                chain: 'polygon-amoy',
+                symbol: 'USDC',
+                type: 'erc20',
+              },
+              walletType: 'MATIC',
+              chainName: 'Polygon',
+              chainSymbol: 'MATIC',
+              tokenSymbol: 'USDC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
+            },
           ],
           DESTINATION: [
             {

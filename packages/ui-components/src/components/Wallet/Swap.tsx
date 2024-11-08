@@ -5,6 +5,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 // eslint-disable-next-line no-restricted-imports
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
@@ -17,6 +18,7 @@ import {capitalize} from 'lodash';
 import Markdown from 'markdown-to-jsx';
 import numeral from 'numeral';
 import React, {useEffect, useRef, useState} from 'react';
+import Animation from 'react-canvas-confetti/dist/presets/fireworks';
 import {useDebounce} from 'usehooks-ts';
 
 import config from '@unstoppabledomains/config';
@@ -153,6 +155,7 @@ const Swap: React.FC<Props> = ({
   const [isGettingQuote, setIsGettingQuote] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [txId, setTxId] = useState<string>();
   const [errorMessage, setErrorMessage] = useState<string>();
 
   // swap pair state
@@ -289,8 +292,23 @@ const Swap: React.FC<Props> = ({
     void handleGetQuote();
   }, [sourceTokenAmountUsdDebounced, sourceToken, destinationToken]);
 
+  const handleTransactionClick = () => {
+    if (!sourceToken) {
+      return;
+    }
+    window.open(
+      `${
+        config.BLOCKCHAINS[
+          sourceToken.chainSymbol as keyof typeof config.BLOCKCHAINS
+        ].BLOCK_EXPLORER_TX_URL
+      }${txId}`,
+      '_blank',
+    );
+  };
+
   const handleSourceChange = (event: SelectChangeEvent) => {
     setIsSuccess(false);
+    setTxId(undefined);
     setErrorMessage(undefined);
     setSourceToken(
       sourceTokens.find(
@@ -304,6 +322,7 @@ const Swap: React.FC<Props> = ({
 
   const handleDestinationChange = async (event: SelectChangeEvent) => {
     setIsSuccess(false);
+    setTxId(undefined);
     setQuotes(undefined);
     setErrorMessage(undefined);
     setDestinationToken(
@@ -317,6 +336,13 @@ const Swap: React.FC<Props> = ({
   };
 
   const handleAmountChanged = async (id: string, v: string) => {
+    setIsSuccess(false);
+    setTxId(undefined);
+    setQuotes(undefined);
+    setErrorMessage(undefined);
+    setDestinationTokenAmountUsd(0);
+    setSourceTokenDescription(undefined);
+    setDestinationTokenDescription(undefined);
     try {
       const parsedValue = parseFloat(v.replaceAll('$', ''));
       if (parsedValue) {
@@ -554,7 +580,7 @@ const Swap: React.FC<Props> = ({
         return {success: false};
       },
       attempts: FB_MAX_RETRY,
-      interval: FB_WAIT_TIME_MS,
+      interval: FB_WAIT_TIME_MS * 3,
     });
     if (!result.success) {
       throw new Error('Signature process failed');
@@ -571,6 +597,9 @@ const Swap: React.FC<Props> = ({
         if (!operationStatus) {
           throw new Error('Error requesting transaction operation status');
         }
+        if (operationStatus.transaction?.id) {
+          setTxId(operationStatus.transaction.id);
+        }
         if (
           operationStatus.status === OperationStatusType.FAILED ||
           operationStatus.status === OperationStatusType.CANCELLED
@@ -581,12 +610,13 @@ const Swap: React.FC<Props> = ({
         }
         if (operationStatus.status === OperationStatusType.COMPLETED) {
           setIsSwapping(false);
+          setIsSuccess(true);
           return {success: true};
         }
         return {success: false};
       },
       attempts: FB_MAX_RETRY,
-      interval: FB_WAIT_TIME_MS,
+      interval: FB_WAIT_TIME_MS * 3,
     });
     if (!result.success) {
       throw new Error('Transaction process failed');
@@ -753,6 +783,15 @@ const Swap: React.FC<Props> = ({
             </FormHelperText>
           </FormControl>
         </Box>
+        {txId && (
+          <Button
+            className={classes.button}
+            variant="text"
+            onClick={handleTransactionClick}
+          >
+            View Transaction
+          </Button>
+        )}
         <LoadingButton
           fullWidth
           variant="contained"
@@ -817,6 +856,7 @@ const Swap: React.FC<Props> = ({
             )}
           </Box>
         </LoadingButton>
+        {isSuccess && <Animation autorun={{speed: 3, duration: 1}} />}
       </Box>
     </Box>
   );

@@ -4289,6 +4289,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/canvas-confetti@npm:^1.6.4":
+  version: 1.6.4
+  resolution: "@types/canvas-confetti@npm:1.6.4"
+  checksum: 0452e1f381e5d59471578be1b83f2908f0906ba0fddfe16f941a07e070f4ad91ceaf1a68bd84d84bb5e81214c95ef00137677d9d61d81119051425ca5ce307ba
+  languageName: node
+  linkType: hard
+
 "@types/chrome@npm:^0.0.268":
   version: 0.0.268
   resolution: "@types/chrome@npm:0.0.268"
@@ -5425,6 +5432,7 @@ __metadata:
     qs: ^6.11.2
     ramda: ^0.27.1
     react: ^17.0.0
+    react-canvas-confetti: ^2.0.7
     react-chartjs-2: ^5.2.0
     react-cookies: ^0.1.1
     react-dom: ^17.0.0
@@ -8012,6 +8020,13 @@ __metadata:
   version: 1.0.30001547
   resolution: "caniuse-lite@npm:1.0.30001547"
   checksum: ec0fc2b46721887f6f4aca1f3902f03d9a1a07416d16a86b7cd4bfba60e7b6b03ab3969659d3ea0158cc2f298972c80215c06c9457eb15c649d7780e8f5e91a7
+  languageName: node
+  linkType: hard
+
+"canvas-confetti@npm:^1.9.2":
+  version: 1.9.3
+  resolution: "canvas-confetti@npm:1.9.3"
+  checksum: db044a9c9ca0e58eafd115f7dfc2f9ecc377be34d8a5dd75901dae0dafd4fb0b75fbbf8edd48bbefad2468653c5838348f0e768b79727a924259a9ada343ea30
   languageName: node
   linkType: hard
 
@@ -18126,6 +18141,18 @@ __metadata:
   version: 1.1.3
   resolution: "re-emitter@npm:1.1.3"
   checksum: 3234850c26c4e51622ad7e54172396134cd510c2511da680275ab1e663e5d12c8b81e3e6f4ec025527ed241ad53dae9d1478c0148569840d2fec96a37d155431
+  languageName: node
+  linkType: hard
+
+"react-canvas-confetti@npm:^2.0.7":
+  version: 2.0.7
+  resolution: "react-canvas-confetti@npm:2.0.7"
+  dependencies:
+    "@types/canvas-confetti": ^1.6.4
+    canvas-confetti: ^1.9.2
+  peerDependencies:
+    react: "*"
+  checksum: 256f0e6e01b35535d7f26ba43c85d4dad488b3ea77b3e36c6849c8ef76a9354a4d85d8908445cc3820e7553e77a1a7dfa1a86904cc9a74746d5ec12a66cdcd5f
   languageName: node
   linkType: hard
 

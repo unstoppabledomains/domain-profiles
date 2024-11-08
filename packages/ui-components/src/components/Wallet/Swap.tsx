@@ -4,6 +4,7 @@ import ImportExportIcon from '@mui/icons-material/ImportExport';
 import LoadingButton from '@mui/lab/LoadingButton';
 // eslint-disable-next-line no-restricted-imports
 import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -53,11 +54,14 @@ import {OperationStatusType} from '../../lib/types/fireBlocks';
 import type {RouteQuote, SwingQuoteRequest} from '../../lib/types/swingXyz';
 import {getAsset} from '../../lib/wallet/asset';
 import {getAllTokens} from '../../lib/wallet/evm/token';
+import {localStorageWrapper} from '../Chat';
 import ManageInput from '../Manage/common/ManageInput';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 import FundWalletModal from './FundWalletModal';
 import {TitleWithBackButton} from './TitleWithBackButton';
 import Token from './Token';
+
+const swapIntroFlag = 'swap-intro-flag';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -65,6 +69,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     justifyContent: 'space-between',
     height: '100%',
+    marginTop: theme.spacing(2),
   },
   flexColCenterAligned: {
     display: 'flex',
@@ -83,7 +88,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     width: '100%',
-    height: '100%',
   },
   noTokensContainer: {
     textAlign: 'center',
@@ -91,8 +95,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   description: {
     textAlign: 'left',
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2),
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(4),
   },
   dropDown: {
     padding: theme.spacing(0.5),
@@ -111,9 +115,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
     color: theme.palette.primary.main,
   },
   swapIcon: {
+    marginTop: theme.spacing(2),
     color: theme.palette.neutralShades[400],
     width: '40px',
     height: '40px',
+  },
+  successIcon: {
+    color: theme.palette.success.main,
   },
 }));
 
@@ -145,8 +153,9 @@ const Swap: React.FC<Props> = ({
 }) => {
   // page state
   const [t] = useTranslationContext();
-  const {classes} = useStyles();
+  const {classes, cx} = useStyles();
   const isMounted = useRef(false);
+  const [showSwapIntro, setShowSwapIntro] = useState(false);
 
   // fireblocks state
   const [state] = useFireblocksState();
@@ -154,7 +163,7 @@ const Swap: React.FC<Props> = ({
   // operation state
   const [isGettingQuote, setIsGettingQuote] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isTxComplete, setIsTxComplete] = useState(false);
   const [txId, setTxId] = useState<string>();
   const [errorMessage, setErrorMessage] = useState<string>();
 
@@ -176,15 +185,21 @@ const Swap: React.FC<Props> = ({
   const [quoteRequest, setQuoteRequest] = useState<SwingQuoteRequest>();
   const [quotes, setQuotes] = useState<RouteQuote[]>();
 
-  // determines if button is disabled
-  const isDisabled =
-    isSuccess ||
+  // determines if button is visible
+  const isButtonHidden =
+    txId ||
+    isTxComplete ||
+    isSwapping ||
+    isGettingQuote ||
     !!errorMessage ||
     !sourceToken ||
     !destinationToken ||
     !sourceTokenAmountUsd ||
     !quotes ||
     quotes.length === 0;
+
+  // determines if the page is in loading state
+  const isLoading = isGettingQuote || isSwapping;
 
   // build list of all available wallet tokens
   const allTokens = getAllTokens(wallets).filter(
@@ -254,8 +269,15 @@ const Swap: React.FC<Props> = ({
         `${sourceToken?.swing.chain}/${sourceToken?.swing.symbol}`,
     );
 
-  // determine mounted state
   useEffect(() => {
+    // determine swap intro visibility
+    const loadSwapIntro = async () => {
+      const swapIntroState = await localStorageWrapper.getItem(swapIntroFlag);
+      setShowSwapIntro(swapIntroState === null);
+    };
+    void loadSwapIntro();
+
+    // determine mounted state
     isMounted.current = true;
     return () => {
       isMounted.current = false;
@@ -292,6 +314,11 @@ const Swap: React.FC<Props> = ({
     void handleGetQuote();
   }, [sourceTokenAmountUsdDebounced, sourceToken, destinationToken]);
 
+  const handleSwapInfoClicked = async () => {
+    setShowSwapIntro(false);
+    await localStorageWrapper.setItem(swapIntroFlag, swapIntroFlag);
+  };
+
   const handleTransactionClick = () => {
     if (!sourceToken) {
       return;
@@ -307,7 +334,7 @@ const Swap: React.FC<Props> = ({
   };
 
   const handleSourceChange = (event: SelectChangeEvent) => {
-    setIsSuccess(false);
+    setIsTxComplete(false);
     setTxId(undefined);
     setErrorMessage(undefined);
     setSourceToken(
@@ -321,7 +348,7 @@ const Swap: React.FC<Props> = ({
   };
 
   const handleDestinationChange = async (event: SelectChangeEvent) => {
-    setIsSuccess(false);
+    setIsTxComplete(false);
     setTxId(undefined);
     setQuotes(undefined);
     setErrorMessage(undefined);
@@ -336,7 +363,7 @@ const Swap: React.FC<Props> = ({
   };
 
   const handleAmountChanged = async (id: string, v: string) => {
-    setIsSuccess(false);
+    setIsTxComplete(false);
     setTxId(undefined);
     setQuotes(undefined);
     setErrorMessage(undefined);
@@ -362,6 +389,9 @@ const Swap: React.FC<Props> = ({
       return;
     }
 
+    // hide the swap intro
+    setShowSwapIntro(false);
+
     // reset state
     setIsGettingQuote(true);
     setErrorMessage(undefined);
@@ -378,7 +408,9 @@ const Swap: React.FC<Props> = ({
         ),
       ]);
       if (!swapTokenSource || !swapTokenDestination) {
-        setErrorMessage('Error retrieving token details');
+        setErrorMessage(
+          `Swapping ${sourceToken.swing.symbol} to ${destinationToken.swing.symbol} is not supported at this time. Choose another token and try again.`,
+        );
         return;
       }
 
@@ -424,7 +456,9 @@ const Swap: React.FC<Props> = ({
 
       // validate result
       if (!quotesResponse?.routes || quotesResponse.routes.length === 0) {
-        setErrorMessage('No quotes available');
+        setErrorMessage(
+          'No quotes available at this time. Select new tokens or try a different amount.',
+        );
         return;
       }
 
@@ -610,7 +644,7 @@ const Swap: React.FC<Props> = ({
         }
         if (operationStatus.status === OperationStatusType.COMPLETED) {
           setIsSwapping(false);
-          setIsSuccess(true);
+          setIsTxComplete(true);
           return {success: true};
         }
         return {success: false};
@@ -661,10 +695,19 @@ const Swap: React.FC<Props> = ({
                 />
               </Box>
             )}
-          <Alert severity="info" className={classes.description}>
-            Swapping allows you to convert from one crypto token to another.
-          </Alert>
-          <FormControl disabled={isGettingQuote || isSwapping}>
+          {showSwapIntro && (
+            <Alert
+              severity="info"
+              className={classes.description}
+              onClose={handleSwapInfoClicked}
+            >
+              <AlertTitle>Introduction to swap</AlertTitle>
+              Swapping is simply a way to convert one token into another. Choose
+              a token from your wallet and the amount you want to swap. A quote
+              will be created automatically.
+            </Alert>
+          )}
+          <FormControl disabled={isLoading}>
             <ManageInput
               id="source-token-amount"
               label="Pay with token"
@@ -673,12 +716,14 @@ const Swap: React.FC<Props> = ({
                 sourceTokenAmountUsd ? sourceTokenAmountUsd.toString() : ''
               }
               stacked={true}
+              disabled={isLoading}
               onChange={handleAmountChanged}
               startAdornment={<Typography ml={2}>$</Typography>}
               endAdornment={
                 <Select
                   size="small"
                   id="source-token"
+                  disabled={isLoading}
                   value={
                     sourceToken
                       ? `${sourceToken.swing.chain}/${sourceToken.swing.symbol}`
@@ -692,8 +737,12 @@ const Swap: React.FC<Props> = ({
                   {sourceTokens
                     .filter(v => getTokenEntry(v))
                     .map(v => (
-                      <MenuItem value={`${v.swing.chain}/${v.swing.symbol}`}>
+                      <MenuItem
+                        key={`source-${v.swing.chain}/${v.swing.symbol}`}
+                        value={`${v.swing.chain}/${v.swing.symbol}`}
+                      >
                         <Token
+                          key={`source-token-${v.swing.chain}/${v.swing.symbol}`}
                           token={getTokenEntry(v)!}
                           isOwner
                           hideBalance
@@ -732,8 +781,18 @@ const Swap: React.FC<Props> = ({
               </Box>
             </FormHelperText>
           </FormControl>
-          <ImportExportIcon className={classes.swapIcon} />
-          <FormControl disabled={!sourceToken || isGettingQuote || isSwapping}>
+          {txId ? (
+            <CheckIcon
+              className={cx(classes.swapIcon, {
+                [classes.successIcon]: isTxComplete,
+              })}
+            />
+          ) : isLoading ? (
+            <CircularProgress className={classes.swapIcon} />
+          ) : (
+            <ImportExportIcon className={classes.swapIcon} />
+          )}
+          <FormControl disabled={isLoading}>
             <ManageInput
               id="destination-token-amount"
               label="Receive token"
@@ -744,12 +803,14 @@ const Swap: React.FC<Props> = ({
                   : ''
               }
               stacked={true}
+              disabled={isLoading}
               onChange={handleAmountChanged}
               startAdornment={<Typography ml={2}>$</Typography>}
               endAdornment={
                 <Select
                   size="small"
                   id="destination-token"
+                  disabled={isLoading}
                   value={
                     destinationToken
                       ? `${destinationToken.swing.chain}/${destinationToken.swing.symbol}`
@@ -763,8 +824,12 @@ const Swap: React.FC<Props> = ({
                   {destinationTokens
                     .filter(v => getTokenEntry(v, true))
                     .map(v => (
-                      <MenuItem value={`${v.swing.chain}/${v.swing.symbol}`}>
+                      <MenuItem
+                        key={`destination-${v.swing.chain}/${v.swing.symbol}`}
+                        value={`${v.swing.chain}/${v.swing.symbol}`}
+                      >
                         <Token
+                          key={`destination-token-${v.swing.chain}/${v.swing.symbol}`}
                           token={getTokenEntry(v, true)!}
                           isOwner
                           hideBalance
@@ -784,52 +849,46 @@ const Swap: React.FC<Props> = ({
           </FormControl>
         </Box>
         {txId && (
-          <Button
-            className={classes.button}
-            variant="text"
-            onClick={handleTransactionClick}
-          >
-            View Transaction
-          </Button>
+          <Box>
+            <Button
+              fullWidth
+              variant="outlined"
+              className={classes.button}
+              onClick={handleTransactionClick}
+            >
+              View Transaction
+            </Button>
+            <Animation autorun={{speed: 3, duration: 1}} />
+          </Box>
         )}
-        <LoadingButton
-          fullWidth
-          variant="contained"
-          onClick={handleSubmitTransaction}
-          disabled={isDisabled}
-          className={classes.button}
-          loading={isGettingQuote || isSwapping}
-          loadingIndicator={
-            <Box display="flex" alignItems="center" p={1}>
-              <CircularProgress color="inherit" size={16} />
-              <Box ml={1}>
-                {isSwapping
-                  ? 'Swapping...'
-                  : isGettingQuote
-                  ? 'Getting quote...'
-                  : ''}
-              </Box>
-            </Box>
-          }
-        >
-          <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            p={isDisabled ? 1 : undefined}
-          >
-            <Typography variant="body1" fontWeight="bold">
-              {errorMessage ? (
-                errorMessage
-              ) : isSuccess ? (
-                <Box display="flex" alignItems="center">
-                  <CheckIcon />
-                  <Box ml={1}>Success!</Box>
+        {errorMessage && (
+          <Box mb={1}>
+            <Alert severity="error">{errorMessage}</Alert>
+          </Box>
+        )}
+        {!isButtonHidden && (
+          <LoadingButton
+            fullWidth
+            variant="contained"
+            onClick={handleSubmitTransaction}
+            className={classes.button}
+            loading={isLoading}
+            loadingIndicator={
+              <Box display="flex" alignItems="center" p={1}>
+                <CircularProgress color="inherit" size={16} />
+                <Box ml={1}>
+                  {isSwapping
+                    ? 'Swapping...'
+                    : isGettingQuote
+                    ? 'Getting quote...'
+                    : ''}
                 </Box>
-              ) : isDisabled ? (
-                'Select tokens and amount'
-              ) : (
-                `${
+              </Box>
+            }
+          >
+            <Box display="flex" flexDirection="column" alignItems="center">
+              <Typography variant="body1" fontWeight="bold">
+                {`${
                   sourceToken.swing.symbol !== destinationToken.swing.symbol
                     ? 'Swap'
                     : 'Bridge'
@@ -846,17 +905,16 @@ const Swap: React.FC<Props> = ({
                         destinationToken.swing.symbol,
                       )}`
                     : ''
-                }`
-              )}
-            </Typography>
-            {quotes && !isDisabled && (
-              <Typography variant="caption">
-                {getQuoteDescription(quotes[0])}
+                }`}
               </Typography>
-            )}
-          </Box>
-        </LoadingButton>
-        {isSuccess && <Animation autorun={{speed: 3, duration: 1}} />}
+              {quotes && (
+                <Typography variant="caption">
+                  {getQuoteDescription(quotes[0])}
+                </Typography>
+              )}
+            </Box>
+          </LoadingButton>
+        )}
       </Box>
     </Box>
   );

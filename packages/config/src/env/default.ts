@@ -145,6 +145,19 @@ export default function getDefaultConfig(): Config {
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/ETH/icon.svg',
             },
+            {
+              swing: {
+                chain: 'polygon-amoy',
+                symbol: 'MATIC',
+                type: 'native',
+              },
+              walletType: 'MATIC',
+              chainName: 'Polygon',
+              chainSymbol: 'MATIC',
+              tokenSymbol: 'MATIC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/MATIC/icon.svg',
+            },
           ],
           DESTINATION: [
             {
@@ -172,6 +185,58 @@ export default function getDefaultConfig(): Config {
               tokenSymbol: 'ETH',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/ARB/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'polygon-amoy',
+                symbol: 'MATIC',
+                type: 'native',
+              },
+              walletType: 'MATIC',
+              chainName: 'Polygon',
+              chainSymbol: 'MATIC',
+              tokenSymbol: 'MATIC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/MATIC/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'solana-dev',
+                symbol: 'SOL',
+                type: 'native',
+              },
+              walletType: 'SOL',
+              chainName: 'Solana',
+              chainSymbol: 'SOL',
+              tokenSymbol: 'SOL',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/SOL/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'bitcoin-testnet',
+                symbol: 'BTC',
+                type: 'native',
+              },
+              walletType: 'BTC',
+              chainName: 'Bitcoin',
+              chainSymbol: 'BTC',
+              tokenSymbol: 'BTC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/BTC/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'base-sepolia',
+                symbol: 'BASE',
+                type: 'native',
+              },
+              walletType: 'BASE',
+              chainName: 'Base',
+              chainSymbol: 'BASE',
+              tokenSymbol: 'ETH',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/BASE/icon.svg',
             },
           ],
         },

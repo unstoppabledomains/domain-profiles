@@ -829,8 +829,27 @@
     "tryAnotherSearch": "Try another domain or wallet address"
   },
   "swap": {
+    "balance": "Balance",
+    "bridge": "Bridge",
+    "chooseTokens": "Choose tokens to swap",
     "description": "Swap your crypto",
-    "title": "Swap"
+    "errorCreatingTx": "Error creating transaction",
+    "errorRetrievingWallet": "Error retrieving wallet details",
+    "errorSwappingTokens": "There was an error swapping your tokens",
+    "gettingQuote": "Getting quote...",
+    "introContent": "Swapping is simply a way to convert one token into another. Choose a token from your wallet and the amount you want to swap. A quote will be created automatically.",
+    "introTitle": "Introduction to swap",
+    "noQuoteAvailable": "No quotes available at this time. Select new tokens or try a different amount.",
+    "noTokenPrice": "Error determining {{token}} token price",
+    "pairNotSupported": "Swapping {{source}} to {{destination}} is not supported at this time. Choose another token and try again.",
+    "pay": "Pay",
+    "payWithToken": "Pay with token",
+    "receive": "Receive",
+    "receiveToken": "Receive token",
+    "swap": "Swap",
+    "swapping": "Swapping...",
+    "title": "Swap",
+    "viewTransaction": "View transaction"
   },
   "tokensPortfolio": {
     "all": "All",

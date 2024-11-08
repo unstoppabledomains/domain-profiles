@@ -385,7 +385,7 @@ const Swap: React.FC<Props> = ({
   const handleGetQuote = async () => {
     // validate parameters
     if (!sourceToken || !destinationToken) {
-      setErrorMessage('Choose tokens to swap');
+      setErrorMessage(t('swap.chooseTokens'));
       return;
     }
 
@@ -409,7 +409,10 @@ const Swap: React.FC<Props> = ({
       ]);
       if (!swapTokenSource || !swapTokenDestination) {
         setErrorMessage(
-          `Swapping ${sourceToken.swing.symbol} to ${destinationToken.swing.symbol} is not supported at this time. Choose another token and try again.`,
+          t('swap.pairNotSupported', {
+            source: sourceToken.swing.symbol,
+            destination: destinationToken.swing.symbol,
+          }),
         );
         return;
       }
@@ -421,7 +424,7 @@ const Swap: React.FC<Props> = ({
         );
         if (!walletToken) {
           setErrorMessage(
-            `Error determining ${swapTokenSource.symbol} token price`,
+            t('swap.noTokenPrice', {token: swapTokenSource.symbol}),
           );
           return;
         }
@@ -456,9 +459,7 @@ const Swap: React.FC<Props> = ({
 
       // validate result
       if (!quotesResponse?.routes || quotesResponse.routes.length === 0) {
-        setErrorMessage(
-          'No quotes available at this time. Select new tokens or try a different amount.',
-        );
+        setErrorMessage(t('swap.noQuoteAvailable'));
         return;
       }
 
@@ -483,8 +484,8 @@ const Swap: React.FC<Props> = ({
 
       // set quote amounts for each token
       setSourceTokenDescription(
-        `Pay ~**${new Intl.NumberFormat('en-US', {
-          maximumSignificantDigits: 6,
+        `${t('swap.pay')} **${new Intl.NumberFormat('en-US', {
+          maximumSignificantDigits: 4,
         }).format(sourceAmt)}** ${getBlockchainDisplaySymbol(
           sourceToken.swing.symbol,
         )}`,
@@ -493,8 +494,8 @@ const Swap: React.FC<Props> = ({
         parseFloat(quotesResponse.routes[0].quote.amount) /
         Math.pow(10, quotesResponse.routes[0].quote.decimals);
       setDestinationTokenDescription(
-        `Receive ~**${new Intl.NumberFormat('en-US', {
-          maximumSignificantDigits: 6,
+        `${t('swap.receive')} **${new Intl.NumberFormat('en-US', {
+          maximumSignificantDigits: 4,
         }).format(destinationTokenBalance)}** ${getBlockchainDisplaySymbol(
           destinationToken.swing.symbol,
         )}`,
@@ -530,7 +531,7 @@ const Swap: React.FC<Props> = ({
 
       // validate the response
       if (!txResponse?.tx) {
-        setErrorMessage('Error creating transaction');
+        setErrorMessage(t('swap.errorCreatingTx'));
         return;
       }
       if (txResponse.error && txResponse.message) {
@@ -541,7 +542,7 @@ const Swap: React.FC<Props> = ({
       // retrieve and validate fireblocks state
       const clientState = getBootstrapState(state);
       if (!clientState) {
-        setErrorMessage('Error retrieving wallet state');
+        setErrorMessage(t('swap.errorRetrievingWallet'));
         return;
       }
 
@@ -550,7 +551,7 @@ const Swap: React.FC<Props> = ({
         chainId: txResponse.fromChain.chainId,
       });
       if (!asset?.accountId) {
-        setErrorMessage('Error finding signing asset');
+        setErrorMessage(t('swap.errorRetrievingWallet'));
         return;
       }
 
@@ -568,7 +569,7 @@ const Swap: React.FC<Props> = ({
         swapTx,
       );
       if (!operationResponse) {
-        setErrorMessage('Error creating swap transaction');
+        setErrorMessage(t('swap.errorCreatingTx'));
         return;
       }
 
@@ -576,7 +577,7 @@ const Swap: React.FC<Props> = ({
       await pollForSignature(operationResponse);
       await pollForCompletion(operationResponse);
     } catch (e) {
-      setErrorMessage('Error swapping tokens');
+      setErrorMessage(t('swap.errorSwappingTokens'));
       notifyEvent(e, 'error', 'Wallet', 'Transaction', {
         msg: 'error creating swap transaction',
       });
@@ -701,16 +702,14 @@ const Swap: React.FC<Props> = ({
               className={classes.description}
               onClose={handleSwapInfoClicked}
             >
-              <AlertTitle>Introduction to swap</AlertTitle>
-              Swapping is simply a way to convert one token into another. Choose
-              a token from your wallet and the amount you want to swap. A quote
-              will be created automatically.
+              <AlertTitle>{t('swap.introTitle')}</AlertTitle>
+              {t('swap.introContent')}
             </Alert>
           )}
           <FormControl disabled={isLoading}>
             <ManageInput
               id="source-token-amount"
-              label="Pay with token"
+              label={t('swap.payWithToken')}
               placeholder="0.00"
               value={
                 sourceTokenAmountUsd ? sourceTokenAmountUsd.toString() : ''
@@ -761,12 +760,7 @@ const Swap: React.FC<Props> = ({
                 </Box>
                 {sourceToken && (
                   <Box>
-                    <b>
-                      {numeral(getTokenEntry(sourceToken)?.balance).format(
-                        '0.[000000]',
-                      )}
-                    </b>{' '}
-                    {getBlockchainDisplaySymbol(sourceToken.tokenSymbol)} /{' '}
+                    {t('swap.balance')}:{' '}
                     <b>
                       {getTokenEntry(sourceToken)?.value.toLocaleString(
                         'en-US',
@@ -795,7 +789,7 @@ const Swap: React.FC<Props> = ({
           <FormControl disabled={isLoading}>
             <ManageInput
               id="destination-token-amount"
-              label="Receive token"
+              label={t('swap.receiveToken')}
               placeholder="0.00"
               value={
                 destinationTokenAmountUsd
@@ -856,7 +850,7 @@ const Swap: React.FC<Props> = ({
               className={classes.button}
               onClick={handleTransactionClick}
             >
-              View Transaction
+              {t('swap.viewTransaction')}
             </Button>
             <Animation autorun={{speed: 3, duration: 1}} />
           </Box>
@@ -878,9 +872,9 @@ const Swap: React.FC<Props> = ({
                 <CircularProgress color="inherit" size={16} />
                 <Box ml={1}>
                   {isSwapping
-                    ? 'Swapping...'
+                    ? t('swap.swapping')
                     : isGettingQuote
-                    ? 'Getting quote...'
+                    ? t('swap.gettingQuote')
                     : ''}
                 </Box>
               </Box>
@@ -890,8 +884,8 @@ const Swap: React.FC<Props> = ({
               <Typography variant="body1" fontWeight="bold">
                 {`${
                   sourceToken.swing.symbol !== destinationToken.swing.symbol
-                    ? 'Swap'
-                    : 'Bridge'
+                    ? t('swap.swap')
+                    : t('swap.bridge')
                 } ${sourceTokenAmountUsd
                   .toLocaleString('en-US', {
                     style: 'currency',
@@ -901,7 +895,9 @@ const Swap: React.FC<Props> = ({
                   sourceToken.swing.symbol,
                 )}${
                   sourceToken.swing.symbol !== destinationToken.swing.symbol
-                    ? ` to ${getBlockchainDisplaySymbol(
+                    ? ` ${t(
+                        'common.to',
+                      ).toLowerCase()} ${getBlockchainDisplaySymbol(
                         destinationToken.swing.symbol,
                       )}`
                     : ''

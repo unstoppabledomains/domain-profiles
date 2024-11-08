@@ -60,9 +60,12 @@ export type BaseChainBlockchainConfig = BaseBlockchainConfig & {
 };
 
 export interface SwapConfig {
-  description: string;
   swing: {chain: string; symbol: string; type: 'erc20' | 'native'};
   walletType: string;
+  chainName: string;
+  chainSymbol: string;
+  tokenSymbol: string;
+  imageUrl: string;
 }
 
 export type Config = {

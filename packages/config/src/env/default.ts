@@ -133,33 +133,45 @@ export default function getDefaultConfig(): Config {
         SUPPORTED_TOKENS: {
           SOURCE: [
             {
-              description: 'ETH on Ethereum',
               swing: {
                 chain: 'sepolia',
                 symbol: 'ETH',
                 type: 'native',
               },
               walletType: 'ETH',
+              chainName: 'Ethereum',
+              chainSymbol: 'ETH',
+              tokenSymbol: 'ETH',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/ETH/icon.svg',
             },
           ],
           DESTINATION: [
             {
-              description: 'ETH on Ethereum',
               swing: {
                 chain: 'sepolia',
                 symbol: 'ETH',
                 type: 'native',
               },
               walletType: 'ETH',
+              chainName: 'Ethereum',
+              chainSymbol: 'ETH',
+              tokenSymbol: 'ETH',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/ETH/icon.svg',
             },
             {
-              description: 'ETH on Arbitrum',
               swing: {
                 chain: 'arbitrum-sepolia',
                 symbol: 'ETH',
                 type: 'native',
               },
               walletType: 'ETH',
+              chainName: 'Arbitrum',
+              chainSymbol: 'ARB',
+              tokenSymbol: 'ETH',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/ARB/icon.svg',
             },
           ],
         },

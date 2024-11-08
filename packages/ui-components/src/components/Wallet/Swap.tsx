@@ -1,13 +1,13 @@
 import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
 import CheckIcon from '@mui/icons-material/Check';
 import ImportExportIcon from '@mui/icons-material/ImportExport';
-import Alert from '@mui/lab/Alert';
 import LoadingButton from '@mui/lab/LoadingButton';
+// eslint-disable-next-line no-restricted-imports
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
-import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import type {SelectChangeEvent} from '@mui/material/Select';
 import Select from '@mui/material/Select';
@@ -15,7 +15,9 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {capitalize} from 'lodash';
 import Markdown from 'markdown-to-jsx';
+import numeral from 'numeral';
 import React, {useEffect, useRef, useState} from 'react';
+import {useDebounce} from 'usehooks-ts';
 
 import config from '@unstoppabledomains/config';
 import type {SwapConfig} from '@unstoppabledomains/config/build/src/env/types';
@@ -31,7 +33,11 @@ import {
   getSwapTransaction,
 } from '../../actions/swapActions';
 import {useFireblocksState} from '../../hooks';
-import type {CreateTransaction, SerializedWalletBalance} from '../../lib';
+import type {
+  CreateTransaction,
+  SerializedWalletBalance,
+  TokenEntry,
+} from '../../lib';
 import {
   TokenType,
   getBootstrapState,
@@ -45,9 +51,11 @@ import {OperationStatusType} from '../../lib/types/fireBlocks';
 import type {RouteQuote, SwingQuoteRequest} from '../../lib/types/swingXyz';
 import {getAsset} from '../../lib/wallet/asset';
 import {getAllTokens} from '../../lib/wallet/evm/token';
+import ManageInput from '../Manage/common/ManageInput';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 import FundWalletModal from './FundWalletModal';
 import {TitleWithBackButton} from './TitleWithBackButton';
+import Token from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -82,25 +90,28 @@ const useStyles = makeStyles()((theme: Theme) => ({
   description: {
     textAlign: 'left',
     marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(4),
+    marginBottom: theme.spacing(2),
   },
   dropDown: {
-    width: '100%',
-    marginBottom: theme.spacing(3),
+    padding: theme.spacing(0.5),
+    minWidth: '150px',
   },
   button: {
     marginBottom: theme.spacing(1),
   },
-  tokenAmount: {
-    color: theme.palette.neutralShades[800],
+  tokenBalanceContainer: {
+    marginLeft: theme.spacing(0),
+    marginRight: theme.spacing(0),
+    color: theme.palette.neutralShades[600],
     height: '20px',
+  },
+  tokenActionText: {
+    color: theme.palette.primary.main,
   },
   swapIcon: {
     color: theme.palette.neutralShades[400],
-    width: '50px',
-    height: '50px',
-    marginTop: theme.spacing(-3),
-    marginBottom: theme.spacing(3),
+    width: '40px',
+    height: '40px',
   },
 }));
 
@@ -145,10 +156,15 @@ const Swap: React.FC<Props> = ({
   const [errorMessage, setErrorMessage] = useState<string>();
 
   // swap pair state
-  const [amtUsd, setAmtUsd] = useState('50');
+  const [sourceTokenAmountUsd, setSourceTokenAmountUsd] = useState(0);
+  const sourceTokenAmountUsdDebounced = useDebounce<number>(
+    sourceTokenAmountUsd,
+    500,
+  );
   const [sourceToken, setSourceToken] = useState<SwapToken>();
   const [sourceTokenDescription, setSourceTokenDescription] =
     useState<string>();
+  const [destinationTokenAmountUsd, setDestinationTokenAmountUsd] = useState(0);
   const [destinationToken, setDestinationToken] = useState<SwapToken>();
   const [destinationTokenDescription, setDestinationTokenDescription] =
     useState<string>();
@@ -163,7 +179,7 @@ const Swap: React.FC<Props> = ({
     !!errorMessage ||
     !sourceToken ||
     !destinationToken ||
-    !amtUsd ||
+    !sourceTokenAmountUsd ||
     !quotes ||
     quotes.length === 0;
 
@@ -174,15 +190,43 @@ const Swap: React.FC<Props> = ({
       token.type === TokenType.Native,
   );
 
+  const getTokenEntry = (
+    swapConfig: SwapConfig,
+    placeholder?: boolean,
+  ): TokenEntry | undefined => {
+    const entry = allTokens.find(
+      token =>
+        token.walletName === swapConfig.chainName &&
+        token.symbol === swapConfig.tokenSymbol,
+    );
+    if (entry) {
+      return entry;
+    }
+    if (placeholder) {
+      return {
+        type: swapConfig.swing.type as TokenType,
+        symbol: swapConfig.chainSymbol,
+        ticker: swapConfig.tokenSymbol,
+        name: swapConfig.chainName,
+        imageUrl: swapConfig.imageUrl,
+        walletName: swapConfig.chainName,
+        walletAddress: '',
+        walletBlockChainLink: '',
+        tokenConversionUsd: 0,
+        balance: 0,
+        value: 0,
+      };
+    }
+    return undefined;
+  };
+
   // build list of supported source tokens with sufficient balance
   const sourceTokens: SwapToken[] =
     config.WALLETS.SWAP.SUPPORTED_TOKENS.SOURCE.filter(configToken =>
-      allTokens.find(token => token.symbol === configToken.swing.symbol),
+      getTokenEntry(configToken),
     )
       .map(configToken => {
-        const walletToken = allTokens.find(
-          token => token.symbol === configToken.swing.symbol,
-        )!;
+        const walletToken = getTokenEntry(configToken)!;
         return {
           ...configToken,
           walletAddress: walletToken.walletAddress,
@@ -239,11 +283,11 @@ const Swap: React.FC<Props> = ({
 
   // retrieve quote when a swap pair is selected
   useEffect(() => {
-    if (!sourceToken || !destinationToken) {
+    if (!sourceTokenAmountUsdDebounced || !sourceToken || !destinationToken) {
       return;
     }
     void handleGetQuote();
-  }, [sourceToken, destinationToken]);
+  }, [sourceTokenAmountUsdDebounced, sourceToken, destinationToken]);
 
   const handleSourceChange = (event: SelectChangeEvent) => {
     setIsSuccess(false);
@@ -253,6 +297,7 @@ const Swap: React.FC<Props> = ({
         v => `${v.swing.chain}/${v.swing.symbol}` === event.target.value,
       ),
     );
+    setDestinationTokenAmountUsd(0);
     setSourceTokenDescription(undefined);
     setDestinationTokenDescription(undefined);
   };
@@ -266,8 +311,22 @@ const Swap: React.FC<Props> = ({
         v => `${v.swing.chain}/${v.swing.symbol}` === event.target.value,
       ),
     );
+    setDestinationTokenAmountUsd(0);
     setSourceTokenDescription(undefined);
     setDestinationTokenDescription(undefined);
+  };
+
+  const handleAmountChanged = async (id: string, v: string) => {
+    try {
+      const parsedValue = parseFloat(v.replaceAll('$', ''));
+      if (parsedValue) {
+        setSourceTokenAmountUsd(parsedValue);
+        setDestinationTokenAmountUsd(parsedValue);
+        return;
+      }
+    } catch (e) {}
+    setSourceTokenAmountUsd(0);
+    setDestinationTokenAmountUsd(0);
   };
 
   const handleGetQuote = async () => {
@@ -312,7 +371,7 @@ const Swap: React.FC<Props> = ({
       }
 
       // determine amount based on market price and token decimals
-      const sourceAmt = parseFloat(amtUsd) / swapTokenSource.price;
+      const sourceAmt = sourceTokenAmountUsd / swapTokenSource.price;
       const sourceAmountInDecimals = Math.floor(
         sourceAmt * Math.pow(10, swapTokenSource.decimals),
       );
@@ -339,7 +398,7 @@ const Swap: React.FC<Props> = ({
 
       // validate result
       if (!quotesResponse?.routes || quotesResponse.routes.length === 0) {
-        setErrorMessage('Unable to find quote');
+        setErrorMessage('No quotes available');
         return;
       }
 
@@ -370,13 +429,25 @@ const Swap: React.FC<Props> = ({
           sourceToken.swing.symbol,
         )}`,
       );
+      const destinationTokenBalance =
+        parseFloat(quotesResponse.routes[0].quote.amount) /
+        Math.pow(10, quotesResponse.routes[0].quote.decimals);
       setDestinationTokenDescription(
         `Receive ~**${new Intl.NumberFormat('en-US', {
           maximumSignificantDigits: 6,
-        }).format(
-          parseFloat(quotesResponse.routes[0].quote.amount) /
-            Math.pow(10, quotesResponse.routes[0].quote.decimals),
-        )}** ${getBlockchainDisplaySymbol(destinationToken.swing.symbol)}`,
+        }).format(destinationTokenBalance)}** ${getBlockchainDisplaySymbol(
+          destinationToken.swing.symbol,
+        )}`,
+      );
+      const destinationUsd =
+        quotesResponse.routes[0].quote.amountUSD &&
+        parseFloat(quotesResponse.routes[0].quote.amountUSD)
+          ? parseFloat(quotesResponse.routes[0].quote.amountUSD)
+          : swapTokenSource.symbol === swapTokenDestination.symbol
+          ? swapTokenSource.price * destinationTokenBalance
+          : 0;
+      setDestinationTokenAmountUsd(
+        parseFloat(numeral(destinationUsd).format('0.00')),
       );
     } catch (e) {
       notifyEvent(e, 'error', 'Wallet', 'Transaction', {
@@ -523,13 +594,17 @@ const Swap: React.FC<Props> = ({
   };
 
   const getQuoteDescription = (q: RouteQuote) => {
+    // calculate fee total
     const quoteFee = q.quote.fees
       .map(f => parseFloat(f.amountUSD))
       .reduce((a, b) => a + b, 0);
 
+    // calculate price impact
+    const priceImpact = sourceTokenAmountUsd - destinationTokenAmountUsd;
+
     return `${
-      quoteFee > 0
-        ? `${quoteFee.toLocaleString('en-US', {
+      priceImpact > 0 || quoteFee > 0
+        ? `${(priceImpact || quoteFee).toLocaleString('en-US', {
             style: 'currency',
             currency: 'USD',
           })} network fee / `
@@ -559,57 +634,122 @@ const Swap: React.FC<Props> = ({
           <Alert severity="info" className={classes.description}>
             Swapping allows you to convert from one crypto token to another.
           </Alert>
-          <FormControl
-            className={classes.dropDown}
-            disabled={isGettingQuote || isSwapping}
-          >
-            <InputLabel id="source-token-label">Pay with token</InputLabel>
-            <Select
-              labelId="source-token-label"
-              id="source-token"
-              value={
-                sourceToken
-                  ? `${sourceToken.swing.chain}/${sourceToken.swing.symbol}`
-                  : ''
-              }
+          <FormControl disabled={isGettingQuote || isSwapping}>
+            <ManageInput
+              id="source-token-amount"
               label="Pay with token"
-              onChange={handleSourceChange}
-            >
-              {sourceTokens.map(v => (
-                <MenuItem value={`${v.swing.chain}/${v.swing.symbol}`}>
-                  {v.description}
-                </MenuItem>
-              ))}
-            </Select>
-            <FormHelperText className={classes.tokenAmount}>
-              <Markdown>{sourceTokenDescription || ''}</Markdown>
+              placeholder="0.00"
+              value={
+                sourceTokenAmountUsd ? sourceTokenAmountUsd.toString() : ''
+              }
+              stacked={true}
+              onChange={handleAmountChanged}
+              startAdornment={<Typography ml={2}>$</Typography>}
+              endAdornment={
+                <Select
+                  size="small"
+                  id="source-token"
+                  value={
+                    sourceToken
+                      ? `${sourceToken.swing.chain}/${sourceToken.swing.symbol}`
+                      : ''
+                  }
+                  onChange={handleSourceChange}
+                  className={classes.dropDown}
+                  variant="standard"
+                  disableUnderline
+                >
+                  {sourceTokens
+                    .filter(v => getTokenEntry(v))
+                    .map(v => (
+                      <MenuItem value={`${v.swing.chain}/${v.swing.symbol}`}>
+                        <Token
+                          token={getTokenEntry(v)!}
+                          isOwner
+                          hideBalance
+                          iconWidth={5}
+                          descriptionWidth={7}
+                        />
+                      </MenuItem>
+                    ))}
+                </Select>
+              }
+            />
+            <FormHelperText className={classes.tokenBalanceContainer}>
+              <Box display="flex" justifyContent="space-between" width="100%">
+                <Box className={classes.tokenActionText}>
+                  <Markdown>{sourceTokenDescription || ''}</Markdown>
+                </Box>
+                {sourceToken && (
+                  <Box>
+                    <b>
+                      {numeral(getTokenEntry(sourceToken)?.balance).format(
+                        '0.[000000]',
+                      )}
+                    </b>{' '}
+                    {getBlockchainDisplaySymbol(sourceToken.tokenSymbol)} /{' '}
+                    <b>
+                      {getTokenEntry(sourceToken)?.value.toLocaleString(
+                        'en-US',
+                        {
+                          style: 'currency',
+                          currency: 'USD',
+                        },
+                      )}
+                    </b>
+                  </Box>
+                )}
+              </Box>
             </FormHelperText>
           </FormControl>
           <ImportExportIcon className={classes.swapIcon} />
-          <FormControl
-            className={classes.dropDown}
-            disabled={!sourceToken || isGettingQuote || isSwapping}
-          >
-            <InputLabel id="destination-token-label">Receive token</InputLabel>
-            <Select
-              labelId="destination-token-label"
-              id="destination-token"
+          <FormControl disabled={!sourceToken || isGettingQuote || isSwapping}>
+            <ManageInput
+              id="destination-token-amount"
+              label="Receive token"
+              placeholder="0.00"
               value={
-                destinationToken
-                  ? `${destinationToken.swing.chain}/${destinationToken.swing.symbol}`
+                destinationTokenAmountUsd
+                  ? destinationTokenAmountUsd.toString()
                   : ''
               }
-              label="Receive token"
-              onChange={handleDestinationChange}
-            >
-              {destinationTokens.map(v => (
-                <MenuItem value={`${v.swing.chain}/${v.swing.symbol}`}>
-                  {v.description}
-                </MenuItem>
-              ))}
-            </Select>
-            <FormHelperText className={classes.tokenAmount}>
-              <Markdown>{destinationTokenDescription || ''}</Markdown>
+              stacked={true}
+              onChange={handleAmountChanged}
+              startAdornment={<Typography ml={2}>$</Typography>}
+              endAdornment={
+                <Select
+                  size="small"
+                  id="destination-token"
+                  value={
+                    destinationToken
+                      ? `${destinationToken.swing.chain}/${destinationToken.swing.symbol}`
+                      : ''
+                  }
+                  onChange={handleDestinationChange}
+                  className={classes.dropDown}
+                  variant="standard"
+                  disableUnderline
+                >
+                  {destinationTokens
+                    .filter(v => getTokenEntry(v, true))
+                    .map(v => (
+                      <MenuItem value={`${v.swing.chain}/${v.swing.symbol}`}>
+                        <Token
+                          token={getTokenEntry(v, true)!}
+                          isOwner
+                          hideBalance
+                          iconWidth={5}
+                          descriptionWidth={7}
+                        />
+                      </MenuItem>
+                    ))}
+                </Select>
+              }
+            />
+            <FormHelperText className={classes.tokenBalanceContainer}>
+              <Box className={classes.tokenActionText}>
+                <Markdown>{destinationTokenDescription || ''}</Markdown>
+              </Box>
             </FormHelperText>
           </FormControl>
         </Box>
@@ -648,13 +788,13 @@ const Swap: React.FC<Props> = ({
                   <Box ml={1}>Success!</Box>
                 </Box>
               ) : isDisabled ? (
-                'Select tokens to swap'
+                'Select tokens and amount'
               ) : (
                 `${
                   sourceToken.swing.symbol !== destinationToken.swing.symbol
                     ? 'Swap'
                     : 'Bridge'
-                } ${parseFloat(amtUsd)
+                } ${sourceTokenAmountUsd
                   .toLocaleString('en-US', {
                     style: 'currency',
                     currency: 'USD',

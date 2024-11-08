@@ -11,11 +11,7 @@ import {Line} from 'react-chartjs-2';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import type {
-  CurrenciesType,
-  TokenEntry,
-  WalletPalette,
-} from '../../lib';
+import type {CurrenciesType, TokenEntry, WalletPalette} from '../../lib';
 import {TokenType, WalletPaletteOwner, WalletPalettePublic} from '../../lib';
 import {CryptoIcon} from '../Image';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
@@ -89,10 +85,12 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
 
 type Props = {
   token: TokenEntry;
-  onClick: () => void;
+  onClick?: () => void;
   isOwner?: boolean;
   showGraph?: boolean;
   hideBalance?: boolean;
+  iconWidth?: number;
+  descriptionWidth?: number;
 };
 
 const Token: React.FC<Props> = ({
@@ -101,6 +99,8 @@ const Token: React.FC<Props> = ({
   isOwner,
   showGraph,
   hideBalance,
+  iconWidth,
+  descriptionWidth,
 }) => {
   const {classes, cx} = useStyles({
     palette: isOwner ? WalletPaletteOwner : WalletPalettePublic,
@@ -114,7 +114,7 @@ const Token: React.FC<Props> = ({
       className={classes.txLink}
       data-testid={`token-${token.symbol}`}
     >
-      <Grid item xs={2}>
+      <Grid item xs={iconWidth || 2}>
         <Box display="flex" justifyContent="left" textAlign="left">
           <Badge
             overlap="circular"
@@ -155,7 +155,7 @@ const Token: React.FC<Props> = ({
           </Badge>
         </Box>
       </Grid>
-      <Grid item xs={4}>
+      <Grid item xs={descriptionWidth || 4}>
         <Box display="flex" flexDirection="column">
           <Typography variant="caption" className={classes.txTitle}>
             {token.name}
@@ -215,8 +215,8 @@ const Token: React.FC<Props> = ({
           </Box>
         )}
       </Grid>
-      <Grid item xs={2}>
-        {!hideBalance && (
+      {!hideBalance && (
+        <Grid item xs={2}>
           <Box
             display="flex"
             flexDirection="column"
@@ -247,8 +247,8 @@ const Token: React.FC<Props> = ({
                 : `---`}
             </Typography>
           </Box>
-        )}
-      </Grid>
+        </Grid>
+      )}
     </Grid>
   );
 };

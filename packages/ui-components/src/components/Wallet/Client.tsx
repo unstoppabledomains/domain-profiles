@@ -26,6 +26,7 @@ import {
   DOMAIN_LIST_PAGE_SIZE,
   getOwnerDomains,
   getProfileData,
+  useFeatureFlags,
 } from '../../actions';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
@@ -197,6 +198,7 @@ export const Client: React.FC<ClientProps> = ({
   const {classes} = useStyles({isMobile});
   const [t] = useTranslationContext();
   const {enqueueSnackbar} = useSnackbar();
+  const {data: featureFlags} = useFeatureFlags();
 
   // wallet state variables
   const [state, saveState] = useFireblocksState();
@@ -497,18 +499,20 @@ export const Client: React.FC<ClientProps> = ({
                   {t('common.receive')}
                 </Typography>
               </Box>
-              <Box
-                className={classes.actionContainer}
-                onClick={handleClickedSwap}
-              >
-                <SwapHorizIcon className={classes.actionIcon} />
-                <Typography
-                  variant={isMobile ? 'caption' : 'body2'}
-                  className={classes.actionText}
+              {featureFlags?.variations?.udMeServiceEnableSwap && (
+                <Box
+                  className={classes.actionContainer}
+                  onClick={handleClickedSwap}
                 >
-                  {t('swap.title')}
-                </Typography>
-              </Box>
+                  <SwapHorizIcon className={classes.actionIcon} />
+                  <Typography
+                    variant={isMobile ? 'caption' : 'body2'}
+                    className={classes.actionText}
+                  >
+                    {t('swap.title')}
+                  </Typography>
+                </Box>
+              )}
               <Box mr={-2}>
                 <Box
                   className={classes.actionContainer}

@@ -836,7 +836,7 @@
     "errorCreatingTx": "Error creating transaction",
     "errorRetrievingWallet": "Error retrieving wallet details",
     "errorSwappingTokens": "There was an error swapping your tokens",
-    "gettingQuote": "Getting quote...",
+    "gettingQuote": "Getting a quote to swap your {{source}} \u2192 {{destination}}",
     "introContent": "Swapping is simply a way to convert one token into another. Choose a token from your wallet and the amount you want to swap. A quote will be created automatically.",
     "introTitle": "Introduction to swap",
     "noQuoteAvailable": "No quotes available at this time. Select new tokens or try a different amount.",
@@ -847,7 +847,7 @@
     "receive": "Receive",
     "receiveToken": "Receive token",
     "swap": "Swap",
-    "swapping": "Swapping...",
+    "swapping": "Swapping your {{source}} \u2192 {{destination}}. The estimated processing time is {{minutes}} minute{{s}}. Leave this window open until complete.",
     "title": "Swap",
     "viewTransaction": "View transaction"
   },

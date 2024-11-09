@@ -80,11 +80,12 @@ export default function getProductionConfig(): ConfigOverride {
               tokenSymbol: 'ETH',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/ETH/icon.svg',
+              environment: 'production',
             },
             {
               swing: {
                 chain: 'polygon',
-                symbol: 'MATIC',
+                symbol: 'POL',
                 type: 'native',
               },
               walletType: 'MATIC',
@@ -93,37 +94,12 @@ export default function getProductionConfig(): ConfigOverride {
               tokenSymbol: 'MATIC',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/MATIC/icon.svg',
-            },
-            {
-              swing: {
-                chain: 'solana',
-                symbol: 'SOL',
-                type: 'native',
-              },
-              walletType: 'SOL',
-              chainName: 'Solana',
-              chainSymbol: 'SOL',
-              tokenSymbol: 'SOL',
-              imageUrl:
-                'https://images.unstoppabledomains.com/images/icons/SOL/icon.svg',
-            },
-            {
-              swing: {
-                chain: 'bitcoin',
-                symbol: 'BTC',
-                type: 'native',
-              },
-              walletType: 'BTC',
-              chainName: 'Bitcoin',
-              chainSymbol: 'BTC',
-              tokenSymbol: 'BTC',
-              imageUrl:
-                'https://images.unstoppabledomains.com/images/icons/BTC/icon.svg',
+              environment: 'production',
             },
             {
               swing: {
                 chain: 'base',
-                symbol: 'BASE',
+                symbol: 'ETH',
                 type: 'native',
               },
               walletType: 'BASE',
@@ -132,6 +108,7 @@ export default function getProductionConfig(): ConfigOverride {
               tokenSymbol: 'ETH',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/BASE/icon.svg',
+              environment: 'production',
             },
           ],
           DESTINATION: [
@@ -147,19 +124,7 @@ export default function getProductionConfig(): ConfigOverride {
               tokenSymbol: 'ETH',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/ETH/icon.svg',
-            },
-            {
-              swing: {
-                chain: 'polygon',
-                symbol: 'MATIC',
-                type: 'native',
-              },
-              walletType: 'MATIC',
-              chainName: 'Polygon',
-              chainSymbol: 'MATIC',
-              tokenSymbol: 'MATIC',
-              imageUrl:
-                'https://images.unstoppabledomains.com/images/icons/MATIC/icon.svg',
+              environment: 'production',
             },
             {
               swing: {
@@ -173,6 +138,7 @@ export default function getProductionConfig(): ConfigOverride {
               tokenSymbol: 'SOL',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/SOL/icon.svg',
+              environment: 'production',
             },
             {
               swing: {
@@ -186,11 +152,26 @@ export default function getProductionConfig(): ConfigOverride {
               tokenSymbol: 'BTC',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/BTC/icon.svg',
+              environment: 'production',
+            },
+            {
+              swing: {
+                chain: 'polygon',
+                symbol: 'POL',
+                type: 'native',
+              },
+              walletType: 'MATIC',
+              chainName: 'Polygon',
+              chainSymbol: 'MATIC',
+              tokenSymbol: 'MATIC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/MATIC/icon.svg',
+              environment: 'production',
             },
             {
               swing: {
                 chain: 'base',
-                symbol: 'BASE',
+                symbol: 'ETH',
                 type: 'native',
               },
               walletType: 'BASE',
@@ -199,6 +180,7 @@ export default function getProductionConfig(): ConfigOverride {
               tokenSymbol: 'ETH',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/BASE/icon.svg',
+              environment: 'production',
             },
           ],
         },

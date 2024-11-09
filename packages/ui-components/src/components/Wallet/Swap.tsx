@@ -106,8 +106,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginBottom: theme.spacing(1),
   },
   tokenBalanceContainer: {
-    marginLeft: theme.spacing(0),
-    marginRight: theme.spacing(0),
+    marginLeft: theme.spacing(0.5),
+    marginRight: theme.spacing(0.5),
     color: theme.palette.neutralShades[600],
     height: '20px',
   },
@@ -249,6 +249,11 @@ const Swap: React.FC<Props> = ({
         };
       })
       .filter(token => token.balance && token.balance > 0)
+      .filter(
+        token =>
+          config.APP_ENV !== 'production' ||
+          token.environment === config.APP_ENV,
+      )
       .sort((a, b) => b.value - a.value || b.balance - a.balance);
 
   // build list of supported destination tokens
@@ -264,6 +269,11 @@ const Swap: React.FC<Props> = ({
         v =>
           `${v.swing.chain}/${v.swing.symbol}` !==
           `${sourceToken?.swing.chain}/${sourceToken?.swing.symbol}`,
+      )
+      .filter(
+        token =>
+          config.APP_ENV !== 'production' ||
+          token.environment === config.APP_ENV,
       )
       .sort(
         (a, b) =>
@@ -773,7 +783,7 @@ const Swap: React.FC<Props> = ({
                             },
                           )
                         : numeral(getTokenEntry(sourceToken)?.balance).format(
-                            '0.0000',
+                            '0.[0000]',
                           )}
                     </b>
                   </Box>
@@ -866,6 +876,28 @@ const Swap: React.FC<Props> = ({
             <Alert severity="error">{errorMessage}</Alert>
           </Box>
         )}
+        {isGettingQuote && sourceToken && destinationToken && (
+          <Box mb={1}>
+            <Alert severity="info">
+              {t('swap.gettingQuote', {
+                source: sourceToken.swing.symbol,
+                destination: destinationToken.swing.symbol,
+              })}
+            </Alert>
+          </Box>
+        )}
+        {isSwapping && sourceToken && destinationToken && quotes && (
+          <Box mb={1}>
+            <Alert severity="info">
+              {t('swap.swapping', {
+                source: sourceToken.swing.symbol,
+                destination: destinationToken.swing.symbol,
+                minutes: quotes[0].duration,
+                s: quotes[0].duration > 1 ? 's' : '',
+              })}
+            </Alert>
+          </Box>
+        )}
         {!isButtonHidden && (
           <LoadingButton
             fullWidth
@@ -873,18 +905,6 @@ const Swap: React.FC<Props> = ({
             onClick={handleSubmitTransaction}
             className={classes.button}
             loading={isLoading}
-            loadingIndicator={
-              <Box display="flex" alignItems="center" p={1}>
-                <CircularProgress color="inherit" size={16} />
-                <Box ml={1}>
-                  {isSwapping
-                    ? t('swap.swapping')
-                    : isGettingQuote
-                    ? t('swap.gettingQuote')
-                    : ''}
-                </Box>
-              </Box>
-            }
           >
             <Box display="flex" flexDirection="column" alignItems="center">
               <Typography variant="body1" fontWeight="bold">

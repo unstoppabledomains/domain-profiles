@@ -129,7 +129,7 @@ export default function getDefaultConfig(): Config {
         API_KEY: 'swing-8faf57ed-6f1d-4dbc-94a0-00c28bd1a277',
         ENVIRONMENT: 'testnet',
         PROJECT_ID: 'unstoppable-domains-staging',
-        FEE_BPS: 100, // 1%
+        FEE_BPS: 85, // 0.85%
         SUPPORTED_TOKENS: {
           SOURCE: [
             {
@@ -148,7 +148,7 @@ export default function getDefaultConfig(): Config {
             {
               swing: {
                 chain: 'polygon-amoy',
-                symbol: 'MATIC',
+                symbol: 'POL',
                 type: 'native',
               },
               walletType: 'MATIC',
@@ -202,7 +202,7 @@ export default function getDefaultConfig(): Config {
             {
               swing: {
                 chain: 'polygon-amoy',
-                symbol: 'MATIC',
+                symbol: 'POL',
                 type: 'native',
               },
               walletType: 'MATIC',
@@ -241,7 +241,7 @@ export default function getDefaultConfig(): Config {
             {
               swing: {
                 chain: 'base-sepolia',
-                symbol: 'BASE',
+                symbol: 'ETH',
                 type: 'native',
               },
               walletType: 'BASE',

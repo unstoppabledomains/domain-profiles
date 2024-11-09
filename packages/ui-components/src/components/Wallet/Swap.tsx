@@ -698,165 +698,172 @@ const Swap: React.FC<Props> = ({
       <Box className={classes.container}>
         <Box className={classes.content}>
           {allTokens.length > 0 &&
-            sourceTokens.length === 0 &&
-            onClickBuy &&
-            onClickReceive && (
-              <Box className={classes.noTokensContainer}>
-                <FundWalletModal
-                  onBuyClicked={onClickBuy}
-                  onReceiveClicked={onClickReceive}
-                />
-              </Box>
-            )}
-          {showSwapIntro && (
-            <Alert
-              severity="info"
-              className={classes.description}
-              onClose={handleSwapInfoClicked}
-            >
-              <AlertTitle>{t('swap.introTitle')}</AlertTitle>
-              {t('swap.introContent')}
-            </Alert>
-          )}
-          <FormControl disabled={isLoading}>
-            <ManageInput
-              id="source-token-amount"
-              label={t('swap.payWithToken')}
-              placeholder="0.00"
-              value={
-                sourceTokenAmountUsd ? sourceTokenAmountUsd.toString() : ''
-              }
-              stacked={true}
-              disabled={isLoading}
-              onChange={handleAmountChanged}
-              startAdornment={<Typography ml={2}>$</Typography>}
-              endAdornment={
-                <Select
-                  size="small"
-                  id="source-token"
-                  disabled={isLoading}
-                  value={
-                    sourceToken
-                      ? `${sourceToken.swing.chain}/${sourceToken.swing.symbol}`
-                      : ''
-                  }
-                  onChange={handleSourceChange}
-                  className={classes.dropDown}
-                  variant="standard"
-                  disableUnderline
-                >
-                  {sourceTokens
-                    .filter(v => getTokenEntry(v))
-                    .map(v => (
-                      <MenuItem
-                        key={`source-${v.swing.chain}/${v.swing.symbol}`}
-                        value={`${v.swing.chain}/${v.swing.symbol}`}
-                      >
-                        <Token
-                          key={`source-token-${v.swing.chain}/${v.swing.symbol}`}
-                          token={getTokenEntry(v)!}
-                          isOwner
-                          hideBalance
-                          iconWidth={5}
-                          descriptionWidth={7}
-                        />
-                      </MenuItem>
-                    ))}
-                </Select>
-              }
-            />
-            <FormHelperText className={classes.tokenBalanceContainer}>
-              <Box display="flex" justifyContent="space-between" width="100%">
-                <Box className={classes.tokenActionText}>
-                  <Markdown>{sourceTokenDescription || ''}</Markdown>
-                </Box>
-                {sourceToken && (
-                  <Box>
-                    {t('swap.balance')}:{' '}
-                    <b>
-                      {getTokenEntry(sourceToken)?.value
-                        ? getTokenEntry(sourceToken)?.value.toLocaleString(
-                            'en-US',
-                            {
-                              style: 'currency',
-                              currency: 'USD',
-                            },
-                          )
-                        : numeral(getTokenEntry(sourceToken)?.balance).format(
-                            '0.[0000]',
-                          )}
-                    </b>
-                  </Box>
-                )}
-              </Box>
-            </FormHelperText>
-          </FormControl>
-          {txId ? (
-            <CheckIcon
-              className={cx(classes.swapIcon, {
-                [classes.successIcon]: isTxComplete,
-              })}
-            />
-          ) : isLoading ? (
-            <CircularProgress className={classes.swapIcon} />
+          sourceTokens.length === 0 &&
+          onClickBuy &&
+          onClickReceive ? (
+            <Box className={classes.noTokensContainer}>
+              <FundWalletModal
+                onBuyClicked={onClickBuy}
+                onReceiveClicked={onClickReceive}
+              />
+            </Box>
           ) : (
-            <ImportExportIcon className={classes.swapIcon} />
-          )}
-          <FormControl disabled={isLoading}>
-            <ManageInput
-              id="destination-token-amount"
-              label={t('swap.receiveToken')}
-              placeholder="0.00"
-              value={
-                destinationTokenAmountUsd
-                  ? destinationTokenAmountUsd.toString()
-                  : ''
-              }
-              stacked={true}
-              disabled={isLoading}
-              onChange={handleAmountChanged}
-              startAdornment={<Typography ml={2}>$</Typography>}
-              endAdornment={
-                <Select
-                  size="small"
-                  id="destination-token"
-                  disabled={isLoading}
+            <>
+              {showSwapIntro && (
+                <Alert
+                  severity="info"
+                  className={classes.description}
+                  onClose={handleSwapInfoClicked}
+                >
+                  <AlertTitle>{t('swap.introTitle')}</AlertTitle>
+                  {t('swap.introContent')}
+                </Alert>
+              )}
+              <FormControl disabled={isLoading}>
+                <ManageInput
+                  id="source-token-amount"
+                  label={t('swap.payWithToken')}
+                  placeholder="0.00"
                   value={
-                    destinationToken
-                      ? `${destinationToken.swing.chain}/${destinationToken.swing.symbol}`
+                    sourceTokenAmountUsd ? sourceTokenAmountUsd.toString() : ''
+                  }
+                  stacked={true}
+                  disabled={isLoading}
+                  onChange={handleAmountChanged}
+                  startAdornment={<Typography ml={2}>$</Typography>}
+                  endAdornment={
+                    <Select
+                      size="small"
+                      id="source-token"
+                      disabled={isLoading}
+                      value={
+                        sourceToken
+                          ? `${sourceToken.swing.chain}/${sourceToken.swing.symbol}`
+                          : ''
+                      }
+                      onChange={handleSourceChange}
+                      className={classes.dropDown}
+                      variant="standard"
+                      disableUnderline
+                    >
+                      {sourceTokens
+                        .filter(v => getTokenEntry(v))
+                        .map(v => (
+                          <MenuItem
+                            key={`source-${v.swing.chain}/${v.swing.symbol}`}
+                            value={`${v.swing.chain}/${v.swing.symbol}`}
+                          >
+                            <Token
+                              key={`source-token-${v.swing.chain}/${v.swing.symbol}`}
+                              token={getTokenEntry(v)!}
+                              isOwner
+                              hideBalance
+                              iconWidth={5}
+                              descriptionWidth={7}
+                            />
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  }
+                />
+                <FormHelperText className={classes.tokenBalanceContainer}>
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    width="100%"
+                  >
+                    <Box className={classes.tokenActionText}>
+                      <Markdown>{sourceTokenDescription || ''}</Markdown>
+                    </Box>
+                    {sourceToken && (
+                      <Box>
+                        {t('swap.balance')}:{' '}
+                        <b>
+                          {getTokenEntry(sourceToken)?.value
+                            ? getTokenEntry(sourceToken)?.value.toLocaleString(
+                                'en-US',
+                                {
+                                  style: 'currency',
+                                  currency: 'USD',
+                                },
+                              )
+                            : numeral(
+                                getTokenEntry(sourceToken)?.balance,
+                              ).format('0.[0000]')}
+                        </b>
+                      </Box>
+                    )}
+                  </Box>
+                </FormHelperText>
+              </FormControl>
+              {txId ? (
+                <CheckIcon
+                  className={cx(classes.swapIcon, {
+                    [classes.successIcon]: isTxComplete,
+                  })}
+                />
+              ) : isLoading ? (
+                <CircularProgress className={classes.swapIcon} />
+              ) : (
+                <ImportExportIcon className={classes.swapIcon} />
+              )}
+              <FormControl disabled={isLoading}>
+                <ManageInput
+                  id="destination-token-amount"
+                  label={t('swap.receiveToken')}
+                  placeholder="0.00"
+                  value={
+                    destinationTokenAmountUsd
+                      ? destinationTokenAmountUsd.toString()
                       : ''
                   }
-                  onChange={handleDestinationChange}
-                  className={classes.dropDown}
-                  variant="standard"
-                  disableUnderline
-                >
-                  {destinationTokens
-                    .filter(v => getTokenEntry(v, true))
-                    .map(v => (
-                      <MenuItem
-                        key={`destination-${v.swing.chain}/${v.swing.symbol}`}
-                        value={`${v.swing.chain}/${v.swing.symbol}`}
-                      >
-                        <Token
-                          key={`destination-token-${v.swing.chain}/${v.swing.symbol}`}
-                          token={getTokenEntry(v, true)!}
-                          isOwner
-                          hideBalance
-                          iconWidth={5}
-                          descriptionWidth={7}
-                        />
-                      </MenuItem>
-                    ))}
-                </Select>
-              }
-            />
-            <FormHelperText className={classes.tokenBalanceContainer}>
-              <Box className={classes.tokenActionText}>
-                <Markdown>{destinationTokenDescription || ''}</Markdown>
-              </Box>
-            </FormHelperText>
-          </FormControl>
+                  stacked={true}
+                  disabled={isLoading}
+                  onChange={handleAmountChanged}
+                  startAdornment={<Typography ml={2}>$</Typography>}
+                  endAdornment={
+                    <Select
+                      size="small"
+                      id="destination-token"
+                      disabled={isLoading}
+                      value={
+                        destinationToken
+                          ? `${destinationToken.swing.chain}/${destinationToken.swing.symbol}`
+                          : ''
+                      }
+                      onChange={handleDestinationChange}
+                      className={classes.dropDown}
+                      variant="standard"
+                      disableUnderline
+                    >
+                      {destinationTokens
+                        .filter(v => getTokenEntry(v, true))
+                        .map(v => (
+                          <MenuItem
+                            key={`destination-${v.swing.chain}/${v.swing.symbol}`}
+                            value={`${v.swing.chain}/${v.swing.symbol}`}
+                          >
+                            <Token
+                              key={`destination-token-${v.swing.chain}/${v.swing.symbol}`}
+                              token={getTokenEntry(v, true)!}
+                              isOwner
+                              hideBalance
+                              iconWidth={5}
+                              descriptionWidth={7}
+                            />
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  }
+                />
+                <FormHelperText className={classes.tokenBalanceContainer}>
+                  <Box className={classes.tokenActionText}>
+                    <Markdown>{destinationTokenDescription || ''}</Markdown>
+                  </Box>
+                </FormHelperText>
+              </FormControl>
+            </>
+          )}
         </Box>
         {txId && (
           <Box>

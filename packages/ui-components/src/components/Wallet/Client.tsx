@@ -148,6 +148,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       },
     },
     actionText: {
+      marginTop: theme.spacing(0.5),
       color: theme.palette.primary.main,
     },
     tabList: {

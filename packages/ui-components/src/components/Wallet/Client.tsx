@@ -150,6 +150,9 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
     actionText: {
       marginTop: theme.spacing(0.5),
       color: theme.palette.primary.main,
+      [theme.breakpoints.down('sm')]: {
+        marginTop: theme.spacing(0),
+      },
     },
     tabList: {
       marginTop: theme.spacing(-3),

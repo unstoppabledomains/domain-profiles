@@ -1,8 +1,8 @@
-import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import HistoryIcon from '@mui/icons-material/History';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
+import QrCodeIcon from '@mui/icons-material/QrCode';
 import SendIcon from '@mui/icons-material/Send';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import TabContext from '@mui/lab/TabContext';
@@ -89,9 +89,11 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       borderRadius: theme.shape.borderRadius,
       marginRight: theme.spacing(2),
       width: '85px',
+      height: '85px',
       cursor: 'pointer',
       [theme.breakpoints.down('sm')]: {
         width: '70px',
+        height: '70px',
       },
     },
     domainListContainer: {
@@ -138,8 +140,8 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
     },
     actionIcon: {
       color: theme.palette.primary.main,
-      width: '50px',
-      height: '50px',
+      width: '40px',
+      height: '40px',
       [theme.breakpoints.down('sm')]: {
         width: '35px',
         height: '35px',
@@ -491,7 +493,7 @@ export const Client: React.FC<ClientProps> = ({
                 className={classes.actionContainer}
                 onClick={handleClickedReceive}
               >
-                <AddOutlinedIcon className={classes.actionIcon} />
+                <QrCodeIcon className={classes.actionIcon} />
                 <Typography
                   variant={isMobile ? 'caption' : 'body2'}
                   className={classes.actionText}

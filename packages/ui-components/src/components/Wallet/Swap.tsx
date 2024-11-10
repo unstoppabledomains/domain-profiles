@@ -254,7 +254,13 @@ const Swap: React.FC<Props> = ({
           config.APP_ENV !== 'production' ||
           token.environment === config.APP_ENV,
       )
-      .sort((a, b) => b.value - a.value || b.balance - a.balance);
+      .sort(
+        (a, b) =>
+          b.value - a.value ||
+          b.balance - a.balance ||
+          a.chainName.localeCompare(b.chainName) ||
+          a.tokenSymbol.localeCompare(b.tokenSymbol),
+      );
 
   // build list of supported destination tokens
   const destinationTokens: SwapToken[] =
@@ -265,6 +271,15 @@ const Swap: React.FC<Props> = ({
           .address,
       };
     })
+      .map(configToken => {
+        const walletToken = getTokenEntry(configToken)!;
+        return {
+          ...configToken,
+          walletAddress: walletToken?.walletAddress,
+          balance: walletToken?.balance,
+          value: walletToken?.value,
+        };
+      })
       .filter(
         v =>
           `${v.swing.chain}/${v.swing.symbol}` !==
@@ -277,6 +292,8 @@ const Swap: React.FC<Props> = ({
       )
       .sort(
         (a, b) =>
+          (b.value || 0) - (a.value || 0) ||
+          (b.balance || 0) - (a.balance || 0) ||
           a.chainName.localeCompare(b.chainName) ||
           a.tokenSymbol.localeCompare(b.tokenSymbol),
       );
@@ -755,10 +772,12 @@ const Swap: React.FC<Props> = ({
                           <Token
                             key={`source-token-${v.swing.chain}/${v.swing.symbol}`}
                             token={getTokenEntry(v)!}
-                            isOwner
                             hideBalance
-                            iconWidth={5}
-                            descriptionWidth={7}
+                            isOwner
+                            compact
+                            iconWidth={6}
+                            descriptionWidth={6}
+                            graphWidth={0}
                           />
                         </MenuItem>
                       ))}
@@ -770,24 +789,6 @@ const Swap: React.FC<Props> = ({
                   <Box className={classes.tokenActionText}>
                     <Markdown>{sourceTokenDescription || ''}</Markdown>
                   </Box>
-                  {sourceToken && (
-                    <Box>
-                      {t('swap.balance')}:{' '}
-                      <b>
-                        {getTokenEntry(sourceToken)?.value
-                          ? getTokenEntry(sourceToken)?.value.toLocaleString(
-                              'en-US',
-                              {
-                                style: 'currency',
-                                currency: 'USD',
-                              },
-                            )
-                          : numeral(getTokenEntry(sourceToken)?.balance).format(
-                              '0.[0000]',
-                            )}
-                      </b>
-                    </Box>
-                  )}
                 </Box>
               </FormHelperText>
             </FormControl>
@@ -841,10 +842,12 @@ const Swap: React.FC<Props> = ({
                           <Token
                             key={`destination-token-${v.swing.chain}/${v.swing.symbol}`}
                             token={getTokenEntry(v, true)!}
-                            isOwner
                             hideBalance
-                            iconWidth={5}
-                            descriptionWidth={7}
+                            isOwner
+                            compact
+                            iconWidth={6}
+                            descriptionWidth={6}
+                            graphWidth={0}
                           />
                         </MenuItem>
                       ))}

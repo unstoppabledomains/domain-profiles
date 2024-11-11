@@ -120,6 +120,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   tokenActionText: {
     color: theme.palette.primary.main,
+    display: 'none',
   },
   swapIcon: {
     marginTop: theme.spacing(2),

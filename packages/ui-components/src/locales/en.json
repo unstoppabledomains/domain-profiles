@@ -200,6 +200,7 @@
     "merch": "Merch",
     "messenger": "Messenger",
     "mint": "Mint",
+    "minute": "minute",
     "more": "More",
     "multichain": "multichain",
     "needHelp": "Need help?",
@@ -848,8 +849,7 @@
     "receiveToken": "Receive token",
     "swap": "Swap",
     "swapping": "Swapping your {{source}} \u2192 {{destination}}. The estimated processing time is {{minutes}} minute{{s}}. Leave this window open until complete.",
-    "title": "Swap",
-    "viewTransaction": "View transaction"
+    "title": "Swap"
   },
   "tokensPortfolio": {
     "all": "All",

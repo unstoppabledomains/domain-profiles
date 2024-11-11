@@ -8,9 +8,8 @@ import type {
   RouteQuote,
   SwingQuoteRequest,
   SwingQuoteResponse,
-  SwingToken,
   SwingTransactionResponse,
-} from '../lib/types/swingXyz';
+} from '../lib/types/swingXyzV1';
 
 export const getSwapQuote = async (opts: SwingQuoteRequest) => {
   try {
@@ -32,27 +31,6 @@ export const getSwapQuote = async (opts: SwingQuoteRequest) => {
   } catch (e) {
     notifyEvent(e, 'warning', 'Wallet', 'Transaction', {
       msg: 'error fetching swap quote',
-    });
-  }
-  return undefined;
-};
-
-export const getSwapToken = async (chain: string, token: string) => {
-  try {
-    const tokens = await fetchApi<SwingToken[]>(`/tokens?chain=${chain}`, {
-      mode: 'cors',
-      host: config.WALLETS.SWAP.PLATFORM_HOST_URL,
-      headers: {
-        Accept: 'application/json',
-        'x-swing-environment': config.WALLETS.SWAP.ENVIRONMENT,
-      },
-    });
-    return tokens.find(
-      t => t.chain === chain && (t.symbol === token || t.address === token),
-    );
-  } catch (e) {
-    notifyEvent(e, 'warning', 'Wallet', 'Transaction', {
-      msg: 'error fetching tokens',
     });
   }
   return undefined;

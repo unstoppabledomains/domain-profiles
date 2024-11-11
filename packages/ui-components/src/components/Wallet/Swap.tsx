@@ -13,6 +13,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import MenuItem from '@mui/material/MenuItem';
 import type {SelectChangeEvent} from '@mui/material/Select';
 import Select from '@mui/material/Select';
+import Slider from '@mui/material/Slider';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {capitalize} from 'lodash';
@@ -106,11 +107,16 @@ const useStyles = makeStyles()((theme: Theme) => ({
   button: {
     marginBottom: theme.spacing(1),
   },
+  sliderContainer: {
+    width: '100%',
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(2),
+  },
   tokenBalanceContainer: {
     marginLeft: theme.spacing(0.5),
     marginRight: theme.spacing(0.5),
     color: theme.palette.neutralShades[600],
-    height: '20px',
+    minHeight: '20px',
   },
   tokenActionText: {
     color: theme.palette.primary.main,
@@ -167,10 +173,11 @@ const Swap: React.FC<Props> = ({
   const [errorMessage, setErrorMessage] = useState<string>();
 
   // swap pair state
+  const [sliderValue, setSliderValue] = useState(0);
   const [sourceTokenAmountUsd, setSourceTokenAmountUsd] = useState(0);
   const sourceTokenAmountUsdDebounced = useDebounce<number>(
     sourceTokenAmountUsd,
-    500,
+    750,
   );
   const [sourceToken, setSourceToken] = useState<SwapToken>();
   const [sourceTokenDescription, setSourceTokenDescription] =
@@ -250,11 +257,7 @@ const Swap: React.FC<Props> = ({
         };
       })
       .filter(token => token.balance && token.balance > 0)
-      .filter(
-        token =>
-          config.APP_ENV !== 'production' ||
-          token.environment === config.APP_ENV,
-      )
+      .filter(token => token.environment === config.APP_ENV)
       .sort(
         (a, b) =>
           b.value - a.value ||
@@ -276,7 +279,8 @@ const Swap: React.FC<Props> = ({
         const walletToken = getTokenEntry(configToken)!;
         return {
           ...configToken,
-          walletAddress: walletToken?.walletAddress,
+          walletAddress:
+            walletToken?.walletAddress || configToken.walletAddress,
           balance: walletToken?.balance,
           value: walletToken?.value,
         };
@@ -341,6 +345,19 @@ const Swap: React.FC<Props> = ({
     if (!sourceTokenAmountUsdDebounced || !sourceToken || !destinationToken) {
       return;
     }
+
+    // set the slider amount
+    const tokenEntry = getTokenEntry(sourceToken);
+    if (tokenEntry) {
+      const pctValue = Math.floor(
+        100 * (sourceTokenAmountUsdDebounced / tokenEntry.value),
+      );
+      if (sliderValue !== pctValue) {
+        setSliderValue(pctValue);
+      }
+    }
+
+    // get the quote
     void handleGetQuote();
   }, [sourceTokenAmountUsdDebounced, sourceToken, destinationToken]);
 
@@ -363,18 +380,43 @@ const Swap: React.FC<Props> = ({
     );
   };
 
+  const handleSliderChange = (_e: Event, v: number | number[]) => {
+    if (!sourceToken) {
+      return;
+    }
+    const tokenEntry = getTokenEntry(sourceToken);
+    if (!tokenEntry) {
+      return;
+    }
+
+    // reset quote state
+    setIsTxComplete(false);
+    setTxId(undefined);
+    setQuotes(undefined);
+    setErrorMessage(undefined);
+    setDestinationTokenAmountUsd(0);
+    setSourceTokenDescription(undefined);
+    setDestinationTokenDescription(undefined);
+
+    // set the form elements
+    const pctSelected = v as number;
+    const valueSelected = tokenEntry.value * (pctSelected / 100);
+    setSliderValue(pctSelected);
+    setSourceTokenAmountUsd(parseFloat(numeral(valueSelected).format('0.')));
+  };
+
   const handleSourceChange = (event: SelectChangeEvent) => {
     setIsTxComplete(false);
     setTxId(undefined);
     setErrorMessage(undefined);
+    setDestinationTokenAmountUsd(0);
+    setSourceTokenDescription(undefined);
+    setDestinationTokenDescription(undefined);
     setSourceToken(
       sourceTokens.find(
         v => `${v.swing.chain}/${v.swing.symbol}` === event.target.value,
       ),
     );
-    setDestinationTokenAmountUsd(0);
-    setSourceTokenDescription(undefined);
-    setDestinationTokenDescription(undefined);
   };
 
   const handleDestinationChange = async (event: SelectChangeEvent) => {
@@ -608,7 +650,7 @@ const Swap: React.FC<Props> = ({
       }
 
       // sign the swap transaction
-      await pollForSignature(operationResponse);
+      await pollForSignature(txResponse.id, operationResponse);
       await pollForCompletion(txResponse.id, operationResponse);
     } catch (e) {
       setErrorMessage(t('swap.errorSwappingTokens'));
@@ -620,7 +662,10 @@ const Swap: React.FC<Props> = ({
     }
   };
 
-  const pollForSignature = async (operationResponse: GetOperationResponse) => {
+  const pollForSignature = async (
+    swingId: number,
+    operationResponse: GetOperationResponse,
+  ) => {
     const result = await pollForSuccess({
       fn: async () => {
         if (!isMounted.current) {
@@ -630,6 +675,11 @@ const Swap: React.FC<Props> = ({
           accessToken,
           operationResponse.operation.id,
         );
+        if (operationStatus.transaction?.id) {
+          // retrieve the swing transaction status, which is an important step in
+          // registering the transaction on the Swing dashboard
+          await getSwapStatusV2(swingId, operationStatus.transaction.id);
+        }
         if (
           !operationStatus ||
           operationStatus.status === OperationStatusType.FAILED
@@ -804,8 +854,23 @@ const Swap: React.FC<Props> = ({
               />
               <FormHelperText className={classes.tokenBalanceContainer}>
                 <Box display="flex" justifyContent="space-between" width="100%">
-                  <Box className={classes.tokenActionText}>
-                    <Markdown>{sourceTokenDescription || ''}</Markdown>
+                  <Box className={classes.sliderContainer}>
+                    <Slider
+                      step={5}
+                      size="small"
+                      defaultValue={0}
+                      disabled={isLoading}
+                      value={sliderValue}
+                      onChange={handleSliderChange}
+                      valueLabelDisplay="off"
+                      marks={[
+                        {value: 0, label: '0%'},
+                        {value: 25, label: '25%'},
+                        {value: 50, label: '50%'},
+                        {value: 75, label: '75%'},
+                        {value: 100, label: 'Max'},
+                      ]}
+                    />
                   </Box>
                 </Box>
               </FormHelperText>

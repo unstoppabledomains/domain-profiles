@@ -144,6 +144,7 @@ export default function getDefaultConfig(): Config {
               tokenSymbol: 'ETH',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/ETH/icon.svg',
+              environment: 'staging',
             },
             {
               swing: {
@@ -157,6 +158,7 @@ export default function getDefaultConfig(): Config {
               tokenSymbol: 'MATIC',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/MATIC/icon.svg',
+              environment: 'staging',
             },
             {
               swing: {
@@ -170,6 +172,7 @@ export default function getDefaultConfig(): Config {
               tokenSymbol: 'USDC',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
+              environment: 'staging',
             },
           ],
           DESTINATION: [
@@ -185,6 +188,7 @@ export default function getDefaultConfig(): Config {
               tokenSymbol: 'ETH',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/ETH/icon.svg',
+              environment: 'staging',
             },
             {
               swing: {
@@ -198,19 +202,7 @@ export default function getDefaultConfig(): Config {
               tokenSymbol: 'ETH',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/ARB/icon.svg',
-            },
-            {
-              swing: {
-                chain: 'polygon-amoy',
-                symbol: 'POL',
-                type: 'native',
-              },
-              walletType: 'MATIC',
-              chainName: 'Polygon',
-              chainSymbol: 'MATIC',
-              tokenSymbol: 'MATIC',
-              imageUrl:
-                'https://images.unstoppabledomains.com/images/icons/MATIC/icon.svg',
+              environment: 'staging',
             },
             {
               swing: {
@@ -224,6 +216,7 @@ export default function getDefaultConfig(): Config {
               tokenSymbol: 'SOL',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/SOL/icon.svg',
+              environment: 'staging',
             },
             {
               swing: {
@@ -237,6 +230,7 @@ export default function getDefaultConfig(): Config {
               tokenSymbol: 'BTC',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/BTC/icon.svg',
+              environment: 'staging',
             },
             {
               swing: {
@@ -250,6 +244,7 @@ export default function getDefaultConfig(): Config {
               tokenSymbol: 'ETH',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/BASE/icon.svg',
+              environment: 'staging',
             },
           ],
         },

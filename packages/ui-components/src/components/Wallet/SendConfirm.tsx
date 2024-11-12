@@ -8,7 +8,8 @@ import React from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {useTranslationContext} from '../../lib';
+import type {TokenEntry} from '../../lib';
+import { useTranslationContext} from '../../lib';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {
   getBlockchainDisplaySymbol,
@@ -16,7 +17,6 @@ import {
   getBlockchainSymbol,
 } from '../Manage/common/verification/types';
 import {TitleWithBackButton} from './TitleWithBackButton';
-import type {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   fullWidth: {

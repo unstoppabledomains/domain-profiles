@@ -1,9 +1,29 @@
+import type {SerializedPriceHistory, TokenType} from './domain';
+
 export interface LoginResult {
   address: string;
   domain: string;
 }
 
 export const SUPPORTED_SIGNING_SYMBOLS = ['ETH', 'MATIC', 'POL', 'SOL', 'BTC'];
+
+export type TokenEntry = {
+  address?: string;
+  type: TokenType;
+  symbol: string;
+  name: string;
+  ticker: string;
+  value: number;
+  tokenConversionUsd: number;
+  balance: number;
+  pctChange?: number;
+  imageUrl?: string;
+  history?: SerializedPriceHistory[];
+  walletAddress: string;
+  walletBlockChainLink: string;
+  walletName: string;
+  walletType?: string;
+};
 
 export const WALLET_CARD_HEIGHT = 275;
 

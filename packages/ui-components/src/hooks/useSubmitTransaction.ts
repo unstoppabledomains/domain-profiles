@@ -9,8 +9,8 @@ import {
   getTransferOperationResponse,
 } from '../actions/fireBlocksActions';
 import {getRecordKeys} from '../components/Manage/common/verification/types';
-import type {TokenEntry} from '../components/Wallet/Token';
-import {TokenType} from '../lib';
+import type {TokenEntry} from '../lib';
+import { TokenType} from '../lib';
 import {notifyEvent} from '../lib/error';
 import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../lib/fireBlocks/client';
 import {isEmailValid} from '../lib/isEmailValid';

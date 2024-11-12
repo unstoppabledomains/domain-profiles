@@ -60,6 +60,131 @@ export default function getProductionConfig(): ConfigOverride {
       HOST_URL: 'https://api.unstoppabledomains.com/wallet/v1',
       GET_WALLET_URL:
         'https://unstoppabledomains.com/cart?product=unstoppable-wallet',
+      SWAP: {
+        PLATFORM_HOST_URL:
+          'https://platform.swing.xyz/api/v1/projects/unstoppable-domains',
+        API_KEY: 'swing-37b05c4c-0b6d-43a8-ad54-7bd7168af0ee',
+        ENVIRONMENT: 'production',
+        PROJECT_ID: 'unstoppable-domains',
+        SUPPORTED_TOKENS: {
+          SOURCE: [
+            {
+              swing: {
+                chain: 'ethereum',
+                symbol: 'ETH',
+                type: 'native',
+              },
+              walletType: 'ETH',
+              chainName: 'Ethereum',
+              chainSymbol: 'ETH',
+              tokenSymbol: 'ETH',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/ETH/icon.svg',
+              environment: 'production',
+            },
+            {
+              swing: {
+                chain: 'polygon',
+                symbol: 'POL',
+                type: 'native',
+              },
+              walletType: 'MATIC',
+              chainName: 'Polygon',
+              chainSymbol: 'MATIC',
+              tokenSymbol: 'MATIC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/MATIC/icon.svg',
+              environment: 'production',
+            },
+            {
+              swing: {
+                chain: 'base',
+                symbol: 'ETH',
+                type: 'native',
+              },
+              walletType: 'BASE',
+              chainName: 'Base',
+              chainSymbol: 'BASE',
+              tokenSymbol: 'ETH',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/BASE/icon.svg',
+              environment: 'production',
+            },
+          ],
+          DESTINATION: [
+            {
+              swing: {
+                chain: 'ethereum',
+                symbol: 'ETH',
+                type: 'native',
+              },
+              walletType: 'ETH',
+              chainName: 'Ethereum',
+              chainSymbol: 'ETH',
+              tokenSymbol: 'ETH',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/ETH/icon.svg',
+              environment: 'production',
+            },
+            {
+              swing: {
+                chain: 'solana',
+                symbol: 'SOL',
+                type: 'native',
+              },
+              walletType: 'SOL',
+              chainName: 'Solana',
+              chainSymbol: 'SOL',
+              tokenSymbol: 'SOL',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/SOL/icon.svg',
+              environment: 'production',
+            },
+            {
+              swing: {
+                chain: 'bitcoin',
+                symbol: 'BTC',
+                type: 'native',
+              },
+              walletType: 'BTC',
+              chainName: 'Bitcoin',
+              chainSymbol: 'BTC',
+              tokenSymbol: 'BTC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/BTC/icon.svg',
+              environment: 'production',
+            },
+            {
+              swing: {
+                chain: 'polygon',
+                symbol: 'POL',
+                type: 'native',
+              },
+              walletType: 'MATIC',
+              chainName: 'Polygon',
+              chainSymbol: 'MATIC',
+              tokenSymbol: 'MATIC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/MATIC/icon.svg',
+              environment: 'production',
+            },
+            {
+              swing: {
+                chain: 'base',
+                symbol: 'ETH',
+                type: 'native',
+              },
+              walletType: 'BASE',
+              chainName: 'Base',
+              chainSymbol: 'BASE',
+              tokenSymbol: 'ETH',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/BASE/icon.svg',
+              environment: 'production',
+            },
+          ],
+        },
+      },
     },
     XMTP: {
       ENVIRONMENT: 'production',

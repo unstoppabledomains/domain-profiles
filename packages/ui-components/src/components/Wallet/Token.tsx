@@ -11,11 +11,7 @@ import {Line} from 'react-chartjs-2';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import type {
-  CurrenciesType,
-  SerializedPriceHistory,
-  WalletPalette,
-} from '../../lib';
+import type {CurrenciesType, TokenEntry, WalletPalette} from '../../lib';
 import {TokenType, WalletPaletteOwner, WalletPalettePublic} from '../../lib';
 import {CryptoIcon} from '../Image';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
@@ -87,30 +83,17 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
   },
 }));
 
-export type TokenEntry = {
-  address?: string;
-  type: TokenType;
-  symbol: string;
-  name: string;
-  ticker: string;
-  value: number;
-  tokenConversionUsd: number;
-  balance: number;
-  pctChange?: number;
-  imageUrl?: string;
-  history?: SerializedPriceHistory[];
-  walletAddress: string;
-  walletBlockChainLink: string;
-  walletName: string;
-  walletType?: string;
-};
-
 type Props = {
   token: TokenEntry;
-  onClick: () => void;
+  onClick?: () => void;
   isOwner?: boolean;
   showGraph?: boolean;
   hideBalance?: boolean;
+  iconWidth?: number;
+  graphWidth?: number;
+  balanceWidth?: number;
+  descriptionWidth?: number;
+  compact?: boolean;
 };
 
 const Token: React.FC<Props> = ({
@@ -119,6 +102,11 @@ const Token: React.FC<Props> = ({
   isOwner,
   showGraph,
   hideBalance,
+  iconWidth,
+  descriptionWidth,
+  graphWidth,
+  balanceWidth,
+  compact,
 }) => {
   const {classes, cx} = useStyles({
     palette: isOwner ? WalletPaletteOwner : WalletPalettePublic,
@@ -132,7 +120,7 @@ const Token: React.FC<Props> = ({
       className={classes.txLink}
       data-testid={`token-${token.symbol}`}
     >
-      <Grid item xs={2}>
+      <Grid item xs={iconWidth || 2}>
         <Box display="flex" justifyContent="left" textAlign="left">
           <Badge
             overlap="circular"
@@ -173,20 +161,27 @@ const Token: React.FC<Props> = ({
           </Badge>
         </Box>
       </Grid>
-      <Grid item xs={4}>
+      <Grid item xs={descriptionWidth || 4}>
         <Box display="flex" flexDirection="column">
           <Typography variant="caption" className={classes.txTitle}>
-            {token.name}
+            {compact
+              ? token.type === TokenType.Nft
+                ? `NFT${token.balance === 1 ? '' : 's'}`
+                : getBlockchainDisplaySymbol(token.ticker)
+              : token.name}
           </Typography>
           <Typography variant="caption" className={classes.txSubTitle}>
+            {compact && numeral(token.value).format('($0.00a)')}
             {!hideBalance && numeral(token.balance).format('0.[000000]')}{' '}
-            {token.type === TokenType.Nft
+            {compact
+              ? ''
+              : token.type === TokenType.Nft
               ? `NFT${token.balance === 1 ? '' : 's'}`
               : getBlockchainDisplaySymbol(token.ticker)}
           </Typography>
         </Box>
       </Grid>
-      <Grid item xs={4}>
+      <Grid item xs={graphWidth === 0 ? 0 : graphWidth || 4}>
         {showGraph && token.history && (
           <Box className={classes.chartContainer}>
             <Line
@@ -233,8 +228,8 @@ const Token: React.FC<Props> = ({
           </Box>
         )}
       </Grid>
-      <Grid item xs={2}>
-        {!hideBalance && (
+      {!hideBalance && (
+        <Grid item xs={balanceWidth || 2}>
           <Box
             display="flex"
             flexDirection="column"
@@ -265,8 +260,8 @@ const Token: React.FC<Props> = ({
                 : `---`}
             </Typography>
           </Box>
-        )}
-      </Grid>
+        </Grid>
+      )}
     </Grid>
   );
 };

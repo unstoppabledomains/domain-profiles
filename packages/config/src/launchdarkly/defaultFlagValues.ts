@@ -12,6 +12,7 @@ export const defaultFlagValues: LaunchDarklyFlagSet = {
   'ud-me-service-domains-enable-social-verification': false,
   'ud-me-service-domains-enable-management': false,
   'ud-me-service-domains-enable-fireblocks': false,
+  'ud-me-service-enable-swap': false,
   'ecommerce-service-users-enable-chat-community-udBlue': false,
   'ecommerce-service-wallets-disable-badges': [],
   'example-number': 0,

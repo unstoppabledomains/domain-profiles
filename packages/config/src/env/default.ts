@@ -122,6 +122,134 @@ export default function getDefaultConfig(): Config {
         SEND: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'BASE/ETH', 'ETH/ETH'],
         DOMAINS: ['ETH', 'MATIC', 'BASE'],
       },
+      SWAP: {
+        EXCHANGE_HOST_URL: 'https://swap.prod.swing.xyz/v0',
+        PLATFORM_HOST_URL:
+          'https://platform.swing.xyz/api/v1/projects/unstoppable-domains-staging',
+        API_KEY: 'swing-8faf57ed-6f1d-4dbc-94a0-00c28bd1a277',
+        ENVIRONMENT: 'testnet',
+        PROJECT_ID: 'unstoppable-domains-staging',
+        FEE_BPS: 85, // 0.85%
+        MIN_BALANCE_USD: 5,
+        SUPPORTED_TOKENS: {
+          SOURCE: [
+            {
+              swing: {
+                chain: 'sepolia',
+                symbol: 'ETH',
+                type: 'native',
+              },
+              walletType: 'ETH',
+              chainName: 'Ethereum',
+              chainSymbol: 'ETH',
+              tokenSymbol: 'ETH',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/ETH/icon.svg',
+              environment: 'staging',
+            },
+            {
+              swing: {
+                chain: 'polygon-amoy',
+                symbol: 'POL',
+                type: 'native',
+              },
+              walletType: 'MATIC',
+              chainName: 'Polygon',
+              chainSymbol: 'MATIC',
+              tokenSymbol: 'MATIC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/MATIC/icon.svg',
+              environment: 'staging',
+            },
+            {
+              swing: {
+                chain: 'polygon-amoy',
+                symbol: 'USDC',
+                type: 'erc20',
+              },
+              walletType: 'MATIC',
+              chainName: 'Polygon',
+              chainSymbol: 'MATIC',
+              tokenSymbol: 'USDC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
+              environment: 'staging',
+            },
+          ],
+          DESTINATION: [
+            {
+              swing: {
+                chain: 'sepolia',
+                symbol: 'ETH',
+                type: 'native',
+              },
+              walletType: 'ETH',
+              chainName: 'Ethereum',
+              chainSymbol: 'ETH',
+              tokenSymbol: 'ETH',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/ETH/icon.svg',
+              environment: 'staging',
+            },
+            {
+              swing: {
+                chain: 'arbitrum-sepolia',
+                symbol: 'ETH',
+                type: 'native',
+              },
+              walletType: 'ETH',
+              chainName: 'Arbitrum',
+              chainSymbol: 'ARB',
+              tokenSymbol: 'ETH',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/ARB/icon.svg',
+              environment: 'staging',
+            },
+            {
+              swing: {
+                chain: 'solana-dev',
+                symbol: 'SOL',
+                type: 'native',
+              },
+              walletType: 'SOL',
+              chainName: 'Solana',
+              chainSymbol: 'SOL',
+              tokenSymbol: 'SOL',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/SOL/icon.svg',
+              environment: 'staging',
+            },
+            {
+              swing: {
+                chain: 'bitcoin-testnet',
+                symbol: 'BTC',
+                type: 'native',
+              },
+              walletType: 'BTC',
+              chainName: 'Bitcoin',
+              chainSymbol: 'BTC',
+              tokenSymbol: 'BTC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/BTC/icon.svg',
+              environment: 'staging',
+            },
+            {
+              swing: {
+                chain: 'base-sepolia',
+                symbol: 'ETH',
+                type: 'native',
+              },
+              walletType: 'BASE',
+              chainName: 'Base',
+              chainSymbol: 'BASE',
+              tokenSymbol: 'ETH',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/BASE/icon.svg',
+              environment: 'staging',
+            },
+          ],
+        },
+      },
       MOBILE: {
         ANDROID_URL:
           'https://play.google.com/store/apps/details?id=com.unstoppabledomains.manager',

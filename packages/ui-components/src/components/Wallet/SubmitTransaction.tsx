@@ -11,14 +11,14 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {SendCryptoStatusMessage} from '../../actions/fireBlocksActions';
 import {Status, useSubmitTransaction} from '../../hooks/useSubmitTransaction';
-import {useTranslationContext} from '../../lib';
+import type {TokenEntry} from '../../lib';
+import { useTranslationContext} from '../../lib';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {
   getBlockchainDisplaySymbol,
   getBlockchainSymbol,
 } from '../Manage/common/verification/types';
 import {OperationStatus} from './OperationStatus';
-import type {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   fullWidth: {

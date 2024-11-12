@@ -1,5 +1,5 @@
-import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import QrCodeIcon from '@mui/icons-material/QrCode';
 import RocketLaunchOutlined from '@mui/icons-material/RocketLaunchOutlined';
 import Alert from '@mui/lab/Alert';
 import Box from '@mui/material/Box';
@@ -86,7 +86,7 @@ const FundWalletModal: React.FC<Props> = ({onReceiveClicked, onBuyClicked}) => {
             <Button
               onClick={onReceiveClicked}
               variant="contained"
-              startIcon={<AddOutlinedIcon />}
+              startIcon={<QrCodeIcon />}
               className={classes.button}
             >
               {t('common.receive')}

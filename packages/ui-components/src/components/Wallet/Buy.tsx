@@ -6,10 +6,9 @@ import React from 'react';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import type {SerializedWalletBalance} from '../../lib';
+import type {SerializedWalletBalance, TokenEntry} from '../../lib';
 import {useTranslationContext} from '../../lib';
 import {SelectAsset} from './SelectAsset';
-import type {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   flexColCenterAligned: {

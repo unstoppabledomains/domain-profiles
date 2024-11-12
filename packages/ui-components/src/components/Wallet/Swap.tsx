@@ -275,8 +275,8 @@ const Swap: React.FC<Props> = ({
     config.WALLETS.SWAP.SUPPORTED_TOKENS.DESTINATION.map(configToken => {
       return {
         ...configToken,
-        walletAddress: wallets.find(w => w.symbol === configToken.walletType)
-          ?.address!,
+        walletAddress:
+          wallets.find(w => w.symbol === configToken.walletType)?.address || '',
       };
     })
       .map(configToken => {

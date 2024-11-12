@@ -1,6 +1,7 @@
 import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import ImportExportIcon from '@mui/icons-material/ImportExport';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import LoadingButton from '@mui/lab/LoadingButton';
 // eslint-disable-next-line no-restricted-imports
 import Alert from '@mui/material/Alert';
@@ -16,7 +17,6 @@ import Select from '@mui/material/Select';
 import Slider from '@mui/material/Slider';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {capitalize} from 'lodash';
 import Markdown from 'markdown-to-jsx';
 import numeral from 'numeral';
 import React, {useEffect, useRef, useState} from 'react';
@@ -98,7 +98,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   description: {
     textAlign: 'left',
     marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(4),
+    marginBottom: theme.spacing(3),
   },
   dropDown: {
     padding: theme.spacing(0.5),
@@ -125,8 +125,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
   swapIcon: {
     marginTop: theme.spacing(2),
     color: theme.palette.neutralShades[400],
-    width: '40px',
-    height: '40px',
+    width: '50px',
+    height: '50px',
+  },
+  loadingSpinner: {
+    padding: theme.spacing(0.5),
   },
   successIcon: {
     color: theme.palette.success.main,
@@ -612,7 +615,7 @@ const Swap: React.FC<Props> = ({
         return;
       }
       if (txResponse.error && txResponse.message) {
-        setErrorMessage(capitalize(txResponse.message));
+        setErrorMessage(t('swap.errorCreatingTx'));
         return;
       }
 
@@ -713,6 +716,7 @@ const Swap: React.FC<Props> = ({
   ) => {
     const result = await pollForSuccess({
       fn: async () => {
+        // retrieve and validate the operation status
         const operationStatus = await getOperationStatus(
           accessToken,
           operationResponse.operation.id,
@@ -720,7 +724,18 @@ const Swap: React.FC<Props> = ({
         if (!operationStatus) {
           throw new Error('Error requesting transaction operation status');
         }
+        if (
+          operationStatus.status === OperationStatusType.FAILED ||
+          operationStatus.status === OperationStatusType.CANCELLED
+        ) {
+          throw new Error(
+            `Swap failed ${operationStatus.status.toLowerCase()}`,
+          );
+        }
+
+        // handle transaction ID
         if (operationStatus.transaction?.id) {
+          // set transaction ID
           setTxId(operationStatus.transaction.id);
 
           // retrieve the swing transaction status, which is an important step in
@@ -729,18 +744,18 @@ const Swap: React.FC<Props> = ({
             swingId,
             operationStatus.transaction.id,
           );
-          if (swingStatus?.status?.toLowerCase() !== 'success') {
+          if (swingStatus?.status?.toLowerCase() === 'failed') {
+            throw new Error(
+              `Swap failed: ${
+                swingStatus?.reason || operationStatus.status.toLowerCase()
+              }`,
+            );
+          } else if (swingStatus?.status?.toLowerCase() !== 'success') {
             return {success: false};
           }
         }
-        if (
-          operationStatus.status === OperationStatusType.FAILED ||
-          operationStatus.status === OperationStatusType.CANCELLED
-        ) {
-          throw new Error(
-            `Transferred failed ${operationStatus.status.toLowerCase()}`,
-          );
-        }
+
+        // handle operation status success
         if (operationStatus.status === OperationStatusType.COMPLETED) {
           setIsSwapping(false);
           setIsTxComplete(true);
@@ -877,13 +892,20 @@ const Swap: React.FC<Props> = ({
               </FormHelperText>
             </FormControl>
             {txId ? (
-              <CheckCircleOutlineIcon
-                className={cx(classes.swapIcon, {
-                  [classes.successIcon]: isTxComplete,
-                })}
-              />
+              errorMessage ? (
+                <ErrorOutlineIcon className={classes.swapIcon} />
+              ) : (
+                <TaskAltIcon
+                  className={cx(classes.swapIcon, {
+                    [classes.successIcon]: isTxComplete,
+                  })}
+                />
+              )
             ) : isLoading ? (
-              <CircularProgress className={classes.swapIcon} />
+              <CircularProgress
+                size="50px"
+                className={cx(classes.swapIcon, classes.loadingSpinner)}
+              />
             ) : (
               <ImportExportIcon className={classes.swapIcon} />
             )}
@@ -946,7 +968,7 @@ const Swap: React.FC<Props> = ({
             </FormControl>
           </Box>
         )}
-        {txId && (
+        {txId && !errorMessage && (
           <Box>
             <Button
               fullWidth
@@ -956,9 +978,9 @@ const Swap: React.FC<Props> = ({
             >
               {t('wallet.viewTransaction')}
             </Button>
-            <Animation autorun={{speed: 3, duration: 1}} />
           </Box>
         )}
+        {isTxComplete && <Animation autorun={{speed: 3, duration: 1}} />}
         {errorMessage && (
           <Box mb={1}>
             <Alert severity="error">{errorMessage}</Alert>

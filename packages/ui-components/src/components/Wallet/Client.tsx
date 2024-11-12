@@ -204,7 +204,10 @@ export const Client: React.FC<ClientProps> = ({
   const {classes} = useStyles({isMobile});
   const [t] = useTranslationContext();
   const {enqueueSnackbar} = useSnackbar();
-  const {data: featureFlags} = useFeatureFlags();
+  const {data: featureFlags} = useFeatureFlags(
+    false,
+    wallets?.find(w => isEthAddress(w.address))?.address,
+  );
 
   // wallet state variables
   const [state, saveState] = useFireblocksState();

@@ -840,9 +840,9 @@
     "noQuoteAvailable": "No quotes available for {{source}}  \u2192 {{destination}} at this time. Select new tokens or try a different amount.",
     "pairNotSupported": "Swapping {{source}}  \u2192 {{destination}} is not supported at this time. Choose another token and try again.",
     "pay": "Pay",
-    "payWithToken": "From token",
+    "payWithToken": "Token you have",
     "receive": "Receive",
-    "receiveToken": "To token",
+    "receiveToken": "Token you want",
     "swap": "Swap",
     "swapping": "Swapping your {{source}} \u2192 {{destination}}. Estimated processing time is {{minutes}} minute{{s}}. Leave this window open until complete.",
     "title": "Swap"

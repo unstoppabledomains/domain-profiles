@@ -127,6 +127,7 @@ export type Config = {
       ENVIRONMENT: string;
       PROJECT_ID: string;
       FEE_BPS?: number;
+      MIN_BALANCE_USD: number;
       SUPPORTED_TOKENS: {
         SOURCE: SwapConfig[];
         DESTINATION: SwapConfig[];

@@ -112,15 +112,18 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginLeft: theme.spacing(1),
     marginRight: theme.spacing(2),
   },
+  tokenActionText: {
+    color: theme.palette.primary.main,
+    display: 'none',
+  },
   tokenBalanceContainer: {
     marginLeft: theme.spacing(0.5),
     marginRight: theme.spacing(0.5),
     color: theme.palette.neutralShades[600],
     minHeight: '20px',
   },
-  tokenActionText: {
-    color: theme.palette.primary.main,
-    display: 'none',
+  tokenInput: {
+    backgroundColor: theme.palette.white,
   },
   swapIcon: {
     marginTop: theme.spacing(2),
@@ -260,7 +263,10 @@ const Swap: React.FC<Props> = ({
           value: walletToken.value,
         };
       })
-      .filter(token => token.balance && token.balance > 0)
+      .filter(
+        token =>
+          token.value && token.value > config.WALLETS.SWAP.MIN_BALANCE_USD,
+      )
       .filter(token => token.environment === config.APP_ENV)
       .sort(
         (a, b) =>
@@ -529,7 +535,12 @@ const Swap: React.FC<Props> = ({
 
       // validate result
       if (!quotesResponse?.routes || quotesResponse.routes.length === 0) {
-        setErrorMessage(t('swap.noQuoteAvailable'));
+        setErrorMessage(
+          t('swap.noQuoteAvailable', {
+            source: sourceToken.swing.symbol,
+            destination: destinationToken.swing.symbol,
+          }),
+        );
         return;
       }
 
@@ -743,8 +754,6 @@ const Swap: React.FC<Props> = ({
                 swingStatus?.reason || operationStatus.status.toLowerCase()
               }`,
             );
-          } else if (swingStatus?.status?.toLowerCase() !== 'success') {
-            return {success: false};
           }
         }
 
@@ -822,6 +831,7 @@ const Swap: React.FC<Props> = ({
                 }
                 stacked={true}
                 disabled={isLoading}
+                classes={{root: classes.tokenInput, input: classes.tokenInput}}
                 onChange={handleAmountChanged}
                 startAdornment={<Typography ml={2}>$</Typography>}
                 endAdornment={
@@ -914,6 +924,7 @@ const Swap: React.FC<Props> = ({
                 }
                 stacked={true}
                 disabled={isLoading}
+                classes={{root: classes.tokenInput, input: classes.tokenInput}}
                 onChange={handleAmountChanged}
                 startAdornment={<Typography ml={2}>$</Typography>}
                 endAdornment={

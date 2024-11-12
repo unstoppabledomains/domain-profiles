@@ -130,6 +130,7 @@ export default function getDefaultConfig(): Config {
         ENVIRONMENT: 'testnet',
         PROJECT_ID: 'unstoppable-domains-staging',
         FEE_BPS: 85, // 0.85%
+        MIN_BALANCE_USD: 5,
         SUPPORTED_TOKENS: {
           SOURCE: [
             {

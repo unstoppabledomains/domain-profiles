@@ -275,8 +275,8 @@ const Swap: React.FC<Props> = ({
     config.WALLETS.SWAP.SUPPORTED_TOKENS.DESTINATION.map(configToken => {
       return {
         ...configToken,
-        walletAddress: wallets.find(w => w.symbol === configToken.walletType)!
-          .address,
+        walletAddress: wallets.find(w => w.symbol === configToken.walletType)
+          ?.address!,
       };
     })
       .map(configToken => {
@@ -461,8 +461,7 @@ const Swap: React.FC<Props> = ({
   const handleGetQuote = async () => {
     // validate parameters
     if (!sourceToken || !destinationToken) {
-      setErrorMessage(t('swap.chooseTokens'));
-      return;
+      throw new Error('source and destination tokens are required');
     }
 
     // hide the swap intro
@@ -498,11 +497,8 @@ const Swap: React.FC<Props> = ({
         const walletToken = allTokens.find(
           token => token.symbol === swapTokenSource.symbol,
         );
-        if (!walletToken) {
-          setErrorMessage(
-            t('swap.noTokenPrice', {token: swapTokenSource.symbol}),
-          );
-          return;
+        if (!walletToken?.value || !walletToken?.balance) {
+          throw new Error('source token price not found');
         }
         swapTokenSource.price = walletToken.value / walletToken.balance;
       }
@@ -599,8 +595,14 @@ const Swap: React.FC<Props> = ({
     }
 
     try {
-      // request the transaction details required to swap
+      // retrieve and validate fireblocks state
       setIsSwapping(true);
+      const clientState = getBootstrapState(state);
+      if (!clientState) {
+        throw new Error('invalid wallet client state');
+      }
+
+      // request the transaction details required to swap
       const txResponse = await getSwapTransactionV2({
         ...quoteRequest,
         integration: quotes[0].quote.integration,
@@ -611,19 +613,12 @@ const Swap: React.FC<Props> = ({
 
       // validate the response
       if (!txResponse?.tx) {
-        setErrorMessage(t('swap.errorCreatingTx'));
-        return;
+        throw new Error('SwingError: swap transaction details not found');
       }
       if (txResponse.error && txResponse.message) {
-        setErrorMessage(t('swap.errorCreatingTx'));
-        return;
-      }
-
-      // retrieve and validate fireblocks state
-      const clientState = getBootstrapState(state);
-      if (!clientState) {
-        setErrorMessage(t('swap.errorRetrievingWallet'));
-        return;
+        throw new Error(
+          `SwingError: ${txResponse.error}, ${txResponse.message}`,
+        );
       }
 
       // retrieve and validate the asset required to sign this message
@@ -631,8 +626,7 @@ const Swap: React.FC<Props> = ({
         chainId: txResponse.fromChain.chainId,
       });
       if (!asset?.accountId) {
-        setErrorMessage(t('swap.errorRetrievingWallet'));
-        return;
+        throw new Error('error retrieving source asset from wallet state');
       }
 
       // create and validate the swap transaction
@@ -649,8 +643,7 @@ const Swap: React.FC<Props> = ({
         swapTx,
       );
       if (!operationResponse) {
-        setErrorMessage(t('swap.errorCreatingTx'));
-        return;
+        throw new Error('error creating MPC transaction for swap');
       }
 
       // sign the swap transaction
@@ -983,7 +976,18 @@ const Swap: React.FC<Props> = ({
         {isTxComplete && <Animation autorun={{speed: 3, duration: 1}} />}
         {errorMessage && (
           <Box mb={1}>
-            <Alert severity="error">{errorMessage}</Alert>
+            <Alert
+              severity="error"
+              action={
+                errorMessage.toLowerCase().includes('refresh') ? (
+                  <Button onClick={handleGetQuote} color="inherit" size="small">
+                    {t('common.refresh')}
+                  </Button>
+                ) : undefined
+              }
+            >
+              {errorMessage}
+            </Alert>
           </Box>
         )}
         {isGettingQuote && sourceToken && destinationToken && (

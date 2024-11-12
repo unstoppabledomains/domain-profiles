@@ -219,6 +219,13 @@ const Swap: React.FC<Props> = ({
     token => token.type === TokenType.Erc20 || token.type === TokenType.Native,
   );
 
+  const getSourceGasFees = (q: RouteQuote) => {
+    return q.quote.fees
+      .filter(f => f.chainSlug === sourceToken?.swing.chain)
+      .map(f => parseFloat(f.amountUSD))
+      .reduce((a, b) => a + b, 0);
+  };
+
   const getTokenEntry = (
     swapConfig: SwapConfig,
     placeholder?: boolean,
@@ -248,6 +255,13 @@ const Swap: React.FC<Props> = ({
     }
     return undefined;
   };
+
+  // determine if sufficient funds
+  const isInsufficientFunds =
+    quotes && quotes.length > 0 && sourceToken && getTokenEntry(sourceToken)
+      ? getTokenEntry(sourceToken)!.value <
+        sourceTokenAmountUsd + getSourceGasFees(quotes[0])
+      : false;
 
   // build list of supported source tokens with sufficient balance
   const sourceTokens: SwapToken[] =
@@ -390,6 +404,23 @@ const Swap: React.FC<Props> = ({
     );
   };
 
+  const handleResetState = (opts?: {sourceAmtUsd?: boolean}) => {
+    // default items to clear
+    setIsTxComplete(false);
+    setTxId(undefined);
+    setQuotes(undefined);
+    setErrorMessage(undefined);
+    setDestinationTokenAmountUsd(0);
+    setSourceTokenDescription(undefined);
+    setDestinationTokenDescription(undefined);
+
+    // optional items to clear
+    if (opts?.sourceAmtUsd) {
+      setSliderValue(0);
+      setSourceTokenAmountUsd(0);
+    }
+  };
+
   const handleSliderChange = (_e: Event, v: number | number[]) => {
     if (!sourceToken) {
       return;
@@ -400,13 +431,7 @@ const Swap: React.FC<Props> = ({
     }
 
     // reset quote state
-    setIsTxComplete(false);
-    setTxId(undefined);
-    setQuotes(undefined);
-    setErrorMessage(undefined);
-    setDestinationTokenAmountUsd(0);
-    setSourceTokenDescription(undefined);
-    setDestinationTokenDescription(undefined);
+    handleResetState();
 
     // set the form elements
     const pctSelected = v as number;
@@ -415,13 +440,15 @@ const Swap: React.FC<Props> = ({
     setSourceTokenAmountUsd(parseFloat(numeral(valueSelected).format('0.')));
   };
 
+  const handleSourceClicked = () => {
+    // clear any existing quotes when source token list is clicked
+    if (quotes) {
+      handleResetState({sourceAmtUsd: true});
+    }
+  };
+
   const handleSourceChange = (event: SelectChangeEvent) => {
-    setIsTxComplete(false);
-    setTxId(undefined);
-    setErrorMessage(undefined);
-    setDestinationTokenAmountUsd(0);
-    setSourceTokenDescription(undefined);
-    setDestinationTokenDescription(undefined);
+    handleResetState();
     setSourceToken(
       sourceTokens.find(
         v => `${v.swing.chain}/${v.swing.symbol}` === event.target.value,
@@ -430,29 +457,20 @@ const Swap: React.FC<Props> = ({
   };
 
   const handleDestinationChange = async (event: SelectChangeEvent) => {
-    setIsTxComplete(false);
-    setTxId(undefined);
-    setQuotes(undefined);
-    setErrorMessage(undefined);
+    handleResetState();
     setDestinationToken(
       destinationTokens.find(
         v => `${v.swing.chain}/${v.swing.symbol}` === event.target.value,
       ),
     );
-    setDestinationTokenAmountUsd(0);
-    setSourceTokenDescription(undefined);
-    setDestinationTokenDescription(undefined);
   };
 
   const handleAmountChanged = async (id: string, v: string) => {
-    setIsTxComplete(false);
-    setTxId(undefined);
-    setQuotes(undefined);
-    setErrorMessage(undefined);
-    setDestinationTokenAmountUsd(0);
-    setSourceTokenDescription(undefined);
-    setDestinationTokenDescription(undefined);
     try {
+      // reset swap state
+      handleResetState();
+
+      // parse provided text
       const parsedValue = parseFloat(v.replaceAll('$', ''));
       if (parsedValue) {
         setSourceTokenAmountUsd(parsedValue);
@@ -460,8 +478,7 @@ const Swap: React.FC<Props> = ({
         return;
       }
     } catch (e) {}
-    setSourceTokenAmountUsd(0);
-    setDestinationTokenAmountUsd(0);
+    handleResetState({sourceAmtUsd: true});
   };
 
   const handleGetQuote = async () => {
@@ -774,17 +791,15 @@ const Swap: React.FC<Props> = ({
   };
 
   const getQuoteDescription = (q: RouteQuote) => {
-    // calculate fee total
-    const quoteFee = q.quote.fees
-      .map(f => parseFloat(f.amountUSD))
-      .reduce((a, b) => a + b, 0);
+    // calculate fees on the source chain
+    const sourceFees = getSourceGasFees(q);
 
-    // calculate price impact
-    const priceImpact = sourceTokenAmountUsd - destinationTokenAmountUsd;
+    // calculate fees on the destination chain
+    const destinationFees = sourceTokenAmountUsd - destinationTokenAmountUsd;
 
     return `${
-      priceImpact > 0 || quoteFee > 0
-        ? `${(priceImpact + quoteFee).toLocaleString('en-US', {
+      destinationFees > 0 || sourceFees > 0
+        ? `${(destinationFees + sourceFees).toLocaleString('en-US', {
             style: 'currency',
             currency: 'USD',
           })} ${t('wallet.networkFee').toLowerCase()} / `
@@ -844,6 +859,7 @@ const Swap: React.FC<Props> = ({
                         ? `${sourceToken.swing.chain}/${sourceToken.swing.symbol}`
                         : ''
                     }
+                    onMouseDown={handleSourceClicked}
                     onChange={handleSourceChange}
                     className={classes.dropDown}
                     variant="standard"
@@ -934,7 +950,12 @@ const Swap: React.FC<Props> = ({
                     disabled={isLoading}
                     value={
                       destinationToken
-                        ? `${destinationToken.swing.chain}/${destinationToken.swing.symbol}`
+                        ? destinationToken.swing.chain ===
+                            sourceToken?.swing.chain &&
+                          destinationToken.swing.symbol ===
+                            sourceToken?.swing.symbol
+                          ? `${destinationTokens[0].swing.chain}/${destinationTokens[0].swing.symbol}`
+                          : `${destinationToken.swing.chain}/${destinationToken.swing.symbol}`
                         : ''
                     }
                     onChange={handleDestinationChange}
@@ -1030,6 +1051,7 @@ const Swap: React.FC<Props> = ({
             onClick={handleSubmitTransaction}
             className={classes.button}
             loading={isLoading}
+            disabled={isInsufficientFunds}
           >
             <Box display="flex" flexDirection="column" alignItems="center">
               <Typography variant="body1" fontWeight="bold">

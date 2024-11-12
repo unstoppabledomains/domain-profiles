@@ -845,7 +845,10 @@
     "receiveToken": "Token you want",
     "swap": "Swap",
     "swapping": "Swapping your {{source}} \u2192 {{destination}}. The estimated processing time is {{minutes}} minute{{s}}. Leave this window open until complete.",
-    "title": "Swap"
+    "title": "Swap",
+    "tryCheaperOption": "Try cheaper option",
+    "tryFasterOption": "Try faster option",
+    "useMax": "Adjust for fees"
   },
   "tokensPortfolio": {
     "all": "All",

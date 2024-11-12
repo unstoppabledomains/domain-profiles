@@ -2,7 +2,6 @@ import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import ImportExportIcon from '@mui/icons-material/ImportExport';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
-import LoadingButton from '@mui/lab/LoadingButton';
 // eslint-disable-next-line no-restricted-imports
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -17,6 +16,7 @@ import Select from '@mui/material/Select';
 import Slider from '@mui/material/Slider';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import cloneDeep from 'lodash/cloneDeep';
 import Markdown from 'markdown-to-jsx';
 import numeral from 'numeral';
 import React, {useEffect, useRef, useState} from 'react';
@@ -197,6 +197,56 @@ const Swap: React.FC<Props> = ({
   // quote state
   const [quoteRequest, setQuoteRequest] = useState<SwingV2QuoteRequest>();
   const [quotes, setQuotes] = useState<RouteQuote[]>();
+  const [quoteType, setQuoteType] = useState<'fastest' | 'cheapest'>(
+    'cheapest',
+  );
+
+  // sort quotes sorted by fastest execution
+  const quotesByLowestTime = cloneDeep(quotes)?.sort((a, b) => {
+    return (
+      // lowest duration
+      a.duration - b.duration ||
+      // lowest fee
+      a.quote.fees
+        .map(f => parseFloat(f.amountUSD))
+        .reduce((c, d) => c + d, 0) -
+        b.quote.fees
+          .map(f => parseFloat(f.amountUSD))
+          .reduce((c, d) => c + d, 0) ||
+      // lowest price impact
+      parseFloat(b.quote.priceImpact || '0') -
+        parseFloat(a.quote.priceImpact || '0')
+    );
+  });
+  const quoteFastest =
+    quotesByLowestTime && quotesByLowestTime.length > 0
+      ? quotesByLowestTime[0]
+      : undefined;
+
+  // sort quotes sorted by lowest fee
+  const quotesByLowestFee = cloneDeep(quotes)?.sort((a, b) => {
+    return (
+      // lowest fee
+      a.quote.fees
+        .map(f => parseFloat(f.amountUSD))
+        .reduce((c, d) => c + d, 0) -
+        b.quote.fees
+          .map(f => parseFloat(f.amountUSD))
+          .reduce((c, d) => c + d, 0) ||
+      // lowest price impact
+      parseFloat(b.quote.priceImpact || '0') -
+        parseFloat(a.quote.priceImpact || '0') ||
+      // lowest duration
+      a.duration - b.duration
+    );
+  });
+  const quoteCheapest =
+    quotesByLowestFee && quotesByLowestFee.length > 0
+      ? quotesByLowestFee[0]
+      : undefined;
+
+  // currently selected quote
+  const quoteSelected = quoteType === 'cheapest' ? quoteCheapest : quoteFastest;
 
   // determines if button is visible
   const isButtonHidden =
@@ -208,8 +258,7 @@ const Swap: React.FC<Props> = ({
     !sourceToken ||
     !destinationToken ||
     !sourceTokenAmountUsd ||
-    !quotes ||
-    quotes.length === 0;
+    !quoteSelected;
 
   // determines if the page is in loading state
   const isLoading = isGettingQuote || isSwapping;
@@ -218,6 +267,29 @@ const Swap: React.FC<Props> = ({
   const allTokens = getAllTokens(wallets).filter(
     token => token.type === TokenType.Erc20 || token.type === TokenType.Native,
   );
+
+  const isCheapestQuote = (q: RouteQuote) => {
+    if (!quotesByLowestFee || quotesByLowestFee.length === 0) {
+      return false;
+    }
+    return JSON.stringify(quotesByLowestFee[0]) === JSON.stringify(q);
+  };
+
+  const isMultipleQuotes = () => {
+    if (
+      !quotesByLowestTime ||
+      quotesByLowestTime.length === 0 ||
+      !quotesByLowestFee ||
+      quotesByLowestFee.length === 0
+    ) {
+      return false;
+    }
+
+    return (
+      JSON.stringify(quotesByLowestTime[0]) !==
+      JSON.stringify(quotesByLowestFee[0])
+    );
+  };
 
   const getSourceGasFees = (q: RouteQuote) => {
     return q.quote.fees
@@ -258,9 +330,9 @@ const Swap: React.FC<Props> = ({
 
   // determine if sufficient funds
   const isInsufficientFunds =
-    quotes && quotes.length > 0 && sourceToken && getTokenEntry(sourceToken)
+    quoteSelected && sourceToken && getTokenEntry(sourceToken)
       ? getTokenEntry(sourceToken)!.value <
-        sourceTokenAmountUsd + getSourceGasFees(quotes[0])
+        sourceTokenAmountUsd + getSourceGasFees(quoteSelected)
       : false;
 
   // build list of supported source tokens with sufficient balance
@@ -390,6 +462,17 @@ const Swap: React.FC<Props> = ({
     await localStorageWrapper.setItem(swapIntroFlag, swapIntroFlag);
   };
 
+  const handleSwitchQuotes = () => {
+    if (!quoteSelected) {
+      return;
+    }
+    if (isCheapestQuote(quoteSelected)) {
+      setQuoteType('fastest');
+    } else {
+      setQuoteType('cheapest');
+    }
+  };
+
   const handleTransactionClick = () => {
     if (!sourceToken) {
       return;
@@ -409,6 +492,7 @@ const Swap: React.FC<Props> = ({
     setIsTxComplete(false);
     setTxId(undefined);
     setQuotes(undefined);
+    setQuoteType('cheapest');
     setErrorMessage(undefined);
     setDestinationTokenAmountUsd(0);
     setSourceTokenDescription(undefined);
@@ -442,7 +526,7 @@ const Swap: React.FC<Props> = ({
 
   const handleSourceClicked = () => {
     // clear any existing quotes when source token list is clicked
-    if (quotes) {
+    if (quoteSelected) {
       handleResetState({sourceAmtUsd: true});
     }
   };
@@ -479,6 +563,21 @@ const Swap: React.FC<Props> = ({
       }
     } catch (e) {}
     handleResetState({sourceAmtUsd: true});
+  };
+
+  const handleUseMax = async () => {
+    if (!quoteSelected || !sourceToken) {
+      return;
+    }
+    const tokenEntry = getTokenEntry(sourceToken);
+    if (!tokenEntry) {
+      return;
+    }
+
+    const sourceAvailableValue = tokenEntry.value;
+    const sourceFees = getSourceGasFees(quoteSelected);
+    const maxAvailable = Math.floor(sourceAvailableValue - sourceFees);
+    await handleAmountChanged('', String(maxAvailable));
   };
 
   const handleGetQuote = async () => {
@@ -561,23 +660,7 @@ const Swap: React.FC<Props> = ({
         return;
       }
 
-      // store quotes sorted by time, price impact and fees
-      quotesResponse.routes = quotesResponse.routes.sort((a, b) => {
-        return (
-          // lowest duration
-          a.duration - b.duration ||
-          // lowest fee
-          a.quote.fees
-            .map(f => parseFloat(f.amountUSD))
-            .reduce((c, d) => c + d, 0) -
-            b.quote.fees
-              .map(f => parseFloat(f.amountUSD))
-              .reduce((c, d) => c + d, 0) ||
-          // lowest price impact
-          parseFloat(b.quote.priceImpact || '0') -
-            parseFloat(a.quote.priceImpact || '0')
-        );
-      });
+      // store a list of all available quotes
       setQuotes(quotesResponse.routes);
 
       // set quote amounts for each token
@@ -618,7 +701,7 @@ const Swap: React.FC<Props> = ({
   };
 
   const handleSubmitTransaction = async () => {
-    if (!quoteRequest || !quotes || quotes.length === 0) {
+    if (!quoteRequest || !quoteSelected) {
       return;
     }
 
@@ -633,10 +716,10 @@ const Swap: React.FC<Props> = ({
       // request the transaction details required to swap
       const txResponse = await getSwapTransactionV2({
         ...quoteRequest,
-        integration: quotes[0].quote.integration,
-        toTokenAmount: quotes[0].quote.amount,
-        type: quotes[0].quote.type,
-        route: quotes[0].route,
+        integration: quoteSelected.quote.integration,
+        toTokenAmount: quoteSelected.quote.amount,
+        type: quoteSelected.quote.type,
+        route: quoteSelected.route,
       });
 
       // validate the response
@@ -1032,57 +1115,83 @@ const Swap: React.FC<Props> = ({
             </Alert>
           </Box>
         )}
-        {isSwapping && !txId && sourceToken && destinationToken && quotes && (
-          <Box mb={1}>
-            <Alert severity="info">
-              {t('swap.swapping', {
-                source: sourceToken.swing.symbol,
-                destination: destinationToken.swing.symbol,
-                minutes: quotes[0].duration,
-                s: quotes[0].duration > 1 ? 's' : '',
-              })}
-            </Alert>
-          </Box>
-        )}
-        {!isButtonHidden && (
-          <LoadingButton
-            fullWidth
-            variant="contained"
-            onClick={handleSubmitTransaction}
-            className={classes.button}
-            loading={isLoading}
-            disabled={isInsufficientFunds}
-          >
-            <Box display="flex" flexDirection="column" alignItems="center">
-              <Typography variant="body1" fontWeight="bold">
-                {`${
-                  sourceToken.swing.symbol !== destinationToken.swing.symbol
-                    ? t('swap.swap')
-                    : t('swap.bridge')
-                } ${sourceTokenAmountUsd
-                  .toLocaleString('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                  })
-                  .replace('.00', '')} ${getBlockchainDisplaySymbol(
-                  sourceToken.swing.symbol,
-                )}${
-                  sourceToken.swing.symbol !== destinationToken.swing.symbol
-                    ? ` ${t(
-                        'common.to',
-                      ).toLowerCase()} ${getBlockchainDisplaySymbol(
-                        destinationToken.swing.symbol,
-                      )}`
-                    : ''
-                }`}
-              </Typography>
-              {quotes && (
-                <Typography variant="caption">
-                  {getQuoteDescription(quotes[0])}
-                </Typography>
-              )}
+        {isSwapping &&
+          !txId &&
+          sourceToken &&
+          destinationToken &&
+          quoteSelected && (
+            <Box mb={1}>
+              <Alert severity="info">
+                {t('swap.swapping', {
+                  source: sourceToken.swing.symbol,
+                  destination: destinationToken.swing.symbol,
+                  minutes: quoteSelected.duration,
+                  s: quoteSelected.duration > 1 ? 's' : '',
+                })}
+              </Alert>
             </Box>
-          </LoadingButton>
+          )}
+        {!isButtonHidden && quoteSelected && (
+          <Box className={classes.content}>
+            {isInsufficientFunds ? (
+              <Button
+                fullWidth
+                size="small"
+                variant="text"
+                onClick={handleUseMax}
+              >
+                {t('swap.useMax')}
+              </Button>
+            ) : isMultipleQuotes() ? (
+              <Button
+                fullWidth
+                size="small"
+                variant="text"
+                onClick={handleSwitchQuotes}
+              >
+                {isCheapestQuote(quoteSelected)
+                  ? t('swap.tryFasterOption')
+                  : t('swap.tryCheaperOption')}
+              </Button>
+            ) : null}
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={handleSubmitTransaction}
+              className={classes.button}
+              disabled={isInsufficientFunds}
+            >
+              <Box display="flex" flexDirection="column" alignItems="center">
+                <Typography variant="body1" fontWeight="bold">
+                  {`${
+                    sourceToken.swing.symbol !== destinationToken.swing.symbol
+                      ? t('swap.swap')
+                      : t('swap.bridge')
+                  } ${sourceTokenAmountUsd
+                    .toLocaleString('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                    })
+                    .replace('.00', '')} ${getBlockchainDisplaySymbol(
+                    sourceToken.swing.symbol,
+                  )}${
+                    sourceToken.swing.symbol !== destinationToken.swing.symbol
+                      ? ` ${t(
+                          'common.to',
+                        ).toLowerCase()} ${getBlockchainDisplaySymbol(
+                          destinationToken.swing.symbol,
+                        )}`
+                      : ''
+                  }`}
+                </Typography>
+                {quoteSelected && (
+                  <Typography variant="caption">
+                    {getQuoteDescription(quoteSelected)}
+                  </Typography>
+                )}
+              </Box>
+            </Button>
+          </Box>
         )}
       </Box>
     </Box>

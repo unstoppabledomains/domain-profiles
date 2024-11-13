@@ -14,6 +14,7 @@ import MenuItem from '@mui/material/MenuItem';
 import type {SelectChangeEvent} from '@mui/material/Select';
 import Select from '@mui/material/Select';
 import Slider from '@mui/material/Slider';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import cloneDeep from 'lodash/cloneDeep';
@@ -196,23 +197,74 @@ const Swap: React.FC<Props> = ({
     'cheapest',
   );
 
-  // sort quotes sorted by fastest execution
-  const quotesByLowestTime = cloneDeep(quotes)?.sort((a, b) => {
-    return (
-      // lowest duration
-      a.duration - b.duration ||
-      // lowest fee
-      a.quote.fees
-        .map(f => parseFloat(f.amountUSD))
-        .reduce((c, d) => c + d, 0) -
-        b.quote.fees
-          .map(f => parseFloat(f.amountUSD))
-          .reduce((c, d) => c + d, 0) ||
-      // lowest price impact
-      parseFloat(b.quote.priceImpact || '0') -
-        parseFloat(a.quote.priceImpact || '0')
+  // build list of all available wallet tokens
+  const allTokens = getAllTokens(wallets).filter(
+    token => token.type === TokenType.Erc20 || token.type === TokenType.Native,
+  );
+
+  const getTokenEntry = (
+    swapConfig: SwapConfig,
+    placeholder?: boolean,
+  ): TokenEntry | undefined => {
+    const entry = allTokens?.find(
+      token =>
+        token.walletName === swapConfig.chainName &&
+        token.ticker === swapConfig.tokenSymbol,
     );
-  });
+    if (entry) {
+      return entry;
+    }
+    if (placeholder) {
+      return {
+        type: swapConfig.swing.type as TokenType,
+        symbol: swapConfig.chainSymbol,
+        ticker: swapConfig.tokenSymbol,
+        name: swapConfig.chainName,
+        imageUrl: swapConfig.imageUrl,
+        walletName: swapConfig.chainName,
+        walletAddress: '',
+        walletBlockChainLink: '',
+        tokenConversionUsd: 0,
+        balance: 0,
+        value: 0,
+      };
+    }
+    return undefined;
+  };
+
+  const getSourceGasFees = (q: RouteQuote) => {
+    return q.quote.fees
+      .filter(f => f.chainSlug === sourceToken?.swing.chain)
+      .map(f => parseFloat(f.amountUSD))
+      .reduce((a, b) => a + b, 0);
+  };
+
+  // sort quotes sorted by fastest execution
+  const quotesByLowestTime = cloneDeep(quotes)
+    // only show quotes the user can afford
+    ?.filter(q =>
+      q && sourceToken && getTokenEntry(sourceToken)
+        ? getTokenEntry(sourceToken)!.value >
+          sourceTokenAmountUsd + getSourceGasFees(q)
+        : false,
+    )
+    // sort by fastest execution time
+    .sort((a, b) => {
+      return (
+        // lowest duration
+        a.duration - b.duration ||
+        // lowest fee
+        a.quote.fees
+          .map(f => parseFloat(f.amountUSD))
+          .reduce((c, d) => c + d, 0) -
+          b.quote.fees
+            .map(f => parseFloat(f.amountUSD))
+            .reduce((c, d) => c + d, 0) ||
+        // lowest price impact
+        parseFloat(b.quote.priceImpact || '0') -
+          parseFloat(a.quote.priceImpact || '0')
+      );
+    });
   const quoteFastest =
     quotesByLowestTime && quotesByLowestTime.length > 0
       ? quotesByLowestTime[0]
@@ -258,11 +310,6 @@ const Swap: React.FC<Props> = ({
   // determines if the page is in loading state
   const isLoading = isGettingQuote || isSwapping;
 
-  // build list of all available wallet tokens
-  const allTokens = getAllTokens(wallets).filter(
-    token => token.type === TokenType.Erc20 || token.type === TokenType.Native,
-  );
-
   const isCheapestQuote = (q: RouteQuote) => {
     if (!quotesByLowestFee || quotesByLowestFee.length === 0) {
       return false;
@@ -284,43 +331,6 @@ const Swap: React.FC<Props> = ({
       JSON.stringify(quotesByLowestTime[0]) !==
       JSON.stringify(quotesByLowestFee[0])
     );
-  };
-
-  const getSourceGasFees = (q: RouteQuote) => {
-    return q.quote.fees
-      .filter(f => f.chainSlug === sourceToken?.swing.chain)
-      .map(f => parseFloat(f.amountUSD))
-      .reduce((a, b) => a + b, 0);
-  };
-
-  const getTokenEntry = (
-    swapConfig: SwapConfig,
-    placeholder?: boolean,
-  ): TokenEntry | undefined => {
-    const entry = allTokens.find(
-      token =>
-        token.walletName === swapConfig.chainName &&
-        token.ticker === swapConfig.tokenSymbol,
-    );
-    if (entry) {
-      return entry;
-    }
-    if (placeholder) {
-      return {
-        type: swapConfig.swing.type as TokenType,
-        symbol: swapConfig.chainSymbol,
-        ticker: swapConfig.tokenSymbol,
-        name: swapConfig.chainName,
-        imageUrl: swapConfig.imageUrl,
-        walletName: swapConfig.chainName,
-        walletAddress: '',
-        walletBlockChainLink: '',
-        tokenConversionUsd: 0,
-        balance: 0,
-        value: 0,
-      };
-    }
-    return undefined;
   };
 
   // determine if sufficient funds
@@ -346,18 +356,29 @@ const Swap: React.FC<Props> = ({
           walletAddress: walletToken.walletAddress,
           balance: walletToken.balance,
           value: walletToken.value,
+          disabledReason:
+            configToken.disabledReason ||
+            (!walletToken.value ||
+            walletToken.value < config.WALLETS.SWAP.MIN_BALANCE_USD
+              ? t('wallet.insufficientBalance')
+              : undefined),
         };
       })
-      .filter(
-        token =>
-          token.value && token.value > config.WALLETS.SWAP.MIN_BALANCE_USD,
-      )
-      .filter(token => token.environment === config.APP_ENV)
       .sort(
         (a, b) =>
+          // sort be enabled first
+          (!!a.disabledReason === !!b.disabledReason
+            ? 0
+            : b.disabledReason
+            ? -1
+            : 1) ||
+          // sort by value descending
           b.value - a.value ||
+          // sort by balance descending
           b.balance - a.balance ||
+          // sort by chain name ascending
           a.chainName.localeCompare(b.chainName) ||
+          // sort by symbol ascending
           a.tokenSymbol.localeCompare(b.tokenSymbol),
       );
 
@@ -384,11 +405,6 @@ const Swap: React.FC<Props> = ({
         v =>
           `${v.swing.chain}/${v.swing.symbol}` !==
           `${sourceToken?.swing.chain}/${sourceToken?.swing.symbol}`,
-      )
-      .filter(
-        token =>
-          config.APP_ENV !== 'production' ||
-          token.environment === config.APP_ENV,
       )
       .sort(
         (a, b) =>
@@ -554,6 +570,7 @@ const Swap: React.FC<Props> = ({
 
   const handleSourceChange = (event: SelectChangeEvent) => {
     handleResetState();
+    setQuoteType('cheapest');
     setSourceToken(
       sourceTokens.find(
         v => `${v.swing.chain}/${v.swing.symbol}` === event.target.value,
@@ -563,6 +580,7 @@ const Swap: React.FC<Props> = ({
 
   const handleDestinationChange = async (event: SelectChangeEvent) => {
     handleResetState();
+    setQuoteType('cheapest');
     setDestinationToken(
       destinationTokens.find(
         v => `${v.swing.chain}/${v.swing.symbol}` === event.target.value,
@@ -574,6 +592,7 @@ const Swap: React.FC<Props> = ({
     try {
       // reset swap state
       handleResetState();
+      setQuoteType('cheapest');
 
       // parse provided text
       const parsedValue = parseFloat(v.replaceAll('$', ''));
@@ -883,18 +902,34 @@ const Swap: React.FC<Props> = ({
     // calculate fees on the source chain
     const sourceFees = getSourceGasFees(q);
 
-    // calculate fees on the destination chain
-    const destinationFees = sourceTokenAmountUsd - destinationTokenAmountUsd;
-
     return `${
-      destinationFees > 0 || sourceFees > 0
-        ? `${(destinationFees + sourceFees).toLocaleString('en-US', {
+      sourceFees > 0
+        ? `+ ${sourceFees.toLocaleString('en-US', {
             style: 'currency',
             currency: 'USD',
           })} ${t('wallet.networkFee').toLowerCase()} / `
         : ''
-    }~ ${q.duration} ${t('common.minute')}${q.duration > 1 ? 's' : ''}`;
+    } ETA ~ ${q.duration} ${t('common.minute')}${q.duration > 1 ? 's' : ''}`;
   };
+
+  const renderMenuItem = (type: string, v: SwapToken) => (
+    <MenuItem
+      key={`${type}-${v.swing.chain}/${v.swing.symbol}`}
+      value={`${v.swing.chain}/${v.swing.symbol}`}
+      disabled={isLoading || !!v.disabledReason}
+    >
+      <Token
+        key={`source-token-${v.swing.chain}/${v.swing.symbol}`}
+        token={getTokenEntry(v)!}
+        hideBalance
+        isOwner
+        compact
+        iconWidth={6}
+        descriptionWidth={6}
+        graphWidth={0}
+      />
+    </MenuItem>
+  );
 
   return (
     <Box className={classes.flexColCenterAligned}>
@@ -956,23 +991,20 @@ const Swap: React.FC<Props> = ({
                   >
                     {sourceTokens
                       .filter(v => getTokenEntry(v))
-                      .map(v => (
-                        <MenuItem
-                          key={`source-${v.swing.chain}/${v.swing.symbol}`}
-                          value={`${v.swing.chain}/${v.swing.symbol}`}
-                        >
-                          <Token
-                            key={`source-token-${v.swing.chain}/${v.swing.symbol}`}
-                            token={getTokenEntry(v)!}
-                            hideBalance
-                            isOwner
-                            compact
-                            iconWidth={6}
-                            descriptionWidth={6}
-                            graphWidth={0}
-                          />
-                        </MenuItem>
-                      ))}
+                      .map(v =>
+                        !v.disabledReason ? (
+                          renderMenuItem('source', v)
+                        ) : (
+                          <Tooltip
+                            arrow
+                            placement="left"
+                            title={v.disabledReason}
+                            key={`sourceTooltip-${v.swing.chain}/${v.swing.symbol}`}
+                          >
+                            <Box>{renderMenuItem('source', v)}</Box>
+                          </Tooltip>
+                        ),
+                      )}
                   </Select>
                 }
               />
@@ -1054,23 +1086,7 @@ const Swap: React.FC<Props> = ({
                   >
                     {destinationTokens
                       .filter(v => getTokenEntry(v, true))
-                      .map(v => (
-                        <MenuItem
-                          key={`destination-${v.swing.chain}/${v.swing.symbol}`}
-                          value={`${v.swing.chain}/${v.swing.symbol}`}
-                        >
-                          <Token
-                            key={`destination-token-${v.swing.chain}/${v.swing.symbol}`}
-                            token={getTokenEntry(v, true)!}
-                            hideBalance
-                            isOwner
-                            compact
-                            iconWidth={6}
-                            descriptionWidth={6}
-                            graphWidth={0}
-                          />
-                        </MenuItem>
-                      ))}
+                      .map(v => renderMenuItem('destination', v))}
                   </Select>
                 }
               />
@@ -1135,16 +1151,17 @@ const Swap: React.FC<Props> = ({
         {!isButtonHidden && quoteSelected && (
           <Box className={classes.content}>
             {isInsufficientFunds ? (
-              isFundingPossible && (
-                <Button
-                  fullWidth
-                  size="small"
-                  variant="text"
-                  onClick={handleUseMax}
-                >
-                  {t('swap.useMax')}
-                </Button>
-              )
+              <Button
+                fullWidth
+                size="small"
+                variant="text"
+                onClick={handleUseMax}
+                disabled={!isFundingPossible}
+              >
+                {isFundingPossible
+                  ? t('swap.useMax')
+                  : t('wallet.insufficientBalance')}
+              </Button>
             ) : isMultipleQuotes() ? (
               <Button
                 fullWidth

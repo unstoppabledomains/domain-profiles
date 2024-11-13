@@ -178,6 +178,7 @@ export const createTransactionOperation = async (
           destinationAddress: tx.to,
           data: tx.data,
           value: tx.value,
+          gas: tx.gas,
         }),
       },
     );

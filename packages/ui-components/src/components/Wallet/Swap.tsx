@@ -17,7 +17,6 @@ import Slider from '@mui/material/Slider';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import cloneDeep from 'lodash/cloneDeep';
-import Markdown from 'markdown-to-jsx';
 import numeral from 'numeral';
 import React, {useEffect, useRef, useState} from 'react';
 import Animation from 'react-canvas-confetti/dist/presets/fireworks';
@@ -187,12 +186,8 @@ const Swap: React.FC<Props> = ({
     750,
   );
   const [sourceToken, setSourceToken] = useState<SwapToken>();
-  const [sourceTokenDescription, setSourceTokenDescription] =
-    useState<string>();
   const [destinationTokenAmountUsd, setDestinationTokenAmountUsd] = useState(0);
   const [destinationToken, setDestinationToken] = useState<SwapToken>();
-  const [destinationTokenDescription, setDestinationTokenDescription] =
-    useState<string>();
 
   // quote state
   const [quoteRequest, setQuoteRequest] = useState<SwingV2QuoteRequest>();
@@ -334,6 +329,10 @@ const Swap: React.FC<Props> = ({
       ? getTokenEntry(sourceToken)!.value <
         sourceTokenAmountUsd + getSourceGasFees(quoteSelected)
       : false;
+  const isFundingPossible =
+    quoteSelected && sourceToken && getTokenEntry(sourceToken)
+      ? getTokenEntry(sourceToken)!.value > getSourceGasFees(quoteSelected)
+      : false;
 
   // build list of supported source tokens with sufficient balance
   const sourceTokens: SwapToken[] =
@@ -436,6 +435,19 @@ const Swap: React.FC<Props> = ({
     setDestinationToken(destinationTokens[0]);
   }, [sourceToken, destinationToken, destinationTokens]);
 
+  // update the destination token if it conflicts with source token
+  useEffect(() => {
+    if (!sourceToken || !destinationToken) {
+      return;
+    }
+    if (
+      `${sourceToken.swing.chain}/${sourceToken.swing.symbol}` ===
+      `${destinationToken.swing.chain}/${destinationToken.swing.symbol}`
+    ) {
+      setDestinationToken(destinationTokens[0]);
+    }
+  }, [sourceToken]);
+
   // retrieve quote when a swap pair is selected
   useEffect(() => {
     if (!sourceTokenAmountUsdDebounced || !sourceToken || !destinationToken) {
@@ -468,8 +480,20 @@ const Swap: React.FC<Props> = ({
     }
     if (isCheapestQuote(quoteSelected)) {
       setQuoteType('fastest');
+      const v = parseFloat(
+        numeral(quoteFastest?.quote.amountUSD || '0').format('0.00'),
+      );
+      if (v) {
+        setDestinationTokenAmountUsd(v);
+      }
     } else {
       setQuoteType('cheapest');
+      const v = parseFloat(
+        numeral(quoteCheapest?.quote.amountUSD || '0').format('0.00'),
+      );
+      if (v) {
+        setDestinationTokenAmountUsd(v);
+      }
     }
   };
 
@@ -492,11 +516,8 @@ const Swap: React.FC<Props> = ({
     setIsTxComplete(false);
     setTxId(undefined);
     setQuotes(undefined);
-    setQuoteType('cheapest');
     setErrorMessage(undefined);
     setDestinationTokenAmountUsd(0);
-    setSourceTokenDescription(undefined);
-    setDestinationTokenDescription(undefined);
 
     // optional items to clear
     if (opts?.sourceAmtUsd) {
@@ -592,8 +613,6 @@ const Swap: React.FC<Props> = ({
     // reset state
     setIsGettingQuote(true);
     setErrorMessage(undefined);
-    setSourceTokenDescription(undefined);
-    setDestinationTokenDescription(undefined);
 
     // retrieve swap token definitions
     try {
@@ -664,23 +683,9 @@ const Swap: React.FC<Props> = ({
       setQuotes(quotesResponse.routes);
 
       // set quote amounts for each token
-      setSourceTokenDescription(
-        `${t('swap.pay')} **${new Intl.NumberFormat('en-US', {
-          maximumSignificantDigits: 4,
-        }).format(sourceAmt)}** ${getBlockchainDisplaySymbol(
-          sourceToken.swing.symbol,
-        )}`,
-      );
       const destinationTokenBalance =
         parseFloat(quotesResponse.routes[0].quote.amount) /
         Math.pow(10, quotesResponse.routes[0].quote.decimals);
-      setDestinationTokenDescription(
-        `${t('swap.receive')} **${new Intl.NumberFormat('en-US', {
-          maximumSignificantDigits: 4,
-        }).format(destinationTokenBalance)}** ${getBlockchainDisplaySymbol(
-          destinationToken.swing.symbol,
-        )}`,
-      );
       const destinationUsd =
         quotesResponse.routes[0].quote.amountUSD &&
         parseFloat(quotesResponse.routes[0].quote.amountUSD)
@@ -746,6 +751,7 @@ const Swap: React.FC<Props> = ({
         to: txResponse.tx.to,
         data: txResponse.tx.data,
         value: txResponse.tx.value,
+        gas: txResponse.tx.gas,
       };
       const operationResponse = await createTransactionOperation(
         accessToken,
@@ -1068,11 +1074,6 @@ const Swap: React.FC<Props> = ({
                   </Select>
                 }
               />
-              <FormHelperText className={classes.tokenBalanceContainer}>
-                <Box className={classes.tokenActionText}>
-                  <Markdown>{destinationTokenDescription || ''}</Markdown>
-                </Box>
-              </FormHelperText>
             </FormControl>
           </Box>
         )}
@@ -1134,14 +1135,16 @@ const Swap: React.FC<Props> = ({
         {!isButtonHidden && quoteSelected && (
           <Box className={classes.content}>
             {isInsufficientFunds ? (
-              <Button
-                fullWidth
-                size="small"
-                variant="text"
-                onClick={handleUseMax}
-              >
-                {t('swap.useMax')}
-              </Button>
+              isFundingPossible && (
+                <Button
+                  fullWidth
+                  size="small"
+                  variant="text"
+                  onClick={handleUseMax}
+                >
+                  {t('swap.useMax')}
+                </Button>
+              )
             ) : isMultipleQuotes() ? (
               <Button
                 fullWidth

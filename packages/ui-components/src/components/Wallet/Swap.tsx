@@ -770,7 +770,7 @@ const Swap: React.FC<Props> = ({
         to: txResponse.tx.to,
         data: txResponse.tx.data,
         value: txResponse.tx.value,
-        gas: txResponse.tx.gas,
+        gasLimit: txResponse.tx.gas,
       };
       const operationResponse = await createTransactionOperation(
         accessToken,

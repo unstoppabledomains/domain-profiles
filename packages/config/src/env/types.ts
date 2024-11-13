@@ -66,7 +66,7 @@ export interface SwapConfig {
   chainSymbol: string;
   tokenSymbol: string;
   imageUrl: string;
-  environment: string;
+  disabledReason?: string;
 }
 
 export type Config = {

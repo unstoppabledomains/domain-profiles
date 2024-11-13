@@ -80,7 +80,6 @@ export default function getProductionConfig(): ConfigOverride {
               tokenSymbol: 'ETH',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/ETH/icon.svg',
-              environment: 'production',
             },
             {
               swing: {
@@ -94,7 +93,6 @@ export default function getProductionConfig(): ConfigOverride {
               tokenSymbol: 'MATIC',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/MATIC/icon.svg',
-              environment: 'production',
             },
             {
               swing: {
@@ -108,7 +106,36 @@ export default function getProductionConfig(): ConfigOverride {
               tokenSymbol: 'ETH',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/BASE/icon.svg',
-              environment: 'production',
+            },
+            {
+              swing: {
+                chain: 'solana',
+                symbol: 'SOL',
+                type: 'native',
+              },
+              walletType: 'SOL',
+              chainName: 'Solana',
+              chainSymbol: 'SOL',
+              tokenSymbol: 'SOL',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/SOL/icon.svg',
+              // show in the list but do not allow interaction
+              disabledReason: 'Solana swaps coming soon',
+            },
+            {
+              swing: {
+                chain: 'bitcoin',
+                symbol: 'BTC',
+                type: 'native',
+              },
+              walletType: 'BTC',
+              chainName: 'Bitcoin',
+              chainSymbol: 'BTC',
+              tokenSymbol: 'BTC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/BTC/icon.svg',
+              // show in the list but do not allow interaction
+              disabledReason: 'Bitcoin swaps coming soon',
             },
           ],
           DESTINATION: [
@@ -124,7 +151,6 @@ export default function getProductionConfig(): ConfigOverride {
               tokenSymbol: 'ETH',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/ETH/icon.svg',
-              environment: 'production',
             },
             {
               swing: {
@@ -138,7 +164,6 @@ export default function getProductionConfig(): ConfigOverride {
               tokenSymbol: 'SOL',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/SOL/icon.svg',
-              environment: 'production',
             },
             {
               swing: {
@@ -152,7 +177,6 @@ export default function getProductionConfig(): ConfigOverride {
               tokenSymbol: 'BTC',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/BTC/icon.svg',
-              environment: 'production',
             },
             {
               swing: {
@@ -166,7 +190,6 @@ export default function getProductionConfig(): ConfigOverride {
               tokenSymbol: 'MATIC',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/MATIC/icon.svg',
-              environment: 'production',
             },
             {
               swing: {
@@ -180,7 +203,6 @@ export default function getProductionConfig(): ConfigOverride {
               tokenSymbol: 'ETH',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/BASE/icon.svg',
-              environment: 'production',
             },
           ],
         },

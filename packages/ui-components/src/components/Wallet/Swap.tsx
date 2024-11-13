@@ -2,7 +2,6 @@ import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import ImportExportIcon from '@mui/icons-material/ImportExport';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
-import LoadingButton from '@mui/lab/LoadingButton';
 // eslint-disable-next-line no-restricted-imports
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -15,9 +14,10 @@ import MenuItem from '@mui/material/MenuItem';
 import type {SelectChangeEvent} from '@mui/material/Select';
 import Select from '@mui/material/Select';
 import Slider from '@mui/material/Slider';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import Markdown from 'markdown-to-jsx';
+import cloneDeep from 'lodash/cloneDeep';
 import numeral from 'numeral';
 import React, {useEffect, useRef, useState} from 'react';
 import Animation from 'react-canvas-confetti/dist/presets/fireworks';
@@ -187,32 +187,15 @@ const Swap: React.FC<Props> = ({
     750,
   );
   const [sourceToken, setSourceToken] = useState<SwapToken>();
-  const [sourceTokenDescription, setSourceTokenDescription] =
-    useState<string>();
   const [destinationTokenAmountUsd, setDestinationTokenAmountUsd] = useState(0);
   const [destinationToken, setDestinationToken] = useState<SwapToken>();
-  const [destinationTokenDescription, setDestinationTokenDescription] =
-    useState<string>();
 
   // quote state
   const [quoteRequest, setQuoteRequest] = useState<SwingV2QuoteRequest>();
   const [quotes, setQuotes] = useState<RouteQuote[]>();
-
-  // determines if button is visible
-  const isButtonHidden =
-    txId ||
-    isTxComplete ||
-    isSwapping ||
-    isGettingQuote ||
-    !!errorMessage ||
-    !sourceToken ||
-    !destinationToken ||
-    !sourceTokenAmountUsd ||
-    !quotes ||
-    quotes.length === 0;
-
-  // determines if the page is in loading state
-  const isLoading = isGettingQuote || isSwapping;
+  const [quoteType, setQuoteType] = useState<'fastest' | 'cheapest'>(
+    'cheapest',
+  );
 
   // build list of all available wallet tokens
   const allTokens = getAllTokens(wallets).filter(
@@ -223,7 +206,7 @@ const Swap: React.FC<Props> = ({
     swapConfig: SwapConfig,
     placeholder?: boolean,
   ): TokenEntry | undefined => {
-    const entry = allTokens.find(
+    const entry = allTokens?.find(
       token =>
         token.walletName === swapConfig.chainName &&
         token.ticker === swapConfig.tokenSymbol,
@@ -249,6 +232,118 @@ const Swap: React.FC<Props> = ({
     return undefined;
   };
 
+  const getSourceGasFees = (q: RouteQuote) => {
+    return q.quote.fees
+      .filter(f => f.chainSlug === sourceToken?.swing.chain)
+      .map(f => parseFloat(f.amountUSD))
+      .reduce((a, b) => a + b, 0);
+  };
+
+  // sort quotes sorted by fastest execution
+  const quotesByLowestTime = cloneDeep(quotes)
+    // only show quotes the user can afford
+    ?.filter(q =>
+      q && sourceToken && getTokenEntry(sourceToken)
+        ? getTokenEntry(sourceToken)!.value >
+          sourceTokenAmountUsd + getSourceGasFees(q)
+        : false,
+    )
+    // sort by fastest execution time
+    .sort((a, b) => {
+      return (
+        // lowest duration
+        a.duration - b.duration ||
+        // lowest fee
+        a.quote.fees
+          .map(f => parseFloat(f.amountUSD))
+          .reduce((c, d) => c + d, 0) -
+          b.quote.fees
+            .map(f => parseFloat(f.amountUSD))
+            .reduce((c, d) => c + d, 0) ||
+        // lowest price impact
+        parseFloat(b.quote.priceImpact || '0') -
+          parseFloat(a.quote.priceImpact || '0')
+      );
+    });
+  const quoteFastest =
+    quotesByLowestTime && quotesByLowestTime.length > 0
+      ? quotesByLowestTime[0]
+      : undefined;
+
+  // sort quotes sorted by lowest fee
+  const quotesByLowestFee = cloneDeep(quotes)?.sort((a, b) => {
+    return (
+      // lowest fee
+      a.quote.fees
+        .map(f => parseFloat(f.amountUSD))
+        .reduce((c, d) => c + d, 0) -
+        b.quote.fees
+          .map(f => parseFloat(f.amountUSD))
+          .reduce((c, d) => c + d, 0) ||
+      // lowest price impact
+      parseFloat(b.quote.priceImpact || '0') -
+        parseFloat(a.quote.priceImpact || '0') ||
+      // lowest duration
+      a.duration - b.duration
+    );
+  });
+  const quoteCheapest =
+    quotesByLowestFee && quotesByLowestFee.length > 0
+      ? quotesByLowestFee[0]
+      : undefined;
+
+  // currently selected quote
+  const quoteSelected = quoteType === 'cheapest' ? quoteCheapest : quoteFastest;
+
+  // determines if button is visible
+  const isButtonHidden =
+    txId ||
+    isTxComplete ||
+    isSwapping ||
+    isGettingQuote ||
+    !!errorMessage ||
+    !sourceToken ||
+    !destinationToken ||
+    !sourceTokenAmountUsd ||
+    !quoteSelected;
+
+  // determines if the page is in loading state
+  const isLoading = isGettingQuote || isSwapping;
+
+  const isCheapestQuote = (q: RouteQuote) => {
+    if (!quotesByLowestFee || quotesByLowestFee.length === 0) {
+      return false;
+    }
+    return JSON.stringify(quotesByLowestFee[0]) === JSON.stringify(q);
+  };
+
+  const isMultipleQuotes = () => {
+    if (
+      !quotesByLowestTime ||
+      quotesByLowestTime.length === 0 ||
+      !quotesByLowestFee ||
+      quotesByLowestFee.length === 0
+    ) {
+      return false;
+    }
+
+    return (
+      JSON.stringify(quotesByLowestTime[0]) !==
+      JSON.stringify(quotesByLowestFee[0])
+    );
+  };
+
+  // determine if sufficient funds
+  const isInsufficientFunds =
+    quoteSelected && sourceToken && getTokenEntry(sourceToken)
+      ? getTokenEntry(sourceToken)!.value <
+        sourceTokenAmountUsd + getSourceGasFees(quoteSelected)
+      : false;
+  const isFundingPossible =
+    quoteSelected && sourceToken && getTokenEntry(sourceToken)
+      ? getTokenEntry(sourceToken)!.value > getSourceGasFees(quoteSelected)
+      : false;
+
   // build list of supported source tokens with sufficient balance
   const sourceTokens: SwapToken[] =
     config.WALLETS.SWAP.SUPPORTED_TOKENS.SOURCE.filter(configToken =>
@@ -261,18 +356,29 @@ const Swap: React.FC<Props> = ({
           walletAddress: walletToken.walletAddress,
           balance: walletToken.balance,
           value: walletToken.value,
+          disabledReason:
+            configToken.disabledReason ||
+            (!walletToken.value ||
+            walletToken.value < config.WALLETS.SWAP.MIN_BALANCE_USD
+              ? t('wallet.insufficientBalance')
+              : undefined),
         };
       })
-      .filter(
-        token =>
-          token.value && token.value > config.WALLETS.SWAP.MIN_BALANCE_USD,
-      )
-      .filter(token => token.environment === config.APP_ENV)
       .sort(
         (a, b) =>
+          // sort be enabled first
+          (!!a.disabledReason === !!b.disabledReason
+            ? 0
+            : b.disabledReason
+            ? -1
+            : 1) ||
+          // sort by value descending
           b.value - a.value ||
+          // sort by balance descending
           b.balance - a.balance ||
+          // sort by chain name ascending
           a.chainName.localeCompare(b.chainName) ||
+          // sort by symbol ascending
           a.tokenSymbol.localeCompare(b.tokenSymbol),
       );
 
@@ -299,11 +405,6 @@ const Swap: React.FC<Props> = ({
         v =>
           `${v.swing.chain}/${v.swing.symbol}` !==
           `${sourceToken?.swing.chain}/${sourceToken?.swing.symbol}`,
-      )
-      .filter(
-        token =>
-          config.APP_ENV !== 'production' ||
-          token.environment === config.APP_ENV,
       )
       .sort(
         (a, b) =>
@@ -350,6 +451,19 @@ const Swap: React.FC<Props> = ({
     setDestinationToken(destinationTokens[0]);
   }, [sourceToken, destinationToken, destinationTokens]);
 
+  // update the destination token if it conflicts with source token
+  useEffect(() => {
+    if (!sourceToken || !destinationToken) {
+      return;
+    }
+    if (
+      `${sourceToken.swing.chain}/${sourceToken.swing.symbol}` ===
+      `${destinationToken.swing.chain}/${destinationToken.swing.symbol}`
+    ) {
+      setDestinationToken(destinationTokens[0]);
+    }
+  }, [sourceToken]);
+
   // retrieve quote when a swap pair is selected
   useEffect(() => {
     if (!sourceTokenAmountUsdDebounced || !sourceToken || !destinationToken) {
@@ -376,6 +490,29 @@ const Swap: React.FC<Props> = ({
     await localStorageWrapper.setItem(swapIntroFlag, swapIntroFlag);
   };
 
+  const handleSwitchQuotes = () => {
+    if (!quoteSelected) {
+      return;
+    }
+    if (isCheapestQuote(quoteSelected)) {
+      setQuoteType('fastest');
+      const v = parseFloat(
+        numeral(quoteFastest?.quote.amountUSD || '0').format('0.00'),
+      );
+      if (v) {
+        setDestinationTokenAmountUsd(v);
+      }
+    } else {
+      setQuoteType('cheapest');
+      const v = parseFloat(
+        numeral(quoteCheapest?.quote.amountUSD || '0').format('0.00'),
+      );
+      if (v) {
+        setDestinationTokenAmountUsd(v);
+      }
+    }
+  };
+
   const handleTransactionClick = () => {
     if (!sourceToken) {
       return;
@@ -390,6 +527,21 @@ const Swap: React.FC<Props> = ({
     );
   };
 
+  const handleResetState = (opts?: {sourceAmtUsd?: boolean}) => {
+    // default items to clear
+    setIsTxComplete(false);
+    setTxId(undefined);
+    setQuotes(undefined);
+    setErrorMessage(undefined);
+    setDestinationTokenAmountUsd(0);
+
+    // optional items to clear
+    if (opts?.sourceAmtUsd) {
+      setSliderValue(0);
+      setSourceTokenAmountUsd(0);
+    }
+  };
+
   const handleSliderChange = (_e: Event, v: number | number[]) => {
     if (!sourceToken) {
       return;
@@ -400,13 +552,7 @@ const Swap: React.FC<Props> = ({
     }
 
     // reset quote state
-    setIsTxComplete(false);
-    setTxId(undefined);
-    setQuotes(undefined);
-    setErrorMessage(undefined);
-    setDestinationTokenAmountUsd(0);
-    setSourceTokenDescription(undefined);
-    setDestinationTokenDescription(undefined);
+    handleResetState();
 
     // set the form elements
     const pctSelected = v as number;
@@ -415,13 +561,16 @@ const Swap: React.FC<Props> = ({
     setSourceTokenAmountUsd(parseFloat(numeral(valueSelected).format('0.')));
   };
 
+  const handleSourceClicked = () => {
+    // clear any existing quotes when source token list is clicked
+    if (quoteSelected) {
+      handleResetState({sourceAmtUsd: true});
+    }
+  };
+
   const handleSourceChange = (event: SelectChangeEvent) => {
-    setIsTxComplete(false);
-    setTxId(undefined);
-    setErrorMessage(undefined);
-    setDestinationTokenAmountUsd(0);
-    setSourceTokenDescription(undefined);
-    setDestinationTokenDescription(undefined);
+    handleResetState();
+    setQuoteType('cheapest');
     setSourceToken(
       sourceTokens.find(
         v => `${v.swing.chain}/${v.swing.symbol}` === event.target.value,
@@ -430,29 +579,22 @@ const Swap: React.FC<Props> = ({
   };
 
   const handleDestinationChange = async (event: SelectChangeEvent) => {
-    setIsTxComplete(false);
-    setTxId(undefined);
-    setQuotes(undefined);
-    setErrorMessage(undefined);
+    handleResetState();
+    setQuoteType('cheapest');
     setDestinationToken(
       destinationTokens.find(
         v => `${v.swing.chain}/${v.swing.symbol}` === event.target.value,
       ),
     );
-    setDestinationTokenAmountUsd(0);
-    setSourceTokenDescription(undefined);
-    setDestinationTokenDescription(undefined);
   };
 
   const handleAmountChanged = async (id: string, v: string) => {
-    setIsTxComplete(false);
-    setTxId(undefined);
-    setQuotes(undefined);
-    setErrorMessage(undefined);
-    setDestinationTokenAmountUsd(0);
-    setSourceTokenDescription(undefined);
-    setDestinationTokenDescription(undefined);
     try {
+      // reset swap state
+      handleResetState();
+      setQuoteType('cheapest');
+
+      // parse provided text
       const parsedValue = parseFloat(v.replaceAll('$', ''));
       if (parsedValue) {
         setSourceTokenAmountUsd(parsedValue);
@@ -460,8 +602,22 @@ const Swap: React.FC<Props> = ({
         return;
       }
     } catch (e) {}
-    setSourceTokenAmountUsd(0);
-    setDestinationTokenAmountUsd(0);
+    handleResetState({sourceAmtUsd: true});
+  };
+
+  const handleUseMax = async () => {
+    if (!quoteSelected || !sourceToken) {
+      return;
+    }
+    const tokenEntry = getTokenEntry(sourceToken);
+    if (!tokenEntry) {
+      return;
+    }
+
+    const sourceAvailableValue = tokenEntry.value;
+    const sourceFees = getSourceGasFees(quoteSelected);
+    const maxAvailable = Math.floor(sourceAvailableValue - sourceFees);
+    await handleAmountChanged('', String(maxAvailable));
   };
 
   const handleGetQuote = async () => {
@@ -476,8 +632,6 @@ const Swap: React.FC<Props> = ({
     // reset state
     setIsGettingQuote(true);
     setErrorMessage(undefined);
-    setSourceTokenDescription(undefined);
-    setDestinationTokenDescription(undefined);
 
     // retrieve swap token definitions
     try {
@@ -544,43 +698,13 @@ const Swap: React.FC<Props> = ({
         return;
       }
 
-      // store quotes sorted by time, price impact and fees
-      quotesResponse.routes = quotesResponse.routes.sort((a, b) => {
-        return (
-          // lowest duration
-          a.duration - b.duration ||
-          // lowest fee
-          a.quote.fees
-            .map(f => parseFloat(f.amountUSD))
-            .reduce((c, d) => c + d, 0) -
-            b.quote.fees
-              .map(f => parseFloat(f.amountUSD))
-              .reduce((c, d) => c + d, 0) ||
-          // lowest price impact
-          parseFloat(b.quote.priceImpact || '0') -
-            parseFloat(a.quote.priceImpact || '0')
-        );
-      });
+      // store a list of all available quotes
       setQuotes(quotesResponse.routes);
 
       // set quote amounts for each token
-      setSourceTokenDescription(
-        `${t('swap.pay')} **${new Intl.NumberFormat('en-US', {
-          maximumSignificantDigits: 4,
-        }).format(sourceAmt)}** ${getBlockchainDisplaySymbol(
-          sourceToken.swing.symbol,
-        )}`,
-      );
       const destinationTokenBalance =
         parseFloat(quotesResponse.routes[0].quote.amount) /
         Math.pow(10, quotesResponse.routes[0].quote.decimals);
-      setDestinationTokenDescription(
-        `${t('swap.receive')} **${new Intl.NumberFormat('en-US', {
-          maximumSignificantDigits: 4,
-        }).format(destinationTokenBalance)}** ${getBlockchainDisplaySymbol(
-          destinationToken.swing.symbol,
-        )}`,
-      );
       const destinationUsd =
         quotesResponse.routes[0].quote.amountUSD &&
         parseFloat(quotesResponse.routes[0].quote.amountUSD)
@@ -601,7 +725,7 @@ const Swap: React.FC<Props> = ({
   };
 
   const handleSubmitTransaction = async () => {
-    if (!quoteRequest || !quotes || quotes.length === 0) {
+    if (!quoteRequest || !quoteSelected) {
       return;
     }
 
@@ -616,10 +740,10 @@ const Swap: React.FC<Props> = ({
       // request the transaction details required to swap
       const txResponse = await getSwapTransactionV2({
         ...quoteRequest,
-        integration: quotes[0].quote.integration,
-        toTokenAmount: quotes[0].quote.amount,
-        type: quotes[0].quote.type,
-        route: quotes[0].route,
+        integration: quoteSelected.quote.integration,
+        toTokenAmount: quoteSelected.quote.amount,
+        type: quoteSelected.quote.type,
+        route: quoteSelected.route,
       });
 
       // validate the response
@@ -646,6 +770,7 @@ const Swap: React.FC<Props> = ({
         to: txResponse.tx.to,
         data: txResponse.tx.data,
         value: txResponse.tx.value,
+        gasLimit: txResponse.tx.gas,
       };
       const operationResponse = await createTransactionOperation(
         accessToken,
@@ -774,22 +899,43 @@ const Swap: React.FC<Props> = ({
   };
 
   const getQuoteDescription = (q: RouteQuote) => {
-    // calculate fee total
-    const quoteFee = q.quote.fees
-      .map(f => parseFloat(f.amountUSD))
-      .reduce((a, b) => a + b, 0);
-
-    // calculate price impact
-    const priceImpact = sourceTokenAmountUsd - destinationTokenAmountUsd;
+    // calculate fees on the source chain
+    const sourceFees = getSourceGasFees(q);
 
     return `${
-      priceImpact > 0 || quoteFee > 0
-        ? `${(priceImpact + quoteFee).toLocaleString('en-US', {
+      sourceFees > 0
+        ? `+ ${sourceFees.toLocaleString('en-US', {
             style: 'currency',
             currency: 'USD',
           })} ${t('wallet.networkFee').toLowerCase()} / `
         : ''
-    }~ ${q.duration} ${t('common.minute')}${q.duration > 1 ? 's' : ''}`;
+    } ETA ~ ${q.duration} ${t('common.minute')}${q.duration > 1 ? 's' : ''}`;
+  };
+
+  const renderMenuItem = (type: string, v: SwapToken) => {
+    const tokenEntry = getTokenEntry(v, true);
+    if (!tokenEntry) {
+      return null;
+    }
+
+    return (
+      <MenuItem
+        key={`${type}-${v.swing.chain}/${v.swing.symbol}`}
+        value={`${v.swing.chain}/${v.swing.symbol}`}
+        disabled={isLoading || !!v.disabledReason}
+      >
+        <Token
+          key={`source-token-${v.swing.chain}/${v.swing.symbol}`}
+          token={tokenEntry}
+          hideBalance
+          isOwner
+          compact
+          iconWidth={6}
+          descriptionWidth={6}
+          graphWidth={0}
+        />
+      </MenuItem>
+    );
   };
 
   return (
@@ -844,6 +990,7 @@ const Swap: React.FC<Props> = ({
                         ? `${sourceToken.swing.chain}/${sourceToken.swing.symbol}`
                         : ''
                     }
+                    onMouseDown={handleSourceClicked}
                     onChange={handleSourceChange}
                     className={classes.dropDown}
                     variant="standard"
@@ -851,23 +998,20 @@ const Swap: React.FC<Props> = ({
                   >
                     {sourceTokens
                       .filter(v => getTokenEntry(v))
-                      .map(v => (
-                        <MenuItem
-                          key={`source-${v.swing.chain}/${v.swing.symbol}`}
-                          value={`${v.swing.chain}/${v.swing.symbol}`}
-                        >
-                          <Token
-                            key={`source-token-${v.swing.chain}/${v.swing.symbol}`}
-                            token={getTokenEntry(v)!}
-                            hideBalance
-                            isOwner
-                            compact
-                            iconWidth={6}
-                            descriptionWidth={6}
-                            graphWidth={0}
-                          />
-                        </MenuItem>
-                      ))}
+                      .map(v =>
+                        !v.disabledReason ? (
+                          renderMenuItem('source', v)
+                        ) : (
+                          <Tooltip
+                            arrow
+                            placement="left"
+                            title={v.disabledReason}
+                            key={`sourceTooltip-${v.swing.chain}/${v.swing.symbol}`}
+                          >
+                            <Box>{renderMenuItem('source', v)}</Box>
+                          </Tooltip>
+                        ),
+                      )}
                   </Select>
                 }
               />
@@ -934,7 +1078,12 @@ const Swap: React.FC<Props> = ({
                     disabled={isLoading}
                     value={
                       destinationToken
-                        ? `${destinationToken.swing.chain}/${destinationToken.swing.symbol}`
+                        ? destinationToken.swing.chain ===
+                            sourceToken?.swing.chain &&
+                          destinationToken.swing.symbol ===
+                            sourceToken?.swing.symbol
+                          ? `${destinationTokens[0].swing.chain}/${destinationTokens[0].swing.symbol}`
+                          : `${destinationToken.swing.chain}/${destinationToken.swing.symbol}`
                         : ''
                     }
                     onChange={handleDestinationChange}
@@ -944,31 +1093,10 @@ const Swap: React.FC<Props> = ({
                   >
                     {destinationTokens
                       .filter(v => getTokenEntry(v, true))
-                      .map(v => (
-                        <MenuItem
-                          key={`destination-${v.swing.chain}/${v.swing.symbol}`}
-                          value={`${v.swing.chain}/${v.swing.symbol}`}
-                        >
-                          <Token
-                            key={`destination-token-${v.swing.chain}/${v.swing.symbol}`}
-                            token={getTokenEntry(v, true)!}
-                            hideBalance
-                            isOwner
-                            compact
-                            iconWidth={6}
-                            descriptionWidth={6}
-                            graphWidth={0}
-                          />
-                        </MenuItem>
-                      ))}
+                      .map(v => renderMenuItem('destination', v))}
                   </Select>
                 }
               />
-              <FormHelperText className={classes.tokenBalanceContainer}>
-                <Box className={classes.tokenActionText}>
-                  <Markdown>{destinationTokenDescription || ''}</Markdown>
-                </Box>
-              </FormHelperText>
             </FormControl>
           </Box>
         )}
@@ -1011,56 +1139,86 @@ const Swap: React.FC<Props> = ({
             </Alert>
           </Box>
         )}
-        {isSwapping && !txId && sourceToken && destinationToken && quotes && (
-          <Box mb={1}>
-            <Alert severity="info">
-              {t('swap.swapping', {
-                source: sourceToken.swing.symbol,
-                destination: destinationToken.swing.symbol,
-                minutes: quotes[0].duration,
-                s: quotes[0].duration > 1 ? 's' : '',
-              })}
-            </Alert>
-          </Box>
-        )}
-        {!isButtonHidden && (
-          <LoadingButton
-            fullWidth
-            variant="contained"
-            onClick={handleSubmitTransaction}
-            className={classes.button}
-            loading={isLoading}
-          >
-            <Box display="flex" flexDirection="column" alignItems="center">
-              <Typography variant="body1" fontWeight="bold">
-                {`${
-                  sourceToken.swing.symbol !== destinationToken.swing.symbol
-                    ? t('swap.swap')
-                    : t('swap.bridge')
-                } ${sourceTokenAmountUsd
-                  .toLocaleString('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                  })
-                  .replace('.00', '')} ${getBlockchainDisplaySymbol(
-                  sourceToken.swing.symbol,
-                )}${
-                  sourceToken.swing.symbol !== destinationToken.swing.symbol
-                    ? ` ${t(
-                        'common.to',
-                      ).toLowerCase()} ${getBlockchainDisplaySymbol(
-                        destinationToken.swing.symbol,
-                      )}`
-                    : ''
-                }`}
-              </Typography>
-              {quotes && (
-                <Typography variant="caption">
-                  {getQuoteDescription(quotes[0])}
-                </Typography>
-              )}
+        {isSwapping &&
+          !txId &&
+          sourceToken &&
+          destinationToken &&
+          quoteSelected && (
+            <Box mb={1}>
+              <Alert severity="info">
+                {t('swap.swapping', {
+                  source: sourceToken.swing.symbol,
+                  destination: destinationToken.swing.symbol,
+                  minutes: quoteSelected.duration,
+                  s: quoteSelected.duration > 1 ? 's' : '',
+                })}
+              </Alert>
             </Box>
-          </LoadingButton>
+          )}
+        {!isButtonHidden && quoteSelected && (
+          <Box className={classes.content}>
+            {isInsufficientFunds ? (
+              <Button
+                fullWidth
+                size="small"
+                variant="text"
+                onClick={handleUseMax}
+                disabled={!isFundingPossible}
+              >
+                {isFundingPossible
+                  ? t('swap.useMax')
+                  : t('wallet.insufficientBalance')}
+              </Button>
+            ) : isMultipleQuotes() ? (
+              <Button
+                fullWidth
+                size="small"
+                variant="text"
+                onClick={handleSwitchQuotes}
+              >
+                {isCheapestQuote(quoteSelected)
+                  ? t('swap.tryFasterOption')
+                  : t('swap.tryCheaperOption')}
+              </Button>
+            ) : null}
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={handleSubmitTransaction}
+              className={classes.button}
+              disabled={isInsufficientFunds}
+            >
+              <Box display="flex" flexDirection="column" alignItems="center">
+                <Typography variant="body1" fontWeight="bold">
+                  {`${
+                    sourceToken.swing.symbol !== destinationToken.swing.symbol
+                      ? t('swap.swap')
+                      : t('swap.bridge')
+                  } ${sourceTokenAmountUsd
+                    .toLocaleString('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                    })
+                    .replace('.00', '')} ${getBlockchainDisplaySymbol(
+                    sourceToken.swing.symbol,
+                  )}${
+                    sourceToken.swing.symbol !== destinationToken.swing.symbol
+                      ? ` ${t(
+                          'common.to',
+                        ).toLowerCase()} ${getBlockchainDisplaySymbol(
+                          destinationToken.swing.symbol,
+                        )}`
+                      : ''
+                  }`}
+                </Typography>
+                {quoteSelected && (
+                  <Typography variant="caption">
+                    {getQuoteDescription(quoteSelected)}
+                  </Typography>
+                )}
+              </Box>
+            </Button>
+          </Box>
         )}
       </Box>
     </Box>

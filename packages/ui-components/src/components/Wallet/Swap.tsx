@@ -912,24 +912,31 @@ const Swap: React.FC<Props> = ({
     } ETA ~ ${q.duration} ${t('common.minute')}${q.duration > 1 ? 's' : ''}`;
   };
 
-  const renderMenuItem = (type: string, v: SwapToken) => (
-    <MenuItem
-      key={`${type}-${v.swing.chain}/${v.swing.symbol}`}
-      value={`${v.swing.chain}/${v.swing.symbol}`}
-      disabled={isLoading || !!v.disabledReason}
-    >
-      <Token
-        key={`source-token-${v.swing.chain}/${v.swing.symbol}`}
-        token={getTokenEntry(v)!}
-        hideBalance
-        isOwner
-        compact
-        iconWidth={6}
-        descriptionWidth={6}
-        graphWidth={0}
-      />
-    </MenuItem>
-  );
+  const renderMenuItem = (type: string, v: SwapToken) => {
+    const tokenEntry = getTokenEntry(v, true);
+    if (!tokenEntry) {
+      return null;
+    }
+
+    return (
+      <MenuItem
+        key={`${type}-${v.swing.chain}/${v.swing.symbol}`}
+        value={`${v.swing.chain}/${v.swing.symbol}`}
+        disabled={isLoading || !!v.disabledReason}
+      >
+        <Token
+          key={`source-token-${v.swing.chain}/${v.swing.symbol}`}
+          token={tokenEntry}
+          hideBalance
+          isOwner
+          compact
+          iconWidth={6}
+          descriptionWidth={6}
+          graphWidth={0}
+        />
+      </MenuItem>
+    );
+  };
 
   return (
     <Box className={classes.flexColCenterAligned}>

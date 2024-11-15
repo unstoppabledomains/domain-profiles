@@ -80,10 +80,23 @@ export interface Source {
   hash?: string;
 }
 
+export interface SwingV2AllowanceRequest {
+  bridge: string;
+  fromAddress: string;
+  fromChain: string;
+  toChain: string;
+  tokenAddress: string;
+  tokenSymbol: string;
+  tokenAmount?: string;
+  toTokenSymbol: string;
+  toTokenAddress: string;
+  contractCall: boolean;
+}
+
 export interface SwingV2QuoteRequest {
   // information about source token
   fromChain: string;
-  fromTokenAddress?: string;
+  fromTokenAddress: string;
   fromUserAddress: string;
   tokenSymbol: string;
   tokenAmount: string;
@@ -91,7 +104,7 @@ export interface SwingV2QuoteRequest {
   // information about destination token
   toChain: string;
   toTokenSymbol: string;
-  toTokenAddress?: string;
+  toTokenAddress: string;
   toUserAddress: string;
 
   // information about project configuration
@@ -146,6 +159,15 @@ export interface SwingV2Token {
   decimals: number;
   logo: string;
   price: number;
+}
+
+export interface SwingV2TokenAllowance {
+  allowance: string;
+}
+
+export interface SwingV2TokenApproval {
+  tx: Tx[];
+  fromChain: FromChain;
 }
 
 export interface ToChain {

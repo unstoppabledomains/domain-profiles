@@ -131,6 +131,7 @@ export default function getDefaultConfig(): Config {
         PROJECT_ID: 'unstoppable-domains-staging',
         FEE_BPS: 85, // 0.85%
         MIN_BALANCE_USD: 5,
+        DISABLED_INTEGRATIONS: ['hop'],
         SUPPORTED_TOKENS: {
           SOURCE: [],
           DESTINATION: [],

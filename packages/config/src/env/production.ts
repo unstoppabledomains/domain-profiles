@@ -71,6 +71,7 @@ export default function getProductionConfig(): ConfigOverride {
             {
               swing: {
                 chain: 'ethereum',
+                chainId: 1,
                 symbol: 'ETH',
                 type: 'native',
               },
@@ -84,6 +85,7 @@ export default function getProductionConfig(): ConfigOverride {
             {
               swing: {
                 chain: 'polygon',
+                chainId: 137,
                 symbol: 'POL',
                 type: 'native',
               },
@@ -97,6 +99,7 @@ export default function getProductionConfig(): ConfigOverride {
             {
               swing: {
                 chain: 'base',
+                chainId: 8453,
                 symbol: 'ETH',
                 type: 'native',
               },
@@ -137,11 +140,54 @@ export default function getProductionConfig(): ConfigOverride {
               // show in the list but do not allow interaction
               disabledReason: 'Bitcoin swaps coming soon',
             },
+            {
+              swing: {
+                chain: 'base',
+                chainId: 8453,
+                symbol: 'USDC',
+                type: 'erc20',
+              },
+              walletType: 'BASE',
+              chainName: 'Base',
+              chainSymbol: 'BASE',
+              tokenSymbol: 'USDC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'polygon',
+                chainId: 137,
+                symbol: 'USDC',
+                type: 'erc20',
+              },
+              walletType: 'MATIC',
+              chainName: 'Polygon',
+              chainSymbol: 'MATIC',
+              tokenSymbol: 'USDC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'ethereum',
+                chainId: 1,
+                symbol: 'USDC',
+                type: 'erc20',
+              },
+              walletType: 'ETH',
+              chainName: 'Ethereum',
+              chainSymbol: 'ETH',
+              tokenSymbol: 'USDC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
+            },
           ],
           DESTINATION: [
             {
               swing: {
                 chain: 'ethereum',
+                chainId: 1,
                 symbol: 'ETH',
                 type: 'native',
               },
@@ -181,6 +227,7 @@ export default function getProductionConfig(): ConfigOverride {
             {
               swing: {
                 chain: 'polygon',
+                chainId: 137,
                 symbol: 'POL',
                 type: 'native',
               },
@@ -194,6 +241,7 @@ export default function getProductionConfig(): ConfigOverride {
             {
               swing: {
                 chain: 'base',
+                chainId: 8453,
                 symbol: 'ETH',
                 type: 'native',
               },
@@ -203,6 +251,48 @@ export default function getProductionConfig(): ConfigOverride {
               tokenSymbol: 'ETH',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/BASE/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'base',
+                chainId: 8453,
+                symbol: 'USDC',
+                type: 'erc20',
+              },
+              walletType: 'BASE',
+              chainName: 'Base',
+              chainSymbol: 'BASE',
+              tokenSymbol: 'USDC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'polygon',
+                chainId: 137,
+                symbol: 'USDC',
+                type: 'erc20',
+              },
+              walletType: 'MATIC',
+              chainName: 'Polygon',
+              chainSymbol: 'MATIC',
+              tokenSymbol: 'USDC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'ethereum',
+                chainId: 1,
+                symbol: 'USDC',
+                type: 'erc20',
+              },
+              walletType: 'ETH',
+              chainName: 'Ethereum',
+              chainSymbol: 'ETH',
+              tokenSymbol: 'USDC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
             },
           ],
         },

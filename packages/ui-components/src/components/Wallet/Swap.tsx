@@ -1073,6 +1073,7 @@ const Swap: React.FC<Props> = ({
                 startAdornment={<Typography ml={2}>$</Typography>}
                 endAdornment={
                   <Autocomplete
+                    size="small"
                     id="source-token-autocomplete"
                     className={classes.dropDown}
                     options={sourceTokens.filter(v => getTokenEntry(v))}
@@ -1082,6 +1083,7 @@ const Swap: React.FC<Props> = ({
                     }
                     onMouseDown={handleSourceClicked}
                     onChange={handleSourceChange2}
+                    key={sourceToken?.tokenSymbol}
                     defaultValue={sourceToken}
                     renderOption={(props, v) => {
                       return (

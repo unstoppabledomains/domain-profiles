@@ -5,6 +5,7 @@ import TaskAltIcon from '@mui/icons-material/TaskAlt';
 // eslint-disable-next-line no-restricted-imports
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
+import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -14,6 +15,7 @@ import MenuItem from '@mui/material/MenuItem';
 import type {SelectChangeEvent} from '@mui/material/Select';
 import Select from '@mui/material/Select';
 import Slider from '@mui/material/Slider';
+import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -584,6 +586,12 @@ const Swap: React.FC<Props> = ({
     );
   };
 
+  const handleSourceChange2 = (_e: any, selected: SwapToken | null) => {
+    handleResetState();
+    setQuoteType('cheapest');
+    setSourceToken(selected || undefined);
+  };
+
   const handleDestinationChange = async (event: SelectChangeEvent) => {
     handleResetState();
     setQuoteType('cheapest');
@@ -1001,6 +1009,26 @@ const Swap: React.FC<Props> = ({
     );
   };
 
+  const renderTokenOption = (type: string, v: SwapToken) => {
+    const tokenEntry = getTokenEntry(v, true);
+    if (!tokenEntry) {
+      return null;
+    }
+
+    return (
+      <Token
+        key={`${type}-token-${v.swing.chain}/${v.swing.symbol}`}
+        token={tokenEntry}
+        hideBalance
+        isOwner
+        compact
+        iconWidth={6}
+        descriptionWidth={6}
+        graphWidth={0}
+      />
+    );
+  };
+
   return (
     <Box className={classes.flexColCenterAligned}>
       <TitleWithBackButton
@@ -1044,38 +1072,51 @@ const Swap: React.FC<Props> = ({
                 onChange={handleAmountChanged}
                 startAdornment={<Typography ml={2}>$</Typography>}
                 endAdornment={
-                  <Select
-                    size="small"
-                    id="source-token"
-                    disabled={isLoading}
-                    value={
-                      sourceToken
-                        ? `${sourceToken.swing.chain}/${sourceToken.swing.symbol}`
-                        : ''
+                  <Autocomplete
+                    id="source-token-autocomplete"
+                    className={classes.dropDown}
+                    options={sourceTokens.filter(v => getTokenEntry(v))}
+                    getOptionLabel={option => option.tokenSymbol}
+                    getOptionDisabled={option =>
+                      option.disabledReason !== undefined
                     }
                     onMouseDown={handleSourceClicked}
-                    onChange={handleSourceChange}
-                    className={classes.dropDown}
-                    variant="standard"
-                    disableUnderline
-                  >
-                    {sourceTokens
-                      .filter(v => getTokenEntry(v))
-                      .map(v =>
-                        !v.disabledReason ? (
-                          renderMenuItem('source', v)
-                        ) : (
-                          <Tooltip
-                            arrow
-                            placement="left"
-                            title={v.disabledReason}
-                            key={`sourceTooltip-${v.swing.chain}/${v.swing.symbol}`}
-                          >
-                            <Box>{renderMenuItem('source', v)}</Box>
-                          </Tooltip>
-                        ),
-                      )}
-                  </Select>
+                    onChange={handleSourceChange2}
+                    defaultValue={sourceToken}
+                    renderOption={(props, v) => {
+                      return (
+                        <Box
+                          component="li"
+                          {...props}
+                          key={`source-menu-${v.swing.chain}/${v.swing.symbol}`}
+                        >
+                          {!v.disabledReason ? (
+                            renderTokenOption('source', v)
+                          ) : (
+                            <Tooltip
+                              arrow
+                              placement="left"
+                              title={v.disabledReason}
+                              key={`sourceTooltip-${v.swing.chain}/${v.swing.symbol}`}
+                            >
+                              <>{renderTokenOption('source', v)}</>
+                            </Tooltip>
+                          )}
+                        </Box>
+                      );
+                    }}
+                    renderInput={params => (
+                      <TextField
+                        {...params}
+                        size="small"
+                        variant="filled"
+                        inputProps={{
+                          ...params.inputProps,
+                          autoComplete: 'new-password', // disable autocomplete and autofill
+                        }}
+                      />
+                    )}
+                  />
                 }
               />
               <FormHelperText className={classes.tokenBalanceContainer}>

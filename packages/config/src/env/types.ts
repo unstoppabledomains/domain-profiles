@@ -60,7 +60,12 @@ export type BaseChainBlockchainConfig = BaseBlockchainConfig & {
 };
 
 export interface SwapConfig {
-  swing: {chain: string; symbol: string; type: 'erc20' | 'native'};
+  swing: {
+    chain: string;
+    chainId?: number;
+    symbol: string;
+    type: 'erc20' | 'native';
+  };
   walletType: string;
   chainName: string;
   chainSymbol: string;
@@ -128,6 +133,7 @@ export type Config = {
       PROJECT_ID: string;
       FEE_BPS?: number;
       MIN_BALANCE_USD: number;
+      DISABLED_INTEGRATIONS: string[];
       SUPPORTED_TOKENS: {
         SOURCE: SwapConfig[];
         DESTINATION: SwapConfig[];

@@ -14,6 +14,7 @@ export default function getStagingConfig(): ConfigOverride {
             {
               swing: {
                 chain: 'sepolia',
+                chainId: 11155111,
                 symbol: 'ETH',
                 type: 'native',
               },
@@ -27,6 +28,7 @@ export default function getStagingConfig(): ConfigOverride {
             {
               swing: {
                 chain: 'polygon-amoy',
+                chainId: 80002,
                 symbol: 'POL',
                 type: 'native',
               },
@@ -41,6 +43,7 @@ export default function getStagingConfig(): ConfigOverride {
             {
               swing: {
                 chain: 'polygon-amoy',
+                chainId: 80002,
                 symbol: 'USDC',
                 type: 'erc20',
               },
@@ -57,6 +60,7 @@ export default function getStagingConfig(): ConfigOverride {
             {
               swing: {
                 chain: 'sepolia',
+                chainId: 11155111,
                 symbol: 'ETH',
                 type: 'native',
               },
@@ -70,6 +74,7 @@ export default function getStagingConfig(): ConfigOverride {
             {
               swing: {
                 chain: 'arbitrum-sepolia',
+                chainId: 421614,
                 symbol: 'ETH',
                 type: 'native',
               },
@@ -111,6 +116,7 @@ export default function getStagingConfig(): ConfigOverride {
             {
               swing: {
                 chain: 'base-sepolia',
+                chainId: 84532,
                 symbol: 'ETH',
                 type: 'native',
               },

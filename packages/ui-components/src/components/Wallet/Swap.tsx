@@ -34,8 +34,10 @@ import {
 import {
   getSwapQuoteV2,
   getSwapStatusV2,
+  getSwapTokenAllowance,
   getSwapTokenV2,
   getSwapTransactionV2,
+  setSwapTokenAllowance,
 } from '../../actions/swingActionsV2';
 import {useFireblocksState} from '../../hooks';
 import type {
@@ -53,7 +55,11 @@ import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../../lib/fireBlocks/client';
 import {pollForSuccess} from '../../lib/poll';
 import type {GetOperationResponse} from '../../lib/types/fireBlocks';
 import {OperationStatusType} from '../../lib/types/fireBlocks';
-import type {RouteQuote, SwingV2QuoteRequest} from '../../lib/types/swingXyzV2';
+import type {
+  RouteQuote,
+  SwingV2AllowanceRequest,
+  SwingV2QuoteRequest,
+} from '../../lib/types/swingXyzV2';
 import {getAsset} from '../../lib/wallet/asset';
 import {getAllTokens} from '../../lib/wallet/evm/token';
 import {localStorageWrapper} from '../Chat';
@@ -725,7 +731,13 @@ const Swap: React.FC<Props> = ({
   };
 
   const handleSubmitTransaction = async () => {
-    if (!quoteRequest || !quoteSelected) {
+    if (
+      !quoteRequest ||
+      !quoteSelected ||
+      !sourceToken ||
+      !destinationToken ||
+      !quoteRequest
+    ) {
       return;
     }
 
@@ -735,6 +747,62 @@ const Swap: React.FC<Props> = ({
       const clientState = getBootstrapState(state);
       if (!clientState) {
         throw new Error('invalid wallet client state');
+      }
+
+      // retrieve and validate the asset required to sign this message
+      const asset = getAsset(clientState.assets, {
+        chainId: sourceToken.swing.chainId,
+      });
+      if (!asset?.accountId) {
+        throw new Error('error retrieving source asset from wallet state');
+      }
+
+      // if the source token is ERC-20 there is some extra work that needs
+      // to be done to check token approvals and possibly increase the approved
+      // amount if not already completed
+      if (sourceToken.swing.type === 'erc20' && sourceToken.swing.chainId) {
+        // request the existing token approval amount
+        const approvalOpts: SwingV2AllowanceRequest = {
+          bridge: quoteSelected.route[0].bridge,
+          fromAddress: sourceToken.walletAddress,
+          fromChain: sourceToken.swing.chain,
+          toChain: destinationToken.swing.chain,
+          tokenAddress: quoteRequest.fromTokenAddress,
+          tokenSymbol: sourceToken.swing.symbol,
+          tokenAmount: quoteRequest.tokenAmount,
+          toTokenSymbol: destinationToken.swing.symbol,
+          toTokenAddress: quoteRequest.toTokenAddress,
+          contractCall: false,
+        };
+        const approvalAmt = await getSwapTokenAllowance(approvalOpts);
+
+        // compare the token approval amount
+        if (approvalAmt < parseFloat(quoteSelected.quote.amount)) {
+          const txns = (await setSwapTokenAllowance(approvalOpts)) || [];
+          for (const tx of txns) {
+            // create and validate the swap transaction
+            const swapTx: CreateTransaction = {
+              chainId: sourceToken.swing.chainId,
+              to: tx.to,
+              data: tx.data,
+              value: tx.value,
+              gasLimit: tx.gas,
+            };
+            const operationResponse = await createTransactionOperation(
+              accessToken,
+              asset.accountId,
+              asset.id,
+              swapTx,
+            );
+            if (!operationResponse) {
+              throw new Error('error creating MPC token approval for swap');
+            }
+
+            // sign the swap transaction
+            await pollForSignature(operationResponse);
+            await pollForCompletion(operationResponse);
+          }
+        }
       }
 
       // request the transaction details required to swap
@@ -756,14 +824,6 @@ const Swap: React.FC<Props> = ({
         );
       }
 
-      // retrieve and validate the asset required to sign this message
-      const asset = getAsset(clientState.assets, {
-        chainId: txResponse.fromChain.chainId,
-      });
-      if (!asset?.accountId) {
-        throw new Error('error retrieving source asset from wallet state');
-      }
-
       // create and validate the swap transaction
       const swapTx: CreateTransaction = {
         chainId: txResponse.fromChain.chainId,
@@ -783,8 +843,11 @@ const Swap: React.FC<Props> = ({
       }
 
       // sign the swap transaction
-      await pollForSignature(txResponse.id, operationResponse);
-      await pollForCompletion(txResponse.id, operationResponse);
+      await pollForSignature(operationResponse, txResponse.id);
+      await pollForCompletion(operationResponse, txResponse.id);
+
+      // set completion state
+      setIsTxComplete(true);
     } catch (e) {
       setErrorMessage(t('swap.errorSwappingTokens'));
       notifyEvent(e, 'error', 'Wallet', 'Transaction', {
@@ -796,8 +859,8 @@ const Swap: React.FC<Props> = ({
   };
 
   const pollForSignature = async (
-    swingId: number,
     operationResponse: GetOperationResponse,
+    swingId?: number,
   ) => {
     const result = await pollForSuccess({
       fn: async () => {
@@ -808,7 +871,7 @@ const Swap: React.FC<Props> = ({
           accessToken,
           operationResponse.operation.id,
         );
-        if (operationStatus.transaction?.id) {
+        if (operationStatus.transaction?.id && swingId) {
           // retrieve the swing transaction status, which is an important step in
           // registering the transaction on the Swing dashboard
           await getSwapStatusV2(swingId, operationStatus.transaction.id);
@@ -840,8 +903,8 @@ const Swap: React.FC<Props> = ({
   };
 
   const pollForCompletion = async (
-    swingId: number,
     operationResponse: GetOperationResponse,
+    swingId?: number,
   ) => {
     const result = await pollForSuccess({
       fn: async () => {
@@ -863,7 +926,7 @@ const Swap: React.FC<Props> = ({
         }
 
         // handle transaction ID
-        if (operationStatus.transaction?.id) {
+        if (operationStatus.transaction?.id && swingId) {
           // set transaction ID
           setTxId(operationStatus.transaction.id);
 
@@ -873,7 +936,9 @@ const Swap: React.FC<Props> = ({
             swingId,
             operationStatus.transaction.id,
           );
-          if (swingStatus?.status?.toLowerCase() === 'failed') {
+          if (swingStatus?.status?.toLowerCase() === 'success') {
+            return {success: true};
+          } else if (swingStatus?.status?.toLowerCase() === 'failed') {
             throw new Error(
               `Swap failed: ${
                 swingStatus?.reason || operationStatus.status.toLowerCase()
@@ -884,8 +949,6 @@ const Swap: React.FC<Props> = ({
 
         // handle operation status success
         if (operationStatus.status === OperationStatusType.COMPLETED) {
-          setIsSwapping(false);
-          setIsTxComplete(true);
           return {success: true};
         }
         return {success: false};

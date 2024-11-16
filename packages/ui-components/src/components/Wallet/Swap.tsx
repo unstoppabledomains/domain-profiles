@@ -20,7 +20,6 @@ import type {Theme} from '@mui/material/styles';
 import cloneDeep from 'lodash/cloneDeep';
 import numeral from 'numeral';
 import React, {useEffect, useRef, useState} from 'react';
-import Animation from 'react-canvas-confetti/dist/presets/fireworks';
 import {useDebounce} from 'usehooks-ts';
 
 import config from '@unstoppabledomains/config';
@@ -39,7 +38,7 @@ import {
   getSwapTransactionV2,
   setSwapTokenAllowance,
 } from '../../actions/swingActionsV2';
-import {useFireblocksState} from '../../hooks';
+import {useDomainConfig, useFireblocksState} from '../../hooks';
 import type {
   CreateTransaction,
   SerializedWalletBalance,
@@ -174,6 +173,7 @@ const Swap: React.FC<Props> = ({
   const {classes, cx} = useStyles();
   const isMounted = useRef(false);
   const [showSwapIntro, setShowSwapIntro] = useState(false);
+  const {setShowSuccessAnimation} = useDomainConfig();
 
   // fireblocks state
   const [state] = useFireblocksState();
@@ -540,6 +540,7 @@ const Swap: React.FC<Props> = ({
     setQuotes(undefined);
     setErrorMessage(undefined);
     setDestinationTokenAmountUsd(0);
+    setShowSuccessAnimation(false);
 
     // optional items to clear
     if (opts?.sourceAmtUsd) {
@@ -844,9 +845,10 @@ const Swap: React.FC<Props> = ({
 
       // sign the swap transaction
       await pollForSignature(operationResponse, txResponse.id);
-      await pollForCompletion(operationResponse, txResponse.id);
+      setShowSuccessAnimation(true);
 
-      // set completion state
+      // wait for complete and show set completion state
+      await pollForCompletion(operationResponse, txResponse.id);
       setIsTxComplete(true);
     } catch (e) {
       setErrorMessage(t('swap.errorSwappingTokens'));
@@ -1175,7 +1177,6 @@ const Swap: React.FC<Props> = ({
             </Button>
           </Box>
         )}
-        {isTxComplete && <Animation autorun={{speed: 3, duration: 1}} />}
         {errorMessage && (
           <Box mb={1}>
             <Alert

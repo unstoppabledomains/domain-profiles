@@ -1,4 +1,5 @@
 import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
+import CheckIcon from '@mui/icons-material/Check';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -12,7 +13,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {SendCryptoStatusMessage} from '../../actions/fireBlocksActions';
 import {Status, useSubmitTransaction} from '../../hooks/useSubmitTransaction';
 import type {TokenEntry} from '../../lib';
-import { useTranslationContext} from '../../lib';
+import {useTranslationContext} from '../../lib';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {
   getBlockchainDisplaySymbol,
@@ -114,7 +115,13 @@ export const SubmitTransaction: React.FC<Props> = ({
                 'wallet.leaveWindowOpen',
               )}`
         }
-        icon={<SendOutlinedIcon />}
+        icon={
+          statusMessage === SendCryptoStatusMessage.WAITING_FOR_TRANSACTION ? (
+            <CheckIcon />
+          ) : (
+            <SendOutlinedIcon />
+          )
+        }
         success={status === Status.Success}
         error={status === Status.Failed}
       >

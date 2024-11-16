@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import Animation from 'react-canvas-confetti/dist/presets/fireworks';
 
 import {DomainProfileTabType} from '../components';
 import {AccessWalletModal} from '../components/Wallet/AccessWallet';
@@ -16,10 +17,13 @@ export const DomainConfigContext = React.createContext<{
   isOpen?: boolean;
   setConfigTab?: SetTab;
   configTab?: string;
+  showSuccessAnimation?: boolean;
+  setShowSuccessAnimation?: SetBool;
 }>({});
 
 const DomainConfigProvider: React.FC<Props> = ({children}) => {
   const [isOpen, setIsOpen] = useState<boolean>();
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState<boolean>();
   const {web3Deps, messageToSign, setMessageToSign, txToSign, setTxToSign} =
     useWeb3Context();
   const [configTab, setConfigTab] = useState<DomainProfileTabType>(
@@ -31,6 +35,8 @@ const DomainConfigProvider: React.FC<Props> = ({children}) => {
     setIsOpen,
     configTab,
     setConfigTab,
+    showSuccessAnimation,
+    setShowSuccessAnimation,
   };
 
   // handleClose ensures the messages are cleared from queue
@@ -55,6 +61,9 @@ const DomainConfigProvider: React.FC<Props> = ({children}) => {
           fullScreen={web3Deps.unstoppableWallet.fullScreenModal}
           hideHeader={web3Deps.unstoppableWallet.fullScreenModal}
         />
+      )}
+      {showSuccessAnimation && (
+        <Animation autorun={{speed: 3, duration: 1500}} />
       )}
     </DomainConfigContext.Provider>
   );

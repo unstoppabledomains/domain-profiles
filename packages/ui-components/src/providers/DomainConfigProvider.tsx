@@ -65,7 +65,7 @@ const DomainConfigProvider: React.FC<Props> = ({children}) => {
       )}
       {showSuccessAnimation && (
         <Box sx={{position: 'relative', zIndex: 1000000}}>
-          <Animation autorun={{speed: 3, duration: 1500}} />
+          <Animation autorun={{speed: 3, duration: 1000}} />
         </Box>
       )}
     </DomainConfigContext.Provider>

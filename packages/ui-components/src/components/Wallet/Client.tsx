@@ -486,18 +486,6 @@ export const Client: React.FC<ClientProps> = ({
             <Box className={classes.mainActionsContainer}>
               <Box
                 className={classes.actionContainer}
-                onClick={handleClickedSend}
-              >
-                <SendIcon className={classes.actionIcon} />
-                <Typography
-                  variant={isMobile ? 'caption' : 'body2'}
-                  className={classes.actionText}
-                >
-                  {t('common.send')}
-                </Typography>
-              </Box>
-              <Box
-                className={classes.actionContainer}
                 onClick={handleClickedReceive}
               >
                 <QrCodeIcon className={classes.actionIcon} />
@@ -506,6 +494,18 @@ export const Client: React.FC<ClientProps> = ({
                   className={classes.actionText}
                 >
                   {t('common.receive')}
+                </Typography>
+              </Box>
+              <Box
+                className={classes.actionContainer}
+                onClick={handleClickedSend}
+              >
+                <SendIcon className={classes.actionIcon} />
+                <Typography
+                  variant={isMobile ? 'caption' : 'body2'}
+                  className={classes.actionText}
+                >
+                  {t('common.send')}
                 </Typography>
               </Box>
               {featureFlags?.variations?.udMeServiceEnableSwap && (

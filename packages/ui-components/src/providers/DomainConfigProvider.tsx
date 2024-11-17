@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, {useState} from 'react';
 import Animation from 'react-canvas-confetti/dist/presets/fireworks';
 
@@ -63,7 +64,9 @@ const DomainConfigProvider: React.FC<Props> = ({children}) => {
         />
       )}
       {showSuccessAnimation && (
-        <Animation autorun={{speed: 3, duration: 1500}} />
+        <Box sx={{position: 'relative', zIndex: 1000000}}>
+          <Animation autorun={{speed: 3, duration: 1500}} />
+        </Box>
       )}
     </DomainConfigContext.Provider>
   );

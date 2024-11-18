@@ -3,9 +3,9 @@ import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
 import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import Logout from '@mui/icons-material/Logout';
-import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
+import MedicalServicesOutlinedIcon from '@mui/icons-material/MedicalServicesOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import SupportOutlinedIcon from '@mui/icons-material/SupportOutlined';
+import SupportIcon from '@mui/icons-material/Support';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import {Card, Typography} from '@mui/material/';
 import type {Theme} from '@mui/material/styles';
@@ -204,7 +204,7 @@ const DropDownMenu: React.FC<Props> = ({
           className={classes.container}
           onClick={onRecoveryLinkClicked}
         >
-          <SupportOutlinedIcon className={classes.settingsIcon} />
+          <MedicalServicesOutlinedIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
             {t('wallet.recoveryKit')}
           </Typography>
@@ -228,9 +228,9 @@ const DropDownMenu: React.FC<Props> = ({
           className={classes.container}
           onClick={onSupportClicked}
         >
-          <SchoolOutlinedIcon className={classes.settingsIcon} />
+          <SupportIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
-            {t('common.learnMore')}
+            {t('common.support')}
           </Typography>
         </div>
       )}

@@ -231,6 +231,11 @@ export const Header: React.FC<Props> = ({
     setIsMenuOpen(false);
   };
 
+  const handleSupportClicked = () => {
+    window.open(config.WALLETS.DOCUMENTATION_URL, '_blank');
+    setIsMenuOpen(false);
+  };
+
   const handleMessagingClicked = () => {
     if (onMessagesClick) {
       onMessagesClick();
@@ -402,6 +407,7 @@ export const Header: React.FC<Props> = ({
           onLogout={handleLogout}
           onDisconnect={onDisconnect ? handleDisconnect : undefined}
           onHideMenu={() => setIsMenuOpen(false)}
+          onSupportClicked={handleSupportClicked}
         />
       )}
       {domainToManage && (

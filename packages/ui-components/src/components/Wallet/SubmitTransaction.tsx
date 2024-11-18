@@ -35,6 +35,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'space-between',
   },
   transactionStatusContainer: {
+    color: theme.palette.neutralShades[600],
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -44,13 +45,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   icon: {
     fontSize: '60px',
-  },
-  subTitlePending: {
-    marginTop: theme.spacing(1),
-    color: theme.palette.neutralShades[400],
-  },
-  subTitleComplete: {
-    marginTop: theme.spacing(1),
   },
 }));
 
@@ -126,6 +120,12 @@ export const SubmitTransaction: React.FC<Props> = ({
         error={status === Status.Failed}
       >
         <Box className={classes.transactionStatusContainer} mt={2}>
+          {statusMessage ===
+            SendCryptoStatusMessage.WAITING_FOR_TRANSACTION && (
+            <Typography variant="caption">
+              {t('wallet.safeToCloseWindow')}
+            </Typography>
+          )}
           {[Status.Success, Status.Failed].includes(status) && (
             <Typography variant="caption">
               {t(

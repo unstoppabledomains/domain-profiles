@@ -15,8 +15,9 @@ import {
   getTransferGasEstimate,
 } from '../../actions/fireBlocksActions';
 import {prepareRecipientWallet} from '../../actions/walletActions';
+import {useFireblocksState} from '../../hooks';
 import type {SerializedWalletBalance, TokenEntry} from '../../lib';
-import {TokenType, useTranslationContext} from '../../lib';
+import {TokenType, getBootstrapState, useTranslationContext} from '../../lib';
 import {sleep} from '../../lib/sleep';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {getAsset} from '../../lib/wallet/asset';
@@ -159,6 +160,7 @@ const Send: React.FC<Props> = ({
   wallets,
 }) => {
   const [t] = useTranslationContext();
+  const [state, saveState] = useFireblocksState();
   const [recipientAddress, setRecipientAddress] = useState('');
   const [accountAsset, setAccountAsset] = useState<AccountAsset>();
   const [selectedToken, setSelectedToken] = useState<TokenEntry>();
@@ -200,12 +202,15 @@ const Send: React.FC<Props> = ({
   };
 
   const handleSelectToken = async (token: TokenEntry) => {
+    // retrieve client state
     setSelectedToken(token);
-    const assets = await getAccountAssets(accessToken, true);
-    if (!assets) {
-      throw new Error('Assets not found');
+    const clientState = getBootstrapState(state);
+    if (!clientState) {
+      throw new Error('Invalid configuration');
     }
-    const assetToSend = getAsset(assets, {
+
+    // find the requested asset
+    const assetToSend = getAsset(clientState.assets, {
       token,
     });
     if (!assetToSend) {

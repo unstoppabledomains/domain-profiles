@@ -970,6 +970,7 @@
     "resolutionError": "Could not find recipient wallet address",
     "resolvedDomain": "Wallet found for {{resolvedDomain}}",
     "retrievingGasPrice": "Checking {{blockchain}} network health...",
+    "safeToCloseWindow": "You can safely close this window while the transfer is confirmed onchain",
     "selectAssetToBuy": "Select crypto to buy using a bank account",
     "selectAssetToBuySell": "Select crypto to deposit or withdraw from your bank account",
     "selectAssetToReceive": "Select crypto to receive",

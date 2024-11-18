@@ -47,7 +47,7 @@ export enum SendCryptoStatusMessage {
   WAITING_TO_SIGN = 'Waiting to approve transfer...',
   SIGNING = 'Approving transfer...',
   SUBMITTING_TRANSACTION = 'Submitting transfer...',
-  WAITING_FOR_TRANSACTION = 'Successfully submitted your transfer! You can safely close this window, or wait for the transfer to complete...',
+  WAITING_FOR_TRANSACTION = 'Successfully submitted your transfer!',
   TRANSACTION_COMPLETED = 'Transfer completed!',
   TRANSACTION_FAILED = 'Transfer failed',
 }

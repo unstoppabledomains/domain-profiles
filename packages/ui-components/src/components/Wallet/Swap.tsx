@@ -1029,6 +1029,7 @@ const Swap: React.FC<Props> = ({
             {showSwapIntro && (
               <Alert
                 severity="info"
+                icon={false}
                 className={classes.description}
                 onClose={handleSwapInfoClicked}
               >

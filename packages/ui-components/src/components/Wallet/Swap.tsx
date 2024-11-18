@@ -62,6 +62,7 @@ import type {
 import {getAsset} from '../../lib/wallet/asset';
 import {getAllTokens} from '../../lib/wallet/evm/token';
 import {localStorageWrapper} from '../Chat';
+import Link from '../Link';
 import ManageInput from '../Manage/common/ManageInput';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 import FundWalletModal from './FundWalletModal';
@@ -141,6 +142,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   successIcon: {
     color: theme.palette.success.main,
+  },
+  learnMoreLink: {
+    display: 'inline-flex',
   },
 }));
 
@@ -1029,7 +1033,16 @@ const Swap: React.FC<Props> = ({
                 onClose={handleSwapInfoClicked}
               >
                 <AlertTitle>{t('swap.introTitle')}</AlertTitle>
-                {t('swap.introContent')}
+                {t('swap.introContent')}{' '}
+                <Link
+                  href={config.WALLETS.SWAP.DOCUMENTATION_URL}
+                  target="_blank"
+                  className={classes.learnMoreLink}
+                >
+                  <Typography variant="body2">
+                    {t('common.learnMore')}
+                  </Typography>
+                </Link>
               </Alert>
             )}
             <FormControl disabled={isLoading}>

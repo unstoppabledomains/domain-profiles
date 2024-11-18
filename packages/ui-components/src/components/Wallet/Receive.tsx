@@ -234,7 +234,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
             target="_blank"
             className={classes.learnMoreLink}
           >
-            <Typography variant={'caption'}>Learn More</Typography>
+            <Typography variant={'caption'}>{t('common.learnMore')}</Typography>
           </Link>
         </Typography>
       </Box>

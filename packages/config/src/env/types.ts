@@ -131,6 +131,7 @@ export type Config = {
       API_KEY: string;
       ENVIRONMENT: string;
       PROJECT_ID: string;
+      DOCUMENTATION_URL: string;
       FEE_BPS?: number;
       MIN_BALANCE_USD: number;
       DISABLED_INTEGRATIONS: string[];

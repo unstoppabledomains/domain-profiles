@@ -15,8 +15,9 @@ import {
   getTransferGasEstimate,
 } from '../../actions/fireBlocksActions';
 import {prepareRecipientWallet} from '../../actions/walletActions';
+import {useFireblocksState} from '../../hooks';
 import type {SerializedWalletBalance, TokenEntry} from '../../lib';
-import {TokenType, useTranslationContext} from '../../lib';
+import {TokenType, getBootstrapState, useTranslationContext} from '../../lib';
 import {sleep} from '../../lib/sleep';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {getAsset} from '../../lib/wallet/asset';
@@ -159,6 +160,7 @@ const Send: React.FC<Props> = ({
   wallets,
 }) => {
   const [t] = useTranslationContext();
+  const [state, saveState] = useFireblocksState();
   const [recipientAddress, setRecipientAddress] = useState('');
   const [accountAsset, setAccountAsset] = useState<AccountAsset>();
   const [selectedToken, setSelectedToken] = useState<TokenEntry>();
@@ -167,7 +169,6 @@ const Send: React.FC<Props> = ({
   const [sendConfirmation, setSendConfirmation] = useState(false);
   const [resolvedDomain, setResolvedDomain] = useState('');
   const [gasFeeEstimate, setGasFeeEstimate] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const {classes, cx} = useStyles();
   const amountInputRef = useRef<HTMLInputElement>(null);
 
@@ -201,18 +202,23 @@ const Send: React.FC<Props> = ({
   };
 
   const handleSelectToken = async (token: TokenEntry) => {
+    // retrieve client state
     setSelectedToken(token);
-    setIsLoading(true);
-    const assets = await getAccountAssets(accessToken, true);
-    if (!assets) {
-      throw new Error('Assets not found');
+    const clientState = getBootstrapState(state);
+    if (!clientState) {
+      throw new Error('Invalid configuration');
     }
-    const assetToSend = getAsset(assets, {
+
+    // find the requested asset
+    const assetToSend = getAsset(clientState.assets, {
       token,
     });
     if (!assetToSend) {
       throw new Error('Asset not found');
     }
+
+    // save the asset entry to be sent
+    setAccountAsset(assetToSend);
 
     // depending on the type of token, estimate the required gas
     if (
@@ -247,10 +253,6 @@ const Send: React.FC<Props> = ({
       );
       setGasFeeEstimate(transferGas.networkFee?.amount || '0');
     }
-
-    // save the asset entry to be sent
-    setAccountAsset(assetToSend);
-    setIsLoading(false);
   };
 
   const handleSubmitTransaction = () => {
@@ -319,7 +321,7 @@ const Send: React.FC<Props> = ({
     setAmount(normalizedValue);
   };
 
-  if (isLoading) {
+  if (selectedToken && !accountAsset) {
     return (
       <Box className={classes.loaderContainer}>
         <OperationStatus
@@ -413,6 +415,7 @@ const Send: React.FC<Props> = ({
 
   const canSend = Boolean(
     !insufficientBalance &&
+      gasFeeEstimate &&
       recipientAddress &&
       !transactionSubmitted &&
       gasTokenBalance !== 0 &&

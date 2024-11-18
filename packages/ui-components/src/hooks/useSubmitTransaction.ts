@@ -10,7 +10,7 @@ import {
 } from '../actions/fireBlocksActions';
 import {getRecordKeys} from '../components/Manage/common/verification/types';
 import type {TokenEntry} from '../lib';
-import { TokenType} from '../lib';
+import {TokenType} from '../lib';
 import {notifyEvent} from '../lib/error';
 import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../lib/fireBlocks/client';
 import {isEmailValid} from '../lib/isEmailValid';
@@ -19,6 +19,7 @@ import type {AccountAsset, GetOperationResponse} from '../lib/types/fireBlocks';
 import {OperationStatusType} from '../lib/types/fireBlocks';
 import {getProviderUrl} from '../lib/wallet/evm/provider';
 import {createErc20TransferTx} from '../lib/wallet/evm/token';
+import useDomainConfig from './useDomainConfig';
 import useResolverKeys from './useResolverKeys';
 
 export type Params = {
@@ -49,6 +50,7 @@ export const useSubmitTransaction = ({
   onInvitation,
 }: Params) => {
   const {mappedResolverKeys} = useResolverKeys();
+  const {setShowSuccessAnimation} = useDomainConfig();
   const [transactionId, setTransactionId] = useState('');
   const [status, setStatus] = useState(Status.Pending);
   const [statusMessage, setStatusMessage] = useState<SendCryptoStatusMessage>(
@@ -65,6 +67,7 @@ export const useSubmitTransaction = ({
   }, []);
 
   const submitTransaction = async () => {
+    setShowSuccessAnimation(false);
     try {
       if (!isMounted.current) {
         return;
@@ -221,6 +224,7 @@ export const useSubmitTransaction = ({
         if (operationStatus.transaction?.id) {
           setTransactionId(operationStatus.transaction.id);
           setStatusMessage(SendCryptoStatusMessage.WAITING_FOR_TRANSACTION);
+          setShowSuccessAnimation(true);
         }
         if (operationStatus.status === OperationStatusType.COMPLETED) {
           setStatusMessage(SendCryptoStatusMessage.TRANSACTION_COMPLETED);

@@ -29,6 +29,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     gap: 5,
     alignItems: 'center',
+    overflowY: 'scroll',
   },
   asset: {
     backgroundImage: `linear-gradient(${WalletPaletteOwner.background.gradient.start}, ${WalletPaletteOwner.background.gradient.end})`,

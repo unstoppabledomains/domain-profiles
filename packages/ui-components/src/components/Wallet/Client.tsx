@@ -46,6 +46,7 @@ import {DomainProfileList} from '../Domain';
 import {DomainProfileModal} from '../Manage';
 import Modal from '../Modal';
 import Buy from './Buy';
+import {LetsGetStartedCta} from './LetsGetStartedCta';
 import Receive from './Receive';
 import ReceiveDomainModal from './ReceiveDomainModal';
 import Send from './Send';
@@ -74,6 +75,18 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       justifyContent: 'center',
       marginTop: theme.spacing(3),
       marginBottom: theme.spacing(2),
+    },
+    header: {
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      minHeight: '180px',
+      [theme.breakpoints.down('sm')]: {
+        minHeight: '150px',
+        marginLeft: theme.spacing(-1),
+        marginRight: theme.spacing(-1),
+        width: '345px',
+      },
     },
     balanceContainer: {
       display: 'flex',
@@ -466,77 +479,89 @@ export const Client: React.FC<ClientProps> = ({
           </Box>
         ) : (
           <TabContext value={tabValue as ClientTabType}>
-            <Box className={classes.balanceContainer}>
-              <Typography variant="h3">
-                {(tabValue === ClientTabType.Domains
-                  ? // show only domain value on domain tab
-                    domainsValue
-                  : tabValue === ClientTabType.Portfolio
-                  ? // show only crypto value on crypto tab
-                    cryptoValue
-                  : tabValue === ClientTabType.Transactions &&
-                    // show aggregate value (domains + crypto) on activity tab
-                    domainsValue + cryptoValue
-                ).toLocaleString('en-US', {
-                  style: 'currency',
-                  currency: 'USD',
-                })}
-              </Typography>
-            </Box>
-            <Box className={classes.mainActionsContainer}>
-              <Box
-                className={classes.actionContainer}
-                onClick={handleClickedSend}
-              >
-                <SendIcon className={classes.actionIcon} />
-                <Typography
-                  variant={isMobile ? 'caption' : 'body2'}
-                  className={classes.actionText}
-                >
-                  {t('common.send')}
-                </Typography>
-              </Box>
-              <Box
-                className={classes.actionContainer}
-                onClick={handleClickedReceive}
-              >
-                <QrCodeIcon className={classes.actionIcon} />
-                <Typography
-                  variant={isMobile ? 'caption' : 'body2'}
-                  className={classes.actionText}
-                >
-                  {t('common.receive')}
-                </Typography>
-              </Box>
-              {featureFlags?.variations?.udMeServiceEnableSwap && (
-                <Box
-                  className={classes.actionContainer}
-                  onClick={handleClickedSwap}
-                >
-                  <SwapHorizIcon className={classes.actionIcon} />
-                  <Typography
-                    variant={isMobile ? 'caption' : 'body2'}
-                    className={classes.actionText}
-                  >
-                    {t('swap.title')}
+            {cryptoValue ? (
+              <Box className={classes.header}>
+                <Box className={classes.balanceContainer}>
+                  <Typography variant="h3">
+                    {(tabValue === ClientTabType.Domains
+                      ? // show only domain value on domain tab
+                        domainsValue
+                      : tabValue === ClientTabType.Portfolio
+                      ? // show only crypto value on crypto tab
+                        cryptoValue
+                      : tabValue === ClientTabType.Transactions &&
+                        // show aggregate value (domains + crypto) on activity tab
+                        domainsValue + cryptoValue
+                    ).toLocaleString('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                    })}
                   </Typography>
                 </Box>
-              )}
-              <Box mr={-2}>
-                <Box
-                  className={classes.actionContainer}
-                  onClick={handleClickedBuy}
-                >
-                  <AttachMoneyIcon className={classes.actionIcon} />
-                  <Typography
-                    variant={isMobile ? 'caption' : 'body2'}
-                    className={classes.actionText}
+                <Box className={classes.mainActionsContainer}>
+                  <Box
+                    className={classes.actionContainer}
+                    onClick={handleClickedReceive}
                   >
-                    {t(isSellEnabled ? 'common.buySell' : 'common.buy')}
-                  </Typography>
+                    <QrCodeIcon className={classes.actionIcon} />
+                    <Typography
+                      variant={isMobile ? 'caption' : 'body2'}
+                      className={classes.actionText}
+                    >
+                      {t('common.receive')}
+                    </Typography>
+                  </Box>
+                  <Box
+                    className={classes.actionContainer}
+                    onClick={handleClickedSend}
+                  >
+                    <SendIcon className={classes.actionIcon} />
+                    <Typography
+                      variant={isMobile ? 'caption' : 'body2'}
+                      className={classes.actionText}
+                    >
+                      {t('common.send')}
+                    </Typography>
+                  </Box>
+                  {featureFlags?.variations?.udMeServiceEnableSwap && (
+                    <Box
+                      className={classes.actionContainer}
+                      onClick={handleClickedSwap}
+                    >
+                      <SwapHorizIcon className={classes.actionIcon} />
+                      <Typography
+                        variant={isMobile ? 'caption' : 'body2'}
+                        className={classes.actionText}
+                      >
+                        {t('swap.title')}
+                      </Typography>
+                    </Box>
+                  )}
+                  <Box mr={-2}>
+                    <Box
+                      className={classes.actionContainer}
+                      onClick={handleClickedBuy}
+                    >
+                      <AttachMoneyIcon className={classes.actionIcon} />
+                      <Typography
+                        variant={isMobile ? 'caption' : 'body2'}
+                        className={classes.actionText}
+                      >
+                        {t(isSellEnabled ? 'common.buySell' : 'common.buy')}
+                      </Typography>
+                    </Box>
+                  </Box>
                 </Box>
               </Box>
-            </Box>
+            ) : (
+              <Box className={classes.header}>
+                <LetsGetStartedCta
+                  color="primary"
+                  onBuyClicked={handleClickedBuy}
+                  onReceiveClicked={handleClickedReceive}
+                />
+              </Box>
+            )}
             <Grid container className={classes.portfolioContainer}>
               <Grid item xs={12}>
                 <TabPanel

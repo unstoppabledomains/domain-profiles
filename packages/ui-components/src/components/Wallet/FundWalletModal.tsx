@@ -1,11 +1,7 @@
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import QrCodeIcon from '@mui/icons-material/QrCode';
 import RocketLaunchOutlined from '@mui/icons-material/RocketLaunchOutlined';
 import Alert from '@mui/lab/Alert';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
-import Grid from '@mui/material/Grid';
 import type {Theme} from '@mui/material/styles';
 import React from 'react';
 
@@ -15,6 +11,7 @@ import {useFireblocksState} from '../../hooks';
 import {useTranslationContext} from '../../lib';
 import {getBootstrapState} from '../../lib/fireBlocks/storage/state';
 import {isEthAddress} from '../Chat/protocol/resolution';
+import {BuyCryptoButton, ReceiveCryptoButton} from './LetsGetStartedCta';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -44,6 +41,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   alert: {
     textAlign: 'left',
+    marginTop: theme.spacing(3),
   },
 }));
 
@@ -76,33 +74,23 @@ const FundWalletModal: React.FC<Props> = ({onReceiveClicked, onBuyClicked}) => {
     <Box className={classes.container}>
       <Box className={cx(classes.content, classes.centered)}>
         <RocketLaunchOutlined className={classes.icon} />
-      </Box>
-      <Box mt={3} className={classes.content}>
         <Alert className={classes.alert} severity="info">
           {t('wallet.noTokensAvailableForSend')}
         </Alert>
-        <Grid container spacing={1}>
-          <Grid item xs={6}>
-            <Button
-              onClick={onReceiveClicked}
-              variant="contained"
-              startIcon={<QrCodeIcon />}
-              className={classes.button}
-            >
-              {t('common.receive')}
-            </Button>
-          </Grid>
-          <Grid item xs={6}>
-            <Button
-              onClick={onBuyClicked}
-              variant="contained"
-              startIcon={<AttachMoneyIcon />}
-              className={classes.button}
-            >
-              {t('common.buy')}
-            </Button>
-          </Grid>
-        </Grid>
+      </Box>
+      <Box mt={3} className={classes.content}>
+        <BuyCryptoButton
+          onReceiveClicked={onReceiveClicked}
+          onBuyClicked={onBuyClicked}
+          variant="outlined"
+          color="primary"
+        />
+        <ReceiveCryptoButton
+          onReceiveClicked={onReceiveClicked}
+          onBuyClicked={onBuyClicked}
+          variant="contained"
+          color="primary"
+        />
       </Box>
     </Box>
   );

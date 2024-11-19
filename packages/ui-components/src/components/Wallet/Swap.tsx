@@ -849,7 +849,6 @@ const Swap: React.FC<Props> = ({
 
       // sign the swap transaction
       await pollForSignature(operationResponse, txResponse.id);
-      setShowSuccessAnimation(true);
 
       // wait for complete and show set completion state
       await pollForCompletion(operationResponse, txResponse.id);
@@ -935,6 +934,9 @@ const Swap: React.FC<Props> = ({
         if (operationStatus.transaction?.id && swingId) {
           // set transaction ID
           setTxId(operationStatus.transaction.id);
+
+          // throw some confetti since the transaction is onchain
+          setShowSuccessAnimation(true);
 
           // retrieve the swing transaction status, which is an important step in
           // registering the transaction on the Swing dashboard

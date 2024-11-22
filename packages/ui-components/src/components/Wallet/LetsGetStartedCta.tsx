@@ -14,7 +14,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'space-between',
+    height: '100%',
   },
   content: {
     display: 'flex',
@@ -28,7 +28,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
   },
   button: {
-    marginTop: theme.spacing(1),
     width: '100%',
   },
   icon: {
@@ -41,7 +40,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 type Props = {
   onReceiveClicked: () => void;
   onBuyClicked: () => void;
-  color?: 'primary' | 'secondary' | 'info';
+  color?: 'primary' | 'secondary' | 'info' | 'inherit';
   variant?: 'contained' | 'outlined';
 };
 
@@ -54,7 +53,9 @@ export const LetsGetStartedCta: React.FC<Props> = props => {
         {t('wallet.letsGetStarted')}
       </Typography>
       <Box className={cx(classes.content, classes.centered)}>
-        <BuyCryptoButton {...props} />
+        <Box mb={1} className={classes.content}>
+          <BuyCryptoButton {...props} />
+        </Box>
         <ReceiveCryptoButton {...props} />
       </Box>
     </Box>

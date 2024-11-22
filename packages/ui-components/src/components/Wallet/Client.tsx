@@ -556,7 +556,8 @@ export const Client: React.FC<ClientProps> = ({
             ) : (
               <Box className={classes.header}>
                 <LetsGetStartedCta
-                  color="primary"
+                  color="inherit"
+                  variant="contained"
                   onBuyClicked={handleClickedBuy}
                   onReceiveClicked={handleClickedReceive}
                 />

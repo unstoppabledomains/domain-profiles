@@ -1245,7 +1245,7 @@ export const Configuration: React.FC<
                 textAlign="center"
                 justifyContent="center"
               >
-                <Alert severity="info">
+                <Alert severity="info" icon={false}>
                   <Markdown>
                     {t('wallet.onboardSuccessDescription', {
                       emailAddress: emailAddress!,

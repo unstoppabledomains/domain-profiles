@@ -31,7 +31,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
   },
   button: {
-    marginTop: theme.spacing(3),
+    marginTop: theme.spacing(1),
     width: '100%',
   },
   icon: {
@@ -85,12 +85,14 @@ const FundWalletModal: React.FC<Props> = ({onReceiveClicked, onBuyClicked}) => {
           variant="outlined"
           color="primary"
         />
-        <ReceiveCryptoButton
-          onReceiveClicked={onReceiveClicked}
-          onBuyClicked={onBuyClicked}
-          variant="contained"
-          color="primary"
-        />
+        <Box className={classes.button}>
+          <ReceiveCryptoButton
+            onReceiveClicked={onReceiveClicked}
+            onBuyClicked={onBuyClicked}
+            variant="contained"
+            color="primary"
+          />
+        </Box>
       </Box>
     </Box>
   );

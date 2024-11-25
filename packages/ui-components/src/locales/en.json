@@ -978,7 +978,7 @@
     "retrievingGasPrice": "Checking {{blockchain}} network health...",
     "safeToCloseWindow": "You can safely close this window while the transfer is confirmed onchain",
     "selectAssetToBuy": "Select crypto to deposit using a bank account",
-    "selectAssetToBuySell": "Select crypto to deposit or withdraw from a bank account",
+    "selectAssetToBuySell": "Select crypto to deposit or withdraw using a bank account",
     "selectAssetToReceive": "Select crypto to receive",
     "selectAssetToSend": "Select crypto to send",
     "sendByEmail": "Send to email address",

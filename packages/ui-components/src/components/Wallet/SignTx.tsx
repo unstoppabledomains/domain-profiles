@@ -7,6 +7,7 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {utils} from 'ethers';
 import {round} from 'lodash';
 import React, {useEffect, useState} from 'react';
 
@@ -75,6 +76,14 @@ export const SignTx: React.FC<SignTxProps> = ({
   const [gasEstimate, setGasEstimate] =
     useState<GetEstimateTransactionResponse>();
   const fireblocksSigner = useFireblocksTxSigner();
+
+  // is recipient a smart contract or user?
+  const valueAmt = value
+    ? utils.isHexString(value)
+      ? parseFloat(utils.formatEther(value))
+      : parseFloat(value)
+    : 0;
+  const isSmartContract = data && data.length > 2;
 
   // retrieve and validate key state
   const clientState = getBootstrapState(state);
@@ -212,19 +221,25 @@ export const SignTx: React.FC<SignTxProps> = ({
               </Typography>
             )}
             <Typography mt={3} variant="body1">
-              {t('common.smartContract')}:
+              {isSmartContract
+                ? t('common.smartContract')
+                : t('wallet.recipient')}
+              :
             </Typography>
             <Typography mt={1} variant="body2">
               <b>{contractAddress}</b>
             </Typography>
             <Typography mt={3} variant="body1">
-              {t('wallet.networkFee')}:{' '}
+              {valueAmt
+                ? t('wallet.amountWithNetworkFees')
+                : t('wallet.networkFee')}
+              :{' '}
             </Typography>
             <Typography mt={1} variant="body2">
               <b>
                 {gasEstimate.status === 'VALID' && gasEstimate?.networkFee
                   ? `${round(
-                      parseFloat(gasEstimate.networkFee.amount),
+                      valueAmt + parseFloat(gasEstimate.networkFee.amount),
                       maxDisplayLength,
                     )} ${getBlockchainSymbol(
                       asset.blockchainAsset.blockchain.id,

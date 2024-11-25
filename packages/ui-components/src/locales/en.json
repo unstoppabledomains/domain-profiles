@@ -907,6 +907,7 @@
     "alreadySentVerification": "A verification code for {{emailAddress}} has already been sent. Try again in a few minutes.",
     "amount": "Amount",
     "amountInSymbol": "Amount in {{symbol}}",
+    "amountWithNetworkFees": "Amount (with network fees)",
     "approve": "Confirm",
     "availableAmount": "Available {{amount}} {{symbol}}",
     "availableUsd": "Available {{amount}} USD",

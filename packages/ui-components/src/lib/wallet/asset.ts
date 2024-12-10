@@ -3,7 +3,7 @@ import config from '@unstoppabledomains/config';
 import {notifyEvent} from '../error';
 import {TokenType} from '../types';
 import type {AccountAsset} from '../types/fireBlocks';
-import type { TokenEntry} from '../types/wallet';
+import type {TokenEntry} from '../types/wallet';
 import {SUPPORTED_SIGNING_SYMBOLS} from '../types/wallet';
 
 export const getAsset = (
@@ -43,14 +43,19 @@ export const getAsset = (
       );
     }
 
-    // use default blockchain symbol
-    return (
+    // find by address on default signing asset
+    const defaultAsset =
       a.blockchainAsset.blockchain.id.toLowerCase() ===
         config.WALLETS.SIGNATURE_SYMBOL.split('/')[0].toLowerCase() &&
       a.blockchainAsset.symbol.toLowerCase() ===
         config.WALLETS.SIGNATURE_SYMBOL.split('/')[1].toLowerCase() &&
-      a.address.toLowerCase() === opts?.address?.toLowerCase()
-    );
+      a.address.toLowerCase() === opts?.address?.toLowerCase();
+    if (defaultAsset) {
+      return defaultAsset;
+    }
+
+    // find by address on any asset
+    return a.address.toLowerCase() === opts?.address?.toLowerCase();
   });
 
   // fallback to first element if asset is not found, and no options have

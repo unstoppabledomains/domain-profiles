@@ -210,7 +210,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
       )}
       <div>
         <div className={classes.theCardHover} data-testid={'avatar'}>
-          {src && imageType !== 'default' ? (
+          {src ? (
             <>
               <div className={cx(classes.theBack)}>
                 <div>

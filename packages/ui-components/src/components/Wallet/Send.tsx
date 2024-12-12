@@ -10,7 +10,6 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useFeatureFlags} from '../../actions';
 import {
-  getAccountAssets,
   getTransactionGasEstimate,
   getTransferGasEstimate,
 } from '../../actions/fireBlocksActions';
@@ -160,7 +159,7 @@ const Send: React.FC<Props> = ({
   wallets,
 }) => {
   const [t] = useTranslationContext();
-  const [state, saveState] = useFireblocksState();
+  const [state] = useFireblocksState();
   const [recipientAddress, setRecipientAddress] = useState('');
   const [accountAsset, setAccountAsset] = useState<AccountAsset>();
   const [selectedToken, setSelectedToken] = useState<TokenEntry>();
@@ -180,6 +179,8 @@ const Send: React.FC<Props> = ({
   const isSendToEmailEnabled =
     featureFlags.variations?.profileServiceEnableWalletCreation === true &&
     featureFlags.variations?.profileServiceEnableWalletSendToEmail === true;
+  const isSplTokenEnabled =
+    featureFlags.variations?.udMeEnableWalletSolanaSigning;
 
   const resetForm = () => {
     setResolvedDomain('');
@@ -212,6 +213,7 @@ const Send: React.FC<Props> = ({
     // find the requested asset
     const assetToSend = getAsset(clientState.assets, {
       token,
+      address: token.walletAddress,
     });
     if (!assetToSend) {
       throw new Error('Asset not found');
@@ -241,6 +243,17 @@ const Send: React.FC<Props> = ({
         transferTx,
       );
       setGasFeeEstimate(transferTxGas.networkFee?.amount || '0');
+    } else if (token.type === TokenType.Spl && token.address) {
+      // TODO - potentially update this gas estimation
+      const transferGas = await getTransferGasEstimate(
+        assetToSend,
+        accessToken,
+        // Doesn't matter what the recipient and amount are, just need to get the fee estimate
+        assetToSend.address,
+        // Use a small test amount to measure gas
+        '0.0001',
+      );
+      setGasFeeEstimate(transferGas.networkFee?.amount || '0');
     } else {
       // retrieve gas for a transfer
       const transferGas = await getTransferGasEstimate(
@@ -347,6 +360,7 @@ const Send: React.FC<Props> = ({
           requireBalance={true}
           supportedAssetList={config.WALLETS.CHAINS.SEND}
           supportErc20={true}
+          supportSpl={isSplTokenEnabled}
         />
       </Box>
     );

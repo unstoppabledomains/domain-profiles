@@ -480,7 +480,7 @@ export type SerializedWalletNftCollection = {
 };
 
 export type SerializedWalletToken = {
-  type: TokenType.Erc20 | TokenType.Native;
+  type: TokenType.Erc20 | TokenType.Native | TokenType.Spl;
   address: string;
   symbol: string;
   gasCurrency: string;
@@ -527,6 +527,7 @@ export type TelegramUserInfo = {
 export enum TokenType {
   Native = 'native',
   Erc20 = 'erc20',
+  Spl = 'spl',
   Nft = 'nft',
 }
 

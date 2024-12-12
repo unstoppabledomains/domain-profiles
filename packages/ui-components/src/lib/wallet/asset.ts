@@ -23,24 +23,28 @@ export const getAsset = (
   const asset = assets.find(a => {
     // use chain ID if provided
     if (opts?.chainId) {
-      return (
+      const chainAsset =
         SUPPORTED_SIGNING_SYMBOLS.includes(
           a.blockchainAsset.symbol.toUpperCase(),
-        ) && a.blockchainAsset.blockchain.networkId === opts.chainId
-      );
+        ) && a.blockchainAsset.blockchain.networkId === opts.chainId;
+      if (chainAsset) {
+        return chainAsset;
+      }
     }
 
     // use token if provided
     if (opts?.token) {
-      return (
+      const tokenAsset =
         a.blockchainAsset.blockchain.name.toLowerCase() ===
           opts.token.walletName.toLowerCase() &&
         a.blockchainAsset.symbol.toLowerCase() ===
           (opts.token.type === TokenType.Erc20
             ? opts.token.symbol.toLowerCase()
             : opts.token.ticker.toLowerCase()) &&
-        a.address.toLowerCase() === opts.token.walletAddress.toLowerCase()
-      );
+        a.address.toLowerCase() === opts.token.walletAddress.toLowerCase();
+      if (tokenAsset) {
+        return tokenAsset;
+      }
     }
 
     // find by address on default signing asset

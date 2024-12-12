@@ -154,6 +154,7 @@ export const useSubmitTransaction = ({
 
           // wait for transaction confirmation
           setStatusMessage(SendCryptoStatusMessage.WAITING_FOR_TRANSACTION);
+          setShowSuccessAnimation(true);
           setTransactionId(txHash);
           await waitForTx(txHash);
 

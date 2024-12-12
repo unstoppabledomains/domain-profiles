@@ -59,6 +59,7 @@ type Props = {
   onClickBuy?: () => void;
   supportedAssetList: ImmutableArray<string>;
   supportErc20?: boolean;
+  supportSpl?: boolean;
 };
 
 export const SelectAsset: React.FC<Props> = ({
@@ -73,6 +74,7 @@ export const SelectAsset: React.FC<Props> = ({
   onClickBuy,
   supportedAssetList,
   supportErc20,
+  supportSpl,
 }) => {
   const {classes} = useStyles();
   const wallets = filterWallets(initialWallets, supportedAssetList);
@@ -82,6 +84,7 @@ export const SelectAsset: React.FC<Props> = ({
     .filter(
       token =>
         (token.type === TokenType.Erc20 && supportErc20) ||
+        (token.type === TokenType.Spl && supportSpl) ||
         supportedAssetList.includes(
           `${token.symbol.toUpperCase()}/${token.ticker.toUpperCase()}`,
         ),

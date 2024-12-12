@@ -62,7 +62,8 @@ export default function getDefaultConfig(): Config {
       SOL: {
         CHAIN_ID: 0,
         NETWORK_NAME: 'solana',
-        JSON_RPC_API_URL: '',
+        JSON_RPC_API_URL:
+          'https://solana-mainnet.g.alchemy.com/v2/NHnzEesdDuX90lFZRMOa4ZSE0wIR-BAo',
         BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/sol/tx/',
         BLOCK_EXPLORER_NAME: 'oklink',
         BLOCK_EXPLORER_BASE_URL: 'https://www.oklink.com/sol',

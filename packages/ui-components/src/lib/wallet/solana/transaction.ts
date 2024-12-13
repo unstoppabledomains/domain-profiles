@@ -242,15 +242,11 @@ export const signTransaction = async (
   // update the latest blockhash to increase chance of landing onchain
   const latestBlockhash = await getLatestBlockhash();
   if (isVersionedTransaction(tx)) {
-    // versioned transactions must be repackaged
     if (latestBlockhash.blockhash !== tx.message.recentBlockhash) {
       notifyEvent('updating tx', 'info', 'Wallet', 'Transaction');
-      const m = TransactionMessage.decompile(tx.message);
-      m.recentBlockhash = latestBlockhash.blockhash;
-      tx = new VersionedTransaction(m.compileToV0Message());
+      tx.message.recentBlockhash = latestBlockhash.blockhash;
     }
   } else {
-    // legacy transactions can be updated directly
     if (latestBlockhash.blockhash !== tx.recentBlockhash) {
       notifyEvent('updating legacy tx', 'info', 'Wallet', 'Transaction');
       tx.recentBlockhash = latestBlockhash.blockhash;

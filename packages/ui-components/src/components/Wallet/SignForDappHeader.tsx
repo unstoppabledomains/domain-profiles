@@ -53,19 +53,23 @@ export const SignForDappHeader: React.FC<SignForDappHeaderProps> = ({
           {t('wallet.signDappOperationDescription', {name, actionText})}
         </Markdown>
       </Typography>
-      <Typography className={classes.headerText} variant="body1">
-        {t('manage.website')}:
-      </Typography>
-      <Typography className={classes.detailText} variant="body2">
-        {hostUrl}
-      </Typography>
+      {hostUrl && (
+        <>
+          <Typography className={classes.headerText} variant="body1">
+            {t('manage.website')}:
+          </Typography>
+          <Typography className={classes.detailText} variant="body2">
+            {hostUrl}
+          </Typography>
+        </>
+      )}
     </Box>
   );
 };
 
 interface SignForDappHeaderProps {
   name: string;
-  hostUrl: string;
+  hostUrl?: string;
   iconUrl: string;
   actionText: string;
 }

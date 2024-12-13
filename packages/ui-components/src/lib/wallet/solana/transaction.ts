@@ -6,11 +6,13 @@ import {
   getOrCreateAssociatedTokenAccount,
 } from '@solana/spl-token';
 import {
+  ComputeBudgetProgram,
   Connection,
   ParsedAccountData,
   PublicKey,
   Signer,
   Transaction,
+  TransactionMessage,
   VersionedTransaction,
 } from '@solana/web3.js';
 import {utils} from 'ethers';
@@ -62,21 +64,81 @@ export const createSplTransferTx = async (
   // it's considered expired. This means if it takes too long to generate a signature
   // the transaction will fail.
   const [latestBlockhash, tokenDecimals] = await Promise.all([
-    rpcProvider.getLatestBlockhash(),
+    getLatestBlockhash(),
     getTokenDecimals(rpcProvider, tokenMint),
   ]);
-  const transaction = new Transaction({
-    feePayer: fromWalletSigner.publicKey,
-    ...latestBlockhash,
-  }).add(
-    createTransferInstruction(
-      fromTokenAccount.address,
-      toTokenAccount.address,
-      fromWalletSigner.publicKey,
-      amount * Math.pow(10, tokenDecimals),
+  const transaction = await simulateAndBudgetTx(
+    new Transaction({
+      feePayer: fromWalletSigner.publicKey,
+      ...latestBlockhash,
+    }).add(
+      createTransferInstruction(
+        fromTokenAccount.address,
+        toTokenAccount.address,
+        fromWalletSigner.publicKey,
+        amount * Math.pow(10, tokenDecimals),
+      ),
     ),
   );
   return transaction;
+};
+
+/**
+ * Improve the odds the Tx will land onchain, from https://docs.helius.dev/guides/sending-transactions-on-solana
+ */
+export const simulateAndBudgetTx = async (tx: Transaction) => {
+  try {
+    // generate a test transaction which includes the actual instructions plus
+    // an additional compute budget instruction
+    const testInstructions = [
+      ComputeBudgetProgram.setComputeUnitLimit({units: 1_400_000}),
+      ...tx.instructions,
+    ];
+    const testTransaction = new VersionedTransaction(
+      new TransactionMessage({
+        instructions: testInstructions,
+        payerKey: tx.feePayer!,
+        recentBlockhash: (await getLatestBlockhash()).blockhash,
+      }).compileToV0Message(),
+    );
+
+    // simulate the test transaction
+    const rpcConnection = getSolanaProvider();
+    const simulationResult = await rpcConnection.simulateTransaction(
+      testTransaction,
+      {
+        replaceRecentBlockhash: true,
+        sigVerify: false,
+      },
+    );
+    notifyEvent('simulation results', 'info', 'Wallet', 'Transaction', {
+      meta: simulationResult,
+    });
+
+    // validate that a simulation result has compute units
+    if (!simulationResult.value.unitsConsumed) {
+      throw new Error('no compute units available');
+    }
+
+    // calculate the recommended compute units to motivate validators to
+    // include the transaction in a block
+    const unitsConsumed = simulationResult.value.unitsConsumed;
+    const cuBuffer = Math.ceil(unitsConsumed * 1.1);
+
+    // augment the original transaction compute units
+    notifyEvent('adding tx compute units', 'info', 'Wallet', 'Transaction', {
+      meta: {cuBuffer},
+    });
+    const computeUnitIx = ComputeBudgetProgram.setComputeUnitLimit({
+      units: cuBuffer,
+    });
+    tx.add(computeUnitIx);
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Transaction', {
+      msg: 'error simulating test transaction',
+    });
+  }
+  return tx;
 };
 
 export const getOrCreateAssociatedTokenAccountWithMPC = async (
@@ -106,7 +168,7 @@ export const getOrCreateAssociatedTokenAccountWithMPC = async (
     if (e instanceof TokenAccountNotFoundError) {
       // create a transaction to create the token account if it is missing
       const associatedToken = getAssociatedTokenAddressSync(mint, owner);
-      const latestBlockhash = await connection.getLatestBlockhash();
+      const latestBlockhash = await getLatestBlockhash();
       notifyEvent('creating token account', 'info', 'Wallet', 'Transaction', {
         meta: {
           payer: payer.publicKey,
@@ -117,15 +179,17 @@ export const getOrCreateAssociatedTokenAccountWithMPC = async (
           broadcast,
         },
       });
-      const associatedTokenTx = new Transaction({
-        feePayer: payer.publicKey,
-        ...latestBlockhash,
-      }).add(
-        createAssociatedTokenAccountInstruction(
-          payer.publicKey,
-          associatedToken,
-          owner,
-          mint,
+      const associatedTokenTx = await simulateAndBudgetTx(
+        new Transaction({
+          feePayer: payer.publicKey,
+          ...latestBlockhash,
+        }).add(
+          createAssociatedTokenAccountInstruction(
+            payer.publicKey,
+            associatedToken,
+            owner,
+            mint,
+          ),
         ),
       );
 
@@ -164,12 +228,35 @@ export const getTokenDecimals = async (
   return result;
 };
 
+export const getLatestBlockhash = async () => {
+  const rpcConnection = getSolanaProvider();
+  return await rpcConnection.getLatestBlockhash('confirmed');
+};
+
 export const signTransaction = async (
   tx: Transaction | VersionedTransaction,
   signerAddress: string,
   signWithMpc: FireblocksMessageSigner,
   broadcast?: boolean,
 ): Promise<Transaction | VersionedTransaction> => {
+  // update the latest blockhash to increase chance of landing onchain
+  const latestBlockhash = await getLatestBlockhash();
+  if (isVersionedTransaction(tx)) {
+    // versioned transactions must be repackaged
+    if (latestBlockhash.blockhash !== tx.message.recentBlockhash) {
+      notifyEvent('updating tx', 'info', 'Wallet', 'Transaction');
+      const m = TransactionMessage.decompile(tx.message);
+      m.recentBlockhash = latestBlockhash.blockhash;
+      tx = new VersionedTransaction(m.compileToV0Message());
+    }
+  } else {
+    // legacy transactions can be updated directly
+    if (latestBlockhash.blockhash !== tx.recentBlockhash) {
+      notifyEvent('updating legacy tx', 'info', 'Wallet', 'Transaction');
+      tx.recentBlockhash = latestBlockhash.blockhash;
+    }
+  }
+
   // retrieve the tx message that must be signed depending on the format
   const txMessageBuffer = isVersionedTransaction(tx)
     ? tx.message.serialize()
@@ -211,7 +298,6 @@ export const broadcastTx = async (tx: Transaction | VersionedTransaction) => {
   notifyEvent('broadcast tx complete', 'info', 'Wallet', 'Signature', {
     meta: {txHash},
   });
-
   return txHash;
 };
 
@@ -231,17 +317,20 @@ export const waitForTx = async (txHash: string) => {
         meta: {txHash, info},
       });
       if (info) {
-        break;
+        notifyEvent('confirm tx complete', 'info', 'Wallet', 'Signature', {
+          meta: {txHash},
+        });
+        return true;
       }
     } catch (e) {
       notifyEvent(e, 'warning', 'Wallet', 'Transaction', {meta: {txHash}});
     }
     await sleep(FB_WAIT_TIME_MS);
   }
-
-  notifyEvent('confirm tx complete', 'info', 'Wallet', 'Signature', {
+  notifyEvent('transaction not confirmed', 'warning', 'Wallet', 'Signature', {
     meta: {txHash},
   });
+  throw new Error('transaction not confirmed');
 };
 
 export const isVersionedTransaction = (

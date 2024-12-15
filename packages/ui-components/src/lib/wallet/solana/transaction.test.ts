@@ -1,15 +1,29 @@
-import {Keypair, PublicKey} from '@solana/web3.js';
+import {Connection, Keypair, PublicKey} from '@solana/web3.js';
 import {utils} from 'ethers';
 import nacl from 'tweetnacl';
 
 import {FireblocksMessageSigner} from '../../../hooks/useFireblocksMessageSigner';
-import {getSolanaProvider} from './provider';
+import * as provider from './provider';
 import {
   createSplTransferTx,
   getOrCreateAssociatedTokenAccountWithMPC,
 } from './transaction';
 
+const mockAddress = 'mock-address';
+const mockAccessToken = 'mock-access-token';
+
 describe('solana transactions', () => {
+  beforeEach(() => {
+    jest
+      .spyOn(provider, 'getSolanaProvider')
+      .mockReturnValue(
+        new Connection(
+          'https://solana-mainnet.g.alchemy.com/v2/NHnzEesdDuX90lFZRMOa4ZSE0wIR-BAo',
+          'confirmed',
+        ),
+      );
+  });
+
   it('should create a transaction if destination token account exists', async () => {
     const mockSigner = jest.fn();
 
@@ -19,6 +33,7 @@ describe('solana transactions', () => {
       '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr',
       1,
       mockSigner,
+      mockAccessToken,
     );
     expect(tx).toBeDefined();
     expect(mockSigner).not.toHaveBeenCalled();
@@ -36,6 +51,7 @@ describe('solana transactions', () => {
         'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',
         1,
         mockSigner,
+        mockAccessToken,
       ),
     ).rejects.toThrow('Assertion failed');
     expect(mockSigner).toHaveBeenCalledTimes(1);
@@ -43,7 +59,10 @@ describe('solana transactions', () => {
 
   it('should create a token account transaction', async () => {
     const payer = Keypair.generate();
-    const rpcConnection = getSolanaProvider();
+    const rpcConnection = provider.getSolanaProvider(
+      mockAddress,
+      mockAccessToken,
+    );
 
     const mockSigner: FireblocksMessageSigner = async (message: string) => {
       const messageBytes = Buffer.from(message.replace('0x', ''), 'hex');
@@ -58,6 +77,7 @@ describe('solana transactions', () => {
         new PublicKey('EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm'),
         payer.publicKey,
         mockSigner,
+        mockAccessToken,
         false,
       ),
     ).rejects.toThrow(/token account .+ tx was not broadcasted/);
@@ -65,7 +85,10 @@ describe('solana transactions', () => {
 
   it('should broadcast a token account transaction', async () => {
     const payer = Keypair.generate();
-    const rpcConnection = getSolanaProvider();
+    const rpcConnection = provider.getSolanaProvider(
+      mockAccessToken,
+      mockAccessToken,
+    );
 
     const mockSigner: FireblocksMessageSigner = async (message: string) => {
       const messageBytes = Buffer.from(message.replace('0x', ''), 'hex');
@@ -80,6 +103,7 @@ describe('solana transactions', () => {
         new PublicKey('EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm'),
         payer.publicKey,
         mockSigner,
+        mockAccessToken,
         true,
       ),
     ).rejects.toThrow(

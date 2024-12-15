@@ -137,6 +137,7 @@ export const useSubmitTransaction = ({
             token.address,
             parseFloat(amount),
             fireblocksMessageSigner,
+            accessToken,
           );
 
           // sign and wait for the signature value
@@ -145,18 +146,23 @@ export const useSubmitTransaction = ({
             tx,
             token.walletAddress,
             fireblocksMessageSigner,
+            accessToken,
             false,
           );
 
           // submit the transaction
           setStatusMessage(SendCryptoStatusMessage.SUBMITTING_TRANSACTION);
-          const txHash = await broadcastTx(signedTx);
+          const txHash = await broadcastTx(
+            signedTx,
+            token.walletAddress,
+            accessToken,
+          );
 
           // wait for transaction confirmation
           setStatusMessage(SendCryptoStatusMessage.WAITING_FOR_TRANSACTION);
           setShowSuccessAnimation(true);
           setTransactionId(txHash);
-          await waitForTx(txHash);
+          await waitForTx(txHash, token.walletAddress, accessToken);
 
           // operation is complete
           setStatusMessage(SendCryptoStatusMessage.TRANSACTION_COMPLETED);

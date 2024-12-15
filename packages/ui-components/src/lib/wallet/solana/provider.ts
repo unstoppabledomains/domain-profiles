@@ -1,7 +1,18 @@
 import {Connection} from '@solana/web3.js';
 
-import {getProviderUrl} from '../evm/provider';
+import config from '@unstoppabledomains/config';
 
-export const getSolanaProvider = () => {
-  return new Connection(getProviderUrl('SOL'), 'confirmed');
+export const getSolanaProvider = (
+  ownerAddress: string,
+  accessToken: string,
+) => {
+  return new Connection(
+    `${config.PROFILE.HOST_URL}/user/${ownerAddress}/wallet/rpc`,
+    {
+      commitment: 'confirmed',
+      httpHeaders: {
+        ['Authorization']: `Bearer ${accessToken}`,
+      },
+    },
+  );
 };

@@ -146,7 +146,7 @@ export default function getDefaultConfig(): Config {
         APPLE_URL:
           'https://apps.apple.com/us/app/unstoppable-domains/id1544748602',
       },
-      SIGNATURE_SYMBOL: 'ETHEREUM/ETH',
+      SIGNATURE_SYMBOL: 'ETHEREUM/ETH,SOLANA/SOL',
       MAX_CLOCK_DRIFT_MS: 2 * 60 * 1000, // 2 minutes
     },
     PUSH: {

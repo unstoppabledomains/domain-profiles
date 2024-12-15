@@ -1,3 +1,4 @@
+import {getBlockchainSymbolFromChainId} from '../../../components/Manage/common/verification/types';
 import type {SerializedWalletBalance} from '../../types/domain';
 import {TokenType} from '../../types/domain';
 import type {CreateTransaction} from '../../types/fireBlocks';
@@ -6,24 +7,30 @@ import {getContract, getContractDecimals} from './web3';
 
 export const createErc20TransferTx = async (opts: {
   chainId: number;
-  providerUrl: string;
+  accessToken: string;
   tokenAddress: string;
   fromAddress: string;
   toAddress: string;
   amount: number;
 }): Promise<CreateTransaction> => {
   // ERC-20 contract instance for sending a specific token
+  const chainSymbol = getBlockchainSymbolFromChainId(opts.chainId) || '';
   const erc20Contract = getContract(
-    opts.providerUrl,
     opts.tokenAddress,
+    {
+      chainSymbol,
+      ownerAddress: opts.fromAddress,
+      accessToken: opts.accessToken,
+    },
     opts.fromAddress,
   );
 
   // retrieve the contract decimals to represent the amount
-  const decimals = await getContractDecimals(
-    opts.providerUrl,
-    opts.tokenAddress,
-  );
+  const decimals = await getContractDecimals(opts.tokenAddress, {
+    chainSymbol,
+    ownerAddress: opts.fromAddress,
+    accessToken: opts.accessToken,
+  });
   const normalizedAmt = Math.floor(opts.amount * Math.pow(10, decimals));
 
   // create the transaction that should be signed to execute ERC-20 transfer

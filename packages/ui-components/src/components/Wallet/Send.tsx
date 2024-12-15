@@ -20,7 +20,6 @@ import {TokenType, getBootstrapState, useTranslationContext} from '../../lib';
 import {sleep} from '../../lib/sleep';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {getAsset} from '../../lib/wallet/asset';
-import {getProviderUrl} from '../../lib/wallet/evm/provider';
 import {createErc20TransferTx} from '../../lib/wallet/evm/token';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
@@ -230,8 +229,8 @@ const Send: React.FC<Props> = ({
     ) {
       // retrieve gas for a transaction
       const transferTx = await createErc20TransferTx({
+        accessToken,
         chainId: assetToSend.blockchainAsset.blockchain.networkId,
-        providerUrl: getProviderUrl(assetToSend.blockchainAsset.blockchain.id),
         tokenAddress: token.address,
         fromAddress: token.walletAddress,
         toAddress: token.walletAddress,

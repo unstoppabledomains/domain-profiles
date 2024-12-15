@@ -17,7 +17,6 @@ import {isEmailValid} from '../lib/isEmailValid';
 import {pollForSuccess} from '../lib/poll';
 import type {AccountAsset, GetOperationResponse} from '../lib/types/fireBlocks';
 import {OperationStatusType} from '../lib/types/fireBlocks';
-import {getProviderUrl} from '../lib/wallet/evm/provider';
 import {createErc20TransferTx} from '../lib/wallet/evm/token';
 import {
   broadcastTx,
@@ -184,8 +183,8 @@ export const useSubmitTransaction = ({
         token.address &&
         token.type === TokenType.Erc20
           ? await createErc20TransferTx({
+              accessToken,
               chainId: asset.blockchainAsset.blockchain.networkId,
-              providerUrl: getProviderUrl(asset.blockchainAsset.blockchain.id),
               tokenAddress: token.address,
               fromAddress: token.walletAddress,
               toAddress: recipientAddress,

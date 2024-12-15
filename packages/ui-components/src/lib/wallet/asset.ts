@@ -38,7 +38,8 @@ export const getAsset = (
         a.blockchainAsset.blockchain.name.toLowerCase() ===
           opts.token.walletName.toLowerCase() &&
         a.blockchainAsset.symbol.toLowerCase() ===
-          (opts.token.type === TokenType.Erc20
+          (opts.token.type === TokenType.Erc20 ||
+          opts.token.type === TokenType.Spl
             ? opts.token.symbol.toLowerCase()
             : opts.token.ticker.toLowerCase()) &&
         a.address.toLowerCase() === opts.token.walletAddress.toLowerCase();
@@ -58,8 +59,8 @@ export const getAsset = (
       return defaultAsset;
     }
 
-    // find by address on any asset
-    return a.address.toLowerCase() === opts?.address?.toLowerCase();
+    // asset not found
+    return false;
   });
 
   // fallback to first element if asset is not found, and no options have

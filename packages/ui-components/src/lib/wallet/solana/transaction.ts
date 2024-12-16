@@ -29,9 +29,10 @@ export const createSplTransferTx = async (
   tokenAddress: string,
   amount: number,
   signWithMpc: FireblocksMessageSigner,
+  accessToken: string,
 ) => {
   // retrieve a connection
-  const rpcProvider = getSolanaProvider();
+  const rpcProvider = getSolanaProvider(fromAddress, accessToken);
 
   // create public keys for associated accounts
   const fromWalletSigner: Signer = {
@@ -48,6 +49,7 @@ export const createSplTransferTx = async (
     tokenMint,
     fromWalletSigner.publicKey,
     signWithMpc,
+    accessToken,
   );
 
   // get the token account of the to address, if it does not exist, create it
@@ -57,6 +59,7 @@ export const createSplTransferTx = async (
     tokenMint,
     toWallet,
     signWithMpc,
+    accessToken,
   );
 
   // Add token transfer instructions to transaction. The lastBlockHash is important
@@ -64,7 +67,7 @@ export const createSplTransferTx = async (
   // it's considered expired. This means if it takes too long to generate a signature
   // the transaction will fail.
   const [latestBlockhash, tokenDecimals] = await Promise.all([
-    getLatestBlockhash(),
+    getLatestBlockhash(fromAddress, accessToken),
     getTokenDecimals(rpcProvider, tokenMint),
   ]);
   const transaction = await simulateAndBudgetTx(
@@ -79,6 +82,8 @@ export const createSplTransferTx = async (
         amount * Math.pow(10, tokenDecimals),
       ),
     ),
+    fromAddress,
+    accessToken,
   );
   return transaction;
 };
@@ -86,7 +91,11 @@ export const createSplTransferTx = async (
 /**
  * Improve the odds the Tx will land onchain, from https://docs.helius.dev/guides/sending-transactions-on-solana
  */
-export const simulateAndBudgetTx = async (tx: Transaction) => {
+export const simulateAndBudgetTx = async (
+  tx: Transaction,
+  ownerAddress: string,
+  accessToken: string,
+) => {
   try {
     // generate a test transaction which includes the actual instructions plus
     // an additional compute budget instruction
@@ -98,12 +107,13 @@ export const simulateAndBudgetTx = async (tx: Transaction) => {
       new TransactionMessage({
         instructions: testInstructions,
         payerKey: tx.feePayer!,
-        recentBlockhash: (await getLatestBlockhash()).blockhash,
+        recentBlockhash: (await getLatestBlockhash(ownerAddress, accessToken))
+          .blockhash,
       }).compileToV0Message(),
     );
 
     // simulate the test transaction
-    const rpcConnection = getSolanaProvider();
+    const rpcConnection = getSolanaProvider(ownerAddress, accessToken);
     const simulationResult = await rpcConnection.simulateTransaction(
       testTransaction,
       {
@@ -147,6 +157,7 @@ export const getOrCreateAssociatedTokenAccountWithMPC = async (
   mint: PublicKey,
   owner: PublicKey,
   signWithMpc: FireblocksMessageSigner,
+  accessToken: string,
   broadcast: boolean = true,
 ) => {
   try {
@@ -168,7 +179,10 @@ export const getOrCreateAssociatedTokenAccountWithMPC = async (
     if (e instanceof TokenAccountNotFoundError) {
       // create a transaction to create the token account if it is missing
       const associatedToken = getAssociatedTokenAddressSync(mint, owner);
-      const latestBlockhash = await getLatestBlockhash();
+      const latestBlockhash = await getLatestBlockhash(
+        payer.publicKey.toBase58(),
+        accessToken,
+      );
       notifyEvent('creating token account', 'info', 'Wallet', 'Transaction', {
         meta: {
           payer: payer.publicKey,
@@ -191,6 +205,8 @@ export const getOrCreateAssociatedTokenAccountWithMPC = async (
             mint,
           ),
         ),
+        payer.publicKey.toBase58(),
+        accessToken,
       );
 
       // sign the transaction to create token account
@@ -198,6 +214,7 @@ export const getOrCreateAssociatedTokenAccountWithMPC = async (
         associatedTokenTx,
         payer.publicKey.toBase58(),
         signWithMpc,
+        accessToken,
         broadcast,
       );
 
@@ -228,8 +245,11 @@ export const getTokenDecimals = async (
   return result;
 };
 
-export const getLatestBlockhash = async () => {
-  const rpcConnection = getSolanaProvider();
+export const getLatestBlockhash = async (
+  ownerAddress: string,
+  accessToken: string,
+) => {
+  const rpcConnection = getSolanaProvider(ownerAddress, accessToken);
   return await rpcConnection.getLatestBlockhash('confirmed');
 };
 
@@ -237,10 +257,11 @@ export const signTransaction = async (
   tx: Transaction | VersionedTransaction,
   signerAddress: string,
   signWithMpc: FireblocksMessageSigner,
+  accessToken: string,
   broadcast?: boolean,
 ): Promise<Transaction | VersionedTransaction> => {
   // update the latest blockhash to increase chance of landing onchain
-  const latestBlockhash = await getLatestBlockhash();
+  const latestBlockhash = await getLatestBlockhash(signerAddress, accessToken);
   if (isVersionedTransaction(tx)) {
     if (latestBlockhash.blockhash !== tx.message.recentBlockhash) {
       notifyEvent('updating tx', 'info', 'Wallet', 'Transaction');
@@ -276,17 +297,21 @@ export const signTransaction = async (
 
   // broadcast the tx if requested
   if (broadcast) {
-    const txHash = await broadcastTx(tx);
-    await waitForTx(txHash);
+    const txHash = await broadcastTx(tx, signerAddress, accessToken);
+    await waitForTx(txHash, signerAddress, accessToken);
   }
 
   // return the signed transaction
   return tx;
 };
 
-export const broadcastTx = async (tx: Transaction | VersionedTransaction) => {
+export const broadcastTx = async (
+  tx: Transaction | VersionedTransaction,
+  ownerAddress: string,
+  accessToken: string,
+) => {
   // broadcast the raw transaction
-  const rpcConnection = getSolanaProvider();
+  const rpcConnection = getSolanaProvider(ownerAddress, accessToken);
   notifyEvent('broadcast tx start', 'info', 'Wallet', 'Signature', {
     meta: {tx},
   });
@@ -297,9 +322,13 @@ export const broadcastTx = async (tx: Transaction | VersionedTransaction) => {
   return txHash;
 };
 
-export const waitForTx = async (txHash: string) => {
+export const waitForTx = async (
+  txHash: string,
+  ownerAddress: string,
+  accessToken: string,
+) => {
   // wait for confirmation
-  const rpcConnection = getSolanaProvider();
+  const rpcConnection = getSolanaProvider(ownerAddress, accessToken);
   notifyEvent('confirm tx start', 'info', 'Wallet', 'Signature', {
     meta: {txHash},
   });

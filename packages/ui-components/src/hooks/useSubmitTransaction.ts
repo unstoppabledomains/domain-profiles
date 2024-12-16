@@ -17,7 +17,6 @@ import {isEmailValid} from '../lib/isEmailValid';
 import {pollForSuccess} from '../lib/poll';
 import type {AccountAsset, GetOperationResponse} from '../lib/types/fireBlocks';
 import {OperationStatusType} from '../lib/types/fireBlocks';
-import {getProviderUrl} from '../lib/wallet/evm/provider';
 import {createErc20TransferTx} from '../lib/wallet/evm/token';
 import {
   broadcastTx,
@@ -137,6 +136,7 @@ export const useSubmitTransaction = ({
             token.address,
             parseFloat(amount),
             fireblocksMessageSigner,
+            accessToken,
           );
 
           // sign and wait for the signature value
@@ -145,18 +145,23 @@ export const useSubmitTransaction = ({
             tx,
             token.walletAddress,
             fireblocksMessageSigner,
+            accessToken,
             false,
           );
 
           // submit the transaction
           setStatusMessage(SendCryptoStatusMessage.SUBMITTING_TRANSACTION);
-          const txHash = await broadcastTx(signedTx);
+          const txHash = await broadcastTx(
+            signedTx,
+            token.walletAddress,
+            accessToken,
+          );
 
           // wait for transaction confirmation
           setStatusMessage(SendCryptoStatusMessage.WAITING_FOR_TRANSACTION);
           setShowSuccessAnimation(true);
           setTransactionId(txHash);
-          await waitForTx(txHash);
+          await waitForTx(txHash, token.walletAddress, accessToken);
 
           // operation is complete
           setStatusMessage(SendCryptoStatusMessage.TRANSACTION_COMPLETED);
@@ -178,8 +183,8 @@ export const useSubmitTransaction = ({
         token.address &&
         token.type === TokenType.Erc20
           ? await createErc20TransferTx({
+              accessToken,
               chainId: asset.blockchainAsset.blockchain.networkId,
-              providerUrl: getProviderUrl(asset.blockchainAsset.blockchain.id),
               tokenAddress: token.address,
               fromAddress: token.walletAddress,
               toAddress: recipientAddress,

@@ -85,9 +85,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '100%',
   },
   assetLogo: {
-    height: '60px',
-    width: '60px',
+    height: '70px',
+    width: '70px',
     marginTop: '10px',
+    borderRadius: '50%',
+    boxShadow: theme.shadows[6],
   },
   sendAssetContainer: {
     display: 'flex',

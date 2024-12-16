@@ -1,3 +1,6 @@
+import config from '@unstoppabledomains/config';
+import {BaseBlockchainConfig} from '@unstoppabledomains/config/build/src/env/types';
+
 import {notifyEvent} from '../../../../lib';
 import type {MappedResolverKey} from '../../../../lib/types/pav3';
 import {getMappedResolverKey} from '../../../../lib/types/resolverKeys';
@@ -86,6 +89,15 @@ export const getBlockchainSymbol = (
     default:
       return noMatchEmpty ? '' : name.toUpperCase();
   }
+};
+
+export const getBlockchainSymbolFromChainId = (
+  chainId: number,
+): string | undefined => {
+  return Object.keys(config.BLOCKCHAINS)
+    .filter(k => k.toLowerCase() !== 'zil')
+    .map(k => ({k, chain: config.BLOCKCHAINS[k] as BaseBlockchainConfig}))
+    .find(b => b.chain.CHAIN_ID === chainId)?.k;
 };
 
 // getRecordKeys retrieves ordered list of keys for provided symbol

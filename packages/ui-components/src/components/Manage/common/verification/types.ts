@@ -95,6 +95,7 @@ export const getBlockchainSymbolFromChainId = (
   chainId: number,
 ): string | undefined => {
   return Object.keys(config.BLOCKCHAINS)
+    .filter(k => k.toLowerCase() !== 'zil')
     .map(k => ({k, chain: config.BLOCKCHAINS[k] as BaseBlockchainConfig}))
     .find(b => b.chain.CHAIN_ID === chainId)?.k;
 };

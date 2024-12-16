@@ -34,14 +34,20 @@ export const getAsset = (
 
     // use token if provided
     if (opts?.token) {
+      const isToken =
+        opts.token.type === TokenType.Erc20 ||
+        opts.token.type === TokenType.Spl;
       const tokenAsset =
-        a.blockchainAsset.blockchain.name.toLowerCase() ===
-          opts.token.walletName.toLowerCase() &&
-        a.blockchainAsset.symbol.toLowerCase() ===
-          (opts.token.type === TokenType.Erc20 ||
-          opts.token.type === TokenType.Spl
+        opts.token.walletName.toLowerCase() ===
+          a.blockchainAsset.blockchain.name.toLowerCase() &&
+        [
+          a.blockchainAsset.symbol.toLowerCase(),
+          a.blockchainAsset.blockchain.id.toLowerCase(),
+        ].includes(
+          isToken
             ? opts.token.symbol.toLowerCase()
-            : opts.token.ticker.toLowerCase()) &&
+            : opts.token.ticker.toLowerCase(),
+        ) &&
         a.address.toLowerCase() === opts.token.walletAddress.toLowerCase();
       if (tokenAsset) {
         return tokenAsset;

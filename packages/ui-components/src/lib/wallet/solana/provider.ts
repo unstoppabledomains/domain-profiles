@@ -7,7 +7,7 @@ export const getSolanaProvider = (
   accessToken: string,
 ) => {
   return new Connection(
-    `${config.PROFILE.HOST_URL}/user/${ownerAddress}/wallet/rpc`,
+    `${config.PROFILE.HOST_URL}/user/${ownerAddress}/wallet/rpc?symbol=SOL`,
     {
       commitment: 'confirmed',
       httpHeaders: {

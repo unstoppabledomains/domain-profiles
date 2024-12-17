@@ -30,10 +30,10 @@ import {
 } from '../../actions';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
-import type {SerializedWalletBalance} from '../../lib';
+import type {SerializedWalletBalance,
+  TokenEntry} from '../../lib';
 import {
   DomainFieldTypes,
-  TokenEntry,
   WALLET_CARD_HEIGHT,
   WalletPaletteOwner,
   useTranslationContext,

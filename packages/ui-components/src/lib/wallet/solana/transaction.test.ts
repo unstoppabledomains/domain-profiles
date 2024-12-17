@@ -2,7 +2,7 @@ import {Connection, Keypair, PublicKey} from '@solana/web3.js';
 import {utils} from 'ethers';
 import nacl from 'tweetnacl';
 
-import {FireblocksMessageSigner} from '../../../hooks/useFireblocksMessageSigner';
+import type {FireblocksMessageSigner} from '../../../hooks/useFireblocksMessageSigner';
 import * as provider from './provider';
 import {
   createSplTransferTx,

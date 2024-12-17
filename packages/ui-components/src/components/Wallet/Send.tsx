@@ -189,7 +189,7 @@ const Send: React.FC<Props> = ({
     if (!initialSelectedToken) {
       return;
     }
-    handleSelectToken(initialSelectedToken);
+    void handleSelectToken(initialSelectedToken);
   }, [initialSelectedToken]);
 
   const resetForm = () => {

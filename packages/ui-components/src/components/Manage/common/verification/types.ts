@@ -1,5 +1,5 @@
 import config from '@unstoppabledomains/config';
-import {BaseBlockchainConfig} from '@unstoppabledomains/config/build/src/env/types';
+import type {BaseBlockchainConfig} from '@unstoppabledomains/config/build/src/env/types';
 
 import {notifyEvent} from '../../../../lib';
 import type {MappedResolverKey} from '../../../../lib/types/pav3';

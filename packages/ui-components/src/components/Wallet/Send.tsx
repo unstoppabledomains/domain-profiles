@@ -3,7 +3,7 @@ import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import type {Theme} from '@mui/material/styles';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -149,6 +149,7 @@ type Props = {
   getClient: () => Promise<IFireblocksNCW>;
   accessToken: string;
   wallets: SerializedWalletBalance[];
+  initialSelectedToken?: TokenEntry;
 };
 
 const Send: React.FC<Props> = ({
@@ -158,6 +159,7 @@ const Send: React.FC<Props> = ({
   getClient,
   accessToken,
   wallets,
+  initialSelectedToken,
 }) => {
   const [t] = useTranslationContext();
   const [state] = useFireblocksState();
@@ -183,6 +185,13 @@ const Send: React.FC<Props> = ({
   const isSplTokenEnabled =
     featureFlags.variations?.udMeEnableWalletSolanaSigning;
 
+  useEffect(() => {
+    if (!initialSelectedToken) {
+      return;
+    }
+    handleSelectToken(initialSelectedToken);
+  }, [initialSelectedToken]);
+
   const resetForm = () => {
     setResolvedDomain('');
     setRecipientAddress('');
@@ -193,7 +202,7 @@ const Send: React.FC<Props> = ({
   };
 
   const handleBackClick = () => {
-    if (!selectedToken) {
+    if (!selectedToken || initialSelectedToken) {
       onCancelClick();
     }
     if (!transactionSubmitted && sendConfirmation) {

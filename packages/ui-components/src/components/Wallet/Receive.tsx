@@ -55,10 +55,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '100%',
   },
   assetLogo: {
-    height: '60px',
-    width: '60px',
+    height: '70px',
+    width: '70px',
     borderRadius: '50%',
     overflow: 'hidden',
+    boxShadow: theme.shadows[6],
   },
   contentWrapper: {
     display: 'flex',
@@ -108,11 +109,16 @@ const useStyles = makeStyles()((theme: Theme) => ({
 type Props = {
   onCancelClick: () => void;
   wallets: SerializedWalletBalance[];
+  initialSelectedToken?: TokenEntry;
 };
 
-const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
+const Receive: React.FC<Props> = ({
+  onCancelClick,
+  wallets,
+  initialSelectedToken,
+}) => {
   const [t] = useTranslationContext();
-  const [asset, setAsset] = useState<TokenEntry>();
+  const [selectedToken, setSelectedToken] = useState<TokenEntry>();
   const [copied, setCopied] = useState<boolean>(false);
   const {classes} = useStyles();
   const debounceTimer = useRef<NodeJS.Timeout>();
@@ -125,19 +131,30 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!initialSelectedToken) {
+      return;
+    }
+    handleSelectToken(initialSelectedToken);
+  }, [initialSelectedToken]);
+
+  const handleSelectToken = (token: TokenEntry) => {
+    setSelectedToken(token);
+  };
+
   const handleBackClick = () => {
-    if (asset) {
-      setAsset(undefined);
+    if (selectedToken && !initialSelectedToken) {
+      setSelectedToken(undefined);
     } else {
       onCancelClick();
     }
   };
 
-  if (!asset) {
+  if (!selectedToken) {
     return (
       <Box className={classes.flexColCenterAligned}>
         <SelectAsset
-          onSelectAsset={setAsset}
+          onSelectAsset={handleSelectToken}
           wallets={wallets}
           onCancelClick={handleBackClick}
           label={t('wallet.selectAssetToReceive')}
@@ -148,7 +165,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
   }
 
   const handleCopyClick = () => {
-    void navigator.clipboard.writeText(asset.walletAddress);
+    void navigator.clipboard.writeText(selectedToken.walletAddress);
     setCopied(true);
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
@@ -164,17 +181,17 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
         onCancelClick={handleBackClick}
         label={t('wallet.actionOnBlockchainTitle', {
           action: t('common.receive'),
-          symbol: getBlockchainDisplaySymbol(asset.ticker),
-          blockchain: asset.walletName,
+          symbol: getBlockchainDisplaySymbol(selectedToken.ticker),
+          blockchain: selectedToken.walletName,
         })}
       />
       <Box className={classes.contentWrapper}>
         <Box className={classes.receiveContentContainer}>
           <Box className={classes.receiveAssetContainer} mb={2}>
-            <img src={asset.imageUrl} className={classes.assetLogo} />
+            <img src={selectedToken.imageUrl} className={classes.assetLogo} />
           </Box>
           <QRCode
-            value={`${asset.walletName}:${asset.walletAddress}`}
+            value={`${selectedToken.walletName}:${selectedToken.walletAddress}`}
             size={125}
             logoOpacity={0.5}
             logoHeight={60}
@@ -190,7 +207,7 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
               placeholder=""
               onChange={() => null}
               id="amount"
-              value={asset.walletAddress}
+              value={selectedToken.walletAddress}
               stacked={true}
               disabled
               multiline
@@ -215,19 +232,19 @@ const Receive: React.FC<Props> = ({onCancelClick, wallets}) => {
           <Markdown>
             {t(
               config.WALLETS.CHAINS.DOMAINS.map(s => s.toLowerCase()).includes(
-                asset.symbol.toLowerCase(),
+                selectedToken.symbol.toLowerCase(),
               )
                 ? 'wallet.receiveAddressCaptionWithDomains'
                 : 'wallet.receiveAddressCaption',
               {
-                symbol: getBlockchainDisplaySymbol(asset.ticker),
-                blockchain: asset.walletName,
+                symbol: getBlockchainDisplaySymbol(selectedToken.ticker),
+                blockchain: selectedToken.walletName,
               },
             )}
           </Markdown>{' '}
           {t('wallet.sendingForOtherNetworksAndTokens', {
-            symbol: getBlockchainDisplaySymbol(asset.ticker),
-            blockchain: asset.walletName,
+            symbol: getBlockchainDisplaySymbol(selectedToken.ticker),
+            blockchain: selectedToken.walletName,
           })}{' '}
           <Link
             href={config.WALLETS.LANDING_PAGE_URL}

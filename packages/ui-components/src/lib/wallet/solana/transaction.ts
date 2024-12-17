@@ -8,9 +8,11 @@ import {
 import {
   ComputeBudgetProgram,
   Connection,
+  LAMPORTS_PER_SOL,
   ParsedAccountData,
   PublicKey,
   Signer,
+  SystemProgram,
   Transaction,
   TransactionMessage,
   VersionedTransaction,
@@ -81,6 +83,42 @@ export const createSplTransferTx = async (
         fromWalletSigner.publicKey,
         amount * Math.pow(10, tokenDecimals),
       ),
+    ),
+    fromAddress,
+    accessToken,
+  );
+  return transaction;
+};
+
+export const createNativeTransferTx = async (
+  fromAddress: string,
+  toAddress: string,
+  amount: number,
+  accessToken: string,
+) => {
+  // create public keys for associated accounts
+  const fromWalletSigner: Signer = {
+    publicKey: new PublicKey(fromAddress),
+    secretKey: new Uint8Array(),
+  };
+  const toPubkey = new PublicKey(toAddress);
+
+  // Add token transfer instructions to transaction. The lastBlockHash is important
+  // to ensure the tx is valid, and can only be used for about 60–90 seconds before
+  // it's considered expired. This means if it takes too long to generate a signature
+  // the transaction will fail.
+  const latestBlockhash = await getLatestBlockhash(fromAddress, accessToken);
+
+  const transaction = await simulateAndBudgetTx(
+    new Transaction({
+      feePayer: fromWalletSigner.publicKey,
+      ...latestBlockhash,
+    }).add(
+      SystemProgram.transfer({
+        fromPubkey: fromWalletSigner.publicKey,
+        toPubkey,
+        lamports: amount * LAMPORTS_PER_SOL,
+      }),
     ),
     fromAddress,
     accessToken,

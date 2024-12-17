@@ -5,23 +5,79 @@ import {
   getAssociatedTokenAddressSync,
   getOrCreateAssociatedTokenAccount,
 } from '@solana/spl-token';
-import {
-  ComputeBudgetProgram,
+import type {
   Connection,
   ParsedAccountData,
+  Signer} from '@solana/web3.js';
+import {
+  ComputeBudgetProgram,
+  LAMPORTS_PER_SOL,
   PublicKey,
-  Signer,
+  SystemProgram,
   Transaction,
   TransactionMessage,
   VersionedTransaction,
 } from '@solana/web3.js';
 import {utils} from 'ethers';
 
-import {FireblocksMessageSigner} from '../../../hooks/useFireblocksMessageSigner';
+import type {FireblocksMessageSigner} from '../../../hooks/useFireblocksMessageSigner';
 import {notifyEvent} from '../../error';
 import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../../fireBlocks/client';
 import {sleep} from '../../sleep';
 import {getSolanaProvider} from './provider';
+
+export const broadcastTx = async (
+  tx: Transaction | VersionedTransaction,
+  ownerAddress: string,
+  accessToken: string,
+) => {
+  // broadcast the raw transaction
+  const rpcConnection = getSolanaProvider(ownerAddress, accessToken);
+  notifyEvent('broadcast tx start', 'info', 'Wallet', 'Signature', {
+    meta: {tx},
+  });
+  const txHash = await rpcConnection.sendRawTransaction(tx.serialize());
+  notifyEvent('broadcast tx complete', 'info', 'Wallet', 'Signature', {
+    meta: {txHash},
+  });
+  return txHash;
+};
+
+export const createNativeTransferTx = async (
+  fromAddress: string,
+  toAddress: string,
+  amount: number,
+  accessToken: string,
+) => {
+  // create public keys for associated accounts
+  const fromWalletSigner: Signer = {
+    publicKey: new PublicKey(fromAddress),
+    secretKey: new Uint8Array(),
+  };
+  const toPubkey = new PublicKey(toAddress);
+
+  // Add token transfer instructions to transaction. The lastBlockHash is important
+  // to ensure the tx is valid, and can only be used for about 60–90 seconds before
+  // it's considered expired. This means if it takes too long to generate a signature
+  // the transaction will fail.
+  const latestBlockhash = await getLatestBlockhash(fromAddress, accessToken);
+
+  const transaction = await simulateAndBudgetTx(
+    new Transaction({
+      feePayer: fromWalletSigner.publicKey,
+      ...latestBlockhash,
+    }).add(
+      SystemProgram.transfer({
+        fromPubkey: fromWalletSigner.publicKey,
+        toPubkey,
+        lamports: amount * LAMPORTS_PER_SOL,
+      }),
+    ),
+    fromAddress,
+    accessToken,
+  );
+  return transaction;
+};
 
 export const createSplTransferTx = async (
   fromAddress: string,
@@ -88,67 +144,12 @@ export const createSplTransferTx = async (
   return transaction;
 };
 
-/**
- * Improve the odds the Tx will land onchain, from https://docs.helius.dev/guides/sending-transactions-on-solana
- */
-export const simulateAndBudgetTx = async (
-  tx: Transaction,
+export const getLatestBlockhash = async (
   ownerAddress: string,
   accessToken: string,
 ) => {
-  try {
-    // generate a test transaction which includes the actual instructions plus
-    // an additional compute budget instruction
-    const testInstructions = [
-      ComputeBudgetProgram.setComputeUnitLimit({units: 1_400_000}),
-      ...tx.instructions,
-    ];
-    const testTransaction = new VersionedTransaction(
-      new TransactionMessage({
-        instructions: testInstructions,
-        payerKey: tx.feePayer!,
-        recentBlockhash: (await getLatestBlockhash(ownerAddress, accessToken))
-          .blockhash,
-      }).compileToV0Message(),
-    );
-
-    // simulate the test transaction
-    const rpcConnection = getSolanaProvider(ownerAddress, accessToken);
-    const simulationResult = await rpcConnection.simulateTransaction(
-      testTransaction,
-      {
-        replaceRecentBlockhash: true,
-        sigVerify: false,
-      },
-    );
-    notifyEvent('simulation results', 'info', 'Wallet', 'Transaction', {
-      meta: simulationResult,
-    });
-
-    // validate that a simulation result has compute units
-    if (!simulationResult.value.unitsConsumed) {
-      throw new Error('no compute units available');
-    }
-
-    // calculate the recommended compute units to motivate validators to
-    // include the transaction in a block
-    const unitsConsumed = simulationResult.value.unitsConsumed;
-    const cuBuffer = Math.ceil(unitsConsumed * 1.1);
-
-    // augment the original transaction compute units
-    notifyEvent('adding tx compute units', 'info', 'Wallet', 'Transaction', {
-      meta: {cuBuffer},
-    });
-    const computeUnitIx = ComputeBudgetProgram.setComputeUnitLimit({
-      units: cuBuffer,
-    });
-    tx.add(computeUnitIx);
-  } catch (e) {
-    notifyEvent(e, 'error', 'Wallet', 'Transaction', {
-      msg: 'error simulating test transaction',
-    });
-  }
-  return tx;
+  const rpcConnection = getSolanaProvider(ownerAddress, accessToken);
+  return await rpcConnection.getLatestBlockhash('confirmed');
 };
 
 export const getOrCreateAssociatedTokenAccountWithMPC = async (
@@ -245,12 +246,10 @@ export const getTokenDecimals = async (
   return result;
 };
 
-export const getLatestBlockhash = async (
-  ownerAddress: string,
-  accessToken: string,
-) => {
-  const rpcConnection = getSolanaProvider(ownerAddress, accessToken);
-  return await rpcConnection.getLatestBlockhash('confirmed');
+export const isVersionedTransaction = (
+  transaction: Transaction | VersionedTransaction,
+): transaction is VersionedTransaction => {
+  return 'version' in transaction;
 };
 
 export const signTransaction = async (
@@ -305,21 +304,67 @@ export const signTransaction = async (
   return tx;
 };
 
-export const broadcastTx = async (
-  tx: Transaction | VersionedTransaction,
+/**
+ * Improve the odds the Tx will land onchain, from https://docs.helius.dev/guides/sending-transactions-on-solana
+ */
+export const simulateAndBudgetTx = async (
+  tx: Transaction,
   ownerAddress: string,
   accessToken: string,
 ) => {
-  // broadcast the raw transaction
-  const rpcConnection = getSolanaProvider(ownerAddress, accessToken);
-  notifyEvent('broadcast tx start', 'info', 'Wallet', 'Signature', {
-    meta: {tx},
-  });
-  const txHash = await rpcConnection.sendRawTransaction(tx.serialize());
-  notifyEvent('broadcast tx complete', 'info', 'Wallet', 'Signature', {
-    meta: {txHash},
-  });
-  return txHash;
+  try {
+    // generate a test transaction which includes the actual instructions plus
+    // an additional compute budget instruction
+    const testInstructions = [
+      ComputeBudgetProgram.setComputeUnitLimit({units: 1_400_000}),
+      ...tx.instructions,
+    ];
+    const testTransaction = new VersionedTransaction(
+      new TransactionMessage({
+        instructions: testInstructions,
+        payerKey: tx.feePayer!,
+        recentBlockhash: (await getLatestBlockhash(ownerAddress, accessToken))
+          .blockhash,
+      }).compileToV0Message(),
+    );
+
+    // simulate the test transaction
+    const rpcConnection = getSolanaProvider(ownerAddress, accessToken);
+    const simulationResult = await rpcConnection.simulateTransaction(
+      testTransaction,
+      {
+        replaceRecentBlockhash: true,
+        sigVerify: false,
+      },
+    );
+    notifyEvent('simulation results', 'info', 'Wallet', 'Transaction', {
+      meta: simulationResult,
+    });
+
+    // validate that a simulation result has compute units
+    if (!simulationResult.value.unitsConsumed) {
+      throw new Error('no compute units available');
+    }
+
+    // calculate the recommended compute units to motivate validators to
+    // include the transaction in a block
+    const unitsConsumed = simulationResult.value.unitsConsumed;
+    const cuBuffer = Math.ceil(unitsConsumed * 1.1);
+
+    // augment the original transaction compute units
+    notifyEvent('adding tx compute units', 'info', 'Wallet', 'Transaction', {
+      meta: {cuBuffer},
+    });
+    const computeUnitIx = ComputeBudgetProgram.setComputeUnitLimit({
+      units: cuBuffer,
+    });
+    tx.add(computeUnitIx);
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Transaction', {
+      msg: 'error simulating test transaction',
+    });
+  }
+  return tx;
 };
 
 export const waitForTx = async (
@@ -356,10 +401,4 @@ export const waitForTx = async (
     meta: {txHash},
   });
   throw new Error('transaction not confirmed');
-};
-
-export const isVersionedTransaction = (
-  transaction: Transaction | VersionedTransaction,
-): transaction is VersionedTransaction => {
-  return 'version' in transaction;
 };

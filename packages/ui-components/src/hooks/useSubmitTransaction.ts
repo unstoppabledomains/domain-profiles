@@ -20,6 +20,7 @@ import {OperationStatusType} from '../lib/types/fireBlocks';
 import {createErc20TransferTx} from '../lib/wallet/evm/token';
 import {
   broadcastTx,
+  createNativeTransferTx,
   createSplTransferTx,
   signTransaction,
   waitForTx,
@@ -125,7 +126,7 @@ export const useSubmitTransaction = ({
         recipientAddress = resolvedAddress;
       }
 
-      // handle an SPL token transfer
+      // handle an Solana SPL token transfer
       if (token.address && token.type === TokenType.Spl) {
         try {
           // create the transaction that must be signed
@@ -170,6 +171,52 @@ export const useSubmitTransaction = ({
           notifyEvent(e, 'error', 'Wallet', 'Transaction', {
             msg: 'error sending SPL token',
             meta: {token, recipientAddress, amount},
+          });
+          setStatus(Status.Failed);
+        }
+        return;
+      }
+
+      // handle Solana native transfer
+      if (asset.blockchainAsset.blockchain.id.toLowerCase() === 'solana') {
+        try {
+          // create the transaction that must be signed
+          setStatusMessage(SendCryptoStatusMessage.STARTING_TRANSACTION);
+          const fromAddress = asset.address;
+          const tx = await createNativeTransferTx(
+            fromAddress,
+            recipientAddress,
+            parseFloat(amount),
+            accessToken,
+          );
+
+          // sign and wait for the signature value
+          setStatusMessage(SendCryptoStatusMessage.WAITING_TO_SIGN);
+          const signedTx = await signTransaction(
+            tx,
+            fromAddress,
+            fireblocksMessageSigner,
+            accessToken,
+            false,
+          );
+
+          // submit the transaction
+          setStatusMessage(SendCryptoStatusMessage.SUBMITTING_TRANSACTION);
+          const txHash = await broadcastTx(signedTx, fromAddress, accessToken);
+
+          // wait for transaction confirmation
+          setStatusMessage(SendCryptoStatusMessage.WAITING_FOR_TRANSACTION);
+          setShowSuccessAnimation(true);
+          setTransactionId(txHash);
+          await waitForTx(txHash, fromAddress, accessToken);
+
+          // operation is complete
+          setStatusMessage(SendCryptoStatusMessage.TRANSACTION_COMPLETED);
+          setStatus(Status.Success);
+        } catch (e) {
+          notifyEvent(e, 'error', 'Wallet', 'Transaction', {
+            msg: 'error sending SOL native transfer',
+            meta: {recipientAddress, amount},
           });
           setStatus(Status.Failed);
         }

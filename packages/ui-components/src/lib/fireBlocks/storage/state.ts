@@ -23,17 +23,19 @@ export const saveBootstrapState = async (
   saveState: (
     state: Record<string, Record<string, string>>,
   ) => void | Promise<void>,
-  accessToken: string,
+  accessToken?: string,
 ): Promise<BootstrapState> => {
   try {
     // saturate values if required
-    if (!values.assets || values.assets.length === 0) {
+    if (accessToken && (!values.assets || values.assets.length === 0)) {
       values.assets = (await getAccountAssets(accessToken)) || [];
     }
 
     // save the state values
-    state[`${BootstrapStatePrefix}-${values.deviceId}`] =
-      values as unknown as Record<string, string>;
+    if (values.deviceId) {
+      state[`${BootstrapStatePrefix}-${values.deviceId}`] =
+        values as unknown as Record<string, string>;
+    }
     state[`${BootstrapStatePrefix}-${BootstrapStateCurrentKey}`] =
       values as unknown as Record<string, string>;
     await saveState({...state});

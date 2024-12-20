@@ -6,28 +6,52 @@ import {notifyEvent} from '../lib/error';
 import {fetchApi} from '../lib/fetchApi';
 import type {SerializedWalletBalance} from '../lib/types/domain';
 import type {SerializedIdentityResponse} from '../lib/types/identity';
-import type {WalletAccountResponse} from '../lib/types/wallet';
+import type {
+  CustodyWallet,
+  WalletAccountResponse} from '../lib/types/wallet';
+import {
+  CustodyState
+} from '../lib/types/wallet';
 
-export const createWallet = async (
-  emailAddress: string,
-  otp: string,
-  password: string,
-): Promise<boolean> => {
-  const createResult = await fetchApi<WalletAccountResponse>(
-    `/user/wallet/register`,
-    {
-      host: config.PROFILE.HOST_URL,
-      method: 'POST',
-      headers: {
-        'Content-type': 'application/json',
-      },
-      body: JSON.stringify({emailAddress, otp, password}),
+const API_KEY_HEADER_KEY = 'x-api-key';
+
+export const claimMpcCustodyWallet = async (
+  secret: string,
+  claimDetails: {
+    emailAddress: string;
+    password: string;
+  },
+): Promise<CustodyWallet | undefined> => {
+  const claimResult = await fetchApi<CustodyWallet>(`/user/wallet/claim`, {
+    host: config.PROFILE.HOST_URL,
+    method: 'POST',
+    headers: {
+      'Content-type': 'application/json',
+      [API_KEY_HEADER_KEY]: secret,
     },
-  );
-  if (!createResult?.emailAddress) {
-    return false;
+    body: JSON.stringify(claimDetails),
+  });
+  if (claimResult.state !== CustodyState.SELF_CUSTODY) {
+    return undefined;
   }
-  return true;
+  return claimResult;
+};
+
+export const createMpcCustodyWallet = async (): Promise<
+  CustodyWallet | undefined
+> => {
+  const createResult = await fetchApi<CustodyWallet>(`/user/wallet/launch`, {
+    host: config.PROFILE.HOST_URL,
+    method: 'POST',
+    headers: {
+      'Content-type': 'application/json',
+      [API_KEY_HEADER_KEY]: config.WALLETS.LAUNCH_API_KEY,
+    },
+  });
+  if (!createResult?.secret) {
+    return undefined;
+  }
+  return createResult;
 };
 
 export const createWalletOtp = async (
@@ -45,6 +69,22 @@ export const createWalletOtp = async (
     return false;
   }
   return true;
+};
+
+export const getMpcCustodyWallet = async (
+  secret: string,
+  checkClaim?: boolean,
+): Promise<CustodyWallet> => {
+  return await fetchApi<CustodyWallet>(
+    `/user/wallet/${checkClaim ? 'claim' : 'launch'}`,
+    {
+      host: config.PROFILE.HOST_URL,
+      headers: {
+        'Content-type': 'application/json',
+        [API_KEY_HEADER_KEY]: secret,
+      },
+    },
+  );
 };
 
 export const getOnboardingStatus = async (

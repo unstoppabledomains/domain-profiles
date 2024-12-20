@@ -7,9 +7,11 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {AccessWalletModal} from '.';
 import {useWeb3Context} from '../../hooks';
 import type {Web3Dependencies} from '../../lib';
-import {isDomainValidForManagement} from '../../lib';
+import {isDomainValidForManagement, useTranslationContext} from '../../lib';
 import type {DomainProfileTabType} from '../Manage';
 import type {ManageTabProps} from '../Manage/common/types';
+import Modal from '../Modal';
+import ClaimWalletModal from './ClaimWalletModal';
 import {Configuration, WalletConfigState} from './Configuration';
 import {Header} from './Header';
 
@@ -18,6 +20,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
+  },
+  modalTitleStyle: {
+    color: 'inherit',
+    alignSelf: 'center',
   },
 }));
 
@@ -38,6 +44,7 @@ export const Wallet: React.FC<
     onError?: () => void;
     onLogout?: () => void;
     onDisconnect?: () => void;
+    onClaimComplete?: (emailAddress: string) => void;
     onSettingsClick?: () => void;
     onMessagesClick?: () => void;
     onMessagePopoutClick?: (address?: string) => void;
@@ -61,6 +68,7 @@ export const Wallet: React.FC<
   onError,
   onLoginInitiated,
   onLogout,
+  onClaimComplete,
   onDisconnect,
   onSettingsClick,
   onMessagesClick,
@@ -69,12 +77,16 @@ export const Wallet: React.FC<
   setButtonComponent,
 }) => {
   const {classes} = useStyles();
+  const [t] = useTranslationContext();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isFetching, setIsFetching] = useState<boolean>();
   const [isWeb3DepsLoading, setIsWeb3DepsLoading] = useState(true);
   const [isHeaderClicked, setIsHeaderClicked] = useState(false);
   const [accessToken, setAccessToken] = useState<string>();
   const {setWeb3Deps} = useWeb3Context();
+
+  // claim
+  const [showClaimWalletModal, setShowClaimWalletModal] = useState<boolean>();
 
   const handleWalletLoaded = (v: boolean) => {
     setIsLoaded(v);
@@ -91,11 +103,27 @@ export const Wallet: React.FC<
   };
 
   const handleAccessToken = (
-    t: DomainProfileTabType,
-    v: {accessToken: string},
+    tab: DomainProfileTabType,
+    data: {accessToken: string},
   ) => {
-    setAccessToken(v.accessToken);
-    onUpdate(t, v);
+    setAccessToken(data.accessToken);
+    onUpdate(tab, data);
+  };
+
+  const handleClaimWallet = () => {
+    setShowClaimWalletModal(true);
+  };
+
+  const handleClaimComplete = (v: string) => {
+    if (onClaimComplete) {
+      onClaimComplete(v);
+    } else {
+      handleClaimModalClose();
+    }
+  };
+
+  const handleClaimModalClose = () => {
+    setShowClaimWalletModal(false);
   };
 
   return (
@@ -116,6 +144,7 @@ export const Wallet: React.FC<
           onSettingsClick={onSettingsClick}
           onMessagesClick={onMessagesClick}
           onMessagePopoutClick={onMessagePopoutClick}
+          onClaimWalletClick={accessToken ? undefined : handleClaimWallet}
           fullScreenModals={fullScreenModals}
           domain={isDomainValidForManagement(domain) ? domain : undefined}
         />
@@ -138,9 +167,9 @@ export const Wallet: React.FC<
         setAuthAddress={setAuthAddress}
         disableInlineEducation={disableInlineEducation}
         fullScreenModals={fullScreenModals}
-        forceRememberOnDevice={forceRememberOnDevice}
+        forceRememberOnDevice={forceRememberOnDevice || isNewUser}
         initialState={
-          isNewUser ? WalletConfigState.OnboardWithEmail : undefined
+          isNewUser ? WalletConfigState.OnboardWithCustody : undefined
         }
       />
       {isLoaded && isWeb3DepsLoading && (
@@ -153,6 +182,17 @@ export const Wallet: React.FC<
           isMpcWallet={true}
           isMpcPromptDisabled={true}
         />
+      )}
+      {showClaimWalletModal && (
+        <Modal
+          title={t('wallet.claimWalletTitle')}
+          open={true}
+          fullScreen={fullScreenModals}
+          titleStyle={classes.modalTitleStyle}
+          onClose={handleClaimModalClose}
+        >
+          <ClaimWalletModal onComplete={handleClaimComplete} />
+        </Modal>
       )}
     </Box>
   );

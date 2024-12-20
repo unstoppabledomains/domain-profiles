@@ -3,6 +3,7 @@ import React from 'react';
 
 import * as fireBlocksActions from '../../actions/fireBlocksActions';
 import * as pav3Actions from '../../actions/pav3Actions';
+import {CustodyState} from '../../lib';
 import * as fireBlocksState from '../../lib/fireBlocks/storage/state';
 import type {GetEstimateTransactionResponse} from '../../lib/types/fireBlocks';
 import {VALID_ETH_ADDRESS} from '../../tests/common';
@@ -33,6 +34,10 @@ describe('<Send />', () => {
     refreshToken: 'mockRefreshToken',
     deviceId: 'mockDeviceId',
     assets: [mockAccountAsset()],
+    custodyState: {
+      state: CustodyState.SELF_CUSTODY,
+      status: 'COMPLETED',
+    },
   });
 
   beforeAll(() => {

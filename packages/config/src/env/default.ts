@@ -148,6 +148,7 @@ export default function getDefaultConfig(): Config {
       },
       SIGNATURE_SYMBOL: 'ETHEREUM/ETH,SOLANA/SOL',
       MAX_CLOCK_DRIFT_MS: 2 * 60 * 1000, // 2 minutes
+      LAUNCH_API_KEY: 'dummy-launch-api-key',
     },
     PUSH: {
       CHANNELS: ['eip155:5:0x0389246fB9191Dc41722e1f0D558dC8f82Be3C7A'],

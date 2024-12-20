@@ -160,6 +160,7 @@ export const Wallet: React.FC<
         onLoaded={handleWalletLoaded}
         onLoginInitiated={onLoginInitiated}
         onUpdate={handleAccessToken}
+        onClaimWallet={handleClaimWallet}
         setButtonComponent={setButtonComponent}
         setIsFetching={setIsFetching}
         isHeaderClicked={isHeaderClicked}

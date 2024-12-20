@@ -154,6 +154,7 @@ export const Configuration: React.FC<
     onError?: () => void;
     onLoaded?: (v: boolean) => void;
     onLoginInitiated?: (emailAddress: string, password: string) => void;
+    onClaimWallet?: () => void;
     setIsFetching?: (v?: boolean) => void;
     isHeaderClicked: boolean;
     setIsHeaderClicked?: (v: boolean) => void;
@@ -168,6 +169,7 @@ export const Configuration: React.FC<
   onError,
   onLoaded,
   onLoginInitiated,
+  onClaimWallet,
   setButtonComponent,
   setIsFetching,
   setAuthAddress,
@@ -1384,6 +1386,7 @@ export const Configuration: React.FC<
                 accessToken={accessToken}
                 fullScreenModals={fullScreenModals}
                 onRefresh={async () => await loadMpcWallets(true)}
+                onClaimWallet={onClaimWallet}
                 isHeaderClicked={isHeaderClicked}
                 setIsHeaderClicked={setIsHeaderClicked}
               />

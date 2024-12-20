@@ -17,8 +17,7 @@ import {
   getOnboardingStatus,
 } from '../../actions/walletActions';
 import {useFireblocksState} from '../../hooks';
-import type {
-  CustodyWallet} from '../../lib';
+import type {CustodyWallet} from '../../lib';
 import {
   CustodyState,
   getBootstrapState,
@@ -171,6 +170,7 @@ const ClaimWalletModal: React.FC<Props> = ({
       }
 
       // operation is completed
+      setErrorMessage(t('common.success'));
       onComplete(emailAddress);
     } finally {
       setIsSaving(false);

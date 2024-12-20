@@ -9,6 +9,7 @@ import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
@@ -32,6 +33,7 @@ import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
 import type {SerializedWalletBalance, TokenEntry} from '../../lib';
 import {
+  CustodyState,
   DomainFieldTypes,
   WALLET_CARD_HEIGHT,
   WalletPaletteOwner,
@@ -92,6 +94,10 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
     balanceContainer: {
       display: 'flex',
       justifyContent: 'center',
+    },
+    actionButton: {
+      color: 'white',
+      marginLeft: theme.spacing(1),
     },
     actionContainer: {
       display: 'flex',
@@ -198,6 +204,9 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       color: 'inherit',
       alignSelf: 'center',
     },
+    fundWalletCtaText: {
+      maxWidth: '350px',
+    },
   }),
 );
 
@@ -206,6 +215,7 @@ export const Client: React.FC<ClientProps> = ({
   wallets,
   paymentConfigStatus,
   fullScreenModals,
+  onClaimWallet,
   onRefresh,
   setIsHeaderClicked,
   isHeaderClicked,
@@ -217,7 +227,7 @@ export const Client: React.FC<ClientProps> = ({
   // style and translation
   const {classes} = useStyles({isMobile});
   const [t] = useTranslationContext();
-  const {enqueueSnackbar} = useSnackbar();
+  const {enqueueSnackbar, closeSnackbar} = useSnackbar();
   const {data: featureFlags} = useFeatureFlags(
     false,
     wallets?.find(w => isEthAddress(w.address))?.address,
@@ -306,6 +316,44 @@ export const Client: React.FC<ClientProps> = ({
     void handleLoadDomains(true);
   }, [address]);
 
+  useEffect(() => {
+    if (accessToken || !cryptoValue) {
+      if (showPasswordCtaTimer) {
+        clearTimeout(showPasswordCtaTimer);
+      }
+      return;
+    }
+    showPasswordCtaTimer = setTimeout(showPasswordCta, 2000);
+  }, [accessToken, cryptoValue]);
+
+  // configure a CTA to prompt the user to set their password if the wallet
+  // is in custody and has a crypto balance
+  const showPasswordCta = async () => {
+    enqueueSnackbar(
+      <Typography variant="body2" className={classes.fundWalletCtaText}>
+        {t('wallet.claimWalletCta')}
+      </Typography>,
+      {
+        variant: 'info',
+        persist: true,
+        key: CustodyState.CUSTODY,
+        preventDuplicate: true,
+        action: (
+          <Button
+            variant="text"
+            size="small"
+            color="primary"
+            className={classes.actionButton}
+            onClick={handleClaimWallet}
+          >
+            {t('wallet.claimWalletCtaButton')}
+          </Button>
+        ),
+      },
+    );
+  };
+  let showPasswordCtaTimer: NodeJS.Timeout | undefined = undefined;
+
   const getClient = async () => {
     // retrieve client state
     const clientState = getBootstrapState(state);
@@ -318,6 +366,13 @@ export const Client: React.FC<ClientProps> = ({
       state,
       saveState,
     });
+  };
+
+  const handleClaimWallet = async () => {
+    closeSnackbar(CustodyState.CUSTODY);
+    if (onClaimWallet) {
+      onClaimWallet();
+    }
   };
 
   const handleCloseFundingModal = () => {
@@ -422,7 +477,12 @@ export const Client: React.FC<ClientProps> = ({
 
   const handleClickedSend = () => {
     if (!accessToken) {
-      setShowFundingModalTitle(t('common.send'));
+      if (!cryptoValue) {
+        setShowFundingModalTitle(t('common.send'));
+      } else if (onClaimWallet) {
+        onClaimWallet();
+      }
+
       return;
     }
 
@@ -434,7 +494,11 @@ export const Client: React.FC<ClientProps> = ({
 
   const handleClickedSwap = () => {
     if (!accessToken) {
-      setShowFundingModalTitle(t('swap.title'));
+      if (!cryptoValue) {
+        setShowFundingModalTitle(t('swap.title'));
+      } else if (onClaimWallet) {
+        onClaimWallet();
+      }
       return;
     }
 
@@ -727,6 +791,7 @@ export type ClientProps = {
   wallets: SerializedWalletBalance[];
   paymentConfigStatus?: SerializedIdentityResponse;
   fullScreenModals?: boolean;
+  onClaimWallet?: () => void;
   onRefresh: () => Promise<void>;
   isHeaderClicked: boolean;
   setIsHeaderClicked?: (v: boolean) => void;

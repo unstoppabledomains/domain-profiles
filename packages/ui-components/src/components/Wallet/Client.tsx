@@ -254,7 +254,7 @@ export const Client: React.FC<ClientProps> = ({
   const [domains, setDomains] = useState<string[]>([]);
   const [domainsValue, setDomainsValue] = useState<number>(0);
   const [cursor, setCursor] = useState<number | string>();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isDomainsLoading, setIsDomainsLoading] = useState(true);
   const [retrievedAll, setRetrievedAll] = useState(false);
   const [domainToManage, setDomainToManage] = useState<string>();
 
@@ -388,7 +388,7 @@ export const Client: React.FC<ClientProps> = ({
     if (address && tv === ClientTabType.Domains) {
       void handleLoadDomains(true);
     }
-    await onRefresh();
+    await onRefresh(true);
   };
 
   const handleRetrieveOwnerDomains = async (
@@ -436,7 +436,7 @@ export const Client: React.FC<ClientProps> = ({
     if (retrievedAll && !reload) {
       return;
     }
-    setIsLoading(true);
+    setIsDomainsLoading(true);
     const resp = await handleRetrieveOwnerDomains(address, reload);
     if (resp.domains.length) {
       if (reload) {
@@ -451,7 +451,7 @@ export const Client: React.FC<ClientProps> = ({
     } else {
       setRetrievedAll(true);
     }
-    setIsLoading(false);
+    setIsDomainsLoading(false);
   };
 
   const handleDomainClick = (v: string) => {
@@ -531,7 +531,7 @@ export const Client: React.FC<ClientProps> = ({
     setSelectedToken(undefined);
 
     // refresh portfolio data
-    await onRefresh();
+    await onRefresh(true);
   };
 
   return (
@@ -682,7 +682,7 @@ export const Client: React.FC<ClientProps> = ({
                       <DomainProfileList
                         id={'wallet-domain-list'}
                         domains={domains}
-                        isLoading={isLoading}
+                        isLoading={isDomainsLoading}
                         withInfiniteScroll={true}
                         setWeb3Deps={setWeb3Deps}
                         onLastPage={handleLoadDomains}
@@ -792,7 +792,7 @@ export type ClientProps = {
   paymentConfigStatus?: SerializedIdentityResponse;
   fullScreenModals?: boolean;
   onClaimWallet?: () => void;
-  onRefresh: () => Promise<void>;
+  onRefresh: (showSpinner?: boolean) => Promise<void>;
   isHeaderClicked: boolean;
   setIsHeaderClicked?: (v: boolean) => void;
 };

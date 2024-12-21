@@ -60,6 +60,7 @@ import {
 import {
   getBootstrapState,
   saveBootstrapState,
+  saveMpcCustodyState,
 } from '../../lib/fireBlocks/storage/state';
 import {sleep} from '../../lib/sleep';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
@@ -145,7 +146,7 @@ const useStyles = makeStyles<{
 // one hour in milliseconds
 const ONE_HOUR = 60 * 60 * 1000;
 
-export const Configuration: React.FC<
+export const WalletProvider: React.FC<
   ManageTabProps & {
     mode?: WalletMode;
     emailAddress?: string;
@@ -275,7 +276,7 @@ export const Configuration: React.FC<
       // retrieve the MPC wallets on page load
       void loadMpcWallets();
     }
-  }, [configState, accessToken]);
+  }, [configState, accessToken, custodySecret]);
 
   useEffect(() => {
     if (!isLoaded) {
@@ -419,15 +420,32 @@ export const Configuration: React.FC<
     setProgressPct(progressValue);
   };
 
-  const loadMpcWallets = async (forceRefresh?: boolean) => {
+  const loadMpcWallets = async (
+    forceRefresh?: boolean,
+    showSpinner?: boolean,
+  ) => {
     if (accessToken) {
-      await loadSelfCustodyWallets(forceRefresh);
+      await loadSelfCustodyWallets(forceRefresh, showSpinner);
     } else if (custodySecret) {
-      await loadCustodyWallets(forceRefresh);
+      try {
+        await loadCustodyWallets(forceRefresh, showSpinner);
+      } finally {
+        setIsSaving(false);
+        setIsLoaded(true);
+        if (setIsFetching) {
+          setIsFetching(false);
+        }
+        if (onLoaded) {
+          onLoaded(true);
+        }
+      }
     }
   };
 
-  const loadSelfCustodyWallets = async (forceRefresh?: boolean) => {
+  const loadSelfCustodyWallets = async (
+    forceRefresh?: boolean,
+    showSpinner?: boolean,
+  ) => {
     if (!accessToken) {
       return;
     }
@@ -439,7 +457,7 @@ export const Configuration: React.FC<
     }
 
     // set fetching flag if provided
-    if (setIsFetching) {
+    if (setIsFetching && showSpinner) {
       setIsFetching(true);
     }
 
@@ -569,20 +587,44 @@ export const Configuration: React.FC<
     }
   };
 
-  const loadCustodyWallets = async (forceRefresh?: boolean) => {
+  const loadCustodyWallets = async (
+    forceRefresh?: boolean,
+    showSpinner?: boolean,
+  ) => {
     if (!custodySecret) {
       return;
     }
 
     // set fetching flag if provided
-    if (setIsFetching) {
+    if (setIsFetching && showSpinner) {
       setIsFetching(true);
     }
 
     // retrieve the accounts associated with the custody wallet
     const bootstrapState = getBootstrapState(state);
-    if (!bootstrapState?.custodyState?.addresses) {
-      return;
+    if (
+      !bootstrapState?.custodyState?.addresses ||
+      Object.keys(bootstrapState.custodyState.addresses).length <
+        config.WALLETS.CHAINS.SEND.length
+    ) {
+      // bootstrap state required
+      if (!bootstrapState) {
+        return;
+      }
+
+      // retrieve latest custody state since address list is not
+      // yet completed
+      const wallet = await getMpcCustodyWallet(custodySecret);
+      if (!wallet) {
+        return;
+      }
+      bootstrapState.custodyState = wallet;
+      await saveMpcCustodyState(state, saveState, wallet, custodySecret);
+
+      // check addresses again after retrieving latest status
+      if (!bootstrapState?.custodyState?.addresses) {
+        return;
+      }
     }
 
     // query addresses belonging to accounts
@@ -763,6 +805,10 @@ export const Configuration: React.FC<
     }
   };
 
+  const handleRefresh = async (showSpinner?: boolean) => {
+    await loadMpcWallets(true, showSpinner);
+  };
+
   const handleBack = () => {
     // clear input variables
     setBootstrapCode(undefined);
@@ -832,42 +878,6 @@ export const Configuration: React.FC<
     setErrorMessage(undefined);
   };
 
-  const saveMpcCustodyState = async (w: CustodyWallet, secret?: string) => {
-    if (!w.addresses) {
-      return;
-    }
-    // update bootstrap state with custody wallet data. The fireblocks
-    // data will remain empty until the user takes custody
-    await saveBootstrapState(
-      {
-        bootstrapToken: '',
-        refreshToken: '',
-        deviceId: '',
-        assets: Object.entries(w.addresses).map(addressEntry => ({
-          '@type': w!.state,
-          id: addressEntry[0],
-          address: addressEntry[1],
-          blockchainAsset: {
-            '@type': w!.state,
-            id: addressEntry[0],
-            name: getBlockchainName(addressEntry[0]),
-            symbol: addressEntry[0],
-            blockchain: {
-              id: addressEntry[0],
-              name: getBlockchainName(addressEntry[0]),
-            },
-          },
-        })),
-        custodyState: {
-          ...w,
-          secret,
-        },
-      },
-      state,
-      saveState,
-    );
-  };
-
   const processOnboardWithCustody = async () => {
     // message successfully sent
     setErrorMessage(undefined);
@@ -882,41 +892,37 @@ export const Configuration: React.FC<
     // persist the secret so that it can be retrieved on a subsequent
     // page load from local storage
     const walletSecret = custodyWallet.secret;
+    await saveMpcCustodyState(state, saveState, custodyWallet, walletSecret);
+    setCustodySecret(walletSecret);
+
+    // move the state to completed now that a valid custody secret is available,
+    // even though the wallet configuration will continue to load in background.
+    // This gives the perception of responsive UX.
+    setConfigState(WalletConfigState.Complete);
 
     // wait for wallet creation to complete
     while (true) {
       // retrieve the latest custody wallet state
       custodyWallet = await getMpcCustodyWallet(walletSecret);
-      if (custodyWallet?.status === 'COMPLETED') {
-        break;
+
+      // update the storage if an address is detected
+      if (custodyWallet?.addresses) {
+        await saveMpcCustodyState(
+          state,
+          saveState,
+          custodyWallet,
+          walletSecret,
+        );
       }
 
-      // check for existence of an EVM address
-      if (custodyWallet?.addresses) {
-        if (Object.values(custodyWallet.addresses).find(a => isEthAddress(a))) {
-          // Allow the client to start rendering as long as the first EVM addresses
-          // has been identified, to optimized perceived performance. The wallet
-          // will continue to be loaded in the background.
-          saveMpcCustodyState(custodyWallet, walletSecret);
-          setCustodySecret(walletSecret);
-          setConfigState(WalletConfigState.Complete);
-        }
+      // stop processing once status is complete
+      if (custodyWallet?.status === 'COMPLETED') {
+        break;
       }
 
       // continue waiting for completed state
       await sleep(1000);
     }
-
-    // validate addresses created
-    if (!custodyWallet.addresses) {
-      setErrorMessage(t('wallet.errorCreatingWallet'));
-      return;
-    }
-
-    // save the final state
-    saveMpcCustodyState(custodyWallet, walletSecret);
-    setCustodySecret(walletSecret);
-    setConfigState(WalletConfigState.Complete);
   };
 
   const processNeedsOnboarding = () => {
@@ -1182,7 +1188,8 @@ export const Configuration: React.FC<
       {isLoaded &&
       (![WalletConfigState.Complete].includes(configState) ||
         mode === 'basic' ||
-        mpcWallets.length > 0) ? (
+        mpcWallets.length > 0 ||
+        custodySecret) ? (
         isSaving || errorMessage ? (
           <Box className={classes.loadingContainer}>
             <OperationStatus
@@ -1408,7 +1415,7 @@ export const Configuration: React.FC<
                 paymentConfigStatus={paymentConfigStatus}
                 accessToken={accessToken}
                 fullScreenModals={fullScreenModals}
-                onRefresh={async () => await loadMpcWallets(true)}
+                onRefresh={handleRefresh}
                 onClaimWallet={onClaimWallet}
                 isHeaderClicked={isHeaderClicked}
                 setIsHeaderClicked={setIsHeaderClicked}

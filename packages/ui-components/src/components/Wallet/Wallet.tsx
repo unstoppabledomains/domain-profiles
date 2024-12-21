@@ -2,18 +2,24 @@ import Box from '@mui/material/Box';
 import type {Theme} from '@mui/material/styles';
 import React, {useState} from 'react';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {AccessWalletModal} from '.';
-import {useWeb3Context} from '../../hooks';
+import {useFireblocksState, useWeb3Context} from '../../hooks';
 import type {Web3Dependencies} from '../../lib';
-import {isDomainValidForManagement, useTranslationContext} from '../../lib';
+import {
+  CustodyState,
+  getBootstrapState,
+  isDomainValidForManagement,
+  useTranslationContext,
+} from '../../lib';
 import type {DomainProfileTabType} from '../Manage';
 import type {ManageTabProps} from '../Manage/common/types';
 import Modal from '../Modal';
 import ClaimWalletModal from './ClaimWalletModal';
-import {Configuration, WalletConfigState} from './Configuration';
 import {Header} from './Header';
+import {WalletConfigState, WalletProvider} from './WalletProvider';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -78,8 +84,10 @@ export const Wallet: React.FC<
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const [state] = useFireblocksState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isFetching, setIsFetching] = useState<boolean>();
+  const [isCustodyWallet, setIsCustodyWallet] = useState<boolean>();
   const [isWeb3DepsLoading, setIsWeb3DepsLoading] = useState(true);
   const [isHeaderClicked, setIsHeaderClicked] = useState(false);
   const [accessToken, setAccessToken] = useState<string>();
@@ -88,7 +96,14 @@ export const Wallet: React.FC<
   // claim
   const [showClaimWalletModal, setShowClaimWalletModal] = useState<boolean>();
 
-  const handleWalletLoaded = (v: boolean) => {
+  const handleWalletLoaded = async (v: boolean) => {
+    const bootstrapState = getBootstrapState(state);
+    if (bootstrapState?.custodyState?.state === CustodyState.CUSTODY) {
+      setIsCustodyWallet(true);
+      if (setAuthAddress) {
+        setAuthAddress(config.UNSTOPPABLE_CONTRACT_ADDRESS);
+      }
+    }
     setIsLoaded(v);
   };
 
@@ -149,7 +164,7 @@ export const Wallet: React.FC<
           domain={isDomainValidForManagement(domain) ? domain : undefined}
         />
       )}
-      <Configuration
+      <WalletProvider
         mode={mode}
         emailAddress={emailAddress}
         recoveryPhrase={recoveryPhrase}
@@ -173,7 +188,7 @@ export const Wallet: React.FC<
           isNewUser ? WalletConfigState.OnboardWithCustody : undefined
         }
       />
-      {isLoaded && isWeb3DepsLoading && (
+      {isLoaded && !isCustodyWallet && isWeb3DepsLoading && (
         <AccessWalletModal
           prompt={true}
           address={address}

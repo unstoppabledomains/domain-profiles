@@ -43,7 +43,7 @@ import {
 } from '../../actions/walletActions';
 import {useFireblocksAccessToken, useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
-import type {SerializedWalletBalance} from '../../lib';
+import type {CustodyWallet, SerializedWalletBalance} from '../../lib';
 import {
   CustodyState,
   isEmailValid,
@@ -832,6 +832,42 @@ export const Configuration: React.FC<
     setErrorMessage(undefined);
   };
 
+  const saveMpcCustodyState = async (w: CustodyWallet, secret?: string) => {
+    if (!w.addresses) {
+      return;
+    }
+    // update bootstrap state with custody wallet data. The fireblocks
+    // data will remain empty until the user takes custody
+    await saveBootstrapState(
+      {
+        bootstrapToken: '',
+        refreshToken: '',
+        deviceId: '',
+        assets: Object.entries(w.addresses).map(addressEntry => ({
+          '@type': w!.state,
+          id: addressEntry[0],
+          address: addressEntry[1],
+          blockchainAsset: {
+            '@type': w!.state,
+            id: addressEntry[0],
+            name: getBlockchainName(addressEntry[0]),
+            symbol: addressEntry[0],
+            blockchain: {
+              id: addressEntry[0],
+              name: getBlockchainName(addressEntry[0]),
+            },
+          },
+        })),
+        custodyState: {
+          ...w,
+          secret,
+        },
+      },
+      state,
+      saveState,
+    );
+  };
+
   const processOnboardWithCustody = async () => {
     // message successfully sent
     setErrorMessage(undefined);
@@ -849,10 +885,25 @@ export const Configuration: React.FC<
 
     // wait for wallet creation to complete
     while (true) {
+      // retrieve the latest custody wallet state
       custodyWallet = await getMpcCustodyWallet(walletSecret);
       if (custodyWallet?.status === 'COMPLETED') {
         break;
       }
+
+      // check for existence of an EVM address
+      if (custodyWallet?.addresses) {
+        if (Object.values(custodyWallet.addresses).find(a => isEthAddress(a))) {
+          // Allow the client to start rendering as long as the first EVM addresses
+          // has been identified, to optimized perceived performance. The wallet
+          // will continue to be loaded in the background.
+          saveMpcCustodyState(custodyWallet, walletSecret);
+          setCustodySecret(walletSecret);
+          setConfigState(WalletConfigState.Complete);
+        }
+      }
+
+      // continue waiting for completed state
       await sleep(1000);
     }
 
@@ -862,36 +913,8 @@ export const Configuration: React.FC<
       return;
     }
 
-    // update bootstrap state with custody wallet data. The fireblocks
-    // data will remain empty until the user takes custody
-    await saveBootstrapState(
-      {
-        bootstrapToken: '',
-        refreshToken: '',
-        deviceId: '',
-        assets: Object.entries(custodyWallet.addresses).map(addressEntry => ({
-          '@type': custodyWallet!.state,
-          id: addressEntry[0],
-          address: addressEntry[1],
-          blockchainAsset: {
-            '@type': custodyWallet!.state,
-            id: addressEntry[0],
-            name: getBlockchainName(addressEntry[0]),
-            symbol: addressEntry[0],
-            blockchain: {
-              id: addressEntry[0],
-              name: getBlockchainName(addressEntry[0]),
-            },
-          },
-        })),
-        custodyState: {
-          ...custodyWallet,
-          secret: walletSecret,
-        },
-      },
-      state,
-      saveState,
-    );
+    // save the final state
+    saveMpcCustodyState(custodyWallet, walletSecret);
     setCustodySecret(walletSecret);
     setConfigState(WalletConfigState.Complete);
   };

@@ -29,10 +29,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   button: {
     width: '100%',
+    padding: theme.spacing(2),
   },
   icon: {
     width: '40px',
     height: '40px',
+    marginLeft: theme.spacing(1),
     marginRight: theme.spacing(1),
   },
 }));

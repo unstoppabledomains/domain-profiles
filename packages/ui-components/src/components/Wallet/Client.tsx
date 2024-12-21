@@ -665,7 +665,7 @@ export const Client: React.FC<ClientProps> = ({
                       onTokenClick={handleTokenClicked}
                     />
                   ) : (
-                    <Box className={classes.header}>
+                    <Box mt={2}>
                       <LetsGetStartedCta
                         onBuyClicked={handleClickedBuy}
                         onReceiveClicked={handleClickedReceive}

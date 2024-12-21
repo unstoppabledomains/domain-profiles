@@ -7,6 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -189,7 +190,9 @@ const ClaimWalletModal: React.FC<Props> = ({
   return (
     <Box className={classes.container}>
       <Box className={cx(classes.content, classes.centered)}>
-        <Typography mb={5}>{t('wallet.claimWalletDescription')}</Typography>
+        <Typography mb={5}>
+          <Markdown>{t('wallet.claimWalletDescription')}</Markdown>
+        </Typography>
         <ManageInput
           id="emailAddress"
           value={emailAddress}
@@ -249,7 +252,7 @@ const ClaimWalletModal: React.FC<Props> = ({
             ) : undefined
           }
         >
-          {errorMessage || t('wallet.completeSetup')}
+          {errorMessage || t('wallet.claimWalletCtaButton')}
         </LoadingButton>
       </Box>
     </Box>

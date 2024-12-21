@@ -23,13 +23,11 @@ export const getAsset = (
   const asset = assets.find(a => {
     // use chain ID if provided
     if (opts?.chainId) {
-      const chainAsset =
+      return (
         SUPPORTED_SIGNING_SYMBOLS.includes(
           a.blockchainAsset.symbol.toUpperCase(),
-        ) && a.blockchainAsset.blockchain.networkId === opts.chainId;
-      if (chainAsset) {
-        return chainAsset;
-      }
+        ) && a.blockchainAsset.blockchain.networkId === opts.chainId
+      );
     }
 
     // use token if provided

@@ -1,5 +1,17 @@
 import type {SerializedPriceHistory, TokenType} from './domain';
 
+export enum CustodyState {
+  CUSTODY = 'CUSTODY',
+  SELF_CUSTODY = 'SELF_CUSTODY',
+}
+
+export interface CustodyWallet {
+  secret?: string;
+  state: CustodyState;
+  status: 'COMPLETED' | 'QUEUED' | 'PROCESSING';
+  addresses?: Record<string, string>;
+}
+
 export interface LoginResult {
   address: string;
   domain: string;

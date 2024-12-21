@@ -54,6 +54,7 @@ export const getBlockchainName = (symbol: string): string => {
     case 'ETH':
       return 'Ethereum';
     case 'MATIC':
+    case 'POL':
       return 'Polygon';
     case 'AVAX':
       return 'Avalanche';
@@ -61,6 +62,8 @@ export const getBlockchainName = (symbol: string): string => {
       return 'Bitcoin';
     case 'SOL':
       return 'Solana';
+    case 'BASE':
+      return 'Base';
     default:
       return symbol;
   }

@@ -1,11 +1,10 @@
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import {MobileCta} from 'components/wallet/MobileCta';
-import {EMAIL_PARAM, RECOVERY_TOKEN_PARAM, SIGN_IN_PARAM} from 'lib/types';
+import {EMAIL_PARAM, RECOVERY_TOKEN_PARAM} from 'lib/types';
 import {NextSeo} from 'next-seo';
 import {useRouter} from 'next/router';
 import React, {useEffect, useState} from 'react';
@@ -23,22 +22,17 @@ import {
   getSeoTags,
   isEthAddress,
   localStorageWrapper,
-  useFeatureFlags,
   useFireblocksState,
   useTranslationContext,
   useWeb3Context,
 } from '@unstoppabledomains/ui-components';
-import InlineEducation from '@unstoppabledomains/ui-components/src/components/Wallet/InlineEducation';
 import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
-import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
-import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableWalletIcon';
 
 const WalletPage = () => {
   const {classes, cx} = useStyles({});
   const [t] = useTranslationContext();
   const {web3Deps} = useWeb3Context();
   const {query: params} = useRouter();
-  const {data: featureFlags} = useFeatureFlags(false);
   const isMounted = useIsMounted();
   const theme = useTheme();
   const [isLoaded, setIsLoaded] = useState(false);
@@ -50,8 +44,6 @@ const WalletPage = () => {
   const [authComplete, setAuthComplete] = useState(false);
   const [recoveryToken, setRecoveryToken] = useState<string>();
   const [emailAddress, setEmailAddress] = useState<string>();
-  const [signInClicked, setSignInClicked] = useState(false);
-  const [getWalletClicked, setGetWalletClicked] = useState(false);
   const [isReloadChecked, setIsReloadChecked] = useState(false);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -60,10 +52,6 @@ const WalletPage = () => {
     title: t('wallet.title'),
     description: t('manage.cryptoWalletDescriptionShort'),
   });
-
-  // indicates whether the wallet creation feature is enabled
-  const isCreateWalletEnabled =
-    featureFlags.variations?.profileServiceEnableWalletCreation === true;
 
   // sign the user out if recovery is requested
   useEffect(() => {
@@ -97,11 +85,6 @@ const WalletPage = () => {
     ) {
       setRecoveryToken(params[RECOVERY_TOKEN_PARAM]);
       return;
-    }
-
-    // select sign in if specified in parameter
-    if (params[SIGN_IN_PARAM] !== undefined) {
-      setSignInClicked(true);
     }
   }, [params]);
 
@@ -159,23 +142,16 @@ const WalletPage = () => {
     void loadWallet();
   }, [isMounted, authComplete]);
 
-  const handleGetLiteWallet = () => {
-    if (isCreateWalletEnabled) {
-      // open new wallet configuration page
-      setGetWalletClicked(true);
-      setSignInClicked(true);
-    } else {
-      // navigate to the wallet info page
-      window.open(config.WALLETS.LANDING_PAGE_URL, '_blank');
-    }
-  };
-
-  const handleSignIn = () => {
-    setSignInClicked(true);
-  };
-
   const handleAuthComplete = () => {
     setAuthComplete(true);
+  };
+
+  const handleClaimComplete = async (v: string) => {
+    await localStorageWrapper.clear();
+    sessionStorage.clear();
+    window.location.href = `${
+      config.UD_ME_BASE_URL
+    }/wallet?${EMAIL_PARAM}=${encodeURIComponent(v)}`;
   };
 
   return (
@@ -210,82 +186,38 @@ const WalletPage = () => {
             className={classes.item}
             sx={{display: isLoaded ? undefined : 'none'}}
           >
-            {signInClicked || recoveryToken || emailAddress || authAddress ? (
-              <Box
-                className={cx(
-                  classes.searchContainer,
-                  classes.walletContainer,
-                  authAddress
-                    ? classes.walletPortfolioContainer
-                    : classes.walletInfoContainer,
-                )}
-              >
-                <Wallet
-                  mode={authAddress ? 'portfolio' : 'basic'}
-                  emailAddress={emailAddress}
-                  address={authAddress}
-                  domain={authDomain}
-                  avatarUrl={authAvatar}
-                  recoveryToken={recoveryToken}
-                  showMessages={true}
-                  onUpdate={(_t: DomainProfileTabType) => {
-                    handleAuthComplete();
-                  }}
-                  setAuthAddress={setAuthAddress}
-                  setButtonComponent={setAuthButton}
-                  isNewUser={getWalletClicked}
-                  fullScreenModals={isMobile}
-                />
-                {!authAddress && (
-                  <Box
-                    display="flex"
-                    flexDirection="column"
-                    width="100%"
-                    mt={2}
-                  >
-                    {authButton}
-                  </Box>
-                )}
-              </Box>
-            ) : (
-              <Box
-                className={cx(
-                  classes.searchContainer,
-                  classes.walletContainer,
-                  classes.walletInfoContainer,
-                )}
-              >
-                <Box mt={1} display="flex" alignItems="center">
-                  <IconPlate size={40} variant="info">
-                    <UnstoppableWalletIcon />
-                  </IconPlate>
-                  <Typography ml={1} variant="h5">
-                    Features & Highlights
-                  </Typography>
+            <Box
+              className={cx(
+                classes.searchContainer,
+                classes.walletContainer,
+                authAddress
+                  ? classes.walletPortfolioContainer
+                  : classes.walletInfoContainer,
+              )}
+            >
+              <Wallet
+                mode={authAddress ? 'portfolio' : 'basic'}
+                emailAddress={emailAddress}
+                address={authAddress}
+                domain={authDomain}
+                avatarUrl={authAvatar}
+                recoveryToken={recoveryToken}
+                showMessages={true}
+                onUpdate={(_t: DomainProfileTabType) => {
+                  handleAuthComplete();
+                }}
+                onClaimComplete={handleClaimComplete}
+                setAuthAddress={setAuthAddress}
+                setButtonComponent={setAuthButton}
+                isNewUser={!emailAddress}
+                fullScreenModals={isMobile}
+              />
+              {!authAddress && (
+                <Box display="flex" flexDirection="column" width="100%" mt={2}>
+                  {authButton}
                 </Box>
-                <InlineEducation />
-                <Box display="flex" flexDirection="column" width="100%">
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    className={classes.button}
-                    onClick={handleGetLiteWallet}
-                  >
-                    {isCreateWalletEnabled
-                      ? t('wallet.getLiteWallet')
-                      : t('common.learnMore')}
-                  </Button>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    className={classes.button}
-                    onClick={handleSignIn}
-                  >
-                    {t('header.signIn')}
-                  </Button>
-                </Box>
-              </Box>
-            )}
+              )}
+            </Box>
           </Grid>
           {web3Deps?.unstoppableWallet && (
             <Grid item xs={12}>

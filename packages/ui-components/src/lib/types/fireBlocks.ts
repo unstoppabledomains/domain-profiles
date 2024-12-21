@@ -1,3 +1,5 @@
+import type {CustodyWallet} from './wallet';
+
 export interface Account {
   '@type': string;
   id: string;
@@ -36,6 +38,7 @@ export interface BootstrapState {
   refreshToken: string;
   deviceId: string;
   assets: AccountAsset[];
+  custodyState: CustodyWallet;
 }
 
 export const BootstrapStateCurrentKey = 'current';

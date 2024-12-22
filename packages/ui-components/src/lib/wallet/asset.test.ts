@@ -6,6 +6,23 @@ describe('selecting asset', () => {
   const mockAssets: AccountAsset[] = [
     {
       '@type': 'unstoppabledomains.com/wallets.v1.WalletAccountAssetMinimal',
+      id: 'wa-aa-6c2a38cd-c12f-4bb1-97fb-da2cf5398ec5',
+      address: '0x8ee1E1d88EBE2B44eAD162777DE787Ef6A2dC2F2',
+      blockchainAsset: {
+        '@type': 'unstoppabledomains.com/wallets.v1.BlockchainAsset',
+        id: 'wa-ba-a8d05b8b-9201-41b8-8401-069dc3909a48',
+        name: 'Ethereum',
+        symbol: 'ETH',
+        blockchain: {
+          id: 'ETHEREUM',
+          name: 'Ethereum',
+          networkId: 11155111,
+        },
+      },
+      accountId: 'wa-ac-4458235d-cac9-4695-bed9-5458adb093d3',
+    },
+    {
+      '@type': 'unstoppabledomains.com/wallets.v1.WalletAccountAssetMinimal',
       id: 'wa-aa-92498f05-ecdb-4932-99a8-69dde0c67219',
       address: '0x8ee1E1d88EBE2B44eAD162777DE787Ef6A2dC2F2',
       blockchainAsset: {
@@ -87,23 +104,6 @@ describe('selecting asset', () => {
       },
       accountId: 'wa-ac-4458235d-cac9-4695-bed9-5458adb093d3',
     },
-    {
-      '@type': 'unstoppabledomains.com/wallets.v1.WalletAccountAssetMinimal',
-      id: 'wa-aa-6c2a38cd-c12f-4bb1-97fb-da2cf5398ec5',
-      address: '0x8ee1E1d88EBE2B44eAD162777DE787Ef6A2dC2F2',
-      blockchainAsset: {
-        '@type': 'unstoppabledomains.com/wallets.v1.BlockchainAsset',
-        id: 'wa-ba-a8d05b8b-9201-41b8-8401-069dc3909a48',
-        name: 'Ethereum',
-        symbol: 'ETH',
-        blockchain: {
-          id: 'ETHEREUM',
-          name: 'Ethereum',
-          networkId: 11155111,
-        },
-      },
-      accountId: 'wa-ac-4458235d-cac9-4695-bed9-5458adb093d3',
-    },
   ];
 
   it('should select default Ethereum asset by address', () => {
@@ -141,13 +141,12 @@ describe('selecting asset', () => {
     expect(asset?.blockchainAsset.blockchain.id).toBe('POLYGON');
   });
 
-  it('should ignore an invalid chain ID', () => {
+  it('should not return an asset for invalid chain ID', () => {
     const asset = getAsset(mockAssets, {
       chainId: 9999999999,
       address: '0x8ee1E1d88EBE2B44eAD162777DE787Ef6A2dC2F2',
     });
-    expect(asset).toBeDefined();
-    expect(asset?.blockchainAsset.blockchain.id).toBe('ETHEREUM');
+    expect(asset).not.toBeDefined();
   });
 
   it('should select Solana asset by address', () => {
@@ -226,8 +225,8 @@ describe('selecting asset', () => {
 
   it('should select the first element if no parameters provided', () => {
     const asset = getAsset(mockAssets);
-    expect(asset?.blockchainAsset.blockchain.id).toBe('POLYGON');
-    expect(asset?.blockchainAsset.name).toBe('USD Coin');
+    expect(asset?.blockchainAsset.blockchain.id).toBe('ETHEREUM');
+    expect(asset?.blockchainAsset.name).toBe('Ethereum');
   });
 
   it('should not select an asset if address is not found', () => {

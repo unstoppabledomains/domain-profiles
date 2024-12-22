@@ -43,7 +43,7 @@ import {
 } from '../../actions/walletActions';
 import {useFireblocksAccessToken, useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
-import type {CustodyWallet, SerializedWalletBalance} from '../../lib';
+import type {SerializedWalletBalance} from '../../lib';
 import {
   CustodyState,
   isEmailValid,
@@ -69,7 +69,6 @@ import {localStorageWrapper} from '../Chat/storage';
 import {DomainProfileTabType} from '../Manage/DomainProfile';
 import ManageInput from '../Manage/common/ManageInput';
 import type {ManageTabProps} from '../Manage/common/types';
-import {getBlockchainName} from '../Manage/common/verification/types';
 import {Client, getMinClientHeight} from './Client';
 import InlineEducation from './InlineEducation';
 import {OperationStatus} from './OperationStatus';
@@ -209,6 +208,7 @@ export const WalletProvider: React.FC<
 
   // wallet in custody state
   const [custodySecret, setCustodySecret] = useState<string>();
+  const [custodyUpdateMs, setCustodyUpdateMs] = useState<number>();
 
   // wallet recovery state variables
   const {accessToken, setAccessToken} = useWeb3Context();
@@ -277,6 +277,13 @@ export const WalletProvider: React.FC<
       void loadMpcWallets();
     }
   }, [configState, accessToken, custodySecret]);
+
+  useEffect(() => {
+    if (!custodyUpdateMs) {
+      return;
+    }
+    void handleRefresh(false);
+  }, [custodyUpdateMs]);
 
   useEffect(() => {
     if (!isLoaded) {
@@ -905,14 +912,19 @@ export const WalletProvider: React.FC<
       // retrieve the latest custody wallet state
       custodyWallet = await getMpcCustodyWallet(walletSecret);
 
-      // update the storage if an address is detected
+      // process the wallet if addresses are detected
       if (custodyWallet?.addresses) {
+        // update the storage state with new addresses
         await saveMpcCustodyState(
           state,
           saveState,
           custodyWallet,
           walletSecret,
         );
+
+        // force a wallet refresh for the client to ensure it has the latest set
+        // of data for the UX
+        setCustodyUpdateMs(Date.now());
       }
 
       // stop processing once status is complete

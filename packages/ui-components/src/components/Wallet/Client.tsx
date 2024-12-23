@@ -235,7 +235,8 @@ export const Client: React.FC<ClientProps> = ({
 
   // wallet state variables
   const [state, saveState] = useFireblocksState();
-  const [showFundingModalTitle, setShowFundingModalTitle] = useState<string>();
+  const [fundingModalTitle, setFundingModalTitle] = useState<string>();
+  const [fundingModalIcon, setFundingModalIcon] = useState<React.ReactNode>();
   const {setWeb3Deps} = useWeb3Context();
   const cryptoValue = wallets
     .map(w => w.totalValueUsdAmt || 0)
@@ -352,7 +353,7 @@ export const Client: React.FC<ClientProps> = ({
       },
     );
   };
-  let showPasswordCtaTimer: NodeJS.Timeout | undefined = undefined;
+  let showPasswordCtaTimer: NodeJS.Timeout | undefined;
 
   const getClient = async () => {
     // retrieve client state
@@ -376,7 +377,8 @@ export const Client: React.FC<ClientProps> = ({
   };
 
   const handleCloseFundingModal = () => {
-    setShowFundingModalTitle(undefined);
+    setFundingModalTitle(undefined);
+    setFundingModalIcon(undefined);
   };
 
   const handleTabChange = async (
@@ -478,7 +480,8 @@ export const Client: React.FC<ClientProps> = ({
   const handleClickedSend = () => {
     if (!accessToken) {
       if (!cryptoValue) {
-        setShowFundingModalTitle(t('common.send'));
+        setFundingModalTitle(t('common.send'));
+        setFundingModalIcon(<SendIcon />);
       } else if (onClaimWallet) {
         onClaimWallet();
       }
@@ -495,7 +498,8 @@ export const Client: React.FC<ClientProps> = ({
   const handleClickedSwap = () => {
     if (!accessToken) {
       if (!cryptoValue) {
-        setShowFundingModalTitle(t('swap.title'));
+        setFundingModalTitle(t('swap.title'));
+        setFundingModalIcon(<SwapHorizIcon />);
       } else if (onClaimWallet) {
         onClaimWallet();
       }
@@ -762,15 +766,16 @@ export const Client: React.FC<ClientProps> = ({
           onUpdate={handleDomainUpdate}
         />
       )}
-      {showFundingModalTitle && (
+      {fundingModalTitle && (
         <Modal
-          title={showFundingModalTitle}
+          title={fundingModalTitle}
           open={true}
           fullScreen={fullScreenModals}
           titleStyle={classes.modalTitleStyle}
           onClose={handleCloseFundingModal}
         >
           <FundWalletModal
+            icon={fundingModalIcon}
             onBuyClicked={() => {
               handleClickedBuy();
               handleCloseFundingModal();

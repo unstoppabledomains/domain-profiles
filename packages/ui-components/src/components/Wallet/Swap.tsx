@@ -1,6 +1,7 @@
 import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import ImportExportIcon from '@mui/icons-material/ImportExport';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 // eslint-disable-next-line no-restricted-imports
 import Alert from '@mui/material/Alert';
@@ -1024,6 +1025,7 @@ const Swap: React.FC<Props> = ({
             <FundWalletModal
               onBuyClicked={onClickBuy}
               onReceiveClicked={onClickReceive}
+              icon={<SwapHorizIcon />}
             />
           </Box>
         ) : (

@@ -70,7 +70,7 @@ const WALLET_PASSWORD_SPECIAL_CHARACTER_VALIDATION_REGEX =
 
 type Props = {
   custodyWallet?: CustodyWallet;
-  onComplete: (emailAddress: string) => void;
+  onComplete: (emailAddress: string, password: string) => void;
 };
 
 const ClaimWalletModal: React.FC<Props> = ({
@@ -87,7 +87,7 @@ const ClaimWalletModal: React.FC<Props> = ({
   const [emailAddress, setEmailAddress] = useState<string>();
   const [recoveryPhrase, setRecoveryPhrase] = useState<string>();
   const [custodyWallet, setCustodyWallet] = useState(initialCustodyWallet);
-  const [state, saveState] = useFireblocksState();
+  const [state] = useFireblocksState();
 
   useEffect(() => {
     if (custodyWallet) {
@@ -172,7 +172,7 @@ const ClaimWalletModal: React.FC<Props> = ({
 
       // operation is completed
       setErrorMessage(t('common.success'));
-      onComplete(emailAddress);
+      onComplete(emailAddress, recoveryPhrase);
     } finally {
       setIsSaving(false);
     }

@@ -45,16 +45,17 @@ export const Wallet: React.FC<
     disableBasicHeader?: boolean;
     fullScreenModals?: boolean;
     forceRememberOnDevice?: boolean;
+    isNewUser?: boolean;
+    loginClicked?: boolean;
     setAuthAddress?: (v: string) => void;
     onLoginInitiated?: (emailAddress: string, password: string) => void;
     onError?: () => void;
     onLogout?: () => void;
     onDisconnect?: () => void;
-    onClaimComplete?: (emailAddress: string) => void;
+    onClaimComplete?: (emailAddress: string, password: string) => void;
     onSettingsClick?: () => void;
     onMessagesClick?: () => void;
     onMessagePopoutClick?: (address?: string) => void;
-    isNewUser?: boolean;
   }
 > = ({
   emailAddress,
@@ -68,6 +69,7 @@ export const Wallet: React.FC<
   disableInlineEducation,
   disableBasicHeader,
   isNewUser,
+  loginClicked,
   fullScreenModals,
   forceRememberOnDevice,
   onUpdate,
@@ -90,11 +92,9 @@ export const Wallet: React.FC<
   const [isCustodyWallet, setIsCustodyWallet] = useState<boolean>();
   const [isWeb3DepsLoading, setIsWeb3DepsLoading] = useState(true);
   const [isHeaderClicked, setIsHeaderClicked] = useState(false);
+  const [showClaimWalletModal, setShowClaimWalletModal] = useState<boolean>();
   const [accessToken, setAccessToken] = useState<string>();
   const {setWeb3Deps} = useWeb3Context();
-
-  // claim
-  const [showClaimWalletModal, setShowClaimWalletModal] = useState<boolean>();
 
   const handleWalletLoaded = async (v: boolean) => {
     const bootstrapState = getBootstrapState(state);
@@ -129,9 +129,9 @@ export const Wallet: React.FC<
     setShowClaimWalletModal(true);
   };
 
-  const handleClaimComplete = (v: string) => {
+  const handleClaimComplete = (email: string, password: string) => {
     if (onClaimComplete) {
-      onClaimComplete(v);
+      onClaimComplete(email, password);
     } else {
       handleClaimModalClose();
     }
@@ -184,6 +184,7 @@ export const Wallet: React.FC<
         disableInlineEducation={disableInlineEducation}
         fullScreenModals={fullScreenModals}
         forceRememberOnDevice={forceRememberOnDevice || isNewUser}
+        loginClicked={loginClicked}
         initialState={
           isNewUser ? WalletConfigState.OnboardWithCustody : undefined
         }

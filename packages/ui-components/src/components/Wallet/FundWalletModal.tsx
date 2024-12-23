@@ -35,9 +35,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '100%',
   },
   icon: {
-    color: theme.palette.neutralShades[300],
-    width: '150px',
-    height: '150px',
+    '& > svg': {
+      width: '150px',
+      height: '150px',
+      fill: theme.palette.neutralShades[300],
+    },
   },
   alert: {
     textAlign: 'left',
@@ -48,9 +50,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
 type Props = {
   onReceiveClicked: () => void;
   onBuyClicked: () => void;
+  icon?: React.ReactNode;
 };
 
-const FundWalletModal: React.FC<Props> = ({onReceiveClicked, onBuyClicked}) => {
+const FundWalletModal: React.FC<Props> = ({
+  onReceiveClicked,
+  onBuyClicked,
+  icon,
+}) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
   const [state] = useFireblocksState();
@@ -60,6 +67,9 @@ const FundWalletModal: React.FC<Props> = ({onReceiveClicked, onBuyClicked}) => {
   const address = walletState?.assets.find(a =>
     isEthAddress(a.address),
   )?.address;
+
+  if (icon) {
+  }
 
   // show loading spinner until address is available
   if (!address) {
@@ -73,7 +83,9 @@ const FundWalletModal: React.FC<Props> = ({onReceiveClicked, onBuyClicked}) => {
   return (
     <Box className={classes.container}>
       <Box className={cx(classes.content, classes.centered)}>
-        <RocketLaunchOutlined className={classes.icon} />
+        <Box className={classes.icon}>
+          {icon ? icon : <RocketLaunchOutlined />}
+        </Box>
         <Alert className={classes.alert} severity="info">
           {t('wallet.noTokensAvailableForSend')}
         </Alert>

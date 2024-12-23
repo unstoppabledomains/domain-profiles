@@ -145,6 +145,14 @@ const useStyles = makeStyles<{
 // one hour in milliseconds
 const ONE_HOUR = 60 * 60 * 1000;
 
+export enum WalletConfigState {
+  OtpEntry = 'otpEntry',
+  PasswordEntry = 'passwordEntry',
+  Complete = 'complete',
+  NeedsOnboarding = 'needsOnboarding',
+  OnboardWithCustody = 'onboardWithCustody',
+}
+
 export const WalletProvider: React.FC<
   ManageTabProps & {
     mode?: WalletMode;
@@ -163,6 +171,7 @@ export const WalletProvider: React.FC<
     initialState?: WalletConfigState;
     fullScreenModals?: boolean;
     forceRememberOnDevice?: boolean;
+    loginClicked?: boolean;
   }
 > = ({
   onUpdate,
@@ -183,6 +192,7 @@ export const WalletProvider: React.FC<
   recoveryToken,
   disableInlineEducation,
   initialState,
+  loginClicked,
 }) => {
   // component state variables
   const router = useRouter();
@@ -277,6 +287,16 @@ export const WalletProvider: React.FC<
       void loadMpcWallets();
     }
   }, [configState, accessToken, custodySecret]);
+
+  useEffect(() => {
+    if (!loginClicked) {
+      return;
+    }
+    if (configState !== WalletConfigState.OnboardWithCustody) {
+      return;
+    }
+    void handleSave();
+  }, [loginClicked, configState]);
 
   useEffect(() => {
     if (!custodyUpdateMs) {
@@ -1446,11 +1466,3 @@ export const WalletProvider: React.FC<
     </Box>
   );
 };
-
-export enum WalletConfigState {
-  OtpEntry = 'otpEntry',
-  PasswordEntry = 'passwordEntry',
-  Complete = 'complete',
-  NeedsOnboarding = 'needsOnboarding',
-  OnboardWithCustody = 'onboardWithCustody',
-}

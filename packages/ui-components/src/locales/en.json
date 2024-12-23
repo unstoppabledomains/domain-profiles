@@ -922,7 +922,7 @@
     "clockDriftError": "Device clock ({{deviceTime}}) is out of sync with wallet provider ({{expectedTime}}). Update your settings and try again.",
     "completeSetup": "Confirm",
     "configuringWallet": "Configuring your wallet...",
-    "configuringWalletShort": "Configuring your wallet",
+    "configuringWalletShort": "Configuring wallet",
     "confirmRecoveryPhrase": "Confirm",
     "createPassword": "Set password",
     "createWallet": "Create a new wallet",

@@ -1,7 +1,7 @@
 import {getAccountAssets} from '../../../actions/fireBlocksActions';
 import {getBlockchainName} from '../../../components/Manage/common/verification/types';
 import {notifyEvent} from '../../error';
-import {CustodyWallet} from '../../types';
+import type {CustodyWallet} from '../../types';
 import type {BootstrapState} from '../../types/fireBlocks';
 import {
   BootstrapStateCurrentKey,

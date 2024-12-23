@@ -68,9 +68,6 @@ const FundWalletModal: React.FC<Props> = ({
     isEthAddress(a.address),
   )?.address;
 
-  if (icon) {
-  }
-
   // show loading spinner until address is available
   if (!address) {
     return (

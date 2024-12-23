@@ -333,7 +333,7 @@
     "crypto": "Crypto Addresses",
     "cryptoAddressesDescription": "Add crypto addresses to receive payments. Optionally verify addresses on supported blockchains to unlock features for your domain.",
     "cryptoWallet": "Wallet",
-    "cryptoWalletDescription": "Unstoppable Lite Wallet is a secure and user friendly web3 wallet for domainers and their domains.",
+    "cryptoWalletDescription": "Designed with features that prioritize the safety of your domains and other onchain investments.",
     "cryptoWalletDescriptionShort": "A web3 wallet for domainers and their domains.",
     "description": "Short bio",
     "displayName": "Name",

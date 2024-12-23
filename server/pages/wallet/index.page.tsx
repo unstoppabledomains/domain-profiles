@@ -170,24 +170,16 @@ const WalletPage = () => {
       />
       <Box className={classes.content}>
         <Grid container data-testid="mainContentContainer">
-          {!isMobile || !authAddress ? (
-            <>
-              <Grid item xs={12} className={classes.item}>
-                <Typography className={classes.sectionTitle}>
-                  {t('wallet.title')}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} className={classes.item}>
-                <Typography className={classes.sectionSubTitle}>
-                  {t('manage.cryptoWalletDescriptionShort')}
-                </Typography>
-              </Grid>
-            </>
-          ) : (
-            <Grid item xs={12}>
-              <Box mt={3} />
-            </Grid>
-          )}
+          <Grid item xs={12} className={classes.item}>
+            <Typography className={classes.sectionTitle}>
+              {t('wallet.title')}
+            </Typography>
+          </Grid>
+          <Grid item xs={12} className={classes.item}>
+            <Typography className={classes.sectionSubTitle}>
+              {t('manage.cryptoWalletDescriptionShort')}
+            </Typography>
+          </Grid>
           <Grid
             item
             xs={12}
@@ -211,7 +203,6 @@ const WalletPage = () => {
                 avatarUrl={authAvatar}
                 recoveryToken={recoveryToken}
                 showMessages={true}
-                disableBasicHeader={true}
                 onUpdate={(_t: DomainProfileTabType) => {
                   handleAuthComplete();
                 }}

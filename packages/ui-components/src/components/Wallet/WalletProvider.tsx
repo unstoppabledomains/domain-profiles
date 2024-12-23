@@ -41,7 +41,11 @@ import {
   getWalletPortfolio,
   syncIdentityConfig,
 } from '../../actions/walletActions';
-import {useFireblocksAccessToken, useWeb3Context} from '../../hooks';
+import {
+  useDomainConfig,
+  useFireblocksAccessToken,
+  useWeb3Context,
+} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
 import type {SerializedWalletBalance} from '../../lib';
 import {
@@ -199,6 +203,7 @@ export const WalletProvider: React.FC<
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const {data: featureFlags} = useFeatureFlags();
+  const {setShowSuccessAnimation} = useDomainConfig();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -927,6 +932,9 @@ export const WalletProvider: React.FC<
     // This gives the perception of responsive UX.
     setConfigState(WalletConfigState.Complete);
 
+    // show the confetti
+    setShowSuccessAnimation(true);
+
     // wait for wallet creation to complete
     while (true) {
       // retrieve the latest custody wallet state
@@ -955,6 +963,9 @@ export const WalletProvider: React.FC<
       // continue waiting for completed state
       await sleep(1000);
     }
+
+    // reset the confetti
+    setShowSuccessAnimation(false);
   };
 
   const processNeedsOnboarding = () => {

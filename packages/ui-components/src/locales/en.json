@@ -959,7 +959,7 @@
     "onboardingMessage": "## Let's get you a wallet...\nWe couldn't find a wallet account for **{{emailAddress}}**. Don't worry, creating a new wallet is easy!",
     "onboardSuccessDescription": "In a few moments we'll send an email to **{{emailAddress}}** with a new one-time code and your wallet recovery kit.",
     "onboardSuccessTitle": "Creating your wallet. Leave this window open until complete...",
-    "onboardWithCustodyDescription": "## Create a new wallet\nYou're one click away from your new favorite wallet. Get up and running in just a few seconds.",
+    "onboardWithCustodyDescription": "## Create a new wallet\nGet up and running with just a single click. Access your new crypto wallet from any device.",
     "readyToUse": "Sign in successful! Your wallet is ready to use, click to open.",
     "receiveAddressCaption": "**Warning: Only send supported tokens.** This address can only receive {{symbol}} on the {{blockchain}} network.",
     "receiveAddressCaptionWithDomains": "**Warning: Only send supported tokens.** This address can only receive {{symbol}} tokens, ERC-20 tokens and Unstoppable Domains NFTs on the {{blockchain}} network.",

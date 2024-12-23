@@ -1018,7 +1018,7 @@ const Swap: React.FC<Props> = ({
       />
       <Box className={classes.container}>
         {allTokens.length > 0 &&
-        sourceTokens.length === 0 &&
+        sourceTokens.filter(v => !v.disabledReason).length === 0 &&
         onClickBuy &&
         onClickReceive ? (
           <Box className={classes.noTokensContainer}>

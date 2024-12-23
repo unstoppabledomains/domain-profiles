@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import Skeleton from '@mui/material/Skeleton';
 import type {Theme} from '@mui/material/styles';
 import React from 'react';
 
@@ -78,6 +79,12 @@ export const SelectAsset: React.FC<Props> = ({
 }) => {
   const {classes} = useStyles();
   const wallets = filterWallets(initialWallets, supportedAssetList);
+  const missingWallets = supportedAssetList.filter(
+    expectedWallet =>
+      !wallets
+        .map(w => `${w.symbol.toUpperCase()}/${w.gasCurrency.toUpperCase()}`)
+        .find(w => w === expectedWallet),
+  );
   const allTokens = getAllTokens(wallets);
   const filteredTokens: TokenEntry[] = allTokens
     .filter(token => !requireBalance || token.balance > 0)
@@ -127,6 +134,14 @@ export const SelectAsset: React.FC<Props> = ({
             </div>
           );
         })}
+        {missingWallets?.map(missingWallet => (
+          <Skeleton
+            key={`missingWallet-${missingWallet}`}
+            className={classes.asset}
+            variant="rectangular"
+            height="65px"
+          />
+        ))}
       </Box>
     </Box>
   );

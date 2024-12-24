@@ -246,17 +246,21 @@ export const WalletProvider: React.FC<
     featureFlags.variations?.profileServiceEnableWalletCreation === true;
 
   useEffect(() => {
-    if (!initialState) {
-      return;
-    }
-    setConfigState(initialState);
-  }, [initialState]);
-
-  useEffect(() => {
     setIsWalletLoaded(false);
     setButtonComponent(<Box className={classes.continueActionContainer} />);
     void loadFromState();
   }, []);
+
+  useEffect(() => {
+    if (initialState) {
+      setConfigState(initialState);
+    }
+    if (recoveryToken || emailAddress) {
+      if (!accessToken && !custodySecret) {
+        setConfigState(WalletConfigState.PasswordEntry);
+      }
+    }
+  }, [accessToken, custodySecret, initialState, recoveryToken, emailAddress]);
 
   useEffect(() => {
     if (!router?.query) {

@@ -8,6 +8,8 @@ export default function getStagingConfig(): ConfigOverride {
       REDIRECT_URI: 'https://staging.ud.me',
     },
     WALLETS: {
+      LAUNCH_API_KEY:
+        'oViIlylot+38CNS8tJ35JZLA6pVnkBncPxkXOlE79WYrSEBKrE4ASL7oDu0QN0Nv',
       SWAP: {
         SUPPORTED_TOKENS: {
           SOURCE: [

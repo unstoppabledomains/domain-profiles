@@ -7,6 +7,7 @@ import {utils as web3utils} from 'web3';
 import config from '@unstoppabledomains/config';
 
 import {getBlockchainSymbol} from '../components/Manage/common/verification/types';
+import {CustodyState} from '../lib';
 import {notifyEvent} from '../lib/error';
 import {fetchApi} from '../lib/fetchApi';
 import {
@@ -227,6 +228,10 @@ export const getAccessTokenInternal = async (
           bootstrapToken: newTokens.bootstrapToken,
           refreshToken: newTokens.refreshToken,
           deviceId: opts.deviceId,
+          custodyState: {
+            state: CustodyState.SELF_CUSTODY,
+            status: 'COMPLETED',
+          },
         },
         opts.state,
         opts.saveState,

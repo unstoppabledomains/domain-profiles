@@ -1,3 +1,4 @@
+import HistoryIcon from '@mui/icons-material/History';
 import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
 import SendIcon from '@mui/icons-material/Send';
 import SouthOutlinedIcon from '@mui/icons-material/SouthOutlined';
@@ -457,6 +458,7 @@ export const DomainWalletTransactions: React.FC<
         <FundWalletModal
           onBuyClicked={onBuyClicked}
           onReceiveClicked={onReceiveClicked}
+          icon={<HistoryIcon />}
         />
       </Modal>
     );

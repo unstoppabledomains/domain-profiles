@@ -116,6 +116,7 @@ const WalletPage = () => {
           return;
         }
         setAuthAddress(accountEvmAddresses[0]);
+        setIsLoaded(true);
         await localStorageWrapper.setItem(
           DomainProfileKeys.AuthAddress,
           accountEvmAddresses[0],
@@ -169,64 +170,66 @@ const WalletPage = () => {
         }}
       />
       <Box className={classes.content}>
-        <Grid container data-testid="mainContentContainer">
-          <Grid item xs={12} className={classes.item}>
-            <Typography className={classes.sectionTitle}>
-              {t('wallet.title')}
-            </Typography>
-          </Grid>
-          <Grid item xs={12} className={classes.item}>
-            <Typography className={classes.sectionSubTitle}>
-              {t('manage.cryptoWalletDescriptionShort')}
-            </Typography>
-          </Grid>
-          <Grid
-            item
-            xs={12}
-            className={classes.item}
-            sx={{display: isLoaded ? undefined : 'none'}}
-          >
-            <Box
-              className={cx(
-                classes.searchContainer,
-                classes.walletContainer,
-                authAddress
-                  ? classes.walletPortfolioContainer
-                  : classes.walletInfoContainer,
-              )}
-            >
-              <Wallet
-                mode={authAddress ? 'portfolio' : 'basic'}
-                emailAddress={emailAddress}
-                address={authAddress}
-                domain={authDomain}
-                avatarUrl={authAvatar}
-                recoveryToken={recoveryToken}
-                showMessages={true}
-                onUpdate={(_t: DomainProfileTabType) => {
-                  handleAuthComplete();
-                }}
-                onClaimComplete={handleClaimComplete}
-                setAuthAddress={setAuthAddress}
-                setButtonComponent={setAuthButton}
-                isNewUser={!emailAddress}
-                fullScreenModals={isMobile}
-              />
-              {!authAddress && (
-                <Box display="flex" flexDirection="column" width="100%" mt={2}>
-                  {authButton}
-                </Box>
-              )}
-            </Box>
-          </Grid>
-          {web3Deps?.unstoppableWallet && (
-            <Grid item xs={12}>
-              <Box mt={5}>
-                <MobileCta />
+        {isLoaded && (
+          <Grid container data-testid="mainContentContainer">
+            <Grid item xs={12} className={classes.item}>
+              <Typography className={classes.sectionTitle}>
+                {t('wallet.title')}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} className={classes.item}>
+              <Typography className={classes.sectionSubTitle}>
+                {t('manage.cryptoWalletDescriptionShort')}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} className={classes.item}>
+              <Box
+                className={cx(
+                  classes.searchContainer,
+                  classes.walletContainer,
+                  authAddress
+                    ? classes.walletPortfolioContainer
+                    : classes.walletInfoContainer,
+                )}
+              >
+                <Wallet
+                  mode={authAddress ? 'portfolio' : 'basic'}
+                  emailAddress={emailAddress}
+                  address={authAddress}
+                  domain={authDomain}
+                  avatarUrl={authAvatar}
+                  recoveryToken={recoveryToken}
+                  showMessages={true}
+                  onUpdate={(_t: DomainProfileTabType) => {
+                    handleAuthComplete();
+                  }}
+                  onClaimComplete={handleClaimComplete}
+                  setAuthAddress={setAuthAddress}
+                  setButtonComponent={setAuthButton}
+                  isNewUser={!emailAddress}
+                  fullScreenModals={isMobile}
+                />
+                {!authAddress && (
+                  <Box
+                    display="flex"
+                    flexDirection="column"
+                    width="100%"
+                    mt={2}
+                  >
+                    {authButton}
+                  </Box>
+                )}
               </Box>
             </Grid>
-          )}
-        </Grid>
+            {web3Deps?.unstoppableWallet && (
+              <Grid item xs={12}>
+                <Box mt={5}>
+                  <MobileCta />
+                </Box>
+              </Grid>
+            )}
+          </Grid>
+        )}
       </Box>
       <Box className={classes.footerContainer}>
         <Box className={classes.footerContent}>

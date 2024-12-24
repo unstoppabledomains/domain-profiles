@@ -1231,13 +1231,16 @@ export const WalletProvider: React.FC<
     setConfigState(WalletConfigState.Complete);
   };
 
+  // indicates the wallet is ready for user interaction
+  const isReadyForUser =
+    ![WalletConfigState.Complete].includes(configState) ||
+    mode === 'basic' ||
+    mpcWallets.length > 0 ||
+    custodySecret;
+
   return (
     <Box className={classes.container}>
-      {isWalletLoaded &&
-      (![WalletConfigState.Complete].includes(configState) ||
-        mode === 'basic' ||
-        mpcWallets.length > 0 ||
-        custodySecret) ? (
+      {isWalletLoaded && isReadyForUser ? (
         isSaving || errorMessage ? (
           <Box className={classes.loadingContainer}>
             <OperationStatus

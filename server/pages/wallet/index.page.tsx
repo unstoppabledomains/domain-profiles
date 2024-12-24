@@ -55,7 +55,7 @@ const WalletPage = () => {
 
   // sign the user out if recovery is requested
   useEffect(() => {
-    if (!walletState || !recoveryToken || isReloadChecked) {
+    if (!walletState || (!recoveryToken && !emailAddress) || isReloadChecked) {
       return;
     }
     if (Object.keys(walletState).length > 0) {
@@ -65,7 +65,7 @@ const WalletPage = () => {
       return;
     }
     setIsReloadChecked(true);
-  }, [walletState, recoveryToken]);
+  }, [walletState, recoveryToken, emailAddress]);
 
   // load query string params
   useEffect(() => {

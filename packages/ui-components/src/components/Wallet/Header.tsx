@@ -293,7 +293,7 @@ export const Header: React.FC<Props> = ({
         <Box className={classes.descriptionContainer}>
           <Typography variant="body2" className={classes.descriptionText}>
             {isMobile
-              ? t('manage.cryptoWalletDescription')
+              ? t('manage.cryptoWalletDescriptionMobile')
               : t('manage.cryptoWalletDescription')}
           </Typography>
           {!isMobile && (

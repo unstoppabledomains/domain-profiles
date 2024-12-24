@@ -334,6 +334,7 @@
     "cryptoAddressesDescription": "Add crypto addresses to receive payments. Optionally verify addresses on supported blockchains to unlock features for your domain.",
     "cryptoWallet": "Wallet",
     "cryptoWalletDescription": "Designed with features that prioritize the safety of your domains and other onchain investments.",
+    "cryptoWalletDescriptionMobile": "Designed to prioritize the safety of your domains and other onchain investments.",
     "cryptoWalletDescriptionShort": "A web3 wallet for domainers and their domains.",
     "description": "Short bio",
     "displayName": "Name",

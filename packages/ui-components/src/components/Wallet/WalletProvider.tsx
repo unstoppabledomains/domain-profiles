@@ -204,7 +204,8 @@ export const WalletProvider: React.FC<
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const {data: featureFlags} = useFeatureFlags();
   const {setShowSuccessAnimation} = useDomainConfig();
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isStateLoaded, setIsStateLoaded] = useState(false);
+  const [isWalletLoaded, setIsWalletLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -245,11 +246,14 @@ export const WalletProvider: React.FC<
     featureFlags.variations?.profileServiceEnableWalletCreation === true;
 
   useEffect(() => {
-    setConfigState(initialState || WalletConfigState.PasswordEntry);
+    if (!initialState) {
+      return;
+    }
+    setConfigState(initialState);
   }, [initialState]);
 
   useEffect(() => {
-    setIsLoaded(false);
+    setIsWalletLoaded(false);
     setButtonComponent(<Box className={classes.continueActionContainer} />);
     void loadFromState();
   }, []);
@@ -286,7 +290,7 @@ export const WalletProvider: React.FC<
       if (accessToken) {
         onUpdate(DomainProfileTabType.Wallet, {accessToken});
       }
-      setIsLoaded(false);
+      setIsWalletLoaded(false);
 
       // retrieve the MPC wallets on page load
       void loadMpcWallets();
@@ -311,7 +315,7 @@ export const WalletProvider: React.FC<
   }, [custodyUpdateMs]);
 
   useEffect(() => {
-    if (!isLoaded) {
+    if (!isWalletLoaded) {
       return;
     }
     if ([WalletConfigState.Complete].includes(configState)) {
@@ -436,7 +440,7 @@ export const WalletProvider: React.FC<
     recoveryToken,
     errorMessage,
     progressPct,
-    isLoaded,
+    isWalletLoaded,
     isCreateWalletEnabled,
     persistKeys,
   ]);
@@ -463,7 +467,7 @@ export const WalletProvider: React.FC<
         await loadCustodyWallets(forceRefresh, showSpinner);
       } finally {
         setIsSaving(false);
-        setIsLoaded(true);
+        setIsWalletLoaded(true);
         if (setIsFetching) {
           setIsFetching(false);
         }
@@ -564,7 +568,7 @@ export const WalletProvider: React.FC<
     ]);
 
     // set authenticated address if applicable
-    if (setAuthAddress && isLoaded) {
+    if (setAuthAddress && isWalletLoaded) {
       const accountAddress = accountAddresses.find(v => isEthAddress(v));
       if (accountAddress) {
         setAuthAddress(accountAddress);
@@ -590,7 +594,7 @@ export const WalletProvider: React.FC<
 
     // display rendered wallets
     setMpcWallets(wallets.sort((a, b) => a.name.localeCompare(b.name)));
-    setIsLoaded(true);
+    setIsWalletLoaded(true);
 
     // store rendered wallets in session memory
     await localStorageWrapper.setItem(
@@ -740,7 +744,7 @@ export const WalletProvider: React.FC<
 
     // display rendered wallets
     setMpcWallets(wallets.sort((a, b) => a.name.localeCompare(b.name)));
-    setIsLoaded(true);
+    setIsWalletLoaded(true);
 
     // store rendered wallets in session memory
     await localStorageWrapper.setItem(
@@ -819,7 +823,8 @@ export const WalletProvider: React.FC<
       // state before returning
       await handleLogout();
     } finally {
-      setIsLoaded(true);
+      setIsStateLoaded(true);
+      setIsWalletLoaded(true);
     }
   };
 
@@ -1228,7 +1233,7 @@ export const WalletProvider: React.FC<
 
   return (
     <Box className={classes.container}>
-      {isLoaded &&
+      {isWalletLoaded &&
       (![WalletConfigState.Complete].includes(configState) ||
         mode === 'basic' ||
         mpcWallets.length > 0 ||
@@ -1467,12 +1472,14 @@ export const WalletProvider: React.FC<
           ))
         )
       ) : (
-        <Box className={classes.loadingContainer}>
-          <OperationStatus
-            icon={<LockOutlinedIcon />}
-            label={t('wallet.loadingWallet')}
-          />
-        </Box>
+        isStateLoaded && (
+          <Box className={classes.loadingContainer}>
+            <OperationStatus
+              icon={<LockOutlinedIcon />}
+              label={t('wallet.loadingWallet')}
+            />
+          </Box>
+        )
       )}
     </Box>
   );

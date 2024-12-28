@@ -10,6 +10,8 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getProfileData} from '../../actions';
 import useResolverKeys from '../../hooks/useResolverKeys';
+import type {
+  TokenEntry} from '../../lib';
 import {
   DomainFieldTypes,
   isDomainValidForManagement,
@@ -22,7 +24,6 @@ import {getAddressMetadata} from '../Chat/protocol/resolution';
 import ManageInput from '../Manage/common/ManageInput';
 import {isValidMappedResolverKeyValue} from '../Manage/common/currencyRecords';
 import {getRecordKeys} from '../Manage/common/verification/types';
-import type {TokenEntry} from './Token';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   loader: {
@@ -98,6 +99,7 @@ const AddressInput: React.FC<Props> = ({
     addressOrDomain: string,
     symbol: string,
   ): Promise<string> => {
+    // resolve keys are required to continue
     if (!mappedResolverKeys) {
       return '';
     }
@@ -108,32 +110,51 @@ const AddressInput: React.FC<Props> = ({
       DomainFieldTypes.CryptoVerifications,
     ]);
 
-    // determine if the onchain key for requested symbol is present
-    const recordKeys = getRecordKeys(symbol, mappedResolverKeys);
-    return profileData?.records
+    // profile records are required to continue
+    if (!profileData?.records) {
+      return '';
+    }
+
+    // scan available domain records and look for matching resolver keys
+    const recordKeys = getRecordKeys(
+      symbol,
+      mappedResolverKeys,
+      profileData.records,
+    );
+
+    // retrieve the record value
+    const recordValue = profileData?.records
       ? recordKeys.map(k => profileData.records![k]).find(k => k) || ''
       : '';
+
+    //validate the record value
+    if (!validateAddress(recordValue, profileData.records)) {
+      return '';
+    }
+
+    // return the validated record value
+    return recordValue;
   };
 
-  const validateAddress = (value: string) => {
+  const validateAddress = (value: string, records?: Record<string, string>) => {
     if (!mappedResolverKeys) {
       return false;
     }
     const validationSymbols = [asset.ticker, asset.symbol];
     for (const symbol of validationSymbols) {
-      const recordKeys = getRecordKeys(symbol, mappedResolverKeys);
+      const recordKeys = getRecordKeys(symbol, mappedResolverKeys, records);
       if (recordKeys.length === 0) {
-        return false;
+        continue;
       }
       const mappedKey = getMappedResolverKey(recordKeys[0], mappedResolverKeys);
       if (!mappedKey) {
-        return false;
+        continue;
       }
       const isValid = isValidMappedResolverKeyValue(value, mappedKey);
       onAddressChange(isValid ? value : '');
       setError(!isValid);
       if (isValid) {
-        return isValid;
+        return true;
       }
     }
     return false;
@@ -197,7 +218,7 @@ const AddressInput: React.FC<Props> = ({
           (await resolveDomain(addressOrDomain, asset.ticker)) ||
           (await resolveDomain(addressOrDomain, asset.symbol));
         setIsLoading(false);
-        if (!resolvedAddress || !validateAddress(resolvedAddress)) {
+        if (!resolvedAddress) {
           if (isEmailValid(addressOrDomain) && createWalletEnabled) {
             // set an empty resolution address, which will indicate that a new
             // wallet should be created for the validated identity

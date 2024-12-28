@@ -4,24 +4,28 @@ import {useEffect, useRef, useState} from 'react';
 import {
   SendCryptoStatusMessage,
   cancelPendingOperations,
+  createTransactionOperation,
   getOperationStatus,
   getTransferOperationResponse,
 } from '../actions/fireBlocksActions';
-import {
-  getBlockchainSymbol,
-  getRecordKeys,
-} from '../components/Manage/common/verification/types';
-import {isEmailValid} from '../lib';
+import {getRecordKeys} from '../components/Manage/common/verification/types';
+import type {TokenEntry} from '../lib';
+import {TokenType} from '../lib';
 import {notifyEvent} from '../lib/error';
 import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../lib/fireBlocks/client';
+import {isEmailValid} from '../lib/isEmailValid';
 import {pollForSuccess} from '../lib/poll';
 import type {AccountAsset, GetOperationResponse} from '../lib/types/fireBlocks';
 import {OperationStatusType} from '../lib/types/fireBlocks';
+import {getProviderUrl} from '../lib/wallet/evm/provider';
+import {createErc20TransferTx} from '../lib/wallet/evm/token';
+import useDomainConfig from './useDomainConfig';
 import useResolverKeys from './useResolverKeys';
 
 export type Params = {
   accessToken: string;
   asset: AccountAsset;
+  token: TokenEntry;
   recipientAddress: string;
   amount: string;
   getClient: () => Promise<IFireblocksNCW>;
@@ -39,12 +43,14 @@ export enum Status {
 export const useSubmitTransaction = ({
   accessToken,
   asset,
+  token,
   recipientAddress: initialRecipientAddress,
   amount,
   getClient,
   onInvitation,
 }: Params) => {
   const {mappedResolverKeys} = useResolverKeys();
+  const {setShowSuccessAnimation} = useDomainConfig();
   const [transactionId, setTransactionId] = useState('');
   const [status, setStatus] = useState(Status.Pending);
   const [statusMessage, setStatusMessage] = useState<SendCryptoStatusMessage>(
@@ -61,6 +67,7 @@ export const useSubmitTransaction = ({
   }, []);
 
   const submitTransaction = async () => {
+    setShowSuccessAnimation(false);
     try {
       if (!isMounted.current) {
         return;
@@ -90,21 +97,20 @@ export const useSubmitTransaction = ({
         const records = await onInvitation(recipientAddress);
         const resolvedAddress =
           records && Object.keys(records).length > 0
-            ? getRecordKeys(asset.blockchainAsset.symbol, mappedResolverKeys)
+            ? getRecordKeys(
+                asset.blockchainAsset.symbol,
+                mappedResolverKeys,
+                records,
+              )
                 .map(k => records[k])
                 .find(k => k) ||
               getRecordKeys(
                 asset.blockchainAsset.blockchain.id,
                 mappedResolverKeys,
+                records,
               )
                 .map(k => records[k])
-                .find(k => k) ||
-              (getBlockchainSymbol(asset.blockchainAsset.blockchain.id) ===
-              'BASE'
-                ? getRecordKeys('MATIC', mappedResolverKeys)
-                    .map(k => records[k])
-                    .find(k => k)
-                : undefined)
+                .find(k => k)
             : undefined;
         if (!resolvedAddress) {
           throw new Error('Wallet not created');
@@ -112,14 +118,38 @@ export const useSubmitTransaction = ({
         recipientAddress = resolvedAddress;
       }
 
-      // create new transfer request
+      // create a transfer transaction if we are working with
+      // an ERC-20 token
+      const transferTx =
+        asset.blockchainAsset.blockchain.networkId &&
+        token.address &&
+        token.type === TokenType.Erc20
+          ? await createErc20TransferTx({
+              chainId: asset.blockchainAsset.blockchain.networkId,
+              providerUrl: getProviderUrl(asset.blockchainAsset.blockchain.id),
+              tokenAddress: token.address,
+              fromAddress: token.walletAddress,
+              toAddress: recipientAddress,
+              amount: parseFloat(amount),
+            })
+          : undefined;
+
+      // create new transfer request, depending on token type
       setStatusMessage(SendCryptoStatusMessage.STARTING_TRANSACTION);
-      const operationResponse = await getTransferOperationResponse(
-        asset,
-        accessToken,
-        recipientAddress,
-        parseFloat(amount),
-      );
+      const operationResponse =
+        transferTx && asset.accountId
+          ? await createTransactionOperation(
+              accessToken,
+              asset.accountId,
+              asset.id,
+              transferTx,
+            )
+          : await getTransferOperationResponse(
+              asset,
+              accessToken,
+              recipientAddress,
+              parseFloat(amount),
+            );
       if (!operationResponse) {
         throw new Error('Error starting transaction');
       }
@@ -194,6 +224,7 @@ export const useSubmitTransaction = ({
         if (operationStatus.transaction?.id) {
           setTransactionId(operationStatus.transaction.id);
           setStatusMessage(SendCryptoStatusMessage.WAITING_FOR_TRANSACTION);
+          setShowSuccessAnimation(true);
         }
         if (operationStatus.status === OperationStatusType.COMPLETED) {
           setStatusMessage(SendCryptoStatusMessage.TRANSACTION_COMPLETED);

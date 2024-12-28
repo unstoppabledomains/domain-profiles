@@ -47,6 +47,7 @@ export interface CreateTransaction {
   to: string;
   data: string;
   value?: string;
+  gasLimit?: string;
 }
 
 export const EIP_712_KEY = 'EIP712Domain';

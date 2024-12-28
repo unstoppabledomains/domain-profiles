@@ -1,5 +1,5 @@
-import AddIcon from '@mui/icons-material/Add';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
+import QrCodeIcon from '@mui/icons-material/QrCode';
 import UpdateOutlinedIcon from '@mui/icons-material/UpdateOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
@@ -133,7 +133,7 @@ export const Crypto: React.FC<CryptoProps> = ({
           onClick={handleOpenModal}
           disabled={isPendingTx}
           className={classes.button}
-          startIcon={<AddIcon />}
+          startIcon={<QrCodeIcon />}
           loading={isModalOpened}
           fullWidth
         >

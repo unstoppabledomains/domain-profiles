@@ -3,6 +3,7 @@ import type {SerializedDomainMarket} from './domain';
 export enum Network {
   Mainnet = '1',
   Goerli = '5',
+  Sepolia = '11155111',
   Polygon = '137',
   Amoy = '80002',
   Binance = '56',

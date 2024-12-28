@@ -20,8 +20,9 @@ export default function getProductionConfig(): ConfigOverride {
         CHAIN_ID: 1,
         NETWORK_NAME: 'mainnet',
         JSON_RPC_API_URL:
-          'https://mainnet.infura.io/v3/4458cf4d1689497b9a38b1d6bbf05e78',
+          'https://mainnet.infura.io/v3/467fd78247874d7e87d34c04fdd09bbb',
         BLOCK_EXPLORER_BASE_URL: 'https://etherscan.io',
+        BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/eth/tx/',
         PROXY_READER_ADDRESS: '0xc3C2BAB5e3e52DBF311b2aAcEf2e40344f19494E',
         OPEN_SEA_BASE_URL: 'https://opensea.io/assets/',
         ENS_CONTRACT_ADDRESS: '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85',
@@ -30,8 +31,9 @@ export default function getProductionConfig(): ConfigOverride {
         CHAIN_ID: 137,
         NETWORK_NAME: 'polygon-mainnet',
         JSON_RPC_API_URL:
-          'https://polygon-mainnet.infura.io/v3/4458cf4d1689497b9a38b1d6bbf05e78',
+          'https://polygon-mainnet.infura.io/v3/467fd78247874d7e87d34c04fdd09bbb',
         BLOCK_EXPLORER_BASE_URL: 'https://polygonscan.com',
+        BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/polygon/tx/',
         PROXY_READER_ADDRESS: '0xA3f32c8cd786dc089Bd1fC175F2707223aeE5d00',
         OPEN_SEA_BASE_URL: 'https://opensea.io/assets/matic/',
       },
@@ -58,6 +60,243 @@ export default function getProductionConfig(): ConfigOverride {
       HOST_URL: 'https://api.unstoppabledomains.com/wallet/v1',
       GET_WALLET_URL:
         'https://unstoppabledomains.com/cart?product=unstoppable-wallet',
+      SWAP: {
+        PLATFORM_HOST_URL:
+          'https://platform.swing.xyz/api/v1/projects/unstoppable-domains',
+        API_KEY: 'swing-37b05c4c-0b6d-43a8-ad54-7bd7168af0ee',
+        ENVIRONMENT: 'production',
+        PROJECT_ID: 'unstoppable-domains',
+        SUPPORTED_TOKENS: {
+          SOURCE: [
+            {
+              swing: {
+                chain: 'ethereum',
+                chainId: 1,
+                symbol: 'ETH',
+                type: 'native',
+              },
+              walletType: 'ETH',
+              chainName: 'Ethereum',
+              chainSymbol: 'ETH',
+              tokenSymbol: 'ETH',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/ETH/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'polygon',
+                chainId: 137,
+                symbol: 'POL',
+                type: 'native',
+              },
+              walletType: 'MATIC',
+              chainName: 'Polygon',
+              chainSymbol: 'MATIC',
+              tokenSymbol: 'MATIC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/MATIC/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'base',
+                chainId: 8453,
+                symbol: 'ETH',
+                type: 'native',
+              },
+              walletType: 'BASE',
+              chainName: 'Base',
+              chainSymbol: 'BASE',
+              tokenSymbol: 'ETH',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/BASE/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'solana',
+                symbol: 'SOL',
+                type: 'native',
+              },
+              walletType: 'SOL',
+              chainName: 'Solana',
+              chainSymbol: 'SOL',
+              tokenSymbol: 'SOL',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/SOL/icon.svg',
+              // show in the list but do not allow interaction
+              disabledReason: 'Solana swaps coming soon',
+            },
+            {
+              swing: {
+                chain: 'bitcoin',
+                symbol: 'BTC',
+                type: 'native',
+              },
+              walletType: 'BTC',
+              chainName: 'Bitcoin',
+              chainSymbol: 'BTC',
+              tokenSymbol: 'BTC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/BTC/icon.svg',
+              // show in the list but do not allow interaction
+              disabledReason: 'Bitcoin swaps coming soon',
+            },
+            {
+              swing: {
+                chain: 'base',
+                chainId: 8453,
+                symbol: 'USDC',
+                type: 'erc20',
+              },
+              walletType: 'BASE',
+              chainName: 'Base',
+              chainSymbol: 'BASE',
+              tokenSymbol: 'USDC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'polygon',
+                chainId: 137,
+                symbol: 'USDC',
+                type: 'erc20',
+              },
+              walletType: 'MATIC',
+              chainName: 'Polygon',
+              chainSymbol: 'MATIC',
+              tokenSymbol: 'USDC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'ethereum',
+                chainId: 1,
+                symbol: 'USDC',
+                type: 'erc20',
+              },
+              walletType: 'ETH',
+              chainName: 'Ethereum',
+              chainSymbol: 'ETH',
+              tokenSymbol: 'USDC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
+            },
+          ],
+          DESTINATION: [
+            {
+              swing: {
+                chain: 'ethereum',
+                chainId: 1,
+                symbol: 'ETH',
+                type: 'native',
+              },
+              walletType: 'ETH',
+              chainName: 'Ethereum',
+              chainSymbol: 'ETH',
+              tokenSymbol: 'ETH',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/ETH/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'solana',
+                symbol: 'SOL',
+                type: 'native',
+              },
+              walletType: 'SOL',
+              chainName: 'Solana',
+              chainSymbol: 'SOL',
+              tokenSymbol: 'SOL',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/SOL/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'bitcoin',
+                symbol: 'BTC',
+                type: 'native',
+              },
+              walletType: 'BTC',
+              chainName: 'Bitcoin',
+              chainSymbol: 'BTC',
+              tokenSymbol: 'BTC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/BTC/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'polygon',
+                chainId: 137,
+                symbol: 'POL',
+                type: 'native',
+              },
+              walletType: 'MATIC',
+              chainName: 'Polygon',
+              chainSymbol: 'MATIC',
+              tokenSymbol: 'MATIC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/MATIC/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'base',
+                chainId: 8453,
+                symbol: 'ETH',
+                type: 'native',
+              },
+              walletType: 'BASE',
+              chainName: 'Base',
+              chainSymbol: 'BASE',
+              tokenSymbol: 'ETH',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/BASE/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'base',
+                chainId: 8453,
+                symbol: 'USDC',
+                type: 'erc20',
+              },
+              walletType: 'BASE',
+              chainName: 'Base',
+              chainSymbol: 'BASE',
+              tokenSymbol: 'USDC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'polygon',
+                chainId: 137,
+                symbol: 'USDC',
+                type: 'erc20',
+              },
+              walletType: 'MATIC',
+              chainName: 'Polygon',
+              chainSymbol: 'MATIC',
+              tokenSymbol: 'USDC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'ethereum',
+                chainId: 1,
+                symbol: 'USDC',
+                type: 'erc20',
+              },
+              walletType: 'ETH',
+              chainName: 'Ethereum',
+              chainSymbol: 'ETH',
+              tokenSymbol: 'USDC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
+            },
+          ],
+        },
+      },
     },
     XMTP: {
       ENVIRONMENT: 'production',

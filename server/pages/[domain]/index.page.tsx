@@ -41,7 +41,7 @@ import {useRouter} from 'next/router';
 import {useSnackbar} from 'notistack';
 import numeral from 'numeral';
 import QueryString from 'qs';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useLayoutEffect, useState} from 'react';
 import useIsMounted from 'react-is-mounted-hook';
 import {useStyles} from 'styles/pages/domain.styles';
 import {titleCase} from 'title-case';
@@ -99,6 +99,7 @@ import {
   getSeoTags,
   isDomainValidForManagement,
   isExternalDomain,
+  localStorageWrapper,
   loginWithAddress,
   parseRecords,
   useDomainConfig,
@@ -131,11 +132,33 @@ export type DomainProfilePageProps = {
   identity?: PersonaIdentity;
 };
 
+const udMeHostname = new URL(config.UD_ME_BASE_URL).hostname;
+
 const DomainProfile = ({
   domain,
   profileData: initialProfileData,
   identity,
 }: DomainProfilePageProps) => {
+  // Redirect to listing page if domain is listed for sale and the host is not ud.me
+  useLayoutEffect(() => {
+    if (
+      initialProfileData?.isListedForSale &&
+      typeof window !== 'undefined' && // Make sure we're on client side
+      window.location.hostname.toLowerCase() !== udMeHostname.toLowerCase()
+    ) {
+      window.location.replace(`${config.UNSTOPPABLE_WEBSITE_URL}/d/${domain}`);
+    }
+  }, [initialProfileData, domain]);
+
+  // If redirecting to listing page, we can prevent rendering the rest
+  if (
+    initialProfileData?.isListedForSale &&
+    typeof window !== 'undefined' &&
+    window.location.hostname.toLowerCase() !== udMeHostname.toLowerCase()
+  ) {
+    return null;
+  }
+
   // hooks
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
@@ -432,27 +455,31 @@ const DomainProfile = ({
     );
 
     // set state from local storage
-    const localAuthAddress =
-      localStorage.getItem(DomainProfileKeys.AuthAddress) || '';
-    const localAuthDomain =
-      localStorage.getItem(DomainProfileKeys.AuthDomain) || '';
-    let isAuthorized = false;
-    if (localAuthAddress && localAuthDomain) {
-      // set local state for logged in user
-      setAuthAddress(localAuthAddress);
-      setAuthDomain(localAuthDomain);
-      isAuthorized =
-        ownerAddress.toLowerCase() === localAuthAddress.toLowerCase();
+    const loadAuth = async () => {
+      const localAuthAddress =
+        (await localStorageWrapper.getItem(DomainProfileKeys.AuthAddress)) ||
+        '';
+      const localAuthDomain =
+        (await localStorageWrapper.getItem(DomainProfileKeys.AuthDomain)) || '';
+      let isAuthorized = false;
+      if (localAuthAddress && localAuthDomain) {
+        // set local state for logged in user
+        setAuthAddress(localAuthAddress);
+        setAuthDomain(localAuthDomain);
+        isAuthorized =
+          ownerAddress.toLowerCase() === localAuthAddress.toLowerCase();
 
-      // determine if logged in user is an MPC wallet
-      setIsMpcWallet(Object.keys(state).length > 0);
+        // determine if logged in user is an MPC wallet
+        setIsMpcWallet(Object.keys(state).length > 0);
 
-      // check for a new resolved domain name
-      void loginWithAddress(localAuthAddress).then(r =>
-        setAuthDomain(r.domain),
-      );
-    }
-    setIsOwner(isAuthorized);
+        // check for a new resolved domain name
+        void loginWithAddress(localAuthAddress).then(r =>
+          setAuthDomain(r.domain),
+        );
+      }
+      setIsOwner(isAuthorized);
+    };
+    void loadAuth();
   }, [isMounted, isFeatureFlagSuccess, featureFlags, ownerAddress]);
 
   useEffect(() => {
@@ -1611,9 +1638,7 @@ const DomainProfile = ({
 };
 
 export async function getServerSideProps(props: DomainProfileServerSideProps) {
-  const {params, req} = props;
-  const host = req.headers.host;
-
+  const {params} = props;
   const profileServiceUrl = config.PROFILE.HOST_URL;
   const domain = params.domain.toLowerCase();
   const redirectToSearch = {
@@ -1624,13 +1649,6 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         searchTerm: domain,
         searchRef: 'domainprofile',
       })}`,
-      permanent: false,
-    },
-  };
-
-  const redirectToListingPage = {
-    redirect: {
-      destination: `${config.UNSTOPPABLE_WEBSITE_URL}/d/${domain}`,
       permanent: false,
     },
   };
@@ -1658,16 +1676,6 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         : null;
   } catch (e) {
     console.error(`error loading domain profile for ${domain}`, String(e));
-  }
-
-  const udMeHostname = new URL(config.UD_ME_BASE_URL).hostname;
-  // Redirect to the listing page if domain is listed for sale and the host is not ud.me
-  if (
-    typeof host === 'string' &&
-    host !== udMeHostname &&
-    profileData?.isListedForSale
-  ) {
-    return redirectToListingPage;
   }
 
   // Redirecting to /search if the domain isn't purchased yet, trying to increase conversion

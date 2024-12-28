@@ -5,7 +5,7 @@ export class ReactDeviceStoreProvider implements IDeviceStore {
     private readonly state: Record<string, Record<string, string>>,
     private readonly saveState: (
       state: Record<string, Record<string, string>>,
-    ) => void,
+    ) => void | Promise<void>,
   ) {}
 
   async get(deviceId: string, key: string): Promise<string | null> {
@@ -23,7 +23,7 @@ export class ReactDeviceStoreProvider implements IDeviceStore {
       this.state[deviceId] = {};
     }
     this.state[deviceId][key] = value;
-    this.saveState({...this.state});
+    await this.saveState({...this.state});
   }
 
   async clear(deviceId: string, key: string): Promise<void> {
@@ -31,7 +31,7 @@ export class ReactDeviceStoreProvider implements IDeviceStore {
       return;
     }
     delete this.state[deviceId][key];
-    this.saveState({...this.state});
+    await this.saveState({...this.state});
   }
 
   async getAllKeys(deviceId: string): Promise<string[]> {

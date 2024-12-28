@@ -5,23 +5,22 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {useTheme} from '@mui/material/styles';
 import numeral from 'numeral';
 import React from 'react';
 import {Line} from 'react-chartjs-2';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import type {CurrenciesType, SerializedPriceHistory} from '../../lib';
-import {TokenType} from '../../lib';
+import type {CurrenciesType, TokenEntry, WalletPalette} from '../../lib';
+import {TokenType, WalletPaletteOwner, WalletPalettePublic} from '../../lib';
 import {CryptoIcon} from '../Image';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 
 type StyleProps = {
-  palletteShade: Record<number, string>;
+  palette: WalletPalette;
 };
 
-const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
+const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
   chartContainer: {
     height: '40px',
     display: 'flex',
@@ -34,27 +33,27 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
   },
   txTitle: {
     fontWeight: 'bold',
-    color: theme.palette.white,
+    color: palette.text.primary,
   },
   txBalance: {
     fontWeight: 'bold',
-    color: theme.palette.white,
+    color: palette.text.primary,
     whiteSpace: 'nowrap',
   },
   txSubTitle: {
-    color: palletteShade[bgNeutralShade - 600],
+    color: palette.text.secondary,
   },
   txLink: {
     cursor: 'pointer',
   },
   txPctChangeDown: {
-    color: palletteShade[bgNeutralShade - 400],
+    color: palette.chart.down,
   },
   txPctChangeNeutral: {
-    color: palletteShade[bgNeutralShade - 400],
+    color: palette.chart.down,
   },
   txPctChangeUp: {
-    color: theme.palette.success.main,
+    color: palette.chart.up,
   },
   nftCollectionIcon: {
     borderRadius: theme.shape.borderRadius,
@@ -65,65 +64,52 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palletteShade}) => ({
     borderRadius: '50%',
     width: '40px',
     height: '40px',
-    backgroundColor: palletteShade[bgNeutralShade],
+    backgroundColor: palette.background.main,
   },
   tokenIconDefault: {
     borderRadius: '50%',
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.white,
+    backgroundColor: palette.background.main,
+    color: palette.text.primary,
     width: '40px',
     height: '40px',
   },
   chainIcon: {
-    color: theme.palette.common.black,
-    backgroundColor: palletteShade[bgNeutralShade],
-    border: `1px solid black`,
+    color: palette.background.main,
+    backgroundColor: palette.background.main,
+    border: `1px solid ${palette.background.main}`,
     borderRadius: '50%',
     width: '17px',
     height: '17px',
   },
 }));
 
-export type TokenEntry = {
-  type: TokenType;
-  symbol: string;
-  name: string;
-  ticker: string;
-  value: number;
-  tokenConversionUsd: number;
-  balance: number;
-  pctChange?: number;
-  imageUrl?: string;
-  history?: SerializedPriceHistory[];
-  walletAddress: string;
-  walletBlockChainLink: string;
-  walletName: string;
-  walletType?: string;
-};
-
 type Props = {
   token: TokenEntry;
-  onClick: () => void;
-  primaryShade: boolean;
+  onClick?: () => void;
+  isOwner?: boolean;
   showGraph?: boolean;
   hideBalance?: boolean;
+  iconWidth?: number;
+  graphWidth?: number;
+  balanceWidth?: number;
+  descriptionWidth?: number;
+  compact?: boolean;
 };
-
-const bgNeutralShade = 800;
 
 const Token: React.FC<Props> = ({
   token,
   onClick,
-  primaryShade,
+  isOwner,
   showGraph,
   hideBalance,
+  iconWidth,
+  descriptionWidth,
+  graphWidth,
+  balanceWidth,
+  compact,
 }) => {
-  const theme = useTheme();
-
   const {classes, cx} = useStyles({
-    palletteShade: primaryShade
-      ? theme.palette.primaryShades
-      : theme.palette.neutralShades,
+    palette: isOwner ? WalletPaletteOwner : WalletPalettePublic,
   });
   return (
     <Grid
@@ -134,7 +120,7 @@ const Token: React.FC<Props> = ({
       className={classes.txLink}
       data-testid={`token-${token.symbol}`}
     >
-      <Grid item xs={2}>
+      <Grid item xs={iconWidth || 2}>
         <Box display="flex" justifyContent="left" textAlign="left">
           <Badge
             overlap="circular"
@@ -175,20 +161,27 @@ const Token: React.FC<Props> = ({
           </Badge>
         </Box>
       </Grid>
-      <Grid item xs={4}>
+      <Grid item xs={descriptionWidth || 4}>
         <Box display="flex" flexDirection="column">
           <Typography variant="caption" className={classes.txTitle}>
-            {token.name}
+            {compact
+              ? token.type === TokenType.Nft
+                ? `NFT${token.balance === 1 ? '' : 's'}`
+                : getBlockchainDisplaySymbol(token.ticker)
+              : token.name}
           </Typography>
           <Typography variant="caption" className={classes.txSubTitle}>
+            {compact && numeral(token.value).format('($0.00a)')}
             {!hideBalance && numeral(token.balance).format('0.[000000]')}{' '}
-            {token.type === TokenType.Nft
+            {compact
+              ? ''
+              : token.type === TokenType.Nft
               ? `NFT${token.balance === 1 ? '' : 's'}`
               : getBlockchainDisplaySymbol(token.ticker)}
           </Typography>
         </Box>
       </Grid>
-      <Grid item xs={4}>
+      <Grid item xs={graphWidth === 0 ? 0 : graphWidth || 4}>
         {showGraph && token.history && (
           <Box className={classes.chartContainer}>
             <Line
@@ -202,18 +195,12 @@ const Token: React.FC<Props> = ({
                     pointBorderColor: 'rgba(0, 0, 0, 0)',
                     backgroundColor:
                       (token.pctChange || 0) > 0
-                        ? theme.palette.success.main
-                        : theme.palette.neutralShades[
-                            (bgNeutralShade -
-                              400) as keyof typeof theme.palette.neutralShades
-                          ],
+                        ? WalletPaletteOwner.chart.up
+                        : WalletPaletteOwner.chart.down,
                     borderColor:
                       (token.pctChange || 0) > 0
-                        ? theme.palette.success.main
-                        : theme.palette.neutralShades[
-                            (bgNeutralShade -
-                              400) as keyof typeof theme.palette.neutralShades
-                          ],
+                        ? WalletPaletteOwner.chart.up
+                        : WalletPaletteOwner.chart.down,
                     fill: false,
                   },
                 ],
@@ -241,8 +228,8 @@ const Token: React.FC<Props> = ({
           </Box>
         )}
       </Grid>
-      <Grid item xs={2}>
-        {!hideBalance && (
+      {!hideBalance && (
+        <Grid item xs={balanceWidth || 2}>
           <Box
             display="flex"
             flexDirection="column"
@@ -273,8 +260,8 @@ const Token: React.FC<Props> = ({
                 : `---`}
             </Typography>
           </Box>
-        )}
-      </Grid>
+        </Grid>
+      )}
     </Grid>
   );
 };

@@ -19,8 +19,8 @@ export type ZilliqaBlockchainConfig = BaseBlockchainConfig & {
 };
 
 export type EthereumBlockchainConfig = BaseBlockchainConfig & {
-  CHAIN_ID: 5 | 1 | 1337;
-  NETWORK_NAME: 'goerli' | 'mainnet' | 'local';
+  CHAIN_ID: 5 | 1 | 1337 | 11155111;
+  NETWORK_NAME: 'goerli' | 'sepolia' | 'mainnet' | 'local';
   PROXY_READER_ADDRESS: string;
   ENS_CONTRACT_ADDRESS: string;
   OPEN_SEA_BASE_URL:
@@ -44,15 +44,35 @@ export type MaticBlockchainConfig = BaseBlockchainConfig & {
     | 'https://www.oklink.com/polygon/tx/';
 };
 
-export type BitcoinBlockchainConfig = {
+export type BitcoinBlockchainConfig = BaseBlockchainConfig & {
+  CHAIN_ID: 0;
   BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/btc/tx/';
 };
-export type SolanaBlockchainConfig = {
+
+export type SolanaBlockchainConfig = BaseBlockchainConfig & {
+  CHAIN_ID: 0;
   BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/sol/tx/';
 };
-export type BaseChainBlockchainConfig = {
+
+export type BaseChainBlockchainConfig = BaseBlockchainConfig & {
+  CHAIN_ID: 8453;
   BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/base/tx/';
 };
+
+export interface SwapConfig {
+  swing: {
+    chain: string;
+    chainId?: number;
+    symbol: string;
+    type: 'erc20' | 'native';
+  };
+  walletType: string;
+  chainName: string;
+  chainSymbol: string;
+  tokenSymbol: string;
+  imageUrl: string;
+  disabledReason?: string;
+}
 
 export type Config = {
   APP_ENV: AppEnv;
@@ -104,6 +124,21 @@ export type Config = {
       RECEIVE: string[];
       SEND: string[];
       DOMAINS: string[];
+    };
+    SWAP: {
+      PLATFORM_HOST_URL: string;
+      EXCHANGE_HOST_URL: string;
+      API_KEY: string;
+      ENVIRONMENT: string;
+      PROJECT_ID: string;
+      DOCUMENTATION_URL: string;
+      FEE_BPS?: number;
+      MIN_BALANCE_USD: number;
+      DISABLED_INTEGRATIONS: string[];
+      SUPPORTED_TOKENS: {
+        SOURCE: SwapConfig[];
+        DESTINATION: SwapConfig[];
+      };
     };
     SIGNATURE_SYMBOL: string;
     MOBILE: {

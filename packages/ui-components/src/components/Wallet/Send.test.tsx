@@ -3,6 +3,7 @@ import React from 'react';
 
 import * as fireBlocksActions from '../../actions/fireBlocksActions';
 import * as pav3Actions from '../../actions/pav3Actions';
+import * as fireBlocksState from '../../lib/fireBlocks/storage/state';
 import type {GetEstimateTransactionResponse} from '../../lib/types/fireBlocks';
 import {VALID_ETH_ADDRESS} from '../../tests/common';
 import {
@@ -27,6 +28,12 @@ describe('<Send />', () => {
   jest
     .spyOn(fireBlocksActions, 'getAccountAssets')
     .mockResolvedValue([mockAccountAsset()]);
+  jest.spyOn(fireBlocksState, 'getBootstrapState').mockReturnValue({
+    bootstrapToken: 'mockBootstrapToken',
+    refreshToken: 'mockRefreshToken',
+    deviceId: 'mockDeviceId',
+    assets: [mockAccountAsset()],
+  });
 
   beforeAll(() => {
     jest.spyOn(pav3Actions, 'getAllResolverKeys').mockResolvedValue([

@@ -1,5 +1,5 @@
-import {TokenEntry} from '../../components/Wallet/Token';
-import {SerializedWalletBalance, TokenType} from '../types';
+import type {SerializedWalletBalance, TokenEntry} from '../types';
+import {TokenType} from '../types';
 
 export const getSortedTokens = (
   wallets: SerializedWalletBalance[],

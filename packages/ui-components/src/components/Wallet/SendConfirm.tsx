@@ -8,7 +8,8 @@ import React from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {useTranslationContext} from '../../lib';
+import type {TokenEntry} from '../../lib';
+import { useTranslationContext} from '../../lib';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {
   getBlockchainDisplaySymbol,
@@ -62,6 +63,7 @@ type Props = {
   amount: string;
   symbol: string;
   asset: AccountAsset;
+  token: TokenEntry;
   gasFee: string;
   amountInDollars: string;
   blockchainName: string;
@@ -76,6 +78,7 @@ export const SendConfirm: React.FC<Props> = ({
   recipientAddress,
   resolvedDomain,
   asset,
+  token,
   amount,
   symbol,
   amountInDollars,
@@ -88,7 +91,7 @@ export const SendConfirm: React.FC<Props> = ({
   const maxDisplayLength = asset.balance?.decimals
     ? Math.min(MAX_DISPLAY_LENGTH, asset.balance.decimals)
     : MAX_DISPLAY_LENGTH;
-  const assetSymbol = asset.blockchainAsset.symbol.toUpperCase();
+  const assetSymbol = token.ticker;
   const gasSymbol = getBlockchainGasSymbol(
     getBlockchainSymbol(asset.blockchainAsset.blockchain.id),
   ).toUpperCase();
@@ -153,9 +156,7 @@ export const SendConfirm: React.FC<Props> = ({
                   `${round(
                     parseFloat(gasFee),
                     maxDisplayLength,
-                  )} ${getBlockchainDisplaySymbol(
-                    getBlockchainSymbol(asset.blockchainAsset.blockchain.id),
-                  )}`
+                  )} ${getBlockchainDisplaySymbol(gasSymbol)}`
                 )}
               </Typography>
             </Box>

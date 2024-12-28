@@ -11,24 +11,21 @@ import {styled, useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import {useSnackbar} from 'notistack';
 import QueryString from 'qs';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableWalletIcon';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getOwnerDomains} from '../../actions';
-import {useUnstoppableMessaging, useWeb3Context} from '../../hooks';
+import {useUnstoppableMessaging} from '../../hooks';
+import {isChromeStorageSupported} from '../../hooks/useChromeStorage';
 import {useTranslationContext} from '../../lib';
-import {notifyEvent} from '../../lib/error';
 import {UnstoppableMessaging} from '../Chat';
-import {DomainListModal} from '../Domain';
 import DropDownMenu from '../DropDownMenu';
 import Link from '../Link';
 import {DomainProfileModal} from '../Manage';
 import Modal from '../Modal';
-import ReceiveDomainModal from './ReceiveDomainModal';
 import RecoverySetupModal from './RecoverySetupModal';
 import type {WalletMode} from './index';
 
@@ -206,7 +203,6 @@ export const Header: React.FC<Props> = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const {classes, cx} = useStyles({isMobile});
-  const {setWeb3Deps} = useWeb3Context();
   const [t] = useTranslationContext();
   const {setOpenChat, isChatReady} = useUnstoppableMessaging();
   const {enqueueSnackbar} = useSnackbar();
@@ -216,17 +212,8 @@ export const Header: React.FC<Props> = ({
 
   // Modal states
   const [isRecoveryModalOpen, setIsRecoveryModalOpen] = useState(false);
-  const [isDomainAddModalOpen, setIsDomainAddModalOpen] = useState(false);
-  const [isDomainListModalOpen, setIsDomainListModalOpen] = useState(false);
-  const [domainToManage, setDomainToManage] = useState<string>();
-  const [isDomains, setIsDomains] = useState(false);
 
-  // load wallet domains when an address is provided
-  useEffect(() => {
-    if (!isDomains) {
-      void handleRetrieveOwnerDomains();
-    }
-  }, [address]);
+  const [domainToManage, setDomainToManage] = useState<string>();
 
   const handleOptionsClick = () => {
     setIsMenuOpen(prev => !prev && !isMenuOpen);
@@ -239,23 +226,13 @@ export const Header: React.FC<Props> = ({
     setIsMenuOpen(false);
   };
 
-  const handleDomainsClick = () => {
-    setIsDomainListModalOpen(true);
-    setIsMenuOpen(false);
-  };
-
-  const handleDomainClick = (v: string) => {
-    handleDomainsClose();
-    setDomainToManage(v);
-  };
-
   const handleRecoveryKitClicked = () => {
     setIsRecoveryModalOpen(true);
     setIsMenuOpen(false);
   };
 
-  const handleGetDomainClick = () => {
-    setIsDomainAddModalOpen(true);
+  const handleSupportClicked = () => {
+    window.open(config.WALLETS.DOCUMENTATION_URL, '_blank');
     setIsMenuOpen(false);
   };
 
@@ -266,10 +243,6 @@ export const Header: React.FC<Props> = ({
       setOpenChat(t('push.messages'));
     }
     setIsMenuOpen(false);
-  };
-
-  const handleDomainsClose = () => {
-    setIsDomainListModalOpen(false);
   };
 
   const handleUpdateSuccess = () => {
@@ -288,35 +261,6 @@ export const Header: React.FC<Props> = ({
       {email: emailAddress},
       {skipNulls: true},
     )}`;
-  };
-
-  const handleRetrieveOwnerDomains = async (cursor?: number | string) => {
-    const retData: {domains: string[]; cursor?: string} = {
-      domains: [],
-      cursor: undefined,
-    };
-    try {
-      // load domains that are contained by this Unstoppable Wallet instance
-      const domainData = await getOwnerDomains(
-        address,
-        cursor as string,
-        true,
-        true,
-      );
-      if (domainData) {
-        retData.domains = domainData.data.map(f => f.domain);
-        retData.cursor = domainData.meta.pagination.cursor;
-        if (retData.domains.length > 0) {
-          // set a flag that other domains exist in portfolio
-          setIsDomains(true);
-        }
-      }
-    } catch (e) {
-      notifyEvent(e, 'error', 'Profile', 'Fetch', {
-        msg: 'error retrieving owner domains',
-      });
-    }
-    return retData;
   };
 
   return mode === 'basic' ? (
@@ -438,7 +382,7 @@ export const Header: React.FC<Props> = ({
           {showMessages && (
             <UnstoppableMessaging
               address={address}
-              silentOnboard={true}
+              silentOnboard={!isChromeStorageSupported('local')}
               hideIcon={true}
               onPopoutClick={onMessagePopoutClick}
               disableSupportBubble
@@ -458,25 +402,12 @@ export const Header: React.FC<Props> = ({
           onMessagingClicked={
             showMessages && isChatReady ? handleMessagingClicked : undefined
           }
-          onGetDomainClicked={!isDomains ? handleGetDomainClick : undefined}
-          onDomainsClicked={isDomains ? handleDomainsClick : undefined}
           onSettingsClicked={onSettingsClick}
           onRecoveryLinkClicked={handleRecoveryKitClicked}
           onLogout={handleLogout}
           onDisconnect={onDisconnect ? handleDisconnect : undefined}
-        />
-      )}
-      {isDomainListModalOpen && (
-        <DomainListModal
-          id="domainMenuList"
-          title={t('manage.otherDomains')}
-          subtitle={t('manage.otherDomainsDescription')}
-          retrieveDomains={handleRetrieveOwnerDomains}
-          open={isDomainListModalOpen}
-          fullScreen={fullScreenModals}
-          setWeb3Deps={setWeb3Deps}
-          onClose={handleDomainsClose}
-          onClick={handleDomainClick}
+          onHideMenu={() => setIsMenuOpen(false)}
+          onSupportClicked={handleSupportClicked}
         />
       )}
       {domainToManage && (
@@ -488,17 +419,6 @@ export const Header: React.FC<Props> = ({
           onClose={() => setDomainToManage(undefined)}
           onUpdate={handleUpdateSuccess}
         />
-      )}
-      {isDomainAddModalOpen && (
-        <Modal
-          title={t('wallet.addDomain')}
-          open={isDomainAddModalOpen}
-          fullScreen={fullScreenModals}
-          titleStyle={classes.modalTitleStyle}
-          onClose={() => setIsDomainAddModalOpen(false)}
-        >
-          <ReceiveDomainModal />
-        </Modal>
       )}
       {isRecoveryModalOpen && (
         <Modal

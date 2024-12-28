@@ -1,9 +1,10 @@
-import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import HistoryIcon from '@mui/icons-material/History';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
+import QrCodeIcon from '@mui/icons-material/QrCode';
 import SendIcon from '@mui/icons-material/Send';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
@@ -25,6 +26,7 @@ import {
   DOMAIN_LIST_PAGE_SIZE,
   getOwnerDomains,
   getProfileData,
+  useFeatureFlags,
 } from '../../actions';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
@@ -32,6 +34,7 @@ import type {SerializedWalletBalance} from '../../lib';
 import {
   DomainFieldTypes,
   WALLET_CARD_HEIGHT,
+  WalletPaletteOwner,
   useTranslationContext,
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
@@ -41,12 +44,14 @@ import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileList} from '../Domain';
 import {DomainProfileModal} from '../Manage';
+import Modal from '../Modal';
 import Buy from './Buy';
+import {LetsGetStartedCta} from './LetsGetStartedCta';
 import Receive from './Receive';
+import ReceiveDomainModal from './ReceiveDomainModal';
 import Send from './Send';
+import Swap from './Swap';
 import {TokensPortfolio} from './TokensPortfolio';
-
-const bgNeutralShade = 800;
 
 const useStyles = makeStyles<{isMobile: boolean}>()(
   (theme: Theme, {isMobile}) => ({
@@ -71,6 +76,18 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       marginTop: theme.spacing(3),
       marginBottom: theme.spacing(2),
     },
+    header: {
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      minHeight: '180px',
+      [theme.breakpoints.down('sm')]: {
+        minHeight: '150px',
+        marginLeft: theme.spacing(-1),
+        marginRight: theme.spacing(-1),
+        width: '345px',
+      },
+    },
     balanceContainer: {
       display: 'flex',
       justifyContent: 'center',
@@ -84,29 +101,19 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       padding: theme.spacing(1),
       borderRadius: theme.shape.borderRadius,
       marginRight: theme.spacing(2),
-      width: '100px',
+      width: '85px',
+      height: '85px',
       cursor: 'pointer',
       [theme.breakpoints.down('sm')]: {
         width: '70px',
+        height: '70px',
       },
     },
     domainListContainer: {
-      color:
-        theme.palette.primaryShades[
-          (bgNeutralShade - 600) as keyof typeof theme.palette.primaryShades
-        ],
+      color: WalletPaletteOwner.text.primary,
       display: 'flex',
-      backgroundImage: `linear-gradient(${
-        theme.palette.primaryShades[
-          (bgNeutralShade - 200) as keyof typeof theme.palette.primaryShades
-        ]
-      }, ${theme.palette.primaryShades[bgNeutralShade]})`,
+      backgroundImage: `linear-gradient(${WalletPaletteOwner.background.gradient.start}, ${WalletPaletteOwner.background.gradient.end})`,
       borderRadius: theme.shape.borderRadius,
-      border: `1px solid ${
-        theme.palette.primaryShades[
-          (bgNeutralShade - 600) as keyof typeof theme.palette.primaryShades
-        ]
-      }`,
       padding: theme.spacing(2),
       height: `${WALLET_CARD_HEIGHT + 2}px`,
       marginBottom: theme.spacing(2),
@@ -120,16 +127,16 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       cursor: 'pointer',
       paddingTop: theme.spacing(1),
       paddingBottom: theme.spacing(1),
-      color: theme.palette.white,
+      color: WalletPaletteOwner.text.primary,
       '&:visited': {
-        color: theme.palette.white,
+        color: WalletPaletteOwner.text.primary,
       },
       '&:hover': {
         '& p': {
-          color: theme.palette.white,
+          color: WalletPaletteOwner.text.primary,
         },
         '& svg': {
-          color: theme.palette.white,
+          color: WalletPaletteOwner.text.primary,
         },
       },
     },
@@ -146,15 +153,19 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
     },
     actionIcon: {
       color: theme.palette.primary.main,
-      width: '50px',
-      height: '50px',
+      width: '40px',
+      height: '40px',
       [theme.breakpoints.down('sm')]: {
         width: '35px',
         height: '35px',
       },
     },
     actionText: {
+      marginTop: theme.spacing(0.5),
       color: theme.palette.primary.main,
+      [theme.breakpoints.down('sm')]: {
+        marginTop: theme.spacing(0),
+      },
     },
     tabList: {
       marginTop: theme.spacing(-3),
@@ -182,6 +193,10 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       display: 'flex',
       maxWidth: '300px',
     },
+    modalTitleStyle: {
+      color: 'inherit',
+      alignSelf: 'center',
+    },
   }),
 );
 
@@ -202,6 +217,10 @@ export const Client: React.FC<ClientProps> = ({
   const {classes} = useStyles({isMobile});
   const [t] = useTranslationContext();
   const {enqueueSnackbar} = useSnackbar();
+  const {data: featureFlags} = useFeatureFlags(
+    false,
+    wallets?.find(w => isEthAddress(w.address))?.address,
+  );
 
   // wallet state variables
   const [state, saveState] = useFireblocksState();
@@ -215,6 +234,7 @@ export const Client: React.FC<ClientProps> = ({
   const [isSend, setIsSend] = useState(false);
   const [isReceive, setIsReceive] = useState(false);
   const [isBuy, setIsBuy] = useState(false);
+  const [isSwap, setIsSwap] = useState(false);
   const [tabValue, setTabValue] = useState(ClientTabType.Portfolio);
 
   // domain list state
@@ -254,7 +274,7 @@ export const Client: React.FC<ClientProps> = ({
       ...state.config,
       identityState: paymentConfigStatus.status,
     };
-    saveState({
+    void saveState({
       ...state,
     });
     enqueueSnackbar(
@@ -385,18 +405,28 @@ export const Client: React.FC<ClientProps> = ({
     setIsSend(true);
     setIsReceive(false);
     setIsBuy(false);
+    setIsSwap(false);
+  };
+
+  const handleClickedSwap = () => {
+    setIsSwap(true);
+    setIsBuy(false);
+    setIsSend(false);
+    setIsReceive(false);
   };
 
   const handleClickedBuy = () => {
     setIsBuy(true);
     setIsSend(false);
     setIsReceive(false);
+    setIsSwap(false);
   };
 
   const handleClickedReceive = () => {
     setIsReceive(true);
     setIsSend(false);
     setIsBuy(false);
+    setIsSwap(false);
   };
 
   const handleCancel = async () => {
@@ -404,6 +434,7 @@ export const Client: React.FC<ClientProps> = ({
     setIsSend(false);
     setIsReceive(false);
     setIsBuy(false);
+    setIsSwap(false);
 
     // refresh portfolio data
     await onRefresh();
@@ -415,6 +446,17 @@ export const Client: React.FC<ClientProps> = ({
         {isSend ? (
           <Box className={classes.panelContainer}>
             <Send
+              getClient={getClient}
+              accessToken={accessToken}
+              onCancelClick={handleCancel}
+              onClickBuy={handleClickedBuy}
+              onClickReceive={handleClickedReceive}
+              wallets={wallets}
+            />
+          </Box>
+        ) : isSwap ? (
+          <Box className={classes.panelContainer}>
+            <Swap
               getClient={getClient}
               accessToken={accessToken}
               onCancelClick={handleCancel}
@@ -437,63 +479,90 @@ export const Client: React.FC<ClientProps> = ({
           </Box>
         ) : (
           <TabContext value={tabValue as ClientTabType}>
-            <Box className={classes.balanceContainer}>
-              <Typography variant="h3">
-                {(tabValue === ClientTabType.Domains
-                  ? // show only domain value on domain tab
-                    domainsValue
-                  : tabValue === ClientTabType.Portfolio
-                  ? // show only crypto value on crypto tab
-                    cryptoValue
-                  : tabValue === ClientTabType.Transactions &&
-                    // show aggregate value (domains + crypto) on activity tab
-                    domainsValue + cryptoValue
-                ).toLocaleString('en-US', {
-                  style: 'currency',
-                  currency: 'USD',
-                })}
-              </Typography>
-            </Box>
-            <Box className={classes.mainActionsContainer}>
-              <Box
-                className={classes.actionContainer}
-                onClick={handleClickedSend}
-              >
-                <SendIcon className={classes.actionIcon} />
-                <Typography
-                  variant={isMobile ? 'caption' : 'body1'}
-                  className={classes.actionText}
-                >
-                  {t('common.send')}
-                </Typography>
-              </Box>
-              <Box
-                className={classes.actionContainer}
-                onClick={handleClickedReceive}
-              >
-                <AddOutlinedIcon className={classes.actionIcon} />
-                <Typography
-                  variant={isMobile ? 'caption' : 'body1'}
-                  className={classes.actionText}
-                >
-                  {t('common.receive')}
-                </Typography>
-              </Box>
-              <Box mr={-2}>
-                <Box
-                  className={classes.actionContainer}
-                  onClick={handleClickedBuy}
-                >
-                  <AttachMoneyIcon className={classes.actionIcon} />
-                  <Typography
-                    variant={isMobile ? 'caption' : 'body1'}
-                    className={classes.actionText}
-                  >
-                    {t(isSellEnabled ? 'common.buySell' : 'common.buy')}
+            {cryptoValue ? (
+              <Box className={classes.header}>
+                <Box className={classes.balanceContainer}>
+                  <Typography variant="h3">
+                    {(tabValue === ClientTabType.Domains
+                      ? // show only domain value on domain tab
+                        domainsValue
+                      : tabValue === ClientTabType.Portfolio
+                      ? // show only crypto value on crypto tab
+                        cryptoValue
+                      : tabValue === ClientTabType.Transactions &&
+                        // show aggregate value (domains + crypto) on activity tab
+                        domainsValue + cryptoValue
+                    ).toLocaleString('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                    })}
                   </Typography>
                 </Box>
+                <Box className={classes.mainActionsContainer}>
+                  <Box
+                    className={classes.actionContainer}
+                    onClick={handleClickedReceive}
+                  >
+                    <QrCodeIcon className={classes.actionIcon} />
+                    <Typography
+                      variant={isMobile ? 'caption' : 'body2'}
+                      className={classes.actionText}
+                    >
+                      {t('common.receive')}
+                    </Typography>
+                  </Box>
+                  <Box
+                    className={classes.actionContainer}
+                    onClick={handleClickedSend}
+                  >
+                    <SendIcon className={classes.actionIcon} />
+                    <Typography
+                      variant={isMobile ? 'caption' : 'body2'}
+                      className={classes.actionText}
+                    >
+                      {t('common.send')}
+                    </Typography>
+                  </Box>
+                  {featureFlags?.variations?.udMeServiceEnableSwap && (
+                    <Box
+                      className={classes.actionContainer}
+                      onClick={handleClickedSwap}
+                    >
+                      <SwapHorizIcon className={classes.actionIcon} />
+                      <Typography
+                        variant={isMobile ? 'caption' : 'body2'}
+                        className={classes.actionText}
+                      >
+                        {t('swap.title')}
+                      </Typography>
+                    </Box>
+                  )}
+                  <Box mr={-2}>
+                    <Box
+                      className={classes.actionContainer}
+                      onClick={handleClickedBuy}
+                    >
+                      <AttachMoneyIcon className={classes.actionIcon} />
+                      <Typography
+                        variant={isMobile ? 'caption' : 'body2'}
+                        className={classes.actionText}
+                      >
+                        {t(isSellEnabled ? 'common.buySell' : 'common.buy')}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
               </Box>
-            </Box>
+            ) : (
+              <Box className={classes.header}>
+                <LetsGetStartedCta
+                  color="inherit"
+                  variant="contained"
+                  onBuyClicked={handleClickedBuy}
+                  onReceiveClicked={handleClickedReceive}
+                />
+              </Box>
+            )}
             <Grid container className={classes.portfolioContainer}>
               <Grid item xs={12}>
                 <TabPanel
@@ -510,19 +579,31 @@ export const Client: React.FC<ClientProps> = ({
                   value={ClientTabType.Domains}
                   className={classes.tabContentItem}
                 >
-                  <Box className={classes.domainListContainer}>
-                    <DomainProfileList
-                      id={'wallet-domain-list'}
-                      domains={domains}
-                      isLoading={isLoading}
-                      withInfiniteScroll={true}
-                      setWeb3Deps={setWeb3Deps}
-                      onLastPage={handleLoadDomains}
-                      hasMore={!retrievedAll}
-                      onClick={handleDomainClick}
-                      rowStyle={classes.domainRow}
-                    />
-                  </Box>
+                  {domains.length > 0 ? (
+                    <Box className={classes.domainListContainer}>
+                      <DomainProfileList
+                        id={'wallet-domain-list'}
+                        domains={domains}
+                        isLoading={isLoading}
+                        withInfiniteScroll={true}
+                        setWeb3Deps={setWeb3Deps}
+                        onLastPage={handleLoadDomains}
+                        hasMore={!retrievedAll}
+                        onClick={handleDomainClick}
+                        rowStyle={classes.domainRow}
+                      />
+                    </Box>
+                  ) : (
+                    <Modal
+                      title={t('wallet.addDomain')}
+                      open={true}
+                      fullScreen={fullScreenModals}
+                      titleStyle={classes.modalTitleStyle}
+                      onClose={() => setTabValue(ClientTabType.Portfolio)}
+                    >
+                      <ReceiveDomainModal />
+                    </Modal>
+                  )}
                 </TabPanel>
                 <TabPanel
                   value={ClientTabType.Transactions}
@@ -533,7 +614,11 @@ export const Client: React.FC<ClientProps> = ({
                     wallets={wallets}
                     isOwner={true}
                     verified={true}
+                    fullScreenModals={fullScreenModals}
                     accessToken={accessToken}
+                    onBack={() => setTabValue(ClientTabType.Portfolio)}
+                    onBuyClicked={handleClickedBuy}
+                    onReceiveClicked={handleClickedReceive}
                   />
                 </TabPanel>
               </Grid>
@@ -557,16 +642,12 @@ export const Client: React.FC<ClientProps> = ({
                   value={ClientTabType.Domains}
                   label={t('common.domains')}
                   iconPosition="start"
-                  disabled={domains.length === 0}
                 />
                 <Tab
                   icon={<HistoryIcon />}
                   value={ClientTabType.Transactions}
                   label={t('activity.title')}
                   iconPosition="start"
-                  disabled={
-                    !wallets?.some(w => w.txns?.data && w.txns.data.length > 0)
-                  }
                 />
               </TabList>
             </Box>

@@ -261,8 +261,8 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     // load information about the connected wallet
     const fetchUser = async () => {
       // retrieve local state about this address
-      const cachedPushKey = getPushLocalKey(chatAddress);
-      const cachedXmtpKey = getXmtpLocalKey(chatAddress);
+      const cachedPushKey = await getPushLocalKey(chatAddress);
+      const cachedXmtpKey = await getXmtpLocalKey(chatAddress);
       if (cachedXmtpKey) {
         setXmtpKey(cachedXmtpKey);
         setIsChatReady(true);
@@ -476,11 +476,11 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     }
 
     // determine if XMTP registration will be performed
-    const xmtpLocalKey = getXmtpLocalKey(chatAddress);
+    const xmtpLocalKey = await getXmtpLocalKey(chatAddress);
     const xmtpSetupRequired = !xmtpLocalKey && !opts.skipXmtp;
 
     // determine if Push Protocol registration will be performed
-    const pushLocalKey = getPushLocalKey(chatAddress);
+    const pushLocalKey = await getPushLocalKey(chatAddress);
     const pushSetupRequired = !pushLocalKey && !opts.skipPush;
 
     try {
@@ -511,7 +511,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
             setConfigState(ConfigurationState.RegisterXmtp);
             await initXmtpAccount(chatAddress, web3Context.web3Deps.signer);
           }
-          setXmtpKey(getXmtpLocalKey(chatAddress));
+          setXmtpKey(await getXmtpLocalKey(chatAddress));
         }
 
         // perform Push Protocol setup if required
@@ -533,7 +533,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
           setPushUser(pushUserAccount);
 
           // retrieve the user's encryption key and store it locally on the device
-          if (!getPushLocalKey(chatAddress)) {
+          if (!(await getPushLocalKey(chatAddress))) {
             setConfigState(ConfigurationState.RegisterPush);
             const decryptedPvtKey = await PushAPI.chat.decryptPGPKey({
               encryptedPGPPrivateKey: pushUserAccount.encryptedPrivateKey,
@@ -563,7 +563,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
 
             // set configuration state
             setPushKey(decryptedPvtKey);
-            setPushLocalKey(chatAddress, decryptedPvtKey);
+            await setPushLocalKey(chatAddress, decryptedPvtKey);
           }
 
           try {

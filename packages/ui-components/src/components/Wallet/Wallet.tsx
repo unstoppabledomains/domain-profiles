@@ -37,6 +37,7 @@ export const Wallet: React.FC<
     forceRememberOnDevice?: boolean;
     setAuthAddress?: (v: string) => void;
     onLoginInitiated?: (emailAddress: string, password: string) => void;
+    onError?: () => void;
     onLogout?: () => void;
     onDisconnect?: () => void;
     onSettingsClick?: () => void;
@@ -59,6 +60,7 @@ export const Wallet: React.FC<
   fullScreenModals,
   forceRememberOnDevice,
   onUpdate,
+  onError,
   onLoginInitiated,
   onLogout,
   onDisconnect,
@@ -127,6 +129,7 @@ export const Wallet: React.FC<
         address={address}
         domain={domain}
         recoveryToken={recoveryToken}
+        onError={onError}
         onLoaded={handleWalletLoaded}
         onLoginInitiated={onLoginInitiated}
         onUpdate={handleAccessToken}

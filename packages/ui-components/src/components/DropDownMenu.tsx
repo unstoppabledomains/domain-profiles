@@ -3,13 +3,13 @@ import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
 import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import Logout from '@mui/icons-material/Logout';
-import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
+import MedicalServicesOutlinedIcon from '@mui/icons-material/MedicalServicesOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import SupportOutlinedIcon from '@mui/icons-material/SupportOutlined';
+import SupportIcon from '@mui/icons-material/Support';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import {Card, Typography} from '@mui/material/';
 import type {Theme} from '@mui/material/styles';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -17,6 +17,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import useFireblocksState from '../hooks/useFireblocksState';
 import {isDomainValidForManagement} from '../lib';
 import useTranslationContext from '../lib/i18n';
+import {localStorageWrapper} from './Chat/storage';
 
 interface Props {
   domain?: string;
@@ -31,6 +32,7 @@ interface Props {
   onMessagingClicked?: () => void;
   onLogout?: () => void;
   onDisconnect?: () => void;
+  onHideMenu: () => void;
   marginTop?: number;
 }
 
@@ -74,7 +76,9 @@ const DropDownMenu: React.FC<Props> = ({
   onMessagingClicked,
   onDisconnect,
   onLogout,
+  onHideMenu,
 }) => {
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const [isLoggingOut, setLoggingOut] = useState<boolean>(false);
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles({marginTop});
@@ -87,6 +91,22 @@ const DropDownMenu: React.FC<Props> = ({
   useEffect(() => {
     void handleLoadWallet();
   }, []);
+
+  // detect if user clicks outside the menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // hide the menu if the target is outside the menu
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setTimeout(onHideMenu, 150);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [menuRef]);
 
   const handleLoadWallet = async () => {
     // retrieve and validate key state
@@ -107,9 +127,9 @@ const DropDownMenu: React.FC<Props> = ({
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setLoggingOut(prev => !prev);
-    localStorage.clear();
+    await localStorageWrapper.clear();
     sessionStorage.clear();
     if (onLogout) {
       onLogout();
@@ -119,7 +139,7 @@ const DropDownMenu: React.FC<Props> = ({
   };
 
   return (
-    <Card className={classes.cardBody} data-testid={'dropdown'}>
+    <Card ref={menuRef} className={classes.cardBody} data-testid={'dropdown'}>
       {authDomain && isDomainValidForManagement(authDomain) && (
         <div
           data-testid={`manage-profile-button`}
@@ -184,7 +204,7 @@ const DropDownMenu: React.FC<Props> = ({
           className={classes.container}
           onClick={onRecoveryLinkClicked}
         >
-          <SupportOutlinedIcon className={classes.settingsIcon} />
+          <MedicalServicesOutlinedIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
             {t('wallet.recoveryKit')}
           </Typography>
@@ -208,9 +228,9 @@ const DropDownMenu: React.FC<Props> = ({
           className={classes.container}
           onClick={onSupportClicked}
         >
-          <SchoolOutlinedIcon className={classes.settingsIcon} />
+          <SupportIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
-            {t('common.learnMore')}
+            {t('common.support')}
           </Typography>
         </div>
       )}

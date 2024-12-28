@@ -21,6 +21,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
+    height: '100%',
+    justifyContent: 'space-between',
+  },
+  content: {
+    display: 'flex',
+    flexDirection: 'column',
     width: '450px',
     [theme.breakpoints.down('sm')]: {
       width: '100%',
@@ -85,7 +91,7 @@ const RecoverySetupModal: React.FC<Props> = ({accessToken}) => {
 
   return (
     <Box className={classes.container}>
-      <form>
+      <Box className={classes.content}>
         <Typography variant="body2" mb={1} mt={-2} component="div">
           <Markdown>{t('wallet.recoveryKitDescription')}</Markdown>
         </Typography>
@@ -119,26 +125,26 @@ const RecoverySetupModal: React.FC<Props> = ({accessToken}) => {
             </IconButton>
           }
         />
-        <LoadingButton
-          variant="contained"
-          fullWidth
-          loading={isSaving}
-          onClick={handleGenerateKit}
-          className={classes.button}
-          disabled={isSaving || !isDirty}
-        >
-          {isSuccess ? (
-            <Box display="flex" alignItems="center">
-              <CheckIcon />
-              <Typography ml={1}>{t('common.success')}</Typography>
-            </Box>
-          ) : isSuccess === false ? (
-            t('wallet.recoveryKitError')
-          ) : (
-            t('common.continue')
-          )}
-        </LoadingButton>
-      </form>
+      </Box>
+      <LoadingButton
+        variant="contained"
+        fullWidth
+        loading={isSaving}
+        onClick={handleGenerateKit}
+        className={classes.button}
+        disabled={isSaving || !isDirty}
+      >
+        {isSuccess ? (
+          <Box display="flex" alignItems="center">
+            <CheckIcon />
+            <Typography ml={1}>{t('common.success')}</Typography>
+          </Box>
+        ) : isSuccess === false ? (
+          t('wallet.recoveryKitError')
+        ) : (
+          t('common.continue')
+        )}
+      </LoadingButton>
     </Box>
   );
 };

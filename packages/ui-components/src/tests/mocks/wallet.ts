@@ -1,10 +1,10 @@
 import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
 
-import type {TokenEntry} from '../../components/Wallet/Token';
+import type {TokenEntry} from '../../lib/types';
 import type {
   SerializedPublicDomainProfileData,
   SerializedWalletBalance,
-} from '../../lib';
+} from '../../lib/types/domain';
 import {TokenType} from '../../lib/types/domain';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {VALID_ETH_ADDRESS} from '../common';
@@ -22,6 +22,7 @@ export const mockAccountAsset = (): AccountAsset => {
       blockchain: {
         id: 'ETH',
         name: 'Ethereum',
+        networkId: 1,
       },
     },
     accountId: '',

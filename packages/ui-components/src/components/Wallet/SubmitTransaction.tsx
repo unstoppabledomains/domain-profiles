@@ -1,4 +1,5 @@
 import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
+import CheckIcon from '@mui/icons-material/Check';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -11,6 +12,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {SendCryptoStatusMessage} from '../../actions/fireBlocksActions';
 import {Status, useSubmitTransaction} from '../../hooks/useSubmitTransaction';
+import type {TokenEntry} from '../../lib';
 import {useTranslationContext} from '../../lib';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {
@@ -33,6 +35,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'space-between',
   },
   transactionStatusContainer: {
+    color: theme.palette.neutralShades[600],
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -42,13 +45,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   icon: {
     fontSize: '60px',
-  },
-  subTitlePending: {
-    marginTop: theme.spacing(1),
-    color: theme.palette.neutralShades[400],
-  },
-  subTitleComplete: {
-    marginTop: theme.spacing(1),
   },
 }));
 
@@ -60,6 +56,7 @@ type Props = {
   ) => Promise<Record<string, string> | undefined>;
   accessToken: string;
   asset: AccountAsset;
+  token: TokenEntry;
   recipientAddress: string;
   recipientDomain?: string;
   amount: string;
@@ -71,6 +68,7 @@ export const SubmitTransaction: React.FC<Props> = ({
   onInvitation,
   accessToken,
   asset,
+  token,
   recipientAddress,
   recipientDomain,
   amount,
@@ -81,6 +79,7 @@ export const SubmitTransaction: React.FC<Props> = ({
   const {transactionId, status, statusMessage} = useSubmitTransaction({
     accessToken,
     asset,
+    token,
     recipientAddress,
     amount,
     getClient,
@@ -110,11 +109,23 @@ export const SubmitTransaction: React.FC<Props> = ({
                 'wallet.leaveWindowOpen',
               )}`
         }
-        icon={<SendOutlinedIcon />}
+        icon={
+          statusMessage === SendCryptoStatusMessage.WAITING_FOR_TRANSACTION ? (
+            <CheckIcon />
+          ) : (
+            <SendOutlinedIcon />
+          )
+        }
         success={status === Status.Success}
         error={status === Status.Failed}
       >
         <Box className={classes.transactionStatusContainer} mt={2}>
+          {statusMessage ===
+            SendCryptoStatusMessage.WAITING_FOR_TRANSACTION && (
+            <Typography variant="caption">
+              {t('wallet.safeToCloseWindow')}
+            </Typography>
+          )}
           {[Status.Success, Status.Failed].includes(status) && (
             <Typography variant="caption">
               {t(
@@ -123,9 +134,7 @@ export const SubmitTransaction: React.FC<Props> = ({
                 }`,
                 {
                   amount,
-                  sourceSymbol: getBlockchainDisplaySymbol(
-                    asset.blockchainAsset.symbol,
-                  ),
+                  sourceSymbol: getBlockchainDisplaySymbol(token.ticker),
                   status,
                   recipientDomain: recipientDomain
                     ? ` ${recipientDomain}`

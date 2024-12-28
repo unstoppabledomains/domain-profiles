@@ -2,10 +2,11 @@ import QueryString from 'qs';
 
 import config from '@unstoppabledomains/config';
 
-import type {SerializedWalletBalance, WalletAccountResponse} from '../lib';
-import {fetchApi} from '../lib';
 import {notifyEvent} from '../lib/error';
+import {fetchApi} from '../lib/fetchApi';
+import type {SerializedWalletBalance} from '../lib/types/domain';
 import type {SerializedIdentityResponse} from '../lib/types/identity';
+import type {WalletAccountResponse} from '../lib/types/wallet';
 
 export const createWallet = async (
   emailAddress: string,

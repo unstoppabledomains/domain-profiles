@@ -1,8 +1,11 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useLocalStorage, useSessionStorage} from 'usehooks-ts';
 
+import useChromeStorage, {
+  isChromeStorageSupported,
+} from '../hooks/useChromeStorage';
 import type {CreateTransaction} from '../lib/types/fireBlocks';
-import { FireblocksStateKey} from '../lib/types/fireBlocks';
+import {FireblocksStateKey} from '../lib/types/fireBlocks';
 import type {Web3Dependencies} from '../lib/types/web3';
 
 type Props = {
@@ -32,14 +35,41 @@ const Web3ContextProvider: React.FC<Props> = ({children}) => {
 
   // used as common source for Unstoppable Wallet state
   const [accessToken, setAccessToken] = useState<string>();
+
+  // standard storage parameters
   const [sessionKeyState, setSessionKeyState] = useSessionStorage<
     Record<string, Record<string, string>>
   >(FireblocksStateKey, {});
   const [persistentKeyState, setPersistentKeyState] = useLocalStorage<
     Record<string, Record<string, string>>
   >(FireblocksStateKey, {});
+
+  // extension storage parameters
+  const [isChromeExtension, setIsChromeExtension] = useState(false);
+  const [chromeSessionKeyState, setChromeSessionKeyState] = useChromeStorage<
+    Record<string, Record<string, string>>
+  >(FireblocksStateKey, {}, 'session');
+  const [chromePersistentKeyState, setChromePersistentKeyState] =
+    useChromeStorage<Record<string, Record<string, string>>>(
+      FireblocksStateKey,
+      {},
+      'local',
+    );
+
+  // signing parameters
   const [messageToSign, setMessageToSign] = useState<string>();
   const [txToSign, setTxToSign] = useState<CreateTransaction>();
+
+  // determine if chrome extension runtime
+  useEffect(() => {
+    try {
+      if (isChromeStorageSupported('local')) {
+        setIsChromeExtension(true);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
 
   const value = {
     web3Deps,
@@ -50,10 +80,18 @@ const Web3ContextProvider: React.FC<Props> = ({children}) => {
     setMessageToSign,
     txToSign,
     setTxToSign,
-    sessionKeyState,
-    setSessionKeyState,
-    persistentKeyState,
-    setPersistentKeyState,
+    sessionKeyState: isChromeExtension
+      ? chromeSessionKeyState
+      : sessionKeyState,
+    setSessionKeyState: isChromeExtension
+      ? setChromeSessionKeyState
+      : setSessionKeyState,
+    persistentKeyState: isChromeExtension
+      ? chromePersistentKeyState
+      : persistentKeyState,
+    setPersistentKeyState: isChromeExtension
+      ? setChromePersistentKeyState
+      : setPersistentKeyState,
   };
 
   return <Web3Context.Provider value={value}>{children}</Web3Context.Provider>;

@@ -28,7 +28,7 @@ import {WalletName} from '../../lib/types/wallet';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import useAccessWalletStyles from '../../styles/components/accessWallet.styles';
 import {isEthAddress} from '../Chat/protocol/resolution';
-import {DomainProfileTabType} from '../Manage/DomainProfile';
+import {DomainProfileTabType} from '../Manage/common/types';
 import {SignMessage as UnstoppableWalletMessageSigner} from './SignMessage';
 import {SignTx as UnstoppableWalletTxSigner} from './SignTx';
 import {Wallet as UnstoppableWalletConfig} from './Wallet';

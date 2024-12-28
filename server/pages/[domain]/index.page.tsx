@@ -54,10 +54,10 @@ import type {
   DomainBadgesResponse,
   PersonaIdentity,
   SerializedCryptoWalletBadge,
-  SerializedDomainProfileSocialAccountsUserInfo,
   SerializedPublicDomainProfileData,
   SerializedRecommendation,
   SerializedWalletBalance,
+  SocialAccountUserInfo,
 } from '@unstoppabledomains/ui-components';
 import {
   AccountButton,
@@ -118,6 +118,7 @@ import {
   getOwnerDomains,
 } from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
 import useResolverKeys from '@unstoppabledomains/ui-components/src/hooks/useResolverKeys';
+import type {SerializedPartialDomainProfileSocialAccountsUserInfo} from '@unstoppabledomains/ui-components/src/lib';
 import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
 import CopyContentIcon from '@unstoppabledomains/ui-kit/icons/CopyContent';
 
@@ -223,21 +224,22 @@ const DomainProfile = ({
   const {data: ensDomainStatus} = useEnsDomainStatus(domain, isEnsDomain);
 
   // format social platform data
-  const socialsInfo: SerializedDomainProfileSocialAccountsUserInfo = {};
-  const allSocials = profileData?.socialAccounts
-    ? Object.keys(profileData.socialAccounts)
-    : [];
-  const verifiedSocials = allSocials.filter(socialType =>
-    Boolean(
-      (profileData?.socialAccounts &&
-        profileData?.socialAccounts[socialType]?.verified) ||
-        true,
-    ),
+  const socialsInfo =
+    {} as SerializedPartialDomainProfileSocialAccountsUserInfo;
+  const allSocials = (
+    profileData?.socialAccounts ? Object.keys(profileData.socialAccounts) : []
+  ) as (keyof SerializedPartialDomainProfileSocialAccountsUserInfo)[];
+  type ExcludesFalse = <T>(x: T | false) => x is T;
+
+  const verifiedSocials = allSocials.filter(
+    socialType =>
+      Boolean(
+        profileData?.socialAccounts?.[socialType]?.verified || true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ) as any as ExcludesFalse,
   );
   verifiedSocials.forEach(socialType => {
-    const socialUser =
-      profileData?.socialAccounts &&
-      profileData?.socialAccounts[socialType]?.location;
+    const socialUser = profileData?.socialAccounts?.[socialType]?.location;
     socialsInfo[socialType] = {
       kind: socialType,
       userName: socialUser,
@@ -1277,16 +1279,16 @@ const DomainProfile = ({
                     <Box mb={1} display="flex" flexWrap="wrap">
                       {verifiedSocials
                         .filter(account => {
-                          return (
-                            profileData?.socialAccounts &&
-                            profileData.socialAccounts[account].location
-                          );
+                          return profileData?.socialAccounts?.[account]
+                            .location;
                         })
                         .map(account => {
                           return (
                             <Box mr={1} key={account}>
                               <SocialAccountCard
-                                socialInfo={socialsInfo[account]}
+                                socialInfo={
+                                  socialsInfo[account] as SocialAccountUserInfo
+                                }
                                 handleClickToCopy={handleClickToCopy}
                                 verified={
                                   profileData!.socialAccounts![account].verified

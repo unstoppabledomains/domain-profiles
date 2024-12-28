@@ -25,26 +25,24 @@ const createTestQueryClient = () =>
 
 // test class to wrap test components with required providers
 const createWrapper =
-  ({theme}: {theme?: Theme} = {}): React.FC =>
+  ({theme}: {theme?: Theme} = {}): React.FC<React.PropsWithChildren> =>
   ({children}) => (
     <QueryClientProvider client={createTestQueryClient()}>
-      <uiComponents.EmotionCacheProvider>
-        <ThemeProvider theme={theme || defaultTheme}>
-          <SnackbarProvider>
-            <uiComponents.Web3ContextProvider>
-              <uiComponents.TokenGalleryProvider>
-                <uiComponents.UnstoppableMessagingProvider>
-                  <uiComponents.DomainConfigProvider>
-                    <uiComponents.TranslationProvider>
-                      {children}
-                    </uiComponents.TranslationProvider>
-                  </uiComponents.DomainConfigProvider>
-                </uiComponents.UnstoppableMessagingProvider>
-              </uiComponents.TokenGalleryProvider>
-            </uiComponents.Web3ContextProvider>
-          </SnackbarProvider>
-        </ThemeProvider>
-      </uiComponents.EmotionCacheProvider>
+      <ThemeProvider theme={theme || defaultTheme}>
+        <SnackbarProvider>
+          <uiComponents.Web3ContextProvider>
+            <uiComponents.TokenGalleryProvider>
+              <uiComponents.UnstoppableMessagingProvider>
+                <uiComponents.DomainConfigProvider>
+                  <uiComponents.TranslationProvider>
+                    {children}
+                  </uiComponents.TranslationProvider>
+                </uiComponents.DomainConfigProvider>
+              </uiComponents.UnstoppableMessagingProvider>
+            </uiComponents.TokenGalleryProvider>
+          </uiComponents.Web3ContextProvider>
+        </SnackbarProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 
@@ -91,6 +89,7 @@ export const createMockRouter = (
   replace: jest.fn(),
   reload: jest.fn(),
   back: jest.fn(),
+  forward: jest.fn(),
   prefetch: jest.fn(),
   beforePopState: jest.fn(),
   events: {

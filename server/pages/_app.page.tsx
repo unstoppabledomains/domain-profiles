@@ -1,3 +1,4 @@
+import {AppCacheProvider} from '@mui/material-nextjs/v14-pagesRouter';
 import Layout from 'components/app/Layout';
 import type {NextPage} from 'next';
 import {NextSeo} from 'next-seo';
@@ -28,7 +29,7 @@ const WrappedApp = (props: WrappedAppProps) => {
   const pageTheme = Component.themeMode === 'dark' ? darkTheme : lightTheme;
 
   return (
-    <>
+    <AppCacheProvider {...props}>
       <Head>
         {/* MUI - Setup */}
         {/* <meta charSet="utf-8" /> */}
@@ -52,7 +53,7 @@ const WrappedApp = (props: WrappedAppProps) => {
           </TokenGalleryProvider>
         </UnstoppableMessagingProvider>
       </BaseProvider>
-    </>
+    </AppCacheProvider>
   );
 };
 

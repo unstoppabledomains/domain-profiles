@@ -426,7 +426,8 @@ const NftGalleryView = ({
             </div>
             <div className={classes.filterChipContainer}>
               <div>
-                {Object.keys(visibleTags).map(filterType => {
+                {Object.keys(visibleTags).map(_filterType => {
+                  const filterType = _filterType as FilterType;
                   return Object.keys(visibleTags[filterType])
                     .filter(
                       tag => tag !== NftTag.All && visibleTags[filterType][tag],

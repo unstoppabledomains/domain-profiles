@@ -16,7 +16,9 @@ export const getAsset = (
 ): AccountAsset | undefined => {
   // determine if any asset options are specified
   const isOptSpecified = opts
-    ? Object.keys(opts).find(k => opts[k] !== undefined) !== undefined
+    ? (Object.keys(opts) as Array<keyof typeof opts>).find(
+        k => opts[k] !== undefined,
+      ) !== undefined
     : false;
 
   // find the requested asset

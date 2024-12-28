@@ -24,8 +24,8 @@ import {useTranslationContext} from '../../../lib';
 import {notifyEvent} from '../../../lib/error';
 import {Badge} from '../../Badges';
 import {ProfileManager} from '../../Wallet/ProfileManager';
-import {DomainProfileTabType} from '../DomainProfile';
 import {TabHeader} from '../common/TabHeader';
+import {DomainProfileTabType} from '../common/types';
 import type {ManageTabProps} from '../common/types';
 
 const useStyles = makeStyles()((theme: Theme) => ({

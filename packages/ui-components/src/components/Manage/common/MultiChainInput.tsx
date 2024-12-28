@@ -138,8 +138,14 @@ const MultiChainInput: React.FC<Props> = ({
                   getParentNetworkSymbol(mappedResolverKey) || currency;
                 const placeholder = t('manage.enterYourAddress', {
                   currency:
-                    (MultichainKeyToLocaleKey[key] &&
-                      t(MultichainKeyToLocaleKey[key])) ||
+                    (MultichainKeyToLocaleKey[
+                      key as keyof typeof MultichainKeyToLocaleKey
+                    ] &&
+                      t(
+                        MultichainKeyToLocaleKey[
+                          key as keyof typeof MultichainKeyToLocaleKey
+                        ],
+                      )) ||
                     mappedResolverKey.name ||
                     currency,
                 });

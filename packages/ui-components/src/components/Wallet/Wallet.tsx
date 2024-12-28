@@ -8,8 +8,10 @@ import {AccessWalletModal} from '.';
 import {useWeb3Context} from '../../hooks';
 import type {Web3Dependencies} from '../../lib';
 import {isDomainValidForManagement} from '../../lib';
-import type {DomainProfileTabType} from '../Manage';
-import type {ManageTabProps} from '../Manage/common/types';
+import type {
+  DomainProfileTabType,
+  ManageTabProps,
+} from '../Manage/common/types';
 import {Configuration, WalletConfigState} from './Configuration';
 import {Header} from './Header';
 

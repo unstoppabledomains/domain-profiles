@@ -1,7 +1,7 @@
 ###########################################################
 # Build container
 ###########################################################
-FROM node:16 AS builder
+FROM node:20.15.1-alpine3.20 AS builder
 
 # Prepare arguments
 ARG service
@@ -20,6 +20,9 @@ ENV CLIENT_URL $CLIENT_URL
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV YARN_IGNORE_NODE 1
 
+# Prepare dependencies
+RUN yarn set version 3.2.0
+
 # Copy project files
 WORKDIR /app
 COPY . .
@@ -37,7 +40,7 @@ RUN rm -rf .yarn/cache
 ###########################################################
 # Runtime container
 ###########################################################
-FROM node:16-alpine
+FROM node:20.15.1-alpine3.20
 
 # Runtime environment variables
 ARG service

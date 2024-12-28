@@ -223,7 +223,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
         DomainFieldTypes.Records,
       ]);
       const onChainPicture =
-        profileData?.records && profileData.records[pictureKey];
+        profileData?.records?.[pictureKey];
       if (onChainPicture) {
         setOnChainImageUrl(
           `${config.UNSTOPPABLE_METADATA_ENDPOINT}/image-src/${domain}?withOverlay=false&ref=${onChainPicture}`,

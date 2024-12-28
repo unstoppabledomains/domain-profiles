@@ -30,8 +30,7 @@ import {
 } from '../../actions';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
-import type {SerializedWalletBalance,
-  TokenEntry} from '../../lib';
+import type {SerializedWalletBalance, TokenEntry} from '../../lib';
 import {
   DomainFieldTypes,
   WALLET_CARD_HEIGHT,
@@ -467,7 +466,6 @@ export const Client: React.FC<ClientProps> = ({
               onClickBuy={handleClickedBuy}
               onClickReceive={handleClickedReceive}
               wallets={wallets}
-              initialSelectedToken={selectedToken}
             />
           </Box>
         ) : isSwap ? (

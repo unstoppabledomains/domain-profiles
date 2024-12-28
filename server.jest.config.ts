@@ -1,13 +1,13 @@
 import {lstatSync, readdirSync} from 'fs';
 import path from 'path';
-import type {InitialOptionsTsJest} from 'ts-jest/dist/types';
+import type {JestConfigWithTsJest} from 'ts-jest/dist/types';
 
 const sharedBasePath = path.resolve(__dirname, 'packages');
 const sharedModules = readdirSync(sharedBasePath).filter(name => {
   return lstatSync(path.join(sharedBasePath, name)).isDirectory();
 });
 
-const config: InitialOptionsTsJest = {
+const config: JestConfigWithTsJest = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   setupFiles: ['<rootDir>/tests/setupTests.ts'],

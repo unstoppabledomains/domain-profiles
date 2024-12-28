@@ -50,6 +50,7 @@ import truncateEthAddress from 'truncate-eth-address';
 import config from '@unstoppabledomains/config';
 import type {
   Blockchain,
+  CurrenciesType,
   DomainBadgesResponse,
   PersonaIdentity,
   SerializedCryptoWalletBadge,
@@ -91,6 +92,7 @@ import {
   TokensPortfolio,
   UnstoppableMessaging,
   formOpenSeaLink,
+  getBlockScanUrl,
   getDomainBadges,
   getFollowers,
   getHumanityCheckStatus,
@@ -305,12 +307,17 @@ const DomainProfile = ({
   };
 
   const handleOwnerAddressClick = () => {
-    window.open(
-      `https://www.oklink.com/${
-        profileData?.metadata?.blockchain === 'ETH' ? 'eth' : 'polygon'
-      }/address/${ownerAddress}?channelId=uns001`,
-      '_blank',
+    if (!profileData?.metadata?.blockchain) {
+      return;
+    }
+    const blockScanUrl = getBlockScanUrl(
+      profileData?.metadata?.blockchain as CurrenciesType,
+      ownerAddress,
     );
+    if (!blockScanUrl) {
+      return;
+    }
+    window.open(blockScanUrl, '_blank');
   };
 
   const handleViewFollowingClick = () => {

@@ -3,14 +3,13 @@ import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import type {Theme} from '@mui/material/styles';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useFeatureFlags} from '../../actions';
 import {
-  getAccountAssets,
   getTransactionGasEstimate,
   getTransferGasEstimate,
 } from '../../actions/fireBlocksActions';
@@ -21,7 +20,6 @@ import {TokenType, getBootstrapState, useTranslationContext} from '../../lib';
 import {sleep} from '../../lib/sleep';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {getAsset} from '../../lib/wallet/asset';
-import {getProviderUrl} from '../../lib/wallet/evm/provider';
 import {createErc20TransferTx} from '../../lib/wallet/evm/token';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
@@ -87,9 +85,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '100%',
   },
   assetLogo: {
-    height: '60px',
-    width: '60px',
+    height: '70px',
+    width: '70px',
     marginTop: '10px',
+    borderRadius: '50%',
+    boxShadow: theme.shadows[6],
   },
   sendAssetContainer: {
     display: 'flex',
@@ -149,6 +149,7 @@ type Props = {
   getClient: () => Promise<IFireblocksNCW>;
   accessToken: string;
   wallets: SerializedWalletBalance[];
+  initialSelectedToken?: TokenEntry;
 };
 
 const Send: React.FC<Props> = ({
@@ -158,9 +159,10 @@ const Send: React.FC<Props> = ({
   getClient,
   accessToken,
   wallets,
+  initialSelectedToken,
 }) => {
   const [t] = useTranslationContext();
-  const [state, saveState] = useFireblocksState();
+  const [state] = useFireblocksState();
   const [recipientAddress, setRecipientAddress] = useState('');
   const [accountAsset, setAccountAsset] = useState<AccountAsset>();
   const [selectedToken, setSelectedToken] = useState<TokenEntry>();
@@ -180,6 +182,15 @@ const Send: React.FC<Props> = ({
   const isSendToEmailEnabled =
     featureFlags.variations?.profileServiceEnableWalletCreation === true &&
     featureFlags.variations?.profileServiceEnableWalletSendToEmail === true;
+  const isSplTokenEnabled =
+    featureFlags.variations?.udMeEnableWalletSolanaSigning;
+
+  useEffect(() => {
+    if (!initialSelectedToken) {
+      return;
+    }
+    void handleSelectToken(initialSelectedToken);
+  }, [initialSelectedToken]);
 
   const resetForm = () => {
     setResolvedDomain('');
@@ -191,7 +202,7 @@ const Send: React.FC<Props> = ({
   };
 
   const handleBackClick = () => {
-    if (!selectedToken) {
+    if (!selectedToken || initialSelectedToken) {
       onCancelClick();
     }
     if (!transactionSubmitted && sendConfirmation) {
@@ -212,6 +223,7 @@ const Send: React.FC<Props> = ({
     // find the requested asset
     const assetToSend = getAsset(clientState.assets, {
       token,
+      address: token.walletAddress,
     });
     if (!assetToSend) {
       throw new Error('Asset not found');
@@ -228,8 +240,8 @@ const Send: React.FC<Props> = ({
     ) {
       // retrieve gas for a transaction
       const transferTx = await createErc20TransferTx({
+        accessToken,
         chainId: assetToSend.blockchainAsset.blockchain.networkId,
-        providerUrl: getProviderUrl(assetToSend.blockchainAsset.blockchain.id),
         tokenAddress: token.address,
         fromAddress: token.walletAddress,
         toAddress: token.walletAddress,
@@ -241,6 +253,17 @@ const Send: React.FC<Props> = ({
         transferTx,
       );
       setGasFeeEstimate(transferTxGas.networkFee?.amount || '0');
+    } else if (token.type === TokenType.Spl && token.address) {
+      // TODO - potentially update this gas estimation
+      const transferGas = await getTransferGasEstimate(
+        assetToSend,
+        accessToken,
+        // Doesn't matter what the recipient and amount are, just need to get the fee estimate
+        assetToSend.address,
+        // Use a small test amount to measure gas
+        '0.0001',
+      );
+      setGasFeeEstimate(transferGas.networkFee?.amount || '0');
     } else {
       // retrieve gas for a transfer
       const transferGas = await getTransferGasEstimate(
@@ -347,6 +370,7 @@ const Send: React.FC<Props> = ({
           requireBalance={true}
           supportedAssetList={config.WALLETS.CHAINS.SEND}
           supportErc20={true}
+          supportSpl={isSplTokenEnabled}
         />
       </Box>
     );

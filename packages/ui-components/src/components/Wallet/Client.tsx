@@ -30,7 +30,7 @@ import {
 } from '../../actions';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
-import type {SerializedWalletBalance} from '../../lib';
+import type {SerializedWalletBalance, TokenEntry} from '../../lib';
 import {
   DomainFieldTypes,
   WALLET_CARD_HEIGHT,
@@ -236,6 +236,7 @@ export const Client: React.FC<ClientProps> = ({
   const [isBuy, setIsBuy] = useState(false);
   const [isSwap, setIsSwap] = useState(false);
   const [tabValue, setTabValue] = useState(ClientTabType.Portfolio);
+  const [selectedToken, setSelectedToken] = useState<TokenEntry>();
 
   // domain list state
   const [domains, setDomains] = useState<string[]>([]);
@@ -401,6 +402,18 @@ export const Client: React.FC<ClientProps> = ({
     enqueueSnackbar(t('manage.updatedDomainSuccess'), {variant: 'success'});
   };
 
+  const handleTokenClicked = (token: TokenEntry) => {
+    // set the token
+    setSelectedToken(token);
+
+    // choose wether to show the receive or send screen
+    if (token.balance > 0) {
+      handleClickedSend();
+    } else {
+      handleClickedReceive();
+    }
+  };
+
   const handleClickedSend = () => {
     setIsSend(true);
     setIsReceive(false);
@@ -435,6 +448,7 @@ export const Client: React.FC<ClientProps> = ({
     setIsReceive(false);
     setIsBuy(false);
     setIsSwap(false);
+    setSelectedToken(undefined);
 
     // refresh portfolio data
     await onRefresh();
@@ -467,7 +481,11 @@ export const Client: React.FC<ClientProps> = ({
           </Box>
         ) : isReceive ? (
           <Box className={classes.panelContainer}>
-            <Receive onCancelClick={handleCancel} wallets={wallets} />
+            <Receive
+              onCancelClick={handleCancel}
+              wallets={wallets}
+              initialSelectedToken={selectedToken}
+            />
           </Box>
         ) : isBuy ? (
           <Box className={classes.panelContainer}>
@@ -573,6 +591,7 @@ export const Client: React.FC<ClientProps> = ({
                     wallets={wallets}
                     isOwner={true}
                     verified={true}
+                    onTokenClick={handleTokenClicked}
                   />
                 </TabPanel>
                 <TabPanel

@@ -1,27 +1,52 @@
 import {erc20Abi} from 'abitype/abis';
 import {Web3} from 'web3';
+import {HttpProvider} from 'web3-providers-http';
+
+import config from '@unstoppabledomains/config';
+
+interface Web3Auth {
+  chainSymbol: string;
+  ownerAddress: string;
+  accessToken: string;
+}
 
 export const getContract = (
-  providerUrl: string,
-  tokenAddress: string,
+  address: string,
+  auth: Web3Auth,
   fromAddress?: string,
 ) => {
   // ERC-20 contract instance for sending a specific token
-  const web3 = getWeb3(providerUrl);
-  return new web3.eth.Contract(erc20Abi, tokenAddress, {
+  const web3 = getWeb3(auth);
+  return new web3.eth.Contract(erc20Abi, address, {
     from: fromAddress,
   });
 };
 
 export const getContractDecimals = async (
-  providerUrl: string,
   address: string,
+  auth: Web3Auth,
 ): Promise<number> => {
-  const erc20Contract = getContract(providerUrl, address);
+  const erc20Contract = getContract(address, auth);
   const decimals = await erc20Contract.methods.decimals.call([]).call();
   return Number(decimals);
 };
 
-export const getWeb3 = (providerUrl: string): Web3 => {
-  return new Web3(providerUrl);
+export const getWeb3 = (auth: Web3Auth): Web3 => {
+  // validate the auth parameters
+  if (!auth.accessToken || !auth.chainSymbol || !auth.ownerAddress) {
+    throw new Error('invalid web3 RPC credentials');
+  }
+
+  // build a web3 provider to the RPC proxy, including the wallet specific
+  // auth data to validate the request
+  return new Web3(
+    new HttpProvider(
+      `${config.PROFILE.HOST_URL}/user/${auth.ownerAddress}/wallet/rpc?symbol=${auth.chainSymbol}`,
+      {
+        providerOptions: {
+          headers: {['Authorization']: `Bearer ${auth.accessToken}`},
+        },
+      },
+    ),
+  );
 };

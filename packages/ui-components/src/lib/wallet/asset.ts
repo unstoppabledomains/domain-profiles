@@ -34,25 +34,42 @@ export const getAsset = (
 
     // use token if provided
     if (opts?.token) {
-      return (
-        a.blockchainAsset.blockchain.name.toLowerCase() ===
-          opts.token.walletName.toLowerCase() &&
-        a.blockchainAsset.symbol.toLowerCase() ===
-          (opts.token.type === TokenType.Erc20
+      const isToken =
+        opts.token.type === TokenType.Erc20 ||
+        opts.token.type === TokenType.Spl;
+      const tokenAsset =
+        opts.token.walletName.toLowerCase() ===
+          a.blockchainAsset.blockchain.name.toLowerCase() &&
+        [
+          a.blockchainAsset.symbol.toLowerCase(),
+          a.blockchainAsset.blockchain.id.toLowerCase(),
+        ].includes(
+          isToken
             ? opts.token.symbol.toLowerCase()
-            : opts.token.ticker.toLowerCase()) &&
-        a.address.toLowerCase() === opts.token.walletAddress.toLowerCase()
-      );
+            : opts.token.ticker.toLowerCase(),
+        ) &&
+        a.address.toLowerCase() === opts.token.walletAddress.toLowerCase();
+      if (tokenAsset) {
+        return tokenAsset;
+      }
     }
 
-    // use default blockchain symbol
-    return (
-      a.blockchainAsset.blockchain.id.toLowerCase() ===
-        config.WALLETS.SIGNATURE_SYMBOL.split('/')[0].toLowerCase() &&
-      a.blockchainAsset.symbol.toLowerCase() ===
-        config.WALLETS.SIGNATURE_SYMBOL.split('/')[1].toLowerCase() &&
-      a.address.toLowerCase() === opts?.address?.toLowerCase()
-    );
+    // find by address on default signing assets
+    const SIGNATURE_SYMBOLS = config.WALLETS.SIGNATURE_SYMBOL.split(',');
+    for (const SIGNATURE_SYMBOL of SIGNATURE_SYMBOLS) {
+      const defaultAsset =
+        a.blockchainAsset.blockchain.id.toLowerCase() ===
+          SIGNATURE_SYMBOL.split('/')[0].toLowerCase() &&
+        a.blockchainAsset.symbol.toLowerCase() ===
+          SIGNATURE_SYMBOL.split('/')[1].toLowerCase() &&
+        a.address.toLowerCase() === opts?.address?.toLowerCase();
+      if (defaultAsset) {
+        return defaultAsset;
+      }
+    }
+
+    // asset not found
+    return false;
   });
 
   // fallback to first element if asset is not found, and no options have

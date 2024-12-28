@@ -44,24 +44,6 @@ type Props = {
   variant?: 'contained' | 'outlined';
 };
 
-export const LetsGetStartedCta: React.FC<Props> = props => {
-  const {classes, cx} = useStyles();
-  const [t] = useTranslationContext();
-  return (
-    <Box className={classes.container}>
-      <Typography variant="h5" mb={1}>
-        {t('wallet.letsGetStarted')}
-      </Typography>
-      <Box className={cx(classes.content, classes.centered)}>
-        <Box mb={1} className={classes.content}>
-          <BuyCryptoButton {...props} />
-        </Box>
-        <ReceiveCryptoButton {...props} />
-      </Box>
-    </Box>
-  );
-};
-
 export const BuyCryptoButton: React.FC<Props> = ({
   onBuyClicked,
   color = 'primary',
@@ -87,6 +69,24 @@ export const BuyCryptoButton: React.FC<Props> = ({
         </Typography>
       </Box>
     </Button>
+  );
+};
+
+export const LetsGetStartedCta: React.FC<Props> = props => {
+  const {classes, cx} = useStyles();
+  const [t] = useTranslationContext();
+  return (
+    <Box className={classes.container}>
+      <Typography variant="h5" mb={1}>
+        {t('wallet.letsGetStarted')}
+      </Typography>
+      <Box className={cx(classes.content, classes.centered)}>
+        <Box mb={1} className={classes.content}>
+          <BuyCryptoButton {...props} />
+        </Box>
+        <ReceiveCryptoButton {...props} />
+      </Box>
+    </Box>
   );
 };
 

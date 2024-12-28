@@ -30,6 +30,7 @@
     "@ipld/car": "^5.2.5",
     "@pushprotocol/restapi": "1.6.6",
     "@pushprotocol/socket": "^0.5.1",
+    "@solana/spl-token": "^0.4.9",
     "@solana/wallet-adapter-phantom": "^0.9.9",
     "@solana/web3.js": "^1.50.1",
     "@swc/cli": "^0.1.57",

@@ -146,6 +146,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   isError,
   isOwner,
   verified,
+  onTokenClick,
 }) => {
   const {classes, cx} = useStyles({
     palette: isOwner ? WalletPaletteOwner : WalletPalettePublic,
@@ -170,8 +171,11 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
     .map(item => item.value)
     .reduce((p, c) => p + c, 0);
 
-  const handleClick = (link: string) => {
-    window.open(link, '_blank');
+  const handleClick = (token: TokenEntry) => {
+    if (onTokenClick) {
+      return onTokenClick(token);
+    }
+    window.open(token.walletBlockChainLink, '_blank');
   };
 
   const handleCopyAddress = (wallet: SerializedWalletBalance) => {
@@ -298,7 +302,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
                     <Token
                       isOwner
                       token={token}
-                      onClick={() => handleClick(token.walletBlockChainLink)}
+                      onClick={() => handleClick(token)}
                       showGraph
                     />
                   </Box>
@@ -337,4 +341,5 @@ export type TokensPortfolioProps = {
   isError?: boolean;
   isOwner?: boolean;
   verified: boolean;
+  onTokenClick?: (token: TokenEntry) => void;
 };

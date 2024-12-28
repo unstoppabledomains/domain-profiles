@@ -37,6 +37,10 @@ export default function getProductionConfig(): ConfigOverride {
         PROXY_READER_ADDRESS: '0xA3f32c8cd786dc089Bd1fC175F2707223aeE5d00',
         OPEN_SEA_BASE_URL: 'https://opensea.io/assets/matic/',
       },
+      SOL: {
+        JSON_RPC_API_URL:
+          'https://solana-mainnet.g.alchemy.com/v2/NHnzEesdDuX90lFZRMOa4ZSE0wIR-BAo',
+      },
     },
     LOGIN_WITH_UNSTOPPABLE: {
       CLIENT_ID: 'c3af833f-3fd5-46fd-ac3e-bfc136624d1b',

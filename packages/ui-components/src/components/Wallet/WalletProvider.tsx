@@ -252,15 +252,20 @@ export const WalletProvider: React.FC<
   }, []);
 
   useEffect(() => {
-    if (initialState) {
-      setConfigState(initialState);
+    if (!initialState) {
+      return;
     }
+    setConfigState(initialState);
+    void loadFromState();
+  }, [initialState]);
+
+  useEffect(() => {
     if (recoveryToken || emailAddress) {
       if (!accessToken && !custodySecret) {
         setConfigState(WalletConfigState.PasswordEntry);
       }
     }
-  }, [accessToken, custodySecret, initialState, recoveryToken, emailAddress]);
+  }, [accessToken, custodySecret, recoveryToken, emailAddress]);
 
   useEffect(() => {
     if (!router?.query) {

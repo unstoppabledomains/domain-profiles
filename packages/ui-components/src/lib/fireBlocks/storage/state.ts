@@ -1,5 +1,7 @@
 import {getAccountAssets} from '../../../actions/fireBlocksActions';
+import {getBlockchainName} from '../../../components/Manage/common/verification/types';
 import {notifyEvent} from '../../error';
+import type {CustodyWallet} from '../../types';
 import type {BootstrapState} from '../../types/fireBlocks';
 import {
   BootstrapStateCurrentKey,
@@ -23,17 +25,19 @@ export const saveBootstrapState = async (
   saveState: (
     state: Record<string, Record<string, string>>,
   ) => void | Promise<void>,
-  accessToken: string,
+  accessToken?: string,
 ): Promise<BootstrapState> => {
   try {
     // saturate values if required
-    if (!values.assets || values.assets.length === 0) {
+    if (accessToken && (!values.assets || values.assets.length === 0)) {
       values.assets = (await getAccountAssets(accessToken)) || [];
     }
 
     // save the state values
-    state[`${BootstrapStatePrefix}-${values.deviceId}`] =
-      values as unknown as Record<string, string>;
+    if (values.deviceId) {
+      state[`${BootstrapStatePrefix}-${values.deviceId}`] =
+        values as unknown as Record<string, string>;
+    }
     state[`${BootstrapStatePrefix}-${BootstrapStateCurrentKey}`] =
       values as unknown as Record<string, string>;
     await saveState({...state});
@@ -47,4 +51,48 @@ export const saveBootstrapState = async (
     });
     throw e;
   }
+};
+
+export const saveMpcCustodyState = async (
+  state: Record<string, Record<string, string>>,
+  saveState: (
+    state: Record<string, Record<string, string>>,
+  ) => void | Promise<void>,
+  w: CustodyWallet,
+  secret?: string,
+) => {
+  // initialize empty address map if necessary
+  if (!w.addresses) {
+    w.addresses = {};
+  }
+  // update bootstrap state with custody wallet data. The fireblocks
+  // data will remain empty until the user takes custody
+  await saveBootstrapState(
+    {
+      bootstrapToken: '',
+      refreshToken: '',
+      deviceId: '',
+      assets: Object.entries(w.addresses).map(addressEntry => ({
+        '@type': w!.state,
+        id: addressEntry[0],
+        address: addressEntry[1],
+        blockchainAsset: {
+          '@type': w!.state,
+          id: addressEntry[0],
+          name: getBlockchainName(addressEntry[0]),
+          symbol: addressEntry[0],
+          blockchain: {
+            id: addressEntry[0],
+            name: getBlockchainName(addressEntry[0]),
+          },
+        },
+      })),
+      custodyState: {
+        ...w,
+        secret,
+      },
+    },
+    state,
+    saveState,
+  );
 };

@@ -1,6 +1,7 @@
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
 import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
+import EnhancedEncryptionOutlinedIcon from '@mui/icons-material/EnhancedEncryptionOutlined';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import Logout from '@mui/icons-material/Logout';
 import MedicalServicesOutlinedIcon from '@mui/icons-material/MedicalServicesOutlined';
@@ -30,10 +31,12 @@ interface Props {
   onSettingsClicked?: () => void;
   onSupportClicked?: () => void;
   onMessagingClicked?: () => void;
+  onClaimWalletClicked?: () => void;
   onLogout?: () => void;
   onDisconnect?: () => void;
   onHideMenu: () => void;
   marginTop?: number;
+  hideLogout?: boolean;
 }
 
 const useStyles = makeStyles<{marginTop?: number}>()(
@@ -67,6 +70,7 @@ const useStyles = makeStyles<{marginTop?: number}>()(
 const DropDownMenu: React.FC<Props> = ({
   authDomain,
   marginTop,
+  hideLogout,
   onGetDomainClicked,
   onDomainsClicked,
   onWalletClicked,
@@ -74,6 +78,7 @@ const DropDownMenu: React.FC<Props> = ({
   onSettingsClicked,
   onSupportClicked,
   onMessagingClicked,
+  onClaimWalletClicked,
   onDisconnect,
   onLogout,
   onHideMenu,
@@ -222,6 +227,18 @@ const DropDownMenu: React.FC<Props> = ({
           </Typography>
         </div>
       )}
+      {onClaimWalletClicked && (
+        <div
+          data-testid={`claim-wallet-button`}
+          className={classes.container}
+          onClick={onClaimWalletClicked}
+        >
+          <EnhancedEncryptionOutlinedIcon className={classes.settingsIcon} />
+          <Typography className={cx(classes.font)} color="text.secondary">
+            {t('wallet.createPassword')}
+          </Typography>
+        </div>
+      )}
       {onSupportClicked && (
         <div
           data-testid={`support-button`}
@@ -234,19 +251,21 @@ const DropDownMenu: React.FC<Props> = ({
           </Typography>
         </div>
       )}
-      <div
-        data-testid={`signout-button`}
-        className={classes.container}
-        onClick={onDisconnect ? handleDisconnect : handleLogout}
-      >
-        <Logout className={cx(classes.settingsIcon, classes.red)} />
-        <Typography
-          className={cx(classes.font, classes.red)}
-          color="text.secondary"
+      {!hideLogout && (
+        <div
+          data-testid={`signout-button`}
+          className={classes.container}
+          onClick={onDisconnect ? handleDisconnect : handleLogout}
         >
-          {onDisconnect ? t('header.disconnect') : t('header.signOut')}
-        </Typography>
-      </div>
+          <Logout className={cx(classes.settingsIcon, classes.red)} />
+          <Typography
+            className={cx(classes.font, classes.red)}
+            color="text.secondary"
+          >
+            {onDisconnect ? t('header.disconnect') : t('header.signOut')}
+          </Typography>
+        </div>
+      )}
     </Card>
   );
 };

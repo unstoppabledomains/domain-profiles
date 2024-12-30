@@ -5,6 +5,7 @@ import {
   getAccounts,
 } from '../actions/fireBlocksActions';
 import {localStorageWrapper} from '../components/Chat/storage';
+import {CustodyState} from '../lib';
 import {notifyEvent} from '../lib/error';
 import {getBootstrapState} from '../lib/fireBlocks/storage/state';
 import {isChromeStorageSupported} from './useChromeStorage';
@@ -26,6 +27,11 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
       const clientState = getBootstrapState(state);
       if (!clientState) {
         throw new Error('invalid configuration');
+      }
+
+      // cannot use access token in custody state
+      if (clientState.custodyState?.state === CustodyState.CUSTODY) {
+        throw new Error('access token not available in custody state');
       }
 
       // retrieve from chrome storage if available

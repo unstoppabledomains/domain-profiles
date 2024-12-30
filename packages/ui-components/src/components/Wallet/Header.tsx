@@ -180,6 +180,7 @@ type Props = {
   onLogout?: () => void;
   onDisconnect?: () => void;
   onMessagePopoutClick?: (address?: string) => void;
+  onClaimWalletClick?: () => void;
 };
 
 export const Header: React.FC<Props> = ({
@@ -199,6 +200,7 @@ export const Header: React.FC<Props> = ({
   onSettingsClick,
   onMessagesClick,
   onMessagePopoutClick,
+  onClaimWalletClick,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -291,9 +293,7 @@ export const Header: React.FC<Props> = ({
         <Box className={classes.descriptionContainer}>
           <Typography variant="body2" className={classes.descriptionText}>
             {isMobile
-              ? `${t('wallet.title')}: ${t(
-                  'manage.cryptoWalletDescriptionShort',
-                ).toLowerCase()}`
+              ? t('manage.cryptoWalletDescriptionMobile')
               : t('manage.cryptoWalletDescription')}
           </Typography>
           {!isMobile && (
@@ -379,7 +379,7 @@ export const Header: React.FC<Props> = ({
       </Box>
       {isLoaded && (
         <Box className={classes.optionsContainer}>
-          {showMessages && (
+          {showMessages && !!accessToken && (
             <UnstoppableMessaging
               address={address}
               silentOnboard={!isChromeStorageSupported('local')}
@@ -402,12 +402,18 @@ export const Header: React.FC<Props> = ({
           onMessagingClicked={
             showMessages && isChatReady ? handleMessagingClicked : undefined
           }
-          onSettingsClicked={onSettingsClick}
-          onRecoveryLinkClicked={handleRecoveryKitClicked}
+          onSettingsClicked={accessToken ? onSettingsClick : undefined}
+          onRecoveryLinkClicked={
+            accessToken ? handleRecoveryKitClicked : undefined
+          }
           onLogout={handleLogout}
-          onDisconnect={onDisconnect ? handleDisconnect : undefined}
+          onDisconnect={
+            onDisconnect && !!accessToken ? handleDisconnect : undefined
+          }
           onHideMenu={() => setIsMenuOpen(false)}
           onSupportClicked={handleSupportClicked}
+          onClaimWalletClicked={onClaimWalletClick}
+          hideLogout={!accessToken}
         />
       )}
       {domainToManage && (

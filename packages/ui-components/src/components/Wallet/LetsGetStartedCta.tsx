@@ -29,10 +29,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   button: {
     width: '100%',
+    padding: theme.spacing(2),
   },
   icon: {
     width: '40px',
     height: '40px',
+    marginLeft: theme.spacing(1),
     marginRight: theme.spacing(1),
   },
 }));
@@ -77,7 +79,7 @@ export const LetsGetStartedCta: React.FC<Props> = props => {
   const [t] = useTranslationContext();
   return (
     <Box className={classes.container}>
-      <Typography variant="h5" mb={1}>
+      <Typography variant="h5" mb={3}>
         {t('wallet.letsGetStarted')}
       </Typography>
       <Box className={cx(classes.content, classes.centered)}>

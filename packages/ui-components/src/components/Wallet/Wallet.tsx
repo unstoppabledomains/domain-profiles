@@ -2,22 +2,34 @@ import Box from '@mui/material/Box';
 import type {Theme} from '@mui/material/styles';
 import React, {useState} from 'react';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {AccessWalletModal} from '.';
-import {useWeb3Context} from '../../hooks';
+import {useFireblocksState, useWeb3Context} from '../../hooks';
 import type {Web3Dependencies} from '../../lib';
-import {isDomainValidForManagement} from '../../lib';
+import {
+  CustodyState,
+  getBootstrapState,
+  isDomainValidForManagement,
+  useTranslationContext,
+} from '../../lib';
 import type {DomainProfileTabType} from '../Manage';
 import type {ManageTabProps} from '../Manage/common/types';
-import {Configuration, WalletConfigState} from './Configuration';
+import Modal from '../Modal';
+import ClaimWalletModal from './ClaimWalletModal';
 import {Header} from './Header';
+import {WalletConfigState, WalletProvider} from './WalletProvider';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
+  },
+  modalTitleStyle: {
+    color: 'inherit',
+    alignSelf: 'center',
   },
 }));
 
@@ -33,15 +45,17 @@ export const Wallet: React.FC<
     disableBasicHeader?: boolean;
     fullScreenModals?: boolean;
     forceRememberOnDevice?: boolean;
+    isNewUser?: boolean;
+    loginClicked?: boolean;
     setAuthAddress?: (v: string) => void;
     onLoginInitiated?: (emailAddress: string, password: string) => void;
     onError?: () => void;
     onLogout?: () => void;
     onDisconnect?: () => void;
+    onClaimComplete?: (emailAddress: string, password: string) => void;
     onSettingsClick?: () => void;
     onMessagesClick?: () => void;
     onMessagePopoutClick?: (address?: string) => void;
-    isNewUser?: boolean;
   }
 > = ({
   emailAddress,
@@ -55,12 +69,14 @@ export const Wallet: React.FC<
   disableInlineEducation,
   disableBasicHeader,
   isNewUser,
+  loginClicked,
   fullScreenModals,
   forceRememberOnDevice,
   onUpdate,
   onError,
   onLoginInitiated,
   onLogout,
+  onClaimComplete,
   onDisconnect,
   onSettingsClick,
   onMessagesClick,
@@ -69,14 +85,25 @@ export const Wallet: React.FC<
   setButtonComponent,
 }) => {
   const {classes} = useStyles();
+  const [t] = useTranslationContext();
+  const [state] = useFireblocksState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isFetching, setIsFetching] = useState<boolean>();
+  const [isCustodyWallet, setIsCustodyWallet] = useState<boolean>();
   const [isWeb3DepsLoading, setIsWeb3DepsLoading] = useState(true);
   const [isHeaderClicked, setIsHeaderClicked] = useState(false);
+  const [showClaimWalletModal, setShowClaimWalletModal] = useState<boolean>();
   const [accessToken, setAccessToken] = useState<string>();
   const {setWeb3Deps} = useWeb3Context();
 
-  const handleWalletLoaded = (v: boolean) => {
+  const handleWalletLoaded = async (v: boolean) => {
+    const bootstrapState = getBootstrapState(state);
+    if (bootstrapState?.custodyState?.state === CustodyState.CUSTODY) {
+      setIsCustodyWallet(true);
+      if (setAuthAddress) {
+        setAuthAddress(config.UNSTOPPABLE_CONTRACT_ADDRESS);
+      }
+    }
     setIsLoaded(v);
   };
 
@@ -91,11 +118,27 @@ export const Wallet: React.FC<
   };
 
   const handleAccessToken = (
-    t: DomainProfileTabType,
-    v: {accessToken: string},
+    tab: DomainProfileTabType,
+    data: {accessToken: string},
   ) => {
-    setAccessToken(v.accessToken);
-    onUpdate(t, v);
+    setAccessToken(data.accessToken);
+    onUpdate(tab, data);
+  };
+
+  const handleClaimWallet = () => {
+    setShowClaimWalletModal(true);
+  };
+
+  const handleClaimComplete = (email: string, password: string) => {
+    if (onClaimComplete) {
+      onClaimComplete(email, password);
+    } else {
+      handleClaimModalClose();
+    }
+  };
+
+  const handleClaimModalClose = () => {
+    setShowClaimWalletModal(false);
   };
 
   return (
@@ -116,11 +159,12 @@ export const Wallet: React.FC<
           onSettingsClick={onSettingsClick}
           onMessagesClick={onMessagesClick}
           onMessagePopoutClick={onMessagePopoutClick}
+          onClaimWalletClick={accessToken ? undefined : handleClaimWallet}
           fullScreenModals={fullScreenModals}
           domain={isDomainValidForManagement(domain) ? domain : undefined}
         />
       )}
-      <Configuration
+      <WalletProvider
         mode={mode}
         emailAddress={emailAddress}
         recoveryPhrase={recoveryPhrase}
@@ -131,6 +175,7 @@ export const Wallet: React.FC<
         onLoaded={handleWalletLoaded}
         onLoginInitiated={onLoginInitiated}
         onUpdate={handleAccessToken}
+        onClaimWallet={handleClaimWallet}
         setButtonComponent={setButtonComponent}
         setIsFetching={setIsFetching}
         isHeaderClicked={isHeaderClicked}
@@ -138,12 +183,13 @@ export const Wallet: React.FC<
         setAuthAddress={setAuthAddress}
         disableInlineEducation={disableInlineEducation}
         fullScreenModals={fullScreenModals}
-        forceRememberOnDevice={forceRememberOnDevice}
+        forceRememberOnDevice={forceRememberOnDevice || isNewUser}
+        loginClicked={loginClicked}
         initialState={
-          isNewUser ? WalletConfigState.OnboardWithEmail : undefined
+          isNewUser ? WalletConfigState.OnboardWithCustody : undefined
         }
       />
-      {isLoaded && isWeb3DepsLoading && (
+      {isLoaded && !isCustodyWallet && isWeb3DepsLoading && (
         <AccessWalletModal
           prompt={true}
           address={address}
@@ -153,6 +199,17 @@ export const Wallet: React.FC<
           isMpcWallet={true}
           isMpcPromptDisabled={true}
         />
+      )}
+      {showClaimWalletModal && (
+        <Modal
+          title={t('wallet.claimWalletTitle')}
+          open={true}
+          fullScreen={fullScreenModals}
+          titleStyle={classes.modalTitleStyle}
+          onClose={handleClaimModalClose}
+        >
+          <ClaimWalletModal onComplete={handleClaimComplete} />
+        </Modal>
       )}
     </Box>
   );

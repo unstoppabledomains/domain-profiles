@@ -146,6 +146,7 @@ export type Config = {
       APPLE_URL: string;
     };
     MAX_CLOCK_DRIFT_MS: number;
+    LAUNCH_API_KEY: string;
   };
   VERIFICATION_SUPPORTED: string[];
   PUSH: {

@@ -163,15 +163,15 @@ export interface Parameters {
   message: string;
 }
 
-export interface PostSignInResponse {
+export interface Result {
+  signature: string;
+}
+
+export interface TokenRefreshResponse {
   '@type': string;
   accessToken: string;
   refreshToken?: string;
   status: 'READY' | 'MFA_OTP_REQUIRED' | 'MFA_EMAIL_REQUIRED';
   code?: string;
   message?: string;
-}
-
-export interface Result {
-  signature: string;
 }

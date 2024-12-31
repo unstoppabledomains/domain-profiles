@@ -32,7 +32,7 @@ const WalletPage = () => {
   const {classes, cx} = useStyles({});
   const [t] = useTranslationContext();
   const {web3Deps} = useWeb3Context();
-  const {query: params, route} = useRouter();
+  const {query: params} = useRouter();
   const isMounted = useIsMounted();
   const theme = useTheme();
   const [isLoaded, setIsLoaded] = useState(false);
@@ -69,7 +69,7 @@ const WalletPage = () => {
 
   // load the existing wallet if singed in
   useEffect(() => {
-    if (!isMounted() || !route) {
+    if (!isMounted() || !params) {
       return;
     }
 
@@ -136,7 +136,7 @@ const WalletPage = () => {
       }
     };
     void loadWallet();
-  }, [isMounted, authComplete, route]);
+  }, [isMounted, authComplete, params]);
 
   const handleAuthComplete = () => {
     setAuthComplete(true);

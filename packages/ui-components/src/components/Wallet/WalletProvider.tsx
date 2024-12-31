@@ -25,7 +25,8 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useFeatureFlags} from '../../actions';
 import {
-  sendRecoveryEmail,
+  recoverToken,
+  recoverTokenOtp,
   signIn,
   signInOtp,
 } from '../../actions/fireBlocksActions';
@@ -56,7 +57,7 @@ import {
   saveMpcCustodyState,
 } from '../../lib/fireBlocks/storage/state';
 import {sleep} from '../../lib/sleep';
-import type {PostSignInResponse} from '../../lib/types/fireBlocks';
+import type {TokenRefreshResponse} from '../../lib/types/fireBlocks';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {localStorageWrapper} from '../Chat/storage';
@@ -213,7 +214,7 @@ export const WalletProvider: React.FC<
 
   // wallet recovery state variables
   const {accessToken, setAccessToken} = useWeb3Context();
-  const [loginState, setLoginState] = useState<PostSignInResponse>();
+  const [loginState, setLoginState] = useState<TokenRefreshResponse>();
   const [bootstrapCode, setBootstrapCode] = useState<string>();
   const [recoveryPhrase, setRecoveryPhrase] = useState(initialRecoveryPhrase);
   const [recoveryPhraseConfirmation, setRecoveryPhraseConfirmation] = useState(
@@ -319,7 +320,7 @@ export const WalletProvider: React.FC<
       configState === WalletConfigState.OnboardWithCustody ||
       (configState === WalletConfigState.PasswordEntry
         ? isDirty &&
-          emailAddress &&
+          (emailAddress || recoveryToken) &&
           recoveryPhrase &&
           !errorMessage &&
           isRecoveryConfirmed
@@ -935,10 +936,12 @@ export const WalletProvider: React.FC<
       return;
     }
 
-    // validate the email address
-    if (!emailAddress || !isEmailValid(emailAddress)) {
-      setErrorMessage(t('common.enterValidEmail'));
-      return;
+    // validate the email address unless in recovery mode
+    if (!recoverToken) {
+      if (!emailAddress || !isEmailValid(emailAddress)) {
+        setErrorMessage(t('common.enterValidEmail'));
+        return;
+      }
     }
 
     // validate password strength
@@ -950,44 +953,48 @@ export const WalletProvider: React.FC<
     }
 
     // check onboarding status and send the OTP
-    const [onboardStatus, signInStatus] = await Promise.all([
-      getOnboardingStatus(emailAddress),
-      signIn(emailAddress, recoveryPhrase),
+    const [onboardStatus, tokenStatus] = await Promise.all([
+      emailAddress ? getOnboardingStatus(emailAddress) : undefined,
+      recoveryToken
+        ? recoverToken(recoveryToken)
+        : emailAddress
+        ? signIn(emailAddress, recoveryPhrase)
+        : undefined,
     ]);
 
     // validate onboarding status
-    if (!onboardStatus) {
+    if (!onboardStatus && !recoveryToken) {
       setConfigState(WalletConfigState.NeedsOnboarding);
       return;
     }
 
     // raise event for login initiated if requested, which may be required
     // for state management in other parent components
-    if (onLoginInitiated) {
+    if (onLoginInitiated && emailAddress) {
       onLoginInitiated(emailAddress, recoveryPhrase);
     }
 
     // validate the sign in status
-    if (!signInStatus?.accessToken || signInStatus.message) {
+    if (!tokenStatus?.accessToken || tokenStatus.message) {
       notifyEvent('sign in error', 'error', 'Wallet', 'Authorization', {
-        meta: signInStatus,
+        meta: tokenStatus,
       });
       setErrorMessage(t('wallet.signInError'));
       return;
     }
 
     // collect 2FA code if necessary
-    if (signInStatus.status === 'READY') {
+    if (tokenStatus.status === 'READY') {
       // 2FA not required, which is not an expected state but
       // needs to be handled
-      setAccessToken(signInStatus.accessToken);
+      setAccessToken(tokenStatus.accessToken);
       setConfigState(WalletConfigState.Complete);
     } else if (
-      signInStatus.status === 'MFA_EMAIL_REQUIRED' ||
-      signInStatus.status === 'MFA_OTP_REQUIRED'
+      tokenStatus.status === 'MFA_EMAIL_REQUIRED' ||
+      tokenStatus.status === 'MFA_OTP_REQUIRED'
     ) {
       // 2FA required
-      setLoginState(signInStatus);
+      setLoginState(tokenStatus);
       setConfigState(WalletConfigState.OtpEntry);
     } else {
       // unexpected state, show an error to the user and log the details
@@ -998,7 +1005,7 @@ export const WalletProvider: React.FC<
         'Wallet',
         'Authorization',
         {
-          meta: signInStatus,
+          meta: tokenStatus,
         },
       );
       setErrorMessage(t('wallet.signInError'));
@@ -1027,19 +1034,21 @@ export const WalletProvider: React.FC<
     }
 
     // verify the user provided OTP
-    const signInOtpResponse = await signInOtp(
-      loginState.accessToken,
-      loginState.status === 'MFA_EMAIL_REQUIRED' ? 'EMAIL' : 'OTP',
-      bootstrapCode,
-    );
-    if (!signInOtpResponse?.accessToken || !signInOtpResponse?.refreshToken) {
-      setErrorMessage('wallet.signInOtpError');
+    const otpResponse = recoveryToken
+      ? await recoverTokenOtp(
+          loginState.accessToken,
+          loginState.status === 'MFA_EMAIL_REQUIRED' ? 'EMAIL' : 'OTP',
+          bootstrapCode,
+          recoveryPhrase,
+        )
+      : await signInOtp(
+          loginState.accessToken,
+          loginState.status === 'MFA_EMAIL_REQUIRED' ? 'EMAIL' : 'OTP',
+          bootstrapCode,
+        );
+    if (!otpResponse?.accessToken || !otpResponse?.refreshToken) {
+      setErrorMessage(t('wallet.signInOtpError'));
       return;
-    }
-
-    // if this is a recovery, also send a new recovery email
-    if (recoveryToken) {
-      await sendRecoveryEmail(signInOtpResponse.accessToken, recoveryPhrase);
     }
 
     // store the wallet service JWT tokens at desired persistence level
@@ -1047,7 +1056,7 @@ export const WalletProvider: React.FC<
       {
         assets: [],
         bootstrapToken: loginState.accessToken,
-        refreshToken: signInOtpResponse.refreshToken,
+        refreshToken: otpResponse.refreshToken,
         deviceId: '',
         custodyState: {
           state: CustodyState.SELF_CUSTODY,
@@ -1056,7 +1065,7 @@ export const WalletProvider: React.FC<
       },
       state,
       saveState,
-      signInOtpResponse.accessToken,
+      otpResponse.accessToken,
     );
 
     // set local storage values if a MATIC address is available
@@ -1068,7 +1077,7 @@ export const WalletProvider: React.FC<
     }
 
     // set component state
-    setAccessToken(signInOtpResponse.accessToken);
+    setAccessToken(otpResponse.accessToken);
     setConfigState(WalletConfigState.Complete);
   };
 
@@ -1094,8 +1103,7 @@ export const WalletProvider: React.FC<
               </Markdown>
             </Typography>
           </Box>
-        ) : [WalletConfigState.OtpEntry].includes(configState) &&
-          emailAddress ? (
+        ) : [WalletConfigState.OtpEntry].includes(configState) ? (
           <Box>
             <Typography
               variant="body1"
@@ -1104,8 +1112,13 @@ export const WalletProvider: React.FC<
             >
               <Markdown>
                 {recoveryToken
-                  ? t('wallet.resetPasswordConfirmation', {emailAddress})
-                  : t('wallet.bootstrapCodeDescription', {emailAddress})}
+                  ? t('wallet.resetPasswordConfirmation', {
+                      emailAddress: t('common.yourEmailAddress'),
+                    })
+                  : t('wallet.bootstrapCodeDescription', {
+                      emailAddress:
+                        emailAddress || t('common.yourEmailAddress'),
+                    })}
               </Markdown>
             </Typography>
             <ManageInput
@@ -1178,20 +1191,21 @@ export const WalletProvider: React.FC<
             {configState !== WalletConfigState.OnboardWithCustody ? (
               <Box mt={5}>
                 <form>
-                  {(!initialEmailAddress || initialRecoveryPhrase) && (
-                    <ManageInput
-                      mt={2}
-                      id="emailAddress"
-                      value={emailAddress}
-                      autoComplete="username"
-                      label={t('wallet.emailAddress')}
-                      placeholder={t('common.enterYourEmail')}
-                      onChange={handleInputChange}
-                      onKeyDown={handleKeyDown}
-                      stacked={false}
-                      disabled={isSaving}
-                    />
-                  )}
+                  {(!initialEmailAddress || initialRecoveryPhrase) &&
+                    !recoveryToken && (
+                      <ManageInput
+                        mt={2}
+                        id="emailAddress"
+                        value={emailAddress}
+                        autoComplete="username"
+                        label={t('wallet.emailAddress')}
+                        placeholder={t('common.enterYourEmail')}
+                        onChange={handleInputChange}
+                        onKeyDown={handleKeyDown}
+                        stacked={false}
+                        disabled={isSaving}
+                      />
+                    )}
                   <ManageInput
                     mt={2}
                     id="recoveryPhrase"

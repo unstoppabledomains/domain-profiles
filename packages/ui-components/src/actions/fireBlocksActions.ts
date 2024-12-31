@@ -30,7 +30,7 @@ import type {
   GetOperationResponse,
   GetOperationStatusResponse,
   GetTokenResponse,
-  PostSignInResponse,
+  TokenRefreshResponse,
 } from '../lib/types/fireBlocks';
 import {EIP_712_KEY} from '../lib/types/fireBlocks';
 import {getAsset} from '../lib/wallet/asset';
@@ -420,13 +420,38 @@ export const getTransferOperationResponse = (
   );
 };
 
-export const sendRecoveryEmail = async (
-  accessToken: string,
-  recoveryPassphrase: string,
-): Promise<boolean> => {
+export const recoverToken = async (
+  recoveryToken: string,
+): Promise<TokenRefreshResponse | undefined> => {
   try {
-    const emailResult = await fetchApi('/v1/recovery/email', {
+    return await fetchApi('/v2/auth/tokens/recover', {
       method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        recoveryToken,
+      }),
+    });
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
+      msg: 'error sending reset request',
+    });
+  }
+  return undefined;
+};
+
+export const recoverTokenOtp = async (
+  accessToken: string,
+  type: string,
+  value: string,
+  newPassword: string,
+): Promise<TokenRefreshResponse | undefined> => {
+  try {
+    return await fetchApi('/v2/auth/tokens', {
+      method: 'PATCH',
       mode: 'cors',
       headers: {
         'Access-Control-Allow-Credentials': 'true',
@@ -435,54 +460,17 @@ export const sendRecoveryEmail = async (
       },
       host: config.WALLETS.HOST_URL,
       body: JSON.stringify({
-        recoveryPassphrase,
+        type,
+        value,
+        newPassword,
       }),
     });
-    if (!emailResult) {
-      return false;
-    }
-    return true;
-  } catch (e) {
-    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
-      msg: 'error sending recovery email',
-    });
-  }
-  return false;
-};
-
-export const sendResetRequest = async (
-  walletJoinRequestId: string,
-  bootstrapJwt: string,
-  recoveryToken: string,
-  newRecoveryPassphrase: string,
-): Promise<boolean> => {
-  try {
-    const resetResult = await fetchApi('/v1/auth/devices/recover', {
-      method: 'POST',
-      mode: 'cors',
-      headers: {
-        'Access-Control-Allow-Credentials': 'true',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${bootstrapJwt}`,
-      },
-      host: config.WALLETS.HOST_URL,
-      body: JSON.stringify({
-        recoveryToken,
-        newRecoveryPassphrase,
-        walletJoinRequestId,
-        sendNewRecoveryEmail: false,
-      }),
-    });
-    if (!resetResult) {
-      return false;
-    }
-    return true;
   } catch (e) {
     notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error sending reset request',
     });
   }
-  return false;
+  return undefined;
 };
 
 export const sendRpcMessage = async <T>(
@@ -608,7 +596,7 @@ export const signAndWait = async (
 export const signIn = async (
   emailAddress: string,
   password: string,
-): Promise<PostSignInResponse | undefined> => {
+): Promise<TokenRefreshResponse | undefined> => {
   try {
     return await fetchApi('/v2/auth/tokens', {
       method: 'POST',
@@ -634,7 +622,7 @@ export const signInOtp = async (
   accessToken: string,
   type: 'OTP' | 'EMAIL',
   value: string,
-): Promise<PostSignInResponse | undefined> => {
+): Promise<TokenRefreshResponse | undefined> => {
   try {
     return await fetchApi('/v2/auth/tokens', {
       method: 'PATCH',

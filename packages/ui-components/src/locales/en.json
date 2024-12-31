@@ -255,7 +255,8 @@
     "warning": "Warning",
     "year": "year",
     "yes": "Yes",
-    "you": "You"
+    "you": "You",
+    "yourEmailAddress": "your email address"
   },
   "config": {
     "renderedAt": "Rendered at {{renderTime}}"
@@ -970,8 +971,6 @@
     "recoveryKit": "Recovery kit",
     "recoveryKitDescription": "Create a new recovery kit by verifying your current password in the field below. You will receive an email with the information needed to recover access to this wallet.\n\n- **Do not share your recovery kit with anyone**\n\n- All previous recovery kits will become inactive when a new one is created",
     "recoveryKitError": "Invalid password",
-    "signInError":"Invalid username or password",
-    "signInOtpError": "Invalid authentication code",
     "recoveryPhrase": "Password",
     "recoveryPhraseDescription": "##Sign In\nYour credentials are required to unlock access to your wallet on this device. **Do not share your password with anyone**, including Unstoppable Domains staff.",
     "refreshingData": "Refreshing wallet balances...",
@@ -996,6 +995,8 @@
     "sendTransactionFailed": "{{amount}} {{sourceSymbol}} failed to send to {{recipientDomain}}",
     "sendTransactionSuccess": "{{amount}} {{sourceSymbol}} was successfully sent to {{recipientDomain}}",
     "signDappOperationDescription": "**{{name}}** wants to **{{actionText}}**. Verify the following details before confirming.",
+    "signInError": "Invalid username or password",
+    "signInOtpError": "Invalid authentication code",
     "signMessage": "Confirmation",
     "signMessageAction": "sign a message",
     "signMessageDescription": "Only confirm if you fully understand the content and trust the requesting site.",

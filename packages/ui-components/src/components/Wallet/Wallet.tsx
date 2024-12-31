@@ -41,7 +41,6 @@ export const Wallet: React.FC<
     recoveryToken?: string;
     showMessages?: boolean;
     mode?: WalletMode;
-    disableInlineEducation?: boolean;
     disableBasicHeader?: boolean;
     fullScreenModals?: boolean;
     forceRememberOnDevice?: boolean;
@@ -66,7 +65,6 @@ export const Wallet: React.FC<
   recoveryToken,
   showMessages,
   mode = 'basic',
-  disableInlineEducation,
   disableBasicHeader,
   isNewUser,
   loginClicked,
@@ -181,7 +179,6 @@ export const Wallet: React.FC<
         isHeaderClicked={isHeaderClicked}
         setIsHeaderClicked={setIsHeaderClicked}
         setAuthAddress={setAuthAddress}
-        disableInlineEducation={disableInlineEducation}
         fullScreenModals={fullScreenModals}
         forceRememberOnDevice={forceRememberOnDevice || isNewUser}
         loginClicked={loginClicked}

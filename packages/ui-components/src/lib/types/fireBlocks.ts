@@ -105,11 +105,11 @@ export interface GetOperationListResponse {
   '@type': string;
   items: Operation[];
 }
+
 export interface GetOperationResponse {
   '@type': string;
   operation: Operation;
 }
-
 export interface GetOperationStatusResponse {
   '@type': string;
   id: string;
@@ -130,13 +130,13 @@ export interface GetTokenResponse {
   refreshToken: string;
   bootstrapToken: string;
 }
+
 export interface IDeviceStore {
   get(deviceId: string, key: string): Promise<string | null>;
   set(deviceId: string, key: string, value: string): Promise<void>;
   clear(deviceId: string, key: string): Promise<void>;
   getAllKeys(deviceId: string): Promise<string[]>;
 }
-
 export const MAX_RETRIES = 5;
 
 export interface Operation {
@@ -161,6 +161,15 @@ export enum OperationStatusType {
 
 export interface Parameters {
   message: string;
+}
+
+export interface PostSignInResponse {
+  '@type': string;
+  accessToken: string;
+  refreshToken?: string;
+  status: 'READY' | 'MFA_OTP_REQUIRED' | 'MFA_EMAIL_REQUIRED';
+  code?: string;
+  message?: string;
 }
 
 export interface Result {

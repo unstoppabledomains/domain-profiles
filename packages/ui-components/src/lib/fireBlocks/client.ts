@@ -8,17 +8,11 @@ import {
   FireblocksNCWFactory,
   getFireblocksNCWInstance,
 } from '@fireblocks/ncw-js-sdk';
-import {retryAsync} from 'ts-retry';
 
 import config from '@unstoppabledomains/config';
 
-import {
-  sendJoinRequest,
-  sendResetRequest,
-} from '../../actions/fireBlocksActions';
 import {notifyEvent} from '../error';
 import {sleep} from '../sleep';
-import {MAX_RETRIES} from '../types/fireBlocks';
 import {LogEventHandler} from './events/logHandler';
 import {
   RpcMessageProvider,
@@ -88,113 +82,6 @@ export const getFireBlocksClient = async (
   };
 
   return await FireblocksNCWFactory(fbOptions);
-};
-
-export const initializeClient = async (
-  client: IFireblocksNCW,
-  opts: {
-    bootstrapJwt: string;
-    recoveryPhrase: string;
-    recoveryToken?: string;
-  },
-): Promise<boolean> => {
-  const initializeFn = async () => {
-    // create a join request for this device
-    let callbackPromise: Promise<boolean> | undefined;
-    await client.requestJoinExistingWallet({
-      onRequestId: async requestId => {
-        callbackPromise = opts.recoveryToken
-          ? // send a reset request
-            sendResetRequest(
-              requestId,
-              opts.bootstrapJwt,
-              opts.recoveryToken,
-              opts.recoveryPhrase,
-            )
-          : // send a join request
-            sendJoinRequest(requestId, opts.bootstrapJwt, opts.recoveryPhrase);
-
-        // the request has been submitted, but we will wait for the promise to
-        // complete after the client call returns
-        const isSuccess = await callbackPromise;
-        if (!isSuccess) {
-          try {
-            // request to stop the join transaction
-            client.stopJoinWallet();
-          } catch (stopJoinWalletErr) {
-            notifyEvent(stopJoinWalletErr, 'warning', 'Wallet', 'Fireblocks', {
-              msg: 'unable to cancel join request',
-            });
-          }
-        }
-      },
-    });
-
-    // ensure the promise was initialized
-    if (!callbackPromise) {
-      throw new Error('failed to initiate join request');
-    }
-
-    // wait for the callback promise to complete
-    const isCallbackSuccessful = await callbackPromise;
-
-    // determine if join request was successful
-    if (!isCallbackSuccessful) {
-      throw new Error('failed to initialize fireblocks client');
-    }
-
-    // wait for the join request to be approved by the backend
-    for (let i = 1; i <= FB_MAX_RETRY; i++) {
-      try {
-        const status = await client.getKeysStatus();
-        if (status.MPC_CMP_ECDSA_SECP256K1.keyStatus === 'READY') {
-          // key material is now available on the device
-          return true;
-        }
-      } catch (statusErr) {
-        notifyEvent(statusErr, 'error', 'Wallet', 'Configuration', {
-          msg: 'error checking key status',
-        });
-      }
-      await sleep(FB_WAIT_TIME_MS);
-    }
-    throw new Error('fireblocks key status is not ready');
-  };
-
-  // handle initialization errors and return a simple boolean result
-  // for the bootstrapping process
-  try {
-    // wrap the signing function in retry logic so that intermittent
-    // backend errors do not result in failed login attempts
-    return await retryAsync(initializeFn, {
-      delay: 100,
-      maxTry: MAX_RETRIES,
-      onError: (err: Error, currentTry: number) => {
-        notifyEvent(err, 'warning', 'Wallet', 'Authorization', {
-          msg: 'encountered bootstrap error in retry logic',
-          meta: {currentTry},
-        });
-      },
-    });
-  } catch (initError) {
-    notifyEvent(initError, 'error', 'Wallet', 'Configuration', {
-      msg: 'unable to initialize client',
-    });
-  }
-
-  // the request to join was not successful
-  return false;
-};
-
-export const isClockDrift = (oracleMs: number): boolean => {
-  const clockDriftMs = Math.abs(new Date().getTime() - oracleMs);
-  if (clockDriftMs > config.WALLETS.MAX_CLOCK_DRIFT_MS) {
-    notifyEvent('detected clock drift', 'error', 'Wallet', 'Validation', {
-      meta: {oracleMs, clockDriftMs},
-    });
-    return true;
-  }
-  return false;
 };
 
 export const signTransaction = async (

@@ -32,7 +32,7 @@ const WalletPage = () => {
   const {classes, cx} = useStyles({});
   const [t] = useTranslationContext();
   const {web3Deps} = useWeb3Context();
-  const {query: params} = useRouter();
+  const {query: params, route} = useRouter();
   const isMounted = useIsMounted();
   const theme = useTheme();
   const [isLoaded, setIsLoaded] = useState(false);
@@ -67,35 +67,30 @@ const WalletPage = () => {
     setIsReloadChecked(true);
   }, [walletState, recoveryToken, emailAddress]);
 
-  // load query string params
-  useEffect(() => {
-    if (!params) {
-      return;
-    }
-
-    // select email address if specified in parameter
-    if (params[EMAIL_PARAM] && typeof params[EMAIL_PARAM] === 'string') {
-      setEmailAddress(params[EMAIL_PARAM]);
-    }
-
-    // select recovery if specified in parameter
-    if (
-      params[RECOVERY_TOKEN_PARAM] &&
-      typeof params[RECOVERY_TOKEN_PARAM] === 'string'
-    ) {
-      setRecoveryToken(params[RECOVERY_TOKEN_PARAM]);
-      return;
-    }
-  }, [params]);
-
   // load the existing wallet if singed in
   useEffect(() => {
-    if (!isMounted()) {
+    if (!isMounted() || !route) {
       return;
     }
 
     const loadWallet = async () => {
       try {
+        if (params) {
+          // select email address if specified in parameter
+          if (params[EMAIL_PARAM] && typeof params[EMAIL_PARAM] === 'string') {
+            setEmailAddress(params[EMAIL_PARAM]);
+          }
+
+          // select recovery if specified in parameter
+          if (
+            params[RECOVERY_TOKEN_PARAM] &&
+            typeof params[RECOVERY_TOKEN_PARAM] === 'string'
+          ) {
+            setRecoveryToken(params[RECOVERY_TOKEN_PARAM]);
+            return;
+          }
+        }
+
         // retrieve state of logged in wallet (if any)
         const signInState = getBootstrapState(walletState);
         if (!signInState) {
@@ -141,7 +136,7 @@ const WalletPage = () => {
       }
     };
     void loadWallet();
-  }, [isMounted, authComplete]);
+  }, [isMounted, authComplete, route]);
 
   const handleAuthComplete = () => {
     setAuthComplete(true);

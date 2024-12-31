@@ -1,4 +1,3 @@
-import type {TEvent} from '@fireblocks/ncw-js-sdk';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
@@ -6,11 +5,9 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
-import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import IconButton from '@mui/material/IconButton';
-import LinearProgress from '@mui/material/LinearProgress';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -28,11 +25,9 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useFeatureFlags} from '../../actions';
 import {
-  confirmAuthorizationTokenTx,
-  getAuthorizationTokenTx,
-  getBootstrapToken,
-  sendBootstrapCode,
   sendRecoveryEmail,
+  signIn,
+  signInOtp,
 } from '../../actions/fireBlocksActions';
 import {
   createMpcCustodyWallet,
@@ -56,17 +51,12 @@ import {
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import {
-  getFireBlocksClient,
-  initializeClient,
-  isClockDrift,
-  signTransaction,
-} from '../../lib/fireBlocks/client';
-import {
   getBootstrapState,
   saveBootstrapState,
   saveMpcCustodyState,
 } from '../../lib/fireBlocks/storage/state';
 import {sleep} from '../../lib/sleep';
+import type {PostSignInResponse} from '../../lib/types/fireBlocks';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {localStorageWrapper} from '../Chat/storage';
@@ -74,7 +64,6 @@ import {DomainProfileTabType} from '../Manage/DomainProfile';
 import ManageInput from '../Manage/common/ManageInput';
 import type {ManageTabProps} from '../Manage/common/types';
 import {Client, getMinClientHeight} from './Client';
-import InlineEducation from './InlineEducation';
 import {OperationStatus} from './OperationStatus';
 import type {WalletMode} from './index';
 
@@ -171,7 +160,6 @@ export const WalletProvider: React.FC<
     isHeaderClicked: boolean;
     setIsHeaderClicked?: (v: boolean) => void;
     setAuthAddress?: (v: string) => void;
-    disableInlineEducation?: boolean;
     initialState?: WalletConfigState;
     fullScreenModals?: boolean;
     forceRememberOnDevice?: boolean;
@@ -194,7 +182,6 @@ export const WalletProvider: React.FC<
   emailAddress: initialEmailAddress,
   recoveryPhrase: initialRecoveryPhrase,
   recoveryToken,
-  disableInlineEducation,
   initialState,
   loginClicked,
 }) => {
@@ -209,7 +196,6 @@ export const WalletProvider: React.FC<
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [savingMessage, setSavingMessage] = useState<string>();
   const [configState, setConfigState] = useState(
     initialState || WalletConfigState.PasswordEntry,
   );
@@ -220,7 +206,6 @@ export const WalletProvider: React.FC<
   const [persistKeys, setPersistKeys] = useState(forceRememberOnDevice);
   const [state, saveState] = useFireblocksState(persistKeys);
   const getAccessToken = useFireblocksAccessToken();
-  const [progressPct, setProgressPct] = useState(0);
 
   // wallet in custody state
   const [custodySecret, setCustodySecret] = useState<string>();
@@ -228,6 +213,7 @@ export const WalletProvider: React.FC<
 
   // wallet recovery state variables
   const {accessToken, setAccessToken} = useWeb3Context();
+  const [loginState, setLoginState] = useState<PostSignInResponse>();
   const [bootstrapCode, setBootstrapCode] = useState<string>();
   const [recoveryPhrase, setRecoveryPhrase] = useState(initialRecoveryPhrase);
   const [recoveryPhraseConfirmation, setRecoveryPhraseConfirmation] = useState(
@@ -250,14 +236,6 @@ export const WalletProvider: React.FC<
     setButtonComponent(<Box className={classes.continueActionContainer} />);
     void loadFromState();
   }, []);
-
-  useEffect(() => {
-    if (!initialState) {
-      return;
-    }
-    setConfigState(initialState);
-    void loadFromState();
-  }, [initialState]);
 
   useEffect(() => {
     if (recoveryToken || emailAddress) {
@@ -349,121 +327,82 @@ export const WalletProvider: React.FC<
 
     setButtonComponent(
       <Box className={classes.continueActionContainer}>
-        {!isSaving && !errorMessage ? (
-          <>
-            <LoadingButton
-              variant="contained"
-              onClick={handleSave}
-              loading={isSaving}
-              loadingIndicator={
-                savingMessage ? (
-                  <Box display="flex" alignItems="center">
-                    <CircularProgress color="inherit" size={16} />
-                    <Box ml={1}>{savingMessage}</Box>
-                  </Box>
-                ) : undefined
-              }
-              disabled={!isSaveEnabled}
+        <LoadingButton
+          variant="contained"
+          onClick={handleSave}
+          loading={isSaving}
+          disabled={!isSaveEnabled}
+          fullWidth
+        >
+          {errorMessage
+            ? errorMessage
+            : configState === WalletConfigState.NeedsOnboarding
+            ? isCreateWalletEnabled
+              ? t('wallet.createWallet')
+              : t('common.learnMore')
+            : configState === WalletConfigState.PasswordEntry
+            ? recoveryToken
+              ? t('common.continue')
+              : t('wallet.beginSetup')
+            : configState === WalletConfigState.OtpEntry
+            ? t('wallet.completeSetup')
+            : configState === WalletConfigState.OnboardWithCustody &&
+              t('wallet.createWallet')}
+        </LoadingButton>
+        {[
+          WalletConfigState.OtpEntry,
+          WalletConfigState.NeedsOnboarding,
+        ].includes(configState) && (
+          <Box mt={1}>
+            <Button
+              onClick={handleBack}
+              variant="outlined"
+              disabled={isSaving}
               fullWidth
             >
-              {configState === WalletConfigState.NeedsOnboarding
-                ? isCreateWalletEnabled
-                  ? t('wallet.createWallet')
-                  : t('common.learnMore')
-                : configState === WalletConfigState.PasswordEntry
-                ? recoveryToken
-                  ? t('common.continue')
-                  : t('wallet.beginSetup')
-                : configState === WalletConfigState.OtpEntry
-                ? t('wallet.completeSetup')
-                : configState === WalletConfigState.OnboardWithCustody &&
-                  t('wallet.createWallet')}
-            </LoadingButton>
-            {[
-              WalletConfigState.OtpEntry,
-              WalletConfigState.NeedsOnboarding,
-            ].includes(configState) && (
-              <Box mt={1}>
-                <Button
-                  onClick={handleBack}
-                  variant="outlined"
-                  disabled={isSaving}
-                  fullWidth
-                >
-                  {t('common.back')}
-                </Button>
-              </Box>
-            )}
-            {isCreateWalletEnabled &&
-              !recoveryToken &&
-              [
-                WalletConfigState.PasswordEntry,
-                WalletConfigState.OnboardWithCustody,
-              ].includes(configState) && (
-                <Box mt={1} display="flex" justifyContent="center" width="100%">
-                  <Button
-                    onClick={
-                      configState === WalletConfigState.PasswordEntry
-                        ? handleNeedWallet
-                        : handleBack
-                    }
-                    disabled={isSaving}
-                    variant="text"
-                    size="small"
-                  >
-                    {configState === WalletConfigState.PasswordEntry
-                      ? t('wallet.needWallet')
-                      : t('wallet.alreadyHaveWallet')}
-                  </Button>
-                </Box>
-              )}
-          </>
-        ) : (
-          !errorMessage &&
-          !disableInlineEducation &&
-          configState === WalletConfigState.OtpEntry && (
-            <Box
-              display="flex"
-              flexDirection="column"
-              justifyItems="center"
-              width="100%"
-            >
-              <InlineEducation />
-              <Box mt={2}>
-                <LinearProgress variant="determinate" value={progressPct} />
-              </Box>
-            </Box>
-          )
+              {t('common.back')}
+            </Button>
+          </Box>
         )}
+        {isCreateWalletEnabled &&
+          !recoveryToken &&
+          [
+            WalletConfigState.PasswordEntry,
+            WalletConfigState.OnboardWithCustody,
+          ].includes(configState) && (
+            <Box mt={1} display="flex" justifyContent="center" width="100%">
+              <Button
+                onClick={
+                  configState === WalletConfigState.PasswordEntry
+                    ? handleNeedWallet
+                    : handleBack
+                }
+                disabled={isSaving}
+                variant="text"
+                size="small"
+              >
+                {configState === WalletConfigState.PasswordEntry
+                  ? t('wallet.needWallet')
+                  : t('wallet.alreadyHaveWallet')}
+              </Button>
+            </Box>
+          )}
       </Box>,
     );
   }, [
     isSaving,
     isDirty,
     configState,
-    savingMessage,
     bootstrapCode,
     emailAddress,
     recoveryPhrase,
     recoveryPhraseConfirmation,
     recoveryToken,
     errorMessage,
-    progressPct,
     isWalletLoaded,
     isCreateWalletEnabled,
     persistKeys,
   ]);
-
-  // trackProgress updates the progress bar and logs events for wallet setup
-  const trackProgress = (startTime: number, progressValue: number) => {
-    notifyEvent('setup elapsed time', 'info', 'Wallet', 'Configuration', {
-      meta: {
-        elapsedSeconds: (Date.now() - startTime) / 1000,
-        progressPct: progressValue,
-      },
-    });
-    setProgressPct(progressValue);
-  };
 
   const loadMpcWallets = async (
     forceRefresh?: boolean,
@@ -904,7 +843,7 @@ export const WalletProvider: React.FC<
       await processOnboardWithCustody();
     } else if (configState === WalletConfigState.OtpEntry) {
       // submit the bootstrap code
-      await processBootstrapCode();
+      await processOtp();
     } else if (configState === WalletConfigState.PasswordEntry) {
       // submit the recovery phrase
       await processPasswordEntry();
@@ -912,7 +851,6 @@ export const WalletProvider: React.FC<
 
     // saving complete
     setIsSaving(false);
-    setSavingMessage(undefined);
   };
 
   const handlePersistChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1011,21 +949,15 @@ export const WalletProvider: React.FC<
       }
     }
 
-    // check for onboarding
-    const onboardStatus = await getOnboardingStatus(emailAddress);
+    // check onboarding status and send the OTP
+    const [onboardStatus, signInStatus] = await Promise.all([
+      getOnboardingStatus(emailAddress),
+      signIn(emailAddress, recoveryPhrase),
+    ]);
+
+    // validate onboarding status
     if (!onboardStatus) {
       setConfigState(WalletConfigState.NeedsOnboarding);
-      return;
-    }
-
-    // check system clock synchronization
-    if (isClockDrift(onboardStatus.clock)) {
-      setErrorMessage(
-        t('wallet.clockDriftError', {
-          deviceTime: new Date().toLocaleString(),
-          expectedTime: new Date(onboardStatus.clock).toLocaleString(),
-        }),
-      );
       return;
     }
 
@@ -1035,18 +967,47 @@ export const WalletProvider: React.FC<
       onLoginInitiated(emailAddress, recoveryPhrase);
     }
 
-    // send the OTP
-    const sendResult = await sendBootstrapCode(emailAddress);
-    if (sendResult) {
+    // validate the sign in status
+    if (!signInStatus?.accessToken || signInStatus.message) {
+      notifyEvent('sign in error', 'error', 'Wallet', 'Authorization', {
+        meta: signInStatus,
+      });
+      setErrorMessage(t('wallet.signInError'));
+      return;
+    }
+
+    // collect 2FA code if necessary
+    if (signInStatus.status === 'READY') {
+      // 2FA not required, which is not an expected state but
+      // needs to be handled
+      setAccessToken(signInStatus.accessToken);
+      setConfigState(WalletConfigState.Complete);
+    } else if (
+      signInStatus.status === 'MFA_EMAIL_REQUIRED' ||
+      signInStatus.status === 'MFA_OTP_REQUIRED'
+    ) {
+      // 2FA required
+      setLoginState(signInStatus);
       setConfigState(WalletConfigState.OtpEntry);
     } else {
-      setErrorMessage(t('wallet.forgotBootstrapCodeError'));
+      // unexpected state, show an error to the user and log the details
+      // for further analysis
+      notifyEvent(
+        'unexpected sign in state',
+        'error',
+        'Wallet',
+        'Authorization',
+        {
+          meta: signInStatus,
+        },
+      );
+      setErrorMessage(t('wallet.signInError'));
     }
   };
 
-  const processBootstrapCode = async () => {
+  const processOtp = async () => {
     // bootstrap and recovery phrase code is required
-    if (!bootstrapCode || !recoveryPhrase) {
+    if (!bootstrapCode || !recoveryPhrase || !loginState) {
       return;
     }
 
@@ -1065,157 +1026,29 @@ export const WalletProvider: React.FC<
       }
     }
 
-    // indicates start time for progress tracking
-    const startTime = Date.now();
-
-    // retrieve a temporary JWT token using the code and validate the
-    // response contains expected value format
-    trackProgress(startTime, 0);
-    setSavingMessage(t('wallet.configuringWallet'));
-    const walletResponse = await getBootstrapToken(bootstrapCode);
-    if (!walletResponse?.accessToken || !walletResponse.deviceId) {
-      notifyEvent(
-        new Error('invalid setup code'),
-        'error',
-        'Wallet',
-        'Authorization',
-      );
-      setErrorMessage(t('wallet.invalidSetupCode'));
-      return;
-    }
-
-    // store the JWT token and device ID in memory
-    const bootstrapJwt = walletResponse?.accessToken;
-    const deviceId = walletResponse?.deviceId;
-
-    // retrieve and initialize the Fireblocks client
-    trackProgress(startTime, 3);
-    const fbClientForInit = await getFireBlocksClient(deviceId, bootstrapJwt, {
-      state,
-      saveState,
-      onEventCallback: (e: TEvent) => {
-        if (e.type === 'join_wallet_descriptor') {
-          switch (e.joinWalletDescriptor.status) {
-            case 'JOIN_INITIATED':
-              trackProgress(startTime, 5);
-              break;
-            case 'ADD_DEVICE_SETUP_REQUESTED':
-              trackProgress(startTime, 11);
-              break;
-          }
-        }
-        if (e.type === 'key_descriptor_changed') {
-          switch (e.keyDescriptor.keyStatus) {
-            case 'INITIATED':
-              trackProgress(startTime, 24);
-              break;
-            case 'SETUP':
-              trackProgress(startTime, 30);
-              break;
-            case 'SETUP_COMPLETE':
-              trackProgress(startTime, 60);
-              break;
-            case 'READY':
-              trackProgress(startTime, 65);
-              break;
-          }
-        }
-      },
-    });
-    const isInitialized = await initializeClient(fbClientForInit, {
-      bootstrapJwt,
-      recoveryPhrase,
-      recoveryToken,
-    });
-    if (!isInitialized) {
-      notifyEvent(
-        new Error('error validating recovery phrase'),
-        'error',
-        'Wallet',
-        'Authorization',
-      );
-      setErrorMessage(
-        recoveryToken
-          ? t('wallet.invalidResetAttempt')
-          : t('wallet.invalidRecoveryAccount'),
-      );
-      return;
-    }
-
-    // retrieve a transaction ID from wallet service, and initialize a new client
-    // instance with which to sign the transaction ID
-    trackProgress(startTime, 70);
-    const [tx, fbClientForTx] = await Promise.all([
-      getAuthorizationTokenTx(bootstrapJwt),
-      getFireBlocksClient(deviceId, bootstrapJwt, {
-        state,
-        saveState,
-        onEventCallback: (e: TEvent) => {
-          if (e.type === 'transaction_signature_changed') {
-            switch (e.transactionSignature.transactionSignatureStatus) {
-              case 'PENDING':
-                trackProgress(startTime, 80);
-                break;
-              case 'STARTED':
-                trackProgress(startTime, 85);
-                break;
-            }
-          }
-        },
-      }),
-    ]);
-    if (!tx) {
-      notifyEvent(
-        new Error('error retrieving auth tx'),
-        'error',
-        'Wallet',
-        'Authorization',
-      );
-      setErrorMessage(t('wallet.recoveryError'));
-      return;
-    }
-
-    // sign the transaction ID with Fireblocks client
-    trackProgress(startTime, 79);
-    const txSignature = await signTransaction(fbClientForTx, tx.transactionId);
-    if (!txSignature) {
-      notifyEvent(
-        new Error('error signing auth tx'),
-        'error',
-        'Wallet',
-        'Authorization',
-      );
-      setErrorMessage(t('wallet.recoveryError'));
-      return;
-    }
-
-    // retrieve the wallet service JWT tokens
-    trackProgress(startTime, 90);
-    const walletServiceTokens = await confirmAuthorizationTokenTx(bootstrapJwt);
-    if (!walletServiceTokens) {
-      notifyEvent(
-        new Error('error retrieving auth tokens'),
-        'error',
-        'Wallet',
-        'Authorization',
-      );
-      setErrorMessage(t('wallet.recoveryError'));
+    // verify the user provided OTP
+    const signInOtpResponse = await signInOtp(
+      loginState.accessToken,
+      loginState.status === 'MFA_EMAIL_REQUIRED' ? 'EMAIL' : 'OTP',
+      bootstrapCode,
+    );
+    if (!signInOtpResponse?.accessToken || !signInOtpResponse?.refreshToken) {
+      setErrorMessage('wallet.signInOtpError');
       return;
     }
 
     // if this is a recovery, also send a new recovery email
     if (recoveryToken) {
-      trackProgress(startTime, 95);
-      await sendRecoveryEmail(walletServiceTokens.accessToken, recoveryPhrase);
+      await sendRecoveryEmail(signInOtpResponse.accessToken, recoveryPhrase);
     }
 
     // store the wallet service JWT tokens at desired persistence level
     const bootstrapState = await saveBootstrapState(
       {
         assets: [],
-        bootstrapToken: walletServiceTokens.bootstrapToken,
-        refreshToken: walletServiceTokens.refreshToken,
-        deviceId,
+        bootstrapToken: loginState.accessToken,
+        refreshToken: signInOtpResponse.refreshToken,
+        deviceId: '',
         custodyState: {
           state: CustodyState.SELF_CUSTODY,
           status: 'COMPLETED',
@@ -1223,7 +1056,7 @@ export const WalletProvider: React.FC<
       },
       state,
       saveState,
-      walletServiceTokens.accessToken,
+      signInOtpResponse.accessToken,
     );
 
     // set local storage values if a MATIC address is available
@@ -1235,8 +1068,7 @@ export const WalletProvider: React.FC<
     }
 
     // set component state
-    trackProgress(startTime, 100);
-    setAccessToken(walletServiceTokens.accessToken);
+    setAccessToken(signInOtpResponse.accessToken);
     setConfigState(WalletConfigState.Complete);
   };
 
@@ -1250,22 +1082,7 @@ export const WalletProvider: React.FC<
   return (
     <Box className={classes.container}>
       {isWalletLoaded && isReadyForUser ? (
-        isSaving || errorMessage ? (
-          <Box className={classes.loadingContainer}>
-            <OperationStatus
-              label={errorMessage || t('wallet.configuringWallet')}
-              icon={<LockOutlinedIcon />}
-              error={errorMessage !== undefined && errorMessage.length > 0}
-            >
-              {errorMessage && (
-                <Button variant="text" onClick={handleTryAgain}>
-                  {t('common.tryAgain')}
-                </Button>
-              )}
-            </OperationStatus>
-          </Box>
-        ) : configState === WalletConfigState.NeedsOnboarding &&
-          emailAddress ? (
+        configState === WalletConfigState.NeedsOnboarding && emailAddress ? (
           <Box>
             <Typography
               variant="body1"

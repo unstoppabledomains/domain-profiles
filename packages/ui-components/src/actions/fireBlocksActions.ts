@@ -473,6 +473,36 @@ export const recoverTokenOtp = async (
   return undefined;
 };
 
+export const sendRecoveryEmail = async (
+  accessToken: string,
+  recoveryPassphrase: string,
+): Promise<boolean> => {
+  try {
+    const emailResult = await fetchApi('/v1/recovery/email', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        recoveryPassphrase,
+      }),
+    });
+    if (!emailResult) {
+      return false;
+    }
+    return true;
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
+      msg: 'error sending recovery email',
+    });
+  }
+  return false;
+};
+
 export const sendRpcMessage = async <T>(
   message: unknown,
   jwt: string,

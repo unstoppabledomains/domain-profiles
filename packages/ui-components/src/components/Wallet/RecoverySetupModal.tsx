@@ -13,6 +13,7 @@ import React, {useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {sendRecoveryEmail} from '../../actions/fireBlocksActions';
 import {useTranslationContext} from '../../lib';
 import ManageInput from '../Manage/common/ManageInput';
 
@@ -74,7 +75,7 @@ const RecoverySetupModal: React.FC<Props> = ({accessToken}) => {
 
     // request a new recovery kit
     setIsSaving(true);
-    setIsSuccess(true);
+    setIsSuccess(await sendRecoveryEmail(accessToken, password));
     setIsSaving(false);
     setIsDirty(false);
   };

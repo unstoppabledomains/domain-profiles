@@ -886,6 +886,8 @@ const Swap: React.FC<Props> = ({
           throw new Error('Error requesting transaction operation status');
         } else if (operationStatus.status === OperationStatusType.COMPLETED) {
           return {success: true};
+        } else if (operationStatus.transaction?.id) {
+          return {success: true};
         }
         return {success: false};
       },

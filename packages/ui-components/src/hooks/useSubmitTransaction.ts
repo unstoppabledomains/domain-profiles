@@ -1,4 +1,3 @@
-import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
 import {useEffect, useRef, useState} from 'react';
 
 import {
@@ -35,7 +34,6 @@ export type Params = {
   token: TokenEntry;
   recipientAddress: string;
   amount: string;
-  getClient: () => Promise<IFireblocksNCW>;
   onInvitation: (
     emailAddress: string,
   ) => Promise<Record<string, string> | undefined>;
@@ -53,7 +51,6 @@ export const useSubmitTransaction = ({
   token,
   recipientAddress: initialRecipientAddress,
   amount,
-  getClient,
   onInvitation,
 }: Params) => {
   const {mappedResolverKeys} = useResolverKeys();
@@ -81,13 +78,7 @@ export const useSubmitTransaction = ({
         return;
       }
       // cancel any in progress transactions
-      const client = await getClient();
       try {
-        // cancel local transactions for this client instance
-        while (await client.getInProgressSigningTxId()) {
-          await client.stopInProgressSignTransaction();
-        }
-
         // cancel queued operations for this specific account asset, which must be
         // completed in case previous transactions are awaiting signature and in an
         // abandoned state from another client.
@@ -286,16 +277,7 @@ export const useSubmitTransaction = ({
           operationStatus.status === OperationStatusType.FAILED
         ) {
           throw new Error('Error requesting transaction operation status');
-        }
-        if (
-          operationStatus.status === OperationStatusType.SIGNATURE_REQUIRED &&
-          operationStatus.transaction?.externalVendorTransactionId
-        ) {
-          setStatusMessage(SendCryptoStatusMessage.SIGNING);
-          const client = await getClient();
-          await client.signTransaction(
-            operationStatus.transaction.externalVendorTransactionId,
-          );
+        } else if (operationStatus.status === OperationStatusType.COMPLETED) {
           return {success: true};
         }
         return {success: false};

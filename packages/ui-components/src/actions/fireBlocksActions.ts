@@ -10,11 +10,7 @@ import {getBlockchainSymbol} from '../components/Manage/common/verification/type
 import {CustodyState} from '../lib';
 import {notifyEvent} from '../lib/error';
 import {fetchApi} from '../lib/fetchApi';
-import {
-  FB_MAX_RETRY,
-  FB_WAIT_TIME_MS,
-  getFireBlocksClient,
-} from '../lib/fireBlocks/client';
+import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../lib/fireBlocks/client';
 import {
   getBootstrapState,
   saveBootstrapState,
@@ -166,7 +162,7 @@ export const getAccessTokenInternal = async (
   try {
     // retrieve a new set of tokens using the refresh token
     const newTokens = await fetchApi<GetTokenResponse>(
-      '/v1/auth/tokens/refresh',
+      '/v2/auth/tokens/refresh',
       {
         method: 'POST',
         mode: 'cors',
@@ -531,7 +527,6 @@ export const sendRpcMessage = async <T>(
 export const signAndWait = async (
   accessToken: string,
   onGetOperation: () => Promise<GetOperationResponse | undefined>,
-  onSignTx: (txId: string) => Promise<void>,
   opts?: {
     address?: string;
     onStatusChange?: (status: string) => void;
@@ -568,13 +563,6 @@ export const signAndWait = async (
         operationStatus.status === 'SIGNATURE_REQUIRED' &&
         operationStatus.transaction?.externalVendorTransactionId
       ) {
-        // request for the client to sign the Tx string
-        if (opts?.onStatusChange) {
-          opts.onStatusChange('signing with local key');
-        }
-        await onSignTx(operationStatus.transaction.externalVendorTransactionId);
-        signedWithClient = true;
-
         // indicate status change
         if (opts?.onStatusChange) {
           opts.onStatusChange('waiting for other signers');
@@ -696,27 +684,12 @@ export const signMessage = async (
     throw new Error('invalid configuration');
   }
 
-  // retrieve a new client instance
-  const client = await getFireBlocksClient(
-    clientState.deviceId,
-    auth.accessToken,
-    {
-      state: auth.state,
-      saveState: auth.saveState,
-    },
-  );
-
   notifyEvent(
     'signing message with fireblocks client',
     'info',
     'Wallet',
     'Signature',
-    {
-      meta: {
-        deviceId: client.getPhysicalDeviceId(),
-        message,
-      },
-    },
+    {meta: {message}},
   );
 
   // determine if a specific chain ID should override based upon a typed
@@ -770,9 +743,6 @@ export const signMessage = async (
         message,
         isTypedMessage,
       );
-    },
-    async (txId: string) => {
-      await client.signTransaction(txId);
     },
     {
       address: opts.address,

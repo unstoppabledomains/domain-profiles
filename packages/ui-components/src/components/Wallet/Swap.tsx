@@ -1,4 +1,3 @@
-import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import ImportExportIcon from '@mui/icons-material/ImportExport';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
@@ -160,7 +159,6 @@ type Props = {
   onCancelClick: () => void;
   onClickReceive?: () => void;
   onClickBuy?: () => void;
-  getClient: () => Promise<IFireblocksNCW>;
   accessToken: string;
   wallets: SerializedWalletBalance[];
 };
@@ -169,7 +167,6 @@ const Swap: React.FC<Props> = ({
   onCancelClick,
   onClickBuy,
   onClickReceive,
-  getClient,
   accessToken,
   wallets,
 }) => {
@@ -887,15 +884,7 @@ const Swap: React.FC<Props> = ({
           operationStatus.status === OperationStatusType.FAILED
         ) {
           throw new Error('Error requesting transaction operation status');
-        }
-        if (
-          operationStatus.status === OperationStatusType.SIGNATURE_REQUIRED &&
-          operationStatus.transaction?.externalVendorTransactionId
-        ) {
-          const client = await getClient();
-          await client.signTransaction(
-            operationStatus.transaction.externalVendorTransactionId,
-          );
+        } else if (operationStatus.status === OperationStatusType.COMPLETED) {
           return {success: true};
         }
         return {success: false};

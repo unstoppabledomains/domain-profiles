@@ -1103,7 +1103,7 @@ export const WalletProvider: React.FC<
               </Markdown>
             </Typography>
           </Box>
-        ) : [WalletConfigState.OtpEntry].includes(configState) ? (
+        ) : [WalletConfigState.OtpEntry].includes(configState) && loginState ? (
           <Box>
             <Typography
               variant="body1"
@@ -1111,13 +1111,24 @@ export const WalletProvider: React.FC<
               component="div"
             >
               <Markdown>
-                {recoveryToken
-                  ? t('wallet.resetPasswordConfirmation', {
-                      emailAddress: t('common.yourEmailAddress'),
-                    })
-                  : t('wallet.bootstrapCodeDescription', {
+                {loginState.status === 'MFA_EMAIL_REQUIRED'
+                  ? t('wallet.oneTimeCodeEmailDescription', {
+                      operation: recoveryToken
+                        ? t('wallet.passwordReset')
+                        : t('wallet.signIn'),
                       emailAddress:
                         emailAddress || t('common.yourEmailAddress'),
+                    })
+                  : loginState.status === 'MFA_OTP_REQUIRED'
+                  ? t('wallet.oneTimeCodeTotpDescription', {
+                      operation: recoveryToken
+                        ? t('wallet.passwordReset')
+                        : t('wallet.beginSetup'),
+                    })
+                  : t('wallet.oneTimeCodeGenericDescription', {
+                      operation: recoveryToken
+                        ? t('wallet.passwordReset')
+                        : t('wallet.beginSetup'),
                     })}
               </Markdown>
             </Typography>
@@ -1126,7 +1137,7 @@ export const WalletProvider: React.FC<
               id="bootstrapCode"
               value={bootstrapCode}
               autoComplete="one-time-code"
-              label={t('wallet.bootstrapCode')}
+              label={t('wallet.oneTimeCode')}
               placeholder={t('wallet.enterBootstrapCode')}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}

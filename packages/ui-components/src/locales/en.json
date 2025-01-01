@@ -918,6 +918,7 @@
     "claimWalletCtaButton": "Set password",
     "claimWalletDescription": "Enter your email and create a password to ensure you can restore access if you lose the app or your device. **Make sure you have access to this email**, it's the only way to restore access to the wallet.",
     "claimWalletError": "Error creating account",
+    "claimWalletOtp": "Enter the one-time code sent to **{{emailAddress}}** to verify your email address.",
     "claimWalletTitle": "Complete wallet setup",
     "clockDriftError": "Device clock ({{deviceTime}}) is out of sync with wallet provider ({{expectedTime}}). Update your settings and try again.",
     "completeSetup": "Confirm",

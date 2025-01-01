@@ -51,7 +51,6 @@ export const Wallet: React.FC<
     onError?: () => void;
     onLogout?: () => void;
     onDisconnect?: () => void;
-    onClaimComplete?: (emailAddress: string, password: string) => void;
     onSettingsClick?: () => void;
     onMessagesClick?: () => void;
     onMessagePopoutClick?: (address?: string) => void;
@@ -74,7 +73,6 @@ export const Wallet: React.FC<
   onError,
   onLoginInitiated,
   onLogout,
-  onClaimComplete,
   onDisconnect,
   onSettingsClick,
   onMessagesClick,
@@ -127,12 +125,9 @@ export const Wallet: React.FC<
     setShowClaimWalletModal(true);
   };
 
-  const handleClaimComplete = (email: string, password: string) => {
-    if (onClaimComplete) {
-      onClaimComplete(email, password);
-    } else {
-      handleClaimModalClose();
-    }
+  const handleClaimComplete = (token: string) => {
+    setAccessToken(token);
+    handleClaimModalClose();
   };
 
   const handleClaimModalClose = () => {

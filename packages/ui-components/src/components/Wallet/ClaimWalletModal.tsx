@@ -12,6 +12,7 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {signIn, signInOtp} from '../../actions/fireBlocksActions';
 import {
   claimMpcCustodyWallet,
   getMpcCustodyWallet,
@@ -23,9 +24,11 @@ import {
   CustodyState,
   getBootstrapState,
   isEmailValid,
+  saveBootstrapState,
   useTranslationContext,
 } from '../../lib';
 import {sleep} from '../../lib/sleep';
+import {TokenRefreshResponse} from '../../lib/types/fireBlocks';
 import ManageInput from '../Manage/common/ManageInput';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -70,7 +73,7 @@ const WALLET_PASSWORD_SPECIAL_CHARACTER_VALIDATION_REGEX =
 
 type Props = {
   custodyWallet?: CustodyWallet;
-  onComplete: (emailAddress: string, password: string) => void;
+  onComplete: (accessToken: string) => void;
 };
 
 const ClaimWalletModal: React.FC<Props> = ({
@@ -79,6 +82,7 @@ const ClaimWalletModal: React.FC<Props> = ({
 }) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
+  const [claimStatus, setClaimStatus] = useState<TokenRefreshResponse>();
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -86,8 +90,9 @@ const ClaimWalletModal: React.FC<Props> = ({
   const [savingMessage, setSavingMessage] = useState<string>();
   const [emailAddress, setEmailAddress] = useState<string>();
   const [recoveryPhrase, setRecoveryPhrase] = useState<string>();
+  const [oneTimeCode, setOneTimeCode] = useState<string>();
   const [custodyWallet, setCustodyWallet] = useState(initialCustodyWallet);
-  const [state] = useFireblocksState();
+  const [state, saveState] = useFireblocksState();
 
   useEffect(() => {
     if (custodyWallet) {
@@ -107,6 +112,8 @@ const ClaimWalletModal: React.FC<Props> = ({
       setRecoveryPhrase(value);
     } else if (id === 'emailAddress') {
       setEmailAddress(value);
+    } else if (id === 'oneTimeCode') {
+      setOneTimeCode(value);
     }
   };
 
@@ -117,65 +124,117 @@ const ClaimWalletModal: React.FC<Props> = ({
   };
 
   const handleSave = async () => {
-    // start claiming process
     try {
       setIsSaving(true);
       setSavingMessage(t('wallet.configuringWalletShort'));
 
-      if (!custodyWallet?.secret) {
-        return;
+      if (!claimStatus) {
+        await processPassword();
+      } else {
+        await processOtp();
       }
-
-      // validate the email address
-      if (!emailAddress || !isEmailValid(emailAddress)) {
-        setErrorMessage(t('common.enterValidEmail'));
-        return;
-      }
-
-      // validate password entered
-      if (!recoveryPhrase) {
-        setErrorMessage(t('common.enterValidPassword'));
-        return;
-      }
-
-      // validate password strength
-      if (!isValidWalletPasswordFormat(recoveryPhrase)) {
-        setErrorMessage(t('wallet.resetPasswordStrength'));
-        return;
-      }
-
-      // check for email already onboarded
-      const onboardStatus = await getOnboardingStatus(emailAddress);
-      if (onboardStatus?.active) {
-        setErrorMessage(t('wallet.emailInUse'));
-        return;
-      }
-
-      // start request to claim the wallet
-      const claimResult = await claimMpcCustodyWallet(custodyWallet.secret, {
-        emailAddress,
-        password: recoveryPhrase,
-      });
-      if (claimResult?.state !== CustodyState.SELF_CUSTODY) {
-        setErrorMessage(t('wallet.claimWalletError'));
-        return;
-      }
-
-      // wait for the operation to be completed
-      while (true) {
-        const c = await getMpcCustodyWallet(custodyWallet.secret, true);
-        if (c?.status === 'COMPLETED') {
-          break;
-        }
-        await sleep(1000);
-      }
-
-      // operation is completed
-      setErrorMessage(t('common.success'));
-      onComplete(emailAddress, recoveryPhrase);
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const processPassword = async () => {
+    if (!custodyWallet?.secret) {
+      return;
+    }
+
+    // validate the email address
+    if (!emailAddress || !isEmailValid(emailAddress)) {
+      setErrorMessage(t('common.enterValidEmail'));
+      return;
+    }
+
+    // validate password entered
+    if (!recoveryPhrase) {
+      setErrorMessage(t('common.enterValidPassword'));
+      return;
+    }
+
+    // validate password strength
+    if (!isValidWalletPasswordFormat(recoveryPhrase)) {
+      setErrorMessage(t('wallet.resetPasswordStrength'));
+      return;
+    }
+
+    // check for email already onboarded
+    const onboardStatus = await getOnboardingStatus(emailAddress);
+    if (onboardStatus?.active) {
+      setErrorMessage(t('wallet.emailInUse'));
+      return;
+    }
+
+    // start request to claim the wallet
+    const claimResult = await claimMpcCustodyWallet(custodyWallet.secret, {
+      emailAddress,
+      password: recoveryPhrase,
+    });
+    if (claimResult?.state !== CustodyState.SELF_CUSTODY) {
+      setErrorMessage(t('wallet.claimWalletError'));
+      return;
+    }
+
+    // wait for the operation to be completed
+    while (true) {
+      const c = await getMpcCustodyWallet(custodyWallet.secret, true);
+      if (c?.status === 'COMPLETED') {
+        break;
+      }
+      await sleep(1000);
+    }
+
+    // generate a one-time code for the new username and password
+    const signInToken = await signIn(emailAddress, recoveryPhrase);
+    if (!signInToken?.status) {
+      setErrorMessage(t('wallet.signInError'));
+      return;
+    }
+
+    // prompt the user to confirm the one-time code
+    setIsDirty(false);
+    setClaimStatus(signInToken);
+  };
+
+  const processOtp = async () => {
+    if (!claimStatus || !emailAddress || !recoveryPhrase || !oneTimeCode) {
+      return;
+    }
+
+    // verify the user provided one-time code
+    const otpResponse = await signInOtp(
+      claimStatus.accessToken,
+      'EMAIL',
+      oneTimeCode,
+    );
+    if (!otpResponse?.accessToken || !otpResponse?.refreshToken) {
+      setErrorMessage(t('wallet.signInOtpError'));
+      return;
+    }
+
+    // store the wallet service JWT tokens at desired persistence level
+    await saveBootstrapState(
+      {
+        assets: [],
+        bootstrapToken: claimStatus.accessToken,
+        refreshToken: otpResponse.refreshToken,
+        deviceId: '',
+        custodyState: {
+          state: CustodyState.SELF_CUSTODY,
+          status: 'COMPLETED',
+        },
+      },
+      state,
+      saveState,
+      otpResponse.accessToken,
+    );
+
+    // operation is completed
+    setErrorMessage(t('common.success'));
+    onComplete(otpResponse.accessToken);
   };
 
   const isValidWalletPasswordFormat = (password: string): boolean => {
@@ -191,50 +250,71 @@ const ClaimWalletModal: React.FC<Props> = ({
     <Box className={classes.container}>
       <Box className={cx(classes.content, classes.centered)}>
         <Typography mb={5}>
-          <Markdown>{t('wallet.claimWalletDescription')}</Markdown>
+          <Markdown>
+            {claimStatus && emailAddress
+              ? t('wallet.claimWalletOtp', {emailAddress})
+              : t('wallet.claimWalletDescription')}
+          </Markdown>
         </Typography>
-        <ManageInput
-          id="emailAddress"
-          value={emailAddress}
-          autoComplete="username"
-          label={t('wallet.emailAddress')}
-          placeholder={t('common.enterYourEmail')}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          stacked={false}
-          disabled={isSaving}
-        />
-        <ManageInput
-          mt={2}
-          id="recoveryPhrase"
-          value={recoveryPhrase}
-          label={t('wallet.recoveryPhrase')}
-          placeholder={t('wallet.enterRecoveryPhrase')}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          disabled={isSaving}
-          type={passwordVisible ? undefined : 'password'}
-          autoComplete="current-password"
-          endAdornment={
-            <IconButton
-              className={classes.passwordIcon}
-              onClick={() => {
-                setPasswordVisible(!passwordVisible);
-              }}
-            >
-              {passwordVisible ? (
-                <Tooltip title={t('common.passwordHide')}>
-                  <VisibilityOffOutlinedIcon />
-                </Tooltip>
-              ) : (
-                <Tooltip title={t('common.passwordShow')}>
-                  <VisibilityOutlinedIcon />
-                </Tooltip>
-              )}
-            </IconButton>
-          }
-          stacked={false}
-        />
+        {claimStatus && (
+          <ManageInput
+            id="oneTimeCode"
+            value={oneTimeCode}
+            autoComplete="one-time-code"
+            label={t('wallet.oneTimeCode')}
+            placeholder={t('wallet.enterBootstrapCode')}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            stacked={false}
+            disabled={isSaving}
+          />
+        )}
+        {!claimStatus && (
+          <ManageInput
+            id="emailAddress"
+            value={emailAddress}
+            autoComplete="username"
+            label={t('wallet.emailAddress')}
+            placeholder={t('common.enterYourEmail')}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            stacked={false}
+            disabled={isSaving}
+          />
+        )}
+        {!claimStatus && (
+          <ManageInput
+            mt={2}
+            id="recoveryPhrase"
+            value={recoveryPhrase}
+            label={t('wallet.recoveryPhrase')}
+            placeholder={t('wallet.enterRecoveryPhrase')}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            disabled={isSaving}
+            type={passwordVisible ? undefined : 'password'}
+            autoComplete="current-password"
+            endAdornment={
+              <IconButton
+                className={classes.passwordIcon}
+                onClick={() => {
+                  setPasswordVisible(!passwordVisible);
+                }}
+              >
+                {passwordVisible ? (
+                  <Tooltip title={t('common.passwordHide')}>
+                    <VisibilityOffOutlinedIcon />
+                  </Tooltip>
+                ) : (
+                  <Tooltip title={t('common.passwordShow')}>
+                    <VisibilityOutlinedIcon />
+                  </Tooltip>
+                )}
+              </IconButton>
+            }
+            stacked={false}
+          />
+        )}
       </Box>
       <Box mt={3} className={classes.content}>
         <LoadingButton
@@ -252,7 +332,9 @@ const ClaimWalletModal: React.FC<Props> = ({
             ) : undefined
           }
         >
-          {errorMessage || t('wallet.claimWalletCtaButton')}
+          {errorMessage || claimStatus
+            ? t('wallet.completeSetup')
+            : t('wallet.claimWalletCtaButton')}
         </LoadingButton>
       </Box>
     </Box>

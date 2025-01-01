@@ -142,14 +142,6 @@ const WalletPage = () => {
     setAuthComplete(true);
   };
 
-  const handleClaimComplete = async (v: string) => {
-    await localStorageWrapper.clear();
-    sessionStorage.clear();
-    window.location.href = `${
-      config.UD_ME_BASE_URL
-    }/wallet?${EMAIL_PARAM}=${encodeURIComponent(v)}`;
-  };
-
   return (
     <Box className={classes.container}>
       <NextSeo {...seoTags} />
@@ -198,7 +190,6 @@ const WalletPage = () => {
                   onUpdate={(_t: DomainProfileTabType) => {
                     handleAuthComplete();
                   }}
-                  onClaimComplete={handleClaimComplete}
                   setAuthAddress={setAuthAddress}
                   setButtonComponent={setAuthButton}
                   isNewUser={!emailAddress}

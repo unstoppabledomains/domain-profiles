@@ -14,7 +14,7 @@ import {
   isDomainValidForManagement,
   useTranslationContext,
 } from '../../lib';
-import {TokenRefreshResponse} from '../../lib/types/fireBlocks';
+import type {TokenRefreshResponse} from '../../lib/types/fireBlocks';
 import type {DomainProfileTabType} from '../Manage';
 import type {ManageTabProps} from '../Manage/common/types';
 import Modal from '../Modal';

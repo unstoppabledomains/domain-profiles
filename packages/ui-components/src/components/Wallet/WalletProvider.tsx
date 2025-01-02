@@ -194,7 +194,6 @@ export const WalletProvider: React.FC<
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const {data: featureFlags} = useFeatureFlags();
   const {setShowSuccessAnimation} = useDomainConfig();
-  const [isStateLoaded, setIsStateLoaded] = useState(false);
   const [isWalletLoaded, setIsWalletLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -779,7 +778,6 @@ export const WalletProvider: React.FC<
       // state before returning
       await handleLogout();
     } finally {
-      setIsStateLoaded(true);
       setIsWalletLoaded(true);
     }
   };
@@ -1293,14 +1291,12 @@ export const WalletProvider: React.FC<
           ))
         )
       ) : (
-        isStateLoaded && (
-          <Box className={classes.loadingContainer}>
-            <OperationStatus
-              icon={<LockOutlinedIcon />}
-              label={t('wallet.loadingWallet')}
-            />
-          </Box>
-        )
+        <Box className={classes.loadingContainer}>
+          <OperationStatus
+            icon={<LockOutlinedIcon />}
+            label={t('wallet.loadingWallet')}
+          />
+        </Box>
       )}
     </Box>
   );

@@ -4,7 +4,7 @@ import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
 import EnhancedEncryptionOutlinedIcon from '@mui/icons-material/EnhancedEncryptionOutlined';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import Logout from '@mui/icons-material/Logout';
-import MedicalServicesOutlinedIcon from '@mui/icons-material/MedicalServicesOutlined';
+import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import SupportIcon from '@mui/icons-material/Support';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
@@ -27,7 +27,7 @@ interface Props {
   onGetDomainClicked?: () => void;
   onDomainsClicked?: () => void;
   onWalletClicked?: () => void;
-  onRecoveryLinkClicked?: () => void;
+  onSecurityCenterClicked?: () => void;
   onSettingsClicked?: () => void;
   onSupportClicked?: () => void;
   onMessagingClicked?: () => void;
@@ -74,7 +74,7 @@ const DropDownMenu: React.FC<Props> = ({
   onGetDomainClicked,
   onDomainsClicked,
   onWalletClicked,
-  onRecoveryLinkClicked,
+  onSecurityCenterClicked,
   onSettingsClicked,
   onSupportClicked,
   onMessagingClicked,
@@ -203,15 +203,15 @@ const DropDownMenu: React.FC<Props> = ({
           </Typography>
         </div>
       )}
-      {onRecoveryLinkClicked && (
+      {onSecurityCenterClicked && (
         <div
-          data-testid={`recovery-link-button`}
+          data-testid={`security-center-button`}
           className={classes.container}
-          onClick={onRecoveryLinkClicked}
+          onClick={onSecurityCenterClicked}
         >
-          <MedicalServicesOutlinedIcon className={classes.settingsIcon} />
+          <SecurityOutlinedIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
-            {t('wallet.recoveryKit')}
+            {t('wallet.securityCenter')}
           </Typography>
         </div>
       )}

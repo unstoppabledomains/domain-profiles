@@ -7,7 +7,7 @@ import {
 import {notifyEvent} from '../lib/error';
 import {getBootstrapState} from '../lib/fireBlocks/storage/state';
 import type {GetOperationStatusResponse} from '../lib/types/fireBlocks';
-import {MAX_RETRIES} from '../lib/types/fireBlocks';
+import {TX_MAX_RETRY} from '../lib/types/fireBlocks';
 import {getAsset} from '../lib/wallet/asset';
 import useFireblocksAccessToken from './useFireblocksAccessToken';
 import useFireblocksState from './useFireblocksState';
@@ -122,7 +122,7 @@ const useFireblocksTxSigner = (): FireblocksTxSigner => {
       async () => await signingFn(chainId, contractAddress, data, value),
       {
         delay: 100,
-        maxTry: MAX_RETRIES,
+        maxTry: TX_MAX_RETRY,
         onError: (err: Error, currentTry: number) => {
           notifyEvent(err, 'warning', 'Wallet', 'Signature', {
             msg: 'encountered transaction error in retry logic',

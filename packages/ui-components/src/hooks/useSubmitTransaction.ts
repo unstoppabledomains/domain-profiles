@@ -11,11 +11,10 @@ import {getRecordKeys} from '../components/Manage/common/verification/types';
 import type {TokenEntry} from '../lib';
 import {TokenType} from '../lib';
 import {notifyEvent} from '../lib/error';
-import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../lib/fireBlocks/client';
 import {isEmailValid} from '../lib/isEmailValid';
 import {pollForSuccess} from '../lib/poll';
+import {FB_MAX_RETRY, FB_WAIT_TIME_MS,OperationStatusType} from '../lib/types/fireBlocks';
 import type {AccountAsset, GetOperationResponse} from '../lib/types/fireBlocks';
-import {OperationStatusType} from '../lib/types/fireBlocks';
 import {createErc20TransferTx} from '../lib/wallet/evm/token';
 import {
   broadcastTx,

@@ -10,12 +10,12 @@ import {getBlockchainSymbol} from '../components/Manage/common/verification/type
 import {CustodyState} from '../lib';
 import {notifyEvent} from '../lib/error';
 import {fetchApi} from '../lib/fetchApi';
-import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../lib/fireBlocks/client';
 import {
   getBootstrapState,
   saveBootstrapState,
 } from '../lib/fireBlocks/storage/state';
 import {sleep} from '../lib/sleep';
+import {FB_MAX_RETRY, FB_WAIT_TIME_MS,EIP_712_KEY} from '../lib/types/fireBlocks';
 import type {
   AccountAsset,
   CreateTransaction,
@@ -28,7 +28,6 @@ import type {
   GetTokenResponse,
   TokenRefreshResponse,
 } from '../lib/types/fireBlocks';
-import {EIP_712_KEY} from '../lib/types/fireBlocks';
 import {getAsset} from '../lib/wallet/asset';
 
 export enum OperationStatus {

@@ -50,10 +50,9 @@ import {
   notifyEvent,
   useTranslationContext,
 } from '../../lib';
-import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../../lib/fireBlocks/client';
 import {pollForSuccess} from '../../lib/poll';
+import {FB_MAX_RETRY, FB_WAIT_TIME_MS,OperationStatusType} from '../../lib/types/fireBlocks';
 import type {GetOperationResponse} from '../../lib/types/fireBlocks';
-import {OperationStatusType} from '../../lib/types/fireBlocks';
 import type {
   RouteQuote,
   SwingV2AllowanceRequest,

@@ -1,14 +1,10 @@
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
@@ -196,7 +192,6 @@ export const WalletProvider: React.FC<
   const [isWalletLoaded, setIsWalletLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
-  const [passwordVisible, setPasswordVisible] = useState(false);
   const [configState, setConfigState] = useState(
     initialState || WalletConfigState.PasswordEntry,
   );
@@ -1234,26 +1229,8 @@ export const WalletProvider: React.FC<
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     disabled={isSaving}
-                    type={passwordVisible ? undefined : 'password'}
+                    type={'password'}
                     autoComplete="current-password"
-                    endAdornment={
-                      <IconButton
-                        className={classes.passwordIcon}
-                        onClick={() => {
-                          setPasswordVisible(!passwordVisible);
-                        }}
-                      >
-                        {passwordVisible ? (
-                          <Tooltip title={t('common.passwordHide')}>
-                            <VisibilityOffOutlinedIcon />
-                          </Tooltip>
-                        ) : (
-                          <Tooltip title={t('common.passwordShow')}>
-                            <VisibilityOutlinedIcon />
-                          </Tooltip>
-                        )}
-                      </IconButton>
-                    }
                     stacked={false}
                   />
                   {recoveryToken && (
@@ -1266,27 +1243,9 @@ export const WalletProvider: React.FC<
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
                       stacked={false}
-                      type={passwordVisible ? undefined : 'password'}
+                      type={'password'}
                       autoComplete="current-password"
                       disabled={isSaving}
-                      endAdornment={
-                        <IconButton
-                          className={classes.passwordIcon}
-                          onClick={() => {
-                            setPasswordVisible(!passwordVisible);
-                          }}
-                        >
-                          {passwordVisible ? (
-                            <Tooltip title={t('common.passwordHide')}>
-                              <VisibilityOffOutlinedIcon />
-                            </Tooltip>
-                          ) : (
-                            <Tooltip title={t('common.passwordShow')}>
-                              <VisibilityOutlinedIcon />
-                            </Tooltip>
-                          )}
-                        </IconButton>
-                      }
                     />
                   )}
                 </form>

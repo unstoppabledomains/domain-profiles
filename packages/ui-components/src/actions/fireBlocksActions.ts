@@ -40,7 +40,6 @@ export enum SendCryptoStatusMessage {
   CREATING_WALLET = 'Preparing transfer...',
   CHECKING_QUEUE = 'Checking queued transfers...',
   STARTING_TRANSACTION = 'Starting transfer...',
-  WAITING_TO_SIGN = 'Waiting to approve transfer...',
   SIGNING = 'Approving transfer...',
   SUBMITTING_TRANSACTION = 'Submitting transfer...',
   WAITING_FOR_TRANSACTION = 'Successfully submitted your transfer!',
@@ -547,7 +546,6 @@ export const signAndWait = async (
     if (opts?.onStatusChange) {
       opts.onStatusChange('waiting to sign with local key');
     }
-    let signedWithClient = false;
     for (let i = 0; i < FB_MAX_RETRY; i++) {
       const operationStatus = await getOperationStatus(
         accessToken,
@@ -559,13 +557,12 @@ export const signAndWait = async (
 
       // sign the Fireblocks transaction ID when requested
       if (
-        !signedWithClient &&
         operationStatus.status === 'SIGNATURE_REQUIRED' &&
         operationStatus.transaction?.externalVendorTransactionId
       ) {
         // indicate status change
         if (opts?.onStatusChange) {
-          opts.onStatusChange('waiting for other signers');
+          opts.onStatusChange('signing');
         }
       }
 

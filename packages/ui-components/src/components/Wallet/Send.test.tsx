@@ -7,17 +7,12 @@ import {CustodyState} from '../../lib';
 import * as fireBlocksState from '../../lib/fireBlocks/storage/state';
 import type {GetEstimateTransactionResponse} from '../../lib/types/fireBlocks';
 import {VALID_ETH_ADDRESS} from '../../tests/common';
-import {
-  mockAccountAsset,
-  mockFireblocksClient,
-  mockWallets,
-} from '../../tests/mocks/wallet';
+import {mockAccountAsset, mockWallets} from '../../tests/mocks/wallet';
 import {customRender} from '../../tests/test-utils';
 import Send from './Send';
 
 const defaultProps = {
   onCancelClick: jest.fn(),
-  getClient: async () => mockFireblocksClient(),
   accessToken: 'dummy_access_token',
   wallets: mockWallets(),
 };

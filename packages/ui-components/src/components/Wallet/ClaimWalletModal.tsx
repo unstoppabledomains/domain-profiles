@@ -1,10 +1,6 @@
-import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
@@ -28,7 +24,7 @@ import {
   useTranslationContext,
 } from '../../lib';
 import {sleep} from '../../lib/sleep';
-import {TokenRefreshResponse} from '../../lib/types/fireBlocks';
+import type {TokenRefreshResponse} from '../../lib/types/fireBlocks';
 import ManageInput from '../Manage/common/ManageInput';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -85,7 +81,6 @@ const ClaimWalletModal: React.FC<Props> = ({
   const [claimStatus, setClaimStatus] = useState<TokenRefreshResponse>();
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [passwordVisible, setPasswordVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>();
   const [savingMessage, setSavingMessage] = useState<string>();
   const [emailAddress, setEmailAddress] = useState<string>();
@@ -292,26 +287,8 @@ const ClaimWalletModal: React.FC<Props> = ({
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             disabled={isSaving}
-            type={passwordVisible ? undefined : 'password'}
+            type={'password'}
             autoComplete="current-password"
-            endAdornment={
-              <IconButton
-                className={classes.passwordIcon}
-                onClick={() => {
-                  setPasswordVisible(!passwordVisible);
-                }}
-              >
-                {passwordVisible ? (
-                  <Tooltip title={t('common.passwordHide')}>
-                    <VisibilityOffOutlinedIcon />
-                  </Tooltip>
-                ) : (
-                  <Tooltip title={t('common.passwordShow')}>
-                    <VisibilityOutlinedIcon />
-                  </Tooltip>
-                )}
-              </IconButton>
-            }
             stacked={false}
           />
         )}

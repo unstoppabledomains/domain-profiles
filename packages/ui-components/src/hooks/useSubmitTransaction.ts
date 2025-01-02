@@ -132,7 +132,7 @@ export const useSubmitTransaction = ({
           );
 
           // sign and wait for the signature value
-          setStatusMessage(SendCryptoStatusMessage.WAITING_TO_SIGN);
+          setStatusMessage(SendCryptoStatusMessage.SIGNING);
           const signedTx = await signTransaction(
             tx,
             token.walletAddress,
@@ -182,7 +182,7 @@ export const useSubmitTransaction = ({
           );
 
           // sign and wait for the signature value
-          setStatusMessage(SendCryptoStatusMessage.WAITING_TO_SIGN);
+          setStatusMessage(SendCryptoStatusMessage.SIGNING);
           const signedTx = await signTransaction(
             tx,
             fromAddress,
@@ -249,7 +249,7 @@ export const useSubmitTransaction = ({
       if (!operationResponse) {
         throw new Error('Error starting transaction');
       }
-      setStatusMessage(SendCryptoStatusMessage.WAITING_TO_SIGN);
+      setStatusMessage(SendCryptoStatusMessage.SIGNING);
       await pollForSignature(operationResponse);
       setStatusMessage(SendCryptoStatusMessage.SUBMITTING_TRANSACTION);
       await pollForCompletion(operationResponse);

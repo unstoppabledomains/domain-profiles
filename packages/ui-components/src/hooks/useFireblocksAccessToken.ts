@@ -7,7 +7,7 @@ import {
 import {localStorageWrapper} from '../components/Chat/storage';
 import {CustodyState} from '../lib';
 import {notifyEvent} from '../lib/error';
-import {getBootstrapState} from '../lib/fireBlocks/storage/state';
+import {getBootstrapState} from '../lib/wallet/storage/state';
 import {isChromeStorageSupported} from './useChromeStorage';
 import useFireblocksState from './useFireblocksState';
 import useWeb3Context from './useWeb3Context';

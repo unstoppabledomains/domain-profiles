@@ -47,14 +47,14 @@ import {
   useTranslationContext,
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
+import {sleep} from '../../lib/sleep';
+import type {TokenRefreshResponse} from '../../lib/types/fireBlocks';
+import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {
   getBootstrapState,
   saveBootstrapState,
   saveMpcCustodyState,
-} from '../../lib/fireBlocks/storage/state';
-import {sleep} from '../../lib/sleep';
-import type {TokenRefreshResponse} from '../../lib/types/fireBlocks';
-import type {SerializedIdentityResponse} from '../../lib/types/identity';
+} from '../../lib/wallet/storage/state';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {localStorageWrapper} from '../Chat/storage';
 import {DomainProfileTabType} from '../Manage/DomainProfile';

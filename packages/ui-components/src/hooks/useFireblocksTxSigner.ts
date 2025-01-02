@@ -5,10 +5,10 @@ import {
   signAndWait,
 } from '../actions/fireBlocksActions';
 import {notifyEvent} from '../lib/error';
-import {getBootstrapState} from '../lib/fireBlocks/storage/state';
 import type {GetOperationStatusResponse} from '../lib/types/fireBlocks';
 import {TX_MAX_RETRY} from '../lib/types/fireBlocks';
 import {getAsset} from '../lib/wallet/asset';
+import {getBootstrapState} from '../lib/wallet/storage/state';
 import useFireblocksAccessToken from './useFireblocksAccessToken';
 import useFireblocksState from './useFireblocksState';
 

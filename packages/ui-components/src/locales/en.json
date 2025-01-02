@@ -928,7 +928,7 @@
     "createWallet": "Create a new wallet",
     "emailAddress": "Email address",
     "emailInUse": "Email already associated with a wallet",
-    "enterBootstrapCode": "Enter Unstoppable Lite Wallet one-time code",
+    "enterOneTimeCode": "Enter your one-time code",
     "enterRecoveryPhrase": "Enter your password",
     "enterRecoveryPhraseConfirmation": "Confirm your new password",
     "enterResetPassword": "Enter your new password",

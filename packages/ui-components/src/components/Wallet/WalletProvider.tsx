@@ -210,7 +210,7 @@ export const WalletProvider: React.FC<
   // wallet recovery state variables
   const {accessToken, setAccessToken} = useWeb3Context();
   const [loginState, setLoginState] = useState<TokenRefreshResponse>();
-  const [bootstrapCode, setBootstrapCode] = useState<string>();
+  const [oneTimeCode, setOneTimeCode] = useState<string>();
   const [recoveryPhrase, setRecoveryPhrase] = useState(initialRecoveryPhrase);
   const [recoveryPhraseConfirmation, setRecoveryPhraseConfirmation] = useState(
     initialRecoveryPhrase,
@@ -389,7 +389,7 @@ export const WalletProvider: React.FC<
     isSaving,
     isDirty,
     configState,
-    bootstrapCode,
+    oneTimeCode,
     emailAddress,
     recoveryPhrase,
     recoveryPhraseConfirmation,
@@ -757,10 +757,16 @@ export const WalletProvider: React.FC<
       }
 
       // retrieve a new access token
-      const newAccessToken = await getAccessToken();
-      if (newAccessToken) {
-        setAccessToken(newAccessToken);
-        return;
+      try {
+        const newAccessToken = await getAccessToken();
+        if (newAccessToken) {
+          setAccessToken(newAccessToken);
+          return;
+        }
+      } catch (e) {
+        notifyEvent(e, 'warning', 'Wallet', 'Authorization', {
+          msg: 'unable to retrieve access token',
+        });
       }
 
       // unable to retrieve access token, so revert back to configuration
@@ -779,8 +785,8 @@ export const WalletProvider: React.FC<
       setRecoveryPhrase(value);
     } else if (id === 'recoveryPhraseConfirmation') {
       setRecoveryPhraseConfirmation(value);
-    } else if (id === 'bootstrapCode') {
-      setBootstrapCode(value);
+    } else if (id === 'oneTimeCode') {
+      setOneTimeCode(value);
     } else if (id === 'emailAddress') {
       setEmailAddress(value);
     }
@@ -792,7 +798,7 @@ export const WalletProvider: React.FC<
 
   const handleBack = () => {
     // clear input variables
-    setBootstrapCode(undefined);
+    setOneTimeCode(undefined);
     setIsDirty(true);
     setErrorMessage(undefined);
     setConfigState(WalletConfigState.PasswordEntry);
@@ -805,7 +811,7 @@ export const WalletProvider: React.FC<
 
   const handleLogout = async () => {
     // clear input variables
-    setBootstrapCode(undefined);
+    setOneTimeCode(undefined);
     setPersistKeys(forceRememberOnDevice);
     setEmailAddress(undefined);
     setRecoveryPhrase(undefined);
@@ -834,11 +840,13 @@ export const WalletProvider: React.FC<
     setIsDirty(false);
 
     if (configState === WalletConfigState.NeedsOnboarding) {
+      // switch to onboarding mode
       processNeedsOnboarding();
     } else if (configState === WalletConfigState.OnboardWithCustody) {
+      // submit new wallet request
       await processOnboardWithCustody();
     } else if (configState === WalletConfigState.OtpEntry) {
-      // submit the bootstrap code
+      // submit the one time code
       await processOtp();
     } else if (configState === WalletConfigState.PasswordEntry) {
       // submit the recovery phrase
@@ -852,10 +860,6 @@ export const WalletProvider: React.FC<
   const handlePersistChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPersistKeys(event.target.checked);
     setIsDirty(true);
-  };
-
-  const handleTryAgain = () => {
-    setErrorMessage(undefined);
   };
 
   const processOnboardWithCustody = async () => {
@@ -1008,8 +1012,8 @@ export const WalletProvider: React.FC<
   };
 
   const processOtp = async () => {
-    // bootstrap and recovery phrase code is required
-    if (!bootstrapCode || !recoveryPhrase || !loginState) {
+    // one time code and recovery phrase are required
+    if (!oneTimeCode || !recoveryPhrase || !loginState) {
       return;
     }
 
@@ -1033,13 +1037,13 @@ export const WalletProvider: React.FC<
       ? await recoverTokenOtp(
           loginState.accessToken,
           loginState.status === 'MFA_EMAIL_REQUIRED' ? 'EMAIL' : 'OTP',
-          bootstrapCode,
+          oneTimeCode,
           recoveryPhrase,
         )
       : await signInOtp(
           loginState.accessToken,
           loginState.status === 'MFA_EMAIL_REQUIRED' ? 'EMAIL' : 'OTP',
-          bootstrapCode,
+          oneTimeCode,
         );
     if (!otpResponse?.accessToken || !otpResponse?.refreshToken) {
       setErrorMessage(t('wallet.signInOtpError'));
@@ -1129,11 +1133,11 @@ export const WalletProvider: React.FC<
             </Typography>
             <ManageInput
               mt={2}
-              id="bootstrapCode"
-              value={bootstrapCode}
+              id="oneTimeCode"
+              value={oneTimeCode}
               autoComplete="one-time-code"
               label={t('wallet.oneTimeCode')}
-              placeholder={t('wallet.enterBootstrapCode')}
+              placeholder={t('wallet.enterOneTimeCode')}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               stacked={true}
@@ -1160,9 +1164,7 @@ export const WalletProvider: React.FC<
                           <Typography
                             variant="caption"
                             className={
-                              bootstrapCode &&
-                              bootstrapCode.length > 0 &&
-                              !isSaving
+                              oneTimeCode && oneTimeCode.length > 0 && !isSaving
                                 ? classes.enableDescription
                                 : undefined
                             }

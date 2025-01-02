@@ -86,7 +86,6 @@ export const SubmitTransaction: React.FC<Props> = ({
     SendCryptoStatusMessage.CREATING_WALLET,
     SendCryptoStatusMessage.CHECKING_QUEUE,
     SendCryptoStatusMessage.STARTING_TRANSACTION,
-    SendCryptoStatusMessage.SIGNING,
     SendCryptoStatusMessage.WAITING_FOR_TRANSACTION,
     SendCryptoStatusMessage.TRANSACTION_COMPLETED,
   ];

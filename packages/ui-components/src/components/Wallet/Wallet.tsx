@@ -14,6 +14,7 @@ import {
   isDomainValidForManagement,
   useTranslationContext,
 } from '../../lib';
+import {TokenRefreshResponse} from '../../lib/types/fireBlocks';
 import type {DomainProfileTabType} from '../Manage';
 import type {ManageTabProps} from '../Manage/common/types';
 import Modal from '../Modal';
@@ -46,8 +47,13 @@ export const Wallet: React.FC<
     forceRememberOnDevice?: boolean;
     isNewUser?: boolean;
     loginClicked?: boolean;
+    loginState?: TokenRefreshResponse;
     setAuthAddress?: (v: string) => void;
-    onLoginInitiated?: (emailAddress: string, password: string) => void;
+    onLoginInitiated?: (
+      emailAddress: string,
+      password: string,
+      state: TokenRefreshResponse,
+    ) => void;
     onError?: () => void;
     onLogout?: () => void;
     onDisconnect?: () => void;
@@ -67,6 +73,7 @@ export const Wallet: React.FC<
   disableBasicHeader,
   isNewUser,
   loginClicked,
+  loginState,
   fullScreenModals,
   forceRememberOnDevice,
   onUpdate,
@@ -180,6 +187,7 @@ export const Wallet: React.FC<
         initialState={
           isNewUser ? WalletConfigState.OnboardWithCustody : undefined
         }
+        initialLoginState={loginState}
       />
       {isLoaded && !isCustodyWallet && isWeb3DepsLoading && (
         <AccessWalletModal

@@ -151,13 +151,18 @@ export const WalletProvider: React.FC<
     recoveryToken?: string;
     onError?: () => void;
     onLoaded?: (v: boolean) => void;
-    onLoginInitiated?: (emailAddress: string, password: string) => void;
+    onLoginInitiated?: (
+      emailAddress: string,
+      password: string,
+      state: TokenRefreshResponse,
+    ) => void;
     onClaimWallet?: () => void;
     setIsFetching?: (v?: boolean) => void;
     isHeaderClicked: boolean;
     setIsHeaderClicked?: (v: boolean) => void;
     setAuthAddress?: (v: string) => void;
     initialState?: WalletConfigState;
+    initialLoginState?: TokenRefreshResponse;
     fullScreenModals?: boolean;
     forceRememberOnDevice?: boolean;
     loginClicked?: boolean;
@@ -180,6 +185,7 @@ export const WalletProvider: React.FC<
   recoveryPhrase: initialRecoveryPhrase,
   recoveryToken,
   initialState,
+  initialLoginState,
   loginClicked,
 }) => {
   // component state variables
@@ -209,7 +215,7 @@ export const WalletProvider: React.FC<
 
   // wallet recovery state variables
   const {accessToken, setAccessToken} = useWeb3Context();
-  const [loginState, setLoginState] = useState<TokenRefreshResponse>();
+  const [loginState, setLoginState] = useState(initialLoginState);
   const [oneTimeCode, setOneTimeCode] = useState<string>();
   const [recoveryPhrase, setRecoveryPhrase] = useState(initialRecoveryPhrase);
   const [recoveryPhraseConfirmation, setRecoveryPhraseConfirmation] = useState(
@@ -967,12 +973,6 @@ export const WalletProvider: React.FC<
       return;
     }
 
-    // raise event for login initiated if requested, which may be required
-    // for state management in other parent components
-    if (onLoginInitiated && emailAddress) {
-      onLoginInitiated(emailAddress, recoveryPhrase);
-    }
-
     // validate the sign in status
     if (!tokenStatus?.accessToken || tokenStatus.message) {
       notifyEvent('sign in error', 'error', 'Wallet', 'Authorization', {
@@ -980,6 +980,12 @@ export const WalletProvider: React.FC<
       });
       setErrorMessage(t('wallet.signInError'));
       return;
+    }
+
+    // raise event for login initiated if requested, which may be required
+    // for state management in other parent components
+    if (onLoginInitiated && emailAddress) {
+      onLoginInitiated(emailAddress, recoveryPhrase, tokenStatus);
     }
 
     // collect 2FA code if necessary

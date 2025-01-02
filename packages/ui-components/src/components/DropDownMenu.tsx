@@ -1,7 +1,6 @@
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
 import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
-import EnhancedEncryptionOutlinedIcon from '@mui/icons-material/EnhancedEncryptionOutlined';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import Logout from '@mui/icons-material/Logout';
 import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
@@ -233,9 +232,9 @@ const DropDownMenu: React.FC<Props> = ({
           className={classes.container}
           onClick={onClaimWalletClicked}
         >
-          <EnhancedEncryptionOutlinedIcon className={classes.settingsIcon} />
+          <SecurityOutlinedIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
-            {t('wallet.createPassword')}
+            {t('wallet.securityCenter')}
           </Typography>
         </div>
       )}

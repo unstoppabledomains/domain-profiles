@@ -96,6 +96,11 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
     <Box className={classes.container}>
       <Box className={classes.content}>
         <WalletPreference
+          title={t('wallet.recoveryPhrase')}
+          description={t('wallet.recoveryPhraseEnabled')}
+          icon={<GppGoodOutlinedIcon className={classes.iconEnabled} />}
+        />
+        <WalletPreference
           title={t('wallet.recoveryKit')}
           description={t('wallet.recoveryKitManage')}
           icon={<GppGoodOutlinedIcon className={classes.iconEnabled} />}

@@ -69,11 +69,17 @@ const WALLET_PASSWORD_SPECIAL_CHARACTER_VALIDATION_REGEX =
 
 type Props = {
   custodyWallet?: CustodyWallet;
+  onClaimInitiated?: (
+    emailAddress: string,
+    password: string,
+    state: TokenRefreshResponse,
+  ) => void;
   onComplete: (accessToken: string) => void;
 };
 
 const ClaimWalletModal: React.FC<Props> = ({
   custodyWallet: initialCustodyWallet,
+  onClaimInitiated,
   onComplete,
 }) => {
   const {classes, cx} = useStyles();
@@ -189,7 +195,18 @@ const ClaimWalletModal: React.FC<Props> = ({
       return;
     }
 
-    // prompt the user to confirm the one-time code
+    // clear all storage state to ensure the user is prompted to sign-in next
+    // time they open the app. If the user waits for claiming to complete in
+    // the current window, they'll be able to complete sign in without leaving.
+    await saveState({});
+
+    // callback if requested
+    if (onClaimInitiated) {
+      onClaimInitiated(emailAddress, recoveryPhrase, signInToken);
+    }
+
+    // prompt the user to confirm the one-time code, which will complete the
+    // sign-in process and generate a wallet access token.
     setIsDirty(false);
     setClaimStatus(signInToken);
   };
@@ -309,7 +326,9 @@ const ClaimWalletModal: React.FC<Props> = ({
             ) : undefined
           }
         >
-          {errorMessage || claimStatus
+          {errorMessage
+            ? errorMessage
+            : claimStatus
             ? t('wallet.completeSetup')
             : t('wallet.claimWalletCtaButton')}
         </LoadingButton>

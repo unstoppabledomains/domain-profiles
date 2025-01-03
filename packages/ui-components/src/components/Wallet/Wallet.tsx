@@ -208,7 +208,10 @@ export const Wallet: React.FC<
           titleStyle={classes.modalTitleStyle}
           onClose={handleClaimModalClose}
         >
-          <ClaimWalletModal onComplete={handleClaimComplete} />
+          <ClaimWalletModal
+            onClaimInitiated={onLoginInitiated}
+            onComplete={handleClaimComplete}
+          />
         </Modal>
       )}
     </Box>

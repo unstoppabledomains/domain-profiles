@@ -516,14 +516,6 @@ export const WalletProvider: React.FC<
         : undefined,
     ]);
 
-    // set authenticated address if applicable
-    if (setAuthAddress && isWalletLoaded) {
-      const accountAddress = accountAddresses.find(v => isEthAddress(v));
-      if (accountAddress) {
-        setAuthAddress(accountAddress);
-      }
-    }
-
     // set payment config status
     setPaymentConfigStatus(paymentConfig);
 
@@ -563,6 +555,14 @@ export const WalletProvider: React.FC<
     // clear fetching flag if provided
     if (setIsFetching) {
       setIsFetching(false);
+    }
+
+    // set authenticated address if applicable
+    if (setAuthAddress && isWalletLoaded) {
+      const accountAddress = accountAddresses.find(v => isEthAddress(v));
+      if (accountAddress) {
+        setAuthAddress(accountAddress);
+      }
     }
 
     // if data was retrieved from cache, call an async force refresh to ensure new

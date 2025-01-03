@@ -20,6 +20,7 @@ import {
   CustodyState,
   getBootstrapState,
   isEmailValid,
+  notifyEvent,
   saveBootstrapState,
   useTranslationContext,
 } from '../../lib';
@@ -169,6 +170,20 @@ const ClaimWalletModal: React.FC<Props> = ({
       return;
     }
 
+    // retrieve current state
+    const bootstrapState = getBootstrapState(state);
+    if (!bootstrapState) {
+      // should not enter this state but needs to be checked
+      notifyEvent(
+        'error loading bootstrap state during claim',
+        'error',
+        'Wallet',
+        'Configuration',
+      );
+      setErrorMessage(t('wallet.claimWalletError'));
+      return;
+    }
+
     // start request to claim the wallet
     const claimResult = await claimMpcCustodyWallet(custodyWallet.secret, {
       emailAddress,
@@ -179,6 +194,12 @@ const ClaimWalletModal: React.FC<Props> = ({
       return;
     }
 
+    // update to CLAIMING state to ensure the user is prompted to sign-in next
+    // time they open the app. If the user waits for claiming to complete in
+    // the current window, they'll be able to complete sign in without leaving.
+    bootstrapState.custodyState.state = CustodyState.CLAIMING;
+    await saveBootstrapState(bootstrapState, state, saveState);
+
     // wait for the operation to be completed
     while (true) {
       const c = await getMpcCustodyWallet(custodyWallet.secret, true);
@@ -188,17 +209,16 @@ const ClaimWalletModal: React.FC<Props> = ({
       await sleep(1000);
     }
 
+    // set state to SELF_CUSTODY now that claiming is complete
+    bootstrapState.custodyState.state = CustodyState.SELF_CUSTODY;
+    await saveBootstrapState(bootstrapState, state, saveState);
+
     // generate a one-time code for the new username and password
     const signInToken = await signIn(emailAddress, recoveryPhrase);
     if (!signInToken?.status) {
       setErrorMessage(t('wallet.signInError'));
       return;
     }
-
-    // clear all storage state to ensure the user is prompted to sign-in next
-    // time they open the app. If the user waits for claiming to complete in
-    // the current window, they'll be able to complete sign in without leaving.
-    await saveState({});
 
     // callback if requested
     if (onClaimInitiated) {

@@ -3,6 +3,7 @@ import type {SerializedPriceHistory, TokenType} from './domain';
 export enum CustodyState {
   CUSTODY = 'CUSTODY',
   SELF_CUSTODY = 'SELF_CUSTODY',
+  CLAIMING = 'CLAIMING',
 }
 
 export interface CustodyWallet {

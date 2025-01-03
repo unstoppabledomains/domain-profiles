@@ -742,6 +742,12 @@ export const WalletProvider: React.FC<
         return;
       }
 
+      // check for claiming state and sign the user out
+      if (existingState.custodyState?.state === CustodyState.CLAIMING) {
+        await handleLogout();
+        return;
+      }
+
       // check for custody state and the availability of custody secret
       if (
         existingState.custodyState?.state === CustodyState.CUSTODY &&

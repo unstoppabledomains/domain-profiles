@@ -1,9 +1,10 @@
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
 import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
+import EnhancedEncryptionOutlinedIcon from '@mui/icons-material/EnhancedEncryptionOutlined';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import Logout from '@mui/icons-material/Logout';
-import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
+import MedicalServicesOutlinedIcon from '@mui/icons-material/MedicalServicesOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import SupportIcon from '@mui/icons-material/Support';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
@@ -26,7 +27,7 @@ interface Props {
   onGetDomainClicked?: () => void;
   onDomainsClicked?: () => void;
   onWalletClicked?: () => void;
-  onSecurityCenterClicked?: () => void;
+  onRecoveryLinkClicked?: () => void;
   onSettingsClicked?: () => void;
   onSupportClicked?: () => void;
   onMessagingClicked?: () => void;
@@ -73,7 +74,7 @@ const DropDownMenu: React.FC<Props> = ({
   onGetDomainClicked,
   onDomainsClicked,
   onWalletClicked,
-  onSecurityCenterClicked,
+  onRecoveryLinkClicked,
   onSettingsClicked,
   onSupportClicked,
   onMessagingClicked,
@@ -202,15 +203,15 @@ const DropDownMenu: React.FC<Props> = ({
           </Typography>
         </div>
       )}
-      {onSecurityCenterClicked && (
+      {onRecoveryLinkClicked && (
         <div
-          data-testid={`security-center-button`}
+          data-testid={`recovery-link-button`}
           className={classes.container}
-          onClick={onSecurityCenterClicked}
+          onClick={onRecoveryLinkClicked}
         >
-          <SecurityOutlinedIcon className={classes.settingsIcon} />
+          <MedicalServicesOutlinedIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
-            {t('wallet.securityCenter')}
+            {t('wallet.recoveryKit')}
           </Typography>
         </div>
       )}
@@ -232,9 +233,9 @@ const DropDownMenu: React.FC<Props> = ({
           className={classes.container}
           onClick={onClaimWalletClicked}
         >
-          <SecurityOutlinedIcon className={classes.settingsIcon} />
+          <EnhancedEncryptionOutlinedIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
-            {t('wallet.securityCenter')}
+            {t('wallet.createPassword')}
           </Typography>
         </div>
       )}

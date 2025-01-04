@@ -67,30 +67,35 @@ const WalletPage = () => {
     setIsReloadChecked(true);
   }, [walletState, recoveryToken, emailAddress]);
 
+  // load query string params
+  useEffect(() => {
+    if (!params) {
+      return;
+    }
+
+    // select email address if specified in parameter
+    if (params[EMAIL_PARAM] && typeof params[EMAIL_PARAM] === 'string') {
+      setEmailAddress(params[EMAIL_PARAM]);
+    }
+
+    // select recovery if specified in parameter
+    if (
+      params[RECOVERY_TOKEN_PARAM] &&
+      typeof params[RECOVERY_TOKEN_PARAM] === 'string'
+    ) {
+      setRecoveryToken(params[RECOVERY_TOKEN_PARAM]);
+      return;
+    }
+  }, [params]);
+
   // load the existing wallet if singed in
   useEffect(() => {
-    if (!isMounted() || !params) {
+    if (!isMounted()) {
       return;
     }
 
     const loadWallet = async () => {
       try {
-        if (params) {
-          // select email address if specified in parameter
-          if (params[EMAIL_PARAM] && typeof params[EMAIL_PARAM] === 'string') {
-            setEmailAddress(params[EMAIL_PARAM]);
-          }
-
-          // select recovery if specified in parameter
-          if (
-            params[RECOVERY_TOKEN_PARAM] &&
-            typeof params[RECOVERY_TOKEN_PARAM] === 'string'
-          ) {
-            setRecoveryToken(params[RECOVERY_TOKEN_PARAM]);
-            return;
-          }
-        }
-
         // retrieve state of logged in wallet (if any)
         const signInState = getBootstrapState(walletState);
         if (!signInState) {
@@ -136,10 +141,18 @@ const WalletPage = () => {
       }
     };
     void loadWallet();
-  }, [isMounted, authComplete, params]);
+  }, [isMounted, authComplete]);
 
   const handleAuthComplete = () => {
     setAuthComplete(true);
+  };
+
+  const handleClaimComplete = async (v: string) => {
+    await localStorageWrapper.clear();
+    sessionStorage.clear();
+    window.location.href = `${
+      config.UD_ME_BASE_URL
+    }/wallet?${EMAIL_PARAM}=${encodeURIComponent(v)}`;
   };
 
   return (
@@ -190,6 +203,7 @@ const WalletPage = () => {
                   onUpdate={(_t: DomainProfileTabType) => {
                     handleAuthComplete();
                   }}
+                  onClaimComplete={handleClaimComplete}
                   setAuthAddress={setAuthAddress}
                   setButtonComponent={setAuthButton}
                   isNewUser={!emailAddress}

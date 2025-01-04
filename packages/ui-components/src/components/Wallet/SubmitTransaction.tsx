@@ -1,3 +1,4 @@
+import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
 import CheckIcon from '@mui/icons-material/Check';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import Box from '@mui/material/Box';
@@ -49,6 +50,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 type Props = {
   onCloseClick: () => void;
+  getClient: () => Promise<IFireblocksNCW>;
   onInvitation: (
     emailAddress: string,
   ) => Promise<Record<string, string> | undefined>;
@@ -62,6 +64,7 @@ type Props = {
 
 export const SubmitTransaction: React.FC<Props> = ({
   onCloseClick,
+  getClient,
   onInvitation,
   accessToken,
   asset,
@@ -79,6 +82,7 @@ export const SubmitTransaction: React.FC<Props> = ({
     token,
     recipientAddress,
     amount,
+    getClient,
     onInvitation,
   });
 
@@ -86,6 +90,7 @@ export const SubmitTransaction: React.FC<Props> = ({
     SendCryptoStatusMessage.CREATING_WALLET,
     SendCryptoStatusMessage.CHECKING_QUEUE,
     SendCryptoStatusMessage.STARTING_TRANSACTION,
+    SendCryptoStatusMessage.WAITING_TO_SIGN,
     SendCryptoStatusMessage.WAITING_FOR_TRANSACTION,
     SendCryptoStatusMessage.TRANSACTION_COMPLETED,
   ];

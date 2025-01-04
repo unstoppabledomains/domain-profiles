@@ -9,7 +9,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useFireblocksState} from '../../hooks';
 import {useTranslationContext} from '../../lib';
-import {getBootstrapState} from '../../lib/wallet/storage/state';
+import {getBootstrapState} from '../../lib/fireBlocks/storage/state';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {BuyCryptoButton, ReceiveCryptoButton} from './LetsGetStartedCta';
 

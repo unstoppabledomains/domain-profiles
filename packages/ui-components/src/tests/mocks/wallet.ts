@@ -1,3 +1,5 @@
+import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
+
 import type {TokenEntry} from '../../lib/types';
 import type {
   SerializedPublicDomainProfileData,
@@ -24,6 +26,28 @@ export const mockAccountAsset = (): AccountAsset => {
       },
     },
     accountId: '',
+  };
+};
+
+export const mockFireblocksClient = (): IFireblocksNCW => {
+  return {
+    dispose: jest.fn(),
+    clearAllStorage: jest.fn(),
+    generateMPCKeys: jest.fn(),
+    stopMpcDeviceSetup: jest.fn(),
+    signTransaction: jest.fn(),
+    stopInProgressSignTransaction: jest.fn(),
+    getInProgressSigningTxId: jest.fn(),
+    backupKeys: jest.fn(),
+    recoverKeys: jest.fn(),
+    requestJoinExistingWallet: jest.fn(),
+    approveJoinWalletRequest: jest.fn(),
+    stopJoinWallet: jest.fn(),
+    takeover: jest.fn(),
+    exportFullKeys: jest.fn(),
+    deriveAssetKey: jest.fn(),
+    getKeysStatus: jest.fn(),
+    getPhysicalDeviceId: jest.fn(),
   };
 };
 

@@ -5,10 +5,11 @@ import {
   signAndWait,
 } from '../actions/fireBlocksActions';
 import {notifyEvent} from '../lib/error';
+import {getFireBlocksClient} from '../lib/fireBlocks/client';
+import {getBootstrapState} from '../lib/fireBlocks/storage/state';
 import type {GetOperationStatusResponse} from '../lib/types/fireBlocks';
-import {TX_MAX_RETRY} from '../lib/types/fireBlocks';
+import {MAX_RETRIES} from '../lib/types/fireBlocks';
 import {getAsset} from '../lib/wallet/asset';
-import {getBootstrapState} from '../lib/wallet/storage/state';
 import useFireblocksAccessToken from './useFireblocksAccessToken';
 import useFireblocksState from './useFireblocksState';
 
@@ -20,7 +21,7 @@ export type FireblocksTxSigner = (
 ) => Promise<string>;
 
 const useFireblocksTxSigner = (): FireblocksTxSigner => {
-  const [state] = useFireblocksState();
+  const [state, saveState] = useFireblocksState();
   const getAccessToken = useFireblocksAccessToken();
 
   // define the fireblocks client signer
@@ -39,6 +40,16 @@ const useFireblocksTxSigner = (): FireblocksTxSigner => {
     // retrieve an access token if required
     const accessToken = await getAccessToken();
 
+    // retrieve a new client instance
+    const client = await getFireBlocksClient(
+      clientState.deviceId,
+      accessToken,
+      {
+        state,
+        saveState,
+      },
+    );
+
     notifyEvent(
       'signing transaction with fireblocks client',
       'info',
@@ -46,6 +57,7 @@ const useFireblocksTxSigner = (): FireblocksTxSigner => {
       'Signature',
       {
         meta: {
+          deviceId: client.getPhysicalDeviceId(),
           contractAddress,
           data,
           value,
@@ -79,6 +91,9 @@ const useFireblocksTxSigner = (): FireblocksTxSigner => {
             value,
           },
         );
+      },
+      async (txId: string) => {
+        await client.signTransaction(txId);
       },
       {
         address: asset.address,
@@ -122,7 +137,7 @@ const useFireblocksTxSigner = (): FireblocksTxSigner => {
       async () => await signingFn(chainId, contractAddress, data, value),
       {
         delay: 100,
-        maxTry: TX_MAX_RETRY,
+        maxTry: MAX_RETRIES,
         onError: (err: Error, currentTry: number) => {
           notifyEvent(err, 'warning', 'Wallet', 'Signature', {
             msg: 'encountered transaction error in retry logic',

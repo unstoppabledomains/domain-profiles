@@ -14,7 +14,6 @@ import {
   isDomainValidForManagement,
   useTranslationContext,
 } from '../../lib';
-import type {TokenRefreshResponse} from '../../lib/types/fireBlocks';
 import type {DomainProfileTabType} from '../Manage';
 import type {ManageTabProps} from '../Manage/common/types';
 import Modal from '../Modal';
@@ -42,21 +41,18 @@ export const Wallet: React.FC<
     recoveryToken?: string;
     showMessages?: boolean;
     mode?: WalletMode;
+    disableInlineEducation?: boolean;
     disableBasicHeader?: boolean;
     fullScreenModals?: boolean;
     forceRememberOnDevice?: boolean;
     isNewUser?: boolean;
     loginClicked?: boolean;
-    loginState?: TokenRefreshResponse;
     setAuthAddress?: (v: string) => void;
-    onLoginInitiated?: (
-      emailAddress: string,
-      password: string,
-      state: TokenRefreshResponse,
-    ) => void;
+    onLoginInitiated?: (emailAddress: string, password: string) => void;
     onError?: () => void;
     onLogout?: () => void;
     onDisconnect?: () => void;
+    onClaimComplete?: (emailAddress: string, password: string) => void;
     onSettingsClick?: () => void;
     onMessagesClick?: () => void;
     onMessagePopoutClick?: (address?: string) => void;
@@ -70,16 +66,17 @@ export const Wallet: React.FC<
   recoveryToken,
   showMessages,
   mode = 'basic',
+  disableInlineEducation,
   disableBasicHeader,
   isNewUser,
   loginClicked,
-  loginState,
   fullScreenModals,
   forceRememberOnDevice,
   onUpdate,
   onError,
   onLoginInitiated,
   onLogout,
+  onClaimComplete,
   onDisconnect,
   onSettingsClick,
   onMessagesClick,
@@ -132,9 +129,12 @@ export const Wallet: React.FC<
     setShowClaimWalletModal(true);
   };
 
-  const handleClaimComplete = (token: string) => {
-    setAccessToken(token);
-    handleClaimModalClose();
+  const handleClaimComplete = (email: string, password: string) => {
+    if (onClaimComplete) {
+      onClaimComplete(email, password);
+    } else {
+      handleClaimModalClose();
+    }
   };
 
   const handleClaimModalClose = () => {
@@ -181,13 +181,13 @@ export const Wallet: React.FC<
         isHeaderClicked={isHeaderClicked}
         setIsHeaderClicked={setIsHeaderClicked}
         setAuthAddress={setAuthAddress}
+        disableInlineEducation={disableInlineEducation}
         fullScreenModals={fullScreenModals}
         forceRememberOnDevice={forceRememberOnDevice || isNewUser}
         loginClicked={loginClicked}
         initialState={
           isNewUser ? WalletConfigState.OnboardWithCustody : undefined
         }
-        initialLoginState={loginState}
       />
       {isLoaded && !isCustodyWallet && isWeb3DepsLoading && (
         <AccessWalletModal
@@ -208,10 +208,7 @@ export const Wallet: React.FC<
           titleStyle={classes.modalTitleStyle}
           onClose={handleClaimModalClose}
         >
-          <ClaimWalletModal
-            onClaimInitiated={onLoginInitiated}
-            onComplete={handleClaimComplete}
-          />
+          <ClaimWalletModal onComplete={handleClaimComplete} />
         </Modal>
       )}
     </Box>

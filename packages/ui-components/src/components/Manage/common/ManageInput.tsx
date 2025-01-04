@@ -2,6 +2,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
 import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
@@ -14,7 +15,7 @@ import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import React from 'react';
+import React, {useState} from 'react';
 
 import type {DomainProfileVisibilityValues} from '../../../lib';
 import {useTranslationContext} from '../../../lib';
@@ -104,11 +105,20 @@ const ManageInput: React.FC<ManageInputProps> = ({
 }) => {
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
+  const [currentType, setCurrentType] = useState(type);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const showPasswordAdornment = type === 'password' && !endAdornment;
+
   const handleChange = ({target}: React.ChangeEvent<HTMLInputElement>) => {
     onChange(
       target.id,
       disableTextTrimming ? target.value : target.value.trim(),
     );
+  };
+
+  const handlePasswordVisibilityClicked = () => {
+    setCurrentType(currentType === 'password' ? 'text' : 'password');
+    setPasswordVisible(!passwordVisible);
   };
 
   const handleAdornmentClick = (e: {stopPropagation: () => void}) => {
@@ -235,7 +245,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
               maxRows={rows}
               inputRef={inputRef}
               value={value || ''}
-              type={type}
+              type={currentType}
               inputProps={{
                 'data-testid': `input-${id}`,
                 className: !endAdornment && error ? classes.error : '',
@@ -255,38 +265,53 @@ const ManageInput: React.FC<ManageInputProps> = ({
               }}
               startAdornment={startAdornment}
               endAdornment={
-                endAdornment
-                  ? endAdornment
-                  : setPublicVisibilityValues && (
-                      <InputAdornment
-                        position="end"
-                        style={{paddingRight: '15px', position: 'relative'}}
+                showPasswordAdornment ? (
+                  <IconButton
+                    className={classes.passwordIcon}
+                    onClick={handlePasswordVisibilityClicked}
+                  >
+                    {passwordVisible ? (
+                      <Tooltip title={t('common.passwordHide')}>
+                        <VisibilityOffOutlinedIcon />
+                      </Tooltip>
+                    ) : (
+                      <Tooltip title={t('common.passwordShow')}>
+                        <VisibilityOutlinedIcon />
+                      </Tooltip>
+                    )}
+                  </IconButton>
+                ) : endAdornment ? (
+                  endAdornment
+                ) : (
+                  setPublicVisibilityValues && (
+                    <InputAdornment
+                      position="end"
+                      style={{paddingRight: '15px', position: 'relative'}}
+                    >
+                      {publicVisibilityValues &&
+                      publicVisibilityValues[id + 'Public'] ? (
+                        <Tooltip title={t('manage.publicData')}>
+                          <PublicOutlinedIcon className={classes.publicIcon} />
+                        </Tooltip>
+                      ) : (
+                        <Tooltip title={t('manage.privateData')}>
+                          <VisibilityOffOutlinedIcon
+                            className={classes.privateIcon}
+                          />
+                        </Tooltip>
+                      )}
+                      <IconButton
+                        data-testid="inlineToggle"
+                        aria-label="toggle public visibility"
+                        onClick={handleAdornmentClick}
+                        edge="end"
                       >
-                        {publicVisibilityValues &&
-                        publicVisibilityValues[id + 'Public'] ? (
-                          <Tooltip title={t('manage.publicData')}>
-                            <PublicOutlinedIcon
-                              className={classes.publicIcon}
-                            />
-                          </Tooltip>
-                        ) : (
-                          <Tooltip title={t('manage.privateData')}>
-                            <VisibilityOffOutlinedIcon
-                              className={classes.privateIcon}
-                            />
-                          </Tooltip>
-                        )}
-                        <IconButton
-                          data-testid="inlineToggle"
-                          aria-label="toggle public visibility"
-                          onClick={handleAdornmentClick}
-                          edge="end"
-                        >
-                          <ExpandMoreOutlinedIcon />
-                        </IconButton>
-                        <BasicCard></BasicCard>
-                      </InputAdornment>
-                    )
+                        <ExpandMoreOutlinedIcon />
+                      </IconButton>
+                      <BasicCard></BasicCard>
+                    </InputAdornment>
+                  )
+                )
               }
             />
             {helperText && <FormHelperText>{helperText}</FormHelperText>}

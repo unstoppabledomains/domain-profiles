@@ -18,14 +18,14 @@ import useFireblocksMessageSigner from '../../hooks/useFireblocksMessageSigner';
 import useFireblocksState from '../../hooks/useFireblocksState';
 import useFireblocksTxSigner from '../../hooks/useFireblocksTxSigner';
 import useWeb3Context from '../../hooks/useWeb3Context';
-import {
-  ReactSigner,
-  UD_COMPLETED_SIGNATURE,
-} from '../../lib/fireBlocks/reactSigner';
-import {getBootstrapState} from '../../lib/fireBlocks/storage/state';
 import useTranslationContext from '../../lib/i18n';
 import {WalletName} from '../../lib/types/wallet';
 import type {Web3Dependencies} from '../../lib/types/web3';
+import {
+  ReactSigner,
+  UD_COMPLETED_SIGNATURE,
+} from '../../lib/wallet/reactSigner';
+import {getBootstrapState} from '../../lib/wallet/storage/state';
 import useAccessWalletStyles from '../../styles/components/accessWallet.styles';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileTabType} from '../Manage/DomainProfile';

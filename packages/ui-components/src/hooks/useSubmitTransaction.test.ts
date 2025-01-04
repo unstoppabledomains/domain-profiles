@@ -1,15 +1,11 @@
 import {VALID_ETH_ADDRESS} from '../tests/common';
-import {
-  mockTokenEntry,
-  mockFireblocksClient,
-} from '../tests/mocks/wallet';
+import {mockTokenEntry} from '../tests/mocks/wallet';
 
 const defaultParams = {
   accessToken: 'dummy_access_token',
   token: mockTokenEntry(),
   recipientAddress: VALID_ETH_ADDRESS,
   amount: '10',
-  getClient: async () => mockFireblocksClient(),
 };
 
 describe('useSubmitTransaction()', () => {

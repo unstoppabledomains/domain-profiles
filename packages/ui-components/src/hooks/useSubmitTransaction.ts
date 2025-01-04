@@ -1,4 +1,3 @@
-import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
 import {useEffect, useRef, useState} from 'react';
 
 import {
@@ -12,11 +11,10 @@ import {getRecordKeys} from '../components/Manage/common/verification/types';
 import type {TokenEntry} from '../lib';
 import {TokenType} from '../lib';
 import {notifyEvent} from '../lib/error';
-import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../lib/fireBlocks/client';
 import {isEmailValid} from '../lib/isEmailValid';
 import {pollForSuccess} from '../lib/poll';
+import {FB_MAX_RETRY, FB_WAIT_TIME_MS,OperationStatusType} from '../lib/types/fireBlocks';
 import type {AccountAsset, GetOperationResponse} from '../lib/types/fireBlocks';
-import {OperationStatusType} from '../lib/types/fireBlocks';
 import {createErc20TransferTx} from '../lib/wallet/evm/token';
 import {
   broadcastTx,
@@ -35,7 +33,6 @@ export type Params = {
   token: TokenEntry;
   recipientAddress: string;
   amount: string;
-  getClient: () => Promise<IFireblocksNCW>;
   onInvitation: (
     emailAddress: string,
   ) => Promise<Record<string, string> | undefined>;
@@ -53,7 +50,6 @@ export const useSubmitTransaction = ({
   token,
   recipientAddress: initialRecipientAddress,
   amount,
-  getClient,
   onInvitation,
 }: Params) => {
   const {mappedResolverKeys} = useResolverKeys();
@@ -81,13 +77,7 @@ export const useSubmitTransaction = ({
         return;
       }
       // cancel any in progress transactions
-      const client = await getClient();
       try {
-        // cancel local transactions for this client instance
-        while (await client.getInProgressSigningTxId()) {
-          await client.stopInProgressSignTransaction();
-        }
-
         // cancel queued operations for this specific account asset, which must be
         // completed in case previous transactions are awaiting signature and in an
         // abandoned state from another client.
@@ -141,7 +131,7 @@ export const useSubmitTransaction = ({
           );
 
           // sign and wait for the signature value
-          setStatusMessage(SendCryptoStatusMessage.WAITING_TO_SIGN);
+          setStatusMessage(SendCryptoStatusMessage.SIGNING);
           const signedTx = await signTransaction(
             tx,
             token.walletAddress,
@@ -191,7 +181,7 @@ export const useSubmitTransaction = ({
           );
 
           // sign and wait for the signature value
-          setStatusMessage(SendCryptoStatusMessage.WAITING_TO_SIGN);
+          setStatusMessage(SendCryptoStatusMessage.SIGNING);
           const signedTx = await signTransaction(
             tx,
             fromAddress,
@@ -258,7 +248,7 @@ export const useSubmitTransaction = ({
       if (!operationResponse) {
         throw new Error('Error starting transaction');
       }
-      setStatusMessage(SendCryptoStatusMessage.WAITING_TO_SIGN);
+      setStatusMessage(SendCryptoStatusMessage.SIGNING);
       await pollForSignature(operationResponse);
       setStatusMessage(SendCryptoStatusMessage.SUBMITTING_TRANSACTION);
       await pollForCompletion(operationResponse);
@@ -286,16 +276,9 @@ export const useSubmitTransaction = ({
           operationStatus.status === OperationStatusType.FAILED
         ) {
           throw new Error('Error requesting transaction operation status');
-        }
-        if (
-          operationStatus.status === OperationStatusType.SIGNATURE_REQUIRED &&
-          operationStatus.transaction?.externalVendorTransactionId
-        ) {
-          setStatusMessage(SendCryptoStatusMessage.SIGNING);
-          const client = await getClient();
-          await client.signTransaction(
-            operationStatus.transaction.externalVendorTransactionId,
-          );
+        } else if (operationStatus.status === OperationStatusType.COMPLETED) {
+          return {success: true};
+        } else if (operationStatus.transaction?.id) {
           return {success: true};
         }
         return {success: false};

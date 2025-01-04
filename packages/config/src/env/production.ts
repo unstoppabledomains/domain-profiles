@@ -61,7 +61,7 @@ export default function getProductionConfig(): ConfigOverride {
       APP_URL: 'https://app.push.org',
     },
     WALLETS: {
-      HOST_URL: 'https://api.unstoppabledomains.com/wallet/v1',
+      HOST_URL: 'https://api.unstoppabledomains.com/wallet',
       GET_WALLET_URL:
         'https://unstoppabledomains.com/cart?product=unstoppable-wallet',
       LAUNCH_API_KEY:

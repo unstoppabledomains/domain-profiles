@@ -10,29 +10,31 @@ import {getBlockchainSymbol} from '../components/Manage/common/verification/type
 import {CustodyState} from '../lib';
 import {notifyEvent} from '../lib/error';
 import {fetchApi} from '../lib/fetchApi';
-import {sleep} from '../lib/sleep';
 import {
-  EIP_712_KEY,
   FB_MAX_RETRY,
   FB_WAIT_TIME_MS,
-} from '../lib/types/fireBlocks';
+  getFireBlocksClient,
+} from '../lib/fireBlocks/client';
+import {
+  getBootstrapState,
+  saveBootstrapState,
+} from '../lib/fireBlocks/storage/state';
+import {sleep} from '../lib/sleep';
 import type {
   AccountAsset,
   CreateTransaction,
   GetAccountAssetsResponse,
   GetAccountsResponse,
+  GetAuthorizationTxResponse,
+  GetBootstrapTokenResponse,
   GetEstimateTransactionResponse,
   GetOperationListResponse,
   GetOperationResponse,
   GetOperationStatusResponse,
   GetTokenResponse,
-  TokenRefreshResponse,
 } from '../lib/types/fireBlocks';
+import {EIP_712_KEY} from '../lib/types/fireBlocks';
 import {getAsset} from '../lib/wallet/asset';
-import {
-  getBootstrapState,
-  saveBootstrapState,
-} from '../lib/wallet/storage/state';
 
 export enum OperationStatus {
   QUEUED = 'QUEUED',
@@ -43,6 +45,7 @@ export enum SendCryptoStatusMessage {
   CREATING_WALLET = 'Preparing transfer...',
   CHECKING_QUEUE = 'Checking queued transfers...',
   STARTING_TRANSACTION = 'Starting transfer...',
+  WAITING_TO_SIGN = 'Waiting to approve transfer...',
   SIGNING = 'Approving transfer...',
   SUBMITTING_TRANSACTION = 'Submitting transfer...',
   WAITING_FOR_TRANSACTION = 'Successfully submitted your transfer!',
@@ -54,7 +57,7 @@ export const cancelOperation = async (
   accessToken: string,
   operationId: string,
 ): Promise<void> => {
-  return await fetchApi(`/v1/operations/${operationId}`, {
+  return await fetchApi(`/operations/${operationId}`, {
     method: 'DELETE',
     mode: 'cors',
     headers: {
@@ -81,6 +84,44 @@ export const cancelPendingOperations = async (
   return opsToCancel;
 };
 
+export const confirmAuthorizationTokenTx = async (
+  bootstrapJwt: string,
+): Promise<GetTokenResponse | undefined> => {
+  try {
+    // confirm the transaction to retrieve auth tokens
+    const getTokenResponse = await fetchApi<GetTokenResponse>(
+      '/auth/tokens/confirm',
+      {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Access-Control-Allow-Credentials': 'true',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${bootstrapJwt}`,
+        },
+        host: config.WALLETS.HOST_URL,
+        acceptStatusCodes: [400],
+      },
+    );
+
+    // return the successfully retrieved tokens
+    if (getTokenResponse?.accessToken) {
+      return getTokenResponse;
+    }
+
+    // retry if the state is reported as processing
+    if (getTokenResponse?.code === 'PROCESSING') {
+      await sleep(FB_MAX_RETRY);
+      return await confirmAuthorizationTokenTx(bootstrapJwt);
+    }
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
+      msg: 'error confirming authorization token tx',
+    });
+  }
+  return undefined;
+};
+
 export const createSignatureOperation = async (
   accessToken: string,
   accountId: string,
@@ -91,7 +132,7 @@ export const createSignatureOperation = async (
   try {
     // call the signature endpoint
     return await fetchApi<GetOperationResponse>(
-      `/v1/accounts/${accountId}/assets/${assetId}/signatures`,
+      `/accounts/${accountId}/assets/${assetId}/signatures`,
       {
         method: 'POST',
         mode: 'cors',
@@ -124,7 +165,7 @@ export const createTransactionOperation = async (
 ): Promise<GetOperationResponse | undefined> => {
   try {
     return await fetchApi<GetOperationResponse>(
-      `/v1/accounts/${accountId}/assets/${assetId}/transactions`,
+      `/accounts/${accountId}/assets/${assetId}/transactions`,
       {
         method: 'POST',
         mode: 'cors',
@@ -154,7 +195,7 @@ export const createTransactionOperation = async (
 // not be called directly.
 export const getAccessTokenInternal = async (
   refreshToken: string,
-  opts: {
+  opts?: {
     deviceId: string;
     state: Record<string, Record<string, string>>;
     saveState: (state: Record<string, Record<string, string>>) => void;
@@ -163,44 +204,43 @@ export const getAccessTokenInternal = async (
 ): Promise<GetTokenResponse | undefined> => {
   try {
     // retrieve a new set of tokens using the refresh token
-    const newTokens = await fetchApi<GetTokenResponse>(
-      '/v2/auth/tokens/refresh',
-      {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Access-Control-Allow-Credentials': 'true',
-          'Content-Type': 'application/json',
-        },
-        host: config.WALLETS.HOST_URL,
-        body: JSON.stringify({
-          refreshToken,
-        }),
+    const newTokens = await fetchApi<GetTokenResponse>('/auth/tokens/refresh', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
       },
-    );
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        refreshToken,
+      }),
+    });
 
-    // retrieve existing state
-    const existingState = getBootstrapState(opts.state);
+    if (opts) {
+      // retrieve existing state
+      const existingState = getBootstrapState(opts.state);
 
-    // save new state
-    await saveBootstrapState(
-      {
-        assets: existingState?.assets || [],
-        bootstrapToken: newTokens.bootstrapToken,
-        refreshToken: newTokens.refreshToken,
-        deviceId: opts.deviceId,
-        custodyState: {
-          state: CustodyState.SELF_CUSTODY,
-          status: 'COMPLETED',
+      // save new state
+      await saveBootstrapState(
+        {
+          assets: existingState?.assets || [],
+          bootstrapToken: newTokens.bootstrapToken,
+          refreshToken: newTokens.refreshToken,
+          deviceId: opts.deviceId,
+          custodyState: {
+            state: CustodyState.SELF_CUSTODY,
+            status: 'COMPLETED',
+          },
         },
-      },
-      opts.state,
-      opts.saveState,
-      newTokens.accessToken,
-    );
+        opts.state,
+        opts.saveState,
+        newTokens.accessToken,
+      );
 
-    // store access token in memory
-    opts.setAccessToken(newTokens.accessToken);
+      // store access token in memory
+      opts.setAccessToken(newTokens.accessToken);
+    }
     return newTokens;
   } catch (e) {
     notifyEvent(e, 'error', 'Wallet', 'Fetch', {
@@ -252,7 +292,7 @@ export const getAccounts = async (
 ): Promise<GetAccountsResponse | undefined> => {
   try {
     // retrieve a new set of tokens using the refresh token
-    return await fetchApi<GetAccountsResponse>('/v1/accounts', {
+    return await fetchApi<GetAccountsResponse>('/accounts', {
       mode: 'cors',
       headers: {
         'Access-Control-Allow-Credentials': 'true',
@@ -277,7 +317,7 @@ export const getAssets = async (
   try {
     // retrieve a new set of tokens using the refresh token
     return await fetchApi<GetAccountAssetsResponse>(
-      `/v1/accounts/${accountId}/assets${balance ? '?$expand=balance' : ''}`,
+      `/accounts/${accountId}/assets${balance ? '?$expand=balance' : ''}`,
       {
         mode: 'cors',
         headers: {
@@ -296,6 +336,92 @@ export const getAssets = async (
   return undefined;
 };
 
+export const getAuthorizationTokenTx = async (
+  bootstrapJwt: string,
+): Promise<GetAuthorizationTxResponse | undefined> => {
+  try {
+    // initialize a transaction to retrieve auth tokens
+    const txInitResponse = await fetchApi('/auth/tokens/setup', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${bootstrapJwt}`,
+      },
+      host: config.WALLETS.HOST_URL,
+    });
+    if (!txInitResponse) {
+      return;
+    }
+
+    // wait for the Tx to reach pending state
+    let tx = await getAuthorizationTokenTxStatus(bootstrapJwt);
+    for (
+      let i = 0;
+      i < FB_MAX_RETRY && tx?.status !== 'PENDING_SIGNATURE';
+      i++
+    ) {
+      if (!tx) {
+        return;
+      }
+      await sleep(FB_WAIT_TIME_MS);
+      tx = await getAuthorizationTokenTxStatus(bootstrapJwt);
+    }
+    return tx;
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
+      msg: 'error initializing authorization token tx',
+    });
+  }
+  return undefined;
+};
+
+export const getAuthorizationTokenTxStatus = async (
+  bootstrapJwt: string,
+): Promise<GetAuthorizationTxResponse | undefined> => {
+  try {
+    // initialize a transaction to retrieve auth tokens
+    return await fetchApi<GetAuthorizationTxResponse>('/auth/tokens/setup', {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        Authorization: `Bearer ${bootstrapJwt}`,
+      },
+      host: config.WALLETS.HOST_URL,
+    });
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
+      msg: 'error retrieving authorization token tx status',
+    });
+  }
+  return undefined;
+};
+
+export const getBootstrapToken = async (
+  bootstrapCode: string,
+  deviceId?: string,
+): Promise<GetBootstrapTokenResponse | undefined> => {
+  try {
+    return await fetchApi<GetBootstrapTokenResponse>('/auth/bootstrap', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({code: bootstrapCode, device: deviceId || null}),
+    });
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
+      msg: 'error retrieving bootstrap token',
+    });
+  }
+  return undefined;
+};
+
 export const getOperationList = async (
   accessToken: string,
   accountId: string,
@@ -306,7 +432,7 @@ export const getOperationList = async (
   ],
 ): Promise<GetOperationListResponse> => {
   return await fetchApi(
-    `/v1/operations?${QueryString.stringify(
+    `/operations?${QueryString.stringify(
       {
         assetId,
         accountId,
@@ -331,7 +457,7 @@ export const getOperationStatus = async (
   accessToken: string,
   operationId: string,
 ): Promise<GetOperationStatusResponse> => {
-  return await fetchApi(`/v1/operations/${operationId}`, {
+  return await fetchApi(`/operations/${operationId}`, {
     method: 'GET',
     mode: 'cors',
     headers: {
@@ -349,7 +475,7 @@ export const getTransactionGasEstimate = async (
   tx: CreateTransaction,
 ) => {
   return fetchApi<GetEstimateTransactionResponse>(
-    `/v1/estimates/accounts/${asset.accountId}/assets/${asset.id}/transactions`,
+    `/estimates/accounts/${asset.accountId}/assets/${asset.id}/transactions`,
     {
       method: 'POST',
       mode: 'cors',
@@ -375,7 +501,7 @@ export const getTransferGasEstimate = async (
   amount: string,
 ) => {
   return fetchApi<GetEstimateTransactionResponse>(
-    `/v1/estimates/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
+    `/estimates/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
     {
       method: 'POST',
       mode: 'cors',
@@ -400,7 +526,7 @@ export const getTransferOperationResponse = (
   amount: number,
 ) => {
   return fetchApi<GetOperationResponse>(
-    `/v1/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
+    `/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
     {
       method: 'POST',
       mode: 'cors',
@@ -418,11 +544,11 @@ export const getTransferOperationResponse = (
   );
 };
 
-export const recoverToken = async (
-  recoveryToken: string,
-): Promise<TokenRefreshResponse | undefined> => {
+export const sendBootstrapCode = async (
+  emailAddress: string,
+): Promise<boolean> => {
   try {
-    return await fetchApi('/v2/auth/tokens/recover', {
+    await fetchApi('/auth/bootstrap/email', {
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -430,45 +556,48 @@ export const recoverToken = async (
       },
       host: config.WALLETS.HOST_URL,
       body: JSON.stringify({
-        recoveryToken,
+        email: emailAddress,
       }),
     });
+    return true;
   } catch (e) {
     notifyEvent(e, 'error', 'Wallet', 'Fetch', {
-      msg: 'error sending reset request',
+      msg: 'error sending bootstrap code',
     });
   }
-  return undefined;
+  return false;
 };
 
-export const recoverTokenOtp = async (
-  accessToken: string,
-  type: string,
-  value: string,
-  newPassword: string,
-): Promise<TokenRefreshResponse | undefined> => {
+export const sendJoinRequest = async (
+  walletJoinRequestId: string,
+  bootstrapJwt: string,
+  recoveryPassphrase: string,
+): Promise<boolean> => {
   try {
-    return await fetchApi('/v2/auth/tokens', {
-      method: 'PATCH',
+    const joinResult = await fetchApi('/auth/devices/bootstrap', {
+      method: 'POST',
       mode: 'cors',
       headers: {
         'Access-Control-Allow-Credentials': 'true',
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${bootstrapJwt}`,
       },
       host: config.WALLETS.HOST_URL,
       body: JSON.stringify({
-        type,
-        value,
-        newPassword,
+        walletJoinRequestId,
+        recoveryPassphrase,
       }),
     });
+    if (!joinResult) {
+      return false;
+    }
+    return true;
   } catch (e) {
     notifyEvent(e, 'error', 'Wallet', 'Fetch', {
-      msg: 'error sending reset request',
+      msg: 'error retrieving bootstrap token',
     });
   }
-  return undefined;
+  return false;
 };
 
 export const sendRecoveryEmail = async (
@@ -476,7 +605,7 @@ export const sendRecoveryEmail = async (
   recoveryPassphrase: string,
 ): Promise<boolean> => {
   try {
-    const emailResult = await fetchApi('/v1/recovery/email', {
+    const emailResult = await fetchApi('/recovery/email', {
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -501,12 +630,47 @@ export const sendRecoveryEmail = async (
   return false;
 };
 
+export const sendResetRequest = async (
+  walletJoinRequestId: string,
+  bootstrapJwt: string,
+  recoveryToken: string,
+  newRecoveryPassphrase: string,
+): Promise<boolean> => {
+  try {
+    const resetResult = await fetchApi('/auth/devices/recover', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${bootstrapJwt}`,
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        recoveryToken,
+        newRecoveryPassphrase,
+        walletJoinRequestId,
+        sendNewRecoveryEmail: false,
+      }),
+    });
+    if (!resetResult) {
+      return false;
+    }
+    return true;
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
+      msg: 'error sending reset request',
+    });
+  }
+  return false;
+};
+
 export const sendRpcMessage = async <T>(
   message: unknown,
   jwt: string,
 ): Promise<T> => {
   try {
-    return await fetchApi<T>('/v1/rpc/messages', {
+    return await fetchApi<T>('/rpc/messages', {
       method: 'POST',
       mode: 'cors',
       credentials: 'include',
@@ -529,6 +693,7 @@ export const sendRpcMessage = async <T>(
 export const signAndWait = async (
   accessToken: string,
   onGetOperation: () => Promise<GetOperationResponse | undefined>,
+  onSignTx: (txId: string) => Promise<void>,
   opts?: {
     address?: string;
     onStatusChange?: (status: string) => void;
@@ -549,6 +714,7 @@ export const signAndWait = async (
     if (opts?.onStatusChange) {
       opts.onStatusChange('waiting to sign with local key');
     }
+    let signedWithClient = false;
     for (let i = 0; i < FB_MAX_RETRY; i++) {
       const operationStatus = await getOperationStatus(
         accessToken,
@@ -560,12 +726,20 @@ export const signAndWait = async (
 
       // sign the Fireblocks transaction ID when requested
       if (
+        !signedWithClient &&
         operationStatus.status === 'SIGNATURE_REQUIRED' &&
         operationStatus.transaction?.externalVendorTransactionId
       ) {
+        // request for the client to sign the Tx string
+        if (opts?.onStatusChange) {
+          opts.onStatusChange('signing with local key');
+        }
+        await onSignTx(operationStatus.transaction.externalVendorTransactionId);
+        signedWithClient = true;
+
         // indicate status change
         if (opts?.onStatusChange) {
-          opts.onStatusChange('signing');
+          opts.onStatusChange('waiting for other signers');
         }
       }
 
@@ -611,59 +785,6 @@ export const signAndWait = async (
   return undefined;
 };
 
-export const signIn = async (
-  emailAddress: string,
-  password: string,
-): Promise<TokenRefreshResponse | undefined> => {
-  try {
-    return await fetchApi('/v2/auth/tokens', {
-      method: 'POST',
-      mode: 'cors',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      host: config.WALLETS.HOST_URL,
-      body: JSON.stringify({
-        emailAddress,
-        password,
-      }),
-    });
-  } catch (e) {
-    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
-      msg: 'error signing in',
-    });
-  }
-  return undefined;
-};
-
-export const signInOtp = async (
-  accessToken: string,
-  type: 'OTP' | 'EMAIL',
-  value: string,
-): Promise<TokenRefreshResponse | undefined> => {
-  try {
-    return await fetchApi('/v2/auth/tokens', {
-      method: 'PATCH',
-      mode: 'cors',
-      headers: {
-        'Access-Control-Allow-Credentials': 'true',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      host: config.WALLETS.HOST_URL,
-      body: JSON.stringify({
-        type,
-        value,
-      }),
-    });
-  } catch (e) {
-    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
-      msg: 'error signing in',
-    });
-  }
-  return undefined;
-};
-
 export const signMessage = async (
   message: string,
   auth: {
@@ -684,12 +805,27 @@ export const signMessage = async (
     throw new Error('invalid configuration');
   }
 
+  // retrieve a new client instance
+  const client = await getFireBlocksClient(
+    clientState.deviceId,
+    auth.accessToken,
+    {
+      state: auth.state,
+      saveState: auth.saveState,
+    },
+  );
+
   notifyEvent(
     'signing message with fireblocks client',
     'info',
     'Wallet',
     'Signature',
-    {meta: {message}},
+    {
+      meta: {
+        deviceId: client.getPhysicalDeviceId(),
+        message,
+      },
+    },
   );
 
   // determine if a specific chain ID should override based upon a typed
@@ -743,6 +879,9 @@ export const signMessage = async (
         message,
         isTypedMessage,
       );
+    },
+    async (txId: string) => {
+      await client.signTransaction(txId);
     },
     {
       address: opts.address,

@@ -54,11 +54,7 @@ export interface CreateTransaction {
 }
 
 export const EIP_712_KEY = 'EIP712Domain';
-export const FB_MAX_RETRY = 100;
-export const FB_WAIT_TIME_MS = 1000;
-
 export const FireblocksStateKey = 'fireblocks-state';
-
 export interface GetAccountAssetsResponse {
   items: AccountAsset[];
 }
@@ -104,11 +100,11 @@ export interface GetEstimateTransactionResponse {
     };
   };
 }
+
 export interface GetOperationListResponse {
   '@type': string;
   items: Operation[];
 }
-
 export interface GetOperationResponse {
   '@type': string;
   operation: Operation;
@@ -127,12 +123,22 @@ export interface GetOperationStatusResponse {
     externalVendorTransactionId?: string;
   };
 }
+
 export interface GetTokenResponse {
   code?: 'SUCCESS' | 'PROCESSING';
   accessToken: string;
   refreshToken: string;
   bootstrapToken: string;
 }
+export interface IDeviceStore {
+  get(deviceId: string, key: string): Promise<string | null>;
+  set(deviceId: string, key: string, value: string): Promise<void>;
+  clear(deviceId: string, key: string): Promise<void>;
+  getAllKeys(deviceId: string): Promise<string[]>;
+}
+
+export const MAX_RETRIES = 5;
+
 export interface Operation {
   '@type': string;
   id: string;
@@ -159,15 +165,4 @@ export interface Parameters {
 
 export interface Result {
   signature: string;
-}
-
-export const TX_MAX_RETRY = 5;
-
-export interface TokenRefreshResponse {
-  '@type': string;
-  accessToken: string;
-  refreshToken?: string;
-  status: 'READY' | 'MFA_OTP_REQUIRED' | 'MFA_EMAIL_REQUIRED';
-  code?: string;
-  message?: string;
 }

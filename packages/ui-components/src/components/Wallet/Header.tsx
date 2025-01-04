@@ -26,7 +26,7 @@ import DropDownMenu from '../DropDownMenu';
 import Link from '../Link';
 import {DomainProfileModal} from '../Manage';
 import Modal from '../Modal';
-import SecurityCenterModal from './SecurityCenterModal';
+import RecoverySetupModal from './RecoverySetupModal';
 import type {WalletMode} from './index';
 
 const AVATAR_SIZE = 120;
@@ -213,8 +213,7 @@ export const Header: React.FC<Props> = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Modal states
-  const [isSecurityCenterModalOpen, setIsSecurityCenterModalOpen] =
-    useState(false);
+  const [isRecoveryModalOpen, setIsRecoveryModalOpen] = useState(false);
 
   const [domainToManage, setDomainToManage] = useState<string>();
 
@@ -229,8 +228,8 @@ export const Header: React.FC<Props> = ({
     setIsMenuOpen(false);
   };
 
-  const handleSecurityCenterClicked = () => {
-    setIsSecurityCenterModalOpen(true);
+  const handleRecoveryKitClicked = () => {
+    setIsRecoveryModalOpen(true);
     setIsMenuOpen(false);
   };
 
@@ -404,8 +403,8 @@ export const Header: React.FC<Props> = ({
             showMessages && isChatReady ? handleMessagingClicked : undefined
           }
           onSettingsClicked={accessToken ? onSettingsClick : undefined}
-          onSecurityCenterClicked={
-            accessToken ? handleSecurityCenterClicked : undefined
+          onRecoveryLinkClicked={
+            accessToken ? handleRecoveryKitClicked : undefined
           }
           onLogout={handleLogout}
           onDisconnect={
@@ -427,15 +426,15 @@ export const Header: React.FC<Props> = ({
           onUpdate={handleUpdateSuccess}
         />
       )}
-      {isSecurityCenterModalOpen && (
+      {isRecoveryModalOpen && (
         <Modal
-          title={t('wallet.securityCenter')}
-          open={isSecurityCenterModalOpen}
+          title={t('wallet.recoveryKit')}
+          open={isRecoveryModalOpen}
           fullScreen={fullScreenModals}
           titleStyle={classes.modalTitleStyle}
-          onClose={() => setIsSecurityCenterModalOpen(false)}
+          onClose={() => setIsRecoveryModalOpen(false)}
         >
-          <SecurityCenterModal accessToken={accessToken} />
+          <RecoverySetupModal accessToken={accessToken} />
         </Modal>
       )}
     </Box>

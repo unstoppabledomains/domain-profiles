@@ -128,9 +128,6 @@ const useStyles = makeStyles<void, 'error'>()(
     privateIcon: {
       fill: theme.palette.neutralShades[400],
     },
-    passwordIcon: {
-      margin: theme.spacing(0.5),
-    },
     card: {
       zIndex: 2,
       position: 'absolute',

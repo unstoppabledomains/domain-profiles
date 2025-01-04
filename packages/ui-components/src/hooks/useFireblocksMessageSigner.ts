@@ -2,7 +2,7 @@ import {retryAsync} from 'ts-retry';
 
 import {signMessage} from '../actions/fireBlocksActions';
 import {notifyEvent} from '../lib/error';
-import {TX_MAX_RETRY} from '../lib/types/fireBlocks';
+import {MAX_RETRIES} from '../lib/types/fireBlocks';
 import useFireblocksAccessToken from './useFireblocksAccessToken';
 import useFireblocksState from './useFireblocksState';
 
@@ -40,7 +40,7 @@ const useFireblocksMessageSigner = (): FireblocksMessageSigner => {
         ),
       {
         delay: 100,
-        maxTry: TX_MAX_RETRY,
+        maxTry: MAX_RETRIES,
         onError: (err: Error, currentTry: number) => {
           notifyEvent(err, 'warning', 'Wallet', 'Signature', {
             msg: 'encountered signature error in retry logic',

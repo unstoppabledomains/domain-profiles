@@ -40,6 +40,8 @@ import {
   useTranslationContext,
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
+import {getFireBlocksClient} from '../../lib/fireBlocks/client';
+import {getBootstrapState} from '../../lib/fireBlocks/storage/state';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileList} from '../Domain';
@@ -353,6 +355,20 @@ export const Client: React.FC<ClientProps> = ({
   };
   let showPasswordCtaTimer: NodeJS.Timeout | undefined;
 
+  const getClient = async () => {
+    // retrieve client state
+    const clientState = getBootstrapState(state);
+    if (!clientState || !accessToken) {
+      throw new Error('invalid configuration');
+    }
+
+    // initialize and set the client
+    return await getFireBlocksClient(clientState.deviceId, accessToken, {
+      state,
+      saveState,
+    });
+  };
+
   const handleClaimWallet = async () => {
     closeSnackbar(CustodyState.CUSTODY);
     if (onClaimWallet) {
@@ -528,6 +544,7 @@ export const Client: React.FC<ClientProps> = ({
         {isSend && accessToken ? (
           <Box className={classes.panelContainer}>
             <Send
+              getClient={getClient}
               accessToken={accessToken}
               onCancelClick={handleCancel}
               onClickBuy={handleClickedBuy}
@@ -539,6 +556,7 @@ export const Client: React.FC<ClientProps> = ({
         ) : isSwap && accessToken ? (
           <Box className={classes.panelContainer}>
             <Swap
+              getClient={getClient}
               accessToken={accessToken}
               onCancelClick={handleCancel}
               onClickBuy={handleClickedBuy}

@@ -161,8 +161,6 @@ export interface Result {
   signature: string;
 }
 
-export const TX_MAX_RETRY = 5;
-
 export interface TokenRefreshResponse {
   '@type': string;
   accessToken: string;

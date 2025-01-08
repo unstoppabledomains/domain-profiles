@@ -188,6 +188,7 @@ export const DomainWalletTransactions: React.FC<
   isOwner,
   wallets,
   isError,
+  isLoadingWallets,
   verified,
   fullScreenModals,
   onBack,
@@ -533,6 +534,10 @@ export const DomainWalletTransactions: React.FC<
                 )}
               </Grid>
             </InfiniteScroll>
+          ) : isLoadingWallets ? (
+            <Box className={classes.infiniteScrollLoading}>
+              <CircularProgress className={classes.loadingSpinner} />
+            </Box>
           ) : (
             <Typography className={classes.noActivity} textAlign="center">
               {isError ? t('activity.retrieveError') : t('activity.noActivity')}
@@ -559,6 +564,7 @@ export type DomainWalletTransactionsProps = {
   accessToken?: string;
   isOwner?: boolean;
   isError?: boolean;
+  isLoadingWallets?: boolean;
   wallets?: SerializedWalletBalance[];
   minCount?: number;
   maxCount?: number;

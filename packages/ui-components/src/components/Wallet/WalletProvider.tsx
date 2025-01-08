@@ -408,12 +408,13 @@ export const WalletProvider: React.FC<
   const loadMpcWallets = async (
     forceRefresh?: boolean,
     showSpinner?: boolean,
+    fields?: string[],
   ) => {
     if (accessToken) {
-      await loadSelfCustodyWallets(forceRefresh, showSpinner);
+      await loadSelfCustodyWallets(forceRefresh, showSpinner, fields);
     } else if (custodySecret) {
       try {
-        await loadCustodyWallets(forceRefresh, showSpinner);
+        await loadCustodyWallets(forceRefresh, showSpinner, fields);
       } finally {
         setIsSaving(false);
         setIsWalletLoaded(true);
@@ -430,6 +431,7 @@ export const WalletProvider: React.FC<
   const loadSelfCustodyWallets = async (
     forceRefresh?: boolean,
     showSpinner?: boolean,
+    fields: string[] = ['native', 'price', 'token'],
   ) => {
     if (!accessToken) {
       return;
@@ -492,10 +494,7 @@ export const WalletProvider: React.FC<
             const addressPortfolio = await getWalletPortfolio(
               address,
               accessToken,
-              // request all fields except for NFT data, since this is
-              // not required in a wallet for domainers. The domains tab
-              // is populated directly from resolution API in other logic.
-              ['native', 'price', 'token', 'tx'],
+              fields,
               true,
             );
             if (!addressPortfolio) {
@@ -575,6 +574,7 @@ export const WalletProvider: React.FC<
   const loadCustodyWallets = async (
     forceRefresh?: boolean,
     showSpinner?: boolean,
+    fields: string[] = ['native', 'price', 'token'],
   ) => {
     if (!custodySecret) {
       return;
@@ -646,10 +646,7 @@ export const WalletProvider: React.FC<
         const addressPortfolio = await getWalletPortfolio(
           address,
           custodySecret,
-          // request all fields except for NFT data, since this is
-          // not required in a wallet for domainers. The domains tab
-          // is populated directly from resolution API in other logic.
-          ['native', 'price', 'token', 'tx'],
+          fields,
           true,
         );
         if (!addressPortfolio) {
@@ -802,8 +799,8 @@ export const WalletProvider: React.FC<
     }
   };
 
-  const handleRefresh = async (showSpinner?: boolean) => {
-    await loadMpcWallets(true, showSpinner);
+  const handleRefresh = async (showSpinner?: boolean, fields?: string[]) => {
+    await loadMpcWallets(true, showSpinner, fields);
   };
 
   const handleBack = () => {

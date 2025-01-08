@@ -3,6 +3,7 @@ import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
 import SendIcon from '@mui/icons-material/Send';
 import SouthOutlinedIcon from '@mui/icons-material/SouthOutlined';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
+import Avatar from '@mui/material/Avatar';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -364,10 +365,18 @@ export const DomainWalletTransactions: React.FC<
                   )
                 }
               >
-                <CryptoIcon
-                  currency={tx.symbol as CurrenciesType}
-                  className={classes.currencyIcon}
-                />
+                {tx.type === 'spl' && tx.imageUrl ? (
+                  <Avatar
+                    src={tx.imageUrl}
+                    alt={tx.symbol}
+                    className={classes.currencyIcon}
+                  />
+                ) : (
+                  <CryptoIcon
+                    currency={tx.symbol as CurrenciesType}
+                    className={classes.currencyIcon}
+                  />
+                )}
               </Badge>
             </Box>
           </Grid>

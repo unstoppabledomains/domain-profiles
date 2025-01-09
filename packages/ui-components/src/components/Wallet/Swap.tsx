@@ -40,6 +40,7 @@ import {
   setSwapTokenAllowance,
 } from '../../actions/swingActionsV2';
 import {useDomainConfig, useFireblocksState} from '../../hooks';
+import useFireblocksMessageSigner from '../../hooks/useFireblocksMessageSigner';
 import type {
   CreateTransaction,
   SerializedWalletBalance,
@@ -62,6 +63,12 @@ import type {
 } from '../../lib/types/swingXyzV2';
 import {getAsset} from '../../lib/wallet/asset';
 import {getAllTokens} from '../../lib/wallet/evm/token';
+import {
+  broadcastTx,
+  deserializeTxHex,
+  signTransaction,
+  waitForTx,
+} from '../../lib/wallet/solana/transaction';
 import {localStorageWrapper} from '../Chat';
 import Link from '../Link';
 import ManageInput from '../Manage/common/ManageInput';
@@ -182,6 +189,7 @@ const Swap: React.FC<Props> = ({
 
   // fireblocks state
   const [state] = useFireblocksState();
+  const fireblocksMessageSigner = useFireblocksMessageSigner();
 
   // operation state
   const [isGettingQuote, setIsGettingQuote] = useState(false);
@@ -831,28 +839,61 @@ const Swap: React.FC<Props> = ({
       }
 
       // create and validate the swap transaction
-      const swapTx: CreateTransaction = {
-        chainId: txResponse.fromChain.chainId,
-        to: txResponse.tx.to,
-        data: txResponse.tx.data,
-        value: txResponse.tx.value,
-        gasLimit: txResponse.tx.gas,
-      };
-      const operationResponse = await createTransactionOperation(
-        accessToken,
-        asset.accountId,
-        asset.id,
-        swapTx,
-      );
-      if (!operationResponse) {
-        throw new Error('error creating MPC transaction for swap');
+      if (txResponse.fromChain.slug.toLowerCase() === 'solana') {
+        // sign and the solana tx
+        const preparedTx = deserializeTxHex(txResponse.tx.data);
+        const signedTx = await signTransaction(
+          preparedTx,
+          sourceToken.walletAddress,
+          fireblocksMessageSigner,
+          accessToken,
+          false,
+        );
+
+        // broadcast the solana tx
+        const txHash = await broadcastTx(
+          signedTx,
+          sourceToken.walletAddress,
+          accessToken,
+        );
+
+        // retrieve the swing transaction status, which is an important step in
+        // registering the transaction on the Swing dashboard
+        await getSwapStatusV2(txResponse.id, txHash);
+        setShowSuccessAnimation(true);
+        setTxId(txHash);
+
+        // wait for solana tx
+        await waitForTx(txHash, sourceToken.walletAddress, accessToken);
+      } else {
+        // handle EVM transactions
+        const swapTx: CreateTransaction = {
+          chainId: txResponse.fromChain.chainId,
+          to: txResponse.tx.to,
+          data: txResponse.tx.data,
+          value: txResponse.tx.value,
+          gasLimit: txResponse.tx.gas,
+        };
+        const operationResponse = await createTransactionOperation(
+          accessToken,
+          asset.accountId,
+          asset.id,
+          swapTx,
+        );
+
+        // ensure an operation was created successfully
+        if (!operationResponse) {
+          throw new Error('error creating MPC transaction for swap');
+        }
+
+        // sign the swap transaction
+        await pollForSignature(operationResponse, txResponse.id);
+
+        // wait for complete and show set completion state
+        await pollForCompletion(operationResponse, txResponse.id);
       }
 
-      // sign the swap transaction
-      await pollForSignature(operationResponse, txResponse.id);
-
-      // wait for complete and show set completion state
-      await pollForCompletion(operationResponse, txResponse.id);
+      // transaction is complete
       setIsTxComplete(true);
     } catch (e) {
       setErrorMessage(t('swap.errorSwappingTokens'));

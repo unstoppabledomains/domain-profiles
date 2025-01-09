@@ -128,8 +128,6 @@ export default function getProductionConfig(): ConfigOverride {
               tokenSymbol: 'SOL',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/SOL/icon.svg',
-              // show in the list but do not allow interaction
-              disabledReason: 'Solana swaps coming soon',
             },
             {
               swing: {

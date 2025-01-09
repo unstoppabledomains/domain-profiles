@@ -5,10 +5,7 @@ import {
   getAssociatedTokenAddressSync,
   getOrCreateAssociatedTokenAccount,
 } from '@solana/spl-token';
-import type {
-  Connection,
-  ParsedAccountData,
-  Signer} from '@solana/web3.js';
+import type {Connection, ParsedAccountData, Signer} from '@solana/web3.js';
 import {
   ComputeBudgetProgram,
   LAMPORTS_PER_SOL,
@@ -18,6 +15,7 @@ import {
   TransactionMessage,
   VersionedTransaction,
 } from '@solana/web3.js';
+import bs58 from 'bs58';
 import {utils} from 'ethers';
 
 import type {FireblocksMessageSigner} from '../../../hooks/useFireblocksMessageSigner';
@@ -401,4 +399,26 @@ export const waitForTx = async (
     meta: {txHash},
   });
   throw new Error('transaction not confirmed');
+};
+
+export const deserializeTxB58 = (
+  b58SerializedTx: string,
+): Transaction | VersionedTransaction => {
+  try {
+    return VersionedTransaction.deserialize(bs58.decode(b58SerializedTx));
+  } catch (e) {
+    return Transaction.from(bs58.decode(b58SerializedTx));
+  }
+};
+
+export const deserializeTxHex = (
+  hexSerializedTx: string,
+): Transaction | VersionedTransaction => {
+  try {
+    return VersionedTransaction.deserialize(
+      Buffer.from(hexSerializedTx, 'hex'),
+    );
+  } catch (e) {
+    return Transaction.from(Buffer.from(hexSerializedTx, 'hex'));
+  }
 };

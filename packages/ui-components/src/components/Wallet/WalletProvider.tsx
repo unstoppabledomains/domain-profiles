@@ -194,6 +194,7 @@ export const WalletProvider: React.FC<
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const {data: featureFlags} = useFeatureFlags();
   const {setShowSuccessAnimation} = useDomainConfig();
+  const [isWalletLoading, setIsWalletLoading] = useState(false);
   const [isWalletLoaded, setIsWalletLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -410,21 +411,26 @@ export const WalletProvider: React.FC<
     showSpinner?: boolean,
     fields?: string[],
   ) => {
-    if (accessToken) {
-      await loadSelfCustodyWallets(forceRefresh, showSpinner, fields);
-    } else if (custodySecret) {
-      try {
-        await loadCustodyWallets(forceRefresh, showSpinner, fields);
-      } finally {
-        setIsSaving(false);
-        setIsWalletLoaded(true);
-        if (setIsFetching) {
-          setIsFetching(false);
-        }
-        if (onLoaded) {
-          onLoaded(true);
+    try {
+      setIsWalletLoading(true);
+      if (accessToken) {
+        await loadSelfCustodyWallets(forceRefresh, showSpinner, fields);
+      } else if (custodySecret) {
+        try {
+          await loadCustodyWallets(forceRefresh, showSpinner, fields);
+        } finally {
+          setIsSaving(false);
+          setIsWalletLoaded(true);
+          if (setIsFetching) {
+            setIsFetching(false);
+          }
+          if (onLoaded) {
+            onLoaded(true);
+          }
         }
       }
+    } finally {
+      setIsWalletLoading(false);
     }
   };
 
@@ -1287,6 +1293,7 @@ export const WalletProvider: React.FC<
                 fullScreenModals={fullScreenModals}
                 onRefresh={handleRefresh}
                 onClaimWallet={onClaimWallet}
+                isWalletLoading={isWalletLoading}
                 isHeaderClicked={isHeaderClicked}
                 setIsHeaderClicked={setIsHeaderClicked}
               />

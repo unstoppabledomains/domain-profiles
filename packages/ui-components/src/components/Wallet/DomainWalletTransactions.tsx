@@ -177,6 +177,12 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
     color: 'inherit',
     alignSelf: 'center',
   },
+  txPlaceholder: {
+    width: '100%',
+    height: '50px',
+    borderRadius: theme.shape.borderRadius,
+    marginBottom: theme.spacing(1),
+  },
 }));
 
 export const DomainWalletTransactions: React.FC<
@@ -188,7 +194,7 @@ export const DomainWalletTransactions: React.FC<
   isOwner,
   wallets,
   isError,
-  isLoadingWallets,
+  isWalletLoading,
   verified,
   fullScreenModals,
   onBack,
@@ -451,6 +457,7 @@ export const DomainWalletTransactions: React.FC<
   // show CTA if there are no transactions
   if (
     isOwner &&
+    !isWalletLoading &&
     txns &&
     txns.length === 0 &&
     onBack &&
@@ -534,9 +541,15 @@ export const DomainWalletTransactions: React.FC<
                 )}
               </Grid>
             </InfiniteScroll>
-          ) : isLoadingWallets ? (
+          ) : isWalletLoading ? (
             <Box className={classes.infiniteScrollLoading}>
-              <CircularProgress className={classes.loadingSpinner} />
+              {[1, 2, 3].map(i => (
+                <Skeleton
+                  key={`placeholder-${i}`}
+                  className={classes.txPlaceholder}
+                  variant="rectangular"
+                />
+              ))}
             </Box>
           ) : (
             <Typography className={classes.noActivity} textAlign="center">
@@ -564,7 +577,7 @@ export type DomainWalletTransactionsProps = {
   accessToken?: string;
   isOwner?: boolean;
   isError?: boolean;
-  isLoadingWallets?: boolean;
+  isWalletLoading?: boolean;
   wallets?: SerializedWalletBalance[];
   minCount?: number;
   maxCount?: number;

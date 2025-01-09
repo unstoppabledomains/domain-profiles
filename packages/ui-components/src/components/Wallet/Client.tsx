@@ -217,6 +217,7 @@ export const Client: React.FC<ClientProps> = ({
   onRefresh,
   setIsHeaderClicked,
   isHeaderClicked,
+  isWalletLoading,
 }) => {
   // mobile behavior flag
   const theme = useTheme();
@@ -242,7 +243,7 @@ export const Client: React.FC<ClientProps> = ({
   const isSellEnabled = cryptoValue >= 15;
 
   // component state variables
-  const [isRefreshing, setIsRefreshing] = useState(false);
+
   const [isSend, setIsSend] = useState(false);
   const [isReceive, setIsReceive] = useState(false);
   const [isBuy, setIsBuy] = useState(false);
@@ -375,13 +376,7 @@ export const Client: React.FC<ClientProps> = ({
     if (address && tv === ClientTabType.Domains) {
       void handleLoadDomains(true);
     }
-    const tabFields =
-      tv === ClientTabType.Transactions
-        ? ['native', 'price', 'token', 'tx']
-        : ['native', 'price', 'token'];
-    setIsRefreshing(true);
-    await onRefresh(true, tabFields);
-    setIsRefreshing(false);
+    await onRefresh(true, getTabFields(tv));
   };
 
   const handleRetrieveOwnerDomains = async (
@@ -526,7 +521,13 @@ export const Client: React.FC<ClientProps> = ({
     setSelectedToken(undefined);
 
     // refresh portfolio data
-    await onRefresh(true, ['native', 'price', 'token']);
+    await onRefresh(true, getTabFields(tabValue));
+  };
+
+  const getTabFields = (tv: ClientTabType) => {
+    return tv === ClientTabType.Transactions
+      ? ['native', 'price', 'token', 'tx']
+      : ['native', 'price', 'token'];
   };
 
   return (
@@ -704,7 +705,7 @@ export const Client: React.FC<ClientProps> = ({
                     id="unstoppable-wallet"
                     wallets={wallets}
                     isOwner={true}
-                    isLoadingWallets={isRefreshing}
+                    isWalletLoading={isWalletLoading}
                     verified={true}
                     fullScreenModals={fullScreenModals}
                     accessToken={accessToken}
@@ -789,6 +790,7 @@ export type ClientProps = {
   onClaimWallet?: () => void;
   onRefresh: (showSpinner?: boolean, fields?: string[]) => Promise<void>;
   isHeaderClicked: boolean;
+  isWalletLoading?: boolean;
   setIsHeaderClicked?: (v: boolean) => void;
 };
 

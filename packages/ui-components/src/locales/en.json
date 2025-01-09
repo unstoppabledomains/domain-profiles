@@ -287,7 +287,7 @@
     "version": "Version",
     "walletConnections": "Wallet Connections",
     "walletConnectionsDescription": "You have authorized the following websites to connect to Unstoppable Lite Wallet.",
-    "welcomeToVersion": "Welcome to version {{version}}!"
+    "welcomeToVersion": "Upgraded to {{version}}!"
   },
   "footer": {
     "copyright": "© Unstoppable Domains Inc. All Rights Reserved.",
@@ -949,7 +949,8 @@
     "inviteSendError": "Error sending invite. Try again in a few moments",
     "inviteSent": "Sent invitation to {{emailAddress}}",
     "leaveWindowOpen": "Leave window open until complete...",
-    "letsGetStarted": "Lets get started!",
+    "letsGetStarted": "Let's get started!",
+    "letsGo":"Let's go",
     "loadingError": "Unable to load balances for **{{address}}**. Try again in a few moments.",
     "loadingWallet": "Loading wallet...",
     "needWallet": "Need a wallet?",

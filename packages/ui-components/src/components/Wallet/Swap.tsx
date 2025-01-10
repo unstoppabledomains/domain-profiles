@@ -218,7 +218,10 @@ const Swap: React.FC<Props> = ({
 
   // build list of all available wallet tokens
   const allTokens = getAllTokens(wallets).filter(
-    token => token.type === TokenType.Erc20 || token.type === TokenType.Native,
+    token =>
+      token.type === TokenType.Erc20 ||
+      token.type === TokenType.Spl ||
+      token.type === TokenType.Native,
   );
 
   const getTokenEntry = (

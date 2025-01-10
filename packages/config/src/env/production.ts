@@ -186,6 +186,19 @@ export default function getProductionConfig(): ConfigOverride {
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
             },
+            {
+              swing: {
+                chain: 'solana',
+                symbol: 'USDC',
+                type: 'spl',
+              },
+              walletType: 'SOL',
+              chainName: 'Solana',
+              chainSymbol: 'SOL',
+              tokenSymbol: 'USDC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
+            },
           ],
           DESTINATION: [
             {
@@ -280,6 +293,19 @@ export default function getProductionConfig(): ConfigOverride {
               walletType: 'MATIC',
               chainName: 'Polygon',
               chainSymbol: 'MATIC',
+              tokenSymbol: 'USDC',
+              imageUrl:
+                'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',
+            },
+            {
+              swing: {
+                chain: 'solana',
+                symbol: 'USDC',
+                type: 'spl',
+              },
+              walletType: 'SOL',
+              chainName: 'Solana',
+              chainSymbol: 'SOL',
               tokenSymbol: 'USDC',
               imageUrl:
                 'https://images.unstoppabledomains.com/images/icons/USDC/icon.svg',

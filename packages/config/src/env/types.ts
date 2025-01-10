@@ -64,7 +64,7 @@ export interface SwapConfig {
     chain: string;
     chainId?: number;
     symbol: string;
-    type: 'erc20' | 'native';
+    type: 'erc20' | 'native' | 'spl';
   };
   walletType: string;
   chainName: string;

@@ -107,6 +107,7 @@ type Props = {
   success?: boolean;
   error?: boolean;
   children?: React.ReactNode;
+  noSpinner?: boolean;
 };
 
 export const OperationStatus: React.FC<Props> = ({
@@ -115,6 +116,7 @@ export const OperationStatus: React.FC<Props> = ({
   success,
   error,
   children,
+  noSpinner,
 }) => {
   const {classes, cx} = useStyles();
 
@@ -145,7 +147,7 @@ export const OperationStatus: React.FC<Props> = ({
               icon
             )}
           </Box>
-          {!success && !error && (
+          {!success && !error && !noSpinner && (
             <CircularProgress
               size={AVATAR_SIZE}
               className={classes.progressSpinner}

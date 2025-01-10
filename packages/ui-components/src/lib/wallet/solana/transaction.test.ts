@@ -1,5 +1,5 @@
+import type {VersionedTransaction} from '@solana/web3.js';
 import {Connection, Keypair, PublicKey} from '@solana/web3.js';
-import {VersionedTransaction} from '@solana/web3.js';
 import {utils} from 'ethers';
 import nacl from 'tweetnacl';
 

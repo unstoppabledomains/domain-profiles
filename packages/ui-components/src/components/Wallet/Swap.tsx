@@ -37,6 +37,7 @@ import {
   getSwapTokenAllowance,
   getSwapTokenV2,
   getSwapTransactionV2,
+  isSwapSupported,
   setSwapTokenAllowance,
 } from '../../actions/swingActionsV2';
 import {useDomainConfig, useFireblocksState} from '../../hooks';
@@ -74,6 +75,7 @@ import Link from '../Link';
 import ManageInput from '../Manage/common/ManageInput';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 import FundWalletModal from './FundWalletModal';
+import {OperationStatus} from './OperationStatus';
 import {TitleWithBackButton} from './TitleWithBackButton';
 import Token from './Token';
 
@@ -145,6 +147,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '50px',
     height: '50px',
   },
+  loadingContainer: {
+    marginTop: theme.spacing(10),
+  },
   loadingSpinner: {
     padding: theme.spacing(0.5),
   },
@@ -192,6 +197,7 @@ const Swap: React.FC<Props> = ({
   const fireblocksMessageSigner = useFireblocksMessageSigner();
 
   // operation state
+  const [isSwapAvailable, setIsSwapAvailable] = useState<boolean>();
   const [isGettingQuote, setIsGettingQuote] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
   const [isTxComplete, setIsTxComplete] = useState(false);
@@ -437,12 +443,19 @@ const Swap: React.FC<Props> = ({
       );
 
   useEffect(() => {
-    // determine swap intro visibility
-    const loadSwapIntro = async () => {
+    const loadSwapPage = async () => {
+      // determine if swap is available
+      const isAvailable = await isSwapSupported();
+      setIsSwapAvailable(isAvailable);
+      if (!isAvailable) {
+        return;
+      }
+
+      // determine swap intro visibility
       const swapIntroState = await localStorageWrapper.getItem(swapIntroFlag);
       setShowSwapIntro(swapIntroState === null);
     };
-    void loadSwapIntro();
+    void loadSwapPage();
 
     // determine mounted state
     isMounted.current = true;
@@ -1061,10 +1074,35 @@ const Swap: React.FC<Props> = ({
         label={t('swap.description')}
       />
       <Box className={classes.container}>
-        {allTokens.length > 0 &&
-        sourceTokens.filter(v => !v.disabledReason).length === 0 &&
-        onClickBuy &&
-        onClickReceive ? (
+        {isSwapAvailable === undefined ? (
+          <Box className={classes.loadingContainer}>
+            <OperationStatus
+              label={t('swap.checkingAvailability')}
+              icon={<SwapHorizIcon />}
+            />
+          </Box>
+        ) : !isSwapAvailable ? (
+          <Box className={classes.loadingContainer}>
+            <OperationStatus
+              label={t('swap.swapNotAvailable')}
+              icon={<SwapHorizIcon />}
+              noSpinner={true}
+            >
+              <Link
+                href={
+                  'https://developers.swing.xyz/compliance#geographic-restrictions'
+                }
+                target="_blank"
+                className={classes.learnMoreLink}
+              >
+                {t('common.learnMore')}
+              </Link>
+            </OperationStatus>
+          </Box>
+        ) : allTokens.length > 0 &&
+          sourceTokens.filter(v => !v.disabledReason).length === 0 &&
+          onClickBuy &&
+          onClickReceive ? (
           <Box className={classes.noTokensContainer}>
             <FundWalletModal
               onBuyClicked={onClickBuy}

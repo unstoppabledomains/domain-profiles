@@ -142,6 +142,28 @@ export const createSplTransferTx = async (
   return transaction;
 };
 
+export const deserializeTxB58 = (
+  b58SerializedTx: string,
+): Transaction | VersionedTransaction => {
+  try {
+    return VersionedTransaction.deserialize(bs58.decode(b58SerializedTx));
+  } catch (e) {
+    return Transaction.from(bs58.decode(b58SerializedTx));
+  }
+};
+
+export const deserializeTxHex = (
+  hexSerializedTx: string,
+): Transaction | VersionedTransaction => {
+  try {
+    return VersionedTransaction.deserialize(
+      Buffer.from(hexSerializedTx, 'hex'),
+    );
+  } catch (e) {
+    return Transaction.from(Buffer.from(hexSerializedTx, 'hex'));
+  }
+};
+
 export const getLatestBlockhash = async (
   ownerAddress: string,
   accessToken: string,
@@ -399,26 +421,4 @@ export const waitForTx = async (
     meta: {txHash},
   });
   throw new Error('transaction not confirmed');
-};
-
-export const deserializeTxB58 = (
-  b58SerializedTx: string,
-): Transaction | VersionedTransaction => {
-  try {
-    return VersionedTransaction.deserialize(bs58.decode(b58SerializedTx));
-  } catch (e) {
-    return Transaction.from(bs58.decode(b58SerializedTx));
-  }
-};
-
-export const deserializeTxHex = (
-  hexSerializedTx: string,
-): Transaction | VersionedTransaction => {
-  try {
-    return VersionedTransaction.deserialize(
-      Buffer.from(hexSerializedTx, 'hex'),
-    );
-  } catch (e) {
-    return Transaction.from(Buffer.from(hexSerializedTx, 'hex'));
-  }
 };

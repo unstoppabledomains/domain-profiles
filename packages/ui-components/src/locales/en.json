@@ -836,6 +836,7 @@
   "swap": {
     "balance": "Balance",
     "bridge": "Bridge",
+    "checkingAvailability": "Checking availability...",
     "description": "Swap your crypto",
     "errorSwappingTokens": "Failed to complete swap, but your funds are safe. Refresh the quote or choose a different amount.",
     "gettingQuote": "Getting a quote to swap your {{source}} \u2192 {{destination}}",
@@ -848,6 +849,7 @@
     "receive": "Receive",
     "receiveToken": "Token you want",
     "swap": "Swap",
+    "swapNotAvailable": "Swap is not available in your region",
     "swapping": "Swapping your {{source}} \u2192 {{destination}}. The estimated processing time is about {{minutes}} minute{{s}}. Leave this window open until complete.",
     "title": "Swap",
     "tryCheaperOption": "Try cheaper option",

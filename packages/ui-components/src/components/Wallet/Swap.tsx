@@ -36,9 +36,11 @@ import {
   getSwapTokenAllowance,
   getSwapTokenV2,
   getSwapTransactionV2,
+  isSwapSupported,
   setSwapTokenAllowance,
 } from '../../actions/swingActionsV2';
 import {useDomainConfig, useFireblocksState} from '../../hooks';
+import useFireblocksMessageSigner from '../../hooks/useFireblocksMessageSigner';
 import type {
   CreateTransaction,
   SerializedWalletBalance,
@@ -60,11 +62,18 @@ import type {
 } from '../../lib/types/swingXyzV2';
 import {getAsset} from '../../lib/wallet/asset';
 import {getAllTokens} from '../../lib/wallet/evm/token';
+import {
+  broadcastTx,
+  deserializeTxHex,
+  signTransaction,
+  waitForTx,
+} from '../../lib/wallet/solana/transaction';
 import {localStorageWrapper} from '../Chat';
 import Link from '../Link';
 import ManageInput from '../Manage/common/ManageInput';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 import FundWalletModal from './FundWalletModal';
+import {OperationStatus} from './OperationStatus';
 import {TitleWithBackButton} from './TitleWithBackButton';
 import Token from './Token';
 
@@ -136,6 +145,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '50px',
     height: '50px',
   },
+  loadingContainer: {
+    marginTop: theme.spacing(10),
+  },
   loadingSpinner: {
     padding: theme.spacing(0.5),
   },
@@ -178,8 +190,10 @@ const Swap: React.FC<Props> = ({
 
   // fireblocks state
   const [state] = useFireblocksState();
+  const fireblocksMessageSigner = useFireblocksMessageSigner();
 
   // operation state
+  const [isSwapAvailable, setIsSwapAvailable] = useState<boolean>();
   const [isGettingQuote, setIsGettingQuote] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
   const [isTxComplete, setIsTxComplete] = useState(false);
@@ -206,7 +220,10 @@ const Swap: React.FC<Props> = ({
 
   // build list of all available wallet tokens
   const allTokens = getAllTokens(wallets).filter(
-    token => token.type === TokenType.Erc20 || token.type === TokenType.Native,
+    token =>
+      token.type === TokenType.Erc20 ||
+      token.type === TokenType.Spl ||
+      token.type === TokenType.Native,
   );
 
   const getTokenEntry = (
@@ -422,12 +439,19 @@ const Swap: React.FC<Props> = ({
       );
 
   useEffect(() => {
-    // determine swap intro visibility
-    const loadSwapIntro = async () => {
+    const loadSwapPage = async () => {
+      // determine if swap is available
+      const isAvailable = await isSwapSupported();
+      setIsSwapAvailable(isAvailable);
+      if (!isAvailable) {
+        return;
+      }
+
+      // determine swap intro visibility
       const swapIntroState = await localStorageWrapper.getItem(swapIntroFlag);
       setShowSwapIntro(swapIntroState === null);
     };
-    void loadSwapIntro();
+    void loadSwapPage();
 
     // determine mounted state
     isMounted.current = true;
@@ -827,28 +851,61 @@ const Swap: React.FC<Props> = ({
       }
 
       // create and validate the swap transaction
-      const swapTx: CreateTransaction = {
-        chainId: txResponse.fromChain.chainId,
-        to: txResponse.tx.to,
-        data: txResponse.tx.data,
-        value: txResponse.tx.value,
-        gasLimit: txResponse.tx.gas,
-      };
-      const operationResponse = await createTransactionOperation(
-        accessToken,
-        asset.accountId,
-        asset.id,
-        swapTx,
-      );
-      if (!operationResponse) {
-        throw new Error('error creating MPC transaction for swap');
+      if (txResponse.fromChain.slug.toLowerCase() === 'solana') {
+        // sign and the solana tx
+        const preparedTx = deserializeTxHex(txResponse.tx.data);
+        const signedTx = await signTransaction(
+          preparedTx,
+          sourceToken.walletAddress,
+          fireblocksMessageSigner,
+          accessToken,
+          false,
+        );
+
+        // broadcast the solana tx
+        const txHash = await broadcastTx(
+          signedTx,
+          sourceToken.walletAddress,
+          accessToken,
+        );
+
+        // retrieve the swing transaction status, which is an important step in
+        // registering the transaction on the Swing dashboard
+        await getSwapStatusV2(txResponse.id, txHash);
+        setShowSuccessAnimation(true);
+        setTxId(txHash);
+
+        // wait for solana tx
+        await waitForTx(txHash, sourceToken.walletAddress, accessToken);
+      } else {
+        // handle EVM transactions
+        const swapTx: CreateTransaction = {
+          chainId: txResponse.fromChain.chainId,
+          to: txResponse.tx.to,
+          data: txResponse.tx.data,
+          value: txResponse.tx.value,
+          gasLimit: txResponse.tx.gas,
+        };
+        const operationResponse = await createTransactionOperation(
+          accessToken,
+          asset.accountId,
+          asset.id,
+          swapTx,
+        );
+
+        // ensure an operation was created successfully
+        if (!operationResponse) {
+          throw new Error('error creating MPC transaction for swap');
+        }
+
+        // sign the swap transaction
+        await pollForSignature(operationResponse, txResponse.id);
+
+        // wait for complete and show set completion state
+        await pollForCompletion(operationResponse, txResponse.id);
       }
 
-      // sign the swap transaction
-      await pollForSignature(operationResponse, txResponse.id);
-
-      // wait for complete and show set completion state
-      await pollForCompletion(operationResponse, txResponse.id);
+      // transaction is complete
       setIsTxComplete(true);
     } catch (e) {
       setErrorMessage(t('swap.errorSwappingTokens'));
@@ -1007,10 +1064,35 @@ const Swap: React.FC<Props> = ({
         label={t('swap.description')}
       />
       <Box className={classes.container}>
-        {allTokens.length > 0 &&
-        sourceTokens.filter(v => !v.disabledReason).length === 0 &&
-        onClickBuy &&
-        onClickReceive ? (
+        {isSwapAvailable === undefined ? (
+          <Box className={classes.loadingContainer}>
+            <OperationStatus
+              label={t('swap.checkingAvailability')}
+              icon={<SwapHorizIcon />}
+            />
+          </Box>
+        ) : !isSwapAvailable ? (
+          <Box className={classes.loadingContainer}>
+            <OperationStatus
+              label={t('swap.swapNotAvailable')}
+              icon={<SwapHorizIcon />}
+              noSpinner={true}
+            >
+              <Link
+                href={
+                  'https://developers.swing.xyz/compliance#geographic-restrictions'
+                }
+                target="_blank"
+                className={classes.learnMoreLink}
+              >
+                {t('common.learnMore')}
+              </Link>
+            </OperationStatus>
+          </Box>
+        ) : allTokens.length > 0 &&
+          sourceTokens.filter(v => !v.disabledReason).length === 0 &&
+          onClickBuy &&
+          onClickReceive ? (
           <Box className={classes.noTokensContainer}>
             <FundWalletModal
               onBuyClicked={onClickBuy}

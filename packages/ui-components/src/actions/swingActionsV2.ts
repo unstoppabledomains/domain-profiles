@@ -162,6 +162,32 @@ export const getSwapTransactionV2 = async (opts: SwingV2SendRequest) => {
   return undefined;
 };
 
+export const isSwapSupported = async () => {
+  try {
+    // request to determine if swap is supported in user region
+    if (
+      await fetchApi<SwingV2SwapStatus>(`/transfer/config/location`, {
+        mode: 'cors',
+        host: config.WALLETS.SWAP.EXCHANGE_HOST_URL,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'x-swing-environment': config.WALLETS.SWAP.ENVIRONMENT,
+        },
+      })
+    ) {
+      // swap is supported in the current region
+      return true;
+    }
+  } catch (e) {
+    notifyEvent(e, 'warning', 'Wallet', 'Configuration', {
+      msg: 'error checking swap geo restrictions',
+    });
+  }
+  // swap not supported in current region
+  return false;
+};
+
 export const setSwapTokenAllowance = async (opts: SwingV2AllowanceRequest) => {
   try {
     // request the status

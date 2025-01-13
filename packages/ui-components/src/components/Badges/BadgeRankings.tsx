@@ -31,7 +31,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   contentContainer: {
     minHeight: 437,
-    boxShadow: '0px 1px 0px #DDDDDF, 0px 0px 0px 1px #DDDDDF',
+    boxShadow: theme.shadows[1],
     borderRadius: 8,
     padding: theme.spacing(2),
   },

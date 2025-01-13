@@ -189,6 +189,7 @@ export const DomainWalletTransactions: React.FC<
   isError,
   verified,
   fullScreenModals,
+  boxShadow,
   onBack,
   onBuyClicked,
   onReceiveClicked,
@@ -495,6 +496,7 @@ export const DomainWalletTransactions: React.FC<
           mb={2}
           id={`scrollableTxDiv-${id}`}
           className={classes.scrollableContainer}
+          boxShadow={boxShadow}
         >
           {!isError && (txns || []).length > 0 ? (
             <InfiniteScroll
@@ -555,6 +557,7 @@ export type DomainWalletTransactionsProps = {
   maxCount?: number;
   verified: boolean;
   fullScreenModals?: boolean;
+  boxShadow?: number;
   onBack?: () => void;
   onReceiveClicked?: () => void;
   onBuyClicked?: () => void;

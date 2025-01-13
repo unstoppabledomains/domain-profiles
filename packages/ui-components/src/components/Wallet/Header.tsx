@@ -46,10 +46,10 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
       minHeight: AVATAR_PLACEHOLDER_SIZE - avatarSizeOffset,
     },
     headerContainer: {
-      backgroundImage: `linear-gradient(to left, #192b55c0, #192B55)`,
+      backgroundImage: `linear-gradient(to left, ${theme.palette.primaryShades[700]}, ${theme.palette.primaryShades[900]})`,
       borderTopRightRadius: theme.shape.borderRadius,
       borderTopLeftRadius: theme.shape.borderRadius,
-      color: theme.palette.white,
+      color: theme.palette.getContrastText(theme.palette.primary.main),
     },
     iconContainer: {
       position: 'absolute',
@@ -79,7 +79,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
       height: '20px',
     },
     descriptionText: {
-      color: theme.palette.white,
+      color: theme.palette.getContrastText(theme.palette.primary.main),
     },
     round: {
       display: 'flex',
@@ -88,7 +88,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
       width: AVATAR_SIZE - avatarSizeOffset,
       height: AVATAR_SIZE - avatarSizeOffset,
       borderRadius: '50%',
-      backgroundColor: theme.palette.white,
+      backgroundColor: theme.palette.background.paper,
       zIndex: 1,
       [theme.breakpoints.up('sm')]: {
         flex: '1 0 auto',
@@ -102,7 +102,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
       position: 'relative',
       backgroundColor: theme.palette.secondary.main,
       borderRadius: '50%',
-      border: `6px solid ${theme.palette.white}`,
+      border: `6px solid ${theme.palette.background.paper}`,
       '&::before': {
         content: '""',
         position: 'absolute',
@@ -127,8 +127,8 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
         width: AVATAR_SIZE - avatarSizeOffset,
         height: AVATAR_SIZE - avatarSizeOffset,
         padding: theme.spacing(2),
-        fill: theme.palette.white,
-        color: theme.palette.white,
+        fill: theme.palette.common.white,
+        color: theme.palette.common.white,
       },
     },
     logo: {
@@ -144,7 +144,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
       },
     },
     learnMoreLink: {
-      color: theme.palette.white,
+      color: theme.palette.getContrastText(theme.palette.primary.main),
       fontSize: theme.typography.body2.fontSize,
     },
     clickable: {

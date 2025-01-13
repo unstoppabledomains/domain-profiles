@@ -93,7 +93,7 @@ const useStyles = makeStyles<{width: string}>()((theme: Theme, {width}) => ({
     zIndex: 2000000,
   },
   tabHeaderContainer: {
-    backgroundColor: theme.palette.white,
+    backgroundColor: theme.palette.background.default,
     position: 'sticky',
     top: 0,
     zIndex: 1000000,

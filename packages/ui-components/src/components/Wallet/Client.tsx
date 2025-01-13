@@ -96,8 +96,8 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       justifyContent: 'center',
     },
     actionButton: {
-      color: 'white',
       marginLeft: theme.spacing(1),
+      color: theme.palette.getContrastText(theme.palette.primary.main),
     },
     actionContainer: {
       display: 'flex',

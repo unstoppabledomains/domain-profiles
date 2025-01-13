@@ -47,7 +47,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
     borderRadius: '50%',
-    backgroundColor: theme.palette.white,
+    backgroundColor: theme.palette.background.default,
     zIndex: 1,
     [theme.breakpoints.up('sm')]: {
       flex: '1 0 auto',
@@ -69,7 +69,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     position: 'relative',
     backgroundColor: theme.palette.primary.main,
     borderRadius: '50%',
-    border: `6px solid ${theme.palette.white}`,
+    border: `6px solid ${theme.palette.background.paper}`,
     cursor: 'pointer',
     '&::before': {
       content: '""',
@@ -127,7 +127,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
   },
   buttonWhite: {
-    color: theme.palette.white,
+    color: theme.palette.background.paper,
   },
   buttonDisabled: {
     '&.Mui-disabled': {
@@ -138,7 +138,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   buttonWhiteDisabled: {
     '&.Mui-disabled': {
-      color: theme.palette.white,
+      color: theme.palette.background.paper,
     },
   },
   buttonIcon: {
@@ -149,7 +149,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     color: theme.palette.neutralShades[600],
   },
   iconWhite: {
-    fill: theme.palette.white,
+    fill: theme.palette.background.paper,
   },
   iconGrey: {
     width: 24,
@@ -161,7 +161,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     zIndex: 1,
   },
   dividerWhite: {
-    backgroundColor: theme.palette.white,
+    backgroundColor: theme.palette.background.default,
     opacity: 0.24,
   },
 }));

@@ -43,7 +43,7 @@ const useStyles = makeStyles<void, 'error'>()(
     input: {
       height: 44,
       borderRadius: theme.shape.borderRadius,
-      backgroundColor: theme.palette.common.white,
+      backgroundColor: theme.palette.background.default,
       border: `1px solid ${theme.palette.neutralShades[300]}`,
       padding: theme.spacing(1, 1.5),
       margin: theme.spacing(0, 3),

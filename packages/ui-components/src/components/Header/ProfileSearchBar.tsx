@@ -2,6 +2,7 @@ import ChevronRightOutlinedIcon from '@mui/icons-material/ChevronRightOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import {alpha} from '@mui/material';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
@@ -43,7 +44,9 @@ const useStyles = makeStyles<{
     paddingLeft: variant === 'homepage' ? theme.spacing(2) : theme.spacing(1),
     backdropFilter: 'blur(5px)',
     backgroundColor:
-      variant === 'homepage' ? 'white' : 'rgba(255, 255, 255, 0.20)',
+      variant === 'homepage'
+        ? theme.palette.background.paper
+        : alpha(theme.palette.background.paper, 0.2),
     boxShadow: variant === 'homepage' ? theme.shadows[6] : undefined,
   },
   input: {
@@ -53,7 +56,7 @@ const useStyles = makeStyles<{
         ? focus
           ? theme.palette.common.black
           : theme.palette.neutralShades[400]
-        : theme.palette.common.white,
+        : theme.palette.background.paper,
     '&::-webkit-search-cancel-button': {
       WebkitAppearance: 'none',
     },
@@ -61,14 +64,14 @@ const useStyles = makeStyles<{
       color:
         variant === 'homepage'
           ? theme.palette.neutralShades[400]
-          : theme.palette.common.white,
+          : theme.palette.background.paper,
       opacity: 1,
     },
     '&::-webkit-input-placeholder': {
       color:
         variant === 'homepage'
           ? theme.palette.neutralShades[400]
-          : theme.palette.common.white,
+          : theme.palette.background.paper,
       opacity: 1,
     },
   },
@@ -92,7 +95,7 @@ const useStyles = makeStyles<{
   },
   searchResultsContainer: {
     width: '100%',
-    backgroundColor: theme.palette.white,
+    backgroundColor: theme.palette.background.paper,
     border: `1px solid ${theme.palette.neutralShades[100]}`,
     display: 'flex',
     flexDirection: 'column',
@@ -140,17 +143,19 @@ const useStyles = makeStyles<{
   },
   closeIcon: {
     color:
-      variant === 'homepage' ? theme.palette.neutralShades[400] : '#FFFFFF80',
+      variant === 'homepage'
+        ? theme.palette.neutralShades[400]
+        : theme.palette.background.paper,
     height: '16px',
     width: '16px',
   },
   searchIcon: {
     color:
       variant === 'homepage'
-        ? theme.palette.common.white
+        ? theme.palette.background.paper
         : focus
-        ? theme.palette.common.black
-        : theme.palette.common.white,
+        ? theme.palette.getContrastText(theme.palette.background.paper)
+        : theme.palette.background.paper,
     margin: theme.spacing(1),
     width: 24,
     height: 24,
@@ -158,10 +163,10 @@ const useStyles = makeStyles<{
   loadingIcon: {
     color:
       variant === 'homepage'
-        ? theme.palette.common.white
+        ? theme.palette.background.paper
         : focus
-        ? theme.palette.common.black
-        : theme.palette.common.white,
+        ? theme.palette.getContrastText(theme.palette.background.paper)
+        : theme.palette.background.paper,
     padding: theme.spacing(1),
   },
   rightIcon: {
@@ -184,7 +189,7 @@ const useStyles = makeStyles<{
       variant === 'homepage'
         ? theme.palette.primary.main
         : focus
-        ? theme.palette.white
+        ? theme.palette.background.paper
         : undefined,
     height: '100%',
     borderRadius: '0px 7px 7px 0px',

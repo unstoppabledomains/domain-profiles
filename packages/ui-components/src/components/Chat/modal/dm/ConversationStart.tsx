@@ -19,7 +19,7 @@ import type {SerializedRecommendation} from '../../../../lib';
 import useTranslationContext from '../../../../lib/i18n';
 import {getAddressMetadata, isEthAddress} from '../../protocol/resolution';
 import type {ConversationMeta} from '../../protocol/xmtp';
-import { isXmtpUser} from '../../protocol/xmtp';
+import {isXmtpUser} from '../../protocol/xmtp';
 import type {AddressResolution} from '../../types';
 import {TabType} from '../../types';
 import CallToAction from '../CallToAction';
@@ -103,7 +103,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     backgroundColor: theme.palette.primary.main,
     height: 50,
     width: 50,
-    color: 'white',
+    color: theme.palette.getContrastText(theme.palette.primary.main),
   },
 }));
 

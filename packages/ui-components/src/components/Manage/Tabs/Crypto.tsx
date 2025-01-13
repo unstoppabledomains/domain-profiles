@@ -58,10 +58,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     borderRadius: theme.shape.borderRadius,
   },
   pendingTxText: {
-    color: theme.palette.white,
+    color: theme.palette.background.paper,
   },
   pendingTxIcon: {
-    color: theme.palette.white,
+    color: theme.palette.background.paper,
     marginRight: theme.spacing(2),
     width: '50px',
     height: '50px',

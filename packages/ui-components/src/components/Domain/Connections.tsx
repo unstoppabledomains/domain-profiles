@@ -35,7 +35,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
-    backgroundImage: `linear-gradient(${theme.palette.white}, ${theme.palette.neutralShades[100]})`,
+    backgroundImage: `linear-gradient(${theme.palette.background.default}, ${theme.palette.neutralShades[100]})`,
     borderRadius: theme.shape.borderRadius,
     boxShadow: theme.shadows[3],
     padding: theme.spacing(1),

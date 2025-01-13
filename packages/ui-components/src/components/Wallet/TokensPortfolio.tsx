@@ -146,6 +146,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   isError,
   isOwner,
   verified,
+  boxShadow,
   onTokenClick,
 }) => {
   const {classes, cx} = useStyles({
@@ -279,6 +280,7 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
         <Box
           mt={'15px'}
           mb={2}
+          boxShadow={boxShadow}
           id={`scrollablePortfolioDiv`}
           className={cx(classes.scrollableContainer)}
         >
@@ -341,5 +343,6 @@ export type TokensPortfolioProps = {
   isError?: boolean;
   isOwner?: boolean;
   verified: boolean;
+  boxShadow?: number;
   onTokenClick?: (token: TokenEntry) => void;
 };

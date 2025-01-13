@@ -104,13 +104,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   cardTitleHorizontal: {
     fontWeight: theme.typography.fontWeightMedium,
-    color: theme.palette.common.black,
+    color: theme.palette.getContrastText(theme.palette.background.default),
   },
   buttonTitle: {
     fontWeight: 600,
     lineHeight: '24px',
     fontSize: theme.typography.body1.fontSize,
-    color: theme.palette.white,
+    color: theme.palette.getContrastText(theme.palette.primary.main),
   },
   cardTip: {
     color: theme.palette.grey[600],
@@ -118,7 +118,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   buttonTip: {
     opacity: '72.16%',
-    color: theme.palette.white,
+    color: theme.palette.getContrastText(theme.palette.primary.main),
     fontSize: theme.typography.body2.fontSize,
   },
   highlighted: {
@@ -145,7 +145,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     transform: 'translateY(-50%)',
   },
   loader: {
-    color: theme.palette.white,
+    color: theme.palette.getContrastText(theme.palette.primary.main),
   },
   metamaskBackground: {
     backgroundColor: '#25292E',

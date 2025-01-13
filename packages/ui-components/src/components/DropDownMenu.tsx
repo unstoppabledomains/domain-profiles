@@ -58,11 +58,11 @@ const useStyles = makeStyles<{marginTop?: number}>()(
       marginRight: '10px',
     },
     red: {
-      color: '#BD1B0F',
+      color: theme.palette.error.main,
     },
     font: {
       fontWeight: 600,
-      color: '#000',
+      color: theme.palette.getContrastText(theme.palette.background.default),
     },
   }),
 );

@@ -54,7 +54,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   listContainer: {
     display: 'flex',
     justifyContent: 'center',
-    outline: `2px solid ${theme.palette.white}`,
+    outline: `2px solid ${theme.palette.background.paper}`,
     outlineOffset: -1,
   },
   button: {

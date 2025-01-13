@@ -1,5 +1,6 @@
 import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
 import MarkUnreadChatAltOutlinedIcon from '@mui/icons-material/MarkUnreadChatAltOutlined';
+import {alpha, useTheme} from '@mui/material/';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
@@ -61,11 +62,13 @@ const useStyles = makeStyles<{inheritStyle?: boolean}>()(
     messageButton: inheritStyle
       ? {}
       : {
-          color: theme.palette.common.white,
+          color: theme.palette.getContrastText(
+            theme.palette.neutralShades[500],
+          ),
           marginRight: theme.spacing(1),
-          backgroundColor: 'rgba(128,128,128, 0.4)',
+          backgroundColor: alpha(theme.palette.neutralShades[500], 0.4),
           '&:hover': {
-            backgroundColor: 'rgba(128,128,128, 0.4)',
+            backgroundColor: alpha(theme.palette.neutralShades[500], 0.4),
           },
         },
     messageIcon: inheritStyle
@@ -134,6 +137,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     setChatUser,
   } = useUnstoppableMessaging();
   const [t] = useTranslationContext();
+  const theme = useTheme();
   const {enqueueSnackbar} = useSnackbar();
   const {web3Deps, setWeb3Deps} = useWeb3Context();
 
@@ -1014,8 +1018,11 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
               '&.Mui-disabled': inheritStyle
                 ? {}
                 : {
-                    color: '#dddddd',
-                    backgroundColor: 'rgba(128,128,128, 0.4)',
+                    color: theme.palette.neutralShades[300],
+                    backgroundColor: `${alpha(
+                      theme.palette.neutralShades[500],
+                      0.4,
+                    )}`,
                   },
             }}
           >

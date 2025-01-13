@@ -64,10 +64,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginTop: theme.spacing(2),
   },
   openButton: {
-    color: 'black',
+    color: theme.palette.getContrastText(theme.palette.background.default),
   },
   cancelBlockButton: {
-    color: 'white',
+    color: theme.palette.getContrastText(theme.palette.warning.main),
   },
   cancelButton: {
     marginTop: theme.spacing(1),

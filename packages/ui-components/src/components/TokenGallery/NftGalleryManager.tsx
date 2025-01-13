@@ -23,7 +23,7 @@ import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {ProfileManager} from '../../components/Wallet/ProfileManager';
-import {fetchApi, type NftMintItem, type NftRequestItem, type NftResponse} from '../../lib';
+import {NftMintItem, NftRequestItem, NftResponse, fetchApi} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 import type {Web3Dependencies} from '../../lib/types/web3';
 
@@ -35,20 +35,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
     textAlign: 'center',
     alignItems: 'center',
   },
-  centeredContainer: {
-    marginTop: '0px',
-    display: 'flex',
-    verticalAlign: 'center',
-    textAlign: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   symbolContainer: {
     display: 'flex',
     textAlign: 'left',
   },
   configLink: {
-    color: '#62626A',
+    color: theme.palette.neutralShades[600],
   },
   buttonLink: {
     marginRight: '1rem',
@@ -64,29 +56,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   selectVisibility: {
     marginBottom: theme.spacing(2),
     marginTop: theme.spacing(1),
-  },
-  symbolHeaderLabelOn: {
-    padding: theme.spacing(0, 0.75),
-    fontSize: theme.typography.body2.fontSize,
-    lineHeight: '1.25rem',
-    backgroundColor: theme.palette.successShades[700],
-    color: theme.palette.white,
-    borderRadius: theme.shape.borderRadius,
-    marginLeft: theme.spacing(1.5),
-    cursor: 'pointer',
-  },
-  symbolHeaderLabelOff: {
-    padding: theme.spacing(0, 0.75),
-    fontSize: theme.typography.body2.fontSize,
-    lineHeight: '1.25rem',
-    backgroundColor: theme.palette.neutralShades[200],
-    borderRadius: theme.shape.borderRadius,
-    marginLeft: theme.spacing(1.5),
-    cursor: 'pointer',
-  },
-  spinner: {
-    margin: theme.spacing(7),
-    textAlign: 'center',
   },
   subTitle: {
     marginTop: theme.spacing(1),

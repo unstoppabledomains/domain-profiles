@@ -28,12 +28,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
     },
   },
   profileButton: {
-    backgroundColor: theme.palette.common.white,
-    color: theme.palette.common.black,
-    borderColor: 'rgba(255, 255, 255, 0.321569)',
+    backgroundColor: theme.palette.background.paper,
+    color: theme.palette.getContrastText(theme.palette.background.paper),
+    borderColor: theme.palette.background.paper,
     '&:hover': {
-      backgroundColor: theme.palette.common.white,
-      borderColor: theme.palette.common.white,
+      backgroundColor: theme.palette.background.paper,
+      borderColor: theme.palette.background.paper,
     },
     paddingRight: '11px',
     paddingLeft: '20px',

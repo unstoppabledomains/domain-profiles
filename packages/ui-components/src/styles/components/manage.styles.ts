@@ -65,7 +65,7 @@ const useStyles = makeStyles<void, 'error'>()(
       '& input': {
         borderRadius: theme.shape.borderRadius,
         position: 'relative',
-        backgroundColor: theme.palette.common.white,
+        backgroundColor: theme.palette.background.paper,
         fontSize: 16,
         width: '100%',
         padding: theme.spacing(1, 1.5),
@@ -78,7 +78,7 @@ const useStyles = makeStyles<void, 'error'>()(
     },
     input: {
       position: 'relative',
-      backgroundColor: theme.palette.common.white,
+      backgroundColor: theme.palette.background.paper,
       width: '100%',
       transition: theme.transitions.create('border-color'),
       height: 24,
@@ -166,7 +166,7 @@ const useStyles = makeStyles<void, 'error'>()(
     },
     cardTitle: {
       fontSize: '16px',
-      color: '#000000',
+      color: theme.palette.getContrastText(theme.palette.background.default),
       fontWeight: 700,
       marginBottom: '0px',
     },
@@ -179,10 +179,10 @@ const useStyles = makeStyles<void, 'error'>()(
       marginLeft: '6px',
     },
     iconButton: {
-      color: '#000000',
+      color: theme.palette.getContrastText(theme.palette.background.default),
     },
     iconButtonBig: {
-      color: '#000000',
+      color: theme.palette.getContrastText(theme.palette.background.default),
       borderRadius: 5,
       width: '100%',
       justifyContent: 'left',

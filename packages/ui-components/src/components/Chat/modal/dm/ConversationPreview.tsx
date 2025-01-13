@@ -27,14 +27,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginBottom: theme.spacing(2),
     paddingBottom: theme.spacing(2),
     marginRight: theme.spacing(1),
-    borderBottom: '1px dashed #eeeeee',
+    borderBottom: `1px dashed ${theme.palette.neutralShades[200]}`,
     height: '70px',
     alignItems: 'center',
   },
   avatar: {
     marginRight: theme.spacing(2),
     backgroundColor: theme.palette.primary.main,
-    color: 'white',
+    color: theme.palette.getContrastText(theme.palette.primary.main),
   },
   avatarLoading: {
     marginRight: theme.spacing(2),

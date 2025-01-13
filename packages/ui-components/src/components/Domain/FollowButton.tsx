@@ -3,7 +3,7 @@ import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
 import PersonRemoveOutlinedIcon from '@mui/icons-material/PersonRemoveOutlined';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import type {Theme} from '@mui/material/styles';
+import {Theme, useTheme} from '@mui/material/styles';
 import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 
@@ -22,7 +22,8 @@ import ChipControlButton from '../ChipControlButton';
 const useStyles = makeStyles<{color?: string}>()((theme: Theme, {color}) => ({
   followButtonSmall: {
     marginLeft: theme.spacing(0.5),
-    color: color || 'white',
+    color:
+      color || theme.palette.getContrastText(theme.palette.neutralShades[500]),
   },
 }));
 
@@ -50,6 +51,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
   small,
 }) => {
   const {classes} = useStyles({color});
+  const theme = useTheme();
   const {enqueueSnackbar} = useSnackbar();
   const {data: followStatus, isLoading} = useDomainProfileFollowStatus(
     authDomain,
@@ -132,14 +134,30 @@ const FollowButton: React.FC<FollowButtonProps> = ({
                   width="16px"
                   height="16px"
                   fontSize="inherit"
-                  sx={{'&&': {color: color || 'white'}}}
+                  sx={{
+                    '&&': {
+                      color:
+                        color ||
+                        theme.palette.getContrastText(
+                          theme.palette.neutralShades[500],
+                        ),
+                    },
+                  }}
                 />
               ) : (
                 <CheckIcon
                   width="16px"
                   height="16px"
                   fontSize="inherit"
-                  sx={{'&&': {color: color || 'white'}}}
+                  sx={{
+                    '&&': {
+                      color:
+                        color ||
+                        theme.palette.getContrastText(
+                          theme.palette.neutralShades[500],
+                        ),
+                    },
+                  }}
                 />
               )
             ) : (
@@ -147,7 +165,15 @@ const FollowButton: React.FC<FollowButtonProps> = ({
                 width="16px"
                 height="16px"
                 fontSize="inherit"
-                sx={{'&&': {color: color || 'white'}}}
+                sx={{
+                  '&&': {
+                    color:
+                      color ||
+                      theme.palette.getContrastText(
+                        theme.palette.neutralShades[500],
+                      ),
+                  },
+                }}
               />
             )}
           </IconButton>

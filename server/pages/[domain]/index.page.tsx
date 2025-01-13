@@ -1360,6 +1360,7 @@ const DomainProfile = ({
                         (b.totalValueUsdAmt || 0) - (a.totalValueUsdAmt || 0),
                     )}
                   domain={domain}
+                  boxShadow={3}
                   isError={isWalletBalanceError}
                   verified={tokenId !== undefined}
                 />
@@ -1369,6 +1370,7 @@ const DomainProfile = ({
                   id="profile"
                   wallets={walletBalances}
                   domain={domain}
+                  boxShadow={3}
                   isError={isWalletBalanceError}
                   verified={tokenId !== undefined}
                 />

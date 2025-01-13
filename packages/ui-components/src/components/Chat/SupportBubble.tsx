@@ -28,9 +28,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     border: '1px solid',
     boxShadow: theme.shadows[6],
     borderColor: theme.palette.neutralShades[200],
-    backgroundColor: theme.palette.white,
+    backgroundColor: theme.palette.background.default,
     '&:hover': {
-      backgroundColor: theme.palette.white,
+      backgroundColor: theme.palette.background.default,
     },
   },
   supportIcon: {

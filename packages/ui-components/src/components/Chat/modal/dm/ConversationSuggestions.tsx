@@ -56,7 +56,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     backgroundColor: theme.palette.primary.main,
     height: 50,
     width: 50,
-    color: 'white',
+    color: theme.palette.getContrastText(theme.palette.primary.main),
   },
 }));
 

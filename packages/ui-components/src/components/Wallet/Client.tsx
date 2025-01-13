@@ -36,7 +36,6 @@ import {
   CustodyState,
   DomainFieldTypes,
   WALLET_CARD_HEIGHT,
-  WalletPaletteOwner,
   useTranslationContext,
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
@@ -117,9 +116,9 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       },
     },
     domainListContainer: {
-      color: WalletPaletteOwner.text.primary,
+      color: theme.palette.wallet.text.primary,
       display: 'flex',
-      backgroundImage: `linear-gradient(${WalletPaletteOwner.background.gradient.start}, ${WalletPaletteOwner.background.gradient.end})`,
+      backgroundImage: `linear-gradient(${theme.palette.wallet.background.gradient.start}, ${theme.palette.wallet.background.gradient.end})`,
       borderRadius: theme.shape.borderRadius,
       padding: theme.spacing(2),
       height: `${WALLET_CARD_HEIGHT + 2}px`,
@@ -134,16 +133,16 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       cursor: 'pointer',
       paddingTop: theme.spacing(1),
       paddingBottom: theme.spacing(1),
-      color: WalletPaletteOwner.text.primary,
+      color: theme.palette.wallet.text.primary,
       '&:visited': {
-        color: WalletPaletteOwner.text.primary,
+        color: theme.palette.wallet.text.primary,
       },
       '&:hover': {
         '& p': {
-          color: WalletPaletteOwner.text.primary,
+          color: theme.palette.wallet.text.primary,
         },
         '& svg': {
-          color: WalletPaletteOwner.text.primary,
+          color: theme.palette.wallet.text.primary,
         },
       },
     },

@@ -12,8 +12,8 @@ import {
   DomainConfigProvider,
   TokenGalleryProvider,
   UnstoppableMessagingProvider,
+  getTheme,
 } from '@unstoppabledomains/ui-components';
-import {darkTheme, lightTheme} from '@unstoppabledomains/ui-kit/styles';
 
 // setup wrapped app props
 export type NextPageWithLayout = NextPage & {
@@ -25,7 +25,7 @@ export type WrappedAppProps = AppProps & {
 
 const WrappedApp = (props: WrappedAppProps) => {
   const {Component, pageProps} = props;
-  const pageTheme = Component.themeMode === 'dark' ? darkTheme : lightTheme;
+  const pageTheme = getTheme('udme', Component.themeMode);
 
   return (
     <>

@@ -6,9 +6,8 @@ import React from 'react';
 import {QueryClient, QueryClientProvider} from 'react-query';
 import {createEmotionSsrAdvancedApproach} from 'tss-react/nextJs';
 
-import {lightTheme} from '@unstoppabledomains/ui-kit/styles';
-
 import {TranslationProvider} from '../lib';
+import {lightTheme} from '../styles/theme/udme';
 import Web3ContextProvider from './Web3ContextProvider';
 
 // setup query client

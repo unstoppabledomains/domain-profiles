@@ -22,14 +22,8 @@ import truncateEthAddress from 'truncate-eth-address';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getTransactionsByAddress, getTransactionsByDomain} from '../../actions';
-import type {CurrenciesType, SerializedTx, WalletPalette} from '../../lib';
-import {
-  TokenType,
-  WALLET_CARD_HEIGHT,
-  WalletPaletteOwner,
-  WalletPalettePublic,
-  useTranslationContext,
-} from '../../lib';
+import type {CurrenciesType, SerializedTx} from '../../lib';
+import {TokenType, WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
 import {CryptoIcon} from '../Image';
@@ -40,10 +34,7 @@ import {
 import Modal from '../Modal';
 import FundWalletModal from './FundWalletModal';
 
-type StyleProps = {
-  palette: WalletPalette;
-};
-const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   walletContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -68,11 +59,11 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
     lineHeight: 1.4,
   },
   totalValue: {
-    color: palette.text.primary,
+    color: theme.palette.wallet.text.primary,
     marginLeft: theme.spacing(1),
   },
   headerIcon: {
-    color: palette.text.primary,
+    color: theme.palette.wallet.text.primary,
     marginRight: theme.spacing(1),
   },
   scrollableContainer: {
@@ -81,7 +72,7 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
     overscrollBehavior: 'contain',
     height: `${WALLET_CARD_HEIGHT + 2}px`,
     width: '100%',
-    backgroundImage: `linear-gradient(${palette.background.gradient.start}, ${palette.background.gradient.end})`,
+    backgroundImage: `linear-gradient(${theme.palette.wallet.background.gradient.start}, ${theme.palette.wallet.background.gradient.end})`,
     borderRadius: theme.shape.borderRadius,
     padding: theme.spacing(2),
     ['::-webkit-scrollbar']: {
@@ -96,7 +87,7 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
     alignItems: 'center',
     textAlign: 'center',
     justifyContent: 'center',
-    color: palette.text.primary,
+    color: theme.palette.wallet.text.primary,
     marginBottom: theme.spacing(1),
   },
   loadingSpinner: {
@@ -105,11 +96,11 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
   currencyIcon: {
     width: 35,
     height: 35,
-    backgroundColor: palette.background.main,
+    backgroundColor: theme.palette.wallet.background.main,
   },
   noActivity: {
     marginTop: theme.spacing(2),
-    color: palette.text.primary,
+    color: theme.palette.wallet.text.primary,
   },
   txContainer: {
     display: 'flex',
@@ -120,30 +111,30 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
     backgroundColor: 'transparent',
     marginLeft: theme.spacing(1),
     '&:hover': {
-      backgroundColor: palette.background.main,
+      backgroundColor: theme.palette.wallet.background.main,
     },
   },
   txTitle: {
     fontWeight: 'bold',
-    color: palette.text.primary,
+    color: theme.palette.wallet.text.primary,
     cursor: 'pointer',
   },
   txSubTitle: {
-    color: palette.text.secondary,
+    color: theme.palette.wallet.text.secondary,
   },
   txReceived: {
     fontWeight: 'bold',
-    color: palette.chart.up,
+    color: theme.palette.wallet.chart.up,
   },
   txSent: {
     fontWeight: 'bold',
-    color: palette.text.primary,
+    color: theme.palette.wallet.text.primary,
   },
   txFee: {
-    color: palette.chart.down,
+    color: theme.palette.wallet.chart.down,
   },
   txTime: {
-    color: palette.text.secondary,
+    color: theme.palette.wallet.text.secondary,
     marginBottom: theme.spacing(1),
   },
   txLink: {
@@ -155,7 +146,7 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
     borderRadius: theme.shape.borderRadius,
   },
   txIcon: {
-    color: palette.background.main,
+    color: theme.palette.wallet.background.main,
     borderRadius: '50%',
     padding: '2px',
     border: `1px solid black`,
@@ -163,14 +154,14 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
     height: '17px',
   },
   txIconReceive: {
-    backgroundColor: palette.chart.up,
+    backgroundColor: theme.palette.wallet.chart.up,
   },
   txIconSend: {
-    backgroundColor: palette.chart.down,
+    backgroundColor: theme.palette.wallet.chart.down,
     transform: 'rotate(-45deg)',
   },
   txIconInteract: {
-    backgroundColor: palette.chart.down,
+    backgroundColor: theme.palette.wallet.chart.down,
   },
   modalTitleStyle: {
     color: 'inherit',
@@ -194,9 +185,7 @@ export const DomainWalletTransactions: React.FC<
   onBuyClicked,
   onReceiveClicked,
 }) => {
-  const {classes, cx} = useStyles({
-    palette: isOwner ? WalletPaletteOwner : WalletPalettePublic,
-  });
+  const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
   const [cursors, setCursors] = useState<Record<string, string>>({});
   const [txns, setTxns] = useState<SerializedTx[]>();

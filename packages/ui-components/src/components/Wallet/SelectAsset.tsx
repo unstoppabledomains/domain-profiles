@@ -7,7 +7,7 @@ import type {ImmutableArray} from '@unstoppabledomains/config/build/src/env/type
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance, TokenEntry} from '../../lib';
-import {TokenType, WalletPaletteOwner} from '../../lib';
+import {TokenType} from '../../lib';
 import {getAllTokens} from '../../lib/wallet/evm/token';
 import {filterWallets} from '../../lib/wallet/filter';
 import FundWalletModal from './FundWalletModal';
@@ -33,7 +33,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     overflowY: 'scroll',
   },
   asset: {
-    backgroundImage: `linear-gradient(${WalletPaletteOwner.background.gradient.start}, ${WalletPaletteOwner.background.gradient.end})`,
+    backgroundImage: `linear-gradient(${theme.palette.wallet.background.gradient.start}, ${theme.palette.wallet.background.gradient.end})`,
     borderRadius: 9,
     padding: 12,
     width: '100%',

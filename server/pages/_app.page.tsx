@@ -1,12 +1,14 @@
+import {Theme} from '@mui/material/styles';
 import Layout from 'components/app/Layout';
 import type {NextPage} from 'next';
 import {NextSeo} from 'next-seo';
 import type {AppProps} from 'next/app';
 import Head from 'next/head';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import 'react-medium-image-zoom/dist/styles.css';
 import 'swiper/css/bundle';
 
+import config from '@unstoppabledomains/config';
 import {
   BaseProvider,
   DomainConfigProvider,
@@ -25,7 +27,27 @@ export type WrappedAppProps = AppProps & {
 
 const WrappedApp = (props: WrappedAppProps) => {
   const {Component, pageProps} = props;
-  const pageTheme = getTheme('udme', Component.themeMode);
+  const [pageTheme, setPageTheme] = useState<Theme>();
+
+  // dynamically apply the page theme
+  useEffect(() => {
+    const pagePath = window.location.href.toLowerCase();
+    const pageQuery = window.location.search.toLowerCase();
+    setPageTheme(
+      getTheme(
+        pagePath.includes(config.UD_ME_BASE_URL) ||
+          pageQuery.includes('theme=udme')
+          ? 'udme'
+          : pagePath.includes(config.UP_IO_BASE_URL) ||
+            pageQuery.includes('theme=upio')
+          ? 'upio'
+          : undefined,
+        Component.themeMode || pageQuery.includes('mode=dark')
+          ? 'dark'
+          : undefined,
+      ),
+    );
+  }, []);
 
   return (
     <>

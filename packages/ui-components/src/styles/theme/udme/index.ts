@@ -204,8 +204,8 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
       background: {
         main: '#fafafa',
         gradient: {
-          start: '#f5f5f5',
-          end: '#fafafa',
+          start: '#fafafa',
+          end: '#ffffff',
         },
       },
       card: {

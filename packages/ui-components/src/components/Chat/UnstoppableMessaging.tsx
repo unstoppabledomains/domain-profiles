@@ -1,11 +1,12 @@
 import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
 import MarkUnreadChatAltOutlinedIcon from '@mui/icons-material/MarkUnreadChatAltOutlined';
-import {alpha, useTheme} from '@mui/material/';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import {useTheme} from '@mui/material/styles';
 import type {Theme} from '@mui/material/styles';
+import {alpha} from '@mui/system/colorManipulator';
 import type {IMessageIPFS} from '@pushprotocol/restapi';
 import * as PushAPI from '@pushprotocol/restapi';
 import {EVENTS, createSocketConnection} from '@pushprotocol/socket';

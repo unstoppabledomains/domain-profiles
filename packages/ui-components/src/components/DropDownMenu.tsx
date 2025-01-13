@@ -8,7 +8,8 @@ import MedicalServicesOutlinedIcon from '@mui/icons-material/MedicalServicesOutl
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import SupportIcon from '@mui/icons-material/Support';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
-import {Card, Typography} from '@mui/material/';
+import Card from '@mui/material/Card';
+import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useRef, useState} from 'react';
 

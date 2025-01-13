@@ -1,7 +1,8 @@
-import {
+import type {
   SimplePaletteColorOptions,
   Theme,
-  ThemeOptions,
+  ThemeOptions} from '@mui/material/styles';
+import {
   createTheme,
   responsiveFontSizes,
   useTheme,

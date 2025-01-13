@@ -3,7 +3,8 @@ import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
 import PersonRemoveOutlinedIcon from '@mui/icons-material/PersonRemoveOutlined';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import {Theme, useTheme} from '@mui/material/styles';
+import type {Theme} from '@mui/material/styles';
+import { useTheme} from '@mui/material/styles';
 import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 

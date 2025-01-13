@@ -1,7 +1,6 @@
 import Close from '@mui/icons-material/Close';
 import OpenInNew from '@mui/icons-material/OpenInNew';
 import PortraitOutlinedIcon from '@mui/icons-material/PortraitOutlined';
-import {alpha} from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
@@ -12,6 +11,7 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import {alpha} from '@mui/system/colorManipulator';
 import numeral from 'numeral';
 import React, {useState} from 'react';
 

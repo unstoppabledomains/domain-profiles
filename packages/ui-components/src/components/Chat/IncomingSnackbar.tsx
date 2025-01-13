@@ -1,8 +1,8 @@
-import {alpha} from '@mui/material/';
 import Avatar from '@mui/material/Avatar';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {alpha} from '@mui/system/colorManipulator';
 import {SnackbarContent} from 'notistack';
 import React, {useEffect, useState} from 'react';
 

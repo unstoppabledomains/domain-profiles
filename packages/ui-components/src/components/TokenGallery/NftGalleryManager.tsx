@@ -23,7 +23,8 @@ import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {ProfileManager} from '../../components/Wallet/ProfileManager';
-import {NftMintItem, NftRequestItem, NftResponse, fetchApi} from '../../lib';
+import type {NftMintItem, NftRequestItem, NftResponse} from '../../lib';
+import { fetchApi} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 import type {Web3Dependencies} from '../../lib/types/web3';
 

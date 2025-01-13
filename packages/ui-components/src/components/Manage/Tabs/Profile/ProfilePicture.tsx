@@ -47,7 +47,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
     borderRadius: '50%',
-    backgroundColor: theme.palette.background.default,
+    backgroundColor: theme.palette.background.paper,
     zIndex: 1,
     [theme.breakpoints.up('sm')]: {
       flex: '1 0 auto',
@@ -161,7 +161,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     zIndex: 1,
   },
   dividerWhite: {
-    backgroundColor: theme.palette.background.default,
+    backgroundColor: theme.palette.background.paper,
     opacity: 0.24,
   },
 }));

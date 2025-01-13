@@ -44,13 +44,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
     color: 'inherit',
     '&:hover': {
       borderColor: theme.palette.background.paper,
-      backgroundColor: theme.palette.background.default,
+      backgroundColor: theme.palette.background.paper,
       color: theme.palette.greyShades[900],
     },
   },
   buttonWhite: {
     borderColor: theme.palette.background.paper,
-    backgroundColor: theme.palette.background.default,
+    backgroundColor: theme.palette.background.paper,
     color: theme.palette.greyShades[900],
     '&:hover': {
       borderColor: theme.palette.greyShades[50],

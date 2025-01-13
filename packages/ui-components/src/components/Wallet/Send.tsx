@@ -79,7 +79,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
   },
   asset: {
-    backgroundImage: `linear-gradient(${theme.palette.primaryShades[500]}, ${theme.palette.primaryShades[900]})`,
+    backgroundImage: `linear-gradient(${theme.palette.wallet.background.gradient.start}, ${theme.palette.wallet.background.gradient.end})`,
     borderRadius: 9,
     padding: 12,
     width: '100%',

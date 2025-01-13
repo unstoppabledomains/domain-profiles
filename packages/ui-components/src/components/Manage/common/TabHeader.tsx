@@ -17,7 +17,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     minHeight: AVATAR_PLACEHOLDER_SIZE,
   },
   headerContainer: {
-    backgroundImage: `linear-gradient(to left, ${theme.palette.primaryShades[500]}, ${theme.palette.primaryShades[900]})`,
+    backgroundImage: `linear-gradient(to left, ${theme.palette.primaryShades[700]}, ${theme.palette.primaryShades[900]})`,
     borderTopRightRadius: theme.shape.borderRadius,
     borderTopLeftRadius: theme.shape.borderRadius,
     color: theme.palette.getContrastText(theme.palette.primary.main),
@@ -46,7 +46,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
     borderRadius: '50%',
-    backgroundColor: theme.palette.background.default,
+    backgroundColor: theme.palette.background.paper,
     zIndex: 1,
     [theme.breakpoints.up('sm')]: {
       flex: '1 0 auto',
@@ -89,7 +89,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     },
   },
   learnMoreLink: {
-    color: theme.palette.getContrastText(theme.palette.background.paper),
+    color: theme.palette.getContrastText(theme.palette.primary.main),
     fontSize: theme.typography.body2.fontSize,
   },
 }));

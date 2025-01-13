@@ -32,7 +32,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'space-between',
   },
   modalTitle: {
-    color: theme.palette.getContrastText(theme.palette.background.default),
+    color: theme.palette.getContrastText(theme.palette.background.paper),
   },
   modalSubTitle: {
     color: theme.palette.neutralShades[600],

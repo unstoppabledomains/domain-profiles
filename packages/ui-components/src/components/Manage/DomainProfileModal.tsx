@@ -20,7 +20,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     maxWidth: `calc(${MODAL_WIDTH} - ${theme.spacing(5)})`,
     marginLeft: theme.spacing(3),
     marginRight: theme.spacing(3),
-    backgroundColor: theme.palette.background.default,
+    backgroundColor: theme.palette.background.paper,
     zIndex: 100,
   },
   modalFullScreen: {

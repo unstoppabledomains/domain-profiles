@@ -108,7 +108,7 @@
   "claimIdentity": {
     "mpcWalletMinting": "Minting identity to receive crypto payments using your email address **{{emailAddress}}**",
     "mpcWalletReady": "Ready to receive crypto payments using your email address **{{emailAddress}}**",
-    "mpcWalletUpdating": "Configuring your wallet to receive crypto payments using your email address **{{emailAddress}}**",
+    "mpcWalletUpdating": "Configuring your wallet to receive crypto payments using your email address **{{emailAddress}}**"
   },
   "common": {
     "account": "Account",

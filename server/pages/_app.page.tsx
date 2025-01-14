@@ -27,27 +27,53 @@ export type WrappedAppProps = AppProps & {
 
 const WrappedApp = (props: WrappedAppProps) => {
   const {Component, pageProps} = props;
+  const [themeName, setThemeName] = useState<'udme' | 'upio'>();
+  const [themeMode, setThemeMode] = useState<'light' | 'dark'>();
   const [pageTheme, setPageTheme] = useState<Theme>();
+  const themeModeKey = 'themeMode';
 
   // dynamically apply the page theme
   useEffect(() => {
+    // retrieve the URL parameters
     const pagePath = window.location.href.toLowerCase();
     const pageQuery = window.location.search.toLowerCase();
-    setPageTheme(
-      getTheme(
-        pagePath.includes(config.UD_ME_BASE_URL) ||
-          pageQuery.includes('theme=udme')
-          ? 'udme'
-          : pagePath.includes(config.UP_IO_BASE_URL) ||
-            pageQuery.includes('theme=upio')
-          ? 'upio'
-          : undefined,
-        Component.themeMode || pageQuery.includes('mode=dark')
-          ? 'dark'
-          : undefined,
-      ),
-    );
+
+    // initialize the theme name
+    const name =
+      pagePath.includes(config.UD_ME_BASE_URL) ||
+      pageQuery.includes('theme=udme')
+        ? 'udme'
+        : pagePath.includes(config.UP_IO_BASE_URL) ||
+          pageQuery.includes('theme=upio')
+        ? 'upio'
+        : 'udme';
+    setThemeName(name);
+
+    // initialize the theme mode
+    const mode =
+      Component.themeMode ||
+      (localStorage.getItem(themeModeKey) === 'dark' ||
+      pageQuery.includes('mode=dark')
+        ? 'dark'
+        : 'light');
+    setThemeMode(mode);
+
+    // set the theme
+    setPageTheme(getTheme(name, mode));
   }, []);
+
+  // dynamically set the page theme
+  useEffect(() => {
+    if (!themeName || !themeMode) {
+      return;
+    }
+    localStorage.setItem(themeModeKey, themeMode);
+    setPageTheme(getTheme(themeName, themeMode));
+  }, [themeName, themeMode]);
+
+  if (!pageTheme) {
+    return null;
+  }
 
   return (
     <>
@@ -63,7 +89,7 @@ const WrappedApp = (props: WrappedAppProps) => {
         />
       </Head>
       <NextSeo title="Unstoppable Domains" />
-      <BaseProvider theme={pageTheme}>
+      <BaseProvider theme={pageTheme} mode={themeMode} setMode={setThemeMode}>
         <UnstoppableMessagingProvider>
           <TokenGalleryProvider>
             <DomainConfigProvider>

@@ -12,7 +12,6 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     flex: '1 1 auto',
-    paddingBottom: theme.spacing(16),
   },
   content: {
     ...theme.containers.main,

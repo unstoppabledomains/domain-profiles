@@ -56,22 +56,16 @@ const useStyles = makeStyles<{
         ? focus
           ? theme.palette.common.black
           : theme.palette.neutralShades[400]
-        : theme.palette.background.paper,
+        : theme.palette.common.white,
     '&::-webkit-search-cancel-button': {
       WebkitAppearance: 'none',
     },
     '&::placeholder': {
-      color:
-        variant === 'homepage'
-          ? theme.palette.neutralShades[400]
-          : theme.palette.background.paper,
+      color: theme.palette.neutralShades[400],
       opacity: 1,
     },
     '&::-webkit-input-placeholder': {
-      color:
-        variant === 'homepage'
-          ? theme.palette.neutralShades[400]
-          : theme.palette.background.paper,
+      color: theme.palette.neutralShades[400],
       opacity: 1,
     },
   },
@@ -119,7 +113,7 @@ const useStyles = makeStyles<{
     justifyContent: 'space-between',
     cursor: 'pointer',
     '&:hover': {
-      backgroundColor: theme.palette.neutralShades[50],
+      backgroundColor: theme.palette.background.default,
     },
     '&:not(:last-child)': {
       borderBottom: `1px dashed ${theme.palette.neutralShades[100]}`,
@@ -145,7 +139,7 @@ const useStyles = makeStyles<{
     color:
       variant === 'homepage'
         ? theme.palette.neutralShades[400]
-        : theme.palette.background.paper,
+        : theme.palette.common.white,
     height: '16px',
     width: '16px',
   },
@@ -155,7 +149,7 @@ const useStyles = makeStyles<{
         ? theme.palette.background.paper
         : focus
         ? theme.palette.getContrastText(theme.palette.background.paper)
-        : theme.palette.background.paper,
+        : theme.palette.neutralShades[400],
     margin: theme.spacing(1),
     width: 24,
     height: 24,

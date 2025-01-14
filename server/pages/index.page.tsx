@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import Footer from 'components/app/Footer';
 import {NextSeo} from 'next-seo';
 import React from 'react';
 import {useStyles} from 'styles/pages/index.styles';
@@ -87,29 +88,7 @@ const HomePage = () => {
           </Grid>
         </Grid>
       </Box>
-      <Box className={classes.footerContainer}>
-        <Box className={classes.footerContent}>
-          <Typography className={classes.copyright} variant="body2">
-            {t('footer.copyright')}
-          </Typography>
-        </Box>
-        <Box className={classes.footerContent}>
-          <Typography variant="caption">
-            <a
-              className={classes.footerLink}
-              href="https://unstoppabledomains.com/terms"
-            >
-              {t('footer.terms')}
-            </a>
-            <a
-              className={classes.footerLink}
-              href="https://unstoppabledomains.com/privacy-policy"
-            >
-              {t('footer.privacyPolicy')}
-            </a>
-          </Typography>
-        </Box>
-      </Box>
+      <Footer />
     </Box>
   );
 };

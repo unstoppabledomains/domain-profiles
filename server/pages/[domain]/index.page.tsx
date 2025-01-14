@@ -32,6 +32,7 @@ import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import LeftBarContentCollapse from 'components/LeftBarContentCollapse';
+import Footer from 'components/app/Footer';
 import {format, isPast} from 'date-fns';
 import {normalizeIpfsHash} from 'lib/ipfs';
 import {shuffle} from 'lodash';
@@ -1591,6 +1592,7 @@ const DomainProfile = ({
           </Grid>
         )}
       </Grid>
+      {isLoaded && <Footer />}
       {isViewFollowModalOpen && profileData && (
         <DomainListModal
           id="followerList"

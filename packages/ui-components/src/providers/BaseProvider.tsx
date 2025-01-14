@@ -30,25 +30,43 @@ export const {EmotionCacheProvider, withEmotionCache} =
 type Props = {
   children: React.ReactNode;
   theme?: Theme;
+  mode?: 'light' | 'dark';
+  setMode?: (v?: 'light' | 'dark') => void;
 };
 
-const BaseProvider: React.FC<Props> = ({children, theme = lightTheme}) => {
+export const ThemeSwitcherContext = React.createContext<{
+  mode?: 'light' | 'dark';
+  setMode?: (v?: 'light' | 'dark') => void;
+}>({});
+
+const BaseProvider: React.FC<Props> = ({
+  children,
+  theme = lightTheme,
+  mode,
+  setMode,
+}) => {
+  const value = {
+    mode,
+    setMode,
+  };
   return (
     <TranslationProvider>
       <EmotionCacheProvider>
         <QueryClientProvider client={queryClient}>
-          <ThemeProvider theme={theme}>
-            {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-            <CssBaseline enableColorScheme />
-            <SnackbarProvider
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-            >
-              <Web3ContextProvider>{children}</Web3ContextProvider>
-            </SnackbarProvider>
-          </ThemeProvider>
+          <ThemeSwitcherContext.Provider value={value}>
+            <ThemeProvider theme={theme}>
+              {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+              <CssBaseline enableColorScheme />
+              <SnackbarProvider
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'left',
+                }}
+              >
+                <Web3ContextProvider>{children}</Web3ContextProvider>
+              </SnackbarProvider>
+            </ThemeProvider>
+          </ThemeSwitcherContext.Provider>
         </QueryClientProvider>
       </EmotionCacheProvider>
     </TranslationProvider>

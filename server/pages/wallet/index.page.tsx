@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import Footer from 'components/app/Footer';
 import {MobileCta} from 'components/wallet/MobileCta';
 import {EMAIL_PARAM, RECOVERY_TOKEN_PARAM} from 'lib/types';
 import {NextSeo} from 'next-seo';
@@ -231,29 +232,7 @@ const WalletPage = () => {
           </Grid>
         )}
       </Box>
-      <Box className={classes.footerContainer}>
-        <Box className={classes.footerContent}>
-          <Typography className={classes.copyright} variant="body2">
-            {t('footer.copyright')}
-          </Typography>
-        </Box>
-        <Box className={classes.footerContent}>
-          <Typography variant="caption">
-            <a
-              className={classes.footerLink}
-              href="https://unstoppabledomains.com/terms"
-            >
-              {t('footer.terms')}
-            </a>
-            <a
-              className={classes.footerLink}
-              href="https://unstoppabledomains.com/privacy-policy"
-            >
-              {t('footer.privacyPolicy')}
-            </a>
-          </Typography>
-        </Box>
-      </Box>
+      <Footer />
     </Box>
   );
 };

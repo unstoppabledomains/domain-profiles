@@ -256,7 +256,10 @@ const SelectNftPopup: React.FC<SelectNftPopupProps> = ({
             />
             {isError && (
               <Box mt={1}>
-                <FormError message={t('manage.enterValidNft')} />
+                <FormError
+                  className={classes.formError}
+                  message={t('manage.enterValidNft')}
+                />
               </Box>
             )}
           </>

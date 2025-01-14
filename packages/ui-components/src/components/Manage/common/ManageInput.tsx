@@ -293,6 +293,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
             {(deprecated || (error && errorText)) && (
               <div className={classes.formErrorContainer}>
                 <FormError
+                  className={classes.formError}
                   message={
                     deprecated ? t('manage.legacyToken') : errorText ?? ''
                   }

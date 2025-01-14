@@ -72,12 +72,6 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       },
       height: '100%',
     },
-    mainActionsContainer: {
-      display: 'flex',
-      justifyContent: 'center',
-      marginTop: theme.spacing(3),
-      marginBottom: theme.spacing(2),
-    },
     header: {
       display: 'flex',
       flexDirection: 'column',
@@ -94,18 +88,17 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       display: 'flex',
       justifyContent: 'center',
     },
-    actionButton: {
+    snackBarButton: {
       marginLeft: theme.spacing(1),
       color: theme.palette.getContrastText(theme.palette.primary.main),
     },
     actionContainer: {
       display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: theme.palette.primaryShades[100],
-      padding: theme.spacing(1),
-      borderRadius: theme.shape.borderRadius,
+      marginTop: theme.spacing(3),
+      marginBottom: theme.spacing(2),
+    },
+    actionButton: {
       marginRight: theme.spacing(2),
       width: '85px',
       height: '85px',
@@ -114,6 +107,20 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
         width: '70px',
         height: '70px',
       },
+    },
+    actionIcon: {
+      width: '35px',
+      height: '35px',
+      [theme.breakpoints.down('sm')]: {
+        width: '25px',
+        height: '25px',
+      },
+    },
+    actionContent: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     domainListContainer: {
       color: theme.palette.wallet.text.primary,
@@ -156,22 +163,6 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       marginTop: theme.spacing(-2),
       marginBottom: theme.spacing(-2),
       width: '100%',
-    },
-    actionIcon: {
-      color: theme.palette.primary.main,
-      width: '40px',
-      height: '40px',
-      [theme.breakpoints.down('sm')]: {
-        width: '35px',
-        height: '35px',
-      },
-    },
-    actionText: {
-      marginTop: theme.spacing(0.5),
-      color: theme.palette.primary.main,
-      [theme.breakpoints.down('sm')]: {
-        marginTop: theme.spacing(0),
-      },
     },
     tabList: {
       marginTop: theme.spacing(-3),
@@ -343,7 +334,7 @@ export const Client: React.FC<ClientProps> = ({
             variant="text"
             size="small"
             color="primary"
-            className={classes.actionButton}
+            className={classes.snackBarButton}
             onClick={handleClaimWallet}
           >
             {t('wallet.claimWalletCtaButton')}
@@ -599,58 +590,56 @@ export const Client: React.FC<ClientProps> = ({
                   })}
                 </Typography>
               </Box>
-              <Box className={classes.mainActionsContainer}>
-                <Box
-                  className={classes.actionContainer}
+              <Box className={classes.actionContainer}>
+                <Button
+                  className={classes.actionButton}
                   onClick={handleClickedReceive}
+                  variant={theme.palette.wallet.buttonStyle}
+                  color="secondary"
+                  size="small"
                 >
-                  <QrCodeIcon className={classes.actionIcon} />
-                  <Typography
-                    variant={isMobile ? 'caption' : 'body2'}
-                    className={classes.actionText}
-                  >
+                  <Box className={classes.actionContent}>
+                    <QrCodeIcon className={classes.actionIcon} />
                     {t('common.receive')}
-                  </Typography>
-                </Box>
-                <Box
-                  className={classes.actionContainer}
+                  </Box>
+                </Button>
+                <Button
+                  className={classes.actionButton}
                   onClick={handleClickedSend}
+                  variant={theme.palette.wallet.buttonStyle}
+                  color="secondary"
+                  size="small"
                 >
-                  <SendIcon className={classes.actionIcon} />
-                  <Typography
-                    variant={isMobile ? 'caption' : 'body2'}
-                    className={classes.actionText}
-                  >
+                  <Box className={classes.actionContent}>
+                    <SendIcon className={classes.actionIcon} />
                     {t('common.send')}
-                  </Typography>
-                </Box>
-                {featureFlags?.variations?.udMeServiceEnableSwap && (
-                  <Box
-                    className={classes.actionContainer}
-                    onClick={handleClickedSwap}
-                  >
+                  </Box>
+                </Button>
+                <Button
+                  className={classes.actionButton}
+                  onClick={handleClickedSwap}
+                  variant={theme.palette.wallet.buttonStyle}
+                  color="secondary"
+                  size="small"
+                >
+                  <Box className={classes.actionContent}>
                     <SwapHorizIcon className={classes.actionIcon} />
-                    <Typography
-                      variant={isMobile ? 'caption' : 'body2'}
-                      className={classes.actionText}
-                    >
-                      {t('swap.title')}
-                    </Typography>
+                    {t('swap.title')}
                   </Box>
-                )}
+                </Button>
                 <Box mr={-2}>
-                  <Box
-                    className={classes.actionContainer}
+                  <Button
+                    className={classes.actionButton}
                     onClick={handleClickedBuy}
+                    variant={theme.palette.wallet.buttonStyle}
+                    color="secondary"
+                    size="small"
                   >
-                    <AttachMoneyIcon className={classes.actionIcon} />
-                    <Typography
-                      variant={isMobile ? 'caption' : 'body2'}
-                      className={classes.actionText}
-                    >
+                    <Box className={classes.actionContent}>
+                      <AttachMoneyIcon className={classes.actionIcon} />
                       {t(isSellEnabled ? 'common.buySell' : 'common.buy')}
-                    </Typography>
-                  </Box>
+                    </Box>
+                  </Button>
                 </Box>
               </Box>
             </Box>
@@ -731,6 +720,8 @@ export const Client: React.FC<ClientProps> = ({
                 onChange={handleTabChange}
                 variant="fullWidth"
                 className={classes.tabList}
+                indicatorColor="primary"
+                textColor="primary"
               >
                 <Tab
                   icon={<PaidOutlinedIcon />}

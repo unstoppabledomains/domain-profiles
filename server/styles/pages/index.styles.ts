@@ -12,7 +12,7 @@ export const useStyles = makeStyles<
 >()((theme: Theme, {isSaleActive}, classes) => ({
   container: {
     position: 'relative',
-    background: theme.palette.neutralShades[100],
+    background: theme.palette.background.default,
     justifyContent: 'space-between',
     display: 'flex',
     flexDirection: 'column',

@@ -1,7 +1,6 @@
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import {MobileCta} from 'components/wallet/MobileCta';
 import {EMAIL_PARAM, RECOVERY_TOKEN_PARAM} from 'lib/types';
@@ -22,6 +21,7 @@ import {
   getSeoTags,
   isEthAddress,
   localStorageWrapper,
+  useCustomTheme,
   useFireblocksState,
   useTranslationContext,
   useWeb3Context,
@@ -34,7 +34,7 @@ const WalletPage = () => {
   const {web3Deps} = useWeb3Context();
   const {query: params} = useRouter();
   const isMounted = useIsMounted();
-  const theme = useTheme();
+  const theme = useCustomTheme();
   const [isLoaded, setIsLoaded] = useState(false);
   const [walletState] = useFireblocksState();
   const [authAddress, setAuthAddress] = useState<string>('');
@@ -49,8 +49,8 @@ const WalletPage = () => {
 
   // build default wallet page SEO tags
   const seoTags = getSeoTags({
-    title: t('wallet.title'),
-    description: t('manage.cryptoWalletDescriptionShort'),
+    title: theme.palette.wallet.product.title,
+    description: theme.palette.wallet.product.subTitle,
   });
 
   // sign the user out if recovery is requested
@@ -174,12 +174,12 @@ const WalletPage = () => {
           <Grid container data-testid="mainContentContainer">
             <Grid item xs={12} className={classes.item}>
               <Typography className={classes.sectionTitle}>
-                {t('wallet.title')}
+                {theme.palette.wallet.product.title}
               </Typography>
             </Grid>
             <Grid item xs={12} className={classes.item}>
               <Typography className={classes.sectionSubTitle}>
-                {t('manage.cryptoWalletDescriptionShort')}
+                {theme.palette.wallet.product.subTitle}
               </Typography>
             </Grid>
             <Grid item xs={12} className={classes.item}>

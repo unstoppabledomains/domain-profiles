@@ -58,6 +58,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     height: '200px',
     borderRadius: '50%',
   },
+  formError: {
+    color: theme.palette.error.main,
+  },
 }));
 
 // TODO jss-to-tss-react codemod: usages of this hook outside of this file will not be converted.

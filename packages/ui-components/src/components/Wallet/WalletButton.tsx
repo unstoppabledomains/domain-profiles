@@ -387,12 +387,12 @@ const WalletButton: React.FC<Props> = ({
 
   switch (name) {
     // show the same button for both the integrated and extension versions
-    // of Unstoppable Lite Wallet. At runtime, only the extension button
+    // of the MPC wallet instance. At runtime, only the extension button
     // will be displayed if the extension is installed. Otherwise integrated
     // UX will be offered so that user does not have to install anything.
     case WalletName.UnstoppableWalletReact:
     case WalletName.UnstoppableWalletExtension:
-      props.title = t('wallet.titleShort');
+      props.title = theme.palette.wallet.product.titleShort;
       props.icon = (
         <IconPlate size={size} variant="info">
           <UnstoppableWalletIcon />

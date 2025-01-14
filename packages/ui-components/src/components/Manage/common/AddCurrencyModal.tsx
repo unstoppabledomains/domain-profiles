@@ -56,8 +56,11 @@ const useStyles = makeStyles<void, 'error'>()(
       },
       [`&.${classes.error}`]: {
         borderRadius: theme.shape.borderRadius,
-        borderColor: 'red',
+        borderColor: theme.palette.error.main,
       },
+    },
+    formError: {
+      color: theme.palette.error.main,
     },
     error: {
       borderRadius: theme.shape.borderRadius,
@@ -196,7 +199,11 @@ const AddCurrencyModal: React.FC<Props> = ({
           <div>
             {currency}
             {versions.length > 0 && versions.every(v => v.deprecated) && (
-              <FormError message={t('manage.legacyToken')} severity="warning" />
+              <FormError
+                className={classes.formError}
+                message={t('manage.legacyToken')}
+                severity="warning"
+              />
             )}
           </div>
         </div>

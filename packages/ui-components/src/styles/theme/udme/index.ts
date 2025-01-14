@@ -85,7 +85,9 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
   },
   palette: {
     mode,
-    error: {main: '#B72015'},
+    error: {
+      main: mode === 'dark' ? '#ef554a' : '#B72015',
+    },
     link: {main: '#0D67FE'},
     iceBlue: {main: '#E6F6FF', dark: '#ceedff'},
     yellow: {main: '#ffefb7'},
@@ -104,6 +106,7 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
     },
     background: {
       default: mode === 'dark' ? '#121212' : '#F5F5F5',
+      paper: mode === 'dark' ? '#323232' : '#ffffff',
     },
     backgroundWithAlpha: {
       default: alpha =>
@@ -200,34 +203,76 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
       700: '#4A4A4F',
       800: '#323234',
     },
-    wallet: {
-      background: {
-        main: '#fafafa',
-        gradient: {
-          start: '#fafafa',
-          end: '#ffffff',
-        },
-      },
-      card: {
-        text: '#606060',
-        selected: {
-          background: '#fafafa',
-          text: '#606060',
-        },
-        gradient: {
-          start: '#dedede',
-          end: '#f0f0f0',
-        },
-      },
-      text: {
-        primary: '#606060',
-        secondary: '#979797',
-      },
-      chart: {
-        up: '#15b64c',
-        down: '#9f9fa7',
-      },
-    },
+    wallet:
+      mode === 'dark'
+        ? {
+            background: {
+              main: '#323232',
+              gradient: {
+                start: '#121212',
+                end: '#323232',
+              },
+            },
+            card: {
+              text: '#eeeeee',
+              selected: {
+                background: '#323232',
+                text: '#eeeeee',
+              },
+              gradient: {
+                start: '#121212',
+                end: '#323232',
+              },
+            },
+            text: {
+              primary: '#eeeeee',
+              secondary: '#979797',
+            },
+            chart: {
+              up: '#15b64c',
+              down: '#9f9fa7',
+            },
+            buttonStyle: 'contained',
+            product: {
+              title: 'Unstoppable Lite Wallet',
+              titleShort: 'Lite Wallet',
+              subTitle: 'A web3 wallet for domainers and their domains.',
+            },
+          }
+        : {
+            background: {
+              main: '#fafafa',
+              gradient: {
+                start: '#fafafa',
+                end: '#ffffff',
+              },
+            },
+            card: {
+              text: '#606060',
+              selected: {
+                background: '#fafafa',
+                text: '#606060',
+              },
+              gradient: {
+                start: '#dedede',
+                end: '#f0f0f0',
+              },
+            },
+            text: {
+              primary: '#606060',
+              secondary: '#979797',
+            },
+            chart: {
+              up: '#15b64c',
+              down: '#9f9fa7',
+            },
+            buttonStyle: 'contained',
+            product: {
+              title: 'Unstoppable Lite Wallet',
+              titleShort: 'Lite Wallet',
+              subTitle: 'A web3 wallet for domainers and their domains.',
+            },
+          },
   },
   shape: {
     borderRadius: THEME_SHAPE_BORDER_RADIUS,

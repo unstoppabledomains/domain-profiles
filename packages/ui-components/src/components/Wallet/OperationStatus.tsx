@@ -22,7 +22,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   imageWrapper: {
     position: 'relative',
-    backgroundColor: theme.palette.neutralShades[100],
+    backgroundColor: theme.palette.background.default,
     borderRadius: '50%',
     '&::before': {
       content: '""',

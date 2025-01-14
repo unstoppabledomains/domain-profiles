@@ -85,7 +85,9 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
   },
   palette: {
     mode,
-    error: {main: '#B72015'},
+    error: {
+      main: mode === 'dark' ? '#ef554a' : '#B72015',
+    },
     link: {main: '#0D67FE'},
     iceBlue: {main: '#E6F6FF', dark: '#ceedff'},
     yellow: {main: '#ffefb7'},
@@ -93,28 +95,23 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
     purple: {main: '#797ff2'},
     nightBlue: {main: '#061543'},
     primary: {
-      light: '#4caf50',
-      main: '#2e7d32',
-      dark: '#1b5e20',
+      main: '#00ca00',
     },
     secondary: {
-      light: '#49aa85',
-      main: '#2e7d59',
-      dark: '#1b5133',
+      main: '#454545',
+    },
+    success: {
+      main: '#00ca00',
     },
     background: {
       default: mode === 'dark' ? '#121212' : '#F5F5F5',
+      paper: mode === 'dark' ? '#323232' : '#ffffff',
     },
     backgroundWithAlpha: {
       default: alpha =>
         mode === 'dark'
           ? `rgba(12,12,12,${alpha})`
           : `rgba(255,255,255,${alpha})`,
-    },
-    success: {
-      light: '#E2F3EC',
-      main: '#36AB61',
-      dark: '#258F56',
     },
     white: '#ffffff',
     hero: 'linear-gradient(75deg, #0D3076, #082055, #004c69)',
@@ -125,15 +122,15 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
       'linear-gradient(272deg, #F5F5F5 25%, rgba(249, 250, 255, 0) 100%)',
     pressedPaper: '#F3F4FB',
     primaryShades: {
-      100: '#c8e6c9',
-      200: '#a5d6a7',
-      300: '#81c784',
-      400: '#66bb6a',
-      500: '#4caf50',
-      600: '#43a047',
-      700: '#388e3c',
-      800: '#2e7d32',
-      900: '#1b5e20',
+      100: '#c9f0bf',
+      200: '#a3e695',
+      300: '#78db67',
+      400: '#50d340',
+      500: '#00ca00',
+      600: '#00ba00',
+      700: '#00a500',
+      800: '#009100',
+      900: '#006e00',
     },
     blueGreyShades: {
       25: '#F9FAFF',
@@ -200,34 +197,76 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
       700: '#4A4A4F',
       800: '#323234',
     },
-    wallet: {
-      background: {
-        main: '#fafafa',
-        gradient: {
-          start: '#f5f5f5',
-          end: '#fafafa',
-        },
-      },
-      card: {
-        text: '#606060',
-        selected: {
-          background: '#fafafa',
-          text: '#606060',
-        },
-        gradient: {
-          start: '#dedede',
-          end: '#f0f0f0',
-        },
-      },
-      text: {
-        primary: '#606060',
-        secondary: '#979797',
-      },
-      chart: {
-        up: '#15b64c',
-        down: '#9f9fa7',
-      },
-    },
+    wallet:
+      mode === 'dark'
+        ? {
+            background: {
+              main: '#323232',
+              gradient: {
+                start: '#121212',
+                end: '#323232',
+              },
+            },
+            card: {
+              text: '#eeeeee',
+              selected: {
+                background: '#323232',
+                text: '#eeeeee',
+              },
+              gradient: {
+                start: '#121212',
+                end: '#323232',
+              },
+            },
+            text: {
+              primary: '#eeeeee',
+              secondary: '#979797',
+            },
+            chart: {
+              up: '#00ca00',
+              down: '#9f9fa7',
+            },
+            buttonStyle: 'contained',
+            product: {
+              title: 'UP.io Wallet',
+              titleShort: 'Up.io',
+              subTitle: 'Watch your crypto grow up.',
+            },
+          }
+        : {
+            background: {
+              main: '#fafafa',
+              gradient: {
+                start: '#fafafa',
+                end: '#ffffff',
+              },
+            },
+            card: {
+              text: '#606060',
+              selected: {
+                background: '#fafafa',
+                text: '#606060',
+              },
+              gradient: {
+                start: '#dedede',
+                end: '#f0f0f0',
+              },
+            },
+            text: {
+              primary: '#606060',
+              secondary: '#979797',
+            },
+            chart: {
+              up: '#00ca00',
+              down: '#9f9fa7',
+            },
+            buttonStyle: 'outlined',
+            product: {
+              title: 'UP.io Wallet',
+              titleShort: 'Up.io',
+              subTitle: 'Watch your crypto grow up.',
+            },
+          },
   },
   shape: {
     borderRadius: THEME_SHAPE_BORDER_RADIUS,

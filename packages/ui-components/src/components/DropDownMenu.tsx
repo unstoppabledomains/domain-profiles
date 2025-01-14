@@ -11,6 +11,7 @@ import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import { useTheme} from '@mui/material/styles';
 import React, {useEffect, useRef, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
@@ -88,6 +89,7 @@ const DropDownMenu: React.FC<Props> = ({
   const [isLoggingOut, setLoggingOut] = useState<boolean>(false);
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles({marginTop});
+  const theme = useTheme();
 
   // MPC wallet state
   const [isMpcWallet, setIsMpcWallet] = useState(false);
@@ -200,7 +202,7 @@ const DropDownMenu: React.FC<Props> = ({
         >
           <WalletOutlinedIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
-            {t('wallet.title')}
+            {theme.palette.wallet.product.title}
           </Typography>
         </div>
       )}

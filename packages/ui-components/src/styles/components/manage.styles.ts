@@ -60,7 +60,7 @@ const useStyles = makeStyles<void, 'error'>()(
       borderRadius: theme.shape.borderRadius,
       [`&.${classes.error}`]: {
         borderRadius: theme.shape.borderRadius,
-        borderColor: 'red',
+        borderColor: theme.palette.error.main,
       },
       '& input': {
         borderRadius: theme.shape.borderRadius,
@@ -106,6 +106,9 @@ const useStyles = makeStyles<void, 'error'>()(
     },
     formErrorContainer: {
       marginTop: theme.spacing(1),
+    },
+    formError: {
+      color: theme.palette.error.main,
     },
     // Loading
     loadingContainer: {

@@ -1,4 +1,5 @@
 import type {SimplePaletteColorOptions} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
 
 // Add custom styles to theme properties
 declare module '@mui/material/styles' {
@@ -205,6 +206,12 @@ export interface WalletPalette {
     up: string;
     down: string;
   };
+  buttonStyle: 'contained' | 'outlined' | 'text';
+  product: {
+    title: string;
+    titleShort: string;
+    subTitle: string;
+  };
 }
 
 export type WarningShades = {
@@ -215,3 +222,5 @@ export type WarningShades = {
   700: string;
   900: string;
 };
+
+export const useCustomTheme = useTheme;

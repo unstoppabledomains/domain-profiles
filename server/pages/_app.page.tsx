@@ -1,4 +1,4 @@
-import {Theme} from '@mui/material/styles';
+import type {Theme} from '@mui/material/styles';
 import Layout from 'components/app/Layout';
 import type {NextPage} from 'next';
 import {NextSeo} from 'next-seo';

@@ -88,7 +88,10 @@ const SelectUrlPopup: React.FC<SelectUrlPopupProps> = ({
         />
         {haveError && (
           <Box mt={1}>
-            <FormError message={t('manage.enterValidUrl')} />
+            <FormError
+              className={classes.formError}
+              message={t('manage.enterValidUrl')}
+            />
           </Box>
         )}
       </DialogContent>

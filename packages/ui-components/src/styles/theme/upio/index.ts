@@ -228,6 +228,7 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
             },
             buttonStyle: 'contained',
             product: {
+              logoType: 'upio',
               title: 'UP.io Wallet',
               titleShort: 'Up.io',
               subTitle: 'Watch your crypto grow up.',
@@ -262,6 +263,7 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
             },
             buttonStyle: 'outlined',
             product: {
+              logoType: 'upio',
               title: 'UP.io Wallet',
               titleShort: 'Up.io',
               subTitle: 'Watch your crypto grow up.',

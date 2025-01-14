@@ -208,6 +208,7 @@ export interface WalletPalette {
   };
   buttonStyle: 'contained' | 'outlined' | 'text';
   product: {
+    logoType: 'udme' | 'upio';
     title: string;
     titleShort: string;
     subTitle: string;

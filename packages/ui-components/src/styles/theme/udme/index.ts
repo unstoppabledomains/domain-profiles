@@ -234,6 +234,7 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
             },
             buttonStyle: 'contained',
             product: {
+              logoType: 'udme',
               title: 'Unstoppable Lite Wallet',
               titleShort: 'Lite Wallet',
               subTitle: 'A web3 wallet for domainers and their domains.',
@@ -268,6 +269,7 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
             },
             buttonStyle: 'contained',
             product: {
+              logoType: 'udme',
               title: 'Unstoppable Lite Wallet',
               titleShort: 'Lite Wallet',
               subTitle: 'A web3 wallet for domainers and their domains.',

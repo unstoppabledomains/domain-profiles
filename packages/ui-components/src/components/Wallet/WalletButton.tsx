@@ -8,12 +8,12 @@ import Image from 'next/image';
 import React from 'react';
 
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
-import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableWalletIcon';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import getImageUrl from '../../lib/domain/getImageUrl';
 import useTranslationContext from '../../lib/i18n';
 import {WalletName} from '../../lib/types/wallet';
+import WalletIcon from './WalletIcon';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   cardRoot: {
@@ -395,7 +395,7 @@ const WalletButton: React.FC<Props> = ({
       props.title = theme.palette.wallet.product.titleShort;
       props.icon = (
         <IconPlate size={size} variant="info">
-          <UnstoppableWalletIcon />
+          <WalletIcon />
         </IconPlate>
       );
       break;

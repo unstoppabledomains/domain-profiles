@@ -15,7 +15,6 @@ import React, {useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
-import UnstoppableWalletIcon from '@unstoppabledomains/ui-kit/icons/UnstoppableWalletIcon';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useUnstoppableMessaging} from '../../hooks';
@@ -27,6 +26,7 @@ import Link from '../Link';
 import {DomainProfileModal} from '../Manage';
 import Modal from '../Modal';
 import RecoverySetupModal from './RecoverySetupModal';
+import WalletIcon from './WalletIcon';
 import type {WalletMode} from './index';
 
 const AVATAR_SIZE = 120;
@@ -283,7 +283,7 @@ export const Header: React.FC<Props> = ({
                 }
                 variant="info"
               >
-                <UnstoppableWalletIcon />
+                <WalletIcon />
               </IconPlate>
             </Box>
           </Box>
@@ -356,7 +356,7 @@ export const Header: React.FC<Props> = ({
                 horizontal: 'right',
               }}
             >
-              <UnstoppableWalletIcon
+              <WalletIcon
                 className={cx(classes.portfolioHeaderIcon, classes.logo)}
               />
             </StyledBadge>

@@ -13,7 +13,7 @@ const useStyles = makeStyles<void, 'error'>()(
     formLabel: {
       fontSize: '1.125rem',
       pointerEvents: 'auto', // to make the Tooltip component work inside the InputLabel
-      color: theme.palette.greyShades[900],
+      color: theme.palette.getContrastText(theme.palette.background.paper),
       fontWeight: theme.typography.fontWeightMedium,
     },
     labelIcon: {

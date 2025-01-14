@@ -53,7 +53,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '100%',
     marginTop: theme.spacing(1),
     padding: theme.spacing(1),
-    backgroundImage: `linear-gradient(to left, ${theme.palette.primaryShades[400]}, ${theme.palette.primaryShades[600]})`,
+    background: theme.palette.heroText,
     justifyContent: 'center',
     borderRadius: theme.shape.borderRadius,
   },

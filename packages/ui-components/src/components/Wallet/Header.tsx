@@ -46,7 +46,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
       minHeight: AVATAR_PLACEHOLDER_SIZE - avatarSizeOffset,
     },
     headerContainer: {
-      backgroundImage: `linear-gradient(to left, ${theme.palette.primaryShades[700]}, ${theme.palette.primaryShades[900]})`,
+      background: theme.palette.heroText,
       borderTopRightRadius: theme.shape.borderRadius,
       borderTopLeftRadius: theme.shape.borderRadius,
       color: theme.palette.getContrastText(theme.palette.primary.main),

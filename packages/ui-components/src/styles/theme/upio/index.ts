@@ -114,10 +114,10 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
           : `rgba(255,255,255,${alpha})`,
     },
     white: '#ffffff',
-    hero: 'linear-gradient(75deg, #0D3076, #082055, #004c69)',
-    heroText: 'linear-gradient(30deg, #9F1FED, #645FF2, #38BDD1)',
+    hero: 'linear-gradient(75deg, #009100, #006e00, #006359)',
+    heroText: 'linear-gradient(30deg, #006e00, #00a500, #00ca00)',
     profileImageGradient:
-      'linear-gradient(45deg, #BD47F7 0%, #5D59F8 52.08%, #38BDD1 100%)',
+      'linear-gradient(45deg, #009100 0%, #006e00 52.08%, #006359 100%)',
     mobileNavGradient:
       'linear-gradient(272deg, #F5F5F5 25%, rgba(249, 250, 255, 0) 100%)',
     pressedPaper: '#F3F4FB',
@@ -231,7 +231,7 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
               logoType: 'upio',
               title: 'UP.io Wallet',
               titleShort: 'Up.io',
-              subTitle: 'Watch your crypto grow up.',
+              subTitle: 'The best place to watch your crypto grow up.',
             },
           }
         : {
@@ -266,7 +266,7 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
               logoType: 'upio',
               title: 'UP.io Wallet',
               titleShort: 'Up.io',
-              subTitle: 'Watch your crypto grow up.',
+              subTitle: 'The best place to watch your crypto grow up.',
             },
           },
   },

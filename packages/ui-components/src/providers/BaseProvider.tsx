@@ -7,6 +7,7 @@ import {QueryClient, QueryClientProvider} from 'react-query';
 import {createEmotionSsrAdvancedApproach} from 'tss-react/nextJs';
 
 import {TranslationProvider} from '../lib';
+import type {ThemeMode} from '../styles/theme';
 import {lightTheme} from '../styles/theme/udme';
 import Web3ContextProvider from './Web3ContextProvider';
 
@@ -30,13 +31,13 @@ export const {EmotionCacheProvider, withEmotionCache} =
 type Props = {
   children: React.ReactNode;
   theme?: Theme;
-  mode?: 'light' | 'dark';
-  setMode?: (v?: 'light' | 'dark') => void;
+  mode?: ThemeMode;
+  setMode?: (v?: ThemeMode) => void;
 };
 
 export const ThemeSwitcherContext = React.createContext<{
-  mode?: 'light' | 'dark';
-  setMode?: (v?: 'light' | 'dark') => void;
+  mode?: ThemeMode;
+  setMode?: (v?: ThemeMode) => void;
 }>({});
 
 const BaseProvider: React.FC<Props> = ({

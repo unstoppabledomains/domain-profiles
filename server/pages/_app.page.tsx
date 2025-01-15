@@ -16,10 +16,14 @@ import {
   UnstoppableMessagingProvider,
   getTheme,
 } from '@unstoppabledomains/ui-components';
+import type {
+  ThemeMode,
+  WalletType,
+} from '@unstoppabledomains/ui-components/src/styles/theme/index';
 
 // setup wrapped app props
 export type NextPageWithLayout = NextPage & {
-  themeMode?: 'light' | 'dark';
+  themeMode?: ThemeMode;
 };
 export type WrappedAppProps = AppProps & {
   Component: NextPageWithLayout;
@@ -27,8 +31,8 @@ export type WrappedAppProps = AppProps & {
 
 const WrappedApp = (props: WrappedAppProps) => {
   const {Component, pageProps} = props;
-  const [themeName, setThemeName] = useState<'udme' | 'upio'>();
-  const [themeMode, setThemeMode] = useState<'light' | 'dark'>();
+  const [themeName, setThemeName] = useState<WalletType>();
+  const [themeMode, setThemeMode] = useState<ThemeMode>();
   const [pageTheme, setPageTheme] = useState<Theme>();
   const themeModeKey = 'themeMode';
 

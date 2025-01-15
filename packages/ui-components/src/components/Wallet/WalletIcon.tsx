@@ -7,7 +7,7 @@ const WalletIcon = React.forwardRef<SVGSVGElement, SvgIconProps>(
   (props, ref) => {
     const theme = useTheme();
 
-    return theme.palette.wallet.product.logoType === 'udme' ? (
+    return theme.wallet.type === 'udme' ? (
       <SvgIcon width="24" height="24" viewBox="0 0 24 24" {...props} ref={ref}>
         <path
           fill="currentColor"

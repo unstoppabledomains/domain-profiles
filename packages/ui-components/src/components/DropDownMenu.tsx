@@ -11,7 +11,7 @@ import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import { useTheme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
 import React, {useEffect, useRef, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
@@ -202,7 +202,7 @@ const DropDownMenu: React.FC<Props> = ({
         >
           <WalletOutlinedIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
-            {theme.palette.wallet.product.title}
+            {theme.wallet.title}
           </Typography>
         </div>
       )}

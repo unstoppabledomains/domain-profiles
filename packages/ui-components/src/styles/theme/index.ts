@@ -97,7 +97,7 @@ export interface PaletteExtends {
   dangerShades: DangerShades;
   neutralShades: NeutralShades;
   wallet: WalletPalette;
-  mode: 'light' | 'dark';
+  mode: ThemeMode;
   backgroundWithAlpha: BackgroundsWithAlpha;
 }
 
@@ -177,8 +177,10 @@ export interface ThemeExtends {
       fontWeight: React.CSSProperties['fontWeight'];
     };
   };
+  wallet: WalletProduct;
 }
 
+export type ThemeMode = 'light' | 'dark';
 export interface WalletPalette {
   background: {
     main: string;
@@ -207,13 +209,16 @@ export interface WalletPalette {
     down: string;
   };
   buttonStyle: 'contained' | 'outlined' | 'text';
-  product: {
-    logoType: 'udme' | 'upio';
-    title: string;
-    titleShort: string;
-    subTitle: string;
-  };
 }
+
+export interface WalletProduct {
+  type: WalletType;
+  title: string;
+  titleShort: string;
+  subTitle: string;
+}
+
+export type WalletType = 'udme' | 'upio';
 
 export type WarningShades = {
   100: string;

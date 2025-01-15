@@ -374,7 +374,7 @@ export const Header: React.FC<Props> = ({
           domain.length <=
             (isMobile ? MAX_NAME_DISPLAY_CHARS_MOBILE : MAX_NAME_DISPLAY_CHARS)
             ? domain
-            : theme.palette.wallet.product.titleShort}
+            : theme.wallet.titleShort}
         </Typography>
       </Box>
       {isLoaded && (

@@ -1,10 +1,11 @@
 import type {Theme, ThemeOptions} from '@mui/material/styles';
 import {createTheme, responsiveFontSizes} from '@mui/material/styles';
 
+import type { ThemeMode} from '../index';
 import {THEME_SHAPE_BORDER_RADIUS} from '../index';
 
 // more info on dark mode: https://mui.com/material-ui/customization/dark-mode/
-const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
+const buildThemeOptions = (mode: ThemeMode): ThemeOptions => ({
   breakpoints: {
     values: {
       xs: 0,
@@ -82,6 +83,12 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
       minWidth: 480,
       width: '100%',
     },
+  },
+  wallet: {
+    type: 'udme',
+    title: 'Unstoppable Lite Wallet',
+    titleShort: 'Lite Wallet',
+    subTitle: 'A web3 wallet for domainers and their domains.',
   },
   palette: {
     mode,
@@ -233,12 +240,6 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
               down: '#9f9fa7',
             },
             buttonStyle: 'contained',
-            product: {
-              logoType: 'udme',
-              title: 'Unstoppable Lite Wallet',
-              titleShort: 'Lite Wallet',
-              subTitle: 'A web3 wallet for domainers and their domains.',
-            },
           }
         : {
             background: {
@@ -268,12 +269,6 @@ const buildThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
               down: '#9f9fa7',
             },
             buttonStyle: 'contained',
-            product: {
-              logoType: 'udme',
-              title: 'Unstoppable Lite Wallet',
-              titleShort: 'Lite Wallet',
-              subTitle: 'A web3 wallet for domainers and their domains.',
-            },
           },
   },
   shape: {

@@ -9,10 +9,11 @@ import {
   BaseProvider,
   UnstoppableMessagingProvider,
 } from '@unstoppabledomains/ui-components';
+import type {ThemeMode} from '@unstoppabledomains/ui-components/src/styles/theme/index';
 
 // setup wrapped app props
 export type NextPageWithLayout = NextPage & {
-  themeMode?: 'light' | 'dark';
+  themeMode?: ThemeMode;
 };
 export type WrappedAppProps = AppProps & {
   Component: NextPageWithLayout;

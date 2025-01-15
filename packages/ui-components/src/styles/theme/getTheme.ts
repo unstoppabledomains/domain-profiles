@@ -1,13 +1,14 @@
 import type {Theme} from '@mui/material/styles';
 
+import type {ThemeMode, WalletType} from '.';
 import {darkTheme as udmeDarkTheme, lightTheme as udmeLightTheme} from './udme';
 import {darkTheme as upioDarkTheme, lightTheme as upioLightTheme} from './upio';
 
 export const getTheme = (
-  name: 'udme' | 'upio' = 'udme',
-  mode: 'light' | 'dark' = 'light',
+  type: WalletType = 'udme',
+  mode: ThemeMode = 'light',
 ): Theme => {
-  switch (name) {
+  switch (type) {
     case 'udme':
       if (mode === 'light') {
         return udmeLightTheme;
@@ -19,6 +20,6 @@ export const getTheme = (
       }
       return upioDarkTheme;
     default:
-      throw new Error(`Invalid theme name: ${name}`);
+      throw new Error(`Invalid theme type: ${type}`);
   }
 };

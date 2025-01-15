@@ -278,7 +278,7 @@ const WalletButton: React.FC<Props> = ({
     // UX will be offered so that user does not have to install anything.
     case WalletName.UnstoppableWalletReact:
     case WalletName.UnstoppableWalletExtension:
-      props.title = theme.palette.wallet.product.titleShort;
+      props.title = theme.wallet.titleShort;
       props.icon = (
         <IconPlate size={size} variant="info">
           <WalletIcon />

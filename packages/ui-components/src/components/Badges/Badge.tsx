@@ -45,7 +45,7 @@ const useStyles = makeStyles<StyleProps>()(
         : DEFAULT_BADGE_SIZE,
     },
     badgeTierStandard: {
-      border: `2px solid white`,
+      border: `2px solid ${theme.palette.background.default}`,
     },
     badgeTierFeatured2: {
       border: `2px solid ${theme.palette.neutralShades[500]}`,
@@ -102,7 +102,7 @@ const useStyles = makeStyles<StyleProps>()(
         ? theme.typography.subtitle2.fontSize
         : theme.typography.subtitle1.fontSize,
       fontWeight: theme.typography.fontWeightMedium,
-      color: small ? 'inherit' : theme.palette.common.black,
+      color: small ? 'inherit' : undefined,
       textOverflow: 'ellipsis',
       overflow: 'hidden',
       whiteSpace: 'nowrap',

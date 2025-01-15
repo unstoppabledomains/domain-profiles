@@ -53,15 +53,15 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '100%',
     marginTop: theme.spacing(1),
     padding: theme.spacing(1),
-    backgroundImage: `linear-gradient(to left, ${theme.palette.primaryShades[400]}, ${theme.palette.primaryShades[600]})`,
+    background: theme.palette.heroText,
     justifyContent: 'center',
     borderRadius: theme.shape.borderRadius,
   },
   pendingTxText: {
-    color: theme.palette.white,
+    color: theme.palette.background.paper,
   },
   pendingTxIcon: {
-    color: theme.palette.white,
+    color: theme.palette.background.paper,
     marginRight: theme.spacing(2),
     width: '50px',
     height: '50px',

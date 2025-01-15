@@ -49,7 +49,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
   },
   asset: {
-    backgroundImage: 'linear-gradient(#0655DD, #043893)',
+    backgroundImage: `linear-gradient(${theme.palette.wallet.background.gradient.start}, ${theme.palette.wallet.background.gradient.end})`,
     borderRadius: 9,
     padding: 12,
     width: '100%',
@@ -88,7 +88,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   captionContainer: {
     display: 'flex',
-    backgroundColor: '#EEF0F3',
+    backgroundColor: theme.palette.neutralShades[200],
     padding: 10,
     borderRadius: 9,
   },

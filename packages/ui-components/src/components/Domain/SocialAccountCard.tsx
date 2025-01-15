@@ -201,14 +201,14 @@ const useStyles = makeStyles<void, 'actionIcon'>()(
     },
     tooltipData: {},
     verifiedBadge: {
-      backgroundColor: theme.palette.white,
-      color: theme.palette.white,
+      backgroundColor: theme.palette.background.default,
+      color: theme.palette.getContrastText(theme.palette.background.default),
       fill: theme.palette.success.main,
       borderRadius: '50%',
     },
     nonVerifiedBadge: {
-      backgroundColor: theme.palette.white,
-      color: theme.palette.white,
+      backgroundColor: theme.palette.background.default,
+      color: theme.palette.getContrastText(theme.palette.background.default),
       fill: theme.palette.warning.main,
       borderRadius: '50%',
     },

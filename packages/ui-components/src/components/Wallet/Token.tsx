@@ -5,22 +5,19 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import { useTheme} from '@mui/material/styles';
 import numeral from 'numeral';
 import React from 'react';
 import {Line} from 'react-chartjs-2';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import type {CurrenciesType, TokenEntry, WalletPalette} from '../../lib';
-import {TokenType, WalletPaletteOwner, WalletPalettePublic} from '../../lib';
+import type {CurrenciesType, TokenEntry} from '../../lib';
+import {TokenType} from '../../lib';
 import {CryptoIcon} from '../Image';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 
-type StyleProps = {
-  palette: WalletPalette;
-};
-
-const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   chartContainer: {
     height: '40px',
     display: 'flex',
@@ -33,27 +30,27 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
   },
   txTitle: {
     fontWeight: 'bold',
-    color: palette.text.primary,
+    color: theme.palette.wallet.text.primary,
   },
   txBalance: {
     fontWeight: 'bold',
-    color: palette.text.primary,
+    color: theme.palette.wallet.text.primary,
     whiteSpace: 'nowrap',
   },
   txSubTitle: {
-    color: palette.text.secondary,
+    color: theme.palette.wallet.text.secondary,
   },
   txLink: {
     cursor: 'pointer',
   },
   txPctChangeDown: {
-    color: palette.chart.down,
+    color: theme.palette.wallet.chart.down,
   },
   txPctChangeNeutral: {
-    color: palette.chart.down,
+    color: theme.palette.wallet.chart.down,
   },
   txPctChangeUp: {
-    color: palette.chart.up,
+    color: theme.palette.wallet.chart.up,
   },
   nftCollectionIcon: {
     borderRadius: theme.shape.borderRadius,
@@ -64,19 +61,19 @@ const useStyles = makeStyles<StyleProps>()((theme: Theme, {palette}) => ({
     borderRadius: '50%',
     width: '40px',
     height: '40px',
-    backgroundColor: palette.background.main,
+    backgroundColor: theme.palette.wallet.background.main,
   },
   tokenIconDefault: {
     borderRadius: '50%',
-    backgroundColor: palette.background.main,
-    color: palette.text.primary,
+    backgroundColor: theme.palette.wallet.background.main,
+    color: theme.palette.wallet.text.primary,
     width: '40px',
     height: '40px',
   },
   chainIcon: {
-    color: palette.background.main,
-    backgroundColor: palette.background.main,
-    border: `1px solid ${palette.background.main}`,
+    color: theme.palette.wallet.background.main,
+    backgroundColor: theme.palette.wallet.background.main,
+    border: `1px solid ${theme.palette.wallet.background.main}`,
     borderRadius: '50%',
     width: '17px',
     height: '17px',
@@ -99,7 +96,6 @@ type Props = {
 const Token: React.FC<Props> = ({
   token,
   onClick,
-  isOwner,
   showGraph,
   hideBalance,
   iconWidth,
@@ -108,9 +104,9 @@ const Token: React.FC<Props> = ({
   balanceWidth,
   compact,
 }) => {
-  const {classes, cx} = useStyles({
-    palette: isOwner ? WalletPaletteOwner : WalletPalettePublic,
-  });
+  const {classes, cx} = useStyles();
+  const theme = useTheme();
+
   return (
     <Grid
       container
@@ -195,12 +191,12 @@ const Token: React.FC<Props> = ({
                     pointBorderColor: 'rgba(0, 0, 0, 0)',
                     backgroundColor:
                       (token.pctChange || 0) > 0
-                        ? WalletPaletteOwner.chart.up
-                        : WalletPaletteOwner.chart.down,
+                        ? theme.palette.wallet.chart.up
+                        : theme.palette.wallet.chart.down,
                     borderColor:
                       (token.pctChange || 0) > 0
-                        ? WalletPaletteOwner.chart.up
-                        : WalletPaletteOwner.chart.down,
+                        ? theme.palette.wallet.chart.up
+                        : theme.palette.wallet.chart.down,
                     fill: false,
                   },
                 ],

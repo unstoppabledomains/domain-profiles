@@ -4,6 +4,7 @@ export default function getProductionConfig(): ConfigOverride {
   return {
     APP_ENV: 'production',
     UD_ME_BASE_URL: 'https://ud.me',
+    UP_IO_BASE_URL: 'https://up.io',
     UNSTOPPABLE_API_URL: 'https://api.unstoppabledomains.com',
     UNSTOPPABLE_WEBSITE_URL: 'https://unstoppabledomains.com',
     UNSTOPPABLE_METADATA_ENDPOINT:

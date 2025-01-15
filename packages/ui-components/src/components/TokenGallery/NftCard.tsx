@@ -10,7 +10,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
-import type {Theme} from '@mui/material/styles';
+import {useTheme, type Theme} from '@mui/material/styles';
 import React, {useEffect, useRef, useState} from 'react';
 import type {MouseEvent} from 'react';
 import VisibilitySensor from 'react-visibility-sensor';
@@ -91,6 +91,7 @@ const NftCard = ({domain, address, nft, compact, placeholder}: Props) => {
   const [open, setOpen] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [pfpModalOpen, setPfpModalOpen] = useState(false);
+  const theme = useTheme();
 
   const css = `
   .NFT-container {
@@ -101,11 +102,11 @@ const NftCard = ({domain, address, nft, compact, placeholder}: Props) => {
     padding-top: 0px;
     transition: all 0.3s ease 0s;
     border-radius: 12px;
-    box-shadow: 0px 1px 0px #DDDDDF, 0px 0px 0px 1px #DDDDDF;
+    box-shadow: ${theme.shadows[3]};
     overflow: hidden;
   }
   .NFT-container:hover {
-    box-shadow: rgba(0, 0, 0, 0.22) 0px 5px 10px;
+    box-shadow: ${theme.shadows[6]};
     transform: translate3d(0px, -2px, 0px);
     transition: all 0.3s ease 0s;
   }

@@ -49,7 +49,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
       'border-color',
     ]),
     '&:hover': {
-      backgroundColor: theme.palette.white,
+      backgroundColor: theme.palette.background.default,
       boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.08)',
       borderColor: theme.palette.neutralShades[200],
     },
@@ -87,13 +87,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
     userSelect: 'none',
   },
   infoIcon: {
-    color: '#D18411',
+    color: theme.palette.warning.main,
   },
   tooltipContainer: {
     textAlign: 'center',
   },
   verifyLink: {
-    color: '#72E6FC',
+    color: theme.palette.secondary.main,
     fontSize: '13px',
     padding: 0,
   },

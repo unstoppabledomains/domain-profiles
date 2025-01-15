@@ -13,7 +13,7 @@ export const useConversationBubbleStyles = makeStyles<{
     marginRight: theme.spacing(1),
     marginBottom: theme.spacing(3.5),
     backgroundColor: theme.palette.primary.main,
-    color: 'white',
+    color: theme.palette.getContrastText(theme.palette.primary.main),
     cursor: 'pointer',
   },
   msgContainer: {
@@ -40,7 +40,7 @@ export const useConversationBubbleStyles = makeStyles<{
   },
   emojiContainer: {
     alignItems: 'center',
-    backgroundColor: theme.palette.white,
+    backgroundColor: theme.palette.background.default,
     boxShadow: theme.shadows[1],
     marginTop: theme.spacing(4),
     marginRight: theme.spacing(1),
@@ -68,7 +68,7 @@ export const useConversationBubbleStyles = makeStyles<{
     alignItems: 'center',
     justifyContent: 'center',
     boxShadow: theme.shadows[1],
-    backgroundColor: theme.palette.white,
+    backgroundColor: theme.palette.background.default,
     borderRadius: '50%',
     marginRight: theme.spacing(-0.5),
     width: '22px',
@@ -81,7 +81,7 @@ export const useConversationBubbleStyles = makeStyles<{
     color: theme.palette.neutralShades[400],
   },
   optionsIconOff: {
-    color: theme.palette.white,
+    color: theme.palette.background.paper,
   },
   leftRow: {
     position: 'relative',
@@ -102,16 +102,20 @@ export const useConversationBubbleStyles = makeStyles<{
     borderTopRightRadius: theme.spacing(2.5),
     borderBottomRightRadius: theme.spacing(2.5),
     backgroundColor: isAttachment
-      ? theme.palette.common.white
+      ? theme.palette.background.default
       : theme.palette.grey[100],
   },
   right: {
     borderTopLeftRadius: theme.spacing(2.5),
     borderBottomLeftRadius: theme.spacing(2.5),
     backgroundColor: isAttachment
-      ? theme.palette.common.white
+      ? theme.palette.background.default
       : theme.palette.primary.main,
-    color: theme.palette.common.white,
+    color: theme.palette.getContrastText(
+      isAttachment
+        ? theme.palette.background.default
+        : theme.palette.primary.main,
+    ),
   },
   leftFirst: {
     borderTopLeftRadius: theme.spacing(2.5),
@@ -228,7 +232,7 @@ export const useConversationComposeStyles = makeStyles<{
     }`,
     borderRadius: theme.shape.borderRadius,
     paddingLeft: 12,
-    backgroundColor: theme.palette.white,
+    backgroundColor: theme.palette.background.default,
   },
   textboxInput: {
     fontSize: 16,
@@ -252,7 +256,7 @@ export const useConversationComposeStyles = makeStyles<{
     color: theme.palette.primary.main,
   },
   sendIconError: {
-    color: 'red',
+    color: theme.palette.error.main,
   },
   attachIcon: {
     color: theme.palette.neutralShades[500],
@@ -292,7 +296,9 @@ export const useConversationStyles = makeStyles<{
   conversationContainer: {
     display: 'flex',
     flexDirection: 'column-reverse',
-    borderBottom: isChatRequest ? undefined : '1px dashed #eeeeee',
+    borderBottom: isChatRequest
+      ? undefined
+      : `1px dashed ${theme.palette.neutralShades[200]}`,
     overflowY: 'auto',
     overflowX: 'hidden',
     overscrollBehavior: 'contain',
@@ -307,7 +313,7 @@ export const useConversationStyles = makeStyles<{
   },
   avatar: {
     backgroundColor: theme.palette.primary.main,
-    color: 'white',
+    color: theme.palette.getContrastText(theme.palette.primary.main),
     height: 35,
     width: 35,
   },
@@ -347,7 +353,7 @@ export const useConversationStyles = makeStyles<{
     marginBottom: theme.spacing(1),
   },
   acceptContainer: {
-    borderTop: '1px dashed #eeeeee',
+    borderTop: `1px dashed ${theme.palette.neutralShades[200]}`,
     color: theme.palette.neutralShades[600],
     marginTop: theme.spacing(1.5),
     paddingTop: theme.spacing(1.5),

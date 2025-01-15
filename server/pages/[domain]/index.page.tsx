@@ -32,6 +32,7 @@ import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import LeftBarContentCollapse from 'components/LeftBarContentCollapse';
+import Footer from 'components/app/Footer';
 import {format, isPast} from 'date-fns';
 import {normalizeIpfsHash} from 'lib/ipfs';
 import {shuffle} from 'lodash';
@@ -1360,6 +1361,7 @@ const DomainProfile = ({
                         (b.totalValueUsdAmt || 0) - (a.totalValueUsdAmt || 0),
                     )}
                   domain={domain}
+                  boxShadow={3}
                   isError={isWalletBalanceError}
                   verified={tokenId !== undefined}
                 />
@@ -1369,6 +1371,7 @@ const DomainProfile = ({
                   id="profile"
                   wallets={walletBalances}
                   domain={domain}
+                  boxShadow={3}
                   isError={isWalletBalanceError}
                   verified={tokenId !== undefined}
                 />
@@ -1589,6 +1592,7 @@ const DomainProfile = ({
           </Grid>
         )}
       </Grid>
+      {isLoaded && <Footer />}
       {isViewFollowModalOpen && profileData && (
         <DomainListModal
           id="followerList"

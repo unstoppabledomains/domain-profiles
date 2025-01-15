@@ -22,7 +22,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   imageWrapper: {
     position: 'relative',
-    backgroundColor: theme.palette.neutralShades[100],
+    backgroundColor: theme.palette.background.default,
     borderRadius: '50%',
     '&::before': {
       content: '""',
@@ -56,12 +56,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
     '& > svg': {
       width: AVATAR_RESULT_SIZE,
       height: AVATAR_RESULT_SIZE,
-      fill: theme.palette.common.white,
+      fill: theme.palette.getContrastText(theme.palette.success.main),
       padding: theme.spacing(3),
     },
   },
   errorIcon: {
-    backgroundColor: theme.palette.common.white,
+    backgroundColor: theme.palette.getContrastText(theme.palette.error.main),
     '& > svg': {
       width: AVATAR_RESULT_SIZE,
       height: AVATAR_RESULT_SIZE,
@@ -72,10 +72,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     color: theme.palette.neutralShades[400],
   },
   successLabel: {
-    color: theme.palette.common.black,
+    color: theme.palette.getContrastText(theme.palette.background.default),
   },
   errorLabel: {
-    color: theme.palette.common.black,
+    color: theme.palette.getContrastText(theme.palette.background.default),
   },
   pictureContainer: {
     display: 'flex',
@@ -89,7 +89,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
     borderRadius: '50%',
-    backgroundColor: theme.palette.white,
+    backgroundColor: theme.palette.background.default,
     zIndex: 1,
     [theme.breakpoints.up('sm')]: {
       flex: '1 0 auto',

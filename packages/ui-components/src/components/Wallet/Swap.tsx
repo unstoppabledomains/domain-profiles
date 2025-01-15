@@ -137,7 +137,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     minHeight: '20px',
   },
   tokenInput: {
-    backgroundColor: theme.palette.white,
+    backgroundColor: theme.palette.background.paper,
   },
   swapIcon: {
     marginTop: theme.spacing(2),

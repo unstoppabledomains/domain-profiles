@@ -99,7 +99,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     backgroundColor: 'transparent',
   },
   chatMobilePaper: {
-    backgroundColor: 'white',
+    backgroundColor: theme.palette.background.default,
   },
   loadingContainer: {
     display: 'flex',

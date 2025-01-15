@@ -61,8 +61,8 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
   },
   avatarMain: {
     color: theme.palette.primary.main,
-    backgroundColor: 'white',
-    border: '2px solid white',
+    backgroundColor: theme.palette.background.default,
+    border: `2px solid ${theme.palette.background.default}`,
     borderRadius: '50%',
     height: `${size}px`,
     width: `${size}px`,
@@ -71,8 +71,8 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
   avatarCard: {
     marginRight: theme.spacing(1),
     color: theme.palette.primary.main,
-    backgroundColor: 'white',
-    border: '2px solid white',
+    backgroundColor: theme.palette.background.default,
+    border: `2px solid ${theme.palette.background.default}`,
     borderRadius: '50%',
     cursor: 'pointer',
     width: '75px',
@@ -82,7 +82,7 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
     cursor: 'pointer',
   },
   greyBg: {
-    backgroundColor: '#F6F6F6',
+    backgroundColor: theme.palette.neutralShades[200],
   },
 }));
 

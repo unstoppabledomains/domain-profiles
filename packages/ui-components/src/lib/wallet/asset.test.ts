@@ -141,6 +141,27 @@ describe('selecting asset', () => {
     expect(asset?.blockchainAsset.blockchain.id).toBe('POLYGON');
   });
 
+  it('should select Polygon asset by native token asset', () => {
+    const asset = getAsset(mockAssets, {
+      token: {
+        address: 'mockTokenAddress',
+        type: TokenType.Native,
+        symbol: 'MATIC',
+        name: 'Polygon',
+        ticker: 'MATIC',
+        value: 1,
+        tokenConversionUsd: 1,
+        balance: 1,
+        walletAddress: '0x8ee1E1d88EBE2B44eAD162777DE787Ef6A2dC2F2',
+        walletBlockChainLink: 'mockBlockchainLink',
+        walletName: 'Polygon',
+      },
+      address: '0x8ee1E1d88EBE2B44eAD162777DE787Ef6A2dC2F2',
+    });
+    expect(asset).toBeDefined();
+    expect(asset?.blockchainAsset.blockchain.id).toBe('POLYGON');
+  });
+
   it('should not return an asset for invalid chain ID', () => {
     const asset = getAsset(mockAssets, {
       chainId: 9999999999,

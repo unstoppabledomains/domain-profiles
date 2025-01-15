@@ -56,7 +56,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     '& > svg': {
       width: AVATAR_RESULT_SIZE,
       height: AVATAR_RESULT_SIZE,
-      fill: theme.palette.getContrastText(theme.palette.success.main),
+      fill: theme.palette.common.white,
       padding: theme.spacing(3),
     },
   },

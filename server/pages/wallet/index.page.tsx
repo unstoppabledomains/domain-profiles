@@ -50,8 +50,8 @@ const WalletPage = () => {
 
   // build default wallet page SEO tags
   const seoTags = getSeoTags({
-    title: theme.palette.wallet.product.title,
-    description: theme.palette.wallet.product.subTitle,
+    title: theme.wallet.title,
+    description: theme.wallet.subTitle,
   });
 
   // sign the user out if recovery is requested
@@ -175,12 +175,12 @@ const WalletPage = () => {
           <Grid container data-testid="mainContentContainer">
             <Grid item xs={12} className={classes.item}>
               <Typography className={classes.sectionTitle}>
-                {theme.palette.wallet.product.title}
+                {theme.wallet.title}
               </Typography>
             </Grid>
             <Grid item xs={12} className={classes.item}>
               <Typography className={classes.sectionSubTitle}>
-                {theme.palette.wallet.product.subTitle}
+                {theme.wallet.subTitle}
               </Typography>
             </Grid>
             <Grid item xs={12} className={classes.item}>

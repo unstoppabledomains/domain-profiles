@@ -35,7 +35,7 @@ export const getAsset = (
       const isToken =
         opts.token.type === TokenType.Erc20 ||
         opts.token.type === TokenType.Spl;
-      const tokenAsset =
+      return (
         opts.token.walletName.toLowerCase() ===
           a.blockchainAsset.blockchain.name.toLowerCase() &&
         [
@@ -46,10 +46,8 @@ export const getAsset = (
             ? opts.token.symbol.toLowerCase()
             : opts.token.ticker.toLowerCase(),
         ) &&
-        a.address.toLowerCase() === opts.token.walletAddress.toLowerCase();
-      if (tokenAsset) {
-        return tokenAsset;
-      }
+        a.address.toLowerCase() === opts.token.walletAddress.toLowerCase()
+      );
     }
 
     // find by address on default signing assets

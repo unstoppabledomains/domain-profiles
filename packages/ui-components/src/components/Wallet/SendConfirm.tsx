@@ -9,7 +9,7 @@ import React from 'react';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {TokenEntry} from '../../lib';
-import { useTranslationContext} from '../../lib';
+import {useTranslationContext} from '../../lib';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {
   getBlockchainDisplaySymbol,
@@ -36,20 +36,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '100%',
     gap: '7px',
     marginBottom: theme.spacing(5),
-    backgroundColor: theme.palette.primaryShades[100],
+    color: theme.palette.getContrastText(theme.palette.secondary.light),
+    backgroundColor: theme.palette.secondary.light,
     padding: 12,
     borderRadius: 8,
     height: '100%',
-  },
-  icon: {
-    fontSize: '60px',
-  },
-  subTitlePending: {
-    marginTop: theme.spacing(1),
-    color: theme.palette.neutralShades[400],
-  },
-  subTitleComplete: {
-    marginTop: theme.spacing(1),
   },
 }));
 

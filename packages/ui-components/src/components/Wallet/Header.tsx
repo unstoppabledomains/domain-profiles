@@ -79,7 +79,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
       height: '20px',
     },
     descriptionText: {
-      color: theme.palette.getContrastText(theme.palette.primary.main),
+      color: theme.palette.neutralShades[50],
     },
     round: {
       display: 'flex',
@@ -144,7 +144,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
       },
     },
     learnMoreLink: {
-      color: theme.palette.getContrastText(theme.palette.primary.main),
+      color: theme.palette.neutralShades[50],
       fontSize: theme.typography.body2.fontSize,
     },
     clickable: {

@@ -10,6 +10,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getTwoFactorStatus} from '../../actions/walletMfaActions';
 import {useTranslationContext} from '../../lib';
+import {useCustomTheme} from '../../styles/theme';
 import Modal from '../Modal';
 import RecoverySetupModal from './RecoverySetupModal';
 import {TwoFactorModal} from './TwoFactorModal';
@@ -54,6 +55,7 @@ type Props = {
 const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const theme = useCustomTheme();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isRecoveryModalOpen, setIsRecoveryModalOpen] = useState(false);
   const [isMfaModalOpen, setIsMfaModalOpen] = useState(false);
@@ -106,6 +108,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           icon={<GppGoodOutlinedIcon className={classes.iconEnabled} />}
         >
           <Button
+            color={theme.palette.mode === 'light' ? 'primary' : 'secondary'}
             onClick={handleRecoveryKitClicked}
             variant="outlined"
             size="small"
@@ -129,6 +132,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           }
         >
           <Button
+            color={theme.palette.mode === 'light' ? 'primary' : 'secondary'}
             onClick={handleMfaClicked}
             variant={isMfaEnabled ? 'outlined' : 'contained'}
             size="small"

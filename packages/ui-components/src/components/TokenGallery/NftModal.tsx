@@ -11,6 +11,7 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import {alpha} from '@mui/system/colorManipulator';
 import numeral from 'numeral';
 import React, {useState} from 'react';
 
@@ -30,7 +31,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'center',
     [theme.breakpoints.down('sm')]: {
       '&.MuiBackdrop-root': {
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        backgroundColor: alpha(theme.palette.common.black, 0.7),
         filter: 'blur(0.5rem)',
       },
     },
@@ -40,7 +41,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   nftGrid: {
     overflowY: 'scroll',
     maxHeight: '100vh',
-    background: 'rgba(0, 0, 0, 0.8)',
+    background: alpha(theme.palette.common.black, 0.7),
     backdropFilter: 'blur(50px)',
     width: theme.spacing(145),
     p: theme.spacing(3),
@@ -125,7 +126,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     borderTopRightRadius: '1.5rem',
     borderBottomRightRadius: '1.5rem',
     padding: theme.spacing(4),
-    color: '#fff',
+    color: theme.palette.common.white,
   },
   currencyIcon: {
     width: 15,
@@ -156,7 +157,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   button: {
     marginTop: '2rem',
-    color: '#fff',
+    color: theme.palette.common.white,
     borderColor: 'rgba(255, 255, 255, 0.7)',
   },
   newWindowIcon: {
@@ -164,7 +165,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   descriptionLink: {
     fontWeight: 'bold',
-    color: '#fff',
+    color: theme.palette.common.white,
     textDecoration: 'none',
   },
   closeIconSection: {
@@ -181,7 +182,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 
   closeIcon: {
-    color: '#fff',
+    color: theme.palette.common.white,
   },
 
   detailsText: {

@@ -61,7 +61,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginRight: theme.spacing(1),
     marginBottom: theme.spacing(1),
     cursor: 'pointer',
-    backgroundColor: '#fff',
+    backgroundColor: theme.palette.background.default,
     fontWeight: 'bold',
     color: theme.palette.neutralShades[500],
     border: `1px solid ${theme.palette.neutralShades[500]}`,

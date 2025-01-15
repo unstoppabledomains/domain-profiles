@@ -1,8 +1,8 @@
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import Footer from 'components/app/Footer';
 import {MobileCta} from 'components/wallet/MobileCta';
 import {EMAIL_PARAM, RECOVERY_TOKEN_PARAM} from 'lib/types';
 import {NextSeo} from 'next-seo';
@@ -22,6 +22,7 @@ import {
   getSeoTags,
   isEthAddress,
   localStorageWrapper,
+  useCustomTheme,
   useFireblocksState,
   useTranslationContext,
   useWeb3Context,
@@ -34,7 +35,7 @@ const WalletPage = () => {
   const {web3Deps} = useWeb3Context();
   const {query: params} = useRouter();
   const isMounted = useIsMounted();
-  const theme = useTheme();
+  const theme = useCustomTheme();
   const [isLoaded, setIsLoaded] = useState(false);
   const [walletState] = useFireblocksState();
   const [authAddress, setAuthAddress] = useState<string>('');
@@ -49,8 +50,8 @@ const WalletPage = () => {
 
   // build default wallet page SEO tags
   const seoTags = getSeoTags({
-    title: t('wallet.title'),
-    description: t('manage.cryptoWalletDescriptionShort'),
+    title: theme.wallet.title,
+    description: theme.wallet.subTitle,
   });
 
   // sign the user out if recovery is requested
@@ -174,12 +175,12 @@ const WalletPage = () => {
           <Grid container data-testid="mainContentContainer">
             <Grid item xs={12} className={classes.item}>
               <Typography className={classes.sectionTitle}>
-                {t('wallet.title')}
+                {theme.wallet.title}
               </Typography>
             </Grid>
             <Grid item xs={12} className={classes.item}>
               <Typography className={classes.sectionSubTitle}>
-                {t('manage.cryptoWalletDescriptionShort')}
+                {theme.wallet.subTitle}
               </Typography>
             </Grid>
             <Grid item xs={12} className={classes.item}>
@@ -231,29 +232,7 @@ const WalletPage = () => {
           </Grid>
         )}
       </Box>
-      <Box className={classes.footerContainer}>
-        <Box className={classes.footerContent}>
-          <Typography className={classes.copyright} variant="body2">
-            {t('footer.copyright')}
-          </Typography>
-        </Box>
-        <Box className={classes.footerContent}>
-          <Typography variant="caption">
-            <a
-              className={classes.footerLink}
-              href="https://unstoppabledomains.com/terms"
-            >
-              {t('footer.terms')}
-            </a>
-            <a
-              className={classes.footerLink}
-              href="https://unstoppabledomains.com/privacy-policy"
-            >
-              {t('footer.privacyPolicy')}
-            </a>
-          </Typography>
-        </Box>
-      </Box>
+      <Footer />
     </Box>
   );
 };

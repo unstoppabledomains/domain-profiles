@@ -12,7 +12,7 @@ export const useStyles = makeStyles<
 >()((theme: Theme, {isSaleActive}, classes) => ({
   container: {
     position: 'relative',
-    background: theme.palette.neutralShades[100],
+    background: theme.palette.background.default,
     justifyContent: 'space-between',
     display: 'flex',
     flexDirection: 'column',
@@ -44,7 +44,7 @@ export const useStyles = makeStyles<
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: theme.shape.borderRadius,
-    backgroundColor: 'white',
+    backgroundColor: theme.palette.background.paper,
     padding: theme.spacing(2),
     boxShadow: theme.shadows[6],
     minHeight: '405px',
@@ -218,7 +218,7 @@ export const useStyles = makeStyles<
   manageTitle: {
     display: 'flex',
     width: '100%',
-    color: 'black',
+    color: theme.palette.getContrastText(theme.palette.background.default),
     marginTop: theme.spacing(1),
     marginRight: theme.spacing(-6),
   },

@@ -43,7 +43,7 @@ const useStyles = makeStyles<void, 'error'>()(
     input: {
       height: 44,
       borderRadius: theme.shape.borderRadius,
-      backgroundColor: theme.palette.common.white,
+      backgroundColor: theme.palette.background.paper,
       border: `1px solid ${theme.palette.neutralShades[300]}`,
       padding: theme.spacing(1, 1.5),
       margin: theme.spacing(0, 3),
@@ -56,8 +56,11 @@ const useStyles = makeStyles<void, 'error'>()(
       },
       [`&.${classes.error}`]: {
         borderRadius: theme.shape.borderRadius,
-        borderColor: 'red',
+        borderColor: theme.palette.error.main,
       },
+    },
+    formError: {
+      color: theme.palette.error.main,
     },
     error: {
       borderRadius: theme.shape.borderRadius,
@@ -196,7 +199,11 @@ const AddCurrencyModal: React.FC<Props> = ({
           <div>
             {currency}
             {versions.length > 0 && versions.every(v => v.deprecated) && (
-              <FormError message={t('manage.legacyToken')} severity="warning" />
+              <FormError
+                className={classes.formError}
+                message={t('manage.legacyToken')}
+                severity="warning"
+              />
             )}
           </div>
         </div>

@@ -179,6 +179,7 @@ const MultiChainInput: React.FC<Props> = ({
                     {(errors[key] || isDeprecated) && (
                       <div className={classes.multinputError}>
                         <FormError
+                          className={classes.formError}
                           message={
                             isDeprecated
                               ? t('manage.legacyToken')

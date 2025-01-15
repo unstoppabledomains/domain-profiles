@@ -17,10 +17,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     position: 'relative',
     padding: theme.spacing(3.5, 3),
-    backgroundColor: '#192B55',
+    backgroundColor: theme.palette.primaryShades[800],
     borderTopRightRadius: theme.shape.borderRadius,
     borderTopLeftRadius: theme.shape.borderRadius,
-    color: theme.palette.white,
+    color: theme.palette.getContrastText(theme.palette.primary.main),
   },
   containerWithCover: {
     backgroundSize: 'cover',
@@ -43,14 +43,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
     fontWeight: theme.typography.fontWeightBold,
     color: 'inherit',
     '&:hover': {
-      borderColor: theme.palette.white,
-      backgroundColor: theme.palette.white,
+      borderColor: theme.palette.background.paper,
+      backgroundColor: theme.palette.background.paper,
       color: theme.palette.greyShades[900],
     },
   },
   buttonWhite: {
-    borderColor: theme.palette.white,
-    backgroundColor: theme.palette.white,
+    borderColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.background.paper,
     color: theme.palette.greyShades[900],
     '&:hover': {
       borderColor: theme.palette.greyShades[50],

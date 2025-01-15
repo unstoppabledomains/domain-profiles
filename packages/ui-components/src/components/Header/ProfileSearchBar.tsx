@@ -9,6 +9,7 @@ import InputBase from '@mui/material/InputBase';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {alpha} from '@mui/system/colorManipulator';
 import React, {useEffect, useRef, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
@@ -43,7 +44,9 @@ const useStyles = makeStyles<{
     paddingLeft: variant === 'homepage' ? theme.spacing(2) : theme.spacing(1),
     backdropFilter: 'blur(5px)',
     backgroundColor:
-      variant === 'homepage' ? 'white' : 'rgba(255, 255, 255, 0.20)',
+      variant === 'homepage'
+        ? theme.palette.background.paper
+        : alpha(theme.palette.background.paper, 0.2),
     boxShadow: variant === 'homepage' ? theme.shadows[6] : undefined,
   },
   input: {
@@ -58,17 +61,11 @@ const useStyles = makeStyles<{
       WebkitAppearance: 'none',
     },
     '&::placeholder': {
-      color:
-        variant === 'homepage'
-          ? theme.palette.neutralShades[400]
-          : theme.palette.common.white,
+      color: theme.palette.neutralShades[400],
       opacity: 1,
     },
     '&::-webkit-input-placeholder': {
-      color:
-        variant === 'homepage'
-          ? theme.palette.neutralShades[400]
-          : theme.palette.common.white,
+      color: theme.palette.neutralShades[400],
       opacity: 1,
     },
   },
@@ -92,7 +89,7 @@ const useStyles = makeStyles<{
   },
   searchResultsContainer: {
     width: '100%',
-    backgroundColor: theme.palette.white,
+    backgroundColor: theme.palette.background.paper,
     border: `1px solid ${theme.palette.neutralShades[100]}`,
     display: 'flex',
     flexDirection: 'column',
@@ -116,7 +113,7 @@ const useStyles = makeStyles<{
     justifyContent: 'space-between',
     cursor: 'pointer',
     '&:hover': {
-      backgroundColor: theme.palette.neutralShades[50],
+      backgroundColor: theme.palette.background.default,
     },
     '&:not(:last-child)': {
       borderBottom: `1px dashed ${theme.palette.neutralShades[100]}`,
@@ -140,17 +137,19 @@ const useStyles = makeStyles<{
   },
   closeIcon: {
     color:
-      variant === 'homepage' ? theme.palette.neutralShades[400] : '#FFFFFF80',
+      variant === 'homepage'
+        ? theme.palette.neutralShades[400]
+        : theme.palette.common.white,
     height: '16px',
     width: '16px',
   },
   searchIcon: {
     color:
       variant === 'homepage'
-        ? theme.palette.common.white
+        ? theme.palette.background.paper
         : focus
-        ? theme.palette.common.black
-        : theme.palette.common.white,
+        ? theme.palette.getContrastText(theme.palette.background.paper)
+        : theme.palette.neutralShades[400],
     margin: theme.spacing(1),
     width: 24,
     height: 24,
@@ -158,10 +157,10 @@ const useStyles = makeStyles<{
   loadingIcon: {
     color:
       variant === 'homepage'
-        ? theme.palette.common.white
+        ? theme.palette.background.paper
         : focus
-        ? theme.palette.common.black
-        : theme.palette.common.white,
+        ? theme.palette.getContrastText(theme.palette.background.paper)
+        : theme.palette.background.paper,
     padding: theme.spacing(1),
   },
   rightIcon: {
@@ -184,7 +183,7 @@ const useStyles = makeStyles<{
       variant === 'homepage'
         ? theme.palette.primary.main
         : focus
-        ? theme.palette.white
+        ? theme.palette.background.paper
         : undefined,
     height: '100%',
     borderRadius: '0px 7px 7px 0px',

@@ -8,11 +8,10 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 export const useStyles = makeStyles()((theme: Theme) => ({
   container: {
-    background: theme.palette.common.white,
+    background: theme.palette.background.default,
     display: 'flex',
     flexDirection: 'column',
     flex: '1 1 auto',
-    paddingBottom: theme.spacing(16),
   },
   content: {
     ...theme.containers.main,
@@ -35,7 +34,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   },
   headWrapper: {
     position: 'relative',
-    backgroundColor: '#192B55',
+    backgroundColor: theme.palette.primaryShades[900],
     height: 148,
     [theme.breakpoints.up('md')]: {
       height: 200,
@@ -247,7 +246,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     marginRight: theme.spacing(1),
   },
   reverseResolutionProfileLink: {
-    color: theme.palette.white,
+    color: theme.palette.getContrastText(theme.palette.neutralShades[600]),
     transition: theme.transitions.create('color'),
     fontWeight: 'bold',
     fontSize: theme.typography.body2.fontSize,
@@ -356,16 +355,6 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     textAlign: 'center',
     fontSize: theme.typography.caption.fontSize,
     maxWidth: 220,
-  },
-  humanityVerifiedTooltipLink: {
-    display: 'block',
-    fontSize: 'inherit',
-    color: theme.palette.greyShades[200],
-    transition: theme.transitions.create('color'),
-    '&:hover': {
-      textDecoration: 'none',
-      color: theme.palette.white,
-    },
   },
   featuredTooltipLink: {
     fontSize: 'inherit',

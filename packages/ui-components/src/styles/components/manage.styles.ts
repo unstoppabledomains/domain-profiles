@@ -13,7 +13,7 @@ const useStyles = makeStyles<void, 'error'>()(
     formLabel: {
       fontSize: '1.125rem',
       pointerEvents: 'auto', // to make the Tooltip component work inside the InputLabel
-      color: theme.palette.greyShades[900],
+      color: theme.palette.getContrastText(theme.palette.background.paper),
       fontWeight: theme.typography.fontWeightMedium,
     },
     labelIcon: {
@@ -60,12 +60,12 @@ const useStyles = makeStyles<void, 'error'>()(
       borderRadius: theme.shape.borderRadius,
       [`&.${classes.error}`]: {
         borderRadius: theme.shape.borderRadius,
-        borderColor: 'red',
+        borderColor: theme.palette.error.main,
       },
       '& input': {
         borderRadius: theme.shape.borderRadius,
         position: 'relative',
-        backgroundColor: theme.palette.common.white,
+        backgroundColor: theme.palette.background.paper,
         fontSize: 16,
         width: '100%',
         padding: theme.spacing(1, 1.5),
@@ -78,7 +78,7 @@ const useStyles = makeStyles<void, 'error'>()(
     },
     input: {
       position: 'relative',
-      backgroundColor: theme.palette.common.white,
+      backgroundColor: theme.palette.background.paper,
       width: '100%',
       transition: theme.transitions.create('border-color'),
       height: 24,
@@ -106,6 +106,9 @@ const useStyles = makeStyles<void, 'error'>()(
     },
     formErrorContainer: {
       marginTop: theme.spacing(1),
+    },
+    formError: {
+      color: theme.palette.error.main,
     },
     // Loading
     loadingContainer: {
@@ -166,7 +169,7 @@ const useStyles = makeStyles<void, 'error'>()(
     },
     cardTitle: {
       fontSize: '16px',
-      color: '#000000',
+      color: theme.palette.getContrastText(theme.palette.background.default),
       fontWeight: 700,
       marginBottom: '0px',
     },
@@ -179,10 +182,10 @@ const useStyles = makeStyles<void, 'error'>()(
       marginLeft: '6px',
     },
     iconButton: {
-      color: '#000000',
+      color: theme.palette.getContrastText(theme.palette.background.default),
     },
     iconButtonBig: {
-      color: '#000000',
+      color: theme.palette.getContrastText(theme.palette.background.default),
       borderRadius: 5,
       width: '100%',
       justifyContent: 'left',

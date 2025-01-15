@@ -78,6 +78,9 @@ export const useStyles = makeStyles()((theme: Theme) => ({
       marginLeft: '25%',
     },
   },
+  formError: {
+    color: theme.palette.error.main,
+  },
   formControlMultiChain: {
     display: 'flex',
     justifyContent: 'space-between',

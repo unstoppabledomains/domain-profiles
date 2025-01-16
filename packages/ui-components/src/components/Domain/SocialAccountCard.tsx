@@ -89,6 +89,7 @@ const useStyles = makeStyles<void, 'actionIcon'>()(
       borderRadius: '50%',
       width: 30,
       height: 30,
+      filter: theme.palette.mode === 'dark' ? 'invert(1)' : undefined,
     },
     divider: {
       marginTop: theme.spacing(2),

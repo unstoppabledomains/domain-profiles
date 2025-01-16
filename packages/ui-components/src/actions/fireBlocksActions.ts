@@ -14,7 +14,7 @@ import {sleep} from '../lib/sleep';
 import {
   EIP_712_KEY,
   FB_MAX_RETRY,
-  FB_WAIT_TIME_MS,
+  FB_WAIT_TIME_MS
 } from '../lib/types/fireBlocks';
 import type {
   AccountAsset,
@@ -27,7 +27,8 @@ import type {
   GetOperationStatusResponse,
   GetTokenResponse,
   TokenRefreshResponse,
-} from '../lib/types/fireBlocks';
+
+  VerifyTokenResponse} from '../lib/types/fireBlocks';
 import {getAsset} from '../lib/wallet/asset';
 import {
   getBootstrapState,
@@ -179,6 +180,18 @@ export const getAccessTokenInternal = async (
       },
     );
 
+    // verify the new token is a V2 access token
+    const tokenVersion = await getAccessTokenVersion(newTokens.accessToken);
+    if (tokenVersion !== 'v2') {
+      notifyEvent(
+        'unexpected token version',
+        'warning',
+        'Wallet',
+        'Authorization',
+      );
+      throw new Error('invalid access token');
+    }
+
     // retrieve existing state
     const existingState = getBootstrapState(opts.state);
 
@@ -205,6 +218,35 @@ export const getAccessTokenInternal = async (
   } catch (e) {
     notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error refreshing tokens',
+    });
+  }
+  return undefined;
+};
+
+export const getAccessTokenVersion = async (
+  accessToken: string,
+): Promise<'v1' | 'v2' | undefined> => {
+  try {
+    const tokenStatus = await fetchApi<VerifyTokenResponse>(
+      '/v2/auth/tokens/verify',
+      {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Access-Control-Allow-Credentials': 'true',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        host: config.WALLETS.HOST_URL,
+      },
+    );
+    if (!tokenStatus?.isValid) {
+      return undefined;
+    }
+    return tokenStatus.validations.hasSessionKey ? 'v2' : 'v1';
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
+      msg: 'error sending reset request',
     });
   }
   return undefined;

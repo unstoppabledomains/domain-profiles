@@ -1,7 +1,7 @@
 import type {Theme, ThemeOptions} from '@mui/material/styles';
 import {createTheme, responsiveFontSizes} from '@mui/material/styles';
 
-import type { ThemeMode} from '../index';
+import type {ThemeMode} from '../index';
 import {THEME_SHAPE_BORDER_RADIUS} from '../index';
 
 // more info on dark mode: https://mui.com/material-ui/customization/dark-mode/

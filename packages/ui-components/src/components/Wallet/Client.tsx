@@ -39,8 +39,6 @@ import {
   useTranslationContext,
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
-import {getFireBlocksClient} from '../../lib/fireBlocks/client';
-import {getBootstrapState} from '../../lib/fireBlocks/storage/state';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileList} from '../Domain';
@@ -209,6 +207,7 @@ export const Client: React.FC<ClientProps> = ({
   onRefresh,
   setIsHeaderClicked,
   isHeaderClicked,
+  isWalletLoading,
 }) => {
   // mobile behavior flag
   const theme = useTheme();
@@ -234,6 +233,7 @@ export const Client: React.FC<ClientProps> = ({
   const isSellEnabled = cryptoValue >= 15;
 
   // component state variables
+
   const [isSend, setIsSend] = useState(false);
   const [isReceive, setIsReceive] = useState(false);
   const [isBuy, setIsBuy] = useState(false);
@@ -345,20 +345,6 @@ export const Client: React.FC<ClientProps> = ({
   };
   let showPasswordCtaTimer: NodeJS.Timeout | undefined;
 
-  const getClient = async () => {
-    // retrieve client state
-    const clientState = getBootstrapState(state);
-    if (!clientState || !accessToken) {
-      throw new Error('invalid configuration');
-    }
-
-    // initialize and set the client
-    return await getFireBlocksClient(clientState.deviceId, accessToken, {
-      state,
-      saveState,
-    });
-  };
-
   const handleClaimWallet = async () => {
     closeSnackbar(CustodyState.CUSTODY);
     if (onClaimWallet) {
@@ -380,7 +366,7 @@ export const Client: React.FC<ClientProps> = ({
     if (address && tv === ClientTabType.Domains) {
       void handleLoadDomains(true);
     }
-    await onRefresh(true);
+    await onRefresh(true, getTabFields(tv));
   };
 
   const handleRetrieveOwnerDomains = async (
@@ -525,7 +511,13 @@ export const Client: React.FC<ClientProps> = ({
     setSelectedToken(undefined);
 
     // refresh portfolio data
-    await onRefresh(true);
+    await onRefresh(true, getTabFields(tabValue));
+  };
+
+  const getTabFields = (tv: ClientTabType) => {
+    return tv === ClientTabType.Transactions
+      ? ['native', 'price', 'token', 'tx']
+      : ['native', 'price', 'token'];
   };
 
   return (
@@ -534,7 +526,6 @@ export const Client: React.FC<ClientProps> = ({
         {isSend && accessToken ? (
           <Box className={classes.panelContainer}>
             <Send
-              getClient={getClient}
               accessToken={accessToken}
               onCancelClick={handleCancel}
               onClickBuy={handleClickedBuy}
@@ -546,7 +537,6 @@ export const Client: React.FC<ClientProps> = ({
         ) : isSwap && accessToken ? (
           <Box className={classes.panelContainer}>
             <Swap
-              getClient={getClient}
               accessToken={accessToken}
               onCancelClick={handleCancel}
               onClickBuy={handleClickedBuy}
@@ -703,6 +693,7 @@ export const Client: React.FC<ClientProps> = ({
                     id="unstoppable-wallet"
                     wallets={wallets}
                     isOwner={true}
+                    isWalletLoading={isWalletLoading}
                     verified={true}
                     fullScreenModals={fullScreenModals}
                     accessToken={accessToken}
@@ -787,8 +778,9 @@ export type ClientProps = {
   paymentConfigStatus?: SerializedIdentityResponse;
   fullScreenModals?: boolean;
   onClaimWallet?: () => void;
-  onRefresh: (showSpinner?: boolean) => Promise<void>;
+  onRefresh: (showSpinner?: boolean, fields?: string[]) => Promise<void>;
   isHeaderClicked: boolean;
+  isWalletLoading?: boolean;
   setIsHeaderClicked?: (v: boolean) => void;
 };
 

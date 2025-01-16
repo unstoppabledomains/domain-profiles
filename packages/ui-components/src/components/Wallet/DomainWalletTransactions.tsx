@@ -3,6 +3,7 @@ import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
 import SendIcon from '@mui/icons-material/Send';
 import SouthOutlinedIcon from '@mui/icons-material/SouthOutlined';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
+import Avatar from '@mui/material/Avatar';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -167,6 +168,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
     color: 'inherit',
     alignSelf: 'center',
   },
+  txPlaceholder: {
+    width: '100%',
+    height: '50px',
+    borderRadius: theme.shape.borderRadius,
+    marginBottom: theme.spacing(1),
+  },
 }));
 
 export const DomainWalletTransactions: React.FC<
@@ -178,6 +185,7 @@ export const DomainWalletTransactions: React.FC<
   isOwner,
   wallets,
   isError,
+  isWalletLoading,
   verified,
   fullScreenModals,
   boxShadow,
@@ -354,10 +362,18 @@ export const DomainWalletTransactions: React.FC<
                   )
                 }
               >
-                <CryptoIcon
-                  currency={tx.symbol as CurrenciesType}
-                  className={classes.currencyIcon}
-                />
+                {tx.type === 'spl' && tx.imageUrl ? (
+                  <Avatar
+                    src={tx.imageUrl}
+                    alt={tx.symbol}
+                    className={classes.currencyIcon}
+                  />
+                ) : (
+                  <CryptoIcon
+                    currency={tx.symbol as CurrenciesType}
+                    className={classes.currencyIcon}
+                  />
+                )}
               </Badge>
             </Box>
           </Grid>
@@ -431,6 +447,7 @@ export const DomainWalletTransactions: React.FC<
   // show CTA if there are no transactions
   if (
     isOwner &&
+    !isWalletLoading &&
     txns &&
     txns.length === 0 &&
     onBack &&
@@ -515,6 +532,16 @@ export const DomainWalletTransactions: React.FC<
                 )}
               </Grid>
             </InfiniteScroll>
+          ) : isWalletLoading ? (
+            <Box className={classes.infiniteScrollLoading}>
+              {[1, 2, 3].map(i => (
+                <Skeleton
+                  key={`placeholder-${i}`}
+                  className={classes.txPlaceholder}
+                  variant="rectangular"
+                />
+              ))}
+            </Box>
           ) : (
             <Typography className={classes.noActivity} textAlign="center">
               {isError ? t('activity.retrieveError') : t('activity.noActivity')}
@@ -541,6 +568,7 @@ export type DomainWalletTransactionsProps = {
   accessToken?: string;
   isOwner?: boolean;
   isError?: boolean;
+  isWalletLoading?: boolean;
   wallets?: SerializedWalletBalance[];
   minCount?: number;
   maxCount?: number;

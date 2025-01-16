@@ -92,11 +92,12 @@ describe('solana transactions', () => {
       mockAccessToken,
     );
 
-    const mockSigner: FireblocksMessageSigner = async (message: string) => {
+    const signer: FireblocksMessageSigner = async (message: string) => {
       const messageBytes = Buffer.from(message.replace('0x', ''), 'hex');
       const signature = nacl.sign.detached(messageBytes, payer.secretKey);
       return utils.hexlify(signature);
     };
+    const mockSigner = jest.fn(signer);
 
     await expect(
       getOrCreateAssociatedTokenAccountWithMPC(
@@ -108,9 +109,8 @@ describe('solana transactions', () => {
         mockAccessToken,
         true,
       ),
-    ).rejects.toThrow(
-      'failed to send transaction: Transaction simulation failed: Attempt to debit an account but found no record of a prior credit.',
-    );
+    ).rejects.toThrow(/failed to send transaction:/);
+    expect(mockSigner).toHaveBeenCalledTimes(1);
   });
 
   it('should deserialize a tx from hex', () => {

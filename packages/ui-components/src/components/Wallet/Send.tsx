@@ -1,4 +1,3 @@
-import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -146,7 +145,6 @@ type Props = {
   onCancelClick: () => void;
   onClickReceive?: () => void;
   onClickBuy?: () => void;
-  getClient: () => Promise<IFireblocksNCW>;
   accessToken: string;
   wallets: SerializedWalletBalance[];
   initialSelectedToken?: TokenEntry;
@@ -156,7 +154,6 @@ const Send: React.FC<Props> = ({
   onCancelClick,
   onClickBuy,
   onClickReceive,
-  getClient,
   accessToken,
   wallets,
   initialSelectedToken,
@@ -418,7 +415,6 @@ const Send: React.FC<Props> = ({
           recipientAddress={recipientAddress}
           recipientDomain={resolvedDomain}
           amount={amount}
-          getClient={getClient}
         />
       </Box>
     );

@@ -1,4 +1,3 @@
-import type {IFireblocksNCW} from '@fireblocks/ncw-js-sdk';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import ImportExportIcon from '@mui/icons-material/ImportExport';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
@@ -53,10 +52,9 @@ import {
   notifyEvent,
   useTranslationContext,
 } from '../../lib';
-import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../../lib/fireBlocks/client';
 import {pollForSuccess} from '../../lib/poll';
+import {FB_MAX_RETRY, FB_WAIT_TIME_MS,OperationStatusType} from '../../lib/types/fireBlocks';
 import type {GetOperationResponse} from '../../lib/types/fireBlocks';
-import {OperationStatusType} from '../../lib/types/fireBlocks';
 import type {
   RouteQuote,
   SwingV2AllowanceRequest,
@@ -172,7 +170,6 @@ type Props = {
   onCancelClick: () => void;
   onClickReceive?: () => void;
   onClickBuy?: () => void;
-  getClient: () => Promise<IFireblocksNCW>;
   accessToken: string;
   wallets: SerializedWalletBalance[];
 };
@@ -181,7 +178,6 @@ const Swap: React.FC<Props> = ({
   onCancelClick,
   onClickBuy,
   onClickReceive,
-  getClient,
   accessToken,
   wallets,
 }) => {
@@ -944,15 +940,9 @@ const Swap: React.FC<Props> = ({
           operationStatus.status === OperationStatusType.FAILED
         ) {
           throw new Error('Error requesting transaction operation status');
-        }
-        if (
-          operationStatus.status === OperationStatusType.SIGNATURE_REQUIRED &&
-          operationStatus.transaction?.externalVendorTransactionId
-        ) {
-          const client = await getClient();
-          await client.signTransaction(
-            operationStatus.transaction.externalVendorTransactionId,
-          );
+        } else if (operationStatus.status === OperationStatusType.COMPLETED) {
+          return {success: true};
+        } else if (operationStatus.transaction?.id) {
           return {success: true};
         }
         return {success: false};

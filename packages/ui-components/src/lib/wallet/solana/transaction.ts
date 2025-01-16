@@ -20,8 +20,8 @@ import {utils} from 'ethers';
 
 import type {FireblocksMessageSigner} from '../../../hooks/useFireblocksMessageSigner';
 import {notifyEvent} from '../../error';
-import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../../fireBlocks/client';
 import {sleep} from '../../sleep';
+import {FB_MAX_RETRY, FB_WAIT_TIME_MS} from '../../types/fireBlocks';
 import {getSolanaProvider} from './provider';
 
 export const broadcastTx = async (

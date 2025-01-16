@@ -20,6 +20,7 @@ import type {
   ThemeMode,
   WalletType,
 } from '@unstoppabledomains/ui-components/src/styles/theme/index';
+import {useMediaQuery} from '@unstoppabledomains/ui-kit';
 
 // setup wrapped app props
 export type NextPageWithLayout = NextPage & {
@@ -34,6 +35,7 @@ const WrappedApp = (props: WrappedAppProps) => {
   const [themeName, setThemeName] = useState<WalletType>();
   const [themeMode, setThemeMode] = useState<ThemeMode>();
   const [pageTheme, setPageTheme] = useState<Theme>();
+  const isDarkModeSystemDefault = useMediaQuery('(prefers-color-scheme: dark)');
   const themeModeKey = 'themeMode';
 
   // dynamically apply the page theme
@@ -54,17 +56,21 @@ const WrappedApp = (props: WrappedAppProps) => {
     setThemeName(name);
 
     // initialize the theme mode
+    const userDefinedMode = localStorage.getItem(themeModeKey);
     const mode =
       Component.themeMode ||
-      (localStorage.getItem(themeModeKey) === 'dark' ||
-      pageQuery.includes('mode=dark')
+      (userDefinedMode
+        ? userDefinedMode === 'dark' || pageQuery.includes('mode=dark')
+          ? 'dark'
+          : 'light'
+        : isDarkModeSystemDefault
         ? 'dark'
         : 'light');
     setThemeMode(mode);
 
     // set the theme
     setPageTheme(getTheme(name, mode));
-  }, []);
+  }, [isDarkModeSystemDefault]);
 
   // dynamically set the page theme
   useEffect(() => {

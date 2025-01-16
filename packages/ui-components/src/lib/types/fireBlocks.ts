@@ -169,3 +169,19 @@ export interface TokenRefreshResponse {
   code?: string;
   message?: string;
 }
+
+export interface Validations {
+  isAuthToken: boolean;
+  isTemporary: boolean;
+  hasSessionKey: boolean;
+  hasRecoveryContext: boolean;
+  expiresAt: number;
+  isExpired: boolean;
+  issuedAt: number;
+}
+
+export interface VerifyTokenResponse {
+  '@type': string;
+  isValid: boolean;
+  validations: Validations;
+}

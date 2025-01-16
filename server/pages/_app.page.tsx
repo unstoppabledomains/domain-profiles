@@ -1,4 +1,5 @@
 import type {Theme} from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import Layout from 'components/app/Layout';
 import type {NextPage} from 'next';
 import {NextSeo} from 'next-seo';
@@ -20,7 +21,6 @@ import type {
   ThemeMode,
   WalletType,
 } from '@unstoppabledomains/ui-components/src/styles/theme/index';
-import {useMediaQuery} from '@unstoppabledomains/ui-kit';
 
 // setup wrapped app props
 export type NextPageWithLayout = NextPage & {

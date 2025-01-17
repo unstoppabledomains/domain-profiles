@@ -131,9 +131,6 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
         color: theme.palette.common.white,
       },
     },
-    logo: {
-      color: theme.palette.primary.main,
-    },
     optionsContainer: {
       display: 'flex',
       position: 'absolute',
@@ -357,9 +354,9 @@ export const Header: React.FC<Props> = ({
                 horizontal: 'right',
               }}
             >
-              <WalletIcon
-                className={cx(classes.portfolioHeaderIcon, classes.logo)}
-              />
+              <IconPlate size={24} variant="info">
+                <WalletIcon />
+              </IconPlate>
             </StyledBadge>
           </Tooltip>
         )}

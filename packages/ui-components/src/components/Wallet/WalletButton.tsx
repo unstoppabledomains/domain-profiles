@@ -2,7 +2,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
 import type {Theme} from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import Image from 'next/image';
 import React from 'react';
 
@@ -269,7 +268,6 @@ const WalletButton: React.FC<Props> = ({
     size,
   };
   const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
   switch (name) {
     // show the same button for both the integrated and extension versions

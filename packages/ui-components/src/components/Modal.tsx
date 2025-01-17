@@ -4,7 +4,8 @@ import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import type {ModalProps as MuiModalProps} from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
-import {Breakpoint, useTheme} from '@mui/material/styles';
+import type {Breakpoint} from '@mui/material/styles';
+import { useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import React from 'react';
 

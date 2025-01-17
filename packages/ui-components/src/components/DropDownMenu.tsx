@@ -47,13 +47,21 @@ const useStyles = makeStyles<{marginTop?: number}>()(
       top: `${marginTop || '44'}px`,
       right: '0px',
       zIndex: 100,
+      paddingBottom: theme.spacing(0.5),
+      paddingTop: theme.spacing(0.6),
+      boxShadow: theme.shadows[3],
     },
     container: {
       display: 'flex',
       fontSize: '16px',
-      margin: '20px',
+      padding: theme.spacing(1.2),
       whiteSpace: 'nowrap',
       cursor: 'pointer',
+      backgroundColor: 'transparent',
+      borderRadius: theme.shape.borderRadius,
+      '&:hover': {
+        backgroundColor: theme.palette.background.default,
+      },
     },
     settingsIcon: {
       marginRight: '10px',

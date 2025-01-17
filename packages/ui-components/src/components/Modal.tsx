@@ -4,7 +4,7 @@ import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import type {ModalProps as MuiModalProps} from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
-import {useTheme} from '@mui/material/styles';
+import {Breakpoint, useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import React from 'react';
 
@@ -30,6 +30,7 @@ export type ModalProps = {
   includeHeaderPadding?: boolean;
   noModalHeader?: boolean;
   fullScreen?: boolean;
+  maxWidth?: Breakpoint;
 };
 
 /**
@@ -49,6 +50,7 @@ const Modal: React.FC<ModalProps> = ({
   includeHeaderPadding = false,
   noModalHeader = false,
   fullScreen,
+  maxWidth,
 }) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
@@ -66,6 +68,7 @@ const Modal: React.FC<ModalProps> = ({
     open: open || false,
     onClose: handleCloseOnBlur,
     classes: {paper: cx(classes.dialogRoot, dialogPaperStyle)},
+    maxWidth,
   };
 
   return (

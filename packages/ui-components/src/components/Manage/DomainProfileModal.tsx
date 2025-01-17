@@ -1,5 +1,4 @@
 import Box from '@mui/material/Box';
-import Dialog from '@mui/material/Dialog';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
 
@@ -8,28 +7,23 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {getProfileData, getProfileReverseResolution} from '../../actions';
 import type {SerializedUserDomainProfileData} from '../../lib';
 import {DomainFieldTypes} from '../../lib';
+import Modal from '../Modal';
 import type {DomainProfileTabType} from './DomainProfile';
 import {DomainProfile} from './DomainProfile';
 
 const MODAL_WIDTH = '750px';
 
-const useStyles = makeStyles()((theme: Theme) => ({
-  container: {
-    display: 'flex',
-    minHeight: `calc(100vh - ${theme.spacing(8)})`,
-    maxWidth: `calc(${MODAL_WIDTH} - ${theme.spacing(5)})`,
-    marginLeft: theme.spacing(3),
-    marginRight: theme.spacing(3),
-    backgroundColor: theme.palette.background.paper,
-    zIndex: 100,
-  },
-  modalFullScreen: {
-    '& .MuiDialog-container .MuiDialog-paper': {
-      margin: 0,
-      width: '100%',
+const useStyles = makeStyles<{fullScreen?: boolean}>()(
+  (theme: Theme, {fullScreen}) => ({
+    container: {
+      display: 'flex',
+      marginTop: theme.spacing(-3),
+      height: fullScreen ? `calc(100vh)` : `calc(100vh - ${theme.spacing(7)})`,
+      backgroundColor: theme.palette.background.paper,
+      zIndex: 100,
     },
-  },
-}));
+  }),
+);
 
 export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
   onClose,
@@ -40,7 +34,7 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
   fullScreen,
   open,
 }) => {
-  const {classes, cx} = useStyles();
+  const {classes} = useStyles({fullScreen});
   const [resolvedAddress, setResolvedAddress] = useState(address);
   const [resolvedMetadata, setResolvedMetadata] = useState(metadata);
 
@@ -77,15 +71,13 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
   };
 
   return resolvedAddress && resolvedMetadata ? (
-    <Dialog
+    <Modal
       maxWidth="lg"
       open={open}
       fullScreen={fullScreen}
-      fullWidth={fullScreen}
-      onClose={() => onClose()}
-      className={cx({
-        [classes.modalFullScreen]: fullScreen,
-      })}
+      onClose={onClose}
+      noModalHeader={true}
+      noContentPadding={true}
     >
       <Box className={classes.container}>
         <DomainProfile
@@ -97,7 +89,7 @@ export const DomainProfileModal: React.FC<DomainProfileModalProps> = ({
           onUpdate={onUpdate}
         />
       </Box>
-    </Dialog>
+    </Modal>
   ) : null;
 };
 

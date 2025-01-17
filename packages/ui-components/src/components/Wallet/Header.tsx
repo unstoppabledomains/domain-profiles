@@ -354,7 +354,7 @@ export const Header: React.FC<Props> = ({
                 horizontal: 'right',
               }}
             >
-              <IconPlate size={24} variant="info">
+              <IconPlate size={20} variant="info">
                 <WalletIcon />
               </IconPlate>
             </StyledBadge>

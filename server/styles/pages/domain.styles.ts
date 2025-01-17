@@ -110,7 +110,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     color: theme.palette.secondary.main,
   },
   headerIcon: {
-    color: theme.palette.neutralShades[600],
+    color: theme.palette.getContrastText(theme.palette.background.default),
     marginRight: theme.spacing(1),
   },
   sectionHeaderContainer: {
@@ -176,7 +176,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     padding: theme.spacing(0.5),
   },
   badgeCount: {
-    color: theme.palette.neutralShades[600],
+    color: theme.palette.wallet.text.primary,
     marginLeft: theme.spacing(1),
   },
   badgeHeader: {
@@ -184,13 +184,13 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   },
   infoIcon: {
     marginLeft: theme.spacing(1),
-    color: theme.palette.neutralShades[200],
+    color: theme.palette.neutralShades[400],
     width: '20px',
     height: '20px',
   },
   infoIconDark: {
     marginLeft: theme.spacing(1),
-    color: theme.palette.neutralShades[600],
+    color: theme.palette.wallet.text.primary,
     width: '20px',
     height: '20px',
   },

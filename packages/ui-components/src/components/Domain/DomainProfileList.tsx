@@ -42,14 +42,16 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     justifyContent: 'space-between',
     textDecoration: 'none !important',
-    borderBottom: `1px dashed ${theme.palette.neutralShades[100]}`,
+    borderBottom: `1px dashed ${theme.palette.getContrastText(
+      theme.palette.background.paper,
+    )}`,
     alignItems: 'center',
     cursor: 'pointer',
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
-    color: theme.palette.neutralShades[800],
+    color: theme.palette.getContrastText(theme.palette.background.paper),
     '&:visited': {
-      color: theme.palette.neutralShades[800],
+      color: theme.palette.getContrastText(theme.palette.background.paper),
     },
     '&:hover': {
       '& p': {

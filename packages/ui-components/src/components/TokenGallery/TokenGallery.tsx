@@ -64,7 +64,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     color: theme.palette.neutralShades[600],
   },
   nftCount: {
-    color: theme.palette.neutralShades[600],
+    color: theme.palette.wallet.text.primary,
     marginLeft: theme.spacing(1),
   },
   nftGalleryLinks: {
@@ -83,7 +83,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     cursor: 'pointer',
   },
   headerIcon: {
-    color: theme.palette.neutralShades[600],
+    color: theme.palette.getContrastText(theme.palette.background.default),
     marginRight: theme.spacing(1),
   },
 }));

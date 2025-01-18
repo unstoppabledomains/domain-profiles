@@ -534,7 +534,7 @@ export const DomainWalletTransactions: React.FC<
             </InfiniteScroll>
           ) : isWalletLoading ? (
             <Box className={classes.infiniteScrollLoading}>
-              {[1, 2, 3].map(i => (
+              {[1, 2, 3, 4, 5, 6].map(i => (
                 <Skeleton
                   key={`placeholder-${i}`}
                   className={classes.txPlaceholder}

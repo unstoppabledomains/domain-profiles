@@ -9,12 +9,13 @@ import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
 import Box from '@mui/material/Box';
+import type {ButtonProps} from '@mui/material/Button';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {useTheme} from '@mui/material/styles';
+import {useTheme,styled} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Markdown from 'markdown-to-jsx';
 import {useSnackbar} from 'notistack';
@@ -581,22 +582,25 @@ export const Client: React.FC<ClientProps> = ({
                 </Typography>
               </Box>
               <Box className={classes.actionContainer}>
-                <Button
+                <StyledButton
                   className={classes.actionButton}
                   onClick={handleClickedReceive}
-                  variant={theme.palette.wallet.buttonStyle}
-                  color="secondary"
+                  variant="contained"
+                  colorPalette={theme.palette.neutralShades}
+                  shade={theme.palette.mode === 'light' ? 100 : 600}
                   size="small"
                 >
                   <Box className={classes.actionContent}>
                     <QrCodeIcon className={classes.actionIcon} />
                     {t('common.receive')}
                   </Box>
-                </Button>
-                <Button
+                </StyledButton>
+                <StyledButton
                   className={classes.actionButton}
                   onClick={handleClickedSend}
-                  variant={theme.palette.wallet.buttonStyle}
+                  variant="contained"
+                  colorPalette={theme.palette.neutralShades}
+                  shade={theme.palette.mode === 'light' ? 100 : 600}
                   color="secondary"
                   size="small"
                 >
@@ -604,11 +608,13 @@ export const Client: React.FC<ClientProps> = ({
                     <SendIcon className={classes.actionIcon} />
                     {t('common.send')}
                   </Box>
-                </Button>
-                <Button
+                </StyledButton>
+                <StyledButton
                   className={classes.actionButton}
                   onClick={handleClickedSwap}
-                  variant={theme.palette.wallet.buttonStyle}
+                  variant="contained"
+                  colorPalette={theme.palette.neutralShades}
+                  shade={theme.palette.mode === 'light' ? 100 : 600}
                   color="secondary"
                   size="small"
                 >
@@ -616,12 +622,14 @@ export const Client: React.FC<ClientProps> = ({
                     <SwapHorizIcon className={classes.actionIcon} />
                     {t('swap.title')}
                   </Box>
-                </Button>
+                </StyledButton>
                 <Box mr={-2}>
-                  <Button
+                  <StyledButton
                     className={classes.actionButton}
                     onClick={handleClickedBuy}
-                    variant={theme.palette.wallet.buttonStyle}
+                    variant="contained"
+                    colorPalette={theme.palette.neutralShades}
+                    shade={theme.palette.mode === 'light' ? 100 : 600}
                     color="secondary"
                     size="small"
                   >
@@ -629,7 +637,7 @@ export const Client: React.FC<ClientProps> = ({
                       <AttachMoneyIcon className={classes.actionIcon} />
                       {t(isSellEnabled ? 'common.buySell' : 'common.buy')}
                     </Box>
-                  </Button>
+                  </StyledButton>
                 </Box>
               </Box>
             </Box>
@@ -793,3 +801,18 @@ export enum ClientTabType {
 export const getMinClientHeight = (isMobile: boolean) => {
   return isMobile ? 515 : 550;
 };
+
+type StyledButtonProps = ButtonProps & {
+  colorPalette?: Record<number, string>;
+  shade: number;
+};
+
+const StyledButton = styled(Button)<StyledButtonProps>(
+  ({theme, shade, colorPalette = theme.palette.primaryShades}) => ({
+    color: theme.palette.getContrastText(colorPalette[shade]),
+    backgroundColor: colorPalette[shade],
+    '&:hover': {
+      backgroundColor: colorPalette[shade + 100],
+    },
+  }),
+);

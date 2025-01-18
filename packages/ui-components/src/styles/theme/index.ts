@@ -208,7 +208,6 @@ export interface WalletPalette {
     up: string;
     down: string;
   };
-  buttonStyle: 'contained' | 'outlined' | 'text';
 }
 
 export interface WalletProduct {

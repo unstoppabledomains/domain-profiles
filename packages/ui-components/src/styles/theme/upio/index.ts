@@ -233,7 +233,6 @@ const buildThemeOptions = (mode: ThemeMode): ThemeOptions => ({
               up: '#00ca00',
               down: '#9f9fa7',
             },
-            buttonStyle: 'contained',
           }
         : {
             background: {
@@ -262,7 +261,6 @@ const buildThemeOptions = (mode: ThemeMode): ThemeOptions => ({
               up: '#00ca00',
               down: '#9f9fa7',
             },
-            buttonStyle: 'outlined',
           },
   },
   shape: {

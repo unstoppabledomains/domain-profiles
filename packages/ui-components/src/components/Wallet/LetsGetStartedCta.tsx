@@ -1,9 +1,11 @@
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import QrCodeIcon from '@mui/icons-material/QrCode';
 import Box from '@mui/material/Box';
+import type {ButtonProps} from '@mui/material/Button';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {styled} from '@mui/material/styles';
 import React from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -49,18 +51,19 @@ type Props = {
 export const BuyCryptoButton: React.FC<Props> = ({
   onBuyClicked,
   color = 'primary',
-  variant = 'outlined',
+  variant = 'contained',
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
 
   return (
-    <Button
+    <StyledButton
       onClick={onBuyClicked}
       variant={variant}
       color={color}
       startIcon={<AccountBalanceIcon className={classes.icon} />}
       className={classes.button}
+      shade={500}
     >
       <Box className={classes.content}>
         <Typography variant="body1" fontWeight="bold">
@@ -70,7 +73,7 @@ export const BuyCryptoButton: React.FC<Props> = ({
           {t('wallet.fundWithPurchaseDescription')}
         </Typography>
       </Box>
-    </Button>
+    </StyledButton>
   );
 };
 
@@ -83,7 +86,7 @@ export const LetsGetStartedCta: React.FC<Props> = props => {
         {t('wallet.letsGetStarted')}
       </Typography>
       <Box className={cx(classes.content, classes.centered)}>
-        <Box mb={1} className={classes.content}>
+        <Box mb={2} className={classes.content}>
           <BuyCryptoButton {...props} />
         </Box>
         <ReceiveCryptoButton {...props} />
@@ -101,12 +104,13 @@ export const ReceiveCryptoButton: React.FC<Props> = ({
   const [t] = useTranslationContext();
 
   return (
-    <Button
+    <StyledButton
       onClick={onReceiveClicked}
       variant={variant}
       color={color}
       startIcon={<QrCodeIcon className={classes.icon} />}
       className={classes.button}
+      shade={100}
     >
       <Box className={classes.content}>
         <Typography variant="body1" fontWeight="bold">
@@ -116,6 +120,21 @@ export const ReceiveCryptoButton: React.FC<Props> = ({
           {t('wallet.fundWithTransferDescription')}
         </Typography>
       </Box>
-    </Button>
+    </StyledButton>
   );
 };
+
+type StyledButtonProps = ButtonProps & {
+  colorPalette?: Record<number, string>;
+  shade: number;
+};
+
+const StyledButton = styled(Button)<StyledButtonProps>(
+  ({theme, shade, colorPalette = theme.palette.primaryShades}) => ({
+    color: theme.palette.getContrastText(colorPalette[shade]),
+    backgroundColor: colorPalette[shade],
+    '&:hover': {
+      backgroundColor: colorPalette[shade + 100],
+    },
+  }),
+);

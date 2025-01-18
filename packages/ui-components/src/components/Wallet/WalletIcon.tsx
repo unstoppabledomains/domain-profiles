@@ -25,11 +25,11 @@ const WalletIcon = React.forwardRef<SVGSVGElement, SvgIconProps>(
         <path
           d="M 32 14 L 42 14 L 42 24 M 41 15 L 28.828 27.172 C 27.266 28.734 24.734 28.734 23.172 27.172 L 20.828 24.828 C 19.266 23.266 16.734 23.266 15.172 24.828 L 6 34"
           fill="transparent"
-          stroke-width="5"
+          strokeWidth="5"
           stroke="rgb(0, 199, 67)"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-dasharray=""
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeDasharray=""
         />
       </SvgIcon>
     );

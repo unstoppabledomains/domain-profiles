@@ -108,9 +108,8 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           icon={<GppGoodOutlinedIcon className={classes.iconEnabled} />}
         >
           <Button
-            color={theme.palette.mode === 'light' ? 'primary' : 'secondary'}
             onClick={handleRecoveryKitClicked}
-            variant="outlined"
+            variant="contained"
             size="small"
           >
             {t('manage.manageProfile')} {t('wallet.recoveryKit')}
@@ -132,8 +131,8 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           }
         >
           <Button
-            color={theme.palette.mode === 'light' ? 'primary' : 'secondary'}
             onClick={handleMfaClicked}
+            color={isMfaEnabled ? 'warning' : undefined}
             variant={isMfaEnabled ? 'outlined' : 'contained'}
             size="small"
           >

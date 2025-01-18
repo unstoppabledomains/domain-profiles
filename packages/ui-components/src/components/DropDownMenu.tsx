@@ -47,8 +47,7 @@ const useStyles = makeStyles<{marginTop?: number}>()(
       top: `${marginTop || '44'}px`,
       right: '0px',
       zIndex: 100,
-      paddingBottom: theme.spacing(0.5),
-      paddingTop: theme.spacing(0.6),
+      padding: theme.spacing(0.6),
       boxShadow: theme.shadows[3],
     },
     container: {

@@ -145,6 +145,7 @@ export type Config = {
     MOBILE: {
       ANDROID_URL: string;
       APPLE_URL: string;
+      CHROME_STORE_URL: string;
     };
     MAX_CLOCK_DRIFT_MS: number;
     LAUNCH_API_KEY: string;

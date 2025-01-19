@@ -128,7 +128,7 @@ const buildThemeOptions = (mode: ThemeMode): ThemeOptions => ({
     },
     white: '#ffffff',
     hero: 'linear-gradient(75deg, #0D3076, #082055, #004c69)',
-    heroText: 'linear-gradient(30deg, #9F1FED, #645FF2, #38BDD1)',
+    heroText: 'linear-gradient(30deg, #6c0da6, #1711d1, #38BDD1)',
     profileImageGradient:
       'linear-gradient(45deg, #BD47F7 0%, #5D59F8 52.08%, #38BDD1 100%)',
     mobileNavGradient:

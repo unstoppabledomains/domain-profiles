@@ -1,4 +1,5 @@
 import LoadingButton from '@mui/lab/LoadingButton';
+// eslint-disable-next-line no-restricted-imports
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';

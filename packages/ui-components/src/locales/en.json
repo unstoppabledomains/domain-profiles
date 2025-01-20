@@ -975,7 +975,7 @@
     "securityCenter": "Security Center",
     "selectAssetToBuy": "Select crypto to deposit using a bank account",
     "selectAssetToBuySell": "Select crypto to deposit or withdraw using a bank account",
-    "selectAssetToReceive": "Select crypto to receive",
+    "selectAssetToReceive": "Select network",
     "selectAssetToSend": "Select crypto to send",
     "sendByEmail": "Send to email address",
     "sendTransactionFailed": "{{amount}} {{sourceSymbol}} failed to send to {{recipientDomain}}",

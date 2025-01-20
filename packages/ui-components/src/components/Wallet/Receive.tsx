@@ -91,7 +91,7 @@ const Receive: React.FC<Props> = ({
   const [t] = useTranslationContext();
   const [selectedToken, setSelectedToken] = useState<TokenEntry>();
   const [copied, setCopied] = useState<boolean>(false);
-  const {classes, cx} = useStyles();
+  const {classes} = useStyles();
   const debounceTimer = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
@@ -130,6 +130,7 @@ const Receive: React.FC<Props> = ({
           onCancelClick={handleBackClick}
           label={t('wallet.selectAssetToReceive')}
           supportedAssetList={config.WALLETS.CHAINS.RECEIVE}
+          hideBalance={true}
         />
       </Box>
     );
@@ -152,7 +153,7 @@ const Receive: React.FC<Props> = ({
         onCancelClick={handleBackClick}
         label={t('wallet.actionOnBlockchainTitle', {
           action: t('common.receive'),
-          symbol: getBlockchainDisplaySymbol(selectedToken.ticker),
+          symbol: '',
           blockchain: selectedToken.walletName,
         })}
       />

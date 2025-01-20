@@ -906,6 +906,7 @@
     "configuringWalletShort": "Configuring wallet",
     "confirmRecoveryPhrase": "Confirm",
     "createWallet": "Create a new wallet",
+    "creatingWallets": "Setting up your wallet...",
     "emailAddress": "Email address",
     "emailInUse": "Email already associated with a wallet",
     "enterOneTimeCode": "Enter your one-time code",

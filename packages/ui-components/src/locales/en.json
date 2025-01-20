@@ -979,7 +979,7 @@
     "selectAssetToReceive": "Select crypto to receive",
     "selectAssetToSend": "Select crypto to send",
     "sendByEmail": "Send to email address",
-    "sendingForOtherNetworksAndTokens": "Sending unsupported tokens may result in a loss of funds.",
+    "sendingForOtherNetworksAndTokens": "Sending other tokens may result in a loss of funds.",
     "sendTransactionFailed": "{{amount}} {{sourceSymbol}} failed to send to {{recipientDomain}}",
     "sendTransactionSuccess": "{{amount}} {{sourceSymbol}} was successfully sent to {{recipientDomain}}",
     "signDappOperationDescription": "**{{name}}** wants to **{{actionText}}**. Verify the following details before confirming.",

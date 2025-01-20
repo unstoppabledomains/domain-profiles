@@ -32,6 +32,7 @@ interface ManageInputProps {
   errorText?: string;
   disabled?: boolean;
   deprecated?: boolean;
+  onClick?: () => void;
   onChange: (id: string, value: string) => void;
   onKeyDown?: React.KeyboardEventHandler;
   // if true, the input will allow adding multiple lines of text. Else, one line
@@ -83,6 +84,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
   errorText,
   disabled = false,
   deprecated = false,
+  onClick,
   onChange,
   onKeyDown,
   multiline = false,
@@ -246,6 +248,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
               inputRef={inputRef}
               value={value || ''}
               type={currentType}
+              onClick={onClick}
               inputProps={{
                 'data-testid': `input-${id}`,
                 className: !endAdornment && error ? classes.error : '',

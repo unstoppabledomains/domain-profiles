@@ -151,7 +151,7 @@ export const SelectAsset: React.FC<Props> = ({
             </div>
           );
         })}
-        {missingWallets && (
+        {missingWallets && missingWallets.length > 0 && (
           <Box className={classes.loadingContainer}>
             <CircularProgress size={20} className={classes.loadingSpinner} />
             <Typography variant="body2">

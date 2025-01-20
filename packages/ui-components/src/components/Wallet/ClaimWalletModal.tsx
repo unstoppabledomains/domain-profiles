@@ -1,4 +1,5 @@
 import LoadingButton from '@mui/lab/LoadingButton';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
@@ -88,7 +89,9 @@ const ClaimWalletModal: React.FC<Props> = ({
   const [claimStatus, setClaimStatus] = useState<TokenRefreshResponse>();
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [emailError, setEmailError] = useState<string>();
   const [errorMessage, setErrorMessage] = useState<string>();
+  const [passwordError, setPasswordError] = useState<string>();
   const [savingMessage, setSavingMessage] = useState<string>();
   const [emailAddress, setEmailAddress] = useState<string>();
   const [recoveryPhrase, setRecoveryPhrase] = useState<string>();
@@ -109,7 +112,8 @@ const ClaimWalletModal: React.FC<Props> = ({
 
   const handleInputChange = (id: string, value: string) => {
     setIsDirty(true);
-    setErrorMessage(undefined);
+    setEmailError(undefined);
+    setPasswordError(undefined);
     if (id === 'recoveryPhrase') {
       setRecoveryPhrase(value);
     } else if (id === 'emailAddress') {
@@ -147,26 +151,26 @@ const ClaimWalletModal: React.FC<Props> = ({
 
     // validate the email address
     if (!emailAddress || !isEmailValid(emailAddress)) {
-      setErrorMessage(t('common.enterValidEmail'));
-      return;
-    }
-
-    // validate password entered
-    if (!recoveryPhrase) {
-      setErrorMessage(t('common.enterValidPassword'));
-      return;
-    }
-
-    // validate password strength
-    if (!isValidWalletPasswordFormat(recoveryPhrase)) {
-      setErrorMessage(t('wallet.resetPasswordStrength'));
+      setEmailError(t('common.enterValidEmail'));
       return;
     }
 
     // check for email already onboarded
     const onboardStatus = await getOnboardingStatus(emailAddress);
     if (onboardStatus?.active) {
-      setErrorMessage(t('wallet.emailInUse'));
+      setEmailError(t('wallet.emailInUse'));
+      return;
+    }
+
+    // validate password entered
+    if (!recoveryPhrase) {
+      setPasswordError(t('common.enterValidPassword'));
+      return;
+    }
+
+    // validate password strength
+    if (!isValidWalletPasswordFormat(recoveryPhrase)) {
+      setPasswordError(t('wallet.resetPasswordStrength'));
       return;
     }
 
@@ -265,7 +269,6 @@ const ClaimWalletModal: React.FC<Props> = ({
     );
 
     // operation is completed
-    setErrorMessage(t('common.success'));
     onComplete(otpResponse.accessToken);
   };
 
@@ -312,6 +315,8 @@ const ClaimWalletModal: React.FC<Props> = ({
             onKeyDown={handleKeyDown}
             stacked={false}
             disabled={isSaving}
+            error={!!emailError}
+            errorText={emailError}
           />
         )}
         {!claimStatus && (
@@ -327,15 +332,20 @@ const ClaimWalletModal: React.FC<Props> = ({
             type={'password'}
             autoComplete="current-password"
             stacked={false}
+            error={!!passwordError}
+            errorText={passwordError}
           />
         )}
       </Box>
+      {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
       <Box mt={3} className={classes.content}>
         <LoadingButton
           fullWidth
           onClick={handleSave}
           variant="contained"
-          disabled={!isDirty || !custodyWallet || !!errorMessage}
+          disabled={
+            !isDirty || !custodyWallet || !!emailError || !!passwordError
+          }
           loading={isSaving}
           loadingIndicator={
             savingMessage ? (
@@ -346,9 +356,7 @@ const ClaimWalletModal: React.FC<Props> = ({
             ) : undefined
           }
         >
-          {errorMessage
-            ? errorMessage
-            : claimStatus
+          {claimStatus
             ? t('wallet.completeSetup')
             : t('wallet.claimWalletCtaButton')}
         </LoadingButton>

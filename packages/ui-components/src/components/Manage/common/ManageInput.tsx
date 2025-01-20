@@ -251,7 +251,10 @@ const ManageInput: React.FC<ManageInputProps> = ({
               onClick={onClick}
               inputProps={{
                 'data-testid': `input-${id}`,
-                className: !endAdornment && error ? classes.error : '',
+                className:
+                  !endAdornment && !showPasswordAdornment && error
+                    ? classes.error
+                    : '',
                 maxLength,
                 onClick,
               }}

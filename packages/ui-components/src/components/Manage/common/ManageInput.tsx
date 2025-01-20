@@ -253,6 +253,7 @@ const ManageInput: React.FC<ManageInputProps> = ({
                 'data-testid': `input-${id}`,
                 className: !endAdornment && error ? classes.error : '',
                 maxLength,
+                onClick,
               }}
               autoComplete={autoComplete}
               multiline={multiline}

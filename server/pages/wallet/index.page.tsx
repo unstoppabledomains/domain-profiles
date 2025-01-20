@@ -24,15 +24,11 @@ import {
   localStorageWrapper,
   useCustomTheme,
   useFireblocksState,
-  useTranslationContext,
-  useWeb3Context,
 } from '@unstoppabledomains/ui-components';
 import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
 
 const WalletPage = () => {
   const {classes, cx} = useStyles({});
-  const [t] = useTranslationContext();
-  const {web3Deps} = useWeb3Context();
   const {query: params} = useRouter();
   const isMounted = useIsMounted();
   const theme = useCustomTheme();
@@ -208,7 +204,7 @@ const WalletPage = () => {
                 )}
               </Box>
             </Grid>
-            {web3Deps?.unstoppableWallet && (
+            {authAddress && (
               <Grid item xs={12}>
                 <Box mt={5}>
                   <MobileCta />

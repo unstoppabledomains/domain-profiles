@@ -1,21 +1,20 @@
-import CheckIcon from '@mui/icons-material/CheckCircle';
+import CheckIcon from '@mui/icons-material/Check';
 import CopyIcon from '@mui/icons-material/ContentCopy';
-import InfoIcon from '@mui/icons-material/Info';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useRef, useState} from 'react';
 import {QRCode} from 'react-qrcode-logo';
+import truncateMiddle from 'truncate-middle';
 
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance, TokenEntry} from '../../lib';
 import {useTranslationContext} from '../../lib';
-import Link from '../Link';
-import ManageInput from '../Manage/common/ManageInput';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 import {SelectAsset} from './SelectAsset';
 import {TitleWithBackButton} from './TitleWithBackButton';
@@ -34,75 +33,47 @@ const useStyles = makeStyles()((theme: Theme) => ({
     height: '100%',
     justifyContent: 'space-between',
   },
-  selectAssetContainer: {
+  qrContainer: {
     display: 'flex',
-    flexDirection: 'column',
     alignItems: 'center',
-    minHeight: '250px',
-    justifyContent: 'space-between',
-  },
-  assetsContainer: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 5,
-    alignItems: 'center',
-  },
-  asset: {
-    backgroundImage: `linear-gradient(${theme.palette.wallet.background.gradient.start}, ${theme.palette.wallet.background.gradient.end})`,
-    borderRadius: 9,
-    padding: 12,
-    width: '100%',
-  },
-  assetLogo: {
-    height: '70px',
-    width: '70px',
-    borderRadius: '50%',
+    justifyContent: 'center',
+    borderRadius: theme.shape.borderRadius,
     overflow: 'hidden',
-    boxShadow: theme.shadows[6],
+    backgroundColor: theme.palette.common.white,
+    padding: theme.spacing(2),
   },
-  contentWrapper: {
+  descriptionText: {
+    color: theme.palette.wallet.text.secondary,
+    textAlign: 'center',
+    marginBottom: theme.spacing(3),
+  },
+  infoContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    minHeight: '250px',
+    justifyContent: 'center',
+    textAlign: 'center',
+    marginBottom: theme.spacing(3),
+    width: '325px',
+  },
+  infoTable: {
+    marginTop: theme.spacing(2),
     width: '100%',
   },
-  receiveAssetContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
+  infoData: {
+    color: theme.palette.wallet.text.primary,
+    textAlign: 'right',
   },
-  receiveContentContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    width: '100%',
+  infoHeader: {
+    color: theme.palette.wallet.text.secondary,
+    textAlign: 'left',
   },
-  copyButton: {},
-  addressWrapper: {
+  buttonContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     width: '100%',
-  },
-  captionContainer: {
-    display: 'flex',
-    backgroundColor: theme.palette.neutralShades[200],
-    padding: 10,
-    borderRadius: 9,
-  },
-  input: {
-    fontSize: '12px',
-  },
-  infoIcon: {
-    fontSize: 15,
-  },
-  learnMoreLink: {
-    display: 'inline-flex',
-  },
-  flex: {
-    display: 'flex',
+    marginBottom: theme.spacing(1),
   },
 }));
 
@@ -159,6 +130,7 @@ const Receive: React.FC<Props> = ({
           onCancelClick={handleBackClick}
           label={t('wallet.selectAssetToReceive')}
           supportedAssetList={config.WALLETS.CHAINS.RECEIVE}
+          hideBalance={true}
         />
       </Box>
     );
@@ -181,79 +153,62 @@ const Receive: React.FC<Props> = ({
         onCancelClick={handleBackClick}
         label={t('wallet.actionOnBlockchainTitle', {
           action: t('common.receive'),
-          symbol: getBlockchainDisplaySymbol(selectedToken.ticker),
+          symbol: '',
           blockchain: selectedToken.walletName,
         })}
       />
-      <Box className={classes.contentWrapper}>
-        <Box className={classes.receiveContentContainer}>
-          <Box className={classes.receiveAssetContainer} mb={2}>
-            <img src={selectedToken.imageUrl} className={classes.assetLogo} />
-          </Box>
+      <Box className={classes.infoContainer}>
+        <Typography variant="body2" className={classes.descriptionText}>
+          <Markdown>
+            {t('wallet.receiveAddressCaption', {
+              symbol: getBlockchainDisplaySymbol(selectedToken.ticker),
+              blockchain: selectedToken.walletName,
+            })}
+          </Markdown>
+        </Typography>
+        <Box className={classes.qrContainer}>
           <QRCode
-            value={`${selectedToken.walletName}:${selectedToken.walletAddress}`}
-            size={125}
-            logoOpacity={0.5}
-            logoHeight={60}
-            logoWidth={60}
+            value={selectedToken.walletAddress}
+            size={200}
             qrStyle={'dots'}
             ecLevel={'H'}
             eyeRadius={5}
-            style={{innerHeight: 80, innerWidth: 30}}
+            logoPadding={5}
+            logoImage={selectedToken.imageUrl}
+            logoPaddingStyle="square"
+            removeQrCodeBehindLogo={true}
+            quietZone={0}
           />
-          <Box className={classes.addressWrapper} mt={2}>
-            <ManageInput
-              mt={1}
-              placeholder=""
-              onChange={() => null}
-              id="amount"
-              value={selectedToken.walletAddress}
-              stacked={true}
-              disabled
-              multiline
-              classes={{input: classes.input}}
-              endAdornment={
-                <Button
-                  onClick={handleCopyClick}
-                  className={classes.copyButton}
-                >
-                  {copied ? <CheckIcon color="success" /> : <CopyIcon />}
-                </Button>
-              }
-            />
-          </Box>
         </Box>
+        <Grid container spacing={1} className={classes.infoTable}>
+          <Grid item xs={6} className={classes.infoHeader}>
+            <Typography>{t('common.network')}</Typography>
+          </Grid>
+          <Grid item xs={6} className={classes.infoData}>
+            <Typography fontWeight="bold">
+              {selectedToken.walletName}
+            </Typography>
+          </Grid>
+          <Grid item xs={6} className={classes.infoHeader}>
+            <Typography>{t('common.address')}</Typography>
+          </Grid>
+          <Grid item xs={6} className={classes.infoData}>
+            <Typography fontWeight="bold">
+              {truncateMiddle(selectedToken.walletAddress, 6, 6, '...')}
+            </Typography>
+          </Grid>
+        </Grid>
       </Box>
-      <Box mb={1} className={classes.captionContainer}>
-        <Box mr={1}>
-          <InfoIcon className={classes.infoIcon} color="error" />
-        </Box>
-        <Typography variant="caption" color="error" component="div">
-          <Markdown>
-            {t(
-              config.WALLETS.CHAINS.DOMAINS.map(s => s.toLowerCase()).includes(
-                selectedToken.symbol.toLowerCase(),
-              )
-                ? 'wallet.receiveAddressCaptionWithDomains'
-                : 'wallet.receiveAddressCaption',
-              {
-                symbol: getBlockchainDisplaySymbol(selectedToken.ticker),
-                blockchain: selectedToken.walletName,
-              },
-            )}
-          </Markdown>{' '}
-          {t('wallet.sendingForOtherNetworksAndTokens', {
-            symbol: getBlockchainDisplaySymbol(selectedToken.ticker),
-            blockchain: selectedToken.walletName,
-          })}{' '}
-          <Link
-            href={config.WALLETS.LANDING_PAGE_URL}
-            target="_blank"
-            className={classes.learnMoreLink}
-          >
-            <Typography variant={'caption'}>{t('common.learnMore')}</Typography>
-          </Link>
-        </Typography>
+      <Box className={classes.buttonContainer}>
+        <Button
+          color="primary"
+          startIcon={copied ? <CheckIcon /> : <CopyIcon />}
+          onClick={handleCopyClick}
+          variant="contained"
+          fullWidth
+        >
+          {t('profile.copyAddress')}
+        </Button>
       </Box>
     </Box>
   );

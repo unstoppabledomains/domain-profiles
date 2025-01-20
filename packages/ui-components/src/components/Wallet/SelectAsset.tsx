@@ -1,5 +1,7 @@
 import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import Skeleton from '@mui/material/Skeleton';
+import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React from 'react';
 
@@ -7,7 +9,7 @@ import type {ImmutableArray} from '@unstoppabledomains/config/build/src/env/type
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance, TokenEntry} from '../../lib';
-import {TokenType} from '../../lib';
+import {TokenType, useTranslationContext} from '../../lib';
 import {getAllTokens} from '../../lib/wallet/evm/token';
 import {filterWallets} from '../../lib/wallet/filter';
 import FundWalletModal from './FundWalletModal';
@@ -31,6 +33,19 @@ const useStyles = makeStyles()((theme: Theme) => ({
     gap: 5,
     alignItems: 'center',
     overflowY: 'scroll',
+  },
+  loadingContainer: {
+    color: theme.palette.wallet.text.secondary,
+    display: 'flex',
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+    marginBottom: theme.spacing(2),
+  },
+  loadingSpinner: {
+    color: theme.palette.wallet.text.secondary,
+    marginRight: theme.spacing(1),
   },
   asset: {
     backgroundImage: `linear-gradient(${theme.palette.wallet.background.gradient.start}, ${theme.palette.wallet.background.gradient.end})`,
@@ -78,6 +93,8 @@ export const SelectAsset: React.FC<Props> = ({
   supportSpl,
 }) => {
   const {classes} = useStyles();
+  const [t] = useTranslationContext();
+
   const wallets = filterWallets(initialWallets, supportedAssetList);
   const missingWallets = supportedAssetList.filter(
     expectedWallet =>
@@ -134,6 +151,14 @@ export const SelectAsset: React.FC<Props> = ({
             </div>
           );
         })}
+        {missingWallets && missingWallets.length > 0 && (
+          <Box className={classes.loadingContainer}>
+            <CircularProgress size={20} className={classes.loadingSpinner} />
+            <Typography variant="body2">
+              {t('wallet.creatingWallets')}
+            </Typography>
+          </Box>
+        )}
         {missingWallets?.map(missingWallet => (
           <Skeleton
             key={`missingWallet-${missingWallet}`}

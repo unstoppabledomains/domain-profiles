@@ -53,7 +53,11 @@ import {
   useTranslationContext,
 } from '../../lib';
 import {pollForSuccess} from '../../lib/poll';
-import {FB_MAX_RETRY, FB_WAIT_TIME_MS,OperationStatusType} from '../../lib/types/fireBlocks';
+import {
+  FB_MAX_RETRY,
+  FB_WAIT_TIME_MS,
+  OperationStatusType,
+} from '../../lib/types/fireBlocks';
 import type {GetOperationResponse} from '../../lib/types/fireBlocks';
 import type {
   RouteQuote,
@@ -210,6 +214,7 @@ const Swap: React.FC<Props> = ({
   const [sourceToken, setSourceToken] = useState<SwapToken>();
   const [destinationTokenAmountUsd, setDestinationTokenAmountUsd] = useState(0);
   const [destinationToken, setDestinationToken] = useState<SwapToken>();
+  const [showSlider, setShowSlider] = useState(false);
 
   // quote state
   const [quoteRequest, setQuoteRequest] = useState<SwingV2QuoteRequest>();
@@ -515,6 +520,10 @@ const Swap: React.FC<Props> = ({
     // get the quote
     void handleGetQuote();
   }, [sourceTokenAmountUsdDebounced, sourceToken, destinationToken]);
+
+  const handleInputClicked = () => {
+    setShowSlider(true);
+  };
 
   const handleSwapInfoClicked = async () => {
     setShowSwapIntro(false);
@@ -1134,6 +1143,7 @@ const Swap: React.FC<Props> = ({
                 disabled={isLoading}
                 classes={{root: classes.tokenInput, input: classes.tokenInput}}
                 onChange={handleAmountChanged}
+                onClick={handleInputClicked}
                 startAdornment={<Typography ml={2}>$</Typography>}
                 endAdornment={
                   <Select
@@ -1171,26 +1181,32 @@ const Swap: React.FC<Props> = ({
                 }
               />
               <FormHelperText className={classes.tokenBalanceContainer}>
-                <Box display="flex" justifyContent="space-between" width="100%">
-                  <Box className={classes.sliderContainer}>
-                    <Slider
-                      step={5}
-                      size="small"
-                      defaultValue={0}
-                      disabled={isLoading}
-                      value={sliderValue}
-                      onChange={handleSliderChange}
-                      valueLabelDisplay="off"
-                      marks={[
-                        {value: 0, label: '0%'},
-                        {value: 25, label: '25%'},
-                        {value: 50, label: '50%'},
-                        {value: 75, label: '75%'},
-                        {value: 100, label: 'Max'},
-                      ]}
-                    />
+                {showSlider && (
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    width="100%"
+                  >
+                    <Box className={classes.sliderContainer}>
+                      <Slider
+                        step={5}
+                        size="small"
+                        defaultValue={0}
+                        disabled={isLoading}
+                        value={sliderValue}
+                        onChange={handleSliderChange}
+                        valueLabelDisplay="off"
+                        marks={[
+                          {value: 0, label: '0%'},
+                          {value: 25, label: '25%'},
+                          {value: 50, label: '50%'},
+                          {value: 75, label: '75%'},
+                          {value: 100, label: 'Max'},
+                        ]}
+                      />
+                    </Box>
                   </Box>
-                </Box>
+                )}
               </FormHelperText>
             </FormControl>
             {txId ? (
@@ -1225,6 +1241,7 @@ const Swap: React.FC<Props> = ({
                 disabled={isLoading}
                 classes={{root: classes.tokenInput, input: classes.tokenInput}}
                 onChange={handleAmountChanged}
+                onClick={handleInputClicked}
                 startAdornment={<Typography ml={2}>$</Typography>}
                 endAdornment={
                   <Select

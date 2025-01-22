@@ -156,15 +156,29 @@ const ChangePasswordModal: React.FC<Props> = ({accessToken}) => {
   return (
     <Box className={classes.container}>
       <Box className={classes.content}>
-        <Typography variant="body2" mb={1} mt={-2} component="div">
-          <Markdown>{t('wallet.changeRecoveryPhraseDescription')}</Markdown>
-        </Typography>
+        {!isSuccess && (
+          <Box>
+            <Typography variant="body2" mb={1} mt={-2} component="div">
+              <Markdown>{t('wallet.changeRecoveryPhraseDescription')}</Markdown>
+            </Typography>
+            <Box mt={2} mb={2}>
+              <Alert severity="info">
+                {t('wallet.changeRecoveryPhraseTip')}
+              </Alert>
+            </Box>
+          </Box>
+        )}
         {isSuccess ? (
           <Box mt={3}>
             <OperationStatus
               success={true}
               label={t('wallet.changeRecoveryPhraseSuccess')}
             />
+            <Box mt={2} mb={-2}>
+              <Alert severity="info">
+                {t('wallet.changeRecoveryPhraseSuccessTip')}
+              </Alert>
+            </Box>
           </Box>
         ) : isOtpRequired ? (
           <Box>

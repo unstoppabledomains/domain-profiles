@@ -82,6 +82,55 @@ export const cancelPendingOperations = async (
   return opsToCancel;
 };
 
+export const changePassword = async (
+  accessToken: string,
+  currentPassword: string,
+  newPassword: string,
+  otp?: string,
+): Promise<
+  | 'OK'
+  | 'OTP_TOKEN_REQUIRED'
+  | 'VALIDATION'
+  | 'INVALID_OTP_TOKEN'
+  | 'INVALID_PASSWORD'
+> => {
+  try {
+    // build required headers
+    const headers: Record<string, string> = {
+      'Access-Control-Allow-Credentials': 'true',
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    };
+    if (otp) {
+      headers['X-Otp-Token'] = otp;
+    }
+
+    // make request to change password
+    const changePwResult = await fetchApi('/v1/settings/security/login', {
+      method: 'PATCH',
+      mode: 'cors',
+      headers,
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        currentPassword,
+        newPassword,
+      }),
+      acceptStatusCodes: [400, 401, 403],
+    });
+    if (changePwResult === 'OK') {
+      return 'OK';
+    } else if (!changePwResult?.code) {
+      throw new Error('error changing password');
+    }
+    return changePwResult.code;
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
+      msg: 'error changing password',
+    });
+    throw e;
+  }
+};
+
 export const createSignatureOperation = async (
   accessToken: string,
   accountId: string,
@@ -511,55 +560,6 @@ export const recoverTokenOtp = async (
     });
   }
   return undefined;
-};
-
-export const changePassword = async (
-  accessToken: string,
-  currentPassword: string,
-  newPassword: string,
-  otp?: string,
-): Promise<
-  | 'OK'
-  | 'OTP_TOKEN_REQUIRED'
-  | 'VALIDATION'
-  | 'INVALID_OTP_TOKEN'
-  | 'INVALID_PASSWORD'
-> => {
-  try {
-    // build required headers
-    const headers: Record<string, string> = {
-      'Access-Control-Allow-Credentials': 'true',
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    };
-    if (otp) {
-      headers['X-Otp-Token'] = otp;
-    }
-
-    // make request to change password
-    const changePwResult = await fetchApi('/v1/settings/security/login', {
-      method: 'PATCH',
-      mode: 'cors',
-      headers,
-      host: config.WALLETS.HOST_URL,
-      body: JSON.stringify({
-        currentPassword,
-        newPassword,
-      }),
-      acceptStatusCodes: [400, 401, 403],
-    });
-    if (changePwResult === 'OK') {
-      return 'OK';
-    } else if (!changePwResult?.code) {
-      throw new Error('error changing password');
-    }
-    return changePwResult.code;
-  } catch (e) {
-    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
-      msg: 'error changing password',
-    });
-    throw e;
-  }
 };
 
 export const sendRecoveryEmail = async (

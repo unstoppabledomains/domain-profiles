@@ -113,7 +113,13 @@ export const SelectAsset: React.FC<Props> = ({
           `${token.symbol.toUpperCase()}/${token.ticker.toUpperCase()}`,
         ),
     )
-    .sort((a, b) => b.value - a.value || b.balance - a.balance);
+    .sort((a, b) =>
+      hideBalance
+        ? // sort by name
+          a.name.localeCompare(b.name)
+        : // sort by balance
+          b.value - a.value || b.balance - a.balance,
+    );
 
   return (
     <Box className={classes.container} data-testid={'select-asset-container'}>

@@ -12,6 +12,7 @@ export type LaunchDarklyBooleanKey =
   | 'ud-me-service-domains-enable-fireblocks'
   | 'ud-me-service-domains-enable-management'
   | 'ud-me-enable-wallet-solana-signing'
+  | 'ud-me-enable-wallet-change-pw'
   | 'ud-me-service-enable-swap';
 
 export type LaunchDarklyNumberKey = 'example-number';

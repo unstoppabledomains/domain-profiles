@@ -119,7 +119,7 @@ export default function getDefaultConfig(): Config {
         'https://support.unstoppabledomains.com/support/solutions/48000457487',
       LANDING_PAGE_URL: 'https://unstoppabledomains.com/products/wallet',
       CHAINS: {
-        BUY: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'ETH/ETH'],
+        BUY: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'ETH/ETH', 'BASE/ETH'],
         RECEIVE: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'BASE/ETH', 'ETH/ETH'],
         SEND: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'BASE/ETH', 'ETH/ETH'],
         DOMAINS: ['ETH', 'MATIC', 'BASE'],

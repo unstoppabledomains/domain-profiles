@@ -15,7 +15,7 @@ import Grid from '@mui/material/Grid';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {useTheme,styled} from '@mui/material/styles';
+import {styled, useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Markdown from 'markdown-to-jsx';
 import {useSnackbar} from 'notistack';
@@ -28,7 +28,6 @@ import {
   DOMAIN_LIST_PAGE_SIZE,
   getOwnerDomains,
   getProfileData,
-  useFeatureFlags,
 } from '../../actions';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
@@ -218,10 +217,6 @@ export const Client: React.FC<ClientProps> = ({
   const {classes} = useStyles({isMobile});
   const [t] = useTranslationContext();
   const {enqueueSnackbar, closeSnackbar} = useSnackbar();
-  const {data: featureFlags} = useFeatureFlags(
-    false,
-    wallets?.find(w => isEthAddress(w.address))?.address,
-  );
 
   // wallet state variables
   const [state, saveState] = useFireblocksState();

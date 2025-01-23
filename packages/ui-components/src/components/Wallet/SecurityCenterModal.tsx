@@ -8,6 +8,7 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {useFeatureFlags} from '../../actions';
 import {getTwoFactorStatus} from '../../actions/walletMfaActions';
 import {useTranslationContext} from '../../lib';
 import Modal from '../Modal';
@@ -55,6 +56,7 @@ type Props = {
 const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const {data: featureFlags} = useFeatureFlags(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isRecoveryModalOpen, setIsRecoveryModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -106,13 +108,15 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           description={t('wallet.recoveryPhraseEnabled')}
           icon={<GppGoodOutlinedIcon className={classes.iconEnabled} />}
         >
-          <Button
-            onClick={handleChangePasswordClicked}
-            variant="contained"
-            size="small"
-          >
-            {t('wallet.changeRecoveryPhrase')}
-          </Button>
+          {featureFlags?.variations?.udMeEnableWalletChangePw && (
+            <Button
+              onClick={handleChangePasswordClicked}
+              variant="contained"
+              size="small"
+            >
+              {t('wallet.changeRecoveryPhrase')}
+            </Button>
+          )}
         </WalletPreference>
         <WalletPreference
           title={t('wallet.recoveryKit')}

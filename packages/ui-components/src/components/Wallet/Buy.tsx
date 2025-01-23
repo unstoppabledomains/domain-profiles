@@ -44,6 +44,7 @@ const Buy: React.FC<Props> = ({isSellEnabled, onCancelClick, wallets}) => {
     const queryParams = stringify({
       blockchain: asset.name.toLowerCase(),
       address: asset.walletAddress,
+      token: asset.symbol,
       utm_source: 'ud_me',
     });
     const url = `${config.UNSTOPPABLE_WEBSITE_URL}/fiat-ramps/popup?${queryParams}`;

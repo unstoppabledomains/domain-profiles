@@ -84,6 +84,8 @@ export enum DomainProfileKeys {
   Signature = 'domain-sig',
   Resolution = 'reverse-resolution',
   GenericKeyValue = 'kv',
+  EncryptedPIN = 'encryptedPin',
+  LockStatus = 'lockStatus',
 }
 
 export enum DomainProfileSocialMedia {

@@ -50,6 +50,7 @@ import {notifyEvent} from '../../lib/error';
 import {sleep} from '../../lib/sleep';
 import type {TokenRefreshResponse} from '../../lib/types/fireBlocks';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
+import {isValidWalletPasswordFormat} from '../../lib/wallet/password';
 import {
   getBootstrapState,
   saveBootstrapState,
@@ -65,20 +66,6 @@ import {OperationStatus} from './OperationStatus';
 import type {WalletMode} from './index';
 
 const EMAIL_PARAM = 'email';
-const WALLET_PASSWORD_MIN_LENGTH = 12;
-const WALLET_PASSWORD_MAX_LENGTH = 32;
-const WALLET_PASSWORD_NUMBER_VALIDATION_REGEX = /\d/;
-const WALLET_PASSWORD_SPECIAL_CHARACTER_VALIDATION_REGEX =
-  /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
-
-const isValidWalletPasswordFormat = (password: string): boolean => {
-  return (
-    password.length >= WALLET_PASSWORD_MIN_LENGTH &&
-    password.length < WALLET_PASSWORD_MAX_LENGTH &&
-    WALLET_PASSWORD_NUMBER_VALIDATION_REGEX.test(password) &&
-    WALLET_PASSWORD_SPECIAL_CHARACTER_VALIDATION_REGEX.test(password)
-  );
-};
 
 const useStyles = makeStyles<{
   configState: WalletConfigState;

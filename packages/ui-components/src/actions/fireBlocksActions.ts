@@ -14,7 +14,7 @@ import {sleep} from '../lib/sleep';
 import {
   EIP_712_KEY,
   FB_MAX_RETRY,
-  FB_WAIT_TIME_MS
+  FB_WAIT_TIME_MS,
 } from '../lib/types/fireBlocks';
 import type {
   AccountAsset,
@@ -27,8 +27,8 @@ import type {
   GetOperationStatusResponse,
   GetTokenResponse,
   TokenRefreshResponse,
-
-  VerifyTokenResponse} from '../lib/types/fireBlocks';
+  VerifyTokenResponse,
+} from '../lib/types/fireBlocks';
 import {getAsset} from '../lib/wallet/asset';
 import {
   getBootstrapState,
@@ -80,6 +80,55 @@ export const cancelPendingOperations = async (
     await cancelOperation(accessToken, operation.id);
   });
   return opsToCancel;
+};
+
+export const changePassword = async (
+  accessToken: string,
+  currentPassword: string,
+  newPassword: string,
+  otp?: string,
+): Promise<
+  | 'OK'
+  | 'OTP_TOKEN_REQUIRED'
+  | 'VALIDATION'
+  | 'INVALID_OTP_TOKEN'
+  | 'INVALID_PASSWORD'
+> => {
+  try {
+    // build required headers
+    const headers: Record<string, string> = {
+      'Access-Control-Allow-Credentials': 'true',
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    };
+    if (otp) {
+      headers['X-Otp-Token'] = otp;
+    }
+
+    // make request to change password
+    const changePwResult = await fetchApi('/v1/settings/security/login', {
+      method: 'PATCH',
+      mode: 'cors',
+      headers,
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        currentPassword,
+        newPassword,
+      }),
+      acceptStatusCodes: [400, 401, 403],
+    });
+    if (changePwResult === 'OK') {
+      return 'OK';
+    } else if (!changePwResult?.code) {
+      throw new Error('error changing password');
+    }
+    return changePwResult.code;
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
+      msg: 'error changing password',
+    });
+    throw e;
+  }
 };
 
 export const createSignatureOperation = async (

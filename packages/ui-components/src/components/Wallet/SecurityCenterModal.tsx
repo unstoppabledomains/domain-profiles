@@ -8,10 +8,11 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {useFeatureFlags} from '../../actions';
 import {getTwoFactorStatus} from '../../actions/walletMfaActions';
 import {useTranslationContext} from '../../lib';
-import {useCustomTheme} from '../../styles/theme';
 import Modal from '../Modal';
+import ChangePasswordModal from './ChangePasswordModal';
 import RecoverySetupModal from './RecoverySetupModal';
 import {TwoFactorModal} from './TwoFactorModal';
 import {WalletPreference} from './WalletPreference';
@@ -55,9 +56,10 @@ type Props = {
 const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
-  const theme = useCustomTheme();
+  const {data: featureFlags} = useFeatureFlags(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isRecoveryModalOpen, setIsRecoveryModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isMfaModalOpen, setIsMfaModalOpen] = useState(false);
   const [isMfaEnabled, setIsMfaEnabled] = useState(false);
 
@@ -81,6 +83,10 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
     setIsRecoveryModalOpen(true);
   };
 
+  const handleChangePasswordClicked = () => {
+    setIsPasswordModalOpen(true);
+  };
+
   const handleMfaClicked = () => {
     setIsMfaModalOpen(true);
   };
@@ -101,7 +107,17 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           title={t('wallet.recoveryPhrase')}
           description={t('wallet.recoveryPhraseEnabled')}
           icon={<GppGoodOutlinedIcon className={classes.iconEnabled} />}
-        />
+        >
+          {featureFlags?.variations?.udMeEnableWalletChangePw && (
+            <Button
+              onClick={handleChangePasswordClicked}
+              variant="contained"
+              size="small"
+            >
+              {t('wallet.changeRecoveryPhrase')}
+            </Button>
+          )}
+        </WalletPreference>
         <WalletPreference
           title={t('wallet.recoveryKit')}
           description={t('wallet.recoveryKitManage')}
@@ -150,6 +166,17 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           onClose={() => setIsRecoveryModalOpen(false)}
         >
           <RecoverySetupModal accessToken={accessToken} />
+        </Modal>
+      )}
+      {isPasswordModalOpen && (
+        <Modal
+          title={t('wallet.changeRecoveryPhrase')}
+          open={isPasswordModalOpen}
+          fullScreen={false}
+          titleStyle={classes.modalTitleStyle}
+          onClose={() => setIsPasswordModalOpen(false)}
+        >
+          <ChangePasswordModal accessToken={accessToken} />
         </Modal>
       )}
       {isMfaModalOpen && (

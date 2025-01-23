@@ -36,7 +36,6 @@ export interface BlockchainAsset {
 export interface BootstrapState {
   bootstrapToken: string;
   refreshToken: string;
-  deviceId: string;
   assets: AccountAsset[];
   custodyState: CustodyWallet;
 }
@@ -73,7 +72,6 @@ export interface GetAuthorizationTxResponse {
 }
 
 export interface GetBootstrapTokenResponse {
-  deviceId: string;
   accessToken: string;
 }
 

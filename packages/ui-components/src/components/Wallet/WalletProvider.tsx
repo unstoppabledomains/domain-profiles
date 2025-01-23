@@ -1056,7 +1056,6 @@ export const WalletProvider: React.FC<
         assets: [],
         bootstrapToken: loginState.accessToken,
         refreshToken: otpResponse.refreshToken,
-        deviceId: '',
         custodyState: {
           state: CustodyState.SELF_CUSTODY,
           status: 'COMPLETED',

@@ -258,7 +258,6 @@ const ClaimWalletModal: React.FC<Props> = ({
         assets: [],
         bootstrapToken: claimStatus.accessToken,
         refreshToken: otpResponse.refreshToken,
-        deviceId: '',
         custodyState: {
           state: CustodyState.SELF_CUSTODY,
           status: 'COMPLETED',

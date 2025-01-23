@@ -64,7 +64,6 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
       // retrieve an access token if required
       if (!accessToken) {
         const jwtData = await getAccessTokenInternal(clientState.refreshToken, {
-          deviceId: clientState.deviceId,
           state,
           saveState,
           setAccessToken,

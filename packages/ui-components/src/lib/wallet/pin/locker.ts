@@ -4,6 +4,10 @@ import nacl from 'tweetnacl';
 import {notifyEvent} from '../../error';
 import {getKeypair, getLockStatus, getPublicKey, saveLockStatus} from './store';
 
+export const isLockRequired = async () => {
+  return false;
+};
+
 export const isUnlocked = async () => {
   // retrieve lock status
   const lockStatus = await getLockStatus();

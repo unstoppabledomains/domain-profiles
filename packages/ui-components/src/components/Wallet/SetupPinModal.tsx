@@ -39,19 +39,20 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 type Props = {
   onComplete: () => void;
+  onClose: () => void;
 };
 
-const SetupPinModal: React.FC<Props> = ({onComplete}) => {
+const SetupPinModal: React.FC<Props> = ({onComplete, onClose}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
-  const [newPassword, setNewPassword] = useState<string>();
+  const [password, setPassword] = useState<string>();
   const [isSuccess, setIsSuccess] = useState<boolean>();
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
   const handleValueChanged = (id: string, v: string) => {
-    if (id === 'new-password') {
-      setNewPassword(v);
+    if (id === 'password') {
+      setPassword(v);
     }
     setIsDirty(true);
     setIsSuccess(undefined);
@@ -59,13 +60,19 @@ const SetupPinModal: React.FC<Props> = ({onComplete}) => {
 
   const handleKeyDown: React.KeyboardEventHandler = event => {
     if (event.key === 'Enter') {
-      void handleChangePassword();
+      void handleClick();
     }
   };
 
-  const handleChangePassword = async () => {
+  const handleClick = async () => {
+    // close window if already success
+    if (isSuccess) {
+      onClose();
+      return;
+    }
+
     // validate password and token
-    if (!newPassword) {
+    if (!password) {
       return;
     }
 
@@ -73,8 +80,8 @@ const SetupPinModal: React.FC<Props> = ({onComplete}) => {
     setIsSaving(true);
 
     // enable the PIN with provided value
-    await createPIN(newPassword, true);
-    await unlock(newPassword, config.WALLETS.DEFAULT_PIN_TIMEOUT_MS);
+    await createPIN(password, true);
+    await unlock(password, config.WALLETS.DEFAULT_PIN_TIMEOUT_MS);
 
     // set success state
     setIsSaving(false);
@@ -96,7 +103,7 @@ const SetupPinModal: React.FC<Props> = ({onComplete}) => {
           </Box>
         )}
         {isSuccess ? (
-          <Box mt={3}>
+          <Box mt={3} mb={3}>
             <OperationStatus
               success={true}
               label={t('wallet.changeSessionLockSuccess')}
@@ -110,12 +117,12 @@ const SetupPinModal: React.FC<Props> = ({onComplete}) => {
         ) : (
           <Box>
             <ManageInput
-              id="new-password"
+              id="password"
               type={'password'}
               autoComplete="current-password"
-              label={`${t('common.new')} ${t('wallet.recoveryPhrase')}`}
+              label={t('wallet.recoveryPhrase')}
               placeholder={t('wallet.enterRecoveryPhrase')}
-              value={newPassword}
+              value={password}
               onChange={handleValueChanged}
               mt={1}
               stacked={true}
@@ -125,18 +132,17 @@ const SetupPinModal: React.FC<Props> = ({onComplete}) => {
           </Box>
         )}
       </Box>
-      {!isSuccess && (
-        <LoadingButton
-          variant="contained"
-          fullWidth
-          loading={isSaving}
-          onClick={handleChangePassword}
-          className={classes.button}
-          disabled={isSaving || !isDirty}
-        >
-          {t('common.continue')}
-        </LoadingButton>
-      )}
+
+      <LoadingButton
+        variant="contained"
+        fullWidth
+        loading={isSaving}
+        onClick={handleClick}
+        className={classes.button}
+        disabled={isSaving || !isDirty}
+      >
+        {isSuccess ? t('common.close') : t('common.continue')}
+      </LoadingButton>
     </Box>
   );
 };

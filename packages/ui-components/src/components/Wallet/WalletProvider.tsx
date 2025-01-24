@@ -43,11 +43,9 @@ import type {SerializedWalletBalance} from '../../lib';
 import {
   CustodyState,
   WalletLockedError,
-  createPIN,
   disablePin,
   isEmailValid,
   loginWithAddress,
-  unlock,
   useTranslationContext,
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
@@ -1084,10 +1082,6 @@ export const WalletProvider: React.FC<
     if (primaryAddress) {
       await loginWithAddress(primaryAddress);
     }
-
-    // set inactivity PIN lock using the current password
-    await createPIN(recoveryPhrase);
-    await unlock(recoveryPhrase, config.WALLETS.DEFAULT_PIN_TIMEOUT_MS);
 
     // set component state
     setAccessToken(otpResponse.accessToken);

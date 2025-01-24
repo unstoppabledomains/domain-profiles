@@ -234,7 +234,10 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           titleStyle={classes.modalTitleStyle}
           onClose={() => setIsLockModalOpen(false)}
         >
-          <SetupPinModal onComplete={() => setIsLockEnabled(true)} />
+          <SetupPinModal
+            onComplete={() => setIsLockEnabled(true)}
+            onClose={() => setIsLockModalOpen(false)}
+          />
         </Modal>
       )}
     </Box>

@@ -22,7 +22,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    height: '100%',
     justifyContent: 'space-between',
   },
   content: {
@@ -32,6 +31,16 @@ const useStyles = makeStyles()((theme: Theme) => ({
     [theme.breakpoints.down('sm')]: {
       width: '100%',
     },
+    height: '500px',
+    overflow: 'auto',
+  },
+  recommendedContainer: {
+    padding: theme.spacing(2),
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: theme.palette.dangerShades[100],
+  },
+  recommendedText: {
+    color: theme.palette.getContrastText(theme.palette.dangerShades[100]),
   },
   button: {
     marginTop: theme.spacing(3),
@@ -113,9 +122,14 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
     );
   }
 
-  return (
-    <Box className={classes.container}>
-      <Box className={classes.content}>
+  interface preferenceItem {
+    enabled: boolean;
+    component: React.ReactNode;
+  }
+  const preferenceList: preferenceItem[] = [
+    {
+      enabled: true,
+      component: (
         <WalletPreference
           title={t('wallet.recoveryPhrase')}
           description={t('wallet.recoveryPhraseEnabled')}
@@ -131,6 +145,11 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
             </Button>
           )}
         </WalletPreference>
+      ),
+    },
+    {
+      enabled: true,
+      component: (
         <WalletPreference
           title={t('wallet.recoveryKit')}
           description={t('wallet.recoveryKitManage')}
@@ -144,6 +163,11 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
             {t('manage.manageProfile')} {t('wallet.recoveryKit')}
           </Button>
         </WalletPreference>
+      ),
+    },
+    {
+      enabled: isMfaEnabled,
+      component: (
         <WalletPreference
           title={t('wallet.twoFactorAuthentication')}
           description={
@@ -169,6 +193,11 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
             {isMfaEnabled && ` (${t('common.notRecommended')})`}
           </Button>
         </WalletPreference>
+      ),
+    },
+    {
+      enabled: isLockEnabled,
+      component: (
         <WalletPreference
           title={t('wallet.sessionLock')}
           description={
@@ -194,6 +223,30 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
             {isLockEnabled && ` (${t('common.notRecommended')})`}
           </Button>
         </WalletPreference>
+      ),
+    },
+  ];
+
+  return (
+    <Box className={classes.container}>
+      <Box className={classes.content}>
+        {preferenceList.find(item => !item.enabled) && (
+          <Box className={classes.recommendedContainer}>
+            {preferenceList
+              .filter(item => !item.enabled)
+              .map((item, i) => (
+                <Box
+                  className={classes.recommendedText}
+                  mt={i === 0 ? -3 : undefined}
+                >
+                  {item.component}
+                </Box>
+              ))}
+          </Box>
+        )}
+        {preferenceList
+          .filter(item => item.enabled)
+          .map(item => item.component)}
       </Box>
       {isRecoveryModalOpen && (
         <Modal

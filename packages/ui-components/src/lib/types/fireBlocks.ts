@@ -34,6 +34,7 @@ export interface BlockchainAsset {
 }
 
 export interface BootstrapState {
+  userName?: string;
   bootstrapToken: string;
   refreshToken: string;
   assets: AccountAsset[];

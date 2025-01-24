@@ -42,8 +42,12 @@ import useFireblocksState from '../../hooks/useFireblocksState';
 import type {SerializedWalletBalance} from '../../lib';
 import {
   CustodyState,
+  WalletLockedError,
+  createPIN,
+  disablePin,
   isEmailValid,
   loginWithAddress,
+  unlock,
   useTranslationContext,
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
@@ -765,6 +769,9 @@ export const WalletProvider: React.FC<
           return;
         }
       } catch (e) {
+        if (e instanceof WalletLockedError) {
+          return;
+        }
         notifyEvent(e, 'warning', 'Wallet', 'Authorization', {
           msg: 'unable to retrieve access token',
         });
@@ -822,6 +829,9 @@ export const WalletProvider: React.FC<
       setAuthAddress('');
     }
 
+    // disable session lock
+    await disablePin();
+
     // clear all storage state
     await saveState({});
 
@@ -849,7 +859,7 @@ export const WalletProvider: React.FC<
       // submit the one time code
       await processOtp();
     } else if (configState === WalletConfigState.PasswordEntry) {
-      // submit the recovery phrase
+      // submit sign in request
       await processPasswordEntry();
     }
 
@@ -1054,6 +1064,7 @@ export const WalletProvider: React.FC<
     const bootstrapState = await saveBootstrapState(
       {
         assets: [],
+        userName: emailAddress,
         bootstrapToken: loginState.accessToken,
         refreshToken: otpResponse.refreshToken,
         custodyState: {
@@ -1073,6 +1084,10 @@ export const WalletProvider: React.FC<
     if (primaryAddress) {
       await loginWithAddress(primaryAddress);
     }
+
+    // set inactivity PIN lock using the current password
+    await createPIN(recoveryPhrase);
+    await unlock(recoveryPhrase, config.WALLETS.DEFAULT_PIN_TIMEOUT_MS);
 
     // set component state
     setAccessToken(otpResponse.accessToken);

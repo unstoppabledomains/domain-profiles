@@ -118,6 +118,7 @@ export default function getDefaultConfig(): Config {
       DOCUMENTATION_URL:
         'https://support.unstoppabledomains.com/support/solutions/48000457487',
       LANDING_PAGE_URL: 'https://unstoppabledomains.com/products/wallet',
+      DEFAULT_PIN_TIMEOUT_MS: 1 * 60 * 60 * 1000, // 1 hour
       CHAINS: {
         BUY: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'ETH/ETH', 'BASE/ETH'],
         RECEIVE: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'BASE/ETH', 'ETH/ETH'],

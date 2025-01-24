@@ -246,6 +246,7 @@ export const getAccessTokenInternal = async (
     // save new state
     await saveBootstrapState(
       {
+        userName: existingState?.userName,
         assets: existingState?.assets || [],
         bootstrapToken: newTokens.bootstrapToken,
         refreshToken: newTokens.refreshToken,

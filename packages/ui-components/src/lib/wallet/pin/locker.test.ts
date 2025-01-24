@@ -1,6 +1,6 @@
 import * as storage from '../../../components/Chat/storage';
 import {createPIN} from './key';
-import {isUnlocked, unlock} from './locker';
+import {isPinEnabled, isUnlocked, unlock} from './locker';
 import {saveLockStatus} from './store';
 
 describe('PIN locker', () => {
@@ -16,6 +16,15 @@ describe('PIN locker', () => {
       .mockImplementation(async (k: string) => {
         return testStorage[k];
       });
+  });
+
+  it('should return true if PIN is enabled', async () => {
+    await createPIN('1234');
+    expect(await isPinEnabled()).toBeTruthy();
+  });
+
+  it('should return false if PIN is not enabled', async () => {
+    expect(await isPinEnabled()).toBeFalsy();
   });
 
   it('should be unlocked if timestamp is valid', async () => {

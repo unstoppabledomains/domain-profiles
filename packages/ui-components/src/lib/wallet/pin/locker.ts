@@ -2,10 +2,22 @@ import bs58 from 'bs58';
 import nacl from 'tweetnacl';
 
 import {notifyEvent} from '../../error';
-import {getKeypair, getLockStatus, getPublicKey, saveLockStatus} from './store';
+import {
+  getKeypair,
+  getLockStatus,
+  getPublicKey,
+  removeEncryptedPin,
+  removeLockStatus,
+  saveLockStatus,
+} from './store';
 
-export const isLockRequired = async () => {
-  return false;
+export const disablePin = async () => {
+  await Promise.all([removeEncryptedPin(), removeLockStatus()]);
+};
+
+export const isPinEnabled = async () => {
+  const publicKey = await getPublicKey();
+  return !!publicKey;
 };
 
 export const isUnlocked = async () => {

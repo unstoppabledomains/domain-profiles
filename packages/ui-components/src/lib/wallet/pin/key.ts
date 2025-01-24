@@ -5,7 +5,10 @@ import * as crypto from 'crypto-js';
 import {notifyEvent} from '../../error';
 import {saveEncryptedPin} from './store';
 
-export const createPIN = async (pin: string): Promise<string> => {
+export const createPIN = async (
+  pin: string,
+  isManual?: boolean,
+): Promise<string> => {
   // create a new public key pair
   const pinKeypair = Keypair.generate();
 
@@ -17,6 +20,7 @@ export const createPIN = async (pin: string): Promise<string> => {
   await saveEncryptedPin({
     encryptedPrivateKey,
     publicKey,
+    isManual,
   });
   return publicKey;
 };

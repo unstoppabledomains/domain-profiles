@@ -5,18 +5,26 @@ import {localStorageWrapper} from '../../../components/Chat/storage';
 import {DomainProfileKeys} from '../../types';
 import {decrypt} from './key';
 import type {EncryptedPin, LockStatus} from './types';
+import { WalletLockedError} from './types';
 
-export const getKeypair = async (pin: string): Promise<Keypair> => {
+export const getEncryptedPin = async (): Promise<EncryptedPin | undefined> => {
   const encryptedPinStr = await localStorageWrapper.getItem(
     DomainProfileKeys.EncryptedPIN,
   );
   if (!encryptedPinStr) {
-    throw new Error('PIN not found');
+    return undefined;
   }
-  const encryptedPin = JSON.parse(encryptedPinStr) as EncryptedPin;
+  return JSON.parse(encryptedPinStr) as EncryptedPin;
+};
+
+export const getKeypair = async (pin: string): Promise<Keypair> => {
+  const encryptedPin = await getEncryptedPin();
+  if (!encryptedPin) {
+    throw new WalletLockedError('PIN not found');
+  }
   const decryptedPrivateKey = decrypt(encryptedPin.encryptedPrivateKey, pin);
   if (!decryptedPrivateKey) {
-    throw new Error('invalid PIN');
+    throw new WalletLockedError('invalid PIN');
   }
   return Keypair.fromSecretKey(bs58.decode(decryptedPrivateKey));
 };
@@ -40,6 +48,14 @@ export const getPublicKey = async (): Promise<PublicKey | undefined> => {
   }
   const encryptedPin = JSON.parse(encryptedPinStr) as EncryptedPin;
   return new PublicKey(encryptedPin.publicKey);
+};
+
+export const removeEncryptedPin = async () => {
+  await localStorageWrapper.removeItem(DomainProfileKeys.EncryptedPIN);
+};
+
+export const removeLockStatus = async () => {
+  await localStorageWrapper.removeItem(DomainProfileKeys.LockStatus);
 };
 
 export const saveEncryptedPin = async (data: EncryptedPin) => {

@@ -8,10 +8,16 @@ import type {Theme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
 import React, {useState} from 'react';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {changePassword} from '../../actions/fireBlocksActions';
-import {useTranslationContext} from '../../lib';
+import {
+  createPIN,
+  isPinEnabled,
+  unlock,
+  useTranslationContext,
+} from '../../lib';
 import {isValidWalletPasswordFormat} from '../../lib/wallet/password';
 import ManageInput from '../Manage/common/ManageInput';
 import {OperationStatus} from './OperationStatus';
@@ -116,9 +122,16 @@ const ChangePasswordModal: React.FC<Props> = ({accessToken}) => {
 
     // determine success
     if (result === 'OK') {
+      // show success screen
       setShowBackButton(false);
       setShowContinueButton(false);
       setIsSuccess(true);
+
+      // reset PIN if required
+      if (await isPinEnabled()) {
+        await createPIN(newPassword);
+        await unlock(newPassword, config.WALLETS.DEFAULT_PIN_TIMEOUT_MS);
+      }
     } else if (result === 'OTP_TOKEN_REQUIRED') {
       setIsOtpRequired('TOTP');
     } else if (result === 'VALIDATION') {

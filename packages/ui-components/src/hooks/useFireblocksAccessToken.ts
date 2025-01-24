@@ -5,7 +5,7 @@ import {
   getAccounts,
 } from '../actions/fireBlocksActions';
 import {localStorageWrapper} from '../components/Chat/storage';
-import {CustodyState} from '../lib';
+import {CustodyState, disablePin} from '../lib';
 import {notifyEvent} from '../lib/error';
 import {getBootstrapState} from '../lib/wallet/storage/state';
 import {isChromeStorageSupported} from './useChromeStorage';
@@ -63,6 +63,7 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
 
       // retrieve an access token if required
       if (!accessToken) {
+        // retrieve a new access token
         const jwtData = await getAccessTokenInternal(clientState.refreshToken, {
           state,
           saveState,
@@ -75,7 +76,7 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
             'Wallet',
             'Authorization',
           );
-          await saveState({});
+          await Promise.all([saveState({}), disablePin()]);
           throw new Error('error retrieving access token');
         }
         accessToken = jwtData.accessToken;

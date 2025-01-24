@@ -37,11 +37,22 @@ const useWeb3Context = () => {
 
   // check wallet PIN status
   useEffect(() => {
+    // return if modal is already visible
+    if (showPinCta) {
+      return;
+    }
+
     // hide the modal if key state is empty
     const isAnyState =
       (persistentKeyState && Object.keys(persistentKeyState).length > 0) ||
       (sessionKeyState && Object.keys(sessionKeyState).length > 0);
     if (!isAnyState) {
+      setShowPinCta(false);
+      return;
+    }
+
+    // hide the modal if the session is still active
+    if (accessToken) {
       setShowPinCta(false);
       return;
     }
@@ -54,13 +65,13 @@ const useWeb3Context = () => {
         isUnlocked(),
       ]);
 
-      // show the PIN entry modal if necessary
+      // show the modal if unlock is required
       if (pinEnabled && !unlocked) {
         setShowPinCta(true);
       }
     };
     void checkPinState();
-  }, [persistentKeyState, sessionKeyState]);
+  }, [accessToken, persistentKeyState, sessionKeyState, showPinCta]);
 
   return {
     web3Deps,

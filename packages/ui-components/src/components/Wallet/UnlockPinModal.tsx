@@ -1,8 +1,8 @@
-import Alert from '@mui/lab/Alert';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import { useTheme} from '@mui/material/styles';
 import React, {useState} from 'react';
 
 import config from '@unstoppabledomains/config';
@@ -36,7 +36,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '350px',
+    textAlign: 'center',
+    width: '400px',
+    [theme.breakpoints.down('sm')]: {
+      width: '100%',
+    },
   },
   button: {
     marginTop: theme.spacing(1),
@@ -50,6 +54,7 @@ type Props = {
 const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const theme = useTheme();
   const [state] = useFireblocksState();
   const [pin, setPin] = useState<string>();
   const [isSaving, setIsSaving] = useState(false);
@@ -124,12 +129,9 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
             <WalletIcon />
           </IconPlate>
         </Box>
-        <Typography variant="h4" mb={1}>
-          {t('wallet.sessionLock')}
+        <Typography variant="h4" mb={5}>
+          {theme.wallet.title}
         </Typography>
-        <Box mb={5}>
-          <Alert severity="info">{t('wallet.sessionLockTip')}</Alert>
-        </Box>
         <ManageInput
           id="pin"
           value={pin}

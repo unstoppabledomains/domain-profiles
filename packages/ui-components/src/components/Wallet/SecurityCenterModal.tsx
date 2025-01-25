@@ -30,6 +30,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '450px',
     [theme.breakpoints.down('sm')]: {
       width: '100%',
+      height: 'calc(100vh - 80px)',
     },
     height: '500px',
     overflow: 'auto',

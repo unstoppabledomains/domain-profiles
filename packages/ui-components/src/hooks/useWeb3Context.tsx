@@ -1,6 +1,9 @@
 import {useContext, useEffect} from 'react';
 
-import {isPinEnabled, isUnlocked} from '../lib';
+import config from '@unstoppabledomains/config';
+
+import {isPinEnabled, isUnlocked, unlock} from '../lib';
+import {getPinFromToken} from '../lib/wallet/pin/store';
 import {Web3Context} from '../providers/Web3ContextProvider';
 
 const useWeb3Context = () => {
@@ -51,9 +54,19 @@ const useWeb3Context = () => {
       return;
     }
 
-    // hide the modal if the session is still active
+    // handle access token present
     if (accessToken) {
-      setShowPinCta(false);
+      const handleAccessToken = async () => {
+        // hide the modal if the session is still active
+        setShowPinCta(false);
+
+        // bump the lock state to the future due to usage
+        if (await isPinEnabled()) {
+          const pin = await getPinFromToken(accessToken);
+          await unlock(pin, config.WALLETS.DEFAULT_PIN_TIMEOUT_MS);
+        }
+      };
+      void handleAccessToken();
       return;
     }
 
@@ -68,6 +81,7 @@ const useWeb3Context = () => {
       // show the modal if unlock is required
       if (pinEnabled && !unlocked) {
         setShowPinCta(true);
+        return;
       }
     };
     void checkPinState();

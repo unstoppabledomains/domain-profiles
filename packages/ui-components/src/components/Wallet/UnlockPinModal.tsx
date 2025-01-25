@@ -11,7 +11,7 @@ import config from '@unstoppabledomains/config';
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {useFireblocksState} from '../../hooks';
+import {useFireblocksState, useWeb3Context} from '../../hooks';
 import {
   decrypt,
   disablePin,
@@ -63,6 +63,7 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
   const theme = useTheme();
+  const {setShowPinCta} = useWeb3Context();
   const [state, saveState] = useFireblocksState();
   const [pin, setPin] = useState<string>();
   const [isSaving, setIsSaving] = useState(false);
@@ -134,7 +135,7 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
 
   const handleLogout = async () => {
     await Promise.all([saveState({}), disablePin()]);
-    window.location.reload();
+    setShowPinCta(false);
   };
 
   return (

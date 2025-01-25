@@ -731,6 +731,7 @@ export const WalletProvider: React.FC<
       // retrieve existing state from session or local storage if available
       const existingState = getBootstrapState(state);
       if (!existingState) {
+        await handleLogout();
         return;
       }
 

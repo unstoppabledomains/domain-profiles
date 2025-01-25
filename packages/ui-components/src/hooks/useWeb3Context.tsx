@@ -2,7 +2,14 @@ import {useContext, useEffect} from 'react';
 
 import config from '@unstoppabledomains/config';
 
-import {isPinEnabled, isUnlocked, unlock} from '../lib';
+import {
+  encrypt,
+  getBootstrapState,
+  isPinEnabled,
+  isUnlocked,
+  saveBootstrapState,
+  unlock,
+} from '../lib';
 import {getPinFromToken} from '../lib/wallet/pin/store';
 import {Web3Context} from '../providers/Web3ContextProvider';
 
@@ -38,6 +45,9 @@ const useWeb3Context = () => {
     );
   }
 
+  // timer to show the lock screen
+  let lockScreenTimeout: NodeJS.Timeout;
+
   // check wallet PIN status
   useEffect(() => {
     // return if modal is already visible
@@ -59,11 +69,22 @@ const useWeb3Context = () => {
       const handleAccessToken = async () => {
         // hide the modal if the session is still active
         setShowPinCta(false);
+        clearTimeout(lockScreenTimeout);
 
-        // bump the lock state to the future due to usage
+        // check if session lock is enabled
         if (await isPinEnabled()) {
+          // bump the lock state to the future due to usage
           const pin = await getPinFromToken(accessToken);
-          await unlock(pin, config.WALLETS.DEFAULT_PIN_TIMEOUT_MS);
+          const expirationTime = await unlock(
+            pin,
+            config.WALLETS.DEFAULT_PIN_TIMEOUT_MS,
+          );
+
+          // set timer to lock the screen
+          lockScreenTimeout = setTimeout(
+            handleLockScreen,
+            expirationTime - Date.now(),
+          );
         }
       };
       void handleAccessToken();
@@ -86,6 +107,31 @@ const useWeb3Context = () => {
     };
     void checkPinState();
   }, [accessToken, persistentKeyState, sessionKeyState, showPinCta]);
+
+  const handleLockScreen = async () => {
+    if (!persistentKeyState) {
+      return;
+    }
+
+    // retrieve and validate key state
+    const clientState = getBootstrapState(persistentKeyState);
+    if (!clientState?.refreshToken) {
+      return;
+    }
+
+    // lock the wallet by encrypting the refresh token with user-defined PIN
+    const pin = await getPinFromToken(clientState.refreshToken);
+    clientState.lockedRefreshToken = encrypt(clientState.refreshToken, pin);
+    clientState.refreshToken = '';
+
+    // save the state with encrypted refresh token
+    setShowPinCta(true);
+    await saveBootstrapState(
+      clientState,
+      persistentKeyState,
+      setPersistentKeyState,
+    );
+  };
 
   return {
     web3Deps,

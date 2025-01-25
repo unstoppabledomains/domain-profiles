@@ -38,11 +38,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 type Props = {
+  accessToken?: string;
   onComplete: () => void;
   onClose: () => void;
 };
 
-const SetupPinModal: React.FC<Props> = ({onComplete, onClose}) => {
+const SetupPinModal: React.FC<Props> = ({accessToken, onComplete, onClose}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
   const [password, setPassword] = useState<string>();
@@ -72,7 +73,7 @@ const SetupPinModal: React.FC<Props> = ({onComplete, onClose}) => {
     }
 
     // validate password and token
-    if (!password) {
+    if (!password || !accessToken) {
       return;
     }
 
@@ -80,7 +81,7 @@ const SetupPinModal: React.FC<Props> = ({onComplete, onClose}) => {
     setIsSaving(true);
 
     // enable the PIN with provided value
-    await createPIN(password, true);
+    await createPIN(password, accessToken);
     await unlock(password, config.WALLETS.DEFAULT_PIN_TIMEOUT_MS);
 
     // set success state

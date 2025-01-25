@@ -3,7 +3,7 @@ import nacl from 'tweetnacl';
 
 import {notifyEvent} from '../../error';
 import {
-  getKeypair,
+  getKeypairFromPin,
   getLockStatus,
   getPublicKey,
   removeEncryptedPin,
@@ -64,7 +64,7 @@ export const unlock = async (
   pin: string,
   durationMs: number,
 ): Promise<number> => {
-  const keyPair = await getKeypair(pin);
+  const keyPair = await getKeypairFromPin(pin);
   const timestamp = Date.now() + durationMs;
   await saveLockStatus({
     proof: bs58.encode(

@@ -2,20 +2,19 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import { useTheme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
 import React, {useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {signIn} from '../../actions/fireBlocksActions';
 import {useFireblocksState} from '../../hooks';
 import {
-  WalletLockedError,
-  createPIN,
-  disablePin,
+  decrypt,
   getBootstrapState,
+  notifyEvent,
+  saveBootstrapState,
   unlock,
   useTranslationContext,
 } from '../../lib';
@@ -55,7 +54,7 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
   const theme = useTheme();
-  const [state] = useFireblocksState();
+  const [state, saveState] = useFireblocksState();
   const [pin, setPin] = useState<string>();
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -86,34 +85,32 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
     setErrorMessage(undefined);
     setIsDirty(false);
 
-    // attempt to unlock with user provided input
     try {
+      // attempt to unlock with user provided input
       await unlock(pin, config.WALLETS.DEFAULT_PIN_TIMEOUT_MS);
+
+      // retrieve the encrypted session state
+      const bootstrapState = getBootstrapState(state);
+      if (!bootstrapState?.lockedRefreshToken) {
+        throw new Error('error locating encrypted session state');
+      }
+
+      // decrypt the refresh token
+      const refreshToken = decrypt(bootstrapState.lockedRefreshToken, pin);
+      if (!refreshToken) {
+        throw new Error('error decrypting session state');
+      }
+
+      // restore the session state
+      bootstrapState.refreshToken = refreshToken;
+      bootstrapState.lockedRefreshToken = undefined;
+      await saveBootstrapState(bootstrapState, state, saveState);
+
+      // unlock was successful
       onSuccess();
     } catch (e) {
-      if (e instanceof WalletLockedError) {
-        // attempt the user's account password
-        const bootstrapState = getBootstrapState(state);
-        if (bootstrapState?.userName) {
-          const signInStatus = await signIn(bootstrapState.userName, pin);
-          if (signInStatus) {
-            if (
-              ['MFA_EMAIL_REQUIRED', 'MFA_OTP_REQUIRED'].includes(
-                signInStatus.status,
-              )
-            ) {
-              // replace current PIN with account password
-              await disablePin();
-              await createPIN(pin);
-              await unlock(pin, config.WALLETS.DEFAULT_PIN_TIMEOUT_MS);
-
-              // callback for success
-              onSuccess();
-              return;
-            }
-          }
-        }
-      }
+      // unlock failed
+      notifyEvent(e, 'error', 'Wallet', 'Configuration');
       setErrorMessage(t('wallet.sessionLockError'));
     } finally {
       setPin(undefined);

@@ -42,7 +42,7 @@ import useFireblocksState from '../../hooks/useFireblocksState';
 import type {SerializedWalletBalance} from '../../lib';
 import {
   CustodyState,
-  WalletLockedError,
+  SessionLockError,
   disablePin,
   isEmailValid,
   loginWithAddress,
@@ -203,7 +203,7 @@ export const WalletProvider: React.FC<
   const [custodyUpdateMs, setCustodyUpdateMs] = useState<number>();
 
   // wallet recovery state variables
-  const {accessToken, setAccessToken} = useWeb3Context();
+  const {accessToken, setAccessToken, showPinCta} = useWeb3Context();
   const [loginState, setLoginState] = useState(initialLoginState);
   const [oneTimeCode, setOneTimeCode] = useState<string>();
   const [recoveryPhrase, setRecoveryPhrase] = useState(initialRecoveryPhrase);
@@ -226,7 +226,7 @@ export const WalletProvider: React.FC<
     setIsWalletLoaded(false);
     setButtonComponent(<Box className={classes.continueActionContainer} />);
     void loadFromState();
-  }, []);
+  }, [showPinCta]);
 
   useEffect(() => {
     if (recoveryToken || emailAddress) {
@@ -767,7 +767,7 @@ export const WalletProvider: React.FC<
           return;
         }
       } catch (e) {
-        if (e instanceof WalletLockedError) {
+        if (e instanceof SessionLockError) {
           return;
         }
         notifyEvent(e, 'warning', 'Wallet', 'Authorization', {

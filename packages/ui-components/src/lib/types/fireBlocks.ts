@@ -37,6 +37,7 @@ export interface BootstrapState {
   userName?: string;
   bootstrapToken: string;
   refreshToken: string;
+  lockedRefreshToken?: string;
   assets: AccountAsset[];
   custodyState: CustodyWallet;
 }

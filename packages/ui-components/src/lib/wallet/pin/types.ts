@@ -1,7 +1,7 @@
 export interface EncryptedPin {
   publicKey: string;
   encryptedPrivateKey: string;
-  isManual?: boolean;
+  encryptedPin: string;
 }
 
 export interface LockStatus {
@@ -9,10 +9,10 @@ export interface LockStatus {
   timestamp: number;
 }
 
-export class WalletLockedError extends Error {
+export class SessionLockError extends Error {
   constructor(message: string) {
     super(message);
-    Object.setPrototypeOf(this, WalletLockedError.prototype);
-    this.name = 'WalletLockedError';
+    Object.setPrototypeOf(this, SessionLockError.prototype);
+    this.name = 'SessionLockError';
   }
 }

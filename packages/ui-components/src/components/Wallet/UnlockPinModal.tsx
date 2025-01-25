@@ -1,8 +1,10 @@
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
+import Markdown from 'markdown-to-jsx';
 import React, {useState} from 'react';
 
 import config from '@unstoppabledomains/config';
@@ -12,6 +14,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {useFireblocksState} from '../../hooks';
 import {
   decrypt,
+  disablePin,
   getBootstrapState,
   notifyEvent,
   saveBootstrapState,
@@ -19,6 +22,7 @@ import {
   useTranslationContext,
 } from '../../lib';
 import ManageInput from '../Manage/common/ManageInput';
+import Modal from '../Modal';
 import WalletIcon from './WalletIcon';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -41,8 +45,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
       width: '100%',
     },
   },
+  modalTitleStyle: {
+    color: 'inherit',
+    alignSelf: 'center',
+  },
   button: {
     marginTop: theme.spacing(1),
+    width: '100%',
   },
 }));
 
@@ -58,6 +67,7 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
   const [pin, setPin] = useState<string>();
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>();
 
   const handleValueChanged = (id: string, v: string) => {
@@ -118,6 +128,15 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
     }
   };
 
+  const handleForgotPassword = () => {
+    setShowForgotPasswordModal(true);
+  };
+
+  const handleLogout = async () => {
+    await Promise.all([saveState({}), disablePin()]);
+    window.location.reload();
+  };
+
   return (
     <Box className={classes.container}>
       <Box className={classes.content}>
@@ -152,7 +171,35 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
         >
           {t('wallet.unlock')}
         </LoadingButton>
+        <Button
+          size="small"
+          variant="text"
+          className={classes.button}
+          onClick={handleForgotPassword}
+        >
+          {t('common.forgotPassword')}
+        </Button>
       </Box>
+      {showForgotPasswordModal && (
+        <Modal
+          title={t('common.forgotPassword')}
+          open={showForgotPasswordModal}
+          titleStyle={classes.modalTitleStyle}
+          onClose={() => setShowForgotPasswordModal(false)}
+          fullScreen={false}
+        >
+          <Typography variant="body2">
+            <Markdown>{t('wallet.sessionLockForgotDescription')}</Markdown>
+          </Typography>
+          <Button
+            onClick={handleLogout}
+            variant="contained"
+            className={classes.button}
+          >
+            {t('header.signOut')}
+          </Button>
+        </Modal>
+      )}
     </Box>
   );
 };

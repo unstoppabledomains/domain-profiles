@@ -76,7 +76,10 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
       if (!accessToken) {
         // ensure a refresh token is available
         if (!clientState.refreshToken) {
-          throw new SessionLockError('refresh token is encrypted');
+          if (clientState.lockedRefreshToken) {
+            throw new SessionLockError('refresh token is encrypted');
+          }
+          throw new Error('invalid client state');
         }
 
         // check session lock status

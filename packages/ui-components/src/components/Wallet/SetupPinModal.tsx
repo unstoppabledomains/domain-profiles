@@ -121,8 +121,8 @@ const SetupPinModal: React.FC<Props> = ({accessToken, onComplete, onClose}) => {
               id="password"
               type={'password'}
               autoComplete="current-password"
-              label={t('wallet.recoveryPhrase')}
-              placeholder={t('wallet.enterRecoveryPhrase')}
+              label={`${t('wallet.sessionLock')} ${t('wallet.recoveryPhrase')}`}
+              placeholder={t('wallet.enterSessionLockPassword')}
               value={password}
               onChange={handleValueChanged}
               mt={1}

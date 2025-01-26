@@ -90,6 +90,7 @@ export const changePassword = async (
 ): Promise<
   | 'OK'
   | 'OTP_TOKEN_REQUIRED'
+  | 'EMAIL_OTP_REQUIRED'
   | 'VALIDATION'
   | 'INVALID_OTP_TOKEN'
   | 'INVALID_PASSWORD'

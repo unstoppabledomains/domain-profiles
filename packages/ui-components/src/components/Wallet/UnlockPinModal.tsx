@@ -49,6 +49,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
     color: 'inherit',
     alignSelf: 'center',
   },
+  inputContainer: {
+    textAlign: 'left',
+    width: '100%',
+  },
+  buttonContainer: {
+    marginTop: theme.spacing(1),
+    width: '100%',
+  },
   button: {
     marginTop: theme.spacing(1),
     width: '100%',
@@ -149,37 +157,41 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
         <Typography variant="h4" mb={5}>
           {theme.wallet.title}
         </Typography>
-        <ManageInput
-          id="pin"
-          value={pin}
-          type="password"
-          autoComplete="current-password"
-          placeholder={t('wallet.enterRecoveryPhrase')}
-          onChange={handleValueChanged}
-          onKeyDown={handleKeyDown}
-          stacked={true}
-          disabled={isSaving}
-          error={!!errorMessage}
-          errorText={errorMessage}
-        />
-        <LoadingButton
-          variant="contained"
-          fullWidth
-          loading={isSaving}
-          onClick={handleUnlock}
-          className={classes.button}
-          disabled={isSaving || !isDirty}
-        >
-          {t('wallet.unlock')}
-        </LoadingButton>
-        <Button
-          size="small"
-          variant="text"
-          className={classes.button}
-          onClick={handleForgotPassword}
-        >
-          {t('common.forgotPassword')}
-        </Button>
+        <Box className={classes.inputContainer}>
+          <ManageInput
+            id="pin"
+            value={pin}
+            type="password"
+            autoComplete="current-password"
+            placeholder={t('wallet.enterSessionLockPassword')}
+            onChange={handleValueChanged}
+            onKeyDown={handleKeyDown}
+            stacked={true}
+            disabled={isSaving}
+            error={!!errorMessage}
+            errorText={errorMessage}
+          />
+        </Box>
+        <Box className={classes.buttonContainer}>
+          <LoadingButton
+            variant="contained"
+            fullWidth
+            loading={isSaving}
+            onClick={handleUnlock}
+            className={classes.button}
+            disabled={isSaving || !isDirty}
+          >
+            {t('wallet.unlock')}
+          </LoadingButton>
+          <Button
+            size="small"
+            variant="text"
+            className={classes.button}
+            onClick={handleForgotPassword}
+          >
+            {t('common.forgotPassword')}
+          </Button>
+        </Box>
       </Box>
       {showForgotPasswordModal && (
         <Modal

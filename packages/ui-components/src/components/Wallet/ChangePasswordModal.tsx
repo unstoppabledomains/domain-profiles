@@ -121,6 +121,8 @@ const ChangePasswordModal: React.FC<Props> = ({accessToken}) => {
       setIsSuccess(true);
     } else if (result === 'OTP_TOKEN_REQUIRED') {
       setIsOtpRequired('TOTP');
+    } else if (result === 'EMAIL_OTP_REQUIRED') {
+      setIsOtpRequired('EMAIL');
     } else if (result === 'VALIDATION') {
       setErrorMessage(t('wallet.resetPasswordStrength'));
     } else if (result === 'INVALID_OTP_TOKEN') {
@@ -186,7 +188,11 @@ const ChangePasswordModal: React.FC<Props> = ({accessToken}) => {
               id="oneTimeCode"
               value={oneTimeCode}
               autoComplete="one-time-code"
-              label={t('wallet.oneTimeCode')}
+              label={`${t('wallet.oneTimeCode')} (${
+                isOtpRequired === 'EMAIL'
+                  ? t('common.email').toLowerCase()
+                  : t('common.authenticatorApp').toLowerCase()
+              })`}
               placeholder={t('wallet.enterOneTimeCode')}
               onChange={handleValueChanged}
               onKeyDown={handleKeyDown}

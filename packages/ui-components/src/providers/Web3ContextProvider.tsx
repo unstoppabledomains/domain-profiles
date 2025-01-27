@@ -1,6 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {useLocalStorage, useSessionStorage} from 'usehooks-ts';
 
+import {Modal} from '../components';
+import UnlockPinModal from '../components/Wallet/UnlockPinModal';
 import useChromeStorage, {
   isChromeStorageSupported,
 } from '../hooks/useChromeStorage';
@@ -19,6 +21,8 @@ export const Web3Context = React.createContext<{
   setAccessToken?: (v: string) => void;
   messageToSign?: string;
   setMessageToSign?: (v: string) => void;
+  showPinCta?: boolean;
+  setShowPinCta?: (v: boolean) => void;
   txToSign?: CreateTransaction;
   setTxToSign?: (v?: CreateTransaction) => void;
   sessionKeyState?: Record<string, Record<string, string>>;
@@ -59,6 +63,7 @@ const Web3ContextProvider: React.FC<Props> = ({children}) => {
   // signing parameters
   const [messageToSign, setMessageToSign] = useState<string>();
   const [txToSign, setTxToSign] = useState<CreateTransaction>();
+  const [showPinCta, setShowPinCta] = useState(false);
 
   // determine if chrome extension runtime
   useEffect(() => {
@@ -78,6 +83,8 @@ const Web3ContextProvider: React.FC<Props> = ({children}) => {
     setAccessToken,
     messageToSign,
     setMessageToSign,
+    showPinCta,
+    setShowPinCta,
     txToSign,
     setTxToSign,
     sessionKeyState: isChromeExtension
@@ -94,7 +101,26 @@ const Web3ContextProvider: React.FC<Props> = ({children}) => {
       : setPersistentKeyState,
   };
 
-  return <Web3Context.Provider value={value}>{children}</Web3Context.Provider>;
+  const handlePinComplete = () => {
+    setShowPinCta(false);
+  };
+
+  return (
+    <Web3Context.Provider value={value}>
+      {children}
+      {showPinCta && (
+        <Modal
+          open={showPinCta}
+          onClose={handlePinComplete}
+          fullScreen={true}
+          noModalHeader
+          isConfirmation
+        >
+          <UnlockPinModal onSuccess={handlePinComplete} />
+        </Modal>
+      )}
+    </Web3Context.Provider>
+  );
 };
 
 export default Web3ContextProvider;

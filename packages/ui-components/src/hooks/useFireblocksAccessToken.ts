@@ -5,9 +5,20 @@ import {
   getAccounts,
 } from '../actions/fireBlocksActions';
 import {localStorageWrapper} from '../components/Chat/storage';
-import {CustodyState} from '../lib';
+import {
+  CustodyState,
+  SessionLockError,
+  disablePin,
+  encrypt,
+  isPinEnabled,
+  isUnlocked,
+} from '../lib';
 import {notifyEvent} from '../lib/error';
-import {getBootstrapState} from '../lib/wallet/storage/state';
+import {getPinFromToken} from '../lib/wallet/pin/store';
+import {
+  getBootstrapState,
+  saveBootstrapState,
+} from '../lib/wallet/storage/state';
 import {isChromeStorageSupported} from './useChromeStorage';
 import useFireblocksState from './useFireblocksState';
 import useWeb3Context from './useWeb3Context';
@@ -63,8 +74,37 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
 
       // retrieve an access token if required
       if (!accessToken) {
+        // ensure a refresh token is available
+        if (!clientState.refreshToken) {
+          if (clientState.lockedRefreshToken) {
+            throw new SessionLockError('refresh token is encrypted');
+          }
+          throw new Error('invalid client state');
+        }
+
+        // check session lock status
+        const [pinEnabled, unlocked] = await Promise.all([
+          isPinEnabled(),
+          isUnlocked(),
+        ]);
+        if (pinEnabled && !unlocked) {
+          // lock the wallet by encrypting the refresh token with user-defined PIN
+          const pin = await getPinFromToken(clientState.refreshToken);
+          clientState.lockedRefreshToken = encrypt(
+            clientState.refreshToken,
+            pin,
+          );
+          clientState.refreshToken = '';
+
+          // save the state with encrypted refresh token
+          await saveBootstrapState(clientState, state, saveState);
+
+          // throw error to indicate lock status
+          throw new SessionLockError('session is locked');
+        }
+
+        // retrieve a new access token
         const jwtData = await getAccessTokenInternal(clientState.refreshToken, {
-          deviceId: clientState.deviceId,
           state,
           saveState,
           setAccessToken,
@@ -76,7 +116,7 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
             'Wallet',
             'Authorization',
           );
-          await saveState({});
+          await Promise.all([saveState({}), disablePin()]);
           throw new Error('error retrieving access token');
         }
         accessToken = jwtData.accessToken;

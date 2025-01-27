@@ -27,7 +27,6 @@ describe('<Send />', () => {
   jest.spyOn(fireBlocksState, 'getBootstrapState').mockReturnValue({
     bootstrapToken: 'mockBootstrapToken',
     refreshToken: 'mockRefreshToken',
-    deviceId: 'mockDeviceId',
     assets: [mockAccountAsset()],
     custodyState: {
       state: CustodyState.SELF_CUSTODY,

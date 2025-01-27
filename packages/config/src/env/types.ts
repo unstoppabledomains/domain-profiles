@@ -119,6 +119,7 @@ export type Config = {
     HOST_URL: string;
     GET_WALLET_URL: string;
     LANDING_PAGE_URL: string;
+    DEFAULT_PIN_TIMEOUT_MS: number;
     DOCUMENTATION_URL: string;
     CHAINS: {
       BUY: string[];

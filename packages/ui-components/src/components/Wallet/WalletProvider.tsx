@@ -42,6 +42,8 @@ import useFireblocksState from '../../hooks/useFireblocksState';
 import type {SerializedWalletBalance} from '../../lib';
 import {
   CustodyState,
+  SessionLockError,
+  disablePin,
   isEmailValid,
   loginWithAddress,
   useTranslationContext,
@@ -201,7 +203,7 @@ export const WalletProvider: React.FC<
   const [custodyUpdateMs, setCustodyUpdateMs] = useState<number>();
 
   // wallet recovery state variables
-  const {accessToken, setAccessToken} = useWeb3Context();
+  const {accessToken, setAccessToken, showPinCta} = useWeb3Context();
   const [loginState, setLoginState] = useState(initialLoginState);
   const [oneTimeCode, setOneTimeCode] = useState<string>();
   const [recoveryPhrase, setRecoveryPhrase] = useState(initialRecoveryPhrase);
@@ -224,7 +226,7 @@ export const WalletProvider: React.FC<
     setIsWalletLoaded(false);
     setButtonComponent(<Box className={classes.continueActionContainer} />);
     void loadFromState();
-  }, []);
+  }, [showPinCta]);
 
   useEffect(() => {
     if (recoveryToken || emailAddress) {
@@ -729,6 +731,7 @@ export const WalletProvider: React.FC<
       // retrieve existing state from session or local storage if available
       const existingState = getBootstrapState(state);
       if (!existingState) {
+        await handleLogout();
         return;
       }
 
@@ -765,6 +768,9 @@ export const WalletProvider: React.FC<
           return;
         }
       } catch (e) {
+        if (e instanceof SessionLockError) {
+          return;
+        }
         notifyEvent(e, 'warning', 'Wallet', 'Authorization', {
           msg: 'unable to retrieve access token',
         });
@@ -822,6 +828,9 @@ export const WalletProvider: React.FC<
       setAuthAddress('');
     }
 
+    // disable session lock
+    await disablePin();
+
     // clear all storage state
     await saveState({});
 
@@ -849,7 +858,7 @@ export const WalletProvider: React.FC<
       // submit the one time code
       await processOtp();
     } else if (configState === WalletConfigState.PasswordEntry) {
-      // submit the recovery phrase
+      // submit sign in request
       await processPasswordEntry();
     }
 
@@ -1054,9 +1063,9 @@ export const WalletProvider: React.FC<
     const bootstrapState = await saveBootstrapState(
       {
         assets: [],
+        userName: emailAddress,
         bootstrapToken: loginState.accessToken,
         refreshToken: otpResponse.refreshToken,
-        deviceId: '',
         custodyState: {
           state: CustodyState.SELF_CUSTODY,
           status: 'COMPLETED',

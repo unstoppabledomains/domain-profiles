@@ -10,9 +10,8 @@ import {
 
 export const getBootstrapState = (
   state: Record<string, Record<string, string>>,
-  deviceId = BootstrapStateCurrentKey,
 ): BootstrapState | undefined => {
-  const v = state[`${BootstrapStatePrefix}-${deviceId}`];
+  const v = state[`${BootstrapStatePrefix}-${BootstrapStateCurrentKey}`];
   if (v) {
     return v as unknown as BootstrapState;
   }
@@ -34,10 +33,6 @@ export const saveBootstrapState = async (
     }
 
     // save the state values
-    if (values.deviceId) {
-      state[`${BootstrapStatePrefix}-${values.deviceId}`] =
-        values as unknown as Record<string, string>;
-    }
     state[`${BootstrapStatePrefix}-${BootstrapStateCurrentKey}`] =
       values as unknown as Record<string, string>;
     await saveState({...state});
@@ -71,7 +66,6 @@ export const saveMpcCustodyState = async (
     {
       bootstrapToken: '',
       refreshToken: '',
-      deviceId: '',
       assets: Object.entries(w.addresses).map(addressEntry => ({
         '@type': w!.state,
         id: addressEntry[0],

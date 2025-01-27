@@ -256,9 +256,9 @@ const ClaimWalletModal: React.FC<Props> = ({
     await saveBootstrapState(
       {
         assets: [],
+        userName: emailAddress,
         bootstrapToken: claimStatus.accessToken,
         refreshToken: otpResponse.refreshToken,
-        deviceId: '',
         custodyState: {
           state: CustodyState.SELF_CUSTODY,
           status: 'COMPLETED',

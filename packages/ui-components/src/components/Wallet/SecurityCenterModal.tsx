@@ -10,10 +10,11 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useFeatureFlags} from '../../actions';
 import {getTwoFactorStatus} from '../../actions/walletMfaActions';
-import {useTranslationContext} from '../../lib';
+import {disablePin, isPinEnabled, useTranslationContext} from '../../lib';
 import Modal from '../Modal';
 import ChangePasswordModal from './ChangePasswordModal';
 import RecoverySetupModal from './RecoverySetupModal';
+import SetupPinModal from './SetupPinModal';
 import {TwoFactorModal} from './TwoFactorModal';
 import {WalletPreference} from './WalletPreference';
 
@@ -21,7 +22,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    height: '100%',
     justifyContent: 'space-between',
   },
   content: {
@@ -30,7 +30,18 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '450px',
     [theme.breakpoints.down('sm')]: {
       width: '100%',
+      height: 'calc(100vh - 80px)',
     },
+    height: '500px',
+    overflow: 'auto',
+  },
+  recommendedContainer: {
+    padding: theme.spacing(2),
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: theme.palette.dangerShades[100],
+  },
+  recommendedText: {
+    color: theme.palette.getContrastText(theme.palette.dangerShades[100]),
   },
   button: {
     marginTop: theme.spacing(3),
@@ -62,6 +73,8 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isMfaModalOpen, setIsMfaModalOpen] = useState(false);
   const [isMfaEnabled, setIsMfaEnabled] = useState(false);
+  const [isLockEnabled, setIsLockEnabled] = useState(false);
+  const [isLockModalOpen, setIsLockModalOpen] = useState(false);
 
   useEffect(() => {
     if (!accessToken) {
@@ -70,6 +83,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
 
     const loadSettings = async () => {
       try {
+        setIsLockEnabled(await isPinEnabled());
         setIsMfaEnabled(await getTwoFactorStatus(accessToken));
       } finally {
         setIsLoaded(true);
@@ -91,6 +105,15 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
     setIsMfaModalOpen(true);
   };
 
+  const handleLockClicked = async () => {
+    if (isLockEnabled) {
+      await disablePin();
+      setIsLockEnabled(false);
+    } else {
+      setIsLockModalOpen(true);
+    }
+  };
+
   // show loading spinner until access token available
   if (!isLoaded) {
     return (
@@ -100,9 +123,14 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
     );
   }
 
-  return (
-    <Box className={classes.container}>
-      <Box className={classes.content}>
+  interface preferenceItem {
+    enabled: boolean;
+    component: React.ReactNode;
+  }
+  const preferenceList: preferenceItem[] = [
+    {
+      enabled: true,
+      component: (
         <WalletPreference
           title={t('wallet.recoveryPhrase')}
           description={t('wallet.recoveryPhraseEnabled')}
@@ -111,13 +139,18 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           {featureFlags?.variations?.udMeEnableWalletChangePw && (
             <Button
               onClick={handleChangePasswordClicked}
-              variant="contained"
+              variant="outlined"
               size="small"
             >
               {t('wallet.changeRecoveryPhrase')}
             </Button>
           )}
         </WalletPreference>
+      ),
+    },
+    {
+      enabled: true,
+      component: (
         <WalletPreference
           title={t('wallet.recoveryKit')}
           description={t('wallet.recoveryKitManage')}
@@ -125,12 +158,17 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
         >
           <Button
             onClick={handleRecoveryKitClicked}
-            variant="contained"
+            variant="outlined"
             size="small"
           >
             {t('manage.manageProfile')} {t('wallet.recoveryKit')}
           </Button>
         </WalletPreference>
+      ),
+    },
+    {
+      enabled: isMfaEnabled,
+      component: (
         <WalletPreference
           title={t('wallet.twoFactorAuthentication')}
           description={
@@ -152,10 +190,64 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
             variant={isMfaEnabled ? 'outlined' : 'contained'}
             size="small"
           >
-            {isMfaEnabled ? t('manage.disable') : t('manage.enable')}{' '}
-            {t('wallet.twoFactorAuthentication')}
+            {isMfaEnabled ? t('manage.disable') : t('manage.enable')}
+            {isMfaEnabled && ` (${t('common.notRecommended')})`}
           </Button>
         </WalletPreference>
+      ),
+    },
+    {
+      enabled: isLockEnabled,
+      component: (
+        <WalletPreference
+          title={t('wallet.sessionLock')}
+          description={
+            isLockEnabled
+              ? t('wallet.sessionLockEnabledDescription')
+              : t('wallet.sessionLockDisabledDescription')
+          }
+          icon={
+            isLockEnabled ? (
+              <GppGoodOutlinedIcon className={classes.iconEnabled} />
+            ) : (
+              <GppBadOutlinedIcon className={classes.iconDisabled} />
+            )
+          }
+        >
+          <Button
+            onClick={handleLockClicked}
+            color={isLockEnabled ? 'warning' : undefined}
+            variant={isLockEnabled ? 'outlined' : 'contained'}
+            size="small"
+          >
+            {isLockEnabled ? t('manage.disable') : t('manage.enable')}
+            {isLockEnabled && ` (${t('common.notRecommended')})`}
+          </Button>
+        </WalletPreference>
+      ),
+    },
+  ];
+
+  return (
+    <Box className={classes.container}>
+      <Box className={classes.content}>
+        {preferenceList.find(item => !item.enabled) && (
+          <Box className={classes.recommendedContainer}>
+            {preferenceList
+              .filter(item => !item.enabled)
+              .map((item, i) => (
+                <Box
+                  className={classes.recommendedText}
+                  mt={i === 0 ? -3 : undefined}
+                >
+                  {item.component}
+                </Box>
+              ))}
+          </Box>
+        )}
+        {preferenceList
+          .filter(item => item.enabled)
+          .map(item => item.component)}
       </Box>
       {isRecoveryModalOpen && (
         <Modal
@@ -187,6 +279,21 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           onClose={() => setIsMfaModalOpen(false)}
           onUpdated={async (enabled: boolean) => setIsMfaEnabled(enabled)}
         />
+      )}
+      {isLockModalOpen && (
+        <Modal
+          title={t('wallet.sessionLock')}
+          open={isLockModalOpen}
+          fullScreen={false}
+          titleStyle={classes.modalTitleStyle}
+          onClose={() => setIsLockModalOpen(false)}
+        >
+          <SetupPinModal
+            accessToken={accessToken}
+            onComplete={() => setIsLockEnabled(true)}
+            onClose={() => setIsLockModalOpen(false)}
+          />
+        </Modal>
       )}
     </Box>
   );

@@ -206,7 +206,6 @@ export const createTransactionOperation = async (
 export const getAccessTokenInternal = async (
   refreshToken: string,
   opts: {
-    deviceId: string;
     state: Record<string, Record<string, string>>;
     saveState: (state: Record<string, Record<string, string>>) => void;
     setAccessToken: (v: string) => void;
@@ -248,10 +247,10 @@ export const getAccessTokenInternal = async (
     // save new state
     await saveBootstrapState(
       {
+        userName: existingState?.userName,
         assets: existingState?.assets || [],
         bootstrapToken: newTokens.bootstrapToken,
         refreshToken: newTokens.refreshToken,
-        deviceId: opts.deviceId,
         custodyState: {
           state: CustodyState.SELF_CUSTODY,
           status: 'COMPLETED',

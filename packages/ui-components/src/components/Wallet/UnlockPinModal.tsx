@@ -5,13 +5,17 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {useFireblocksState, useWeb3Context} from '../../hooks';
+import {
+  useFireblocksAccessToken,
+  useFireblocksState,
+  useWeb3Context,
+} from '../../hooks';
 import {
   decrypt,
   disablePin,
@@ -73,11 +77,24 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
   const theme = useTheme();
   const {setShowPinCta} = useWeb3Context();
   const [state, saveState] = useFireblocksState();
+  const getAccessToken = useFireblocksAccessToken();
   const [pin, setPin] = useState<string>();
+  const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>();
+
+  useEffect(() => {
+    const loadPage = async () => {
+      try {
+        await getAccessToken();
+      } catch (e) {
+        setIsLoaded(true);
+      }
+    };
+    void loadPage();
+  }, []);
 
   const handleValueChanged = (id: string, v: string) => {
     if (id === 'pin') {
@@ -179,7 +196,7 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
             loading={isSaving}
             onClick={handleUnlock}
             className={classes.button}
-            disabled={isSaving || !isDirty}
+            disabled={isSaving || !isDirty || !isLoaded}
           >
             {t('wallet.unlock')}
           </LoadingButton>

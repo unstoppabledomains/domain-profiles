@@ -7,6 +7,7 @@ import {
 import {localStorageWrapper} from '../components/Chat/storage';
 import {
   CustodyState,
+  DomainProfileKeys,
   SessionLockError,
   disablePin,
   encrypt,
@@ -48,7 +49,7 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
       // retrieve from chrome storage if available
       const isChromeExtension = isChromeStorageSupported('local');
       const existingLocalAccessToken = isChromeExtension
-        ? await localStorageWrapper.getItem('localAccessToken')
+        ? await localStorageWrapper.getItem(DomainProfileKeys.AccessToken)
         : undefined;
 
       // default access token definition
@@ -72,8 +73,12 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
         }
       }
 
-      // retrieve an access token if required
-      if (!accessToken) {
+      // check session lock status
+      const [pinEnabled, unlocked] = await Promise.all([
+        isPinEnabled(),
+        isUnlocked(),
+      ]);
+      if (pinEnabled && !unlocked) {
         // ensure a refresh token is available
         if (!clientState.refreshToken) {
           if (clientState.lockedRefreshToken) {
@@ -82,27 +87,25 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
           throw new Error('invalid client state');
         }
 
-        // check session lock status
-        const [pinEnabled, unlocked] = await Promise.all([
-          isPinEnabled(),
-          isUnlocked(),
-        ]);
-        if (pinEnabled && !unlocked) {
-          // lock the wallet by encrypting the refresh token with user-defined PIN
-          const pin = await getPinFromToken(clientState.refreshToken);
-          clientState.lockedRefreshToken = encrypt(
-            clientState.refreshToken,
-            pin,
-          );
-          clientState.refreshToken = '';
+        // lock the wallet by encrypting the refresh token with user-defined PIN
+        const pin = await getPinFromToken(clientState.refreshToken);
+        clientState.lockedRefreshToken = encrypt(clientState.refreshToken, pin);
+        clientState.refreshToken = '';
 
-          // save the state with encrypted refresh token
-          await saveBootstrapState(clientState, state, saveState);
+        // save the state with encrypted refresh token
+        await saveBootstrapState(clientState, state, saveState);
 
-          // throw error to indicate lock status
-          throw new SessionLockError('session is locked');
+        // remove the local access token if chrome extension
+        if (isChromeExtension) {
+          await localStorageWrapper.removeItem(DomainProfileKeys.AccessToken);
         }
 
+        // throw error to indicate lock status
+        throw new SessionLockError('session is locked');
+      }
+
+      // retrieve an access token if required
+      if (!accessToken) {
         // retrieve a new access token
         const jwtData = await getAccessTokenInternal(clientState.refreshToken, {
           state,
@@ -122,10 +125,15 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
         accessToken = jwtData.accessToken;
       }
 
-      // return the access token
+      // store locally available access token
       if (isChromeExtension) {
-        await localStorageWrapper.setItem('localAccessToken', accessToken);
+        await localStorageWrapper.setItem(
+          DomainProfileKeys.AccessToken,
+          accessToken,
+        );
       }
+
+      // return the access token
       setAccessToken(accessToken);
       return accessToken;
     });

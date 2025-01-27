@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
-import type {Theme} from '@mui/material/styles';
+import {Theme, useTheme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -33,6 +33,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     [theme.breakpoints.down('sm')]: {
       width: '100%',
       height: 'calc(100vh - 80px)',
+      maxHeight: 'calc(100vh - 80px)',
     },
     maxHeight: '500px',
     overflow: 'auto',
@@ -64,6 +65,7 @@ type Props = {
 const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const theme = useTheme();
   const {data: featureFlags} = useFeatureFlags(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isRecoveryModalOpen, setIsRecoveryModalOpen] = useState(false);
@@ -111,6 +113,14 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
     }
   };
 
+  const renderStatus = (v: string) => {
+    return (
+      <Typography color={theme.palette.wallet.text.secondary} variant="caption">
+        {v}
+      </Typography>
+    );
+  };
+
   // show loading spinner until access token available
   if (!isLoaded) {
     return (
@@ -146,6 +156,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           title={t('wallet.recoveryPhrase')}
           description={t('wallet.recoveryPhraseEnabled')}
           icon={<GppGoodOutlinedIcon className={classes.iconEnabled} />}
+          statusElement={renderStatus(t('common.strong'))}
         >
           {featureFlags?.variations?.udMeEnableWalletChangePw && (
             <Button
@@ -166,13 +177,14 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           title={t('wallet.recoveryKit')}
           description={t('wallet.recoveryKitManage')}
           icon={<GppGoodOutlinedIcon className={classes.iconEnabled} />}
+          statusElement={renderStatus(t('common.on'))}
         >
           <Button
             onClick={handleRecoveryKitClicked}
             variant="contained"
             size="small"
           >
-            {t('manage.manageProfile')} {t('wallet.recoveryKit')}
+            {t('common.create')} {t('wallet.recoveryKit')}
           </Button>
         </WalletPreference>
       ),
@@ -195,6 +207,9 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
               <GppBadOutlinedIcon className={classes.iconDisabled} />
             )
           }
+          statusElement={renderStatus(
+            isMfaEnabled ? t('common.on') : t('common.off'),
+          )}
         >
           <Button
             onClick={handleMfaClicked}
@@ -226,6 +241,9 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
               <GppBadOutlinedIcon className={classes.iconDisabled} />
             )
           }
+          statusElement={renderStatus(
+            isLockEnabled ? t('common.on') : t('common.off'),
+          )}
         >
           <Button
             onClick={handleLockClicked}

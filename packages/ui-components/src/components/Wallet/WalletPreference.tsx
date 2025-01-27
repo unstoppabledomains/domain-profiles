@@ -55,7 +55,7 @@ export const WalletPreference: React.FC<WalletPreferenceProps> = ({
               {title}
             </Typography>
           </Box>
-          {statusElement && !expanded && (
+          {statusElement && !expanded && !forceExpanded && (
             <Box display="flex" alignItems="center" mr={1}>
               {statusElement}
             </Box>

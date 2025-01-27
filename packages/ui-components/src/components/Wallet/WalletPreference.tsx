@@ -7,15 +7,6 @@ import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
 import React from 'react';
 
-export interface WalletPreferenceProps {
-  title: string;
-  statusElement?: React.ReactNode;
-  description: string;
-  icon?: React.ReactNode;
-  children?: React.ReactNode;
-  expanded?: boolean;
-}
-
 export const WalletPreference: React.FC<WalletPreferenceProps> = ({
   title,
   statusElement,
@@ -81,3 +72,12 @@ export const WalletPreference: React.FC<WalletPreferenceProps> = ({
     </Accordion>
   );
 };
+
+export interface WalletPreferenceProps {
+  title: string;
+  statusElement?: React.ReactNode;
+  description: string;
+  icon?: React.ReactNode;
+  children?: React.ReactNode;
+  expanded?: boolean;
+}

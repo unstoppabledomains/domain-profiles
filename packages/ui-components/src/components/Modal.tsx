@@ -5,7 +5,7 @@ import IconButton from '@mui/material/IconButton';
 import type {ModalProps as MuiModalProps} from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
 import type {Breakpoint} from '@mui/material/styles';
-import { useTheme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import React from 'react';
 
@@ -101,7 +101,7 @@ const Modal: React.FC<ModalProps> = ({
                 <Typography
                   variant="h5"
                   color="primary"
-                  className={cx(titleStyle ?? '', classes.bold)}
+                  className={cx(titleStyle ?? classes.titleStyle, classes.bold)}
                 >
                   {title}
                 </Typography>

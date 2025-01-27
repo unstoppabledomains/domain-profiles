@@ -182,6 +182,7 @@
     "mint": "Mint",
     "minute": "minute",
     "more": "More",
+    "moreOptions": "More options",
     "multichain": "multichain",
     "needHelp": "Need help?",
     "network": "Network",
@@ -1023,7 +1024,8 @@
     "txInsufficientFunds": "Transaction may fail due to insufficient funds",
     "unlock": "Unlock",
     "verifyEmail": "Verify email address",
-    "viewTransaction": "View on blockchain"
+    "viewTransaction": "View on blockchain",
+    "yourWalletIsSecure": "Security health check success!"
   },
   "webacy": {
     "high": "Unsafe",

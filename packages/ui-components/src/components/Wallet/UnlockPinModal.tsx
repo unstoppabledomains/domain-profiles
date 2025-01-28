@@ -79,6 +79,7 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
   const [state, saveState] = useFireblocksState();
   const getAccessToken = useFireblocksAccessToken();
   const [pin, setPin] = useState<string>();
+  const [emailAddress, setEmailAddress] = useState<string>();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -93,7 +94,12 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
         setIsLoaded(true);
       }
     };
+    // load async page properties
     void loadPage();
+
+    // load user email address
+    const clientState = getBootstrapState(state);
+    setEmailAddress(clientState?.userName);
   }, []);
 
   const handleValueChanged = (id: string, v: string) => {
@@ -200,17 +206,19 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
           >
             {t('wallet.unlock')}
           </LoadingButton>
-          <Button
-            size="small"
-            variant="text"
-            className={classes.button}
-            onClick={handleForgotPassword}
-          >
-            {t('common.forgotPassword')}
-          </Button>
+          {emailAddress && (
+            <Button
+              size="small"
+              variant="text"
+              className={classes.button}
+              onClick={handleForgotPassword}
+            >
+              {t('common.forgotPassword')}
+            </Button>
+          )}
         </Box>
       </Box>
-      {showForgotPasswordModal && (
+      {showForgotPasswordModal && emailAddress && (
         <Modal
           title={t('common.forgotPassword')}
           open={showForgotPasswordModal}
@@ -219,7 +227,11 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
           fullScreen={false}
         >
           <Typography variant="body2">
-            <Markdown>{t('wallet.sessionLockForgotDescription')}</Markdown>
+            <Markdown>
+              {t('wallet.sessionLockForgotDescription', {
+                emailAddress,
+              })}
+            </Markdown>
           </Typography>
           <Button
             onClick={handleLogout}

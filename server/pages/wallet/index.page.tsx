@@ -24,6 +24,7 @@ import {
   localStorageWrapper,
   useCustomTheme,
   useFireblocksState,
+  useWeb3Context,
 } from '@unstoppabledomains/ui-components';
 import {notifyEvent} from '@unstoppabledomains/ui-components/src/lib/error';
 
@@ -34,6 +35,7 @@ const WalletPage = () => {
   const theme = useCustomTheme();
   const [isLoaded, setIsLoaded] = useState(false);
   const [walletState] = useFireblocksState();
+  const {showPinCta} = useWeb3Context();
   const [authAddress, setAuthAddress] = useState<string>('');
   const [authDomain, setAuthDomain] = useState<string>('');
   const [authAvatar, setAuthAvatar] = useState<string>();
@@ -43,6 +45,10 @@ const WalletPage = () => {
   const [emailAddress, setEmailAddress] = useState<string>();
   const [isReloadChecked, setIsReloadChecked] = useState(false);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  // indicates session lock has been checked and the session is
+  // not in a locked state
+  const isSessionUnlocked = showPinCta === false;
 
   // build default wallet page SEO tags
   const seoTags = getSeoTags({
@@ -66,7 +72,7 @@ const WalletPage = () => {
 
   // load the existing wallet if singed in
   useEffect(() => {
-    if (!isMounted() || !params) {
+    if (!isMounted() || !params || !isSessionUnlocked) {
       return;
     }
 
@@ -133,7 +139,7 @@ const WalletPage = () => {
       }
     };
     void loadWallet();
-  }, [isMounted, authComplete, params]);
+  }, [isMounted, isSessionUnlocked, authComplete, params]);
 
   const handleAuthComplete = () => {
     setAuthComplete(true);

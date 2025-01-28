@@ -2,14 +2,7 @@ import {useContext, useEffect} from 'react';
 
 import config from '@unstoppabledomains/config';
 
-import {
-  encrypt,
-  getBootstrapState,
-  isPinEnabled,
-  isUnlocked,
-  saveBootstrapState,
-  unlock,
-} from '../lib';
+import {isLocked, isPinEnabled, lock, unlock} from '../lib';
 import {getPinFromToken} from '../lib/wallet/pin/store';
 import {Web3Context} from '../providers/Web3ContextProvider';
 
@@ -55,7 +48,7 @@ const useWeb3Context = () => {
       return;
     }
 
-    // hide the modal if key state is empty
+    // handle empty key state
     const isAnyState =
       (persistentKeyState && Object.keys(persistentKeyState).length > 0) ||
       (sessionKeyState && Object.keys(sessionKeyState).length > 0);
@@ -93,17 +86,14 @@ const useWeb3Context = () => {
 
     // check PIN state
     const checkPinState = async () => {
-      // retrieve lock state
-      const [pinEnabled, unlocked] = await Promise.all([
-        isPinEnabled(),
-        isUnlocked(),
-      ]);
-
-      // show the modal if unlock is required
-      if (pinEnabled && !unlocked) {
+      if (await isLocked()) {
+        // show the modal if unlock is required
         setShowPinCta(true);
         return;
       }
+
+      // session is not locked
+      setShowPinCta(false);
     };
     void checkPinState();
   }, [accessToken, persistentKeyState, sessionKeyState, showPinCta]);
@@ -113,24 +103,9 @@ const useWeb3Context = () => {
       return;
     }
 
-    // retrieve and validate key state
-    const clientState = getBootstrapState(persistentKeyState);
-    if (!clientState?.refreshToken) {
-      return;
-    }
-
-    // lock the wallet by encrypting the refresh token with user-defined PIN
-    const pin = await getPinFromToken(clientState.refreshToken);
-    clientState.lockedRefreshToken = encrypt(clientState.refreshToken, pin);
-    clientState.refreshToken = '';
-
-    // save the state with encrypted refresh token
+    // show the lock screen and lock the session
     setShowPinCta(true);
-    await saveBootstrapState(
-      clientState,
-      persistentKeyState,
-      setPersistentKeyState,
-    );
+    await lock(persistentKeyState, setPersistentKeyState);
   };
 
   return {

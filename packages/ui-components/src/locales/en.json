@@ -1029,7 +1029,7 @@
     "unlock": "Unlock",
     "verifyEmail": "Verify email address",
     "viewTransaction": "View on blockchain",
-    "yourWalletIsSecure": "Security health check success!"
+    "yourWalletIsSecure": "Security health check is complete"
   },
   "webacy": {
     "high": "Unsafe",

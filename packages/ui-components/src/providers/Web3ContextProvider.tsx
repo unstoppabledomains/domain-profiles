@@ -63,7 +63,7 @@ const Web3ContextProvider: React.FC<Props> = ({children}) => {
   // signing parameters
   const [messageToSign, setMessageToSign] = useState<string>();
   const [txToSign, setTxToSign] = useState<CreateTransaction>();
-  const [showPinCta, setShowPinCta] = useState(false);
+  const [showPinCta, setShowPinCta] = useState<boolean>();
 
   // determine if chrome extension runtime
   useEffect(() => {

@@ -97,7 +97,11 @@ export const Wallet: React.FC<
   const [isHeaderClicked, setIsHeaderClicked] = useState(false);
   const [showClaimWalletModal, setShowClaimWalletModal] = useState<boolean>();
   const [accessToken, setAccessToken] = useState<string>();
-  const {setWeb3Deps} = useWeb3Context();
+  const {setWeb3Deps, showPinCta} = useWeb3Context();
+
+  // indicates session lock has been checked and the session is
+  // not in a locked state
+  const isSessionUnlocked = showPinCta === false;
 
   const handleWalletLoaded = async (v: boolean) => {
     const bootstrapState = getBootstrapState(state);
@@ -140,6 +144,11 @@ export const Wallet: React.FC<
   const handleClaimModalClose = () => {
     setShowClaimWalletModal(false);
   };
+
+  // until the session is unlocked, there is nothing to display
+  if (!isSessionUnlocked) {
+    return null;
+  }
 
   return (
     <Box className={classes.container}>

@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
 import {QRCode} from 'react-qrcode-logo';
@@ -15,7 +16,6 @@ import {
 import {useFireblocksAccessToken} from '../../hooks';
 import ManageInput from '../Manage/common/ManageInput';
 import Modal from '../Modal';
-import {WalletPreference} from './WalletPreference';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -23,7 +23,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     [theme.breakpoints.down('sm')]: {
       width: '100%',
     },
-    marginTop: theme.spacing(-3),
   },
   walletContainer: {
     display: 'flex',
@@ -137,57 +136,55 @@ export const TwoFactorModal: React.FC<TwoFactorModalProps> = ({
   };
 
   return (
-    <Modal open={open || false} onClose={onClose} noModalHeader>
+    <Modal
+      open={open || false}
+      onClose={onClose}
+      title={
+        enabled
+          ? 'Disable Two-Factor Authentication'
+          : 'Enable Two-Factor Authentication'
+      }
+    >
       <Box className={classes.container}>
-        <WalletPreference
-          title={
-            enabled
-              ? 'Disable Two-Factor Authentication'
-              : 'Enable Two-Factor Authentication'
-          }
-          description={
-            enabled
-              ? 'Two-Factor Authentication (2FA) is highly recommended to ensure your wallet is secure. Use caution if you proceed to disable 2FA.'
-              : 'Scan the QR code below with any authenticator app, such as Google Authenticator.'
-          }
-        >
-          <Box
-            className={cx(classes.walletContainer, classes.contentContainer)}
-          >
-            {!enabled &&
-              (qrCodeContent ? (
-                <QRCode
-                  value={qrCodeContent}
-                  size={200}
-                  qrStyle="dots"
-                  ecLevel="L"
-                />
-              ) : (
-                <CircularProgress className={classes.loadingSpinner} />
-              ))}
-            <Box mt={1} mb={2} width="100%" textAlign="left">
-              <ManageInput
-                id="otp"
-                value={otp}
-                label="One-Time Code"
-                placeholder="Enter code from authenticator app"
-                onChange={handleChange}
-                onKeyDown={handleKeyDown}
-                disabled={!qrCodeContent && !enabled}
-                error={errorMessage !== undefined && errorMessage.length > 0}
-                errorText={errorMessage}
+        <Typography variant="body2">
+          {enabled
+            ? 'Two-Factor Authentication (2FA) is highly recommended to ensure your wallet is secure. Use caution if you proceed to disable 2FA.'
+            : 'Scan the QR code below with any authenticator app, such as Google Authenticator.'}
+        </Typography>
+        <Box className={cx(classes.walletContainer, classes.contentContainer)}>
+          {!enabled &&
+            (qrCodeContent ? (
+              <QRCode
+                value={qrCodeContent}
+                size={200}
+                qrStyle="dots"
+                ecLevel="L"
               />
-            </Box>
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={handleClick}
-              disabled={!otp}
-            >
-              {enabled ? 'Disable 2FA' : 'Enable 2FA'}
-            </Button>
+            ) : (
+              <CircularProgress className={classes.loadingSpinner} />
+            ))}
+          <Box mt={1} mb={2} width="100%" textAlign="left">
+            <ManageInput
+              id="otp"
+              value={otp}
+              label="One-Time Code"
+              placeholder="Enter code from authenticator app"
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              disabled={!qrCodeContent && !enabled}
+              error={errorMessage !== undefined && errorMessage.length > 0}
+              errorText={errorMessage}
+            />
           </Box>
-        </WalletPreference>
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={handleClick}
+            disabled={!otp}
+          >
+            {enabled ? 'Disable 2FA' : 'Enable 2FA'}
+          </Button>
+        </Box>
       </Box>
     </Modal>
   );

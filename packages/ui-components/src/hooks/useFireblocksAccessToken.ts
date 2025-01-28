@@ -7,18 +7,14 @@ import {
 import {localStorageWrapper} from '../components/Chat/storage';
 import {
   CustodyState,
+  DomainProfileKeys,
   SessionLockError,
   disablePin,
-  encrypt,
-  isPinEnabled,
-  isUnlocked,
+  isLocked,
+  lock,
 } from '../lib';
 import {notifyEvent} from '../lib/error';
-import {getPinFromToken} from '../lib/wallet/pin/store';
-import {
-  getBootstrapState,
-  saveBootstrapState,
-} from '../lib/wallet/storage/state';
+import {getBootstrapState} from '../lib/wallet/storage/state';
 import {isChromeStorageSupported} from './useChromeStorage';
 import useFireblocksState from './useFireblocksState';
 import useWeb3Context from './useWeb3Context';
@@ -48,7 +44,7 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
       // retrieve from chrome storage if available
       const isChromeExtension = isChromeStorageSupported('local');
       const existingLocalAccessToken = isChromeExtension
-        ? await localStorageWrapper.getItem('localAccessToken')
+        ? await localStorageWrapper.getItem(DomainProfileKeys.AccessToken)
         : undefined;
 
       // default access token definition
@@ -72,37 +68,15 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
         }
       }
 
+      // check session lock status
+      if (await isLocked()) {
+        // lock the session and throw error to indicate lock status
+        await lock(state, saveState);
+        throw new SessionLockError('session is locked');
+      }
+
       // retrieve an access token if required
       if (!accessToken) {
-        // ensure a refresh token is available
-        if (!clientState.refreshToken) {
-          if (clientState.lockedRefreshToken) {
-            throw new SessionLockError('refresh token is encrypted');
-          }
-          throw new Error('invalid client state');
-        }
-
-        // check session lock status
-        const [pinEnabled, unlocked] = await Promise.all([
-          isPinEnabled(),
-          isUnlocked(),
-        ]);
-        if (pinEnabled && !unlocked) {
-          // lock the wallet by encrypting the refresh token with user-defined PIN
-          const pin = await getPinFromToken(clientState.refreshToken);
-          clientState.lockedRefreshToken = encrypt(
-            clientState.refreshToken,
-            pin,
-          );
-          clientState.refreshToken = '';
-
-          // save the state with encrypted refresh token
-          await saveBootstrapState(clientState, state, saveState);
-
-          // throw error to indicate lock status
-          throw new SessionLockError('session is locked');
-        }
-
         // retrieve a new access token
         const jwtData = await getAccessTokenInternal(clientState.refreshToken, {
           state,
@@ -122,10 +96,15 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
         accessToken = jwtData.accessToken;
       }
 
-      // return the access token
+      // store locally available access token
       if (isChromeExtension) {
-        await localStorageWrapper.setItem('localAccessToken', accessToken);
+        await localStorageWrapper.setItem(
+          DomainProfileKeys.AccessToken,
+          accessToken,
+        );
       }
+
+      // return the access token
       setAccessToken(accessToken);
       return accessToken;
     });

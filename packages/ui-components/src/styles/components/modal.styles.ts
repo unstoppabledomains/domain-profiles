@@ -65,5 +65,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
       width: '100%',
     },
   },
+  titleStyle: {
+    color: 'inherit',
+    alignSelf: 'center',
+  },
 }));
 export default useStyles;

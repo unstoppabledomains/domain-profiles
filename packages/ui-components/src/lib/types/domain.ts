@@ -78,6 +78,7 @@ export enum DomainFieldTypes {
 }
 
 export enum DomainProfileKeys {
+  AccessToken = 'localAccessToken',
   AuthAddress = 'authAddress',
   AuthDomain = 'authDomain',
   Messaging = 'web3-messaging',

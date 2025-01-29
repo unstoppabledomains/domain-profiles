@@ -1,5 +1,6 @@
 import CheckIcon from '@mui/icons-material/Check';
 import CopyIcon from '@mui/icons-material/ContentCopy';
+import ShareIcon from '@mui/icons-material/Share';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
@@ -73,7 +74,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     width: '100%',
-    marginBottom: theme.spacing(1),
+  },
+  button: {
+    marginTop: theme.spacing(1),
   },
 }));
 
@@ -147,6 +150,19 @@ const Receive: React.FC<Props> = ({
     }, 3000);
   };
 
+  const handleShareClick = async () => {
+    try {
+      await navigator.share({
+        text: t('wallet.shareAddress', {
+          address: selectedToken.walletAddress,
+          network: selectedToken.walletName,
+        }),
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   return (
     <Box className={classes.flexColCenterAligned}>
       <TitleWithBackButton
@@ -201,7 +217,16 @@ const Receive: React.FC<Props> = ({
       </Box>
       <Box className={classes.buttonContainer}>
         <Button
-          color="primary"
+          className={classes.button}
+          startIcon={<ShareIcon />}
+          onClick={handleShareClick}
+          variant="outlined"
+          fullWidth
+        >
+          {t('profile.share')}
+        </Button>
+        <Button
+          className={classes.button}
           startIcon={copied ? <CheckIcon /> : <CopyIcon />}
           onClick={handleCopyClick}
           variant="contained"

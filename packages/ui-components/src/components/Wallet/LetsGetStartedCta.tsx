@@ -5,12 +5,20 @@ import type {ButtonProps} from '@mui/material/Button';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {styled} from '@mui/material/styles';
-import React from 'react';
+import {styled, useTheme} from '@mui/material/styles';
+import React, {useState} from 'react';
+import useAsyncEffect from 'use-async-effect';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {useWeb3Context} from '../../hooks';
 import {useTranslationContext} from '../../lib';
+import {localStorageWrapper} from '../Chat';
+import Modal from '../Modal';
+import ClaimWalletModal from './ClaimWalletModal';
+import {OperationStatus} from './OperationStatus';
+
+const passwordCtaConfirmField = 'passwordCtaConfirmed';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -24,6 +32,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     textAlign: 'left',
     width: '100%',
   },
+  modal: {
+    maxWidth: '400px',
+  },
   centered: {
     height: '100%',
     justifyContent: 'center',
@@ -32,6 +43,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   button: {
     width: '100%',
     padding: theme.spacing(2),
+  },
+  actionButton: {
+    marginTop: theme.spacing(1),
   },
   icon: {
     width: '40px',
@@ -78,8 +92,42 @@ export const BuyCryptoButton: React.FC<Props> = ({
 };
 
 export const LetsGetStartedCta: React.FC<Props> = props => {
+  const theme = useTheme();
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
+  const {setAccessToken} = useWeb3Context();
+  const [showPasswordCta, setShowPasswordCta] = useState<boolean>();
+  const [showClaimWallet, setShowClaimWallet] = useState<boolean>();
+
+  useAsyncEffect(async () => {
+    const isCtaConfirmed = await localStorageWrapper.getItem(
+      passwordCtaConfirmField,
+    );
+    if (isCtaConfirmed) {
+      setShowPasswordCta(false);
+      return;
+    }
+    await localStorageWrapper.setItem(passwordCtaConfirmField, 'true');
+    setShowPasswordCta(true);
+  }, []);
+
+  const handleSkipClicked = async () => {
+    handleClose();
+  };
+
+  const handleSetPasswordClicked = () => {
+    setShowClaimWallet(true);
+  };
+
+  const handleClose = async () => {
+    setShowPasswordCta(false);
+  };
+
+  const handleComplete = (token: string) => {
+    setAccessToken(token);
+    void handleClose();
+  };
+
   return (
     <Box className={classes.container}>
       <Typography variant="h5" mb={3}>
@@ -91,6 +139,46 @@ export const LetsGetStartedCta: React.FC<Props> = props => {
         </Box>
         <ReceiveCryptoButton {...props} />
       </Box>
+      {showPasswordCta && (
+        <Modal open={showPasswordCta} onClose={handleClose} noModalHeader>
+          <Box className={classes.modal}>
+            {showClaimWallet ? (
+              <ClaimWalletModal onComplete={handleComplete} />
+            ) : (
+              <Box className={cx(classes.content, classes.centered)}>
+                <OperationStatus
+                  success={true}
+                  label={t('wallet.successDescription')}
+                >
+                  <Typography
+                    variant="body2"
+                    mb={2}
+                    color={theme.palette.wallet.text.primary}
+                  >
+                    {t('wallet.setPasswordNowOrLater')}
+                  </Typography>
+                </OperationStatus>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  className={classes.actionButton}
+                  onClick={handleSkipClicked}
+                >
+                  {t('common.skipForNow')}
+                </Button>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  className={classes.actionButton}
+                  onClick={handleSetPasswordClicked}
+                >
+                  {t('wallet.claimWalletCtaButton')}
+                </Button>
+              </Box>
+            )}
+          </Box>
+        </Modal>
+      )}
     </Box>
   );
 };

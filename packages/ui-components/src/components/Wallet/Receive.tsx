@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import type {Theme} from '@mui/material/styles';
+import {Theme, useTheme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useRef, useState} from 'react';
 import {QRCode} from 'react-qrcode-logo';
@@ -76,7 +76,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '100%',
   },
   button: {
-    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
   },
 }));
 
@@ -92,6 +92,7 @@ const Receive: React.FC<Props> = ({
   initialSelectedToken,
 }) => {
   const [t] = useTranslationContext();
+  const theme = useTheme();
   const [selectedToken, setSelectedToken] = useState<TokenEntry>();
   const [copied, setCopied] = useState<boolean>(false);
   const {classes} = useStyles();
@@ -153,6 +154,7 @@ const Receive: React.FC<Props> = ({
   const handleShareClick = async () => {
     try {
       await navigator.share({
+        title: theme.wallet.title,
         text: t('wallet.shareAddress', {
           address: selectedToken.walletAddress,
           network: selectedToken.walletName,
@@ -185,7 +187,7 @@ const Receive: React.FC<Props> = ({
         <Box className={classes.qrContainer}>
           <QRCode
             value={selectedToken.walletAddress}
-            size={200}
+            size={175}
             qrStyle={'dots'}
             ecLevel={'H'}
             eyeRadius={5}

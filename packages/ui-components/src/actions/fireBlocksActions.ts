@@ -26,6 +26,7 @@ import type {
   GetOperationResponse,
   GetOperationStatusResponse,
   GetTokenResponse,
+  RecoveryStatusResponse,
   TokenRefreshResponse,
   VerifyTokenResponse,
 } from '../lib/types/fireBlocks';
@@ -432,6 +433,32 @@ export const getOperationStatus = async (
     },
     host: config.WALLETS.HOST_URL,
   });
+};
+
+export const getRecoveryKitStatus = async (
+  accessToken: string,
+): Promise<RecoveryStatusResponse | undefined> => {
+  try {
+    const recoveryKitResult = await fetchApi('/v1/recovery', {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+    });
+    if (!recoveryKitResult) {
+      return undefined;
+    }
+    return recoveryKitResult;
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
+      msg: 'error retrieving recovery kit status',
+    });
+  }
+  return undefined;
 };
 
 export const getTransactionGasEstimate = async (

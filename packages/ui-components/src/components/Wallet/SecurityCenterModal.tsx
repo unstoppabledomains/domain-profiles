@@ -6,14 +6,16 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import { useTheme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useFeatureFlags} from '../../actions';
+import {getRecoveryKitStatus} from '../../actions/fireBlocksActions';
 import {getTwoFactorStatus} from '../../actions/walletMfaActions';
 import {disablePin, isPinEnabled, useTranslationContext} from '../../lib';
+import type {RecoveryStatusResponse} from '../../lib/types/fireBlocks';
 import Modal from '../Modal';
 import ChangePasswordModal from './ChangePasswordModal';
 import RecoverySetupModal from './RecoverySetupModal';
@@ -68,6 +70,8 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   const [t] = useTranslationContext();
   const theme = useTheme();
   const {data: featureFlags} = useFeatureFlags(false);
+  const [recoveryKitStatus, setRecoveryKitStatus] =
+    useState<RecoveryStatusResponse>();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isRecoveryModalOpen, setIsRecoveryModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -83,8 +87,14 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
 
     const loadSettings = async () => {
       try {
-        setIsLockEnabled(await isPinEnabled());
-        setIsMfaEnabled(await getTwoFactorStatus(accessToken));
+        const [pinStatus, mfaStatus, recoveryStatus] = await Promise.all([
+          isPinEnabled(),
+          getTwoFactorStatus(accessToken),
+          getRecoveryKitStatus(accessToken),
+        ]);
+        setIsLockEnabled(pinStatus);
+        setIsMfaEnabled(mfaStatus);
+        setRecoveryKitStatus(recoveryStatus);
       } finally {
         setIsLoaded(true);
       }
@@ -172,13 +182,33 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
       ),
     },
     {
-      suggested: false,
+      suggested: getIsSuggested(!!recoveryKitStatus, 'recoveryKit'),
       component: (
         <WalletPreference
           title={t('wallet.recoveryKit')}
-          description={t('wallet.recoveryKitManage')}
-          icon={<GppGoodOutlinedIcon className={classes.iconEnabled} />}
-          statusElement={renderStatus(t('common.on'))}
+          description={
+            recoveryKitStatus?.createdDate
+              ? t('wallet.recoveryKitManage', {
+                  emailAddress: recoveryKitStatus.emailAddress,
+                  date: new Date(
+                    recoveryKitStatus.createdDate,
+                  ).toLocaleString(),
+                })
+              : t('wallet.recoveryKitSuggest')
+          }
+          expanded={getIsSuggested(!!recoveryKitStatus, 'recoveryKit')}
+          icon={
+            recoveryKitStatus ? (
+              <GppGoodOutlinedIcon className={classes.iconEnabled} />
+            ) : (
+              <GppBadOutlinedIcon className={classes.iconDisabled} />
+            )
+          }
+          statusElement={
+            recoveryKitStatus
+              ? renderStatus(t('common.on'))
+              : renderStatus(t('common.off'))
+          }
         >
           <Button
             onClick={handleRecoveryKitClicked}

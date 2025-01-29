@@ -6,12 +6,8 @@ import {notifyEvent} from '../lib/error';
 import {fetchApi} from '../lib/fetchApi';
 import type {SerializedWalletBalance} from '../lib/types/domain';
 import type {SerializedIdentityResponse} from '../lib/types/identity';
-import type {
-  CustodyWallet,
-  WalletAccountResponse} from '../lib/types/wallet';
-import {
-  CustodyState
-} from '../lib/types/wallet';
+import type {CustodyWallet, WalletAccountResponse} from '../lib/types/wallet';
+import {CustodyState} from '../lib/types/wallet';
 
 const API_KEY_HEADER_KEY = 'x-api-key';
 
@@ -31,7 +27,7 @@ export const claimMpcCustodyWallet = async (
     },
     body: JSON.stringify(claimDetails),
   });
-  if (claimResult.state !== CustodyState.SELF_CUSTODY) {
+  if (claimResult?.state !== CustodyState.SELF_CUSTODY) {
     return undefined;
   }
   return claimResult;

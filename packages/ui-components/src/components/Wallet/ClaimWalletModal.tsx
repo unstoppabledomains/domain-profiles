@@ -189,6 +189,15 @@ const ClaimWalletModal: React.FC<Props> = ({
       return;
     }
 
+    // wait for launch to be completed
+    while (true) {
+      const c = await getMpcCustodyWallet(custodyWallet.secret, false);
+      if (c?.status === 'COMPLETED') {
+        break;
+      }
+      await sleep(3000);
+    }
+
     // start request to claim the wallet
     const claimResult = await claimMpcCustodyWallet(custodyWallet.secret, {
       emailAddress,
@@ -205,7 +214,7 @@ const ClaimWalletModal: React.FC<Props> = ({
     bootstrapState.custodyState.state = CustodyState.CLAIMING;
     await saveBootstrapState(bootstrapState, state, saveState);
 
-    // wait for the operation to be completed
+    // wait for the claim to be completed
     while (true) {
       const c = await getMpcCustodyWallet(custodyWallet.secret, true);
       if (c?.status === 'COMPLETED') {

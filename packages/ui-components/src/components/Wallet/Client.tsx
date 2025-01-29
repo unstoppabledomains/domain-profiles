@@ -36,6 +36,7 @@ import {
   CustodyState,
   DomainFieldTypes,
   WALLET_CARD_HEIGHT,
+  isUnlocked,
   useTranslationContext,
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
@@ -198,6 +199,10 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
   }),
 );
 
+// define a timer to refresh the page periodically
+let refreshTimer: NodeJS.Timeout;
+const REFRESH_BALANCE_MS = 10000;
+
 export const Client: React.FC<ClientProps> = ({
   accessToken,
   wallets,
@@ -222,14 +227,13 @@ export const Client: React.FC<ClientProps> = ({
   const [state, saveState] = useFireblocksState();
   const [fundingModalTitle, setFundingModalTitle] = useState<string>();
   const [fundingModalIcon, setFundingModalIcon] = useState<React.ReactNode>();
-  const {setWeb3Deps} = useWeb3Context();
+  const {setWeb3Deps, setShowPinCta} = useWeb3Context();
   const cryptoValue = wallets
     .map(w => w.totalValueUsdAmt || 0)
     .reduce((p, c) => p + c, 0);
   const isSellEnabled = cryptoValue >= 15;
 
   // component state variables
-
   const [isSend, setIsSend] = useState(false);
   const [isReceive, setIsReceive] = useState(false);
   const [isBuy, setIsBuy] = useState(false);
@@ -247,6 +251,20 @@ export const Client: React.FC<ClientProps> = ({
 
   // owner address
   const address = wallets.find(w => isEthAddress(w.address))?.address;
+
+  // initialize the page refresh timer
+  useEffect(() => {
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(
+      () => refresh(false, getTabFields(tabValue)),
+      REFRESH_BALANCE_MS,
+    );
+
+    // clear timer on unload
+    return () => {
+      clearTimeout(refreshTimer);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isHeaderClicked || !setIsHeaderClicked) {
@@ -313,6 +331,23 @@ export const Client: React.FC<ClientProps> = ({
     showPasswordCtaTimer = setTimeout(showPasswordCta, 2000);
   }, [accessToken, cryptoValue]);
 
+  // wrapper for the refresh method
+  const refresh = async (showSpinner?: boolean, fields?: string[]) => {
+    // reset the refresh timer
+    clearTimeout(refreshTimer);
+
+    // refresh the data if the wallet is not locked
+    const isWalletUnlocked = await isUnlocked();
+    if (isWalletUnlocked) {
+      await onRefresh(showSpinner, fields);
+    } else {
+      setShowPinCta(true);
+    }
+
+    // schedule another refresh
+    refreshTimer = setTimeout(() => refresh(false, fields), REFRESH_BALANCE_MS);
+  };
+
   // configure a CTA to prompt the user to set their password if the wallet
   // is in custody and has a crypto balance
   const showPasswordCta = async () => {
@@ -362,7 +397,7 @@ export const Client: React.FC<ClientProps> = ({
     if (address && tv === ClientTabType.Domains) {
       void handleLoadDomains(true);
     }
-    await onRefresh(true, getTabFields(tv));
+    await refresh(true, getTabFields(tv));
   };
 
   const handleRetrieveOwnerDomains = async (
@@ -507,7 +542,7 @@ export const Client: React.FC<ClientProps> = ({
     setSelectedToken(undefined);
 
     // refresh portfolio data
-    await onRefresh(true, getTabFields(tabValue));
+    await refresh(true, getTabFields(tabValue));
   };
 
   const getTabFields = (tv: ClientTabType) => {

@@ -119,13 +119,13 @@ export const LetsGetStartedCta: React.FC<Props> = props => {
     setShowClaimWallet(true);
   };
 
-  const handleClose = async () => {
+  const handleClose = () => {
     setShowPasswordCta(false);
   };
 
   const handleComplete = (token: string) => {
     setAccessToken(token);
-    void handleClose();
+    handleClose();
   };
 
   return (

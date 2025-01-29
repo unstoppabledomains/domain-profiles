@@ -189,6 +189,15 @@ const ClaimWalletModal: React.FC<Props> = ({
       return;
     }
 
+    // wait for launch to be completed
+    while (true) {
+      const c = await getMpcCustodyWallet(custodyWallet.secret, false);
+      if (c?.status === 'COMPLETED') {
+        break;
+      }
+      await sleep(3000);
+    }
+
     // start request to claim the wallet
     const claimResult = await claimMpcCustodyWallet(custodyWallet.secret, {
       emailAddress,
@@ -205,7 +214,7 @@ const ClaimWalletModal: React.FC<Props> = ({
     bootstrapState.custodyState.state = CustodyState.CLAIMING;
     await saveBootstrapState(bootstrapState, state, saveState);
 
-    // wait for the operation to be completed
+    // wait for the claim to be completed
     while (true) {
       const c = await getMpcCustodyWallet(custodyWallet.secret, true);
       if (c?.status === 'COMPLETED') {
@@ -285,7 +294,7 @@ const ClaimWalletModal: React.FC<Props> = ({
   return (
     <Box className={classes.container}>
       <Box className={cx(classes.content, classes.centered)}>
-        <Typography mb={5}>
+        <Typography variant="body1" mb={3}>
           <Markdown>
             {claimStatus && emailAddress
               ? t('wallet.claimWalletOtp', {emailAddress})
@@ -301,7 +310,7 @@ const ClaimWalletModal: React.FC<Props> = ({
             placeholder={t('wallet.enterOneTimeCode')}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            stacked={false}
+            stacked={true}
             disabled={isSaving}
           />
         )}
@@ -314,7 +323,7 @@ const ClaimWalletModal: React.FC<Props> = ({
             placeholder={t('common.enterYourEmail')}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            stacked={false}
+            stacked={true}
             disabled={isSaving}
             error={!!emailError}
             errorText={emailError}
@@ -322,7 +331,7 @@ const ClaimWalletModal: React.FC<Props> = ({
         )}
         {!claimStatus && (
           <ManageInput
-            mt={2}
+            mt={1}
             id="recoveryPhrase"
             value={recoveryPhrase}
             label={t('wallet.recoveryPhrase')}
@@ -332,7 +341,7 @@ const ClaimWalletModal: React.FC<Props> = ({
             disabled={isSaving}
             type={'password'}
             autoComplete="current-password"
-            stacked={false}
+            stacked={true}
             error={!!passwordError}
             errorText={passwordError}
           />

@@ -5596,6 +5596,7 @@ __metadata:
     tss-react: ^4.0.0
     typescript: 5.0.4
     uns: "https://github.com/unstoppabledomains/uns#v0.8.35"
+    use-async-effect: ^2.2.7
     usehooks-ts: ^2.9.1
     wagmi: ^1.4.12
     web3: ^4.11.1
@@ -20550,6 +20551,15 @@ __metadata:
     querystringify: ^2.1.1
     requires-port: ^1.0.0
   checksum: fbdba6b1d83336aca2216bbdc38ba658d9cfb8fc7f665eb8b17852de638ff7d1a162c198a8e4ed66001ddbf6c9888d41e4798912c62b4fd777a31657989f7bdf
+  languageName: node
+  linkType: hard
+
+"use-async-effect@npm:^2.2.7":
+  version: 2.2.7
+  resolution: "use-async-effect@npm:2.2.7"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: 81fe96df0e9db68fcf5b63a88307ba09896ddbdb6ea952fb00340d5f9d1393d06f2af4d8aa547b062cac2edaaf4bc383fc30f039054ce93bc9e61298ee52e938
   languageName: node
   linkType: hard
 

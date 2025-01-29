@@ -157,6 +157,11 @@ export interface Parameters {
   message: string;
 }
 
+export interface RecoveryStatusResponse {
+  emailAddress: string;
+  createdDate?: Date;
+}
+
 export interface Result {
   signature: string;
 }

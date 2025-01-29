@@ -5,6 +5,7 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
+import Markdown from 'markdown-to-jsx';
 import React, {useState} from 'react';
 
 export const WalletPreference: React.FC<WalletPreferenceProps> = ({
@@ -72,7 +73,7 @@ export const WalletPreference: React.FC<WalletPreferenceProps> = ({
           width="100%"
         >
           <Typography variant="body2" mb={1}>
-            {description}
+            <Markdown>{description}</Markdown>
           </Typography>
           {children}
         </Box>

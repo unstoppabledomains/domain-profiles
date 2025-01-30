@@ -1,10 +1,12 @@
 import CheckIcon from '@mui/icons-material/Check';
 import CopyIcon from '@mui/icons-material/ContentCopy';
+import ShareIcon from '@mui/icons-material/Share';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useRef, useState} from 'react';
 import {QRCode} from 'react-qrcode-logo';
@@ -14,7 +16,7 @@ import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance, TokenEntry} from '../../lib';
-import {useTranslationContext} from '../../lib';
+import {notifyEvent, useTranslationContext} from '../../lib';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 import {SelectAsset} from './SelectAsset';
 import {TitleWithBackButton} from './TitleWithBackButton';
@@ -73,6 +75,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     width: '100%',
+  },
+  button: {
     marginBottom: theme.spacing(1),
   },
 }));
@@ -89,6 +93,7 @@ const Receive: React.FC<Props> = ({
   initialSelectedToken,
 }) => {
   const [t] = useTranslationContext();
+  const theme = useTheme();
   const [selectedToken, setSelectedToken] = useState<TokenEntry>();
   const [copied, setCopied] = useState<boolean>(false);
   const {classes} = useStyles();
@@ -147,6 +152,20 @@ const Receive: React.FC<Props> = ({
     }, 3000);
   };
 
+  const handleShareClick = async () => {
+    try {
+      await navigator.share({
+        title: theme.wallet.title,
+        text: t('wallet.shareAddress', {
+          address: selectedToken.walletAddress,
+          network: selectedToken.walletName,
+        }),
+      });
+    } catch (e) {
+      notifyEvent(e, 'error', 'Wallet', 'Configuration');
+    }
+  };
+
   return (
     <Box className={classes.flexColCenterAligned}>
       <TitleWithBackButton
@@ -169,7 +188,7 @@ const Receive: React.FC<Props> = ({
         <Box className={classes.qrContainer}>
           <QRCode
             value={selectedToken.walletAddress}
-            size={200}
+            size={175}
             qrStyle={'dots'}
             ecLevel={'H'}
             eyeRadius={5}
@@ -201,7 +220,16 @@ const Receive: React.FC<Props> = ({
       </Box>
       <Box className={classes.buttonContainer}>
         <Button
-          color="primary"
+          className={classes.button}
+          startIcon={<ShareIcon />}
+          onClick={handleShareClick}
+          variant="outlined"
+          fullWidth
+        >
+          {t('profile.share')}
+        </Button>
+        <Button
+          className={classes.button}
           startIcon={copied ? <CheckIcon /> : <CopyIcon />}
           onClick={handleCopyClick}
           variant="contained"

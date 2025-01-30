@@ -5,7 +5,8 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import {Theme, useTheme} from '@mui/material/styles';
+import type {Theme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useRef, useState} from 'react';
 import {QRCode} from 'react-qrcode-logo';
@@ -15,7 +16,7 @@ import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance, TokenEntry} from '../../lib';
-import {useTranslationContext} from '../../lib';
+import {notifyEvent, useTranslationContext} from '../../lib';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 import {SelectAsset} from './SelectAsset';
 import {TitleWithBackButton} from './TitleWithBackButton';
@@ -161,7 +162,7 @@ const Receive: React.FC<Props> = ({
         }),
       });
     } catch (e) {
-      console.log(e);
+      notifyEvent(e, 'error', 'Wallet', 'Configuration');
     }
   };
 

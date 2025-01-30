@@ -5,7 +5,8 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
+import useAsyncEffect from 'use-async-effect';
 
 import config from '@unstoppabledomains/config';
 import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
@@ -86,16 +87,12 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>();
 
-  useEffect(() => {
-    const loadPage = async () => {
-      try {
-        await getAccessToken();
-      } catch (e) {
-        setIsLoaded(true);
-      }
-    };
-    // load async page properties
-    void loadPage();
+  useAsyncEffect(async () => {
+    try {
+      await getAccessToken();
+    } catch (e) {
+      setIsLoaded(true);
+    }
 
     // load user email address
     const clientState = getBootstrapState(state);
@@ -225,6 +222,7 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
           titleStyle={classes.modalTitleStyle}
           onClose={() => setShowForgotPasswordModal(false)}
           fullScreen={false}
+          maxWidth="xs"
         >
           <Typography variant="body2">
             <Markdown>
@@ -233,6 +231,13 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
               })}
             </Markdown>
           </Typography>
+          <Button
+            onClick={() => setShowForgotPasswordModal(false)}
+            variant="outlined"
+            className={classes.button}
+          >
+            {t('common.cancel')}
+          </Button>
           <Button
             onClick={handleLogout}
             variant="contained"

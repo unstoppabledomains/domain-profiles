@@ -2,7 +2,7 @@ import {useContext, useEffect} from 'react';
 
 import config from '@unstoppabledomains/config';
 
-import {isLocked, isPinEnabled, lock, unlock} from '../lib';
+import {isLocked, isPinEnabled, lock, notifyEvent, unlock} from '../lib';
 import {getPinFromToken} from '../lib/wallet/pin/store';
 import {Web3Context} from '../providers/Web3ContextProvider';
 
@@ -104,8 +104,12 @@ const useWeb3Context = () => {
     }
 
     // show the lock screen and lock the session
-    setShowPinCta(true);
-    await lock(persistentKeyState, setPersistentKeyState);
+    try {
+      setShowPinCta(true);
+      await lock(persistentKeyState, setPersistentKeyState);
+    } catch (e) {
+      notifyEvent(e, 'warning', 'Wallet', 'Configuration');
+    }
   };
 
   return {

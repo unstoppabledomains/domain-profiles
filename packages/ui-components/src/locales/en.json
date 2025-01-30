@@ -1005,7 +1005,7 @@
     "sessionLockDisabledDescription": "We recommend protecting your wallet with a session lock. You'll be prompted for a password if you're away longer than an hour.",
     "sessionLockEnabledDescription": "Your wallet will be automatically locked after an hour of inactivity.",
     "sessionLockError": "Invalid password. Use the password you created when you enabled session lock on this device.",
-    "sessionLockForgotDescription": "There are two ways to restore access to your wallet if you don't remember your session lock password:\n\n- Use the **emergency backup** we sent to **{{emailAddress}}** when you created your wallet.\n\n- Sign out of your wallet on this browser and **sign in again** using **{{emailAddress}}** and your account password.",
+    "sessionLockForgotDescription": "There are two ways to restore access to your wallet if you don't remember your session lock password:\n\n- Use the most recent **emergency backup** we sent to **{{emailAddress}}**\n\n- Sign out of your wallet and **sign in again** using **{{emailAddress}}** and your account password",
     "sessionLockSetup": "Choose a password to protect your wallet session. This password will be required to unlock your wallet if you're away for more than an hour.",
     "sessionLockSetupTip": "Your session lock password does not have to be the same as your account password.",
     "setPasswordNowOrLater": "You can set your password now, or do it later using the security center menu option",

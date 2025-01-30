@@ -272,7 +272,7 @@
     "displayMode": "Display Mode",
     "displayModeDescription": "Toggle the display mode to change the light and dark theme options for your wallet.",
     "enableWallet": "Enable Wallet Features",
-    "notificationsDescription": "Receive desktop notifications on your device for balance changes, transactions and messages.",
+    "notificationsDescription": "Receive notifications on this device for balance changes, transactions and messages.",
     "noWalletConnections": "No authorized connections",
     "refreshNow": "Refresh now",
     "rightClickMenu": "Right click menu",

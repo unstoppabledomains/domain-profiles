@@ -36,7 +36,7 @@ import {
   CustodyState,
   DomainFieldTypes,
   WALLET_CARD_HEIGHT,
-  isUnlocked,
+  isLocked,
   useTranslationContext,
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
@@ -337,11 +337,11 @@ export const Client: React.FC<ClientProps> = ({
     clearTimeout(refreshTimer);
 
     // refresh the data if the wallet is not locked
-    const isWalletUnlocked = await isUnlocked();
-    if (isWalletUnlocked) {
-      await onRefresh(showSpinner, fields);
-    } else {
+    const isWalletLocked = await isLocked();
+    if (isWalletLocked) {
       setShowPinCta(true);
+    } else {
+      await onRefresh(showSpinner, fields);
     }
 
     // schedule another refresh

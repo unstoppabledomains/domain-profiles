@@ -268,7 +268,7 @@
     "connectToChain": "connect to {{chainName}}",
     "continueWithoutWallet": "Continue without wallet",
     "decentralizedBrowsing": "Decentralized Browsing",
-    "decentralizedBrowsingDescription": "Level up your browser by resolving onchain domains. Names like lisa.x or sandy.nft can be looked up using the DNS alternatives configured below.",
+    "decentralizedBrowsingDescription": "Level up your browser by enabling onchain domains like lisa.x or sandy.nft in your address bar.",
     "displayMode": "Display Mode",
     "displayModeDescription": "Toggle the display mode to change the light and dark theme options for your wallet.",
     "enableWallet": "Enable Wallet Features",

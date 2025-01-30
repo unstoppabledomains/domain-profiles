@@ -501,7 +501,7 @@ const DomainProfile = ({
     // retrieve additional profile data at page load time
     const loadAll = async () => {
       // non blocking page elements
-      void Promise.all([loadBadges(), loadWallets(), loadWebacyScore()]);
+      void Promise.all([loadBadges(), loadWallets(), loadWebacyScore(), loadBitscrunchScore()]);
 
       // blocking page elements
       await Promise.all([loadCryptoRecords()]);
@@ -580,6 +580,24 @@ const DomainProfile = ({
       } catch (e) {
         notifyEvent(e, 'error', 'Profile', 'Fetch', {
           msg: 'error retrieving webacy score',
+        });
+      }
+    }
+  };
+
+  // retrieve bitscrunch score at page load time
+  const loadBitscrunchScore = async () => {
+    if (profileData) {
+      try {
+        const bitscrunchData = await getProfileData(domain, [
+          DomainFieldTypes.BitscrunchScore,
+        ]);
+        if (bitscrunchData?.bitscrunch) {
+          profileData.bitscrunch = bitscrunchData.bitscrunch;
+        }
+      } catch (e) {
+        notifyEvent(e, 'error', 'Profile', 'Fetch', {
+          msg: 'error retrieving bitscrunch score',
         });
       }
     }
@@ -1183,6 +1201,58 @@ const DomainProfile = ({
                     id="webacy"
                   />
                 </Box>
+                {profileData?.bitscrunch && (
+                  <LeftBarContentCollapse
+                    icon={<HealthAndSafetyOutlinedIcon />}
+                    header={
+                    <Box display="flex" alignItems="center">
+                      <Typography mr={1}>{t('bitscrunch.riskScore')}</Typography>
+                        <Tooltip
+                          arrow
+                          title={
+                            <Typography variant="caption">
+                              {t('bitscrunch.riskScoreDescription')}
+                            </Typography>
+                          }
+                        >
+                          <Chip
+                            color={
+                              profileData.bitscrunch.wallet.metric_values.wallet_score.high
+                                ? 'error'
+                                : profileData.bitscrunch.wallet.metric_values.wallet_score.medium
+                                ? 'default'
+                                : 'success'
+                            }
+                            size="small"
+                            icon={
+                              profileData.bitscrunch.wallet.metric_values.wallet_score.high ? (
+                                <OutlinedFlagIcon
+                                  className={classes.riskScoreIcon}
+                                />
+                              ) : profileData.bitscrunch.wallet.metric_values.wallet_score.medium ? (
+                                <CheckCircleOutlinedIcon
+                                  className={classes.riskScoreIcon}
+                                />
+                              ) : (
+                                <CheckCircleOutlinedIcon
+                                  className={classes.riskScoreIcon}
+                                />
+                              )
+                            }
+                            label={
+                              profileData.bitscrunch.wallet.metric_values.wallet_score.high
+                                ? t('bitscrunch.high')
+                                : profileData.bitscrunch.wallet.metric_values.wallet_score.medium
+                                ? t('bitscrunch.medium')
+                                : t('bitscrunch.low')
+                            }
+                          />
+                        </Tooltip>
+                    </Box>
+                    }
+                    id="bitscrunch"
+                  />
+                )}
                 {ipfsHash && (
                   <LeftBarContentCollapse
                     icon={<LaunchOutlinedIcon />}

@@ -60,14 +60,14 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       display: 'flex',
       flexDirection: 'column',
       width: '100%',
-      height: `${getMinClientHeight(isMobile)}px`,
+      height: getMinClientHeight(isMobile),
     },
     walletContainer: {
       display: 'flex',
       flexDirection: 'column',
       width: '375px',
       [theme.breakpoints.down('sm')]: {
-        width: '330px',
+        width: 'calc(100vw - 32px)',
       },
       height: '100%',
     },
@@ -80,7 +80,6 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
         minHeight: '150px',
         marginLeft: theme.spacing(-1),
         marginRight: theme.spacing(-1),
-        width: '345px',
       },
     },
     balanceContainer: {
@@ -121,15 +120,21 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       alignItems: 'center',
       justifyContent: 'center',
     },
+    listContainer: {
+      marginBottom: theme.spacing(2),
+      marginTop: '15px',
+      height: `${WALLET_CARD_HEIGHT + 2}px`,
+      [theme.breakpoints.down('sm')]: {
+        height: 'calc(100vh - 330px)',
+      },
+    },
     domainListContainer: {
       color: theme.palette.wallet.text.primary,
       display: 'flex',
       backgroundImage: `linear-gradient(${theme.palette.wallet.background.gradient.start}, ${theme.palette.wallet.background.gradient.end})`,
       borderRadius: theme.shape.borderRadius,
-      padding: theme.spacing(2),
-      height: `${WALLET_CARD_HEIGHT + 2}px`,
-      marginBottom: theme.spacing(2),
-      marginTop: '15px',
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
     },
     domainRow: {
       display: 'flex',
@@ -162,6 +167,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       marginTop: theme.spacing(-2),
       marginBottom: theme.spacing(-2),
       width: '100%',
+      height: '100%',
     },
     tabList: {
       marginTop: theme.spacing(-3),
@@ -174,15 +180,11 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
     tabContentItem: {
       marginLeft: theme.spacing(-3),
       marginRight: theme.spacing(-3),
-      [theme.breakpoints.down('sm')]: {
-        marginLeft: theme.spacing(-4),
-        marginRight: theme.spacing(-4),
-      },
+      height: '100%',
     },
     footer: {
       display: 'flex',
       flexDirection: 'column',
-      height: '100%',
       justifyContent: 'space-between',
     },
     identitySnackbar: {
@@ -219,7 +221,7 @@ export const Client: React.FC<ClientProps> = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // style and translation
-  const {classes} = useStyles({isMobile});
+  const {classes, cx} = useStyles({isMobile});
   const [t] = useTranslationContext();
   const {enqueueSnackbar, closeSnackbar} = useSnackbar();
 
@@ -672,18 +674,21 @@ export const Client: React.FC<ClientProps> = ({
               </Box>
             </Box>
             <Grid container className={classes.portfolioContainer}>
-              <Grid item xs={12}>
+              <Grid item xs={12} height="100%">
                 <TabPanel
                   value={ClientTabType.Portfolio}
                   className={classes.tabContentItem}
                 >
                   {cryptoValue ? (
-                    <TokensPortfolio
-                      wallets={wallets}
-                      isOwner={true}
-                      verified={true}
-                      onTokenClick={handleTokenClicked}
-                    />
+                    <Box className={classes.listContainer}>
+                      <TokensPortfolio
+                        wallets={wallets}
+                        isOwner={true}
+                        verified={true}
+                        fullHeight={isMobile}
+                        onTokenClick={handleTokenClicked}
+                      />
+                    </Box>
                   ) : (
                     <Box mt={2}>
                       <LetsGetStartedCta
@@ -698,7 +703,12 @@ export const Client: React.FC<ClientProps> = ({
                   className={classes.tabContentItem}
                 >
                   {domains.length > 0 ? (
-                    <Box className={classes.domainListContainer}>
+                    <Box
+                      className={cx(
+                        classes.domainListContainer,
+                        classes.listContainer,
+                      )}
+                    >
                       <DomainProfileList
                         id={'wallet-domain-list'}
                         domains={domains}
@@ -727,18 +737,21 @@ export const Client: React.FC<ClientProps> = ({
                   value={ClientTabType.Transactions}
                   className={classes.tabContentItem}
                 >
-                  <DomainWalletTransactions
-                    id="unstoppable-wallet"
-                    wallets={wallets}
-                    isOwner={true}
-                    isWalletLoading={isWalletLoading}
-                    verified={true}
-                    fullScreenModals={fullScreenModals}
-                    accessToken={accessToken}
-                    onBack={() => setTabValue(ClientTabType.Portfolio)}
-                    onBuyClicked={handleClickedBuy}
-                    onReceiveClicked={handleClickedReceive}
-                  />
+                  <Box className={classes.listContainer}>
+                    <DomainWalletTransactions
+                      id="unstoppable-wallet"
+                      wallets={wallets}
+                      isOwner={true}
+                      isWalletLoading={isWalletLoading}
+                      verified={true}
+                      fullScreenModals={fullScreenModals}
+                      accessToken={accessToken}
+                      onBack={() => setTabValue(ClientTabType.Portfolio)}
+                      onBuyClicked={handleClickedBuy}
+                      onReceiveClicked={handleClickedReceive}
+                      fullHeight={isMobile}
+                    />
+                  </Box>
                 </TabPanel>
               </Grid>
             </Grid>
@@ -828,8 +841,8 @@ export enum ClientTabType {
   Transactions = 'txns',
 }
 
-export const getMinClientHeight = (isMobile: boolean) => {
-  return isMobile ? 515 : 550;
+export const getMinClientHeight = (isMobile: boolean, offset = 0) => {
+  return isMobile ? `calc(100vh - 80px - ${offset}px)` : `${550 + offset}px`;
 };
 
 type StyledButtonProps = ButtonProps & {

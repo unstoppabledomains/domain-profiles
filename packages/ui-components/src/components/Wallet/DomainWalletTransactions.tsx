@@ -35,146 +35,149 @@ import {
 import Modal from '../Modal';
 import FundWalletModal from './FundWalletModal';
 
-const useStyles = makeStyles()((theme: Theme) => ({
-  walletContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  walletPlaceholder: {
-    height: `${WALLET_CARD_HEIGHT}px`,
-    width: '100%',
-    borderRadius: theme.shape.borderRadius,
-  },
-  sectionHeaderContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    margin: theme.spacing(6, 0, 0),
-    minHeight: '42px',
-  },
-  sectionHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    fontWeight: theme.typography.fontWeightBold,
-    fontSize: theme.typography.h5.fontSize,
-    lineHeight: 1.4,
-  },
-  totalValue: {
-    color: theme.palette.wallet.text.primary,
-    marginLeft: theme.spacing(1),
-  },
-  headerIcon: {
-    color: theme.palette.wallet.text.primary,
-    marginRight: theme.spacing(1),
-  },
-  scrollableContainer: {
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    overscrollBehavior: 'contain',
-    height: `${WALLET_CARD_HEIGHT + 2}px`,
-    width: '100%',
-    backgroundImage: `linear-gradient(${theme.palette.wallet.background.gradient.start}, ${theme.palette.wallet.background.gradient.end})`,
-    borderRadius: theme.shape.borderRadius,
-    padding: theme.spacing(2),
-    ['::-webkit-scrollbar']: {
-      display: 'none',
+const useStyles = makeStyles<{fullHeight?: boolean}>()(
+  (theme: Theme, {fullHeight}) => ({
+    walletContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
     },
-  },
-  transactionContainer: {
-    border: '1px solid transparent',
-  },
-  infiniteScrollLoading: {
-    width: '100%',
-    alignItems: 'center',
-    textAlign: 'center',
-    justifyContent: 'center',
-    color: theme.palette.wallet.text.primary,
-    marginBottom: theme.spacing(1),
-  },
-  loadingSpinner: {
-    color: 'inherit',
-  },
-  currencyIcon: {
-    width: 35,
-    height: 35,
-    backgroundColor: theme.palette.wallet.background.main,
-  },
-  noActivity: {
-    marginTop: theme.spacing(2),
-    color: theme.palette.wallet.text.primary,
-  },
-  txContainer: {
-    display: 'flex',
-    cursor: 'pointer',
-    width: '100%',
-    padding: theme.spacing(0.5),
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: 'transparent',
-    marginLeft: theme.spacing(1),
-    '&:hover': {
+    walletPlaceholder: {
+      height: fullHeight ? '100%' : `${WALLET_CARD_HEIGHT}px`,
+      width: '100%',
+      borderRadius: theme.shape.borderRadius,
+    },
+    sectionHeaderContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      margin: theme.spacing(6, 0, 0),
+      minHeight: '42px',
+    },
+    sectionHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      fontWeight: theme.typography.fontWeightBold,
+      fontSize: theme.typography.h5.fontSize,
+      lineHeight: 1.4,
+    },
+    totalValue: {
+      color: theme.palette.wallet.text.primary,
+      marginLeft: theme.spacing(1),
+    },
+    headerIcon: {
+      color: theme.palette.wallet.text.primary,
+      marginRight: theme.spacing(1),
+    },
+    scrollableContainer: {
+      overflowY: 'auto',
+      overflowX: 'hidden',
+      overscrollBehavior: 'contain',
+      height: fullHeight ? '100%' : `${WALLET_CARD_HEIGHT + 2}px`,
+      width: '100%',
+      backgroundImage: `linear-gradient(${theme.palette.wallet.background.gradient.start}, ${theme.palette.wallet.background.gradient.end})`,
+      borderRadius: theme.shape.borderRadius,
+      padding: theme.spacing(2),
+      ['::-webkit-scrollbar']: {
+        display: 'none',
+      },
+    },
+    transactionContainer: {
+      border: '1px solid transparent',
+    },
+    infiniteScrollLoading: {
+      width: '100%',
+      alignItems: 'center',
+      textAlign: 'center',
+      justifyContent: 'center',
+      color: theme.palette.wallet.text.primary,
+      marginBottom: theme.spacing(1),
+    },
+    loadingSpinner: {
+      color: 'inherit',
+    },
+    currencyIcon: {
+      width: 35,
+      height: 35,
       backgroundColor: theme.palette.wallet.background.main,
     },
-  },
-  txTitle: {
-    fontWeight: 'bold',
-    color: theme.palette.wallet.text.primary,
-    cursor: 'pointer',
-  },
-  txSubTitle: {
-    color: theme.palette.wallet.text.secondary,
-  },
-  txReceived: {
-    fontWeight: 'bold',
-    color: theme.palette.wallet.chart.up,
-  },
-  txSent: {
-    fontWeight: 'bold',
-    color: theme.palette.wallet.text.primary,
-  },
-  txFee: {
-    color: theme.palette.wallet.chart.down,
-  },
-  txTime: {
-    color: theme.palette.wallet.text.secondary,
-    marginBottom: theme.spacing(1),
-  },
-  txLink: {
-    cursor: 'pointer',
-  },
-  txImgPreview: {
-    width: '50px',
-    height: '50px',
-    borderRadius: theme.shape.borderRadius,
-  },
-  txIcon: {
-    color: theme.palette.wallet.background.main,
-    borderRadius: '50%',
-    padding: '2px',
-    border: `1px solid black`,
-    width: '17px',
-    height: '17px',
-  },
-  txIconReceive: {
-    backgroundColor: theme.palette.wallet.chart.up,
-  },
-  txIconSend: {
-    backgroundColor: theme.palette.wallet.chart.down,
-    transform: 'rotate(-45deg)',
-  },
-  txIconInteract: {
-    backgroundColor: theme.palette.wallet.chart.down,
-  },
-  modalTitleStyle: {
-    color: 'inherit',
-    alignSelf: 'center',
-  },
-  txPlaceholder: {
-    width: '100%',
-    height: '50px',
-    borderRadius: theme.shape.borderRadius,
-    marginBottom: theme.spacing(1),
-  },
-}));
+    noActivity: {
+      marginTop: theme.spacing(2),
+      color: theme.palette.wallet.text.primary,
+    },
+    txContainer: {
+      display: 'flex',
+      cursor: 'pointer',
+      width: '100%',
+      padding: theme.spacing(0.5),
+      borderRadius: theme.shape.borderRadius,
+      backgroundColor: 'transparent',
+      marginLeft: theme.spacing(1),
+      '&:hover': {
+        backgroundColor: theme.palette.wallet.background.main,
+      },
+    },
+    txTitle: {
+      fontWeight: 'bold',
+      color: theme.palette.wallet.text.primary,
+      cursor: 'pointer',
+    },
+    txSubTitle: {
+      color: theme.palette.wallet.text.secondary,
+    },
+    txReceived: {
+      fontWeight: 'bold',
+      color: theme.palette.wallet.chart.up,
+    },
+    txSent: {
+      fontWeight: 'bold',
+      color: theme.palette.wallet.text.primary,
+    },
+    txFee: {
+      color: theme.palette.wallet.chart.down,
+    },
+    txTime: {
+      color: theme.palette.wallet.text.secondary,
+      marginBottom: theme.spacing(1),
+    },
+    txLink: {
+      cursor: 'pointer',
+    },
+    txImgPreview: {
+      width: '50px',
+      height: '50px',
+      borderRadius: theme.shape.borderRadius,
+    },
+    txIcon: {
+      color: theme.palette.wallet.background.main,
+      borderRadius: '50%',
+      padding: '2px',
+      border: `1px solid black`,
+      width: '17px',
+      height: '17px',
+    },
+    txIconReceive: {
+      backgroundColor: theme.palette.wallet.chart.up,
+    },
+    txIconSend: {
+      backgroundColor: theme.palette.wallet.chart.down,
+      transform: 'rotate(-45deg)',
+    },
+    txIconInteract: {
+      backgroundColor: theme.palette.wallet.chart.down,
+    },
+    modalTitleStyle: {
+      color: 'inherit',
+      alignSelf: 'center',
+    },
+    txPlaceholder: {
+      width: '100%',
+      height: '50px',
+      borderRadius: theme.shape.borderRadius,
+      marginBottom: theme.spacing(1),
+    },
+  }),
+);
 
 export const DomainWalletTransactions: React.FC<
   DomainWalletTransactionsProps
@@ -188,12 +191,13 @@ export const DomainWalletTransactions: React.FC<
   isWalletLoading,
   verified,
   fullScreenModals,
+  fullHeight,
   boxShadow,
   onBack,
   onBuyClicked,
   onReceiveClicked,
 }) => {
-  const {classes, cx} = useStyles();
+  const {classes, cx} = useStyles({fullHeight});
   const [t] = useTranslationContext();
   const [cursors, setCursors] = useState<Record<string, string>>({});
   const [txns, setTxns] = useState<SerializedTx[]>();
@@ -498,8 +502,6 @@ export const DomainWalletTransactions: React.FC<
       )}
       {isError || (txns && wallets) ? (
         <Box
-          mt={'15px'}
-          mb={2}
           id={`scrollableTxDiv-${id}`}
           className={classes.scrollableContainer}
           boxShadow={boxShadow}
@@ -574,6 +576,7 @@ export type DomainWalletTransactionsProps = {
   maxCount?: number;
   verified: boolean;
   fullScreenModals?: boolean;
+  fullHeight?: boolean;
   boxShadow?: number;
   onBack?: () => void;
   onReceiveClicked?: () => void;

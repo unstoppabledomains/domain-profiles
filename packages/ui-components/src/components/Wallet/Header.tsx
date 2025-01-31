@@ -73,6 +73,9 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
       marginBottom: theme.spacing(3),
       position: 'relative',
       width: '100%',
+      [theme.breakpoints.down('sm')]: {
+        width: 'calc(100vw - 48px)',
+      },
     },
     portfolioHeaderIcon: {
       width: '20px',

@@ -27,113 +27,116 @@ import Token from './Token';
 
 Chart.register(CategoryScale);
 
-const useStyles = makeStyles()((theme: Theme) => ({
-  portfolioContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-  },
-  walletListContainer: {
-    display: 'flex',
-    overflowX: 'auto',
-    ['::-webkit-scrollbar']: {
-      display: 'none',
+const useStyles = makeStyles<{fullHeight?: boolean}>()(
+  (theme: Theme, {fullHeight}) => ({
+    portfolioContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      height: '100%',
     },
-  },
-  walletContainer: {
-    color: theme.palette.wallet.card.text,
-    cursor: 'pointer',
-    display: 'flex',
-    background: `repeating-linear-gradient(
+    walletListContainer: {
+      display: 'flex',
+      overflowX: 'auto',
+      ['::-webkit-scrollbar']: {
+        display: 'none',
+      },
+    },
+    walletContainer: {
+      color: theme.palette.wallet.card.text,
+      cursor: 'pointer',
+      display: 'flex',
+      background: `repeating-linear-gradient(
       -45deg,
       ${theme.palette.wallet.card.gradient.start},
       ${theme.palette.wallet.card.gradient.start} 5px,
       ${theme.palette.wallet.card.gradient.end} 5px,
       ${theme.palette.wallet.card.gradient.end} 6px
     )`,
-    alignItems: 'center',
-    border: `2px solid ${theme.palette.wallet.card.gradient.start}`,
-    borderRadius: theme.shape.borderRadius,
-    paddingRight: theme.spacing(0.5),
-    marginRight: theme.spacing(1),
-    height: '100%',
-  },
-  walletContainerSelected: {
-    background: theme.palette.wallet.card.selected.background,
-    border: `2px solid ${theme.palette.wallet.card.selected.background}`,
-    color: theme.palette.wallet.card.selected.text,
-  },
-  walletIcon: {
-    marginRight: theme.spacing(0.5),
-    color: theme.palette.wallet.card.text,
-    backgroundColor: theme.palette.wallet.background.main,
-    borderRadius: '50%',
-    width: '25px',
-    height: '25px',
-  },
-  walletAddress: {
-    color: 'inherit',
-    whiteSpace: 'nowrap',
-  },
-  portfolioPlaceholder: {
-    height: `${WALLET_CARD_HEIGHT}px`,
-    width: '100%',
-    borderRadius: theme.shape.borderRadius,
-  },
-  sectionHeaderContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    margin: theme.spacing(6, 0, 0),
-    minHeight: '42px',
-  },
-  sectionHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    fontWeight: theme.typography.fontWeightBold,
-    fontSize: theme.typography.h5.fontSize,
-    lineHeight: 1.4,
-  },
-  totalValue: {
-    color: theme.palette.wallet.text.primary,
-    marginLeft: theme.spacing(1),
-  },
-  headerIcon: {
-    color: theme.palette.wallet.text.primary,
-    marginRight: theme.spacing(1),
-  },
-  scrollableContainer: {
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    overscrollBehavior: 'contain',
-    height: `${WALLET_CARD_HEIGHT + 2}px`,
-    width: '100%',
-    backgroundImage: `linear-gradient(${theme.palette.wallet.background.gradient.start}, ${theme.palette.wallet.background.gradient.end})`,
-    borderRadius: theme.shape.borderRadius,
-    padding: theme.spacing(2),
-    ['::-webkit-scrollbar']: {
-      display: 'none',
+      alignItems: 'center',
+      border: `2px solid ${theme.palette.wallet.card.gradient.start}`,
+      borderRadius: theme.shape.borderRadius,
+      paddingRight: theme.spacing(0.5),
+      marginRight: theme.spacing(1),
+      height: '100%',
     },
-  },
-  noActivity: {
-    color: theme.palette.wallet.text.secondary,
-  },
-  tokenContainer: {
-    display: 'flex',
-    width: '100%',
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: 'transparent',
-    padding: theme.spacing(0.5),
-    '&:hover': {
+    walletContainerSelected: {
+      background: theme.palette.wallet.card.selected.background,
+      border: `2px solid ${theme.palette.wallet.card.selected.background}`,
+      color: theme.palette.wallet.card.selected.text,
+    },
+    walletIcon: {
+      marginRight: theme.spacing(0.5),
+      color: theme.palette.wallet.card.text,
       backgroundColor: theme.palette.wallet.background.main,
+      borderRadius: '50%',
+      width: '25px',
+      height: '25px',
     },
-  },
-  copyIcon: {
-    color: theme.palette.wallet.card.text,
-    width: '14px',
-    height: '14px',
-  },
-}));
+    walletAddress: {
+      color: 'inherit',
+      whiteSpace: 'nowrap',
+    },
+    portfolioPlaceholder: {
+      height: fullHeight ? '100%' : `${WALLET_CARD_HEIGHT}px`,
+      width: '100%',
+      borderRadius: theme.shape.borderRadius,
+    },
+    sectionHeaderContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      margin: theme.spacing(6, 0, 0),
+      minHeight: '42px',
+    },
+    sectionHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      fontWeight: theme.typography.fontWeightBold,
+      fontSize: theme.typography.h5.fontSize,
+      lineHeight: 1.4,
+    },
+    totalValue: {
+      color: theme.palette.wallet.text.primary,
+      marginLeft: theme.spacing(1),
+    },
+    headerIcon: {
+      color: theme.palette.wallet.text.primary,
+      marginRight: theme.spacing(1),
+    },
+    scrollableContainer: {
+      overflowY: 'auto',
+      overflowX: 'hidden',
+      overscrollBehavior: 'contain',
+      height: fullHeight ? '100%' : `${WALLET_CARD_HEIGHT + 2}px`,
+      width: '100%',
+      backgroundImage: `linear-gradient(${theme.palette.wallet.background.gradient.start}, ${theme.palette.wallet.background.gradient.end})`,
+      borderRadius: theme.shape.borderRadius,
+      padding: theme.spacing(2),
+      ['::-webkit-scrollbar']: {
+        display: 'none',
+      },
+    },
+    noActivity: {
+      color: theme.palette.wallet.text.secondary,
+    },
+    tokenContainer: {
+      display: 'flex',
+      width: '100%',
+      borderRadius: theme.shape.borderRadius,
+      backgroundColor: 'transparent',
+      padding: theme.spacing(0.5),
+      '&:hover': {
+        backgroundColor: theme.palette.wallet.background.main,
+      },
+    },
+    copyIcon: {
+      color: theme.palette.wallet.card.text,
+      width: '14px',
+      height: '14px',
+    },
+  }),
+);
 
 export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   domain,
@@ -142,9 +145,10 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   isOwner,
   verified,
   boxShadow,
+  fullHeight,
   onTokenClick,
 }) => {
-  const {classes, cx} = useStyles();
+  const {classes, cx} = useStyles({fullHeight});
   const {enqueueSnackbar} = useSnackbar();
   const [filterAddress, setFilterAddress] = useState<SerializedWalletBalance>();
   const [groupedTokens, setGroupedTokens] = useState<TokenEntry[]>([]);
@@ -271,8 +275,6 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
       )}
       {wallets || isError ? (
         <Box
-          mt={'15px'}
-          mb={2}
           boxShadow={boxShadow}
           id={`scrollablePortfolioDiv`}
           className={cx(classes.scrollableContainer)}
@@ -337,5 +339,6 @@ export type TokensPortfolioProps = {
   isOwner?: boolean;
   verified: boolean;
   boxShadow?: number;
+  fullHeight?: boolean;
   onTokenClick?: (token: TokenEntry) => void;
 };

@@ -48,10 +48,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
     textAlign: 'center',
+    marginTop: theme.spacing(3),
     marginBottom: theme.spacing(3),
     width: '325px',
+    height: '100%',
   },
   infoTable: {
     marginTop: theme.spacing(2),

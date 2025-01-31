@@ -57,6 +57,7 @@ export const Wallet: React.FC<
     onError?: () => void;
     onLogout?: () => void;
     onDisconnect?: () => void;
+    onSidePanelClick?: () => void;
     onSettingsClick?: () => void;
     onMessagesClick?: () => void;
     onMessagePopoutClick?: (address?: string) => void;
@@ -81,6 +82,7 @@ export const Wallet: React.FC<
   onLoginInitiated,
   onLogout,
   onDisconnect,
+  onSidePanelClick,
   onSettingsClick,
   onMessagesClick,
   onMessagePopoutClick,
@@ -166,6 +168,7 @@ export const Wallet: React.FC<
           onLogout={onLogout}
           onDisconnect={onDisconnect}
           onSettingsClick={onSettingsClick}
+          onSidePanelClick={onSidePanelClick}
           onMessagesClick={onMessagesClick}
           onMessagePopoutClick={onMessagePopoutClick}
           onClaimWalletClick={accessToken ? undefined : handleClaimWallet}

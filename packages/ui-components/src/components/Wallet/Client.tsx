@@ -266,7 +266,7 @@ export const Client: React.FC<ClientProps> = ({
     return () => {
       clearTimeout(refreshTimer);
     };
-  }, []);
+  }, [tabValue]);
 
   useEffect(() => {
     if (!isHeaderClicked || !setIsHeaderClicked) {
@@ -545,7 +545,7 @@ export const Client: React.FC<ClientProps> = ({
     setSelectedToken(undefined);
 
     // refresh portfolio data
-    await refresh(true, getTabFields(tabValue));
+    await refresh(true, getTabFields(ClientTabType.Portfolio));
   };
 
   const getTabFields = (tv: ClientTabType) => {

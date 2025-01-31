@@ -1,5 +1,7 @@
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import KeyboardArrowRightOutlinedIcon from '@mui/icons-material/KeyboardArrowRightOutlined';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Pagination from '@mui/material/Pagination';
 import Typography from '@mui/material/Typography';
@@ -10,6 +12,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {useTranslationContext} from '../../lib';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import {DomainPreview} from './DomainPreview';
 
@@ -133,6 +136,7 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
   hasMore = false,
   rowStyle,
 }) => {
+  const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
   const [page, setPage] = useState(1);
   const totalPages = Math.ceil(domains.length / itemsPerPage);
@@ -189,6 +193,17 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
             </a>
           </Box>
         ))}
+        {hasMore && !isLoading && (
+          <Button
+            startIcon={<ArrowDownwardIcon />}
+            onClick={() => onLastPage()}
+            size="small"
+            fullWidth
+            color="secondary"
+          >
+            {t('common.loadMore')}
+          </Button>
+        )}
       </InfiniteScroll>
     </Box>
   ) : (

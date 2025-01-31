@@ -1,3 +1,4 @@
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import HistoryIcon from '@mui/icons-material/History';
 import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
 import SendIcon from '@mui/icons-material/Send';
@@ -6,6 +7,7 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import Avatar from '@mui/material/Avatar';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
@@ -202,6 +204,7 @@ export const DomainWalletTransactions: React.FC<
   const [cursors, setCursors] = useState<Record<string, string>>({});
   const [txns, setTxns] = useState<SerializedTx[]>();
   const [hasMore, setHasMore] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const initialTxns: SerializedTx[] = [];
@@ -232,6 +235,7 @@ export const DomainWalletTransactions: React.FC<
     let isNewCursor = false;
     const newTxns: SerializedTx[] = [];
     const newCursors: Record<string, string> = {};
+    setIsLoading(true);
     await Bluebird.map(
       Object.keys(cursors),
       async cursorKey => {
@@ -272,6 +276,7 @@ export const DomainWalletTransactions: React.FC<
       },
       {concurrency: 3},
     );
+    setIsLoading(false);
     setHasMore(isNewCursor);
     setCursors(newCursors);
     setTxns([...txns!, ...newTxns]);
@@ -533,6 +538,17 @@ export const DomainWalletTransactions: React.FC<
                   ),
                 )}
               </Grid>
+              {hasMore && !isLoading && (
+                <Button
+                  startIcon={<ArrowDownwardIcon />}
+                  onClick={() => handleNext()}
+                  size="small"
+                  fullWidth
+                  color="secondary"
+                >
+                  {t('common.loadMore')}
+                </Button>
+              )}
             </InfiniteScroll>
           ) : isWalletLoading ? (
             <Box className={classes.infiniteScrollLoading}>

@@ -451,6 +451,7 @@ export const Client: React.FC<ClientProps> = ({
     const resp = await handleRetrieveOwnerDomains(address, reload);
     if (resp.domains.length) {
       if (reload) {
+        setRetrievedAll(false);
         setDomains([...resp.domains]);
       } else {
         setDomains(d => [...d, ...resp.domains]);
@@ -719,6 +720,7 @@ export const Client: React.FC<ClientProps> = ({
                         hasMore={!retrievedAll}
                         onClick={handleDomainClick}
                         rowStyle={classes.domainRow}
+                        itemsPerPage={DOMAIN_LIST_PAGE_SIZE}
                       />
                     </Box>
                   ) : (

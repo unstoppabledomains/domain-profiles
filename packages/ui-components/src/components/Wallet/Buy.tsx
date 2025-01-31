@@ -7,7 +7,7 @@ import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {SerializedWalletBalance, TokenEntry} from '../../lib';
-import {useTranslationContext} from '../../lib';
+import {notifyEvent, useTranslationContext} from '../../lib';
 import {SelectAsset} from './SelectAsset';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -50,31 +50,35 @@ const Buy: React.FC<Props> = ({isSellEnabled, onCancelClick, wallets}) => {
     const url = `${config.UNSTOPPABLE_WEBSITE_URL}/fiat-ramps/popup?${queryParams}`;
 
     // open in extension popup if available
-    if (chrome?.windows) {
-      // lookup the parent window dimensions
-      const parentWindow = await chrome.windows.getCurrent();
+    try {
+      if (chrome?.windows) {
+        // lookup the parent window dimensions
+        const parentWindow = await chrome.windows.getCurrent();
 
-      // determine location of popup based on parent window
-      const popupTop = parentWindow?.top;
-      const popupLeft =
-        parentWindow?.left && parentWindow?.top
-          ? parentWindow.left + (parentWindow.width || 0) - popupWidth
-          : undefined;
+        // determine location of popup based on parent window
+        const popupTop = parentWindow?.top;
+        const popupLeft =
+          parentWindow?.left && parentWindow?.top
+            ? parentWindow.left + (parentWindow.width || 0) - popupWidth
+            : undefined;
 
-      // open the popup
-      await chrome.windows.create({
-        url,
-        type: 'popup',
-        focused: true,
-        left: popupLeft,
-        top: popupTop,
-        width: popupWidth,
-        height: popupHeight,
-      });
+        // open the popup
+        await chrome.windows.create({
+          url,
+          type: 'popup',
+          focused: true,
+          left: popupLeft,
+          top: popupTop,
+          width: popupWidth,
+          height: popupHeight,
+        });
 
-      // close the extension window
-      window.close();
-      return;
+        // close the extension window
+        window.close();
+        return;
+      }
+    } catch (e) {
+      notifyEvent(e, 'warning', 'Wallet', 'Configuration');
     }
 
     // determine location of popup based on parent window
@@ -85,10 +89,12 @@ const Buy: React.FC<Props> = ({isSellEnabled, onCancelClick, wallets}) => {
         : undefined;
 
     // fallback to standard popup
-    window.open(
-      url,
-      '_blank',
-      `toolbar=no,
+    setTimeout(
+      () =>
+        window.open(
+          url,
+          '_blank',
+          `toolbar=no,
        location=no,
        status=no,
        menubar=no,
@@ -98,6 +104,8 @@ const Buy: React.FC<Props> = ({isSellEnabled, onCancelClick, wallets}) => {
        height=${popupHeight}
        left=${popupLeft}
        top=${popupTop}`,
+        ),
+      0,
     );
   };
 

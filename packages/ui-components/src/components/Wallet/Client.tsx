@@ -125,7 +125,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       marginTop: '15px',
       height: `${WALLET_CARD_HEIGHT + 2}px`,
       [theme.breakpoints.down('sm')]: {
-        height: 'calc(100vh - 330px)',
+        height: 'calc(100dvh - 330px)',
       },
     },
     domainListContainer: {
@@ -844,7 +844,7 @@ export enum ClientTabType {
 }
 
 export const getMinClientHeight = (isMobile: boolean, offset = 0) => {
-  return isMobile ? `calc(100vh - 80px - ${offset}px)` : `${550 + offset}px`;
+  return isMobile ? `calc(100dvh - 80px - ${offset}px)` : `${550 + offset}px`;
 };
 
 type StyledButtonProps = ButtonProps & {

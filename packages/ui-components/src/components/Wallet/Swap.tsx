@@ -96,11 +96,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     width: '100%',
-    [theme.breakpoints.down('sm')]: {
-      width: '346px',
-      marginLeft: theme.spacing(-1),
-      marginRight: theme.spacing(-1),
-    },
     height: '100%',
   },
   content: {
@@ -150,7 +145,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     height: '50px',
   },
   loadingContainer: {
-    marginTop: theme.spacing(10),
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
   },
   loadingSpinner: {
     padding: theme.spacing(0.5),

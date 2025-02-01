@@ -17,6 +17,7 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {styled, useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import {Mutex} from 'async-mutex';
 import Markdown from 'markdown-to-jsx';
 import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
@@ -234,12 +235,14 @@ export const Client: React.FC<ClientProps> = ({
     .map(w => w.totalValueUsdAmt || 0)
     .reduce((p, c) => p + c, 0);
   const isSellEnabled = cryptoValue >= 15;
+  const refreshMutex = new Mutex();
 
   // component state variables
   const [isSend, setIsSend] = useState(false);
   const [isReceive, setIsReceive] = useState(false);
   const [isBuy, setIsBuy] = useState(false);
   const [isSwap, setIsSwap] = useState(false);
+  const [isTransactionsLoading, setIsTransactionsLoading] = useState(false);
   const [tabValue, setTabValue] = useState(ClientTabType.Portfolio);
   const [selectedToken, setSelectedToken] = useState<TokenEntry>();
 
@@ -256,17 +259,14 @@ export const Client: React.FC<ClientProps> = ({
 
   // initialize the page refresh timer
   useEffect(() => {
-    clearTimeout(refreshTimer);
-    refreshTimer = setTimeout(
-      () => refresh(false, getTabFields(tabValue)),
-      REFRESH_BALANCE_MS,
-    );
+    // start a new refresh timer
+    resetRefreshTimer(getTabFields(tabValue));
 
     // clear timer on unload
     return () => {
       clearTimeout(refreshTimer);
     };
-  }, [tabValue]);
+  }, []);
 
   useEffect(() => {
     if (!isHeaderClicked || !setIsHeaderClicked) {
@@ -335,19 +335,29 @@ export const Client: React.FC<ClientProps> = ({
 
   // wrapper for the refresh method
   const refresh = async (showSpinner?: boolean, fields?: string[]) => {
-    // reset the refresh timer
-    clearTimeout(refreshTimer);
-
-    // refresh the data if the wallet is not locked
-    const isWalletLocked = await isLocked();
-    if (isWalletLocked) {
-      setShowPinCta(true);
-    } else {
-      await onRefresh(showSpinner, fields);
+    // skip background refresh if already locked
+    if (!showSpinner && refreshMutex.isLocked()) {
+      return;
     }
 
-    // schedule another refresh
-    refreshTimer = setTimeout(() => refresh(false, fields), REFRESH_BALANCE_MS);
+    // run serially to prevent race condition
+    await refreshMutex.runExclusive(async () => {
+      // refresh the data if the wallet is not locked
+      const isWalletLocked = await isLocked();
+      if (isWalletLocked) {
+        setShowPinCta(true);
+      } else {
+        await onRefresh(showSpinner, fields);
+      }
+    });
+  };
+
+  const resetRefreshTimer = (fields: string[]) => {
+    clearTimeout(refreshTimer);
+    refreshTimer = setInterval(
+      () => refresh(false, fields),
+      REFRESH_BALANCE_MS,
+    );
   };
 
   // configure a CTA to prompt the user to set their password if the wallet
@@ -395,11 +405,18 @@ export const Client: React.FC<ClientProps> = ({
     newValue: string,
   ) => {
     const tv = newValue as ClientTabType;
+    setIsTransactionsLoading(true);
     setTabValue(tv);
     if (address && tv === ClientTabType.Domains) {
       void handleLoadDomains(true);
     }
+
+    // reset the refresh timer and call refresh
+    resetRefreshTimer(getTabFields(tv));
     await refresh(true, getTabFields(tv));
+
+    // transactions have been loaded
+    setIsTransactionsLoading(false);
   };
 
   const handleRetrieveOwnerDomains = async (
@@ -543,9 +560,6 @@ export const Client: React.FC<ClientProps> = ({
     setIsBuy(false);
     setIsSwap(false);
     setSelectedToken(undefined);
-
-    // refresh portfolio data
-    await refresh(true, getTabFields(ClientTabType.Portfolio));
   };
 
   const getTabFields = (tv: ClientTabType) => {
@@ -744,7 +758,7 @@ export const Client: React.FC<ClientProps> = ({
                       id="unstoppable-wallet"
                       wallets={wallets}
                       isOwner={true}
-                      isWalletLoading={isWalletLoading}
+                      isWalletLoading={isWalletLoading || isTransactionsLoading}
                       verified={true}
                       fullScreenModals={fullScreenModals}
                       accessToken={accessToken}

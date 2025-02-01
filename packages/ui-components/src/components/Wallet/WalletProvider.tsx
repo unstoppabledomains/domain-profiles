@@ -79,7 +79,7 @@ const useStyles = makeStyles<{
     flexDirection: 'column',
     minHeight:
       configState === WalletConfigState.Complete && mode === 'portfolio'
-        ? `${getMinClientHeight(isMobile)}px`
+        ? getMinClientHeight(isMobile)
         : undefined,
     height: '100%',
   },
@@ -88,7 +88,7 @@ const useStyles = makeStyles<{
     justifyContent: 'center',
     height:
       configState === WalletConfigState.Complete && mode === 'portfolio'
-        ? `${getMinClientHeight(isMobile) - 125}px`
+        ? getMinClientHeight(isMobile, -125)
         : '100%',
     alignItems: 'center',
   },

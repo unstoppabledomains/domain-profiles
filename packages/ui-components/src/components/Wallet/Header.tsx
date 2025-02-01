@@ -73,6 +73,9 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
       marginBottom: theme.spacing(3),
       position: 'relative',
       width: '100%',
+      [theme.breakpoints.down('sm')]: {
+        width: 'calc(100vw - 48px)',
+      },
     },
     portfolioHeaderIcon: {
       width: '20px',
@@ -173,6 +176,7 @@ type Props = {
   fullScreenModals?: boolean;
   onHeaderClick?: () => void;
   onSettingsClick?: () => void;
+  onSidePanelClick?: () => void;
   onMessagesClick?: () => void;
   onLogout?: () => void;
   onDisconnect?: () => void;
@@ -195,6 +199,7 @@ export const Header: React.FC<Props> = ({
   onLogout,
   onDisconnect,
   onSettingsClick,
+  onSidePanelClick,
   onMessagesClick,
   onMessagePopoutClick,
   onClaimWalletClick,
@@ -401,6 +406,7 @@ export const Header: React.FC<Props> = ({
             showMessages && isChatReady ? handleMessagingClicked : undefined
           }
           onSettingsClicked={accessToken ? onSettingsClick : undefined}
+          onSidePanelClicked={accessToken ? onSidePanelClick : undefined}
           onSecurityCenterClicked={
             accessToken ? handleSecurityCenterClicked : undefined
           }
@@ -412,6 +418,7 @@ export const Header: React.FC<Props> = ({
           onSupportClicked={handleSupportClicked}
           onClaimWalletClicked={onClaimWalletClick}
           hideLogout={!accessToken}
+          hideProfile={!!handleSecurityCenterClicked}
         />
       )}
       {domainToManage && (

@@ -15,13 +15,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    width: '100%',
-    [theme.breakpoints.down('sm')]: {
-      width: '346px',
-      marginLeft: theme.spacing(-1),
-      marginRight: theme.spacing(-1),
-    },
     height: '100%',
+    width: '100%',
   },
 }));
 

@@ -17,6 +17,7 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {styled, useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import {Mutex} from 'async-mutex';
 import Markdown from 'markdown-to-jsx';
 import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
@@ -60,14 +61,14 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       display: 'flex',
       flexDirection: 'column',
       width: '100%',
-      height: `${getMinClientHeight(isMobile)}px`,
+      height: getMinClientHeight(isMobile),
     },
     walletContainer: {
       display: 'flex',
       flexDirection: 'column',
       width: '375px',
       [theme.breakpoints.down('sm')]: {
-        width: '330px',
+        width: 'calc(100vw - 32px)',
       },
       height: '100%',
     },
@@ -80,7 +81,6 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
         minHeight: '150px',
         marginLeft: theme.spacing(-1),
         marginRight: theme.spacing(-1),
-        width: '345px',
       },
     },
     balanceContainer: {
@@ -121,15 +121,21 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       alignItems: 'center',
       justifyContent: 'center',
     },
+    listContainer: {
+      marginBottom: theme.spacing(2),
+      marginTop: '15px',
+      height: `${WALLET_CARD_HEIGHT + 2}px`,
+      [theme.breakpoints.down('sm')]: {
+        height: 'calc(100dvh - 330px)',
+      },
+    },
     domainListContainer: {
       color: theme.palette.wallet.text.primary,
       display: 'flex',
       backgroundImage: `linear-gradient(${theme.palette.wallet.background.gradient.start}, ${theme.palette.wallet.background.gradient.end})`,
       borderRadius: theme.shape.borderRadius,
-      padding: theme.spacing(2),
-      height: `${WALLET_CARD_HEIGHT + 2}px`,
-      marginBottom: theme.spacing(2),
-      marginTop: '15px',
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
     },
     domainRow: {
       display: 'flex',
@@ -162,6 +168,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       marginTop: theme.spacing(-2),
       marginBottom: theme.spacing(-2),
       width: '100%',
+      height: '100%',
     },
     tabList: {
       marginTop: theme.spacing(-3),
@@ -174,15 +181,11 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
     tabContentItem: {
       marginLeft: theme.spacing(-3),
       marginRight: theme.spacing(-3),
-      [theme.breakpoints.down('sm')]: {
-        marginLeft: theme.spacing(-4),
-        marginRight: theme.spacing(-4),
-      },
+      height: '100%',
     },
     footer: {
       display: 'flex',
       flexDirection: 'column',
-      height: '100%',
       justifyContent: 'space-between',
     },
     identitySnackbar: {
@@ -219,7 +222,7 @@ export const Client: React.FC<ClientProps> = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // style and translation
-  const {classes} = useStyles({isMobile});
+  const {classes, cx} = useStyles({isMobile});
   const [t] = useTranslationContext();
   const {enqueueSnackbar, closeSnackbar} = useSnackbar();
 
@@ -232,12 +235,14 @@ export const Client: React.FC<ClientProps> = ({
     .map(w => w.totalValueUsdAmt || 0)
     .reduce((p, c) => p + c, 0);
   const isSellEnabled = cryptoValue >= 15;
+  const refreshMutex = new Mutex();
 
   // component state variables
   const [isSend, setIsSend] = useState(false);
   const [isReceive, setIsReceive] = useState(false);
   const [isBuy, setIsBuy] = useState(false);
   const [isSwap, setIsSwap] = useState(false);
+  const [isTransactionsLoading, setIsTransactionsLoading] = useState(false);
   const [tabValue, setTabValue] = useState(ClientTabType.Portfolio);
   const [selectedToken, setSelectedToken] = useState<TokenEntry>();
 
@@ -254,11 +259,8 @@ export const Client: React.FC<ClientProps> = ({
 
   // initialize the page refresh timer
   useEffect(() => {
-    clearTimeout(refreshTimer);
-    refreshTimer = setTimeout(
-      () => refresh(false, getTabFields(tabValue)),
-      REFRESH_BALANCE_MS,
-    );
+    // start a new refresh timer
+    resetRefreshTimer(getTabFields(tabValue));
 
     // clear timer on unload
     return () => {
@@ -333,19 +335,29 @@ export const Client: React.FC<ClientProps> = ({
 
   // wrapper for the refresh method
   const refresh = async (showSpinner?: boolean, fields?: string[]) => {
-    // reset the refresh timer
-    clearTimeout(refreshTimer);
-
-    // refresh the data if the wallet is not locked
-    const isWalletLocked = await isLocked();
-    if (isWalletLocked) {
-      setShowPinCta(true);
-    } else {
-      await onRefresh(showSpinner, fields);
+    // skip background refresh if already locked
+    if (!showSpinner && refreshMutex.isLocked()) {
+      return;
     }
 
-    // schedule another refresh
-    refreshTimer = setTimeout(() => refresh(false, fields), REFRESH_BALANCE_MS);
+    // run serially to prevent race condition
+    await refreshMutex.runExclusive(async () => {
+      // refresh the data if the wallet is not locked
+      const isWalletLocked = await isLocked();
+      if (isWalletLocked) {
+        setShowPinCta(true);
+      } else {
+        await onRefresh(showSpinner, fields);
+      }
+    });
+  };
+
+  const resetRefreshTimer = (fields: string[]) => {
+    clearTimeout(refreshTimer);
+    refreshTimer = setInterval(
+      () => refresh(false, fields),
+      REFRESH_BALANCE_MS,
+    );
   };
 
   // configure a CTA to prompt the user to set their password if the wallet
@@ -393,11 +405,18 @@ export const Client: React.FC<ClientProps> = ({
     newValue: string,
   ) => {
     const tv = newValue as ClientTabType;
+    setIsTransactionsLoading(true);
     setTabValue(tv);
     if (address && tv === ClientTabType.Domains) {
       void handleLoadDomains(true);
     }
+
+    // reset the refresh timer and call refresh
+    resetRefreshTimer(getTabFields(tv));
     await refresh(true, getTabFields(tv));
+
+    // transactions have been loaded
+    setIsTransactionsLoading(false);
   };
 
   const handleRetrieveOwnerDomains = async (
@@ -449,6 +468,7 @@ export const Client: React.FC<ClientProps> = ({
     const resp = await handleRetrieveOwnerDomains(address, reload);
     if (resp.domains.length) {
       if (reload) {
+        setRetrievedAll(false);
         setDomains([...resp.domains]);
       } else {
         setDomains(d => [...d, ...resp.domains]);
@@ -540,9 +560,6 @@ export const Client: React.FC<ClientProps> = ({
     setIsBuy(false);
     setIsSwap(false);
     setSelectedToken(undefined);
-
-    // refresh portfolio data
-    await refresh(true, getTabFields(tabValue));
   };
 
   const getTabFields = (tv: ClientTabType) => {
@@ -672,18 +689,21 @@ export const Client: React.FC<ClientProps> = ({
               </Box>
             </Box>
             <Grid container className={classes.portfolioContainer}>
-              <Grid item xs={12}>
+              <Grid item xs={12} height="100%">
                 <TabPanel
                   value={ClientTabType.Portfolio}
                   className={classes.tabContentItem}
                 >
                   {cryptoValue ? (
-                    <TokensPortfolio
-                      wallets={wallets}
-                      isOwner={true}
-                      verified={true}
-                      onTokenClick={handleTokenClicked}
-                    />
+                    <Box className={classes.listContainer}>
+                      <TokensPortfolio
+                        wallets={wallets}
+                        isOwner={true}
+                        verified={true}
+                        fullHeight={isMobile}
+                        onTokenClick={handleTokenClicked}
+                      />
+                    </Box>
                   ) : (
                     <Box mt={2}>
                       <LetsGetStartedCta
@@ -698,7 +718,12 @@ export const Client: React.FC<ClientProps> = ({
                   className={classes.tabContentItem}
                 >
                   {domains.length > 0 ? (
-                    <Box className={classes.domainListContainer}>
+                    <Box
+                      className={cx(
+                        classes.domainListContainer,
+                        classes.listContainer,
+                      )}
+                    >
                       <DomainProfileList
                         id={'wallet-domain-list'}
                         domains={domains}
@@ -709,6 +734,7 @@ export const Client: React.FC<ClientProps> = ({
                         hasMore={!retrievedAll}
                         onClick={handleDomainClick}
                         rowStyle={classes.domainRow}
+                        itemsPerPage={DOMAIN_LIST_PAGE_SIZE}
                       />
                     </Box>
                   ) : (
@@ -727,18 +753,21 @@ export const Client: React.FC<ClientProps> = ({
                   value={ClientTabType.Transactions}
                   className={classes.tabContentItem}
                 >
-                  <DomainWalletTransactions
-                    id="unstoppable-wallet"
-                    wallets={wallets}
-                    isOwner={true}
-                    isWalletLoading={isWalletLoading}
-                    verified={true}
-                    fullScreenModals={fullScreenModals}
-                    accessToken={accessToken}
-                    onBack={() => setTabValue(ClientTabType.Portfolio)}
-                    onBuyClicked={handleClickedBuy}
-                    onReceiveClicked={handleClickedReceive}
-                  />
+                  <Box className={classes.listContainer}>
+                    <DomainWalletTransactions
+                      id="unstoppable-wallet"
+                      wallets={wallets}
+                      isOwner={true}
+                      isWalletLoading={isWalletLoading || isTransactionsLoading}
+                      verified={true}
+                      fullScreenModals={fullScreenModals}
+                      accessToken={accessToken}
+                      onBack={() => setTabValue(ClientTabType.Portfolio)}
+                      onBuyClicked={handleClickedBuy}
+                      onReceiveClicked={handleClickedReceive}
+                      fullHeight={isMobile}
+                    />
+                  </Box>
                 </TabPanel>
               </Grid>
             </Grid>
@@ -828,8 +857,8 @@ export enum ClientTabType {
   Transactions = 'txns',
 }
 
-export const getMinClientHeight = (isMobile: boolean) => {
-  return isMobile ? 515 : 550;
+export const getMinClientHeight = (isMobile: boolean, offset = 0) => {
+  return isMobile ? `calc(100dvh - 80px - ${offset}px)` : `${550 + offset}px`;
 };
 
 type StyledButtonProps = ButtonProps & {

@@ -279,6 +279,7 @@
     "rightClickMenuDescription": "Easy access to wallets settings from any webpage, with a right click.",
     "sherlockAssistant": "Sherlock Assistant",
     "sherlockAssistantDescription": "Gain insight into apps by automatically detecting wallets associated with onchain domains. Overlay rich identity details in real time.",
+    "sidePanel": "Side Panel",
     "unsupportedChain": "Cannot connect to unsupported network ({{originalChainId}}). This browser extension supports Ethereum, Polygon, Base and Solana networks.",
     "version": "Version",
     "walletConnections": "Connected Websites",

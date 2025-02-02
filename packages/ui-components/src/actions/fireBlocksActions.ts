@@ -28,6 +28,8 @@ import type {
   GetTokenResponse,
   RecoveryStatusResponse,
   TokenRefreshResponse,
+  TransactionLockRequest,
+  TransactionLockStatusResponse,
   VerifyTokenResponse,
 } from '../lib/types/fireBlocks';
 import {getAsset} from '../lib/wallet/asset';
@@ -200,6 +202,40 @@ export const createTransactionOperation = async (
     });
   }
   return undefined;
+};
+
+export const disableTransactionLock = async (
+  accessToken: string,
+  otp: string,
+) => {
+  return fetchApi<TransactionLockStatusResponse>(`/v1/signature-lock`, {
+    method: 'DELETE',
+    mode: 'cors',
+    headers: {
+      'Access-Control-Allow-Credentials': 'true',
+      'Content-Type': 'application/json',
+      'X-Otp-Token': otp,
+      Authorization: `Bearer ${accessToken}`,
+    },
+    host: config.WALLETS.HOST_URL,
+  });
+};
+
+export const enableTransactionLock = async (
+  accessToken: string,
+  opts: TransactionLockRequest = {},
+) => {
+  return fetchApi<TransactionLockStatusResponse>(`/v1/signature-lock`, {
+    method: 'POST',
+    mode: 'cors',
+    headers: {
+      'Access-Control-Allow-Credentials': 'true',
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    host: config.WALLETS.HOST_URL,
+    body: JSON.stringify(opts),
+  });
 };
 
 // getAccessTokenInternal called by useFireblocksAccessToken hook. This method should
@@ -484,6 +520,19 @@ export const getTransactionGasEstimate = async (
       }),
     },
   );
+};
+
+export const getTransactionLockStatus = async (accessToken: string) => {
+  return fetchApi<TransactionLockStatusResponse>(`/v1/signature-lock`, {
+    method: 'GET',
+    mode: 'cors',
+    headers: {
+      'Access-Control-Allow-Credentials': 'true',
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    host: config.WALLETS.HOST_URL,
+  });
 };
 
 export const getTransferGasEstimate = async (

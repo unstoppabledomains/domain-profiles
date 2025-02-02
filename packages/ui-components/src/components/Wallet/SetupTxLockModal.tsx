@@ -88,6 +88,7 @@ const SetupTxLockModal: React.FC<Props> = ({
     }
     const status = await getTransactionLockStatus(accessToken);
     setIsEnabled(status?.enabled);
+    setTimeLockPeriodMs(status?.validUntil);
     setIsLoaded(true);
   }, [accessToken]);
 
@@ -142,11 +143,11 @@ const SetupTxLockModal: React.FC<Props> = ({
           return;
         }
       }
-    } else if (timeLockPeriodMs) {
+    } else {
       // enable lock
       const enableResult = await enableTransactionLock(
         accessToken,
-        mode === 'TIME'
+        mode === 'TIME' && timeLockPeriodMs
           ? {time: timeLockPeriodMs / ONE_MINUTE_MS, timeUnit: 'MINUTES'}
           : undefined,
       );
@@ -198,7 +199,8 @@ const SetupTxLockModal: React.FC<Props> = ({
                   : t('wallet.txLockTimeDescription')}
               </Markdown>
             </Typography>
-            {!isEnabled && (
+            {((mode === 'MANUAL' && !isEnabled) ||
+              (mode === 'TIME' && !timeLockPeriodMs)) && (
               <>
                 <Box mt={2} mb={2}>
                   <Alert severity="warning">
@@ -267,7 +269,7 @@ const SetupTxLockModal: React.FC<Props> = ({
               </Box>
             )}
           </Box>
-        ) : isEnabled ? (
+        ) : mode === 'MANUAL' && isEnabled ? (
           <Box>
             <ManageInput
               id="otp"

@@ -90,7 +90,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isMfaModalOpen, setIsMfaModalOpen] = useState(false);
   const [isMfaEnabled, setIsMfaEnabled] = useState(false);
-  const [isTxLockManualEnabled, setIsTxLockManualEnabled] = useState(false);
+  const [isTxLockManualEnabled, setIsTxLockManualEnabled] = useState<boolean>();
   const [isTxLockTimeEnabled, setIsTxLockTimeEnabled] = useState<number>();
   const [isLockEnabled, setIsLockEnabled] = useState(false);
   const [isLockModalOpen, setIsLockModalOpen] = useState(false);
@@ -119,7 +119,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           txLockStatus?.enabled && !txLockStatus?.validUntil,
         );
         setIsTxLockTimeEnabled(
-          txLockStatus?.enabled && txLockStatus?.validUntil > Date.now()
+          txLockStatus?.enabled && txLockStatus?.validUntil
             ? txLockStatus.validUntil
             : undefined,
         );
@@ -388,7 +388,9 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
             icon={
               <LockOutlinedIcon
                 className={cx(classes.icon, {
-                  [classes.iconEnabled]: isTxLockManualEnabled,
+                  [classes.iconEnabled]:
+                    isTxLockManualEnabled ||
+                    (!!isTxLockTimeEnabled && isTxLockTimeEnabled > Date.now()),
                 })}
               />
             }
@@ -397,17 +399,27 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
             )}
           >
             {isMfaEnabled ? (
-              <Button
-                className={classes.button}
-                variant="contained"
-                fullWidth
-                onClick={handleTxLockManualClicked}
-                size="small"
-              >
-                {isTxLockManualEnabled
-                  ? t('manage.disable')
-                  : t('manage.enable')}
-              </Button>
+              isTxLockTimeEnabled && isTxLockTimeEnabled > Date.now() ? (
+                <Alert severity="info">
+                  <Markdown>
+                    {t('wallet.txLockTimeStatus', {
+                      date: new Date(isTxLockTimeEnabled).toLocaleString(),
+                    })}
+                  </Markdown>
+                </Alert>
+              ) : (
+                <Button
+                  className={classes.button}
+                  variant="contained"
+                  fullWidth
+                  onClick={handleTxLockManualClicked}
+                  size="small"
+                >
+                  {isTxLockManualEnabled
+                    ? t('manage.disable')
+                    : t('manage.enable')}
+                </Button>
+              )
             ) : (
               <Alert severity="warning">{t('wallet.txLockPrerequisite')}</Alert>
             )}
@@ -418,7 +430,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
             icon={
               <LockClockOutlinedIcon
                 className={cx(classes.icon, {
-                  [classes.iconEnabled]: isTxLockManualEnabled,
+                  [classes.iconEnabled]: !!isTxLockTimeEnabled,
                 })}
               />
             }

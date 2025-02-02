@@ -183,7 +183,7 @@ export interface TransactionLockRequest {
 export interface TransactionLockStatusResponse {
   '@type': string;
   enabled: boolean;
-  validUntil: number;
+  validUntil?: number;
 }
 
 export interface Validations {

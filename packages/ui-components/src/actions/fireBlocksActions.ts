@@ -523,16 +523,27 @@ export const getTransactionGasEstimate = async (
 };
 
 export const getTransactionLockStatus = async (accessToken: string) => {
-  return fetchApi<TransactionLockStatusResponse>(`/v1/signature-lock`, {
-    method: 'GET',
-    mode: 'cors',
-    headers: {
-      'Access-Control-Allow-Credentials': 'true',
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
+  const lockStatus = await fetchApi<TransactionLockStatusResponse>(
+    `/v1/signature-lock`,
+    {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
     },
-    host: config.WALLETS.HOST_URL,
-  });
+  );
+  if (!lockStatus) {
+    return undefined;
+  }
+  if (lockStatus.validUntil && lockStatus.validUntil < Date.now()) {
+    lockStatus.validUntil = undefined;
+    lockStatus.enabled = false;
+  }
+  return lockStatus;
 };
 
 export const getTransferGasEstimate = async (

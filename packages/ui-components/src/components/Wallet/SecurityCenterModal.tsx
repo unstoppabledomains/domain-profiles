@@ -20,6 +20,7 @@ import {
   getTransactionLockStatus,
 } from '../../actions/fireBlocksActions';
 import {getTwoFactorStatus} from '../../actions/walletMfaActions';
+import {useWeb3Context} from '../../hooks';
 import {disablePin, isPinEnabled, useTranslationContext} from '../../lib';
 import type {
   RecoveryStatusResponse,
@@ -81,6 +82,7 @@ type Props = {
 const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
+  const {setTxLockStatus} = useWeb3Context();
   const theme = useTheme();
   const {data: featureFlags} = useFeatureFlags(false);
   const [recoveryKitStatus, setRecoveryKitStatus] =
@@ -164,6 +166,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
     mode: 'MANUAL' | 'TIME',
     status: TransactionLockStatusResponse,
   ) => {
+    setTxLockStatus(status);
     if (status.enabled) {
       if (mode === 'MANUAL') {
         setIsTxLockManualEnabled(true);
@@ -417,7 +420,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
                 >
                   {isTxLockManualEnabled
                     ? t('manage.disable')
-                    : t('manage.enable')}
+                    : t('manage.configure')}
                 </Button>
               )
             ) : (
@@ -454,7 +457,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
                 onClick={handleTxLockTimeClicked}
                 size="small"
               >
-                {t('manage.enable')}
+                {t('manage.configure')}
               </Button>
             ) : (
               <Alert severity="warning">{t('wallet.txLockPrerequisite')}</Alert>

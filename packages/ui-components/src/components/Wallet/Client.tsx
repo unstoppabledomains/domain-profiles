@@ -44,7 +44,6 @@ import {
   useTranslationContext,
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
-import type {TransactionLockStatusResponse} from '../../lib/types/fireBlocks';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileList} from '../Domain';
@@ -231,10 +230,9 @@ export const Client: React.FC<ClientProps> = ({
   const [state, saveState] = useFireblocksState();
   const [fundingModalTitle, setFundingModalTitle] = useState<string>();
   const [fundingModalIcon, setFundingModalIcon] = useState<React.ReactNode>();
-  const [txLockStatus, setTxLockStatus] =
-    useState<TransactionLockStatusResponse>();
   const [banner, setBanner] = useState<React.ReactNode>();
-  const {setWeb3Deps, setShowPinCta} = useWeb3Context();
+  const {setWeb3Deps, setShowPinCta, setTxLockStatus, txLockStatus} =
+    useWeb3Context();
   const cryptoValue = wallets
     .map(w => w.totalValueUsdAmt || 0)
     .reduce((p, c) => p + c, 0);
@@ -374,11 +372,6 @@ export const Client: React.FC<ClientProps> = ({
       if (isWalletLocked) {
         setShowPinCta(true);
       } else {
-        // retrieve wallet lock status
-        if (accessToken) {
-          setTxLockStatus(await getTransactionLockStatus(accessToken));
-        }
-
         // retrieve fresh wallet balances
         await onRefresh(showSpinner, fields);
       }

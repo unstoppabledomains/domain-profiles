@@ -75,7 +75,7 @@ const SetupTxLockModal: React.FC<Props> = ({
   const [t] = useTranslationContext();
   const [lockStatus, setLockStatus] = useState<TransactionLockStatusResponse>();
   const [otp, setOtp] = useState<string>();
-  const [timeLockPeriodMs, setTimeLockPeriodMs] = useState<number>();
+  const [timeLockPeriodMs, setTimeLockPeriodMs] = useState(7 * ONE_DAY_MS);
   const [isLoaded, setIsLoaded] = useState<boolean>();
   const [isSuccess, setIsSuccess] = useState<boolean>();
   const [isSaving, setIsSaving] = useState(false);
@@ -229,6 +229,7 @@ const SetupTxLockModal: React.FC<Props> = ({
                         <MenuItem value={String(1 * ONE_DAY_MS)}>1</MenuItem>
                         <MenuItem value={String(3 * ONE_DAY_MS)}>3</MenuItem>
                         <MenuItem value={String(7 * ONE_DAY_MS)}>7</MenuItem>
+                        <MenuItem value={String(15 * ONE_DAY_MS)}>15</MenuItem>
                         <MenuItem value={String(30 * ONE_DAY_MS)}>30</MenuItem>
                       </Select>
                     </FormControl>
@@ -297,7 +298,7 @@ const SetupTxLockModal: React.FC<Props> = ({
         className={classes.button}
         disabled={
           isSaving ||
-          (lockStatus?.enabled && !isDirty) ||
+          (mode === 'MANUAL' && lockStatus?.enabled && !isDirty) ||
           (mode === 'TIME' && !timeLockPeriodMs)
         }
       >
@@ -306,6 +307,10 @@ const SetupTxLockModal: React.FC<Props> = ({
           : (mode === 'MANUAL' && lockStatus?.enabled) ||
             (mode === 'TIME' && lockStatus?.validUntil)
           ? t('manage.disable')
+          : mode === 'TIME' && timeLockPeriodMs
+          ? t('wallet.txLockTimeAction', {
+              number: String(timeLockPeriodMs / ONE_DAY_MS),
+            })
           : t('manage.enable')}
       </LoadingButton>
     </Box>

@@ -6,7 +6,10 @@ import UnlockPinModal from '../components/Wallet/UnlockPinModal';
 import useChromeStorage, {
   isChromeStorageSupported,
 } from '../hooks/useChromeStorage';
-import type {CreateTransaction} from '../lib/types/fireBlocks';
+import type {
+  CreateTransaction,
+  TransactionLockStatusResponse,
+} from '../lib/types/fireBlocks';
 import {FireblocksStateKey} from '../lib/types/fireBlocks';
 import type {Web3Dependencies} from '../lib/types/web3';
 
@@ -31,6 +34,8 @@ export const Web3Context = React.createContext<{
   setPersistentKeyState?: (
     state: Record<string, Record<string, string>>,
   ) => void;
+  txLockStatus?: TransactionLockStatusResponse;
+  setTxLockStatus?: (v?: TransactionLockStatusResponse) => void;
 }>({});
 
 const Web3ContextProvider: React.FC<Props> = ({children}) => {
@@ -60,10 +65,12 @@ const Web3ContextProvider: React.FC<Props> = ({children}) => {
       'local',
     );
 
-  // signing parameters
+  // wallet parameters
   const [messageToSign, setMessageToSign] = useState<string>();
   const [txToSign, setTxToSign] = useState<CreateTransaction>();
   const [showPinCta, setShowPinCta] = useState<boolean>();
+  const [txLockStatus, setTxLockStatus] =
+    useState<TransactionLockStatusResponse>();
 
   // determine if chrome extension runtime
   useEffect(() => {
@@ -99,6 +106,8 @@ const Web3ContextProvider: React.FC<Props> = ({children}) => {
     setPersistentKeyState: isChromeExtension
       ? setChromePersistentKeyState
       : setPersistentKeyState,
+    txLockStatus,
+    setTxLockStatus,
   };
 
   const handlePinComplete = () => {

@@ -73,10 +73,10 @@ const SetupTxLockModal: React.FC<Props> = ({
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const [lockStatus, setLockStatus] = useState<TransactionLockStatusResponse>();
   const [otp, setOtp] = useState<string>();
   const [timeLockPeriodMs, setTimeLockPeriodMs] = useState<number>();
   const [isLoaded, setIsLoaded] = useState<boolean>();
-  const [isEnabled, setIsEnabled] = useState<boolean>();
   const [isSuccess, setIsSuccess] = useState<boolean>();
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -86,17 +86,16 @@ const SetupTxLockModal: React.FC<Props> = ({
     if (!accessToken) {
       return;
     }
-    const status = await getTransactionLockStatus(accessToken);
-    setIsEnabled(status?.enabled);
-    setTimeLockPeriodMs(status?.validUntil);
+    setLockStatus(await getTransactionLockStatus(accessToken));
     setIsLoaded(true);
   }, [accessToken]);
 
-  const handleTimePeriodChange = (event: SelectChangeEvent) => {
+  const handleTimePeriodChanged = (event: SelectChangeEvent) => {
     setTimeLockPeriodMs(parseInt(event.target.value, 10));
+    setIsDirty(true);
   };
 
-  const handleValueChanged = (id: string, v: string) => {
+  const handleOtpChanged = (id: string, v: string) => {
     if (id === 'otp') {
       setOtp(v);
     }
@@ -125,7 +124,7 @@ const SetupTxLockModal: React.FC<Props> = ({
     // set saving state
     setIsSaving(true);
 
-    if (isEnabled) {
+    if (mode === 'MANUAL' && lockStatus?.enabled) {
       // disable lock
       if (otp) {
         const disableResult = await disableTransactionLock(accessToken, otp);
@@ -171,7 +170,7 @@ const SetupTxLockModal: React.FC<Props> = ({
     setIsSuccess(true);
     onComplete(mode, {
       '@type': 'TransactionLockStatusResponse',
-      enabled: isEnabled ? false : true,
+      enabled: lockStatus?.enabled ? false : true,
       validUntil:
         mode === 'TIME' && timeLockPeriodMs
           ? Date.now() + timeLockPeriodMs
@@ -199,8 +198,8 @@ const SetupTxLockModal: React.FC<Props> = ({
                   : t('wallet.txLockTimeDescription')}
               </Markdown>
             </Typography>
-            {((mode === 'MANUAL' && !isEnabled) ||
-              (mode === 'TIME' && !timeLockPeriodMs)) && (
+            {((mode === 'MANUAL' && !lockStatus?.enabled) ||
+              (mode === 'TIME' && !lockStatus?.validUntil)) && (
               <>
                 <Box mt={2} mb={2}>
                   <Alert severity="warning">
@@ -223,7 +222,7 @@ const SetupTxLockModal: React.FC<Props> = ({
                             ? String(timeLockPeriodMs)
                             : undefined
                         }
-                        onChange={handleTimePeriodChange}
+                        onChange={handleTimePeriodChanged}
                         label={t('wallet.enterTimeLockDays')}
                         fullWidth
                       >
@@ -246,14 +245,14 @@ const SetupTxLockModal: React.FC<Props> = ({
               label={
                 mode === 'MANUAL'
                   ? t('wallet.txLockManualSuccess', {
-                      action: isEnabled ? 'disabled' : 'enabled',
+                      action: lockStatus?.enabled ? 'disabled' : 'enabled',
                     })
                   : t('wallet.txLockTimeSuccess', {
-                      action: isEnabled ? 'disabled' : 'enabled',
+                      action: lockStatus?.enabled ? 'disabled' : 'enabled',
                     })
               }
             />
-            {!isEnabled && timeLockPeriodMs && (
+            {!lockStatus?.enabled && timeLockPeriodMs && (
               <Box mt={2} mb={-2}>
                 <Alert severity="warning">
                   <Markdown>
@@ -269,7 +268,7 @@ const SetupTxLockModal: React.FC<Props> = ({
               </Box>
             )}
           </Box>
-        ) : mode === 'MANUAL' && isEnabled ? (
+        ) : mode === 'MANUAL' && lockStatus?.enabled ? (
           <Box>
             <ManageInput
               id="otp"
@@ -277,7 +276,7 @@ const SetupTxLockModal: React.FC<Props> = ({
               label={t('wallet.oneTimeCode')}
               placeholder={t('wallet.enterOneTimeCode')}
               value={otp}
-              onChange={handleValueChanged}
+              onChange={handleOtpChanged}
               mt={1}
               stacked={true}
               disabled={isSaving}
@@ -298,13 +297,14 @@ const SetupTxLockModal: React.FC<Props> = ({
         className={classes.button}
         disabled={
           isSaving ||
-          (isEnabled && !isDirty) ||
+          (lockStatus?.enabled && !isDirty) ||
           (mode === 'TIME' && !timeLockPeriodMs)
         }
       >
         {isSuccess
           ? t('common.close')
-          : isEnabled
+          : (mode === 'MANUAL' && lockStatus?.enabled) ||
+            (mode === 'TIME' && lockStatus?.validUntil)
           ? t('manage.disable')
           : t('manage.enable')}
       </LoadingButton>

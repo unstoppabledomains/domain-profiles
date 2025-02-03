@@ -145,6 +145,12 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
       bootstrapState.lockedRefreshToken = undefined;
       await saveBootstrapState(bootstrapState, state, saveState);
 
+      // request a new access token using the refresh token
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        throw new Error('unable to retrieve new access token');
+      }
+
       // unlock was successful
       onSuccess();
     } catch (e) {

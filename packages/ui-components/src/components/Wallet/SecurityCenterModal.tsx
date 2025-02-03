@@ -381,7 +381,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
         </Box>
         <Box className={classes.noRecommendationContainer}>
           <Typography mt={4} variant="h6">
-            {t('wallet.policies')}
+            {t('wallet.rules')}
           </Typography>
         </Box>
         <Box>

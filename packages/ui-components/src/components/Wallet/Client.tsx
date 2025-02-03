@@ -268,19 +268,7 @@ export const Client: React.FC<ClientProps> = ({
     }
 
     // retrieve wallet lock status
-    const lockStatus = await getTransactionLockStatus(accessToken);
-    setTxLockStatus(lockStatus);
-    if (lockStatus?.enabled) {
-      setBanner(
-        <Alert severity="info">
-          {txLockStatus?.validUntil
-            ? t('wallet.txLockTimeStatus', {
-                date: new Date(txLockStatus.validUntil).toLocaleString(),
-              })
-            : t('wallet.txLockManualStatus')}
-        </Alert>,
-      );
-    }
+    setTxLockStatus(await getTransactionLockStatus(accessToken));
 
     // start a new refresh timer
     resetRefreshTimer(getTabFields(tabValue));
@@ -290,6 +278,22 @@ export const Client: React.FC<ClientProps> = ({
       clearTimeout(refreshTimer);
     };
   }, [accessToken]);
+
+  useEffect(() => {
+    if (!txLockStatus?.enabled) {
+      setBanner(undefined);
+      return;
+    }
+    setBanner(
+      <Alert severity="info">
+        {txLockStatus?.validUntil
+          ? t('wallet.txLockTimeStatus', {
+              date: new Date(txLockStatus.validUntil).toLocaleString(),
+            })
+          : t('wallet.txLockManualStatus')}
+      </Alert>,
+    );
+  }, [txLockStatus]);
 
   useEffect(() => {
     if (!isHeaderClicked || !setIsHeaderClicked) {
@@ -370,6 +374,12 @@ export const Client: React.FC<ClientProps> = ({
       if (isWalletLocked) {
         setShowPinCta(true);
       } else {
+        // retrieve wallet lock status
+        if (accessToken) {
+          setTxLockStatus(await getTransactionLockStatus(accessToken));
+        }
+
+        // retrieve fresh wallet balances
         await onRefresh(showSpinner, fields);
       }
     });

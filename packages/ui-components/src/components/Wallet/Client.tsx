@@ -284,11 +284,13 @@ export const Client: React.FC<ClientProps> = ({
     }
     setBanner(
       <Alert severity="info">
-        {txLockStatus?.validUntil
-          ? t('wallet.txLockTimeStatus', {
-              date: new Date(txLockStatus.validUntil).toLocaleString(),
-            })
-          : t('wallet.txLockManualStatus')}
+        <Markdown>
+          {txLockStatus?.validUntil
+            ? t('wallet.txLockTimeStatus', {
+                date: new Date(txLockStatus.validUntil).toLocaleString(),
+              })
+            : t('wallet.txLockManualStatus')}
+        </Markdown>
       </Alert>,
     );
   }, [txLockStatus]);

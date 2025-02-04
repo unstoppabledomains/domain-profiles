@@ -1,10 +1,16 @@
+import LockClockOutlinedIcon from '@mui/icons-material/LockClockOutlined';
+import LockOpenOutlinedIcon from '@mui/icons-material/LockOpenOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Alert from '@mui/lab/Alert';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
 import type {SelectChangeEvent} from '@mui/material/Select';
 import Select from '@mui/material/Select';
 import Typography from '@mui/material/Typography';
@@ -53,10 +59,17 @@ const useStyles = makeStyles()((theme: Theme) => ({
   passwordIcon: {
     margin: theme.spacing(0.5),
   },
+  radio: {
+    display: 'flex',
+    alignItems: 'start',
+  },
+  mode: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+  },
 }));
 
 type Props = {
-  mode: 'MANUAL' | 'TIME';
   accessToken?: string;
   onComplete: (
     mode: 'MANUAL' | 'TIME',
@@ -66,7 +79,6 @@ type Props = {
 };
 
 const SetupTxLockModal: React.FC<Props> = ({
-  mode,
   accessToken,
   onComplete,
   onClose,
@@ -75,6 +87,7 @@ const SetupTxLockModal: React.FC<Props> = ({
   const [t] = useTranslationContext();
   const [lockStatus, setLockStatus] = useState<TransactionLockStatusResponse>();
   const [otp, setOtp] = useState<string>();
+  const [mode, setMode] = useState<'MANUAL' | 'TIME'>('MANUAL');
   const [timeLockPeriodMs, setTimeLockPeriodMs] = useState(7 * ONE_DAY_MS);
   const [isLoaded, setIsLoaded] = useState<boolean>();
   const [isSuccess, setIsSuccess] = useState<boolean>();
@@ -89,6 +102,10 @@ const SetupTxLockModal: React.FC<Props> = ({
     setLockStatus(await getTransactionLockStatus(accessToken));
     setIsLoaded(true);
   }, [accessToken]);
+
+  const handleModeChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setMode((event.target as HTMLInputElement).value as 'MANUAL' | 'TIME');
+  };
 
   const handleTimePeriodChanged = (event: SelectChangeEvent) => {
     setTimeLockPeriodMs(parseInt(event.target.value, 10));
@@ -189,15 +206,43 @@ const SetupTxLockModal: React.FC<Props> = ({
   return (
     <Box className={classes.container}>
       <Box className={classes.content}>
-        {!isSuccess && (
+        {!isSuccess && !lockStatus?.enabled && (
           <Box>
-            <Typography variant="body2" mb={1} mt={-2} component="div">
-              <Markdown>
-                {mode === 'MANUAL'
-                  ? t('wallet.txLockManualDescription')
-                  : t('wallet.txLockTimeDescription')}
-              </Markdown>
-            </Typography>
+            <RadioGroup
+              onChange={handleModeChanged}
+              aria-labelledby="radio-group-label"
+              defaultValue={'MANUAL'}
+              name="radio-group"
+            >
+              <FormControlLabel
+                value="MANUAL"
+                control={<Radio />}
+                className={classes.radio}
+                label={
+                  <Typography variant="body2" className={classes.mode}>
+                    <Markdown>
+                      {`**${t('wallet.txLockStandard')}:** ${t(
+                        'wallet.txLockManualDescription',
+                      )}`}
+                    </Markdown>
+                  </Typography>
+                }
+              />
+              <FormControlLabel
+                value="TIME"
+                control={<Radio />}
+                className={classes.radio}
+                label={
+                  <Typography variant="body2" className={classes.mode}>
+                    <Markdown>
+                      {`**${t('wallet.txLockTime')}:** ${t(
+                        'wallet.txLockTimeDescription',
+                      )}`}
+                    </Markdown>
+                  </Typography>
+                }
+              />
+            </RadioGroup>
             {((mode === 'MANUAL' && !lockStatus?.enabled) ||
               (mode === 'TIME' && !lockStatus?.validUntil)) && (
               <>
@@ -296,6 +341,15 @@ const SetupTxLockModal: React.FC<Props> = ({
         loading={isSaving}
         onClick={handleClick}
         className={classes.button}
+        startIcon={
+          lockStatus?.enabled ? (
+            <LockOpenOutlinedIcon />
+          ) : mode === 'MANUAL' ? (
+            <LockOutlinedIcon />
+          ) : (
+            <LockClockOutlinedIcon />
+          )
+        }
         disabled={
           isSaving ||
           (mode === 'MANUAL' && lockStatus?.enabled && !isDirty) ||
@@ -306,12 +360,12 @@ const SetupTxLockModal: React.FC<Props> = ({
           ? t('common.close')
           : (mode === 'MANUAL' && lockStatus?.enabled) ||
             (mode === 'TIME' && lockStatus?.validUntil)
-          ? t('manage.disable')
+          ? t('wallet.unlock')
           : mode === 'TIME' && timeLockPeriodMs
           ? t('wallet.txLockTimeAction', {
               number: String(timeLockPeriodMs / ONE_DAY_MS),
             })
-          : t('manage.enable')}
+          : t('wallet.lock')}
       </LoadingButton>
     </Box>
   );

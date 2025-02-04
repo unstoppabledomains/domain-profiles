@@ -1,6 +1,5 @@
 import GppBadOutlinedIcon from '@mui/icons-material/GppBadOutlined';
 import GppGoodOutlinedIcon from '@mui/icons-material/GppGoodOutlined';
-import LockClockOutlinedIcon from '@mui/icons-material/LockClockOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Alert from '@mui/lab/Alert';
 import Box from '@mui/material/Box';
@@ -96,9 +95,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   const [isTxLockTimeEnabled, setIsTxLockTimeEnabled] = useState<number>();
   const [isLockEnabled, setIsLockEnabled] = useState(false);
   const [isLockModalOpen, setIsLockModalOpen] = useState(false);
-  const [isTxLockModalOpen, setIsTxLockModalOpen] = useState<
-    'MANUAL' | 'TIME'
-  >();
+  const [isTxLockModalOpen, setIsTxLockModalOpen] = useState(false);
 
   useEffect(() => {
     if (!accessToken) {
@@ -155,11 +152,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   };
 
   const handleTxLockManualClicked = async () => {
-    setIsTxLockModalOpen('MANUAL');
-  };
-
-  const handleTxLockTimeClicked = async () => {
-    setIsTxLockModalOpen('TIME');
+    setIsTxLockModalOpen(true);
   };
 
   const handleTxLockComplete = async (
@@ -387,7 +380,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
         <Box>
           <WalletPreference
             title={t('wallet.txLockManual')}
-            description={t('wallet.txLockManualDescription')}
+            description={t('wallet.txLockDescription')}
             icon={
               <LockOutlinedIcon
                 className={cx(classes.icon, {
@@ -398,7 +391,9 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
               />
             }
             statusElement={renderStatus(
-              isTxLockManualEnabled ? t('common.on') : t('common.off'),
+              isTxLockManualEnabled || isTxLockTimeEnabled
+                ? t('common.on')
+                : t('common.off'),
             )}
           >
             {isMfaEnabled ? (
@@ -419,46 +414,10 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
                   size="small"
                 >
                   {isTxLockManualEnabled
-                    ? t('manage.disable')
+                    ? t('wallet.unlock')
                     : t('manage.configure')}
                 </Button>
               )
-            ) : (
-              <Alert severity="warning">{t('wallet.txLockPrerequisite')}</Alert>
-            )}
-          </WalletPreference>
-          <WalletPreference
-            title={t('wallet.txLockTime')}
-            description={t('wallet.txLockTimeDescription')}
-            icon={
-              <LockClockOutlinedIcon
-                className={cx(classes.icon, {
-                  [classes.iconEnabled]: !!isTxLockTimeEnabled,
-                })}
-              />
-            }
-            statusElement={renderStatus(
-              isTxLockTimeEnabled ? t('common.on') : t('common.off'),
-            )}
-          >
-            {isTxLockTimeEnabled ? (
-              <Alert severity="info">
-                <Markdown>
-                  {t('wallet.txLockTimeStatus', {
-                    date: new Date(isTxLockTimeEnabled).toLocaleString(),
-                  })}
-                </Markdown>
-              </Alert>
-            ) : isMfaEnabled ? (
-              <Button
-                className={classes.button}
-                variant="contained"
-                fullWidth
-                onClick={handleTxLockTimeClicked}
-                size="small"
-              >
-                {t('manage.configure')}
-              </Button>
             ) : (
               <Alert severity="warning">{t('wallet.txLockPrerequisite')}</Alert>
             )}
@@ -510,20 +469,15 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
       )}
       {isTxLockModalOpen && (
         <Modal
-          title={
-            isTxLockModalOpen === 'MANUAL'
-              ? t('wallet.txLockManual')
-              : t('wallet.txLockTime')
-          }
+          title={t('wallet.txLockManual')}
           open={true}
           fullScreen={false}
-          onClose={() => setIsTxLockModalOpen(undefined)}
+          onClose={() => setIsTxLockModalOpen(false)}
         >
           <SetupTxLockModal
             accessToken={accessToken}
-            mode={isTxLockModalOpen}
             onComplete={handleTxLockComplete}
-            onClose={() => setIsTxLockModalOpen(undefined)}
+            onClose={() => setIsTxLockModalOpen(false)}
           />
         </Modal>
       )}

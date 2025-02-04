@@ -41,6 +41,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
+    width: '100%',
     justifyContent: 'space-between',
   },
   content: {
@@ -63,9 +64,18 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     alignItems: 'start',
   },
+  modeContainer: {
+    display: 'flex',
+    width: '100%',
+  },
   mode: {
+    margin: theme.spacing(1),
+  },
+  icon: {
     marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
+    width: '35px',
+    height: '35px',
+    color: theme.palette.wallet.text.secondary,
   },
 }));
 
@@ -218,43 +228,54 @@ const SetupTxLockModal: React.FC<Props> = ({
                 value="MANUAL"
                 control={<Radio />}
                 className={classes.radio}
+                labelPlacement="start"
                 label={
-                  <Typography variant="body2" className={classes.mode}>
-                    <Markdown>
-                      {`**${t('wallet.txLockStandard')}:** ${t(
-                        'wallet.txLockManualDescription',
-                      )}`}
-                    </Markdown>
-                  </Typography>
+                  <Box className={classes.modeContainer}>
+                    <LockOutlinedIcon className={classes.icon} />
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      className={classes.mode}
+                    >
+                      <Typography variant="body2" fontWeight="bold">
+                        {t('wallet.txLockStandard')}
+                      </Typography>
+                      <Typography variant="body2">
+                        {t('wallet.txLockManualDescription')}
+                      </Typography>
+                    </Box>
+                  </Box>
                 }
               />
               <FormControlLabel
                 value="TIME"
                 control={<Radio />}
                 className={classes.radio}
+                labelPlacement="start"
                 label={
-                  <Typography variant="body2" className={classes.mode}>
-                    <Markdown>
-                      {`**${t('wallet.txLockTime')}:** ${t(
-                        'wallet.txLockTimeDescription',
-                      )}`}
-                    </Markdown>
-                  </Typography>
+                  <Box className={classes.modeContainer}>
+                    <LockClockOutlinedIcon className={classes.icon} />
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      className={classes.mode}
+                    >
+                      <Typography variant="body2" fontWeight="bold">
+                        {t('wallet.txLockTime')}
+                      </Typography>
+                      <Typography variant="body2">
+                        {t('wallet.txLockTimeDescription')}
+                      </Typography>
+                    </Box>
+                  </Box>
                 }
               />
             </RadioGroup>
             {((mode === 'MANUAL' && !lockStatus?.enabled) ||
               (mode === 'TIME' && !lockStatus?.validUntil)) && (
               <>
-                <Box mt={2} mb={2}>
-                  <Alert severity={mode === 'MANUAL' ? 'info' : 'warning'}>
-                    {mode === 'MANUAL'
-                      ? t('wallet.txLockManualTip')
-                      : t('wallet.txLockTimeTip')}
-                  </Alert>
-                </Box>
                 {mode === 'TIME' && (
-                  <Box mt={4}>
+                  <Box mt={2} mb={4}>
                     <FormControl fullWidth>
                       <InputLabel id="time-period-label">
                         {t('wallet.enterTimeLockDays')}
@@ -280,6 +301,13 @@ const SetupTxLockModal: React.FC<Props> = ({
                     </FormControl>
                   </Box>
                 )}
+                <Box mt={2}>
+                  <Alert severity={mode === 'MANUAL' ? 'info' : 'warning'}>
+                    {mode === 'MANUAL'
+                      ? t('wallet.txLockManualTip')
+                      : t('wallet.txLockTimeTip')}
+                  </Alert>
+                </Box>
               </>
             )}
           </Box>
@@ -300,7 +328,7 @@ const SetupTxLockModal: React.FC<Props> = ({
             />
             {!lockStatus?.enabled && timeLockPeriodMs && (
               <Box mt={2} mb={-2}>
-                <Alert severity="warning">
+                <Alert severity={mode === 'MANUAL' ? 'info' : 'warning'}>
                   <Markdown>
                     {mode === 'MANUAL'
                       ? t('wallet.txLockManualTip')
@@ -342,7 +370,7 @@ const SetupTxLockModal: React.FC<Props> = ({
         onClick={handleClick}
         className={classes.button}
         startIcon={
-          lockStatus?.enabled ? (
+          isSuccess ? undefined : lockStatus?.enabled ? (
             <LockOpenOutlinedIcon />
           ) : mode === 'MANUAL' ? (
             <LockOutlinedIcon />

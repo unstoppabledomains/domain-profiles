@@ -1,5 +1,6 @@
 import GppBadOutlinedIcon from '@mui/icons-material/GppBadOutlined';
 import GppGoodOutlinedIcon from '@mui/icons-material/GppGoodOutlined';
+import LockOpenOutlinedIcon from '@mui/icons-material/LockOpenOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Alert from '@mui/lab/Alert';
 import Box from '@mui/material/Box';
@@ -380,13 +381,14 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
             title={t('wallet.txLockManual')}
             description={t('wallet.txLockDescription')}
             icon={
-              <LockOutlinedIcon
-                className={cx(classes.icon, {
-                  [classes.iconEnabled]:
-                    isTxLockManualEnabled ||
-                    (!!isTxLockTimeEnabled && isTxLockTimeEnabled > Date.now()),
-                })}
-              />
+              isTxLockManualEnabled ||
+              (isTxLockTimeEnabled && isTxLockTimeEnabled > Date.now()) ? (
+                <LockOutlinedIcon
+                  className={cx(classes.icon, classes.iconEnabled)}
+                />
+              ) : (
+                <LockOpenOutlinedIcon className={classes.icon} />
+              )
             }
             statusElement={renderStatus(
               isTxLockManualEnabled || isTxLockTimeEnabled

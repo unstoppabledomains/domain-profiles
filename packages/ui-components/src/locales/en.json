@@ -1056,7 +1056,7 @@
     "txLockTimeError": "Error {{action}} time lock safe",
     "txLockTimeStatus": "Your wallet is locked until **{{date}}**",
     "txLockTimeSuccess": "Successfully {{action}} time lock safe",
-    "txLockTimeTip": "You won't be able to send crypto or sign transactions until the time expires. Choose your time lock date carefully.",
+    "txLockTimeTip": "You won't be able to unlock your wallet or send crypto before your chosen date. Please choose carefully.",
     "unlock": "Unlock",
     "verifyEmail": "Verify email address",
     "viewTransaction": "View on blockchain",

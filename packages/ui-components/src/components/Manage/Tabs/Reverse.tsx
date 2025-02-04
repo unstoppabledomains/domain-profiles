@@ -12,11 +12,7 @@ import truncateEthAddress from 'truncate-eth-address';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {
-  getProfileData,
-  getStrictReverseResolution,
-  useFeatureFlags,
-} from '../../../actions';
+import {getProfileData, getStrictReverseResolution} from '../../../actions';
 import {
   confirmRecordUpdate,
   getRegistrationMessage,
@@ -88,7 +84,6 @@ export const Reverse: React.FC<ManageTabProps> = ({
 }) => {
   const {classes} = useStyles();
   const {web3Deps, setWeb3Deps} = useWeb3Context();
-  const {data: featureFlags} = useFeatureFlags(false, domain);
   const [saveClicked, setSaveClicked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -244,22 +239,6 @@ export const Reverse: React.FC<ManageTabProps> = ({
     }
     return undefined;
   };
-
-  // show coming soon if feature flag disabled
-  if (!featureFlags.variations?.udMeServiceDomainsEnableManagement) {
-    return (
-      <Box className={classes.container}>
-        <TabHeader
-          icon={<SwapHorizOutlinedIcon />}
-          description={t('manage.reverseResolutionDescription', {domain})}
-          learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001217257-what-is-and-how-to-setup-reverse-resolution"
-        />
-        <Typography variant="h5" className={classes.title}>
-          {t('manage.comingSoon')}
-        </Typography>
-      </Box>
-    );
-  }
 
   return (
     <Box className={classes.container}>

@@ -10,11 +10,7 @@ export type LaunchDarklyBooleanKey =
   | 'profile-service-enable-wallet-send-to-email'
   | 'ud-me-service-domains-enable-social-verification'
   | 'ud-me-service-domains-enable-fireblocks'
-  | 'ud-me-service-domains-enable-management'
-  | 'ud-me-enable-wallet-solana-signing'
-  | 'ud-me-enable-wallet-change-pw'
-  | 'ud-me-service-enable-swap';
-
+  | 'ud-me-service-domains-enable-management';
 export type LaunchDarklyNumberKey = 'example-number';
 
 export type LaunchDarklyStringKey = 'example-string';

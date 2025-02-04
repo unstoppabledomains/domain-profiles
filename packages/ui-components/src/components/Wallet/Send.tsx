@@ -174,8 +174,6 @@ const Send: React.FC<Props> = ({
   const isSendToEmailEnabled =
     featureFlags.variations?.profileServiceEnableWalletCreation === true &&
     featureFlags.variations?.profileServiceEnableWalletSendToEmail === true;
-  const isSplTokenEnabled =
-    featureFlags.variations?.udMeEnableWalletSolanaSigning;
 
   useEffect(() => {
     if (!initialSelectedToken) {
@@ -362,7 +360,7 @@ const Send: React.FC<Props> = ({
           requireBalance={true}
           supportedAssetList={config.WALLETS.CHAINS.SEND}
           supportErc20={true}
-          supportSpl={isSplTokenEnabled}
+          supportSpl={true}
         />
       </Box>
     );

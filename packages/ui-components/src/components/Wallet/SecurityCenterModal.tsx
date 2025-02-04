@@ -220,16 +220,14 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           icon={<GppGoodOutlinedIcon className={classes.iconEnabled} />}
           statusElement={renderStatus(t('common.strong'))}
         >
-          {featureFlags?.variations?.udMeEnableWalletChangePw && (
-            <Button
-              className={classes.button}
-              onClick={handleChangePasswordClicked}
-              variant="contained"
-              size="small"
-            >
-              {t('wallet.changeRecoveryPhrase')}
-            </Button>
-          )}
+          <Button
+            className={classes.button}
+            onClick={handleChangePasswordClicked}
+            variant="contained"
+            size="small"
+          >
+            {t('wallet.changeRecoveryPhrase')}
+          </Button>
         </WalletPreference>
       ),
     },
@@ -396,7 +394,9 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
                 : t('common.off'),
             )}
           >
-            {isMfaEnabled ? (
+            {!featureFlags?.variations?.udMeServiceDomainsEnableManagement ? (
+              <Alert severity="info">{t('common.comingSoon')}</Alert>
+            ) : isMfaEnabled ? (
               isTxLockTimeEnabled && isTxLockTimeEnabled > Date.now() ? (
                 <Alert severity="info">
                   <Markdown>

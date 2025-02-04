@@ -247,7 +247,7 @@ const SetupTxLockModal: React.FC<Props> = ({
               (mode === 'TIME' && !lockStatus?.validUntil)) && (
               <>
                 <Box mt={2} mb={2}>
-                  <Alert severity="warning">
+                  <Alert severity={mode === 'MANUAL' ? 'info' : 'warning'}>
                     {mode === 'MANUAL'
                       ? t('wallet.txLockManualTip')
                       : t('wallet.txLockTimeTip')}

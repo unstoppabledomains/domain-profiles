@@ -219,9 +219,6 @@ export const WalletProvider: React.FC<
   const {classes} = useStyles({configState, mode, isMobile});
   const [t] = useTranslationContext();
 
-  const isCreateWalletEnabled =
-    featureFlags.variations?.profileServiceEnableWalletCreation === true;
-
   useEffect(() => {
     setIsWalletLoaded(false);
     setButtonComponent(<Box className={classes.continueActionContainer} />);
@@ -328,9 +325,7 @@ export const WalletProvider: React.FC<
           {errorMessage
             ? errorMessage
             : configState === WalletConfigState.NeedsOnboarding
-            ? isCreateWalletEnabled
-              ? t('wallet.createWallet')
-              : t('common.learnMore')
+            ? t('wallet.createWallet')
             : configState === WalletConfigState.PasswordEntry
             ? recoveryToken
               ? t('common.continue')
@@ -355,8 +350,7 @@ export const WalletProvider: React.FC<
             </Button>
           </Box>
         )}
-        {isCreateWalletEnabled &&
-          !recoveryToken &&
+        {!recoveryToken &&
           [
             WalletConfigState.PasswordEntry,
             WalletConfigState.OnboardWithCustody,
@@ -391,7 +385,6 @@ export const WalletProvider: React.FC<
     recoveryToken,
     errorMessage,
     isWalletLoaded,
-    isCreateWalletEnabled,
     persistKeys,
   ]);
 
@@ -930,11 +923,7 @@ export const WalletProvider: React.FC<
   };
 
   const processNeedsOnboarding = () => {
-    if (isCreateWalletEnabled) {
-      setConfigState(WalletConfigState.OnboardWithCustody);
-    } else {
-      window.open(config.WALLETS.LANDING_PAGE_URL, '_blank');
-    }
+    setConfigState(WalletConfigState.OnboardWithCustody);
   };
 
   const processPasswordEntry = async () => {

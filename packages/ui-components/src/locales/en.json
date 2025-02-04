@@ -1054,7 +1054,7 @@
     "txLockTimeAction": "Lock for {{number}} days",
     "txLockTimeDescription": "Your wallet remains permanently locked until a future date of your choosing.",
     "txLockTimeError": "Error {{action}} time lock safe",
-    "txLockTimeStatus": "Your wallet is locked until **{{date}}**",
+    "txLockTimeStatus": "Wallet is locked until **{{date}}**",
     "txLockTimeSuccess": "Successfully {{action}} time lock safe",
     "txLockTimeTip": "You won't be able to unlock your wallet or send crypto before your chosen date. Please choose carefully.",
     "unlock": "Unlock",

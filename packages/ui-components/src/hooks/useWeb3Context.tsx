@@ -1,4 +1,5 @@
-import {useContext, useEffect} from 'react';
+import {useContext} from 'react';
+import useAsyncEffect from 'use-async-effect';
 
 import config from '@unstoppabledomains/config';
 
@@ -22,6 +23,8 @@ const useWeb3Context = () => {
     setSessionKeyState,
     persistentKeyState,
     setPersistentKeyState,
+    txLockStatus,
+    setTxLockStatus,
   } = useContext(Web3Context);
 
   if (
@@ -31,7 +34,8 @@ const useWeb3Context = () => {
     !setShowPinCta ||
     !setTxToSign ||
     !setSessionKeyState ||
-    !setPersistentKeyState
+    !setPersistentKeyState ||
+    !setTxLockStatus
   ) {
     throw new Error(
       'Expected useWeb3Context to be called within <Web3ContextProvider />',
@@ -42,7 +46,7 @@ const useWeb3Context = () => {
   let lockScreenTimeout: NodeJS.Timeout;
 
   // check wallet PIN status
-  useEffect(() => {
+  useAsyncEffect(async () => {
     // return if modal is already visible
     if (showPinCta) {
       return;
@@ -59,28 +63,25 @@ const useWeb3Context = () => {
 
     // handle access token present
     if (accessToken) {
-      const handleAccessToken = async () => {
-        // hide the modal if the session is still active
-        setShowPinCta(false);
-        clearTimeout(lockScreenTimeout);
+      // hide the modal if the session is still active
+      setShowPinCta(false);
+      clearTimeout(lockScreenTimeout);
 
-        // check if session lock is enabled
-        if (await isPinEnabled()) {
-          // bump the lock state to the future due to usage
-          const pin = await getPinFromToken(accessToken);
-          const expirationTime = await unlock(
-            pin,
-            config.WALLETS.DEFAULT_PIN_TIMEOUT_MS,
-          );
+      // check if session lock is enabled
+      if (await isPinEnabled()) {
+        // bump the lock state to the future due to usage
+        const pin = await getPinFromToken(accessToken);
+        const expirationTime = await unlock(
+          pin,
+          config.WALLETS.DEFAULT_PIN_TIMEOUT_MS,
+        );
 
-          // set timer to lock the screen
-          lockScreenTimeout = setTimeout(
-            handleLockScreen,
-            expirationTime - Date.now(),
-          );
-        }
-      };
-      void handleAccessToken();
+        // set timer to lock the screen
+        lockScreenTimeout = setTimeout(
+          handleLockScreen,
+          expirationTime - Date.now(),
+        );
+      }
       return;
     }
 
@@ -127,6 +128,8 @@ const useWeb3Context = () => {
     setSessionKeyState,
     persistentKeyState,
     setPersistentKeyState,
+    txLockStatus,
+    setTxLockStatus,
   };
 };
 

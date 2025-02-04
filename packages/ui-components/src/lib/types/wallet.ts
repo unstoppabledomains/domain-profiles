@@ -38,7 +38,7 @@ export type TokenEntry = {
   walletType?: string;
 };
 
-export const WALLET_CARD_HEIGHT = 275;
+export const WALLET_CARD_HEIGHT = 285;
 
 export type WagmiConnectorType =
   | 'injected'

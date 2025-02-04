@@ -1131,7 +1131,6 @@ describe('Owner operations', () => {
     jest.spyOn(featureFlagActions, 'fetchFeatureFlags').mockResolvedValue({
       variations: {
         ...featureFlagActions.DEFAULT_FEATURE_FLAGS.variations!,
-        udMeServiceDomainsEnableManagement: true,
       },
     });
     jest.spyOn(identityActions, 'getHumanityCheckStatus').mockResolvedValue({

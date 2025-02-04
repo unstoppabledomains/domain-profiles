@@ -5,6 +5,7 @@ import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import QrCodeIcon from '@mui/icons-material/QrCode';
 import SendIcon from '@mui/icons-material/Send';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import Alert from '@mui/lab/Alert';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
@@ -21,6 +22,7 @@ import {Mutex} from 'async-mutex';
 import Markdown from 'markdown-to-jsx';
 import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
+import useAsyncEffect from 'use-async-effect';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -30,6 +32,7 @@ import {
   getOwnerDomains,
   getProfileData,
 } from '../../actions';
+import {getTransactionLockStatus} from '../../actions/fireBlocksActions';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
 import type {SerializedWalletBalance, TokenEntry} from '../../lib';
@@ -76,9 +79,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       display: 'flex',
       flexDirection: 'column',
       width: '100%',
-      minHeight: '180px',
       [theme.breakpoints.down('sm')]: {
-        minHeight: '150px',
         marginLeft: theme.spacing(-1),
         marginRight: theme.spacing(-1),
       },
@@ -95,7 +96,6 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       display: 'flex',
       justifyContent: 'center',
       marginTop: theme.spacing(3),
-      marginBottom: theme.spacing(2),
     },
     actionButton: {
       marginRight: theme.spacing(2),
@@ -126,7 +126,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       marginTop: '15px',
       height: `${WALLET_CARD_HEIGHT + 2}px`,
       [theme.breakpoints.down('sm')]: {
-        height: 'calc(100dvh - 330px)',
+        height: 'calc(100dvh - 310px)',
       },
     },
     domainListContainer: {
@@ -230,7 +230,9 @@ export const Client: React.FC<ClientProps> = ({
   const [state, saveState] = useFireblocksState();
   const [fundingModalTitle, setFundingModalTitle] = useState<string>();
   const [fundingModalIcon, setFundingModalIcon] = useState<React.ReactNode>();
-  const {setWeb3Deps, setShowPinCta} = useWeb3Context();
+  const [banner, setBanner] = useState<React.ReactNode>();
+  const {setWeb3Deps, setShowPinCta, setTxLockStatus, txLockStatus} =
+    useWeb3Context();
   const cryptoValue = wallets
     .map(w => w.totalValueUsdAmt || 0)
     .reduce((p, c) => p + c, 0);
@@ -258,7 +260,14 @@ export const Client: React.FC<ClientProps> = ({
   const address = wallets.find(w => isEthAddress(w.address))?.address;
 
   // initialize the page refresh timer
-  useEffect(() => {
+  useAsyncEffect(async () => {
+    if (!accessToken) {
+      return;
+    }
+
+    // retrieve wallet lock status
+    setTxLockStatus(await getTransactionLockStatus(accessToken));
+
     // start a new refresh timer
     resetRefreshTimer(getTabFields(tabValue));
 
@@ -266,7 +275,25 @@ export const Client: React.FC<ClientProps> = ({
     return () => {
       clearTimeout(refreshTimer);
     };
-  }, []);
+  }, [accessToken]);
+
+  useEffect(() => {
+    if (!txLockStatus?.enabled) {
+      setBanner(undefined);
+      return;
+    }
+    setBanner(
+      <Alert severity="info">
+        <Markdown>
+          {txLockStatus?.validUntil
+            ? t('wallet.txLockTimeStatus', {
+                date: new Date(txLockStatus.validUntil).toLocaleString(),
+              })
+            : t('wallet.txLockManualStatus')}
+        </Markdown>
+      </Alert>,
+    );
+  }, [txLockStatus]);
 
   useEffect(() => {
     if (!isHeaderClicked || !setIsHeaderClicked) {
@@ -347,6 +374,7 @@ export const Client: React.FC<ClientProps> = ({
       if (isWalletLocked) {
         setShowPinCta(true);
       } else {
+        // retrieve fresh wallet balances
         await onRefresh(showSpinner, fields);
       }
     });
@@ -646,6 +674,7 @@ export const Client: React.FC<ClientProps> = ({
                   className={classes.actionButton}
                   onClick={handleClickedSend}
                   variant="contained"
+                  disabled={txLockStatus?.enabled}
                   colorPalette={theme.palette.neutralShades}
                   shade={theme.palette.mode === 'light' ? 100 : 600}
                   color="secondary"
@@ -660,6 +689,7 @@ export const Client: React.FC<ClientProps> = ({
                   className={classes.actionButton}
                   onClick={handleClickedSwap}
                   variant="contained"
+                  disabled={txLockStatus?.enabled}
                   colorPalette={theme.palette.neutralShades}
                   shade={theme.palette.mode === 'light' ? 100 : 600}
                   color="secondary"
@@ -697,6 +727,7 @@ export const Client: React.FC<ClientProps> = ({
                   {cryptoValue ? (
                     <Box className={classes.listContainer}>
                       <TokensPortfolio
+                        banner={banner}
                         wallets={wallets}
                         isOwner={true}
                         verified={true}

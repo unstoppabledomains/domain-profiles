@@ -27,8 +27,8 @@ import Token from './Token';
 
 Chart.register(CategoryScale);
 
-const useStyles = makeStyles<{fullHeight?: boolean}>()(
-  (theme: Theme, {fullHeight}) => ({
+const useStyles = makeStyles<{fullHeight?: boolean; isBanner?: boolean}>()(
+  (theme: Theme, {fullHeight, isBanner}) => ({
     portfolioContainer: {
       display: 'flex',
       flexDirection: 'column',
@@ -110,12 +110,18 @@ const useStyles = makeStyles<{fullHeight?: boolean}>()(
       overscrollBehavior: 'contain',
       height: fullHeight ? '100%' : `${WALLET_CARD_HEIGHT + 2}px`,
       width: '100%',
-      backgroundImage: `linear-gradient(${theme.palette.wallet.background.gradient.start}, ${theme.palette.wallet.background.gradient.end})`,
-      borderRadius: theme.shape.borderRadius,
-      padding: theme.spacing(2),
       ['::-webkit-scrollbar']: {
         display: 'none',
       },
+      backgroundImage: isBanner
+        ? undefined
+        : `linear-gradient(${theme.palette.wallet.background.gradient.start}, ${theme.palette.wallet.background.gradient.end})`,
+      borderRadius: theme.shape.borderRadius,
+    },
+    gradientContainer: {
+      padding: theme.spacing(2),
+      borderRadius: theme.shape.borderRadius,
+      backgroundColor: isBanner ? theme.palette.background.default : undefined,
     },
     noActivity: {
       color: theme.palette.wallet.text.secondary,
@@ -146,9 +152,10 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   verified,
   boxShadow,
   fullHeight,
+  banner,
   onTokenClick,
 }) => {
-  const {classes, cx} = useStyles({fullHeight});
+  const {classes, cx} = useStyles({fullHeight, isBanner: !!banner});
   const {enqueueSnackbar} = useSnackbar();
   const [filterAddress, setFilterAddress] = useState<SerializedWalletBalance>();
   const [groupedTokens, setGroupedTokens] = useState<TokenEntry[]>([]);
@@ -279,42 +286,45 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
           id={`scrollablePortfolioDiv`}
           className={cx(classes.scrollableContainer)}
         >
-          <Grid container spacing={1}>
-            <Grid item xs={12}>
-              {wallets && (
-                <Box className={cx(classes.walletListContainer)}>
-                  {wallets.length > 1 && renderWallet()}
-                  {wallets.map(wallet => renderWallet(wallet))}
-                </Box>
+          {banner && <Box mb={2}>{banner}</Box>}
+          <Box className={classes.gradientContainer}>
+            <Grid container spacing={1}>
+              <Grid item xs={12}>
+                {wallets && (
+                  <Box className={cx(classes.walletListContainer)}>
+                    {wallets.length > 1 && renderWallet()}
+                    {wallets.map(wallet => renderWallet(wallet))}
+                  </Box>
+                )}
+              </Grid>
+              {!isError && groupedTokens.length > 0 ? (
+                groupedTokens.map(token => (
+                  <Grid
+                    item
+                    xs={12}
+                    key={`${token.type}/${token.symbol}/${token.ticker}/${token.walletAddress}`}
+                  >
+                    <Box className={classes.tokenContainer}>
+                      <Token
+                        isOwner
+                        token={token}
+                        onClick={() => handleClick(token)}
+                        showGraph
+                      />
+                    </Box>
+                  </Grid>
+                ))
+              ) : (
+                <Grid item xs={12}>
+                  <Typography className={classes.noActivity} textAlign="center">
+                    {isError
+                      ? t('tokensPortfolio.retrieveError')
+                      : t('tokensPortfolio.noTokens')}
+                  </Typography>
+                </Grid>
               )}
             </Grid>
-            {!isError && groupedTokens.length > 0 ? (
-              groupedTokens.map(token => (
-                <Grid
-                  item
-                  xs={12}
-                  key={`${token.type}/${token.symbol}/${token.ticker}/${token.walletAddress}`}
-                >
-                  <Box className={classes.tokenContainer}>
-                    <Token
-                      isOwner
-                      token={token}
-                      onClick={() => handleClick(token)}
-                      showGraph
-                    />
-                  </Box>
-                </Grid>
-              ))
-            ) : (
-              <Grid item xs={12}>
-                <Typography className={classes.noActivity} textAlign="center">
-                  {isError
-                    ? t('tokensPortfolio.retrieveError')
-                    : t('tokensPortfolio.noTokens')}
-                </Typography>
-              </Grid>
-            )}
-          </Grid>
+          </Box>
         </Box>
       ) : (
         <Grid mt="0px" mb={1.5} container spacing={2}>
@@ -340,5 +350,6 @@ export type TokensPortfolioProps = {
   verified: boolean;
   boxShadow?: number;
   fullHeight?: boolean;
+  banner?: React.ReactNode;
   onTokenClick?: (token: TokenEntry) => void;
 };

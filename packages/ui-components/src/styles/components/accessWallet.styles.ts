@@ -138,6 +138,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     },
   },
   modalHeader: {
+    backgroundColor: theme.palette.background.paper,
     width: '100%',
     display: 'flex',
     alignItems: 'center',
@@ -150,6 +151,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     fontWeight: theme.typography.fontWeightBold,
   },
   modalContent: {
+    backgroundColor: theme.palette.background.paper,
     padding: theme.spacing(3),
     paddingTop: 0,
     height: '100%',

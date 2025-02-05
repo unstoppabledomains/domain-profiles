@@ -1,11 +1,11 @@
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import HistoryIcon from '@mui/icons-material/History';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import QrCodeIcon from '@mui/icons-material/QrCode';
 import SendIcon from '@mui/icons-material/Send';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import Alert from '@mui/lab/Alert';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
@@ -44,6 +44,7 @@ import {
   useTranslationContext,
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
+import type {TransactionLockStatusResponse} from '../../lib/types/fireBlocks';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileList} from '../Domain';
@@ -55,8 +56,10 @@ import {LetsGetStartedCta} from './LetsGetStartedCta';
 import Receive from './Receive';
 import ReceiveDomainModal from './ReceiveDomainModal';
 import Send from './Send';
+import SetupTxLockModal from './SetupTxLockModal';
 import Swap from './Swap';
 import {TokensPortfolio} from './TokensPortfolio';
+import {WalletBanner} from './WalletBanner';
 
 const useStyles = makeStyles<{isMobile: boolean}>()(
   (theme: Theme, {isMobile}) => ({
@@ -244,6 +247,7 @@ export const Client: React.FC<ClientProps> = ({
   const [isReceive, setIsReceive] = useState(false);
   const [isBuy, setIsBuy] = useState(false);
   const [isSwap, setIsSwap] = useState(false);
+  const [isTxUnlockOpen, setIsTxUnlockOpen] = useState(false);
   const [isTransactionsLoading, setIsTransactionsLoading] = useState(false);
   const [tabValue, setTabValue] = useState(ClientTabType.Portfolio);
   const [selectedToken, setSelectedToken] = useState<TokenEntry>();
@@ -283,7 +287,16 @@ export const Client: React.FC<ClientProps> = ({
       return;
     }
     setBanner(
-      <Alert severity="info">
+      <WalletBanner
+        icon={<InfoOutlinedIcon fontSize="small" />}
+        action={
+          txLockStatus?.validUntil ? undefined : (
+            <Button variant="text" size="small" onClick={handleTxUnlockClicked}>
+              {t('wallet.unlock')}
+            </Button>
+          )
+        }
+      >
         <Markdown>
           {txLockStatus?.validUntil
             ? t('wallet.txLockTimeStatus', {
@@ -291,7 +304,7 @@ export const Client: React.FC<ClientProps> = ({
               })
             : t('wallet.txLockManualStatus')}
         </Markdown>
-      </Alert>,
+      </WalletBanner>,
     );
   }, [txLockStatus]);
 
@@ -378,6 +391,17 @@ export const Client: React.FC<ClientProps> = ({
         await onRefresh(showSpinner, fields);
       }
     });
+  };
+
+  const handleTxUnlockClicked = () => {
+    setIsTxUnlockOpen(true);
+  };
+
+  const handleTxUnlockComplete = (
+    _mode: string,
+    status: TransactionLockStatusResponse,
+  ) => {
+    setTxLockStatus(status);
   };
 
   const resetRefreshTimer = (fields: string[]) => {
@@ -863,6 +887,19 @@ export const Client: React.FC<ClientProps> = ({
               handleClickedReceive();
               handleCloseFundingModal();
             }}
+          />
+        </Modal>
+      )}
+      {isTxUnlockOpen && accessToken && (
+        <Modal
+          open={true}
+          title={t('wallet.txLockManual')}
+          onClose={() => setIsTxUnlockOpen(false)}
+        >
+          <SetupTxLockModal
+            accessToken={accessToken}
+            onClose={() => setIsTxUnlockOpen(false)}
+            onComplete={handleTxUnlockComplete}
           />
         </Modal>
       )}

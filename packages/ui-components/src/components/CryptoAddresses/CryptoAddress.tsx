@@ -36,8 +36,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
   row: {
     borderRadius: (theme.shape.borderRadius as number) * 25,
     padding: theme.spacing(0.75, 1),
-    backgroundColor: theme.palette.neutralShades[100],
-    border: `1px solid ${theme.palette.neutralShades[100]}`,
+    backgroundColor: theme.palette.background.paper,
+    border: `1px solid ${theme.palette.background.paper}`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',

@@ -18,14 +18,15 @@ const useStyles = makeStyles()((theme: Theme) => ({
     textAlign: 'center',
     cursor: 'pointer',
     padding: theme.spacing(2.5, 0),
-    border: `1px dashed ${theme.palette.neutralShades[100]}`,
+    border: `1px dashed ${theme.palette.wallet.text.secondary}`,
     userSelect: 'none',
     transition: theme.transitions.create('background-color'),
     '&:hover': {
       backgroundColor: theme.palette.background.default,
     },
     '&:active': {
-      backgroundColor: theme.palette.pressedPaper,
+      backgroundColor:
+        theme.palette.mode === 'light' ? theme.palette.pressedPaper : undefined,
     },
   },
   noBorder: {
@@ -76,14 +77,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
     fontFamily: "'Inter', sans-serif",
     fontSize: theme.typography.body2.fontSize,
     fontWeight: theme.typography.fontWeightBold,
-    color: theme.palette.neutralShades[600],
+    color: theme.palette.wallet.text.primary,
   },
   cardTitleHorizontal: {
     fontWeight: theme.typography.fontWeightMedium,
     color: theme.palette.getContrastText(theme.palette.background.default),
   },
   cardTip: {
-    color: theme.palette.grey[600],
+    color: theme.palette.wallet.text.primary,
     fontSize: theme.typography.body2.fontSize,
   },
   highlighted: {
@@ -95,7 +96,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   delimiter: {
     marginRight: theme.spacing(1),
     fontWeight: theme.typography.fontWeightBold,
-    color: theme.palette.grey[600],
+    color: theme.palette.wallet.text.primary,
   },
   disabled: {
     pointerEvents: 'none',

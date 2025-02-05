@@ -7,10 +7,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     margin: 0,
   },
   modalContent: {
-    backgroundColor:
-      theme.palette.mode === 'dark'
-        ? theme.palette.background.paper
-        : 'rgba(17, 51, 83, 0.02)',
+    backgroundColor: theme.palette.background.paper,
     padding: theme.spacing(2),
     display: 'flex',
     flexDirection: 'column',

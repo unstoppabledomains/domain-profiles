@@ -98,7 +98,7 @@ const NftCard = ({domain, address, nft, compact, placeholder}: Props) => {
     display: flex;
     flex-direction: column;
     width: 100%;
-    background-color: white;
+    background-color: ${theme.palette.background.paper};
     padding-top: 0px;
     transition: all 0.3s ease 0s;
     border-radius: 12px;

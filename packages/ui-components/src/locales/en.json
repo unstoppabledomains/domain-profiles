@@ -262,7 +262,7 @@
   },
   "extension": {
     "appConnections": "App Connections",
-    "appConnectionsDescription": "Allow websites to request access to your wallet. You will always be prompted when an app requests to view your wallet.",
+    "appConnectionsDescription": "Allow websites to request interaction with your wallet. You will always be prompted to approve or reject a request.",
     "compatibilityMode": "Compatibility Mode",
     "compatibilityModeCta": "Enable compatibility mode? This extension can override other wallets like MetaMask for enhanced functionality. You can update your preference from the settings menu.",
     "compatibilityModeDescription": "This wallet can override MetaMask in apps to ensure maximum compatibility. Enabling this setting may interfere with other extensions.",

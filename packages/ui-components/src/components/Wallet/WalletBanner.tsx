@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {darken} from '@mui/material/styles';
 import React from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -14,10 +15,16 @@ const useStyles = makeStyles<{backgroundColor?: string}>()(
       justifyContent: 'space-between',
       paddingLeft: theme.spacing(1.5),
       width: '100%',
-      backgroundColor:
+      border: `1px solid ${
         backgroundColor || theme.palette.mode === 'light'
           ? theme.palette.primaryShades[100]
-          : theme.palette.background.default,
+          : theme.palette.background.default
+      }`,
+      background: `linear-gradient(75deg, ${
+        backgroundColor || theme.palette.mode === 'light'
+          ? theme.palette.primaryShades[100]
+          : theme.palette.background.default
+      }, ${darken(theme.palette.background.paper, 0)})`,
       color: backgroundColor
         ? theme.palette.getContrastText(backgroundColor)
         : theme.palette.wallet.text.primary,

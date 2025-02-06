@@ -207,6 +207,7 @@
     "pfp": "PFP",
     "popOut": "Pop out",
     "poweredBy": "Powered by",
+    "preferences": "Preferences",
     "receive": "Receive",
     "recommended": "Recommended",
     "refresh": "Refresh",
@@ -260,6 +261,8 @@
     "show": "Show"
   },
   "extension": {
+    "appConnections": "App Connections",
+    "appConnectionsDescription": "Allow websites to request access to your wallet. You will always be prompted when an app requests to view your wallet.",
     "compatibilityMode": "Compatibility Mode",
     "compatibilityModeCta": "Enable compatibility mode? This extension can override other wallets like MetaMask for enhanced functionality. You can update your preference from the settings menu.",
     "compatibilityModeDescription": "This wallet can override MetaMask in apps to ensure maximum compatibility. Enabling this setting may interfere with other extensions.",
@@ -283,7 +286,7 @@
     "sidePanel": "Side Panel",
     "unsupportedChain": "Cannot connect to unsupported network ({{originalChainId}}). This browser extension supports Ethereum, Polygon, Base and Solana networks.",
     "version": "Version",
-    "walletConnections": "Connected Websites",
+    "walletConnections": "Connected Apps",
     "walletConnectionsDescription": "You have authorized the following websites to connect to your wallet.",
     "welcomeToVersion": "Upgraded to {{version}}!"
   },

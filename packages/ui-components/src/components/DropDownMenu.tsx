@@ -209,18 +209,6 @@ const DropDownMenu: React.FC<Props> = ({
           </Typography>
         </div>
       )}
-      {onSecurityCenterClicked && (
-        <div
-          data-testid={`security-center-button`}
-          className={classes.container}
-          onClick={onSecurityCenterClicked}
-        >
-          <SecurityOutlinedIcon className={classes.settingsIcon} />
-          <Typography className={cx(classes.font)} color="text.secondary">
-            {t('wallet.securityCenter')}
-          </Typography>
-        </div>
-      )}
       {onSettingsClicked && (
         <div
           data-testid={`recovery-link-button`}
@@ -233,15 +221,15 @@ const DropDownMenu: React.FC<Props> = ({
           </Typography>
         </div>
       )}
-      {onSidePanelClicked && (
+      {onSecurityCenterClicked && (
         <div
-          data-testid={`side-panel-button`}
+          data-testid={`security-center-button`}
           className={classes.container}
-          onClick={onSidePanelClicked}
+          onClick={onSecurityCenterClicked}
         >
-          <LaunchIcon className={classes.settingsIcon} />
+          <SecurityOutlinedIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
-            {t('extension.sidePanel')}
+            {t('wallet.securityCenter')}
           </Typography>
         </div>
       )}
@@ -274,6 +262,18 @@ const DropDownMenu: React.FC<Props> = ({
           <SupportIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
             {t('common.support')}
+          </Typography>
+        </div>
+      )}
+      {onSidePanelClicked && (
+        <div
+          data-testid={`side-panel-button`}
+          className={classes.container}
+          onClick={onSidePanelClicked}
+        >
+          <LaunchIcon className={classes.settingsIcon} />
+          <Typography className={cx(classes.font)} color="text.secondary">
+            {t('extension.sidePanel')}
           </Typography>
         </div>
       )}

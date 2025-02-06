@@ -155,6 +155,7 @@ export const WalletProvider: React.FC<
     fullScreenModals?: boolean;
     forceRememberOnDevice?: boolean;
     loginClicked?: boolean;
+    banner?: React.ReactNode;
   }
 > = ({
   onUpdate,
@@ -176,6 +177,7 @@ export const WalletProvider: React.FC<
   initialState,
   initialLoginState,
   loginClicked,
+  banner,
 }) => {
   // component state variables
   const router = useRouter();
@@ -1281,6 +1283,7 @@ export const WalletProvider: React.FC<
                 isWalletLoading={isWalletLoading}
                 isHeaderClicked={isHeaderClicked}
                 setIsHeaderClicked={setIsHeaderClicked}
+                externalBanner={banner}
               />
             )
           ))

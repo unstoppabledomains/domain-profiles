@@ -219,6 +219,7 @@ export const Client: React.FC<ClientProps> = ({
   setIsHeaderClicked,
   isHeaderClicked,
   isWalletLoading,
+  externalBanner,
 }) => {
   // mobile behavior flag
   const theme = useTheme();
@@ -233,7 +234,7 @@ export const Client: React.FC<ClientProps> = ({
   const [state, saveState] = useFireblocksState();
   const [fundingModalTitle, setFundingModalTitle] = useState<string>();
   const [fundingModalIcon, setFundingModalIcon] = useState<React.ReactNode>();
-  const [banner, setBanner] = useState<React.ReactNode>();
+  const [banner, setBanner] = useState<React.ReactNode>(externalBanner);
   const {setWeb3Deps, setShowPinCta, setTxLockStatus, txLockStatus} =
     useWeb3Context();
   const cryptoValue = wallets
@@ -281,32 +282,40 @@ export const Client: React.FC<ClientProps> = ({
     };
   }, [accessToken]);
 
+  // banner management
   useEffect(() => {
-    if (!txLockStatus?.enabled) {
-      setBanner(undefined);
+    // prioritize the lock state banner if required
+    if (txLockStatus?.enabled) {
+      setBanner(
+        <WalletBanner
+          icon={<InfoOutlinedIcon fontSize="small" />}
+          action={
+            txLockStatus?.validUntil ? undefined : (
+              <Button
+                variant="text"
+                size="small"
+                onClick={handleTxUnlockClicked}
+              >
+                {t('wallet.unlock')}
+              </Button>
+            )
+          }
+        >
+          <Markdown>
+            {txLockStatus?.validUntil
+              ? t('wallet.txLockTimeStatus', {
+                  date: new Date(txLockStatus.validUntil).toLocaleString(),
+                })
+              : t('wallet.txLockManualStatus')}
+          </Markdown>
+        </WalletBanner>,
+      );
       return;
     }
-    setBanner(
-      <WalletBanner
-        icon={<InfoOutlinedIcon fontSize="small" />}
-        action={
-          txLockStatus?.validUntil ? undefined : (
-            <Button variant="text" size="small" onClick={handleTxUnlockClicked}>
-              {t('wallet.unlock')}
-            </Button>
-          )
-        }
-      >
-        <Markdown>
-          {txLockStatus?.validUntil
-            ? t('wallet.txLockTimeStatus', {
-                date: new Date(txLockStatus.validUntil).toLocaleString(),
-              })
-            : t('wallet.txLockManualStatus')}
-        </Markdown>
-      </WalletBanner>,
-    );
-  }, [txLockStatus]);
+
+    // use an external banner if present
+    setBanner(externalBanner);
+  }, [externalBanner, txLockStatus]);
 
   useEffect(() => {
     if (!isHeaderClicked || !setIsHeaderClicked) {
@@ -917,6 +926,7 @@ export type ClientProps = {
   isHeaderClicked: boolean;
   isWalletLoading?: boolean;
   setIsHeaderClicked?: (v: boolean) => void;
+  externalBanner?: React.ReactNode;
 };
 
 export enum ClientTabType {

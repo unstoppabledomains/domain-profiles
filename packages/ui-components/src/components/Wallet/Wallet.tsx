@@ -48,6 +48,7 @@ export const Wallet: React.FC<
     isNewUser?: boolean;
     loginClicked?: boolean;
     loginState?: TokenRefreshResponse;
+    banner?: React.ReactNode;
     setAuthAddress?: (v: string) => void;
     onLoginInitiated?: (
       emailAddress: string,
@@ -77,6 +78,7 @@ export const Wallet: React.FC<
   loginState,
   fullScreenModals,
   forceRememberOnDevice,
+  banner,
   onUpdate,
   onError,
   onLoginInitiated,
@@ -200,6 +202,7 @@ export const Wallet: React.FC<
           isNewUser ? WalletConfigState.OnboardWithCustody : undefined
         }
         initialLoginState={loginState}
+        banner={banner}
       />
       {isLoaded && !isCustodyWallet && isWeb3DepsLoading && (
         <AccessWalletModal

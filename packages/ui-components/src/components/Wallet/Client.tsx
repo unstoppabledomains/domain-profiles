@@ -1,9 +1,12 @@
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 import HistoryIcon from '@mui/icons-material/History';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import QrCodeIcon from '@mui/icons-material/QrCode';
+import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import SendIcon from '@mui/icons-material/Send';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import TabContext from '@mui/lab/TabContext';
@@ -13,7 +16,9 @@ import Box from '@mui/material/Box';
 import type {ButtonProps} from '@mui/material/Button';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
 import Tab from '@mui/material/Tab';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {styled, useTheme} from '@mui/material/styles';
@@ -39,6 +44,7 @@ import type {SerializedWalletBalance, TokenEntry} from '../../lib';
 import {
   CustodyState,
   DomainFieldTypes,
+  DomainProfileKeys,
   WALLET_CARD_HEIGHT,
   isLocked,
   useTranslationContext,
@@ -46,6 +52,7 @@ import {
 import {notifyEvent} from '../../lib/error';
 import type {TransactionLockStatusResponse} from '../../lib/types/fireBlocks';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
+import {localStorageWrapper} from '../Chat';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileList} from '../Domain';
 import {DomainProfileModal} from '../Manage';
@@ -216,6 +223,7 @@ export const Client: React.FC<ClientProps> = ({
   fullScreenModals,
   onClaimWallet,
   onRefresh,
+  onSecurityCenterClicked,
   setIsHeaderClicked,
   isHeaderClicked,
   isWalletLoading,
@@ -283,7 +291,7 @@ export const Client: React.FC<ClientProps> = ({
   }, [accessToken]);
 
   // banner management
-  useEffect(() => {
+  useAsyncEffect(async () => {
     // prioritize the lock state banner if required
     if (txLockStatus?.enabled) {
       setBanner(
@@ -309,6 +317,43 @@ export const Client: React.FC<ClientProps> = ({
               : t('wallet.txLockManualStatus')}
           </Markdown>
         </WalletBanner>,
+      );
+      return;
+    }
+
+    // prioritize security health check
+    const isHealthCheckCleared = await localStorageWrapper.getItem(
+      DomainProfileKeys.BannerHealthCheck,
+    );
+    if (!isHealthCheckCleared && onSecurityCenterClicked) {
+      setBanner(
+        <Tooltip arrow title={t('wallet.securityHealthCheckDescription')}>
+          <Box>
+            <WalletBanner
+              icon={<SecurityOutlinedIcon fontSize="small" />}
+              action={
+                <Box display="flex">
+                  <IconButton
+                    size="small"
+                    color="success"
+                    onClick={() => handleHealthCheckClicked(true)}
+                  >
+                    <CheckIcon />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={() => handleHealthCheckClicked(false)}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Box>
+              }
+            >
+              {t('wallet.securityHealthCheck')}
+            </WalletBanner>
+          </Box>
+        </Tooltip>,
       );
       return;
     }
@@ -454,6 +499,17 @@ export const Client: React.FC<ClientProps> = ({
     if (onClaimWallet) {
       onClaimWallet();
     }
+  };
+
+  const handleHealthCheckClicked = async (enabled: boolean) => {
+    await localStorageWrapper.setItem(
+      DomainProfileKeys.BannerHealthCheck,
+      String(Date.now()),
+    );
+    if (enabled && onSecurityCenterClicked) {
+      onSecurityCenterClicked();
+    }
+    setBanner(undefined);
   };
 
   const handleCloseFundingModal = () => {
@@ -922,6 +978,7 @@ export type ClientProps = {
   paymentConfigStatus?: SerializedIdentityResponse;
   fullScreenModals?: boolean;
   onClaimWallet?: () => void;
+  onSecurityCenterClicked?: () => void;
   onRefresh: (showSpinner?: boolean, fields?: string[]) => Promise<void>;
   isHeaderClicked: boolean;
   isWalletLoading?: boolean;

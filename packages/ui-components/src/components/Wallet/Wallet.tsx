@@ -20,6 +20,7 @@ import type {ManageTabProps} from '../Manage/common/types';
 import Modal from '../Modal';
 import ClaimWalletModal from './ClaimWalletModal';
 import {Header} from './Header';
+import SecurityCenterModal from './SecurityCenterModal';
 import {WalletConfigState, WalletProvider} from './WalletProvider';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -99,6 +100,8 @@ export const Wallet: React.FC<
   const [isCustodyWallet, setIsCustodyWallet] = useState<boolean>();
   const [isWeb3DepsLoading, setIsWeb3DepsLoading] = useState(true);
   const [isHeaderClicked, setIsHeaderClicked] = useState(false);
+  const [isSecurityCenterModalOpen, setIsSecurityCenterModalOpen] =
+    useState(false);
   const [showClaimWalletModal, setShowClaimWalletModal] = useState<boolean>();
   const [accessToken, setAccessToken] = useState<string>();
   const {setWeb3Deps, showPinCta} = useWeb3Context();
@@ -134,6 +137,10 @@ export const Wallet: React.FC<
   ) => {
     setAccessToken(data.accessToken);
     onUpdate(tab, data);
+  };
+
+  const handleSecurityCenterOpen = () => {
+    setIsSecurityCenterModalOpen(true);
   };
 
   const handleClaimWallet = () => {
@@ -174,6 +181,7 @@ export const Wallet: React.FC<
           onMessagesClick={onMessagesClick}
           onMessagePopoutClick={onMessagePopoutClick}
           onClaimWalletClick={accessToken ? undefined : handleClaimWallet}
+          onSecurityCenterClicked={handleSecurityCenterOpen}
           fullScreenModals={fullScreenModals}
           domain={isDomainValidForManagement(domain) ? domain : undefined}
         />
@@ -190,6 +198,7 @@ export const Wallet: React.FC<
         onLoginInitiated={onLoginInitiated}
         onUpdate={handleAccessToken}
         onClaimWallet={handleClaimWallet}
+        onSecurityCenterClicked={handleSecurityCenterOpen}
         setButtonComponent={setButtonComponent}
         setIsFetching={setIsFetching}
         isHeaderClicked={isHeaderClicked}
@@ -227,6 +236,17 @@ export const Wallet: React.FC<
             onClaimInitiated={onLoginInitiated}
             onComplete={handleClaimComplete}
           />
+        </Modal>
+      )}
+      {isSecurityCenterModalOpen && (
+        <Modal
+          title={t('wallet.securityCenter')}
+          open={isSecurityCenterModalOpen}
+          fullScreen={fullScreenModals}
+          titleStyle={classes.modalTitleStyle}
+          onClose={() => setIsSecurityCenterModalOpen(false)}
+        >
+          <SecurityCenterModal accessToken={accessToken} />
         </Modal>
       )}
     </Box>

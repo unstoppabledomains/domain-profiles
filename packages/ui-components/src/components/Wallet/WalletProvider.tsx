@@ -146,6 +146,7 @@ export const WalletProvider: React.FC<
       state: TokenRefreshResponse,
     ) => void;
     onClaimWallet?: () => void;
+    onSecurityCenterClicked?: () => void;
     setIsFetching?: (v?: boolean) => void;
     isHeaderClicked: boolean;
     setIsHeaderClicked?: (v: boolean) => void;
@@ -163,6 +164,7 @@ export const WalletProvider: React.FC<
   onLoaded,
   onLoginInitiated,
   onClaimWallet,
+  onSecurityCenterClicked,
   setButtonComponent,
   setIsFetching,
   setAuthAddress,
@@ -1280,6 +1282,7 @@ export const WalletProvider: React.FC<
                 fullScreenModals={fullScreenModals}
                 onRefresh={handleRefresh}
                 onClaimWallet={onClaimWallet}
+                onSecurityCenterClicked={onSecurityCenterClicked}
                 isWalletLoading={isWalletLoading}
                 isHeaderClicked={isHeaderClicked}
                 setIsHeaderClicked={setIsHeaderClicked}

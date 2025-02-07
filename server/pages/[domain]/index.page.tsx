@@ -501,7 +501,12 @@ const DomainProfile = ({
     // retrieve additional profile data at page load time
     const loadAll = async () => {
       // non blocking page elements
-      void Promise.all([loadBadges(), loadWallets(), loadWebacyScore(), loadBitscrunchScore()]);
+      void Promise.all([
+        loadBadges(),
+        loadWallets(),
+        loadWebacyScore(),
+        loadBitscrunchScore(),
+      ]);
 
       // blocking page elements
       await Promise.all([loadCryptoRecords()]);
@@ -1205,8 +1210,10 @@ const DomainProfile = ({
                   <LeftBarContentCollapse
                     icon={<HealthAndSafetyOutlinedIcon />}
                     header={
-                    <Box display="flex" alignItems="center">
-                      <Typography mr={1}>{t('bitscrunch.riskScore')}</Typography>
+                      <Box display="flex" alignItems="center">
+                        <Typography mr={1}>
+                          {t('bitscrunch.riskScore')}
+                        </Typography>
                         <Tooltip
                           arrow
                           title={
@@ -1217,38 +1224,66 @@ const DomainProfile = ({
                         >
                           <Chip
                             color={
-                              profileData.bitscrunch.wallet.metric_values.wallet_score.high
-                                ? 'error'
-                                : profileData.bitscrunch.wallet.metric_values.wallet_score.medium
+                              profileData.bitscrunch.wallet.metric_values
+                                .wallet_score.excellent
+                                ? 'success'
+                                : profileData.bitscrunch.wallet.metric_values
+                                    .wallet_score.good
+                                ? 'info'
+                                : profileData.bitscrunch.wallet.metric_values
+                                    .wallet_score.normal
                                 ? 'default'
-                                : 'success'
+                                : profileData.bitscrunch.wallet.metric_values
+                                    .wallet_score.risk
+                                ? 'warning'
+                                : 'error'
                             }
                             size="small"
                             icon={
-                              profileData.bitscrunch.wallet.metric_values.wallet_score.high ? (
+                              profileData.bitscrunch.wallet.metric_values
+                                .wallet_score.excellent ? (
+                                <CheckCircleOutlinedIcon
+                                  className={classes.riskScoreIcon}
+                                />
+                              ) : profileData.bitscrunch.wallet.metric_values
+                                  .wallet_score.good ? (
+                                <CheckCircleOutlinedIcon
+                                  className={classes.riskScoreIcon}
+                                />
+                              ) : profileData.bitscrunch.wallet.metric_values
+                                  .wallet_score.normal ? (
+                                <CheckCircleOutlinedIcon
+                                  className={classes.riskScoreIcon}
+                                />
+                              ) : profileData.bitscrunch.wallet.metric_values
+                                  .wallet_score.risk ? (
                                 <OutlinedFlagIcon
                                   className={classes.riskScoreIcon}
                                 />
-                              ) : profileData.bitscrunch.wallet.metric_values.wallet_score.medium ? (
-                                <CheckCircleOutlinedIcon
-                                  className={classes.riskScoreIcon}
-                                />
                               ) : (
-                                <CheckCircleOutlinedIcon
+                                <OutlinedFlagIcon
                                   className={classes.riskScoreIcon}
                                 />
                               )
                             }
                             label={
-                              profileData.bitscrunch.wallet.metric_values.wallet_score.high
-                                ? t('bitscrunch.high')
-                                : profileData.bitscrunch.wallet.metric_values.wallet_score.medium
-                                ? t('bitscrunch.medium')
-                                : t('bitscrunch.low')
+                              profileData.bitscrunch.wallet.metric_values
+                                .wallet_score.excellent
+                                ? t('bitscrunch.excellent')
+                                : profileData.bitscrunch.wallet.metric_values
+                                    .wallet_score.good
+                                ? t('bitscrunch.good')
+                                : profileData.bitscrunch.wallet.metric_values
+                                    .wallet_score.normal
+                                ? t('bitscrunch.normal')
+                                : profileData.bitscrunch.wallet.metric_values
+                                    .wallet_score.risk
+                                ? t('bitscrunch.risk')
+                                : t('bitscrunch.highRisk')
                             }
                           />
                         </Tooltip>
-                    </Box>
+                      </Box>
                     }
                     id="bitscrunch"
                   />

@@ -19,9 +19,12 @@ export interface BitscrunchMetricValues {
 }
 
 export interface BitscrunchWalletScore {
-    medium?: number;
-    high?: number;
+    excellent?: number;
+    good?: number;
+    normal?: number;
+    risk?: number;
+    highRisk?: number;
     value: string;
-    unit:  string;
-}
+    unit: string;
+  }
   

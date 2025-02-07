@@ -136,10 +136,9 @@ const buildThemeOptions = (mode: ThemeMode): ThemeOptions => ({
     heroText: `linear-gradient(30deg, ${darken(
       '#0D67FE',
       mode === 'dark' ? 0.85 : 0.75,
-    )}, ${darken('#0D67FE', mode === 'dark' ? 0.35 : 0.25)}, ${lighten(
-      '#0D67FE',
-      mode === 'dark' ? 0.3 : 0.5,
-    )})`,
+    )}, ${darken('#0D67FE', mode === 'dark' ? 0.35 : 0.25)}, ${
+      mode === 'dark' ? darken('#0D67FE', 0.15) : lighten('#0D67FE', 0.3)
+    })`,
     profileImageGradient:
       'linear-gradient(45deg, #BD47F7 0%, #5D59F8 52.08%, #38BDD1 100%)',
     mobileNavGradient:

@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {lighten} from '@mui/material/styles';
+import {darken, lighten} from '@mui/material/styles';
 import React from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -23,14 +23,18 @@ const useStyles = makeStyles<{backgroundColor?: string}>()((
       justifyContent: 'space-between',
       paddingLeft: theme.spacing(1.5),
       width: '100%',
-      border: `1px solid ${baseColor}`,
-      background: `linear-gradient(45deg, ${baseColor}, ${lighten(
-        baseColor,
-        theme.palette.mode === 'light' ? 0.85 : 0.05,
-      )})`,
+      border: backgroundColor ? `1px solid ${baseColor}` : undefined,
+      background: backgroundColor
+        ? `linear-gradient(45deg, ${baseColor}, ${lighten(
+            baseColor,
+            theme.palette.mode === 'light' ? 0.85 : 0.05,
+          )})`
+        : theme.palette.heroText,
       color: backgroundColor
         ? theme.palette.getContrastText(backgroundColor)
-        : theme.palette.wallet.text.primary,
+        : theme.palette.getContrastText(
+            darken(theme.palette.primary.main, 0.85),
+          ),
     },
     icon: {
       display: 'flex',

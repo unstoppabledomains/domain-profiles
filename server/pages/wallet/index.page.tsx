@@ -183,7 +183,7 @@ const WalletPage = () => {
         {isLoaded && (
           <Grid container data-testid="mainContentContainer">
             <Grid item xs={12} className={classes.item}>
-              <Typography className={classes.sectionTitle}>
+              <Typography variant="h1" className={classes.sectionTitle}>
                 {theme.wallet.title}
               </Typography>
             </Grid>

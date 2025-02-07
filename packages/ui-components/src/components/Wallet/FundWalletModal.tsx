@@ -91,13 +91,11 @@ const FundWalletModal: React.FC<Props> = ({
         <BuyCryptoButton
           onReceiveClicked={onReceiveClicked}
           onBuyClicked={onBuyClicked}
-          variant="contained"
         />
         <Box className={classes.button}>
           <ReceiveCryptoButton
             onReceiveClicked={onReceiveClicked}
             onBuyClicked={onBuyClicked}
-            variant="contained"
           />
         </Box>
       </Box>

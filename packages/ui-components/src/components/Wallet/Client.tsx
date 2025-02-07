@@ -301,6 +301,7 @@ export const Client: React.FC<ClientProps> = ({
             txLockStatus?.validUntil ? undefined : (
               <Button
                 variant="text"
+                color="inherit"
                 size="small"
                 onClick={handleTxUnlockClicked}
               >
@@ -335,14 +336,14 @@ export const Client: React.FC<ClientProps> = ({
                 <Box display="flex">
                   <IconButton
                     size="small"
-                    color="success"
+                    color="inherit"
                     onClick={() => handleHealthCheckClicked(true)}
                   >
                     <CheckIcon />
                   </IconButton>
                   <IconButton
                     size="small"
-                    color="error"
+                    color="inherit"
                     onClick={() => handleHealthCheckClicked(false)}
                   >
                     <CloseIcon />
@@ -727,9 +728,93 @@ export const Client: React.FC<ClientProps> = ({
           </Box>
         ) : (
           <TabContext value={tabValue as ClientTabType}>
-            <Box className={classes.header}>
+            {cryptoValue ? (
+              <Box className={classes.header}>
+                <Box className={classes.balanceContainer}>
+                  <Typography variant="h3">
+                    {(tabValue === ClientTabType.Domains
+                      ? // show only domain value on domain tab
+                        domainsValue
+                      : tabValue === ClientTabType.Portfolio
+                      ? // show only crypto value on crypto tab
+                        cryptoValue
+                      : tabValue === ClientTabType.Transactions &&
+                        // show aggregate value (domains + crypto) on activity tab
+                        domainsValue + cryptoValue
+                    ).toLocaleString('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                    })}
+                  </Typography>
+                </Box>
+                <Box className={classes.actionContainer}>
+                  <StyledButton
+                    className={classes.actionButton}
+                    onClick={handleClickedReceive}
+                    variant="contained"
+                    colorPalette={theme.palette.neutralShades}
+                    shade={theme.palette.mode === 'light' ? 100 : 600}
+                    size="small"
+                  >
+                    <Box className={classes.actionContent}>
+                      <QrCodeIcon className={classes.actionIcon} />
+                      {t('common.receive')}
+                    </Box>
+                  </StyledButton>
+                  <StyledButton
+                    className={classes.actionButton}
+                    onClick={handleClickedSend}
+                    variant="contained"
+                    disabled={txLockStatus?.enabled}
+                    colorPalette={theme.palette.neutralShades}
+                    shade={theme.palette.mode === 'light' ? 100 : 600}
+                    color="secondary"
+                    size="small"
+                  >
+                    <Box className={classes.actionContent}>
+                      <SendIcon className={classes.actionIcon} />
+                      {t('common.send')}
+                    </Box>
+                  </StyledButton>
+                  <StyledButton
+                    className={classes.actionButton}
+                    onClick={handleClickedSwap}
+                    variant="contained"
+                    disabled={txLockStatus?.enabled}
+                    colorPalette={theme.palette.neutralShades}
+                    shade={theme.palette.mode === 'light' ? 100 : 600}
+                    color="secondary"
+                    size="small"
+                  >
+                    <Box className={classes.actionContent}>
+                      <SwapHorizIcon className={classes.actionIcon} />
+                      {t('swap.title')}
+                    </Box>
+                  </StyledButton>
+                  <Box mr={-2}>
+                    <StyledButton
+                      className={classes.actionButton}
+                      onClick={handleClickedBuy}
+                      variant="contained"
+                      colorPalette={theme.palette.neutralShades}
+                      shade={theme.palette.mode === 'light' ? 100 : 600}
+                      color="secondary"
+                      size="small"
+                    >
+                      <Box className={classes.actionContent}>
+                        <AttachMoneyIcon className={classes.actionIcon} />
+                        {t(isSellEnabled ? 'common.buySell' : 'common.buy')}
+                      </Box>
+                    </StyledButton>
+                  </Box>
+                </Box>
+              </Box>
+            ) : (
               <Box className={classes.balanceContainer}>
-                <Typography variant="h3">
+                <Typography
+                  variant="h3"
+                  color={theme.palette.neutralShades[500]}
+                >
                   {(tabValue === ClientTabType.Domains
                     ? // show only domain value on domain tab
                       domainsValue
@@ -745,68 +830,7 @@ export const Client: React.FC<ClientProps> = ({
                   })}
                 </Typography>
               </Box>
-              <Box className={classes.actionContainer}>
-                <StyledButton
-                  className={classes.actionButton}
-                  onClick={handleClickedReceive}
-                  variant="contained"
-                  colorPalette={theme.palette.neutralShades}
-                  shade={theme.palette.mode === 'light' ? 100 : 600}
-                  size="small"
-                >
-                  <Box className={classes.actionContent}>
-                    <QrCodeIcon className={classes.actionIcon} />
-                    {t('common.receive')}
-                  </Box>
-                </StyledButton>
-                <StyledButton
-                  className={classes.actionButton}
-                  onClick={handleClickedSend}
-                  variant="contained"
-                  disabled={txLockStatus?.enabled}
-                  colorPalette={theme.palette.neutralShades}
-                  shade={theme.palette.mode === 'light' ? 100 : 600}
-                  color="secondary"
-                  size="small"
-                >
-                  <Box className={classes.actionContent}>
-                    <SendIcon className={classes.actionIcon} />
-                    {t('common.send')}
-                  </Box>
-                </StyledButton>
-                <StyledButton
-                  className={classes.actionButton}
-                  onClick={handleClickedSwap}
-                  variant="contained"
-                  disabled={txLockStatus?.enabled}
-                  colorPalette={theme.palette.neutralShades}
-                  shade={theme.palette.mode === 'light' ? 100 : 600}
-                  color="secondary"
-                  size="small"
-                >
-                  <Box className={classes.actionContent}>
-                    <SwapHorizIcon className={classes.actionIcon} />
-                    {t('swap.title')}
-                  </Box>
-                </StyledButton>
-                <Box mr={-2}>
-                  <StyledButton
-                    className={classes.actionButton}
-                    onClick={handleClickedBuy}
-                    variant="contained"
-                    colorPalette={theme.palette.neutralShades}
-                    shade={theme.palette.mode === 'light' ? 100 : 600}
-                    color="secondary"
-                    size="small"
-                  >
-                    <Box className={classes.actionContent}>
-                      <AttachMoneyIcon className={classes.actionIcon} />
-                      {t(isSellEnabled ? 'common.buySell' : 'common.buy')}
-                    </Box>
-                  </StyledButton>
-                </Box>
-              </Box>
-            </Box>
+            )}
             <Grid container className={classes.portfolioContainer}>
               <Grid item xs={12} height="100%">
                 <TabPanel

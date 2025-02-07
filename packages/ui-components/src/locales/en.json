@@ -1008,7 +1008,7 @@
     "rules": "Rules",
     "safeToCloseWindow": "You can safely close this window while the transfer is confirmed onchain",
     "securityCenter": "Security Center",
-    "securityHealthCheck": "View security center health check?",
+    "securityHealthCheck": "View your security health check?",
     "securityHealthCheckDescription": "You can visit the security center to view recommendations to keep your crypto safe.",
     "selectAssetToBuy": "Select token to deposit using a bank account",
     "selectAssetToBuySell": "Select token to deposit or withdraw using a bank account",

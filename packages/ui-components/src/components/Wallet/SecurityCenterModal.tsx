@@ -1,3 +1,5 @@
+import CallMissedOutgoingIcon from '@mui/icons-material/CallMissedOutgoing';
+import CallReceivedIcon from '@mui/icons-material/CallReceived';
 import GppBadOutlinedIcon from '@mui/icons-material/GppBadOutlined';
 import GppGoodOutlinedIcon from '@mui/icons-material/GppGoodOutlined';
 import LockOpenOutlinedIcon from '@mui/icons-material/LockOpenOutlined';
@@ -5,7 +7,9 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Alert from '@mui/lab/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
@@ -97,6 +101,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   const [isLockEnabled, setIsLockEnabled] = useState(false);
   const [isLockModalOpen, setIsLockModalOpen] = useState(false);
   const [isTxLockModalOpen, setIsTxLockModalOpen] = useState(false);
+  const [isAppConnectionEnabled, setIsAppConnectionEnabled] = useState(false);
 
   useEffect(() => {
     if (!accessToken) {
@@ -105,13 +110,21 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
 
     const loadSettings = async () => {
       try {
-        const [pinStatus, mfaStatus, recoveryStatus, txLockStatus] =
-          await Promise.all([
-            isPinEnabled(),
-            getTwoFactorStatus(accessToken),
-            getRecoveryKitStatus(accessToken),
-            getTransactionLockStatus(accessToken),
-          ]);
+        const [
+          pinStatus,
+          mfaStatus,
+          recoveryStatus,
+          txLockStatus,
+          tabsPermission,
+        ] = await Promise.all([
+          isPinEnabled(),
+          getTwoFactorStatus(accessToken),
+          getRecoveryKitStatus(accessToken),
+          getTransactionLockStatus(accessToken),
+          chrome.permissions
+            ? chrome.permissions.contains({permissions: ['tabs']})
+            : undefined,
+        ]);
         setIsLockEnabled(pinStatus);
         setIsMfaEnabled(mfaStatus);
         setRecoveryKitStatus(recoveryStatus);
@@ -123,6 +136,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
             ? txLockStatus.validUntil
             : undefined,
         );
+        setIsAppConnectionEnabled(!!tabsPermission);
       } finally {
         setIsLoaded(true);
       }
@@ -173,6 +187,19 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
       } else {
         setIsTxLockTimeEnabled(undefined);
       }
+    }
+  };
+
+  const handleAppConnections = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    if (event.target.checked) {
+      if (await chrome.permissions.request({permissions: ['tabs']})) {
+        setIsAppConnectionEnabled(true);
+      }
+    } else {
+      await chrome.permissions.remove({permissions: ['tabs']});
+      setIsAppConnectionEnabled(false);
     }
   };
 
@@ -384,6 +411,37 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           </Typography>
         </Box>
         <Box>
+          {chrome.permissions && (
+            <WalletPreference
+              title={t('extension.appConnections')}
+              description={t('extension.appConnectionsDescription')}
+              icon={
+                isAppConnectionEnabled ? (
+                  <CallReceivedIcon
+                    className={cx(classes.icon, classes.iconEnabled)}
+                  />
+                ) : (
+                  <CallMissedOutgoingIcon className={classes.icon} />
+                )
+              }
+              statusElement={renderStatus(
+                isAppConnectionEnabled ? t('common.on') : t('common.off'),
+              )}
+            >
+              <FormControlLabel
+                label={`${t('manage.enable')} ${t('extension.appConnections')}`}
+                control={
+                  <Checkbox
+                    color={
+                      theme.palette.mode === 'light' ? 'primary' : 'secondary'
+                    }
+                    checked={isAppConnectionEnabled}
+                    onChange={handleAppConnections}
+                  />
+                }
+              />
+            </WalletPreference>
+          )}
           <WalletPreference
             title={t('wallet.txLockManual')}
             description={t('wallet.txLockDescription')}

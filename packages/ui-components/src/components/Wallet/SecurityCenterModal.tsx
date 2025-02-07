@@ -187,8 +187,15 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   // show loading spinner until access token available
   if (!isLoaded) {
     return (
-      <Box display="flex" justifyContent="center">
-        <CircularProgress />
+      <Box className={classes.content}>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height="100%"
+        >
+          <CircularProgress />
+        </Box>
       </Box>
     );
   }

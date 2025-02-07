@@ -1,9 +1,12 @@
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 import HistoryIcon from '@mui/icons-material/History';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
+import LockIcon from '@mui/icons-material/LockOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import QrCodeIcon from '@mui/icons-material/QrCode';
+import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import SendIcon from '@mui/icons-material/Send';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import TabContext from '@mui/lab/TabContext';
@@ -13,7 +16,9 @@ import Box from '@mui/material/Box';
 import type {ButtonProps} from '@mui/material/Button';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
 import Tab from '@mui/material/Tab';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {styled, useTheme} from '@mui/material/styles';
@@ -24,6 +29,7 @@ import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 import useAsyncEffect from 'use-async-effect';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {DomainWalletTransactions} from '.';
@@ -39,6 +45,7 @@ import type {SerializedWalletBalance, TokenEntry} from '../../lib';
 import {
   CustodyState,
   DomainFieldTypes,
+  DomainProfileKeys,
   WALLET_CARD_HEIGHT,
   isLocked,
   useTranslationContext,
@@ -46,6 +53,7 @@ import {
 import {notifyEvent} from '../../lib/error';
 import type {TransactionLockStatusResponse} from '../../lib/types/fireBlocks';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
+import {localStorageWrapper} from '../Chat';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileList} from '../Domain';
 import {DomainProfileModal} from '../Manage';
@@ -216,9 +224,11 @@ export const Client: React.FC<ClientProps> = ({
   fullScreenModals,
   onClaimWallet,
   onRefresh,
+  onSecurityCenterClicked,
   setIsHeaderClicked,
   isHeaderClicked,
   isWalletLoading,
+  externalBanner,
 }) => {
   // mobile behavior flag
   const theme = useTheme();
@@ -233,7 +243,7 @@ export const Client: React.FC<ClientProps> = ({
   const [state, saveState] = useFireblocksState();
   const [fundingModalTitle, setFundingModalTitle] = useState<string>();
   const [fundingModalIcon, setFundingModalIcon] = useState<React.ReactNode>();
-  const [banner, setBanner] = useState<React.ReactNode>();
+  const [banner, setBanner] = useState<React.ReactNode>(externalBanner);
   const {setWeb3Deps, setShowPinCta, setTxLockStatus, txLockStatus} =
     useWeb3Context();
   const cryptoValue = wallets
@@ -281,32 +291,78 @@ export const Client: React.FC<ClientProps> = ({
     };
   }, [accessToken]);
 
-  useEffect(() => {
-    if (!txLockStatus?.enabled) {
-      setBanner(undefined);
+  // banner management
+  useAsyncEffect(async () => {
+    // prioritize the lock state banner if required
+    if (txLockStatus?.enabled) {
+      setBanner(
+        <WalletBanner
+          icon={<LockIcon fontSize="small" />}
+          action={
+            txLockStatus?.validUntil ? undefined : (
+              <Button
+                variant="text"
+                color="inherit"
+                size="small"
+                onClick={handleTxUnlockClicked}
+              >
+                {t('wallet.unlock')}
+              </Button>
+            )
+          }
+        >
+          <Markdown>
+            {txLockStatus?.validUntil
+              ? t('wallet.txLockTimeStatus', {
+                  date: new Date(txLockStatus.validUntil).toLocaleString(),
+                })
+              : t('wallet.txLockManualStatus')}
+          </Markdown>
+        </WalletBanner>,
+      );
       return;
     }
-    setBanner(
-      <WalletBanner
-        icon={<InfoOutlinedIcon fontSize="small" />}
-        action={
-          txLockStatus?.validUntil ? undefined : (
-            <Button variant="text" size="small" onClick={handleTxUnlockClicked}>
-              {t('wallet.unlock')}
-            </Button>
-          )
-        }
-      >
-        <Markdown>
-          {txLockStatus?.validUntil
-            ? t('wallet.txLockTimeStatus', {
-                date: new Date(txLockStatus.validUntil).toLocaleString(),
-              })
-            : t('wallet.txLockManualStatus')}
-        </Markdown>
-      </WalletBanner>,
+
+    // prioritize security health check
+    const isHealthCheckCleared = await localStorageWrapper.getItem(
+      DomainProfileKeys.BannerHealthCheck,
     );
-  }, [txLockStatus]);
+    if (!isHealthCheckCleared && onSecurityCenterClicked) {
+      setBanner(
+        <Tooltip arrow title={t('wallet.securityHealthCheckDescription')}>
+          <Box>
+            <WalletBanner
+              icon={<SecurityOutlinedIcon fontSize="small" />}
+              action={
+                <Box display="flex">
+                  <IconButton
+                    size="small"
+                    color="inherit"
+                    onClick={() => handleHealthCheckClicked(true)}
+                  >
+                    <CheckIcon />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    color="inherit"
+                    onClick={() => handleHealthCheckClicked(false)}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Box>
+              }
+            >
+              {t('wallet.securityHealthCheck')}
+            </WalletBanner>
+          </Box>
+        </Tooltip>,
+      );
+      return;
+    }
+
+    // use an external banner if present
+    setBanner(externalBanner);
+  }, [externalBanner, txLockStatus]);
 
   useEffect(() => {
     if (!isHeaderClicked || !setIsHeaderClicked) {
@@ -445,6 +501,17 @@ export const Client: React.FC<ClientProps> = ({
     if (onClaimWallet) {
       onClaimWallet();
     }
+  };
+
+  const handleHealthCheckClicked = async (enabled: boolean) => {
+    await localStorageWrapper.setItem(
+      DomainProfileKeys.BannerHealthCheck,
+      String(Date.now()),
+    );
+    if (enabled && onSecurityCenterClicked) {
+      onSecurityCenterClicked();
+    }
+    setBanner(undefined);
   };
 
   const handleCloseFundingModal = () => {
@@ -614,6 +681,10 @@ export const Client: React.FC<ClientProps> = ({
     setSelectedToken(undefined);
   };
 
+  const handleLearnMoreClicked = () => {
+    window.open(config.WALLETS.LANDING_PAGE_URL, '_blank');
+  };
+
   const getTabFields = (tv: ClientTabType) => {
     return tv === ClientTabType.Transactions
       ? ['native', 'price', 'token', 'tx']
@@ -662,9 +733,93 @@ export const Client: React.FC<ClientProps> = ({
           </Box>
         ) : (
           <TabContext value={tabValue as ClientTabType}>
-            <Box className={classes.header}>
+            {cryptoValue ? (
+              <Box className={classes.header}>
+                <Box className={classes.balanceContainer}>
+                  <Typography variant="h3">
+                    {(tabValue === ClientTabType.Domains
+                      ? // show only domain value on domain tab
+                        domainsValue
+                      : tabValue === ClientTabType.Portfolio
+                      ? // show only crypto value on crypto tab
+                        cryptoValue
+                      : tabValue === ClientTabType.Transactions &&
+                        // show aggregate value (domains + crypto) on activity tab
+                        domainsValue + cryptoValue
+                    ).toLocaleString('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                    })}
+                  </Typography>
+                </Box>
+                <Box className={classes.actionContainer}>
+                  <StyledButton
+                    className={classes.actionButton}
+                    onClick={handleClickedReceive}
+                    variant="contained"
+                    colorPalette={theme.palette.neutralShades}
+                    shade={theme.palette.mode === 'light' ? 100 : 600}
+                    size="small"
+                  >
+                    <Box className={classes.actionContent}>
+                      <QrCodeIcon className={classes.actionIcon} />
+                      {t('common.receive')}
+                    </Box>
+                  </StyledButton>
+                  <StyledButton
+                    className={classes.actionButton}
+                    onClick={handleClickedSend}
+                    variant="contained"
+                    disabled={txLockStatus?.enabled}
+                    colorPalette={theme.palette.neutralShades}
+                    shade={theme.palette.mode === 'light' ? 100 : 600}
+                    color="secondary"
+                    size="small"
+                  >
+                    <Box className={classes.actionContent}>
+                      <SendIcon className={classes.actionIcon} />
+                      {t('common.send')}
+                    </Box>
+                  </StyledButton>
+                  <StyledButton
+                    className={classes.actionButton}
+                    onClick={handleClickedSwap}
+                    variant="contained"
+                    disabled={txLockStatus?.enabled}
+                    colorPalette={theme.palette.neutralShades}
+                    shade={theme.palette.mode === 'light' ? 100 : 600}
+                    color="secondary"
+                    size="small"
+                  >
+                    <Box className={classes.actionContent}>
+                      <SwapHorizIcon className={classes.actionIcon} />
+                      {t('swap.title')}
+                    </Box>
+                  </StyledButton>
+                  <Box mr={-2}>
+                    <StyledButton
+                      className={classes.actionButton}
+                      onClick={handleClickedBuy}
+                      variant="contained"
+                      colorPalette={theme.palette.neutralShades}
+                      shade={theme.palette.mode === 'light' ? 100 : 600}
+                      color="secondary"
+                      size="small"
+                    >
+                      <Box className={classes.actionContent}>
+                        <AttachMoneyIcon className={classes.actionIcon} />
+                        {t(isSellEnabled ? 'common.buySell' : 'common.buy')}
+                      </Box>
+                    </StyledButton>
+                  </Box>
+                </Box>
+              </Box>
+            ) : (
               <Box className={classes.balanceContainer}>
-                <Typography variant="h3">
+                <Typography
+                  variant="h3"
+                  color={theme.palette.neutralShades[500]}
+                >
                   {(tabValue === ClientTabType.Domains
                     ? // show only domain value on domain tab
                       domainsValue
@@ -680,68 +835,7 @@ export const Client: React.FC<ClientProps> = ({
                   })}
                 </Typography>
               </Box>
-              <Box className={classes.actionContainer}>
-                <StyledButton
-                  className={classes.actionButton}
-                  onClick={handleClickedReceive}
-                  variant="contained"
-                  colorPalette={theme.palette.neutralShades}
-                  shade={theme.palette.mode === 'light' ? 100 : 600}
-                  size="small"
-                >
-                  <Box className={classes.actionContent}>
-                    <QrCodeIcon className={classes.actionIcon} />
-                    {t('common.receive')}
-                  </Box>
-                </StyledButton>
-                <StyledButton
-                  className={classes.actionButton}
-                  onClick={handleClickedSend}
-                  variant="contained"
-                  disabled={txLockStatus?.enabled}
-                  colorPalette={theme.palette.neutralShades}
-                  shade={theme.palette.mode === 'light' ? 100 : 600}
-                  color="secondary"
-                  size="small"
-                >
-                  <Box className={classes.actionContent}>
-                    <SendIcon className={classes.actionIcon} />
-                    {t('common.send')}
-                  </Box>
-                </StyledButton>
-                <StyledButton
-                  className={classes.actionButton}
-                  onClick={handleClickedSwap}
-                  variant="contained"
-                  disabled={txLockStatus?.enabled}
-                  colorPalette={theme.palette.neutralShades}
-                  shade={theme.palette.mode === 'light' ? 100 : 600}
-                  color="secondary"
-                  size="small"
-                >
-                  <Box className={classes.actionContent}>
-                    <SwapHorizIcon className={classes.actionIcon} />
-                    {t('swap.title')}
-                  </Box>
-                </StyledButton>
-                <Box mr={-2}>
-                  <StyledButton
-                    className={classes.actionButton}
-                    onClick={handleClickedBuy}
-                    variant="contained"
-                    colorPalette={theme.palette.neutralShades}
-                    shade={theme.palette.mode === 'light' ? 100 : 600}
-                    color="secondary"
-                    size="small"
-                  >
-                    <Box className={classes.actionContent}>
-                      <AttachMoneyIcon className={classes.actionIcon} />
-                      {t(isSellEnabled ? 'common.buySell' : 'common.buy')}
-                    </Box>
-                  </StyledButton>
-                </Box>
-              </Box>
-            </Box>
+            )}
             <Grid container className={classes.portfolioContainer}>
               <Grid item xs={12} height="100%">
                 <TabPanel
@@ -828,33 +922,45 @@ export const Client: React.FC<ClientProps> = ({
             </Grid>
             <Box className={classes.footer}>
               <Box />
-              <TabList
-                orientation="horizontal"
-                onChange={handleTabChange}
-                variant="fullWidth"
-                className={classes.tabList}
-                indicatorColor="primary"
-                textColor="primary"
-              >
-                <Tab
-                  icon={<PaidOutlinedIcon />}
-                  value={ClientTabType.Portfolio}
-                  label={t('tokensPortfolio.crypto')}
-                  iconPosition="start"
-                />
-                <Tab
-                  icon={<ListOutlinedIcon />}
-                  value={ClientTabType.Domains}
-                  label={t('common.domains')}
-                  iconPosition="start"
-                />
-                <Tab
-                  icon={<HistoryIcon />}
-                  value={ClientTabType.Transactions}
-                  label={t('activity.title')}
-                  iconPosition="start"
-                />
-              </TabList>
+              {cryptoValue ? (
+                <TabList
+                  orientation="horizontal"
+                  onChange={handleTabChange}
+                  variant="fullWidth"
+                  className={classes.tabList}
+                  indicatorColor="primary"
+                  textColor="primary"
+                >
+                  <Tab
+                    icon={<PaidOutlinedIcon />}
+                    value={ClientTabType.Portfolio}
+                    label={t('tokensPortfolio.crypto')}
+                    iconPosition="start"
+                  />
+                  <Tab
+                    icon={<ListOutlinedIcon />}
+                    value={ClientTabType.Domains}
+                    label={t('common.domains')}
+                    iconPosition="start"
+                  />
+                  <Tab
+                    icon={<HistoryIcon />}
+                    value={ClientTabType.Transactions}
+                    label={t('activity.title')}
+                    iconPosition="start"
+                  />
+                </TabList>
+              ) : (
+                <Button
+                  variant="text"
+                  size="small"
+                  fullWidth
+                  color="inherit"
+                  onClick={handleLearnMoreClicked}
+                >
+                  {t('common.learnMore')}
+                </Button>
+              )}
             </Box>
           </TabContext>
         )}
@@ -913,10 +1019,12 @@ export type ClientProps = {
   paymentConfigStatus?: SerializedIdentityResponse;
   fullScreenModals?: boolean;
   onClaimWallet?: () => void;
+  onSecurityCenterClicked?: () => void;
   onRefresh: (showSpinner?: boolean, fields?: string[]) => Promise<void>;
   isHeaderClicked: boolean;
   isWalletLoading?: boolean;
   setIsHeaderClicked?: (v: boolean) => void;
+  externalBanner?: React.ReactNode;
 };
 
 export enum ClientTabType {

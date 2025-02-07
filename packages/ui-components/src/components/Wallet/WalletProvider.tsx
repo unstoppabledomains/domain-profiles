@@ -146,6 +146,7 @@ export const WalletProvider: React.FC<
       state: TokenRefreshResponse,
     ) => void;
     onClaimWallet?: () => void;
+    onSecurityCenterClicked?: () => void;
     setIsFetching?: (v?: boolean) => void;
     isHeaderClicked: boolean;
     setIsHeaderClicked?: (v: boolean) => void;
@@ -155,6 +156,7 @@ export const WalletProvider: React.FC<
     fullScreenModals?: boolean;
     forceRememberOnDevice?: boolean;
     loginClicked?: boolean;
+    banner?: React.ReactNode;
   }
 > = ({
   onUpdate,
@@ -162,6 +164,7 @@ export const WalletProvider: React.FC<
   onLoaded,
   onLoginInitiated,
   onClaimWallet,
+  onSecurityCenterClicked,
   setButtonComponent,
   setIsFetching,
   setAuthAddress,
@@ -176,6 +179,7 @@ export const WalletProvider: React.FC<
   initialState,
   initialLoginState,
   loginClicked,
+  banner,
 }) => {
   // component state variables
   const router = useRouter();
@@ -188,7 +192,7 @@ export const WalletProvider: React.FC<
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [configState, setConfigState] = useState(
-    initialState || WalletConfigState.PasswordEntry,
+    initialState ? initialState : WalletConfigState.PasswordEntry,
   );
   const [errorMessage, setErrorMessage] = useState<string>();
   const {enqueueSnackbar} = useSnackbar();
@@ -828,7 +832,9 @@ export const WalletProvider: React.FC<
     await saveState({});
 
     // reset configuration state
-    setConfigState(WalletConfigState.PasswordEntry);
+    setConfigState(
+      initialState ? initialState : WalletConfigState.PasswordEntry,
+    );
   };
 
   const handleKeyDown: React.KeyboardEventHandler = event => {
@@ -1278,9 +1284,11 @@ export const WalletProvider: React.FC<
                 fullScreenModals={fullScreenModals}
                 onRefresh={handleRefresh}
                 onClaimWallet={onClaimWallet}
+                onSecurityCenterClicked={onSecurityCenterClicked}
                 isWalletLoading={isWalletLoading}
                 isHeaderClicked={isHeaderClicked}
                 setIsHeaderClicked={setIsHeaderClicked}
+                externalBanner={banner}
               />
             )
           ))

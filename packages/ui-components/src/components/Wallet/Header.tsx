@@ -24,8 +24,6 @@ import {UnstoppableMessaging} from '../Chat';
 import DropDownMenu from '../DropDownMenu';
 import Link from '../Link';
 import {DomainProfileModal} from '../Manage';
-import Modal from '../Modal';
-import SecurityCenterModal from './SecurityCenterModal';
 import WalletIcon from './WalletIcon';
 import type {WalletMode} from './index';
 
@@ -182,6 +180,7 @@ type Props = {
   onDisconnect?: () => void;
   onMessagePopoutClick?: (address?: string) => void;
   onClaimWalletClick?: () => void;
+  onSecurityCenterClicked?: () => void;
 };
 
 export const Header: React.FC<Props> = ({
@@ -203,6 +202,7 @@ export const Header: React.FC<Props> = ({
   onMessagesClick,
   onMessagePopoutClick,
   onClaimWalletClick,
+  onSecurityCenterClicked,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -215,9 +215,6 @@ export const Header: React.FC<Props> = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Modal states
-  const [isSecurityCenterModalOpen, setIsSecurityCenterModalOpen] =
-    useState(false);
-
   const [domainToManage, setDomainToManage] = useState<string>();
 
   const handleOptionsClick = () => {
@@ -232,7 +229,10 @@ export const Header: React.FC<Props> = ({
   };
 
   const handleSecurityCenterClicked = () => {
-    setIsSecurityCenterModalOpen(true);
+    if (!onSecurityCenterClicked) {
+      return;
+    }
+    onSecurityCenterClicked();
     setIsMenuOpen(false);
   };
 
@@ -408,7 +408,9 @@ export const Header: React.FC<Props> = ({
           onSettingsClicked={accessToken ? onSettingsClick : undefined}
           onSidePanelClicked={accessToken ? onSidePanelClick : undefined}
           onSecurityCenterClicked={
-            accessToken ? handleSecurityCenterClicked : undefined
+            accessToken && onSecurityCenterClicked
+              ? handleSecurityCenterClicked
+              : undefined
           }
           onLogout={handleLogout}
           onDisconnect={
@@ -418,7 +420,7 @@ export const Header: React.FC<Props> = ({
           onSupportClicked={handleSupportClicked}
           onClaimWalletClicked={onClaimWalletClick}
           hideLogout={!accessToken}
-          hideProfile={!!handleSecurityCenterClicked}
+          hideProfile={!!onSecurityCenterClicked}
         />
       )}
       {domainToManage && (
@@ -430,17 +432,6 @@ export const Header: React.FC<Props> = ({
           onClose={() => setDomainToManage(undefined)}
           onUpdate={handleUpdateSuccess}
         />
-      )}
-      {isSecurityCenterModalOpen && (
-        <Modal
-          title={t('wallet.securityCenter')}
-          open={isSecurityCenterModalOpen}
-          fullScreen={fullScreenModals}
-          titleStyle={classes.modalTitleStyle}
-          onClose={() => setIsSecurityCenterModalOpen(false)}
-        >
-          <SecurityCenterModal accessToken={accessToken} />
-        </Modal>
       )}
     </Box>
   );

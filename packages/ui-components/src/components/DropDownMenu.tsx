@@ -1,6 +1,7 @@
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
 import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
+import LaunchIcon from '@mui/icons-material/Launch';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import Logout from '@mui/icons-material/Logout';
 import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
@@ -30,6 +31,7 @@ interface Props {
   onWalletClicked?: () => void;
   onSecurityCenterClicked?: () => void;
   onSettingsClicked?: () => void;
+  onSidePanelClicked?: () => void;
   onSupportClicked?: () => void;
   onMessagingClicked?: () => void;
   onClaimWalletClicked?: () => void;
@@ -38,6 +40,7 @@ interface Props {
   onHideMenu: () => void;
   marginTop?: number;
   hideLogout?: boolean;
+  hideProfile?: boolean;
 }
 
 const useStyles = makeStyles<{marginTop?: number}>()(
@@ -79,11 +82,13 @@ const DropDownMenu: React.FC<Props> = ({
   authDomain,
   marginTop,
   hideLogout,
+  hideProfile,
   onGetDomainClicked,
   onDomainsClicked,
   onWalletClicked,
   onSecurityCenterClicked,
   onSettingsClicked,
+  onSidePanelClicked,
   onSupportClicked,
   onMessagingClicked,
   onClaimWalletClicked,
@@ -154,7 +159,7 @@ const DropDownMenu: React.FC<Props> = ({
 
   return (
     <Card ref={menuRef} className={classes.cardBody} data-testid={'dropdown'}>
-      {authDomain && isDomainValidForManagement(authDomain) && (
+      {!hideProfile && authDomain && isDomainValidForManagement(authDomain) && (
         <div
           data-testid={`manage-profile-button`}
           className={classes.container}
@@ -177,14 +182,6 @@ const DropDownMenu: React.FC<Props> = ({
           <ListOutlinedIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
             {t('profile.viewMyDomains')}
-          </Typography>
-        </div>
-      )}
-      {onMessagingClicked && (
-        <div className={classes.container} onClick={onMessagingClicked}>
-          <ChatOutlinedIcon className={classes.settingsIcon} />
-          <Typography className={cx(classes.font)} color="text.secondary">
-            {t('push.messages')}
           </Typography>
         </div>
       )}
@@ -212,18 +209,6 @@ const DropDownMenu: React.FC<Props> = ({
           </Typography>
         </div>
       )}
-      {onSecurityCenterClicked && (
-        <div
-          data-testid={`security-center-button`}
-          className={classes.container}
-          onClick={onSecurityCenterClicked}
-        >
-          <SecurityOutlinedIcon className={classes.settingsIcon} />
-          <Typography className={cx(classes.font)} color="text.secondary">
-            {t('wallet.securityCenter')}
-          </Typography>
-        </div>
-      )}
       {onSettingsClicked && (
         <div
           data-testid={`recovery-link-button`}
@@ -233,6 +218,18 @@ const DropDownMenu: React.FC<Props> = ({
           <SettingsOutlinedIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
             {t('push.settings')}
+          </Typography>
+        </div>
+      )}
+      {onSecurityCenterClicked && (
+        <div
+          data-testid={`security-center-button`}
+          className={classes.container}
+          onClick={onSecurityCenterClicked}
+        >
+          <SecurityOutlinedIcon className={classes.settingsIcon} />
+          <Typography className={cx(classes.font)} color="text.secondary">
+            {t('wallet.securityCenter')}
           </Typography>
         </div>
       )}
@@ -248,6 +245,14 @@ const DropDownMenu: React.FC<Props> = ({
           </Typography>
         </div>
       )}
+      {onMessagingClicked && (
+        <div className={classes.container} onClick={onMessagingClicked}>
+          <ChatOutlinedIcon className={classes.settingsIcon} />
+          <Typography className={cx(classes.font)} color="text.secondary">
+            {t('push.messages')}
+          </Typography>
+        </div>
+      )}
       {onSupportClicked && (
         <div
           data-testid={`support-button`}
@@ -257,6 +262,18 @@ const DropDownMenu: React.FC<Props> = ({
           <SupportIcon className={classes.settingsIcon} />
           <Typography className={cx(classes.font)} color="text.secondary">
             {t('common.support')}
+          </Typography>
+        </div>
+      )}
+      {onSidePanelClicked && (
+        <div
+          data-testid={`side-panel-button`}
+          className={classes.container}
+          onClick={onSidePanelClicked}
+        >
+          <LaunchIcon className={classes.settingsIcon} />
+          <Typography className={cx(classes.font)} color="text.secondary">
+            {t('extension.sidePanel')}
           </Typography>
         </div>
       )}

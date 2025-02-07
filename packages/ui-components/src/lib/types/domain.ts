@@ -89,6 +89,7 @@ export enum DomainProfileKeys {
   GenericKeyValue = 'kv',
   EncryptedPIN = 'encryptedPin',
   LockStatus = 'lockStatus',
+  BannerHealthCheck = 'banner-health-check',
 }
 
 export enum DomainProfileSocialMedia {

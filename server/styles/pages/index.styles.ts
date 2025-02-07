@@ -67,8 +67,6 @@ export const useStyles = makeStyles<
     height: '100%',
   },
   sectionTitle: {
-    fontSize: 60,
-    lineHeight: '64px',
     fontFamily: "'Helvetica Neue', sans-serif",
     fontWeight: 900,
     textAlign: 'center',
@@ -76,8 +74,6 @@ export const useStyles = makeStyles<
     marginBottom: theme.spacing(7),
     [theme.breakpoints.down('sm')]: {
       marginBottom: theme.spacing(4),
-      fontSize: 32,
-      lineHeight: '40px',
     },
   },
   sectionSubTitle: {

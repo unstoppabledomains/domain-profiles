@@ -79,7 +79,7 @@ const useStyles = makeStyles<{
     flexDirection: 'column',
     minHeight:
       configState === WalletConfigState.Complete && mode === 'portfolio'
-        ? `${getMinClientHeight(isMobile)}px`
+        ? getMinClientHeight(isMobile)
         : undefined,
     height: '100%',
   },
@@ -88,7 +88,7 @@ const useStyles = makeStyles<{
     justifyContent: 'center',
     height:
       configState === WalletConfigState.Complete && mode === 'portfolio'
-        ? `${getMinClientHeight(isMobile) - 125}px`
+        ? getMinClientHeight(isMobile, -125)
         : '100%',
     alignItems: 'center',
   },
@@ -146,6 +146,7 @@ export const WalletProvider: React.FC<
       state: TokenRefreshResponse,
     ) => void;
     onClaimWallet?: () => void;
+    onSecurityCenterClicked?: () => void;
     setIsFetching?: (v?: boolean) => void;
     isHeaderClicked: boolean;
     setIsHeaderClicked?: (v: boolean) => void;
@@ -155,6 +156,7 @@ export const WalletProvider: React.FC<
     fullScreenModals?: boolean;
     forceRememberOnDevice?: boolean;
     loginClicked?: boolean;
+    banner?: React.ReactNode;
   }
 > = ({
   onUpdate,
@@ -162,6 +164,7 @@ export const WalletProvider: React.FC<
   onLoaded,
   onLoginInitiated,
   onClaimWallet,
+  onSecurityCenterClicked,
   setButtonComponent,
   setIsFetching,
   setAuthAddress,
@@ -176,6 +179,7 @@ export const WalletProvider: React.FC<
   initialState,
   initialLoginState,
   loginClicked,
+  banner,
 }) => {
   // component state variables
   const router = useRouter();
@@ -188,7 +192,7 @@ export const WalletProvider: React.FC<
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [configState, setConfigState] = useState(
-    initialState || WalletConfigState.PasswordEntry,
+    initialState ? initialState : WalletConfigState.PasswordEntry,
   );
   const [errorMessage, setErrorMessage] = useState<string>();
   const {enqueueSnackbar} = useSnackbar();
@@ -218,9 +222,6 @@ export const WalletProvider: React.FC<
   // style and translation
   const {classes} = useStyles({configState, mode, isMobile});
   const [t] = useTranslationContext();
-
-  const isCreateWalletEnabled =
-    featureFlags.variations?.profileServiceEnableWalletCreation === true;
 
   useEffect(() => {
     setIsWalletLoaded(false);
@@ -328,9 +329,7 @@ export const WalletProvider: React.FC<
           {errorMessage
             ? errorMessage
             : configState === WalletConfigState.NeedsOnboarding
-            ? isCreateWalletEnabled
-              ? t('wallet.createWallet')
-              : t('common.learnMore')
+            ? t('wallet.createWallet')
             : configState === WalletConfigState.PasswordEntry
             ? recoveryToken
               ? t('common.continue')
@@ -355,8 +354,7 @@ export const WalletProvider: React.FC<
             </Button>
           </Box>
         )}
-        {isCreateWalletEnabled &&
-          !recoveryToken &&
+        {!recoveryToken &&
           [
             WalletConfigState.PasswordEntry,
             WalletConfigState.OnboardWithCustody,
@@ -391,7 +389,6 @@ export const WalletProvider: React.FC<
     recoveryToken,
     errorMessage,
     isWalletLoaded,
-    isCreateWalletEnabled,
     persistKeys,
   ]);
 
@@ -835,7 +832,9 @@ export const WalletProvider: React.FC<
     await saveState({});
 
     // reset configuration state
-    setConfigState(WalletConfigState.PasswordEntry);
+    setConfigState(
+      initialState ? initialState : WalletConfigState.PasswordEntry,
+    );
   };
 
   const handleKeyDown: React.KeyboardEventHandler = event => {
@@ -930,11 +929,7 @@ export const WalletProvider: React.FC<
   };
 
   const processNeedsOnboarding = () => {
-    if (isCreateWalletEnabled) {
-      setConfigState(WalletConfigState.OnboardWithCustody);
-    } else {
-      window.open(config.WALLETS.LANDING_PAGE_URL, '_blank');
-    }
+    setConfigState(WalletConfigState.OnboardWithCustody);
   };
 
   const processPasswordEntry = async () => {
@@ -1289,9 +1284,11 @@ export const WalletProvider: React.FC<
                 fullScreenModals={fullScreenModals}
                 onRefresh={handleRefresh}
                 onClaimWallet={onClaimWallet}
+                onSecurityCenterClicked={onSecurityCenterClicked}
                 isWalletLoading={isWalletLoading}
                 isHeaderClicked={isHeaderClicked}
                 setIsHeaderClicked={setIsHeaderClicked}
+                externalBanner={banner}
               />
             )
           ))

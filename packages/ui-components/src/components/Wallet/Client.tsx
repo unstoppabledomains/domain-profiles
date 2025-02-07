@@ -1,8 +1,12 @@
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 import HistoryIcon from '@mui/icons-material/History';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
+import LockIcon from '@mui/icons-material/LockOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import QrCodeIcon from '@mui/icons-material/QrCode';
+import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import SendIcon from '@mui/icons-material/Send';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import TabContext from '@mui/lab/TabContext';
@@ -12,15 +16,20 @@ import Box from '@mui/material/Box';
 import type {ButtonProps} from '@mui/material/Button';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
 import Tab from '@mui/material/Tab';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {styled, useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import {Mutex} from 'async-mutex';
 import Markdown from 'markdown-to-jsx';
 import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
+import useAsyncEffect from 'use-async-effect';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {DomainWalletTransactions} from '.';
@@ -29,18 +38,22 @@ import {
   getOwnerDomains,
   getProfileData,
 } from '../../actions';
+import {getTransactionLockStatus} from '../../actions/fireBlocksActions';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
 import type {SerializedWalletBalance, TokenEntry} from '../../lib';
 import {
   CustodyState,
   DomainFieldTypes,
+  DomainProfileKeys,
   WALLET_CARD_HEIGHT,
   isLocked,
   useTranslationContext,
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
+import type {TransactionLockStatusResponse} from '../../lib/types/fireBlocks';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
+import {localStorageWrapper} from '../Chat';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileList} from '../Domain';
 import {DomainProfileModal} from '../Manage';
@@ -51,8 +64,10 @@ import {LetsGetStartedCta} from './LetsGetStartedCta';
 import Receive from './Receive';
 import ReceiveDomainModal from './ReceiveDomainModal';
 import Send from './Send';
+import SetupTxLockModal from './SetupTxLockModal';
 import Swap from './Swap';
 import {TokensPortfolio} from './TokensPortfolio';
+import {WalletBanner} from './WalletBanner';
 
 const useStyles = makeStyles<{isMobile: boolean}>()(
   (theme: Theme, {isMobile}) => ({
@@ -60,14 +75,14 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       display: 'flex',
       flexDirection: 'column',
       width: '100%',
-      height: `${getMinClientHeight(isMobile)}px`,
+      height: getMinClientHeight(isMobile),
     },
     walletContainer: {
       display: 'flex',
       flexDirection: 'column',
       width: '375px',
       [theme.breakpoints.down('sm')]: {
-        width: '330px',
+        width: 'calc(100vw - 32px)',
       },
       height: '100%',
     },
@@ -75,12 +90,9 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       display: 'flex',
       flexDirection: 'column',
       width: '100%',
-      minHeight: '180px',
       [theme.breakpoints.down('sm')]: {
-        minHeight: '150px',
         marginLeft: theme.spacing(-1),
         marginRight: theme.spacing(-1),
-        width: '345px',
       },
     },
     balanceContainer: {
@@ -95,7 +107,6 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       display: 'flex',
       justifyContent: 'center',
       marginTop: theme.spacing(3),
-      marginBottom: theme.spacing(2),
     },
     actionButton: {
       marginRight: theme.spacing(2),
@@ -121,15 +132,21 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       alignItems: 'center',
       justifyContent: 'center',
     },
+    listContainer: {
+      marginBottom: theme.spacing(2),
+      marginTop: '15px',
+      height: `${WALLET_CARD_HEIGHT + 2}px`,
+      [theme.breakpoints.down('sm')]: {
+        height: 'calc(100dvh - 310px)',
+      },
+    },
     domainListContainer: {
       color: theme.palette.wallet.text.primary,
       display: 'flex',
       backgroundImage: `linear-gradient(${theme.palette.wallet.background.gradient.start}, ${theme.palette.wallet.background.gradient.end})`,
       borderRadius: theme.shape.borderRadius,
-      padding: theme.spacing(2),
-      height: `${WALLET_CARD_HEIGHT + 2}px`,
-      marginBottom: theme.spacing(2),
-      marginTop: '15px',
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
     },
     domainRow: {
       display: 'flex',
@@ -162,6 +179,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       marginTop: theme.spacing(-2),
       marginBottom: theme.spacing(-2),
       width: '100%',
+      height: '100%',
     },
     tabList: {
       marginTop: theme.spacing(-3),
@@ -174,15 +192,11 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
     tabContentItem: {
       marginLeft: theme.spacing(-3),
       marginRight: theme.spacing(-3),
-      [theme.breakpoints.down('sm')]: {
-        marginLeft: theme.spacing(-4),
-        marginRight: theme.spacing(-4),
-      },
+      height: '100%',
     },
     footer: {
       display: 'flex',
       flexDirection: 'column',
-      height: '100%',
       justifyContent: 'space-between',
     },
     identitySnackbar: {
@@ -210,16 +224,18 @@ export const Client: React.FC<ClientProps> = ({
   fullScreenModals,
   onClaimWallet,
   onRefresh,
+  onSecurityCenterClicked,
   setIsHeaderClicked,
   isHeaderClicked,
   isWalletLoading,
+  externalBanner,
 }) => {
   // mobile behavior flag
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // style and translation
-  const {classes} = useStyles({isMobile});
+  const {classes, cx} = useStyles({isMobile});
   const [t] = useTranslationContext();
   const {enqueueSnackbar, closeSnackbar} = useSnackbar();
 
@@ -227,17 +243,22 @@ export const Client: React.FC<ClientProps> = ({
   const [state, saveState] = useFireblocksState();
   const [fundingModalTitle, setFundingModalTitle] = useState<string>();
   const [fundingModalIcon, setFundingModalIcon] = useState<React.ReactNode>();
-  const {setWeb3Deps, setShowPinCta} = useWeb3Context();
+  const [banner, setBanner] = useState<React.ReactNode>(externalBanner);
+  const {setWeb3Deps, setShowPinCta, setTxLockStatus, txLockStatus} =
+    useWeb3Context();
   const cryptoValue = wallets
     .map(w => w.totalValueUsdAmt || 0)
     .reduce((p, c) => p + c, 0);
   const isSellEnabled = cryptoValue >= 15;
+  const refreshMutex = new Mutex();
 
   // component state variables
   const [isSend, setIsSend] = useState(false);
   const [isReceive, setIsReceive] = useState(false);
   const [isBuy, setIsBuy] = useState(false);
   const [isSwap, setIsSwap] = useState(false);
+  const [isTxUnlockOpen, setIsTxUnlockOpen] = useState(false);
+  const [isTransactionsLoading, setIsTransactionsLoading] = useState(false);
   const [tabValue, setTabValue] = useState(ClientTabType.Portfolio);
   const [selectedToken, setSelectedToken] = useState<TokenEntry>();
 
@@ -253,18 +274,95 @@ export const Client: React.FC<ClientProps> = ({
   const address = wallets.find(w => isEthAddress(w.address))?.address;
 
   // initialize the page refresh timer
-  useEffect(() => {
-    clearTimeout(refreshTimer);
-    refreshTimer = setTimeout(
-      () => refresh(false, getTabFields(tabValue)),
-      REFRESH_BALANCE_MS,
-    );
+  useAsyncEffect(async () => {
+    if (!accessToken) {
+      return;
+    }
+
+    // retrieve wallet lock status
+    setTxLockStatus(await getTransactionLockStatus(accessToken));
+
+    // start a new refresh timer
+    resetRefreshTimer(getTabFields(tabValue));
 
     // clear timer on unload
     return () => {
       clearTimeout(refreshTimer);
     };
-  }, []);
+  }, [accessToken]);
+
+  // banner management
+  useAsyncEffect(async () => {
+    // prioritize the lock state banner if required
+    if (txLockStatus?.enabled) {
+      setBanner(
+        <WalletBanner
+          icon={<LockIcon fontSize="small" />}
+          action={
+            txLockStatus?.validUntil ? undefined : (
+              <Button
+                variant="text"
+                color="inherit"
+                size="small"
+                onClick={handleTxUnlockClicked}
+              >
+                {t('wallet.unlock')}
+              </Button>
+            )
+          }
+        >
+          <Markdown>
+            {txLockStatus?.validUntil
+              ? t('wallet.txLockTimeStatus', {
+                  date: new Date(txLockStatus.validUntil).toLocaleString(),
+                })
+              : t('wallet.txLockManualStatus')}
+          </Markdown>
+        </WalletBanner>,
+      );
+      return;
+    }
+
+    // prioritize security health check
+    const isHealthCheckCleared = await localStorageWrapper.getItem(
+      DomainProfileKeys.BannerHealthCheck,
+    );
+    if (!isHealthCheckCleared && onSecurityCenterClicked) {
+      setBanner(
+        <Tooltip arrow title={t('wallet.securityHealthCheckDescription')}>
+          <Box>
+            <WalletBanner
+              icon={<SecurityOutlinedIcon fontSize="small" />}
+              action={
+                <Box display="flex">
+                  <IconButton
+                    size="small"
+                    color="inherit"
+                    onClick={() => handleHealthCheckClicked(true)}
+                  >
+                    <CheckIcon />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    color="inherit"
+                    onClick={() => handleHealthCheckClicked(false)}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Box>
+              }
+            >
+              {t('wallet.securityHealthCheck')}
+            </WalletBanner>
+          </Box>
+        </Tooltip>,
+      );
+      return;
+    }
+
+    // use an external banner if present
+    setBanner(externalBanner);
+  }, [externalBanner, txLockStatus]);
 
   useEffect(() => {
     if (!isHeaderClicked || !setIsHeaderClicked) {
@@ -333,19 +431,41 @@ export const Client: React.FC<ClientProps> = ({
 
   // wrapper for the refresh method
   const refresh = async (showSpinner?: boolean, fields?: string[]) => {
-    // reset the refresh timer
-    clearTimeout(refreshTimer);
-
-    // refresh the data if the wallet is not locked
-    const isWalletLocked = await isLocked();
-    if (isWalletLocked) {
-      setShowPinCta(true);
-    } else {
-      await onRefresh(showSpinner, fields);
+    // skip background refresh if already locked
+    if (!showSpinner && refreshMutex.isLocked()) {
+      return;
     }
 
-    // schedule another refresh
-    refreshTimer = setTimeout(() => refresh(false, fields), REFRESH_BALANCE_MS);
+    // run serially to prevent race condition
+    await refreshMutex.runExclusive(async () => {
+      // refresh the data if the wallet is not locked
+      const isWalletLocked = await isLocked();
+      if (isWalletLocked) {
+        setShowPinCta(true);
+      } else {
+        // retrieve fresh wallet balances
+        await onRefresh(showSpinner, fields);
+      }
+    });
+  };
+
+  const handleTxUnlockClicked = () => {
+    setIsTxUnlockOpen(true);
+  };
+
+  const handleTxUnlockComplete = (
+    _mode: string,
+    status: TransactionLockStatusResponse,
+  ) => {
+    setTxLockStatus(status);
+  };
+
+  const resetRefreshTimer = (fields: string[]) => {
+    clearTimeout(refreshTimer);
+    refreshTimer = setInterval(
+      () => refresh(false, fields),
+      REFRESH_BALANCE_MS,
+    );
   };
 
   // configure a CTA to prompt the user to set their password if the wallet
@@ -383,6 +503,17 @@ export const Client: React.FC<ClientProps> = ({
     }
   };
 
+  const handleHealthCheckClicked = async (enabled: boolean) => {
+    await localStorageWrapper.setItem(
+      DomainProfileKeys.BannerHealthCheck,
+      String(Date.now()),
+    );
+    if (enabled && onSecurityCenterClicked) {
+      onSecurityCenterClicked();
+    }
+    setBanner(undefined);
+  };
+
   const handleCloseFundingModal = () => {
     setFundingModalTitle(undefined);
     setFundingModalIcon(undefined);
@@ -393,11 +524,18 @@ export const Client: React.FC<ClientProps> = ({
     newValue: string,
   ) => {
     const tv = newValue as ClientTabType;
+    setIsTransactionsLoading(true);
     setTabValue(tv);
     if (address && tv === ClientTabType.Domains) {
       void handleLoadDomains(true);
     }
+
+    // reset the refresh timer and call refresh
+    resetRefreshTimer(getTabFields(tv));
     await refresh(true, getTabFields(tv));
+
+    // transactions have been loaded
+    setIsTransactionsLoading(false);
   };
 
   const handleRetrieveOwnerDomains = async (
@@ -449,6 +587,7 @@ export const Client: React.FC<ClientProps> = ({
     const resp = await handleRetrieveOwnerDomains(address, reload);
     if (resp.domains.length) {
       if (reload) {
+        setRetrievedAll(false);
         setDomains([...resp.domains]);
       } else {
         setDomains(d => [...d, ...resp.domains]);
@@ -540,9 +679,10 @@ export const Client: React.FC<ClientProps> = ({
     setIsBuy(false);
     setIsSwap(false);
     setSelectedToken(undefined);
+  };
 
-    // refresh portfolio data
-    await refresh(true, getTabFields(tabValue));
+  const handleLearnMoreClicked = () => {
+    window.open(config.WALLETS.LANDING_PAGE_URL, '_blank');
   };
 
   const getTabFields = (tv: ClientTabType) => {
@@ -593,9 +733,93 @@ export const Client: React.FC<ClientProps> = ({
           </Box>
         ) : (
           <TabContext value={tabValue as ClientTabType}>
-            <Box className={classes.header}>
+            {cryptoValue ? (
+              <Box className={classes.header}>
+                <Box className={classes.balanceContainer}>
+                  <Typography variant="h3">
+                    {(tabValue === ClientTabType.Domains
+                      ? // show only domain value on domain tab
+                        domainsValue
+                      : tabValue === ClientTabType.Portfolio
+                      ? // show only crypto value on crypto tab
+                        cryptoValue
+                      : tabValue === ClientTabType.Transactions &&
+                        // show aggregate value (domains + crypto) on activity tab
+                        domainsValue + cryptoValue
+                    ).toLocaleString('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                    })}
+                  </Typography>
+                </Box>
+                <Box className={classes.actionContainer}>
+                  <StyledButton
+                    className={classes.actionButton}
+                    onClick={handleClickedReceive}
+                    variant="contained"
+                    colorPalette={theme.palette.neutralShades}
+                    shade={theme.palette.mode === 'light' ? 100 : 600}
+                    size="small"
+                  >
+                    <Box className={classes.actionContent}>
+                      <QrCodeIcon className={classes.actionIcon} />
+                      {t('common.receive')}
+                    </Box>
+                  </StyledButton>
+                  <StyledButton
+                    className={classes.actionButton}
+                    onClick={handleClickedSend}
+                    variant="contained"
+                    disabled={txLockStatus?.enabled}
+                    colorPalette={theme.palette.neutralShades}
+                    shade={theme.palette.mode === 'light' ? 100 : 600}
+                    color="secondary"
+                    size="small"
+                  >
+                    <Box className={classes.actionContent}>
+                      <SendIcon className={classes.actionIcon} />
+                      {t('common.send')}
+                    </Box>
+                  </StyledButton>
+                  <StyledButton
+                    className={classes.actionButton}
+                    onClick={handleClickedSwap}
+                    variant="contained"
+                    disabled={txLockStatus?.enabled}
+                    colorPalette={theme.palette.neutralShades}
+                    shade={theme.palette.mode === 'light' ? 100 : 600}
+                    color="secondary"
+                    size="small"
+                  >
+                    <Box className={classes.actionContent}>
+                      <SwapHorizIcon className={classes.actionIcon} />
+                      {t('swap.title')}
+                    </Box>
+                  </StyledButton>
+                  <Box mr={-2}>
+                    <StyledButton
+                      className={classes.actionButton}
+                      onClick={handleClickedBuy}
+                      variant="contained"
+                      colorPalette={theme.palette.neutralShades}
+                      shade={theme.palette.mode === 'light' ? 100 : 600}
+                      color="secondary"
+                      size="small"
+                    >
+                      <Box className={classes.actionContent}>
+                        <AttachMoneyIcon className={classes.actionIcon} />
+                        {t(isSellEnabled ? 'common.buySell' : 'common.buy')}
+                      </Box>
+                    </StyledButton>
+                  </Box>
+                </Box>
+              </Box>
+            ) : (
               <Box className={classes.balanceContainer}>
-                <Typography variant="h3">
+                <Typography
+                  variant="h3"
+                  color={theme.palette.neutralShades[500]}
+                >
                   {(tabValue === ClientTabType.Domains
                     ? // show only domain value on domain tab
                       domainsValue
@@ -611,79 +835,24 @@ export const Client: React.FC<ClientProps> = ({
                   })}
                 </Typography>
               </Box>
-              <Box className={classes.actionContainer}>
-                <StyledButton
-                  className={classes.actionButton}
-                  onClick={handleClickedReceive}
-                  variant="contained"
-                  colorPalette={theme.palette.neutralShades}
-                  shade={theme.palette.mode === 'light' ? 100 : 600}
-                  size="small"
-                >
-                  <Box className={classes.actionContent}>
-                    <QrCodeIcon className={classes.actionIcon} />
-                    {t('common.receive')}
-                  </Box>
-                </StyledButton>
-                <StyledButton
-                  className={classes.actionButton}
-                  onClick={handleClickedSend}
-                  variant="contained"
-                  colorPalette={theme.palette.neutralShades}
-                  shade={theme.palette.mode === 'light' ? 100 : 600}
-                  color="secondary"
-                  size="small"
-                >
-                  <Box className={classes.actionContent}>
-                    <SendIcon className={classes.actionIcon} />
-                    {t('common.send')}
-                  </Box>
-                </StyledButton>
-                <StyledButton
-                  className={classes.actionButton}
-                  onClick={handleClickedSwap}
-                  variant="contained"
-                  colorPalette={theme.palette.neutralShades}
-                  shade={theme.palette.mode === 'light' ? 100 : 600}
-                  color="secondary"
-                  size="small"
-                >
-                  <Box className={classes.actionContent}>
-                    <SwapHorizIcon className={classes.actionIcon} />
-                    {t('swap.title')}
-                  </Box>
-                </StyledButton>
-                <Box mr={-2}>
-                  <StyledButton
-                    className={classes.actionButton}
-                    onClick={handleClickedBuy}
-                    variant="contained"
-                    colorPalette={theme.palette.neutralShades}
-                    shade={theme.palette.mode === 'light' ? 100 : 600}
-                    color="secondary"
-                    size="small"
-                  >
-                    <Box className={classes.actionContent}>
-                      <AttachMoneyIcon className={classes.actionIcon} />
-                      {t(isSellEnabled ? 'common.buySell' : 'common.buy')}
-                    </Box>
-                  </StyledButton>
-                </Box>
-              </Box>
-            </Box>
+            )}
             <Grid container className={classes.portfolioContainer}>
-              <Grid item xs={12}>
+              <Grid item xs={12} height="100%">
                 <TabPanel
                   value={ClientTabType.Portfolio}
                   className={classes.tabContentItem}
                 >
                   {cryptoValue ? (
-                    <TokensPortfolio
-                      wallets={wallets}
-                      isOwner={true}
-                      verified={true}
-                      onTokenClick={handleTokenClicked}
-                    />
+                    <Box className={classes.listContainer}>
+                      <TokensPortfolio
+                        banner={banner}
+                        wallets={wallets}
+                        isOwner={true}
+                        verified={true}
+                        fullHeight={isMobile}
+                        onTokenClick={handleTokenClicked}
+                      />
+                    </Box>
                   ) : (
                     <Box mt={2}>
                       <LetsGetStartedCta
@@ -698,7 +867,12 @@ export const Client: React.FC<ClientProps> = ({
                   className={classes.tabContentItem}
                 >
                   {domains.length > 0 ? (
-                    <Box className={classes.domainListContainer}>
+                    <Box
+                      className={cx(
+                        classes.domainListContainer,
+                        classes.listContainer,
+                      )}
+                    >
                       <DomainProfileList
                         id={'wallet-domain-list'}
                         domains={domains}
@@ -709,6 +883,7 @@ export const Client: React.FC<ClientProps> = ({
                         hasMore={!retrievedAll}
                         onClick={handleDomainClick}
                         rowStyle={classes.domainRow}
+                        itemsPerPage={DOMAIN_LIST_PAGE_SIZE}
                       />
                     </Box>
                   ) : (
@@ -727,50 +902,65 @@ export const Client: React.FC<ClientProps> = ({
                   value={ClientTabType.Transactions}
                   className={classes.tabContentItem}
                 >
-                  <DomainWalletTransactions
-                    id="unstoppable-wallet"
-                    wallets={wallets}
-                    isOwner={true}
-                    isWalletLoading={isWalletLoading}
-                    verified={true}
-                    fullScreenModals={fullScreenModals}
-                    accessToken={accessToken}
-                    onBack={() => setTabValue(ClientTabType.Portfolio)}
-                    onBuyClicked={handleClickedBuy}
-                    onReceiveClicked={handleClickedReceive}
-                  />
+                  <Box className={classes.listContainer}>
+                    <DomainWalletTransactions
+                      id="unstoppable-wallet"
+                      wallets={wallets}
+                      isOwner={true}
+                      isWalletLoading={isWalletLoading || isTransactionsLoading}
+                      verified={true}
+                      fullScreenModals={fullScreenModals}
+                      accessToken={accessToken}
+                      onBack={() => setTabValue(ClientTabType.Portfolio)}
+                      onBuyClicked={handleClickedBuy}
+                      onReceiveClicked={handleClickedReceive}
+                      fullHeight={isMobile}
+                    />
+                  </Box>
                 </TabPanel>
               </Grid>
             </Grid>
             <Box className={classes.footer}>
               <Box />
-              <TabList
-                orientation="horizontal"
-                onChange={handleTabChange}
-                variant="fullWidth"
-                className={classes.tabList}
-                indicatorColor="primary"
-                textColor="primary"
-              >
-                <Tab
-                  icon={<PaidOutlinedIcon />}
-                  value={ClientTabType.Portfolio}
-                  label={t('tokensPortfolio.crypto')}
-                  iconPosition="start"
-                />
-                <Tab
-                  icon={<ListOutlinedIcon />}
-                  value={ClientTabType.Domains}
-                  label={t('common.domains')}
-                  iconPosition="start"
-                />
-                <Tab
-                  icon={<HistoryIcon />}
-                  value={ClientTabType.Transactions}
-                  label={t('activity.title')}
-                  iconPosition="start"
-                />
-              </TabList>
+              {cryptoValue ? (
+                <TabList
+                  orientation="horizontal"
+                  onChange={handleTabChange}
+                  variant="fullWidth"
+                  className={classes.tabList}
+                  indicatorColor="primary"
+                  textColor="primary"
+                >
+                  <Tab
+                    icon={<PaidOutlinedIcon />}
+                    value={ClientTabType.Portfolio}
+                    label={t('tokensPortfolio.crypto')}
+                    iconPosition="start"
+                  />
+                  <Tab
+                    icon={<ListOutlinedIcon />}
+                    value={ClientTabType.Domains}
+                    label={t('common.domains')}
+                    iconPosition="start"
+                  />
+                  <Tab
+                    icon={<HistoryIcon />}
+                    value={ClientTabType.Transactions}
+                    label={t('activity.title')}
+                    iconPosition="start"
+                  />
+                </TabList>
+              ) : (
+                <Button
+                  variant="text"
+                  size="small"
+                  fullWidth
+                  color="inherit"
+                  onClick={handleLearnMoreClicked}
+                >
+                  {t('common.learnMore')}
+                </Button>
+              )}
             </Box>
           </TabContext>
         )}
@@ -806,6 +996,19 @@ export const Client: React.FC<ClientProps> = ({
           />
         </Modal>
       )}
+      {isTxUnlockOpen && accessToken && (
+        <Modal
+          open={true}
+          title={t('wallet.txLockManual')}
+          onClose={() => setIsTxUnlockOpen(false)}
+        >
+          <SetupTxLockModal
+            accessToken={accessToken}
+            onClose={() => setIsTxUnlockOpen(false)}
+            onComplete={handleTxUnlockComplete}
+          />
+        </Modal>
+      )}
     </Box>
   );
 };
@@ -816,10 +1019,12 @@ export type ClientProps = {
   paymentConfigStatus?: SerializedIdentityResponse;
   fullScreenModals?: boolean;
   onClaimWallet?: () => void;
+  onSecurityCenterClicked?: () => void;
   onRefresh: (showSpinner?: boolean, fields?: string[]) => Promise<void>;
   isHeaderClicked: boolean;
   isWalletLoading?: boolean;
   setIsHeaderClicked?: (v: boolean) => void;
+  externalBanner?: React.ReactNode;
 };
 
 export enum ClientTabType {
@@ -828,8 +1033,8 @@ export enum ClientTabType {
   Transactions = 'txns',
 }
 
-export const getMinClientHeight = (isMobile: boolean) => {
-  return isMobile ? 515 : 550;
+export const getMinClientHeight = (isMobile: boolean, offset = 0) => {
+  return isMobile ? `calc(100dvh - 80px - ${offset}px)` : `${550 + offset}px`;
 };
 
 type StyledButtonProps = ButtonProps & {

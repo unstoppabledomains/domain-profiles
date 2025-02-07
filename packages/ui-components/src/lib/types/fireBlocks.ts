@@ -175,6 +175,17 @@ export interface TokenRefreshResponse {
   message?: string;
 }
 
+export interface TransactionLockRequest {
+  time?: number;
+  timeUnit?: 'MINUTES' | 'HOURS' | 'DAYS';
+}
+
+export interface TransactionLockStatusResponse {
+  '@type': string;
+  enabled: boolean;
+  validUntil?: number;
+}
+
 export interface Validations {
   isAuthToken: boolean;
   isTemporary: boolean;

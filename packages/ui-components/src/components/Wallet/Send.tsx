@@ -36,11 +36,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     width: '100%',
-    [theme.breakpoints.down('sm')]: {
-      width: '346px',
-      marginLeft: theme.spacing(-1),
-      marginRight: theme.spacing(-1),
-    },
     height: '100%',
   },
   fullWidth: {
@@ -179,8 +174,6 @@ const Send: React.FC<Props> = ({
   const isSendToEmailEnabled =
     featureFlags.variations?.profileServiceEnableWalletCreation === true &&
     featureFlags.variations?.profileServiceEnableWalletSendToEmail === true;
-  const isSplTokenEnabled =
-    featureFlags.variations?.udMeEnableWalletSolanaSigning;
 
   useEffect(() => {
     if (!initialSelectedToken) {
@@ -367,7 +360,7 @@ const Send: React.FC<Props> = ({
           requireBalance={true}
           supportedAssetList={config.WALLETS.CHAINS.SEND}
           supportErc20={true}
-          supportSpl={isSplTokenEnabled}
+          supportSpl={true}
         />
       </Box>
     );

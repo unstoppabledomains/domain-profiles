@@ -16,6 +16,7 @@ import config from '@unstoppabledomains/config';
 import type {DomainProfileTabType} from '@unstoppabledomains/ui-components';
 import {
   DomainProfileKeys,
+  Modal,
   Wallet,
   getAddressMetadata,
   getBootstrapState,
@@ -145,6 +146,25 @@ const WalletPage = () => {
     setAuthComplete(true);
   };
 
+  const renderWallet = () => (
+    <Wallet
+      mode={authAddress ? 'portfolio' : 'basic'}
+      emailAddress={emailAddress}
+      address={authAddress}
+      domain={authDomain}
+      avatarUrl={authAvatar}
+      recoveryToken={recoveryToken}
+      showMessages={true}
+      onUpdate={(_t: DomainProfileTabType) => {
+        handleAuthComplete();
+      }}
+      setAuthAddress={setAuthAddress}
+      setButtonComponent={setAuthButton}
+      isNewUser={!emailAddress}
+      fullScreenModals={isMobile}
+    />
+  );
+
   return (
     <Box className={classes.container}>
       <NextSeo {...seoTags} />
@@ -163,7 +183,7 @@ const WalletPage = () => {
         {isLoaded && (
           <Grid container data-testid="mainContentContainer">
             <Grid item xs={12} className={classes.item}>
-              <Typography className={classes.sectionTitle}>
+              <Typography variant="h1" className={classes.sectionTitle}>
                 {theme.wallet.title}
               </Typography>
             </Grid>
@@ -173,42 +193,40 @@ const WalletPage = () => {
               </Typography>
             </Grid>
             <Grid item xs={12} className={classes.item}>
-              <Box
-                className={cx(
-                  classes.searchContainer,
-                  classes.walletContainer,
-                  authAddress
-                    ? classes.walletPortfolioContainer
-                    : classes.walletInfoContainer,
-                )}
-              >
-                <Wallet
-                  mode={authAddress ? 'portfolio' : 'basic'}
-                  emailAddress={emailAddress}
-                  address={authAddress}
-                  domain={authDomain}
-                  avatarUrl={authAvatar}
-                  recoveryToken={recoveryToken}
-                  showMessages={true}
-                  onUpdate={(_t: DomainProfileTabType) => {
-                    handleAuthComplete();
-                  }}
-                  setAuthAddress={setAuthAddress}
-                  setButtonComponent={setAuthButton}
-                  isNewUser={!emailAddress}
-                  fullScreenModals={isMobile}
-                />
-                {!authAddress && (
-                  <Box
-                    display="flex"
-                    flexDirection="column"
-                    width="100%"
-                    mt={2}
-                  >
-                    {authButton}
-                  </Box>
-                )}
-              </Box>
+              {isMobile && authAddress ? (
+                <Modal
+                  open={true}
+                  fullScreen
+                  isConfirmation
+                  noModalHeader
+                  noContentPadding
+                  onClose={() => {}}
+                >
+                  {renderWallet()}
+                </Modal>
+              ) : (
+                <Box
+                  className={cx(
+                    classes.searchContainer,
+                    classes.walletContainer,
+                    authAddress
+                      ? classes.walletPortfolioContainer
+                      : classes.walletInfoContainer,
+                  )}
+                >
+                  {renderWallet()}
+                  {!authAddress && (
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      width="100%"
+                      mt={2}
+                    >
+                      {authButton}
+                    </Box>
+                  )}
+                </Box>
+              )}
             </Grid>
             {authAddress && (
               <Grid item xs={12}>

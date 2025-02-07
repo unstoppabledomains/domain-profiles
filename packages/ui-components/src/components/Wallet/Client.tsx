@@ -29,6 +29,7 @@ import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 import useAsyncEffect from 'use-async-effect';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {DomainWalletTransactions} from '.';
@@ -680,6 +681,10 @@ export const Client: React.FC<ClientProps> = ({
     setSelectedToken(undefined);
   };
 
+  const handleLearnMoreClicked = () => {
+    window.open(config.WALLETS.LANDING_PAGE_URL, '_blank');
+  };
+
   const getTabFields = (tv: ClientTabType) => {
     return tv === ClientTabType.Transactions
       ? ['native', 'price', 'token', 'tx']
@@ -917,33 +922,45 @@ export const Client: React.FC<ClientProps> = ({
             </Grid>
             <Box className={classes.footer}>
               <Box />
-              <TabList
-                orientation="horizontal"
-                onChange={handleTabChange}
-                variant="fullWidth"
-                className={classes.tabList}
-                indicatorColor="primary"
-                textColor="primary"
-              >
-                <Tab
-                  icon={<PaidOutlinedIcon />}
-                  value={ClientTabType.Portfolio}
-                  label={t('tokensPortfolio.crypto')}
-                  iconPosition="start"
-                />
-                <Tab
-                  icon={<ListOutlinedIcon />}
-                  value={ClientTabType.Domains}
-                  label={t('common.domains')}
-                  iconPosition="start"
-                />
-                <Tab
-                  icon={<HistoryIcon />}
-                  value={ClientTabType.Transactions}
-                  label={t('activity.title')}
-                  iconPosition="start"
-                />
-              </TabList>
+              {cryptoValue ? (
+                <TabList
+                  orientation="horizontal"
+                  onChange={handleTabChange}
+                  variant="fullWidth"
+                  className={classes.tabList}
+                  indicatorColor="primary"
+                  textColor="primary"
+                >
+                  <Tab
+                    icon={<PaidOutlinedIcon />}
+                    value={ClientTabType.Portfolio}
+                    label={t('tokensPortfolio.crypto')}
+                    iconPosition="start"
+                  />
+                  <Tab
+                    icon={<ListOutlinedIcon />}
+                    value={ClientTabType.Domains}
+                    label={t('common.domains')}
+                    iconPosition="start"
+                  />
+                  <Tab
+                    icon={<HistoryIcon />}
+                    value={ClientTabType.Transactions}
+                    label={t('activity.title')}
+                    iconPosition="start"
+                  />
+                </TabList>
+              ) : (
+                <Button
+                  variant="text"
+                  size="small"
+                  fullWidth
+                  color="inherit"
+                  onClick={handleLearnMoreClicked}
+                >
+                  {t('common.learnMore')}
+                </Button>
+              )}
             </Box>
           </TabContext>
         )}

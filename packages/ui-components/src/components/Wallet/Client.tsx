@@ -2,8 +2,8 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import HistoryIcon from '@mui/icons-material/History';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
+import LockIcon from '@mui/icons-material/LockOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import QrCodeIcon from '@mui/icons-material/QrCode';
 import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
@@ -296,7 +296,7 @@ export const Client: React.FC<ClientProps> = ({
     if (txLockStatus?.enabled) {
       setBanner(
         <WalletBanner
-          icon={<InfoOutlinedIcon fontSize="small" />}
+          icon={<LockIcon fontSize="small" />}
           action={
             txLockStatus?.validUntil ? undefined : (
               <Button

@@ -192,7 +192,7 @@ export const WalletProvider: React.FC<
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [configState, setConfigState] = useState(
-    initialState || WalletConfigState.PasswordEntry,
+    initialState ? initialState : WalletConfigState.PasswordEntry,
   );
   const [errorMessage, setErrorMessage] = useState<string>();
   const {enqueueSnackbar} = useSnackbar();
@@ -832,7 +832,9 @@ export const WalletProvider: React.FC<
     await saveState({});
 
     // reset configuration state
-    setConfigState(WalletConfigState.PasswordEntry);
+    setConfigState(
+      initialState ? initialState : WalletConfigState.PasswordEntry,
+    );
   };
 
   const handleKeyDown: React.KeyboardEventHandler = event => {

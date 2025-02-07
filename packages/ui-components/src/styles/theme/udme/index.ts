@@ -1,5 +1,10 @@
 import type {Theme, ThemeOptions} from '@mui/material/styles';
-import {createTheme, responsiveFontSizes} from '@mui/material/styles';
+import {
+  createTheme,
+  darken,
+  lighten,
+  responsiveFontSizes,
+} from '@mui/material/styles';
 
 import type {ThemeMode} from '../index';
 import {THEME_SHAPE_BORDER_RADIUS} from '../index';
@@ -128,7 +133,13 @@ const buildThemeOptions = (mode: ThemeMode): ThemeOptions => ({
     },
     white: '#ffffff',
     hero: 'linear-gradient(75deg, #0D3076, #082055, #004c69)',
-    heroText: 'linear-gradient(30deg, #6c0da6, #1711d1, #38BDD1)',
+    heroText: `linear-gradient(30deg, ${darken(
+      '#0D67FE',
+      mode === 'dark' ? 0.85 : 0.75,
+    )}, ${darken('#0D67FE', mode === 'dark' ? 0.35 : 0.25)}, ${lighten(
+      '#0D67FE',
+      mode === 'dark' ? 0.3 : 0.5,
+    )})`,
     profileImageGradient:
       'linear-gradient(45deg, #BD47F7 0%, #5D59F8 52.08%, #38BDD1 100%)',
     mobileNavGradient:

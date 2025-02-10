@@ -110,36 +110,6 @@ export const BuyCryptoButton: React.FC<Props> = ({onBuyClicked}) => {
   );
 };
 
-export const ReceiveCryptoButton: React.FC<Props> = ({onReceiveClicked}) => {
-  const {classes, cx} = useStyles();
-  const theme = useTheme();
-  const [t] = useTranslationContext();
-
-  return (
-    <Box className={cx(classes.buttonContainer, classes.secondary)}>
-      <Box className={classes.buttonContent}>
-        <Typography variant="subtitle1" className={classes.buttonTitle}>
-          {t('wallet.fundWithTransferDescription')}
-        </Typography>
-        <QrCodeIcon className={classes.icon} />
-      </Box>
-      <Box className={classes.buttonContent}>
-        <StyledButton
-          fullWidth
-          variant="contained"
-          className={classes.button}
-          backgroundColor={theme.palette.neutralShades[100]}
-          onClick={onReceiveClicked}
-          disableElevation
-          size="small"
-        >
-          {t('wallet.fundWithTransferTitle')}
-        </StyledButton>
-      </Box>
-    </Box>
-  );
-};
-
 export const LetsGetStartedCta: React.FC<Props> = props => {
   const theme = useTheme();
   const {classes, cx} = useStyles();
@@ -230,6 +200,36 @@ export const LetsGetStartedCta: React.FC<Props> = props => {
           </Box>
         </Modal>
       )}
+    </Box>
+  );
+};
+
+export const ReceiveCryptoButton: React.FC<Props> = ({onReceiveClicked}) => {
+  const {classes, cx} = useStyles();
+  const theme = useTheme();
+  const [t] = useTranslationContext();
+
+  return (
+    <Box className={cx(classes.buttonContainer, classes.secondary)}>
+      <Box className={classes.buttonContent}>
+        <Typography variant="subtitle1" className={classes.buttonTitle}>
+          {t('wallet.fundWithTransferDescription')}
+        </Typography>
+        <QrCodeIcon className={classes.icon} />
+      </Box>
+      <Box className={classes.buttonContent}>
+        <StyledButton
+          fullWidth
+          variant="contained"
+          className={classes.button}
+          backgroundColor={theme.palette.neutralShades[100]}
+          onClick={onReceiveClicked}
+          disableElevation
+          size="small"
+        >
+          {t('wallet.fundWithTransferTitle')}
+        </StyledButton>
+      </Box>
     </Box>
   );
 };

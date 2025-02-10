@@ -30,22 +30,10 @@ import {
   createTransactionOperation,
   getOperationStatus,
 } from '../../actions/fireBlocksActions';
-import {
-  getSwapQuoteV2,
-  getSwapStatusV2,
-  getSwapTokenAllowance,
-  getSwapTokenV2,
-  getSwapTransactionV2,
-  isSwapSupported,
-  setSwapTokenAllowance,
-} from '../../actions/swingActionsV2';
+import {getSwapQuote, getSwapTransactionPlan} from '../../actions/swapActions';
 import {useDomainConfig, useFireblocksState} from '../../hooks';
 import useFireblocksMessageSigner from '../../hooks/useFireblocksMessageSigner';
-import type {
-  CreateTransaction,
-  SerializedWalletBalance,
-  TokenEntry,
-} from '../../lib';
+import type {SerializedWalletBalance, TokenEntry} from '../../lib';
 import {
   TokenType,
   getBootstrapState,
@@ -59,11 +47,7 @@ import {
   OperationStatusType,
 } from '../../lib/types/fireBlocks';
 import type {GetOperationResponse} from '../../lib/types/fireBlocks';
-import type {
-  RouteQuote,
-  SwingV2AllowanceRequest,
-  SwingV2QuoteRequest,
-} from '../../lib/types/swingXyzV2';
+import type {SwapQuote, SwapQuoteRequest} from '../../lib/types/swap';
 import {getAsset} from '../../lib/wallet/asset';
 import {getAllTokens} from '../../lib/wallet/evm/token';
 import {
@@ -77,7 +61,6 @@ import Link from '../Link';
 import ManageInput from '../Manage/common/ManageInput';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 import FundWalletModal from './FundWalletModal';
-import {OperationStatus} from './OperationStatus';
 import {TitleWithBackButton} from './TitleWithBackButton';
 import Token from './Token';
 
@@ -195,7 +178,6 @@ const Swap: React.FC<Props> = ({
   const fireblocksMessageSigner = useFireblocksMessageSigner();
 
   // operation state
-  const [isSwapAvailable, setIsSwapAvailable] = useState<boolean>();
   const [isGettingQuote, setIsGettingQuote] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
   const [isTxComplete, setIsTxComplete] = useState(false);
@@ -215,8 +197,8 @@ const Swap: React.FC<Props> = ({
   const [showSlider, setShowSlider] = useState(false);
 
   // quote state
-  const [quoteRequest, setQuoteRequest] = useState<SwingV2QuoteRequest>();
-  const [quotes, setQuotes] = useState<RouteQuote[]>();
+  const [quoteRequest, setQuoteRequest] = useState<SwapQuoteRequest>();
+  const [quotes, setQuotes] = useState<SwapQuote[]>();
   const [quoteType, setQuoteType] = useState<'fastest' | 'cheapest'>(
     'cheapest',
   );
@@ -259,7 +241,7 @@ const Swap: React.FC<Props> = ({
     return undefined;
   };
 
-  const getSourceGasFees = (q: RouteQuote) => {
+  const getSourceGasFees = (q: SwapQuote) => {
     return q.quote.fees
       .filter(f => f.chainSlug === sourceToken?.swing.chain)
       .map(f => parseFloat(f.amountUSD))
@@ -337,7 +319,7 @@ const Swap: React.FC<Props> = ({
   // determines if the page is in loading state
   const isLoading = isGettingQuote || isSwapping;
 
-  const isCheapestQuote = (q: RouteQuote) => {
+  const isCheapestQuote = (q: SwapQuote) => {
     if (!quotesByLowestFee || quotesByLowestFee.length === 0) {
       return false;
     }
@@ -443,13 +425,6 @@ const Swap: React.FC<Props> = ({
 
   useEffect(() => {
     const loadSwapPage = async () => {
-      // determine if swap is available
-      const isAvailable = await isSwapSupported();
-      setIsSwapAvailable(isAvailable);
-      if (!isAvailable) {
-        return;
-      }
-
       // determine swap intro visibility
       const swapIntroState = await localStorageWrapper.getItem(swapIntroFlag);
       setShowSwapIntro(swapIntroState === null);
@@ -672,62 +647,26 @@ const Swap: React.FC<Props> = ({
     setIsGettingQuote(true);
     setErrorMessage(undefined);
 
-    // retrieve swap token definitions
     try {
-      const [swapTokenSource, swapTokenDestination] = await Promise.all([
-        getSwapTokenV2(sourceToken.swing.chain, sourceToken.swing.symbol),
-        getSwapTokenV2(
-          destinationToken.swing.chain,
-          destinationToken.swing.symbol,
-        ),
-      ]);
-      if (!swapTokenSource || !swapTokenDestination) {
-        setErrorMessage(
-          t('swap.pairNotSupported', {
-            source: sourceToken.swing.symbol,
-            destination: destinationToken.swing.symbol,
-          }),
-        );
-        return;
-      }
-
-      // ensure the source token price is populated
-      if (!swapTokenSource.price) {
-        const walletToken = allTokens.find(
-          token => token.symbol === swapTokenSource.symbol,
-        );
-        if (!walletToken?.value || !walletToken?.balance) {
-          throw new Error('source token price not found');
-        }
-        swapTokenSource.price = walletToken.value / walletToken.balance;
-      }
-
-      // determine amount based on market price and token decimals
-      const sourceAmt = sourceTokenAmountUsd / swapTokenSource.price;
-      const sourceAmountInDecimals = Math.floor(
-        sourceAmt * Math.pow(10, swapTokenSource.decimals),
-      );
-
       // create a quote request and query the swap service
-      const request: SwingV2QuoteRequest = {
+      const request: SwapQuoteRequest = {
         // information about source token
-        fromChain: swapTokenSource.chain,
-        fromTokenAddress: swapTokenSource.address,
-        fromUserAddress: sourceToken.walletAddress,
-        tokenSymbol: swapTokenSource.symbol,
-        tokenAmount: String(sourceAmountInDecimals),
+        fromChain: sourceToken.chainSymbol,
+        fromToken: sourceToken.tokenSymbol,
+        fromTokenAmountUsd: String(sourceTokenAmountUsd),
 
         // information about destination token
-        toChain: swapTokenDestination.chain,
-        toTokenAddress: swapTokenDestination.address,
-        toTokenSymbol: swapTokenDestination.symbol,
-        toUserAddress: destinationToken.walletAddress,
+        toChain: destinationToken.chainSymbol,
+        toToken: destinationToken.tokenSymbol,
       };
-      const quotesResponse = await getSwapQuoteV2(request);
+      const quotesResponse = await getSwapQuote(
+        sourceToken.walletAddress,
+        request,
+      );
       setQuoteRequest(request);
 
       // validate result
-      if (!quotesResponse?.routes || quotesResponse.routes.length === 0) {
+      if (!quotesResponse) {
         setErrorMessage(
           t('swap.noQuoteAvailable', {
             source: sourceToken.swing.symbol,
@@ -738,18 +677,20 @@ const Swap: React.FC<Props> = ({
       }
 
       // store a list of all available quotes
-      setQuotes(quotesResponse.routes);
+      setQuotes(quotesResponse);
 
       // set quote amounts for each token
       const destinationTokenBalance =
-        parseFloat(quotesResponse.routes[0].quote.amount) /
-        Math.pow(10, quotesResponse.routes[0].quote.decimals);
+        parseFloat(quotesResponse[0].quote.amount) /
+        Math.pow(10, quotesResponse[0].quote.decimals);
       const destinationUsd =
-        quotesResponse.routes[0].quote.amountUSD &&
-        parseFloat(quotesResponse.routes[0].quote.amountUSD)
-          ? parseFloat(quotesResponse.routes[0].quote.amountUSD)
-          : swapTokenSource.symbol === swapTokenDestination.symbol
-          ? swapTokenSource.price * destinationTokenBalance
+        quotesResponse[0].quote.amountUSD &&
+        parseFloat(quotesResponse[0].quote.amountUSD)
+          ? parseFloat(quotesResponse[0].quote.amountUSD)
+          : sourceToken.tokenSymbol === destinationToken.tokenSymbol &&
+            sourceToken.value &&
+            sourceToken.balance
+          ? (sourceToken.value / sourceToken.balance) * destinationTokenBalance
           : 0;
       setDestinationTokenAmountUsd(
         parseFloat(numeral(destinationUsd).format('0.00')),
@@ -790,77 +731,25 @@ const Swap: React.FC<Props> = ({
         throw new Error('error retrieving source asset from wallet state');
       }
 
-      // if the source token is ERC-20 there is some extra work that needs
-      // to be done to check token approvals and possibly increase the approved
-      // amount if not already completed
-      if (sourceToken.swing.type === 'erc20' && sourceToken.swing.chainId) {
-        // request the existing token approval amount
-        const approvalOpts: SwingV2AllowanceRequest = {
-          bridge: quoteSelected.route[0].bridge,
-          fromAddress: sourceToken.walletAddress,
-          fromChain: sourceToken.swing.chain,
-          toChain: destinationToken.swing.chain,
-          tokenAddress: quoteRequest.fromTokenAddress,
-          tokenSymbol: sourceToken.swing.symbol,
-          tokenAmount: quoteRequest.tokenAmount,
-          toTokenSymbol: destinationToken.swing.symbol,
-          toTokenAddress: quoteRequest.toTokenAddress,
-          contractCall: false,
-        };
-        const approvalAmt = await getSwapTokenAllowance(approvalOpts);
-
-        // compare the token approval amount
-        if (approvalAmt < parseFloat(quoteSelected.quote.amount)) {
-          const txns = (await setSwapTokenAllowance(approvalOpts)) || [];
-          for (const tx of txns) {
-            // create and validate the swap transaction
-            const swapTx: CreateTransaction = {
-              chainId: sourceToken.swing.chainId,
-              to: tx.to,
-              data: tx.data,
-              value: tx.value,
-              gasLimit: tx.gas,
-            };
-            const operationResponse = await createTransactionOperation(
-              accessToken,
-              asset.accountId,
-              asset.id,
-              swapTx,
-            );
-            if (!operationResponse) {
-              throw new Error('error creating MPC token approval for swap');
-            }
-
-            // sign the swap transaction
-            await pollForSignature(operationResponse);
-            await pollForCompletion(operationResponse);
-          }
-        }
-      }
-
       // request the transaction details required to swap
-      const txResponse = await getSwapTransactionV2({
-        ...quoteRequest,
-        integration: quoteSelected.quote.integration,
-        toTokenAmount: quoteSelected.quote.amount,
-        type: quoteSelected.quote.type,
-        route: quoteSelected.route,
-      });
+      const txPlanResponse = await getSwapTransactionPlan(
+        sourceToken.walletAddress,
+        quoteRequest,
+        quoteSelected,
+      );
 
       // validate the response
-      if (!txResponse?.tx) {
-        throw new Error('SwingError: swap transaction details not found');
-      }
-      if (txResponse.error && txResponse.message) {
-        throw new Error(
-          `SwingError: ${txResponse.error}, ${txResponse.message}`,
-        );
+      if (!txPlanResponse || txPlanResponse.length === 0) {
+        throw new Error('swap transaction plan not found');
       }
 
       // create and validate the swap transaction
-      if (txResponse.fromChain.slug.toLowerCase() === 'solana') {
+      if (
+        sourceToken.chainSymbol.toLowerCase() === 'sol' &&
+        typeof txPlanResponse[0].transaction === 'string'
+      ) {
         // sign and the solana tx
-        const preparedTx = deserializeTxHex(txResponse.tx.data);
+        const preparedTx = deserializeTxHex(txPlanResponse[0].transaction);
         const signedTx = await signTransaction(
           preparedTx,
           sourceToken.walletAddress,
@@ -876,40 +765,40 @@ const Swap: React.FC<Props> = ({
           accessToken,
         );
 
-        // retrieve the swing transaction status, which is an important step in
-        // registering the transaction on the Swing dashboard
-        await getSwapStatusV2(txResponse.id, txHash);
+        // solana swap is broadcasted
         setShowSuccessAnimation(true);
         setTxId(txHash);
 
         // wait for solana tx
         await waitForTx(txHash, sourceToken.walletAddress, accessToken);
       } else {
-        // handle EVM transactions
-        const swapTx: CreateTransaction = {
-          chainId: txResponse.fromChain.chainId,
-          to: txResponse.tx.to,
-          data: txResponse.tx.data,
-          value: txResponse.tx.value,
-          gasLimit: txResponse.tx.gas,
-        };
-        const operationResponse = await createTransactionOperation(
-          accessToken,
-          asset.accountId,
-          asset.id,
-          swapTx,
-        );
+        for (let i = 0; i < txPlanResponse.length; i++) {
+          const swapTx = txPlanResponse[i];
+          if (typeof swapTx.transaction === 'string') {
+            continue;
+          }
 
-        // ensure an operation was created successfully
-        if (!operationResponse) {
-          throw new Error('error creating MPC transaction for swap');
+          const operationResponse = await createTransactionOperation(
+            accessToken,
+            asset.accountId,
+            asset.id,
+            swapTx.transaction,
+          );
+
+          // ensure an operation was created successfully
+          if (!operationResponse) {
+            throw new Error('error creating MPC transaction for swap');
+          }
+
+          // sign the swap transaction
+          await pollForSignature(operationResponse);
+
+          // wait for complete and show set completion state
+          await pollForCompletion(
+            operationResponse,
+            i === txPlanResponse.length - 1,
+          );
         }
-
-        // sign the swap transaction
-        await pollForSignature(operationResponse, txResponse.id);
-
-        // wait for complete and show set completion state
-        await pollForCompletion(operationResponse, txResponse.id);
       }
 
       // transaction is complete
@@ -924,10 +813,7 @@ const Swap: React.FC<Props> = ({
     }
   };
 
-  const pollForSignature = async (
-    operationResponse: GetOperationResponse,
-    swingId?: number,
-  ) => {
+  const pollForSignature = async (operationResponse: GetOperationResponse) => {
     const result = await pollForSuccess({
       fn: async () => {
         if (!isMounted.current) {
@@ -937,11 +823,6 @@ const Swap: React.FC<Props> = ({
           accessToken,
           operationResponse.operation.id,
         );
-        if (operationStatus.transaction?.id && swingId) {
-          // retrieve the swing transaction status, which is an important step in
-          // registering the transaction on the Swing dashboard
-          await getSwapStatusV2(swingId, operationStatus.transaction.id);
-        }
         if (
           !operationStatus ||
           operationStatus.status === OperationStatusType.FAILED
@@ -964,7 +845,7 @@ const Swap: React.FC<Props> = ({
 
   const pollForCompletion = async (
     operationResponse: GetOperationResponse,
-    swingId?: number,
+    isLast: boolean,
   ) => {
     const result = await pollForSuccess({
       fn: async () => {
@@ -985,28 +866,14 @@ const Swap: React.FC<Props> = ({
           );
         }
 
-        // handle transaction ID
-        if (operationStatus.transaction?.id && swingId) {
-          // set transaction ID
-          setTxId(operationStatus.transaction.id);
+        // handle transaction ID ready
+        if (operationStatus.transaction?.id) {
+          if (isLast) {
+            // set transaction ID
+            setTxId(operationStatus.transaction.id);
 
-          // throw some confetti since the transaction is onchain
-          setShowSuccessAnimation(true);
-
-          // retrieve the swing transaction status, which is an important step in
-          // registering the transaction on the Swing dashboard
-          const swingStatus = await getSwapStatusV2(
-            swingId,
-            operationStatus.transaction.id,
-          );
-          if (swingStatus?.status?.toLowerCase() === 'success') {
-            return {success: true};
-          } else if (swingStatus?.status?.toLowerCase() === 'failed') {
-            throw new Error(
-              `Swap failed: ${
-                swingStatus?.reason || operationStatus.status.toLowerCase()
-              }`,
-            );
+            // throw some confetti since the transaction is onchain
+            setShowSuccessAnimation(true);
           }
         }
 
@@ -1024,7 +891,7 @@ const Swap: React.FC<Props> = ({
     }
   };
 
-  const getQuoteDescription = (q: RouteQuote) => {
+  const getQuoteDescription = (q: SwapQuote) => {
     // calculate fees on the source chain
     const sourceFees = getSourceGasFees(q);
 
@@ -1071,35 +938,10 @@ const Swap: React.FC<Props> = ({
         label={t('swap.description')}
       />
       <Box className={classes.container}>
-        {isSwapAvailable === undefined ? (
-          <Box className={classes.loadingContainer}>
-            <OperationStatus
-              label={t('swap.checkingAvailability')}
-              icon={<SwapHorizIcon />}
-            />
-          </Box>
-        ) : !isSwapAvailable ? (
-          <Box className={classes.loadingContainer}>
-            <OperationStatus
-              label={t('swap.swapNotAvailable')}
-              icon={<SwapHorizIcon />}
-              noSpinner={true}
-            >
-              <Link
-                href={
-                  'https://developers.swing.xyz/compliance#geographic-restrictions'
-                }
-                target="_blank"
-                className={classes.learnMoreLink}
-              >
-                {t('common.learnMore')}
-              </Link>
-            </OperationStatus>
-          </Box>
-        ) : allTokens.length > 0 &&
-          sourceTokens.filter(v => !v.disabledReason).length === 0 &&
-          onClickBuy &&
-          onClickReceive ? (
+        {allTokens.length > 0 &&
+        sourceTokens.filter(v => !v.disabledReason).length === 0 &&
+        onClickBuy &&
+        onClickReceive ? (
           <Box className={classes.noTokensContainer}>
             <FundWalletModal
               onBuyClicked={onClickBuy}

@@ -42,7 +42,7 @@ import {useRouter} from 'next/router';
 import {useSnackbar} from 'notistack';
 import numeral from 'numeral';
 import QueryString from 'qs';
-import React, {useEffect, useLayoutEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import useIsMounted from 'react-is-mounted-hook';
 import {useStyles} from 'styles/pages/domain.styles';
 import {titleCase} from 'title-case';
@@ -134,33 +134,11 @@ export type DomainProfilePageProps = {
   identity?: PersonaIdentity;
 };
 
-const udMeHostname = new URL(config.UD_ME_BASE_URL).hostname;
-
 const DomainProfile = ({
   domain,
   profileData: initialProfileData,
   identity,
 }: DomainProfilePageProps) => {
-  // Redirect to listing page if domain is listed for sale and the host is not ud.me
-  useLayoutEffect(() => {
-    if (
-      initialProfileData?.isListedForSale &&
-      typeof window !== 'undefined' && // Make sure we're on client side
-      window.location.hostname.toLowerCase() !== udMeHostname.toLowerCase()
-    ) {
-      window.location.replace(`${config.UNSTOPPABLE_WEBSITE_URL}/d/${domain}`);
-    }
-  }, [initialProfileData, domain]);
-
-  // If redirecting to listing page, we can prevent rendering the rest
-  if (
-    initialProfileData?.isListedForSale &&
-    typeof window !== 'undefined' &&
-    window.location.hostname.toLowerCase() !== udMeHostname.toLowerCase()
-  ) {
-    return null;
-  }
-
   // hooks
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
@@ -1673,7 +1651,6 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         DomainFieldTypes.Records,
         DomainFieldTypes.Market,
         DomainFieldTypes.Portfolio,
-        DomainFieldTypes.IsListedForSale,
       ]),
       getHumanityCheckStatus({name: domain}),
     ]);

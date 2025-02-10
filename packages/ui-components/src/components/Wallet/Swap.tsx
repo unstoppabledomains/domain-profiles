@@ -658,6 +658,7 @@ const Swap: React.FC<Props> = ({
         // information about destination token
         toChain: destinationToken.chainSymbol,
         toToken: destinationToken.tokenSymbol,
+        toWalletAddress: destinationToken.walletAddress,
       };
       const quotesResponse = await getSwapQuote(
         sourceToken.walletAddress,

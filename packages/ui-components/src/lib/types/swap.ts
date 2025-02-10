@@ -53,6 +53,7 @@ export interface SwapQuoteRequest {
   fromTokenAmountUsd: string;
   toChain: string;
   toToken: string;
+  toWalletAddress: string;
 }
 
 export type SwapQuoteResponse = SwapQuote[];

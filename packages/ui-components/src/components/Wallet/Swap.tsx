@@ -4,7 +4,6 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 // eslint-disable-next-line no-restricted-imports
 import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -141,6 +140,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   learnMoreLink: {
     display: 'inline-flex',
+  },
+  welcomeIcon: {
+    '& > svg': {
+      width: '150px',
+      height: '150px',
+      fill: theme.palette.neutralShades[300],
+    },
   },
 }));
 
@@ -950,28 +956,44 @@ const Swap: React.FC<Props> = ({
               icon={<SwapHorizIcon />}
             />
           </Box>
+        ) : showSwapIntro ? (
+          <Box className={classes.container}>
+            <Box
+              className={cx(
+                classes.content,
+                classes.flexColCenterAligned,
+                classes.noTokensContainer,
+              )}
+            >
+              <Box className={classes.welcomeIcon}>
+                <SwapHorizIcon />
+              </Box>
+              <Typography variant="h5">{t('swap.introTitle')}</Typography>
+              <Typography variant="body2" mt={1} mb={1}>
+                {t('swap.introContent')}
+              </Typography>
+              <Link
+                href={config.WALLETS.SWAP.DOCUMENTATION_URL}
+                target="_blank"
+                className={classes.learnMoreLink}
+              >
+                <Typography variant="body2" fontWeight="bold">
+                  {t('common.learnMore')}
+                </Typography>
+              </Link>
+            </Box>
+            <Box mb={1}>
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={handleSwapInfoClicked}
+              >
+                {t('wallet.letsGo')}
+              </Button>
+            </Box>
+          </Box>
         ) : (
           <Box className={classes.content}>
-            {showSwapIntro && (
-              <Alert
-                severity="info"
-                icon={false}
-                className={classes.description}
-                onClose={handleSwapInfoClicked}
-              >
-                <AlertTitle>{t('swap.introTitle')}</AlertTitle>
-                {t('swap.introContent')}{' '}
-                <Link
-                  href={config.WALLETS.SWAP.DOCUMENTATION_URL}
-                  target="_blank"
-                  className={classes.learnMoreLink}
-                >
-                  <Typography variant="body2">
-                    {t('common.learnMore')}
-                  </Typography>
-                </Link>
-              </Alert>
-            )}
             <FormControl disabled={isLoading}>
               <ManageInput
                 id="source-token-amount"

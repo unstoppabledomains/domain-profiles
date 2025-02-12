@@ -9,11 +9,7 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
-import MenuItem from '@mui/material/MenuItem';
-import type {SelectChangeEvent} from '@mui/material/Select';
-import Select from '@mui/material/Select';
 import Slider from '@mui/material/Slider';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import cloneDeep from 'lodash/cloneDeep';
@@ -59,7 +55,10 @@ import {localStorageWrapper} from '../Chat';
 import Link from '../Link';
 import ManageInput from '../Manage/common/ManageInput';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
+import Modal from '../Modal';
 import FundWalletModal from './FundWalletModal';
+import type {SwapToken, SwapTokenModalMode} from './SwapTokenModal';
+import SwapTokenModal from './SwapTokenModal';
 import {TitleWithBackButton} from './TitleWithBackButton';
 import Token from './Token';
 
@@ -90,15 +89,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     textAlign: 'center',
     height: '100%',
   },
-  description: {
-    textAlign: 'left',
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(3),
-  },
-  dropDown: {
-    padding: theme.spacing(0.5),
-    minWidth: '150px',
-  },
   button: {
     marginBottom: theme.spacing(1),
   },
@@ -106,10 +96,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '100%',
     marginLeft: theme.spacing(1),
     marginRight: theme.spacing(2),
-  },
-  tokenActionText: {
-    color: theme.palette.primary.main,
-    display: 'none',
   },
   tokenBalanceContainer: {
     marginLeft: theme.spacing(0.5),
@@ -120,17 +106,18 @@ const useStyles = makeStyles()((theme: Theme) => ({
   tokenInput: {
     backgroundColor: theme.palette.background.paper,
   },
+  tokenSelected: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '250px',
+    padding: theme.spacing(1),
+  },
   swapIcon: {
     marginTop: theme.spacing(2),
     color: theme.palette.neutralShades[400],
     width: '50px',
     height: '50px',
-  },
-  loadingContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100%',
   },
   loadingSpinner: {
     padding: theme.spacing(0.5),
@@ -149,13 +136,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     },
   },
 }));
-
-// internal type used to define a swap pair
-type SwapToken = SwapConfig & {
-  balance?: number;
-  value?: number;
-  walletAddress: string;
-};
 
 type Props = {
   onCancelClick: () => void;
@@ -201,6 +181,11 @@ const Swap: React.FC<Props> = ({
   const [destinationTokenAmountUsd, setDestinationTokenAmountUsd] = useState(0);
   const [destinationToken, setDestinationToken] = useState<SwapToken>();
   const [showSlider, setShowSlider] = useState(false);
+
+  // token chooser state
+  const [tokenChooserOpen, setTokenChooserOpen] = useState(false);
+  const [tokenChooserMode, setTokenChooserMode] =
+    useState<SwapTokenModalMode>('source');
 
   // quote state
   const [quoteRequest, setQuoteRequest] = useState<SwapQuoteRequest>();
@@ -418,8 +403,8 @@ const Swap: React.FC<Props> = ({
       })
       .filter(
         v =>
-          `${v.swing.chain}/${v.swing.symbol}` !==
-          `${sourceToken?.swing.chain}/${sourceToken?.swing.symbol}`,
+          `${v.swing.chain}/${v.tokenSymbol}` !==
+          `${sourceToken?.swing.chain}/${sourceToken?.tokenSymbol}`,
       )
       .sort(
         (a, b) =>
@@ -472,8 +457,8 @@ const Swap: React.FC<Props> = ({
       return;
     }
     if (
-      `${sourceToken.swing.chain}/${sourceToken.swing.symbol}` ===
-      `${destinationToken.swing.chain}/${destinationToken.swing.symbol}`
+      `${sourceToken.swing.chain}/${sourceToken.tokenSymbol}` ===
+      `${destinationToken.swing.chain}/${destinationToken.tokenSymbol}`
     ) {
       setDestinationToken(destinationTokens[0]);
     }
@@ -581,31 +566,26 @@ const Swap: React.FC<Props> = ({
     setSourceTokenAmountUsd(parseFloat(numeral(valueSelected).format('0.')));
   };
 
-  const handleSourceClicked = () => {
+  const handleTokenClicked = (mode: SwapTokenModalMode) => {
     // clear any existing quotes when source token list is clicked
     if (quoteSelected) {
       handleResetState({sourceAmtUsd: true});
     }
+
+    // open the token chooser
+    setTokenChooserMode(mode);
+    setTokenChooserOpen(true);
   };
 
-  const handleSourceChange = (event: SelectChangeEvent) => {
+  const handleTokenSelected = (mode: SwapTokenModalMode, v: SwapToken) => {
+    setTokenChooserOpen(false);
     handleResetState();
     setQuoteType('cheapest');
-    setSourceToken(
-      sourceTokens.find(
-        v => `${v.swing.chain}/${v.swing.symbol}` === event.target.value,
-      ),
-    );
-  };
-
-  const handleDestinationChange = async (event: SelectChangeEvent) => {
-    handleResetState();
-    setQuoteType('cheapest');
-    setDestinationToken(
-      destinationTokens.find(
-        v => `${v.swing.chain}/${v.swing.symbol}` === event.target.value,
-      ),
-    );
+    if (mode === 'source') {
+      setSourceToken(v);
+    } else {
+      setDestinationToken(v);
+    }
   };
 
   const handleAmountChanged = async (id: string, v: string) => {
@@ -657,13 +637,13 @@ const Swap: React.FC<Props> = ({
       // create a quote request and query the swap service
       const request: SwapQuoteRequest = {
         // information about source token
-        fromChain: sourceToken.chainSymbol,
-        fromToken: sourceToken.tokenSymbol,
+        fromChain: sourceToken.swing.chain,
+        fromToken: sourceToken.swing.symbol,
         fromTokenAmountUsd: String(sourceTokenAmountUsd),
 
         // information about destination token
-        toChain: destinationToken.chainSymbol,
-        toToken: destinationToken.tokenSymbol,
+        toChain: destinationToken.swing.chain,
+        toToken: destinationToken.swing.symbol,
         toWalletAddress: destinationToken.walletAddress,
       };
       const quotesResponse = await getSwapQuote(
@@ -676,8 +656,8 @@ const Swap: React.FC<Props> = ({
       if (!quotesResponse) {
         setErrorMessage(
           t('swap.noQuoteAvailable', {
-            source: sourceToken.swing.symbol,
-            destination: destinationToken.swing.symbol,
+            source: sourceToken.tokenSymbol,
+            destination: destinationToken.tokenSymbol,
           }),
         );
         return;
@@ -912,32 +892,6 @@ const Swap: React.FC<Props> = ({
     } ETA ~ ${q.duration} ${t('common.minute')}${q.duration > 1 ? 's' : ''}`;
   };
 
-  const renderMenuItem = (type: string, v: SwapToken) => {
-    const tokenEntry = getTokenEntry(v, true);
-    if (!tokenEntry) {
-      return null;
-    }
-
-    return (
-      <MenuItem
-        key={`${type}-${v.swing.chain}/${v.swing.symbol}`}
-        value={`${v.swing.chain}/${v.swing.symbol}`}
-        disabled={isLoading || !!v.disabledReason}
-      >
-        <Token
-          key={`source-token-${v.swing.chain}/${v.swing.symbol}`}
-          token={tokenEntry}
-          hideBalance
-          isOwner
-          compact
-          iconWidth={6}
-          descriptionWidth={6}
-          graphWidth={0}
-        />
-      </MenuItem>
-    );
-  };
-
   return (
     <Box className={classes.flexColCenterAligned}>
       <TitleWithBackButton
@@ -1009,38 +963,21 @@ const Swap: React.FC<Props> = ({
                 onClick={handleInputClicked}
                 startAdornment={<Typography ml={2}>$</Typography>}
                 endAdornment={
-                  <Select
-                    size="small"
-                    id="source-token"
-                    disabled={isLoading}
-                    value={
-                      sourceToken
-                        ? `${sourceToken.swing.chain}/${sourceToken.swing.symbol}`
-                        : ''
-                    }
-                    onMouseDown={handleSourceClicked}
-                    onChange={handleSourceChange}
-                    className={classes.dropDown}
-                    variant="standard"
-                    disableUnderline
-                  >
-                    {sourceTokens
-                      .filter(v => getTokenEntry(v))
-                      .map(v =>
-                        !v.disabledReason ? (
-                          renderMenuItem('source', v)
-                        ) : (
-                          <Tooltip
-                            arrow
-                            placement="left"
-                            title={v.disabledReason}
-                            key={`sourceTooltip-${v.swing.chain}/${v.swing.symbol}`}
-                          >
-                            <Box>{renderMenuItem('source', v)}</Box>
-                          </Tooltip>
-                        ),
-                      )}
-                  </Select>
+                  sourceToken && (
+                    <Box className={classes.tokenSelected}>
+                      <Token
+                        key={`source-token-${sourceToken.swing.symbol}`}
+                        token={getTokenEntry(sourceToken, true)}
+                        hideBalance
+                        isOwner
+                        compact
+                        iconWidth={6}
+                        descriptionWidth={6}
+                        graphWidth={0}
+                        onClick={() => handleTokenClicked('source')}
+                      />
+                    </Box>
+                  )
                 }
               />
               <FormHelperText className={classes.tokenBalanceContainer}>
@@ -1107,29 +1044,21 @@ const Swap: React.FC<Props> = ({
                 onClick={handleInputClicked}
                 startAdornment={<Typography ml={2}>$</Typography>}
                 endAdornment={
-                  <Select
-                    size="small"
-                    id="destination-token"
-                    disabled={isLoading}
-                    value={
-                      destinationToken
-                        ? destinationToken.swing.chain ===
-                            sourceToken?.swing.chain &&
-                          destinationToken.swing.symbol ===
-                            sourceToken?.swing.symbol
-                          ? `${destinationTokens[0].swing.chain}/${destinationTokens[0].swing.symbol}`
-                          : `${destinationToken.swing.chain}/${destinationToken.swing.symbol}`
-                        : ''
-                    }
-                    onChange={handleDestinationChange}
-                    className={classes.dropDown}
-                    variant="standard"
-                    disableUnderline
-                  >
-                    {destinationTokens
-                      .filter(v => getTokenEntry(v, true))
-                      .map(v => renderMenuItem('destination', v))}
-                  </Select>
+                  destinationToken && (
+                    <Box className={classes.tokenSelected}>
+                      <Token
+                        key={`destination-token-${destinationToken.swing.symbol}`}
+                        token={getTokenEntry(destinationToken, true)}
+                        hideBalance
+                        isOwner
+                        compact
+                        iconWidth={6}
+                        descriptionWidth={6}
+                        graphWidth={0}
+                        onClick={() => handleTokenClicked('destination')}
+                      />
+                    </Box>
+                  )
                 }
               />
             </FormControl>
@@ -1167,8 +1096,8 @@ const Swap: React.FC<Props> = ({
           <Box mb={1}>
             <Alert severity="info">
               {t('swap.gettingQuote', {
-                source: sourceToken.swing.symbol,
-                destination: destinationToken.swing.symbol,
+                source: sourceToken.tokenSymbol,
+                destination: destinationToken.tokenSymbol,
               })}
             </Alert>
           </Box>
@@ -1181,8 +1110,8 @@ const Swap: React.FC<Props> = ({
             <Box mb={1}>
               <Alert severity="info">
                 {t('swap.swapping', {
-                  source: sourceToken.swing.symbol,
-                  destination: destinationToken.swing.symbol,
+                  source: sourceToken.tokenSymbol,
+                  destination: destinationToken.tokenSymbol,
                   minutes: quoteSelected.duration,
                   s: quoteSelected.duration > 1 ? 's' : '',
                 })}
@@ -1225,7 +1154,7 @@ const Swap: React.FC<Props> = ({
               <Box display="flex" flexDirection="column" alignItems="center">
                 <Typography variant="body1" fontWeight="bold">
                   {`${
-                    sourceToken.swing.symbol !== destinationToken.swing.symbol
+                    sourceToken.tokenSymbol !== destinationToken.tokenSymbol
                       ? t('swap.swap')
                       : t('swap.bridge')
                   } ${sourceTokenAmountUsd
@@ -1234,13 +1163,13 @@ const Swap: React.FC<Props> = ({
                       currency: 'USD',
                     })
                     .replace('.00', '')} ${getBlockchainDisplaySymbol(
-                    sourceToken.swing.symbol,
+                    sourceToken.tokenSymbol,
                   )}${
-                    sourceToken.swing.symbol !== destinationToken.swing.symbol
+                    sourceToken.tokenSymbol !== destinationToken.tokenSymbol
                       ? ` ${t(
                           'common.to',
                         ).toLowerCase()} ${getBlockchainDisplaySymbol(
-                          destinationToken.swing.symbol,
+                          destinationToken.tokenSymbol,
                         )}`
                       : ''
                   }`}
@@ -1255,6 +1184,26 @@ const Swap: React.FC<Props> = ({
           </Box>
         )}
       </Box>
+      {tokenChooserOpen && (
+        <Modal
+          open={tokenChooserOpen}
+          onClose={() => setTokenChooserOpen(false)}
+          title={
+            tokenChooserMode === 'source'
+              ? t('swap.payWithToken')
+              : t('swap.receiveToken')
+          }
+        >
+          <SwapTokenModal
+            getTokenEntry={getTokenEntry}
+            mode={tokenChooserMode}
+            availableTokens={
+              tokenChooserMode === 'source' ? sourceTokens : destinationTokens
+            }
+            onSelectedToken={handleTokenSelected}
+          />
+        </Modal>
+      )}
     </Box>
   );
 };

@@ -3,12 +3,14 @@ import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import { useTheme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
 import numeral from 'numeral';
-import React from 'react';
+import React, {useState} from 'react';
 import {Line} from 'react-chartjs-2';
+import VisibilitySensor from 'react-visibility-sensor';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
@@ -81,7 +83,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 type Props = {
-  token: TokenEntry;
+  token?: TokenEntry;
   onClick?: () => void;
   isOwner?: boolean;
   showGraph?: boolean;
@@ -107,158 +109,171 @@ const Token: React.FC<Props> = ({
   const {classes, cx} = useStyles();
   const theme = useTheme();
 
+  const [isVisible, setIsVisible] = useState(false);
+
+  if (!token) {
+    return null;
+  }
+
   return (
-    <Grid
-      container
-      item
-      xs={12}
-      onClick={onClick}
-      className={classes.txLink}
-      data-testid={`token-${token.symbol}`}
-    >
-      <Grid item xs={iconWidth || 2}>
-        <Box display="flex" justifyContent="left" textAlign="left">
-          <Badge
-            overlap="circular"
-            anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
-            badgeContent={
-              token.type === TokenType.Native ? null : (
-                <CryptoIcon
-                  currency={token.symbol as CurrenciesType}
-                  className={cx(classes.chainIcon)}
-                />
-              )
-            }
-          >
-            {token.type === TokenType.Native ? (
-              <CryptoIcon
-                currency={token.symbol as CurrenciesType}
-                className={cx(classes.tokenIcon)}
-              />
-            ) : token.imageUrl ? (
-              <img
-                src={token.imageUrl}
-                className={
-                  token.type === TokenType.Nft
-                    ? classes.nftCollectionIcon
-                    : classes.tokenIcon
+    <VisibilitySensor onChange={(isVis: boolean) => setIsVisible(isVis)}>
+      {isVisible ? (
+        <Grid
+          container
+          item
+          xs={12}
+          onClick={onClick}
+          className={classes.txLink}
+          data-testid={`token-${token.symbol}`}
+        >
+          <Grid item xs={iconWidth || 2}>
+            <Box display="flex" justifyContent="left" textAlign="left">
+              <Badge
+                overlap="circular"
+                anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+                badgeContent={
+                  token.type === TokenType.Native ? null : (
+                    <CryptoIcon
+                      currency={token.symbol as CurrenciesType}
+                      className={cx(classes.chainIcon)}
+                    />
+                  )
                 }
-              />
-            ) : token.type === TokenType.Nft ? (
-              <PhotoLibraryOutlinedIcon
-                sx={{padding: 0.5}}
-                className={classes.tokenIconDefault}
-              />
-            ) : (
-              <MonetizationOnOutlinedIcon
-                className={classes.tokenIconDefault}
-              />
+              >
+                {token.type === TokenType.Native ? (
+                  <CryptoIcon
+                    currency={token.symbol as CurrenciesType}
+                    className={cx(classes.tokenIcon)}
+                  />
+                ) : token.imageUrl ? (
+                  <img
+                    src={token.imageUrl}
+                    className={
+                      token.type === TokenType.Nft
+                        ? classes.nftCollectionIcon
+                        : classes.tokenIcon
+                    }
+                  />
+                ) : token.type === TokenType.Nft ? (
+                  <PhotoLibraryOutlinedIcon
+                    sx={{padding: 0.5}}
+                    className={classes.tokenIconDefault}
+                  />
+                ) : (
+                  <MonetizationOnOutlinedIcon
+                    className={classes.tokenIconDefault}
+                  />
+                )}
+              </Badge>
+            </Box>
+          </Grid>
+          <Grid item xs={descriptionWidth || 4}>
+            <Box display="flex" flexDirection="column">
+              <Typography variant="caption" className={classes.txTitle}>
+                {compact
+                  ? token.type === TokenType.Nft
+                    ? `NFT${token.balance === 1 ? '' : 's'}`
+                    : getBlockchainDisplaySymbol(token.ticker)
+                  : token.name}
+              </Typography>
+              <Typography variant="caption" className={classes.txSubTitle}>
+                {compact && numeral(token.value).format('($0.00a)')}
+                {!hideBalance &&
+                  numeral(token.balance).format('0.[000000]')}{' '}
+                {compact
+                  ? ''
+                  : token.type === TokenType.Nft
+                  ? `NFT${token.balance === 1 ? '' : 's'}`
+                  : getBlockchainDisplaySymbol(token.ticker)}
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={graphWidth === 0 ? 0 : graphWidth || 4}>
+            {showGraph && token.history && (
+              <Box className={classes.chartContainer}>
+                <Line
+                  data={{
+                    labels: token.history?.map((_h, i) => i) || [],
+                    datasets: [
+                      {
+                        label: token.name,
+                        data: token.history?.map(h => h.value) || [],
+                        pointBackgroundColor: 'rgba(0, 0, 0, 0)',
+                        pointBorderColor: 'rgba(0, 0, 0, 0)',
+                        backgroundColor:
+                          (token.pctChange || 0) > 0
+                            ? theme.palette.wallet.chart.up
+                            : theme.palette.wallet.chart.down,
+                        borderColor:
+                          (token.pctChange || 0) > 0
+                            ? theme.palette.wallet.chart.up
+                            : theme.palette.wallet.chart.down,
+                        fill: false,
+                      },
+                    ],
+                  }}
+                  options={{
+                    events: [],
+                    scales: {
+                      x: {
+                        display: false,
+                      },
+                      y: {
+                        display: false,
+                      },
+                    },
+                    plugins: {
+                      title: {
+                        display: false,
+                      },
+                      legend: {
+                        display: false,
+                      },
+                    },
+                  }}
+                />
+              </Box>
             )}
-          </Badge>
-        </Box>
-      </Grid>
-      <Grid item xs={descriptionWidth || 4}>
-        <Box display="flex" flexDirection="column">
-          <Typography variant="caption" className={classes.txTitle}>
-            {compact
-              ? token.type === TokenType.Nft
-                ? `NFT${token.balance === 1 ? '' : 's'}`
-                : getBlockchainDisplaySymbol(token.ticker)
-              : token.name}
-          </Typography>
-          <Typography variant="caption" className={classes.txSubTitle}>
-            {compact && numeral(token.value).format('($0.00a)')}
-            {!hideBalance && numeral(token.balance).format('0.[000000]')}{' '}
-            {compact
-              ? ''
-              : token.type === TokenType.Nft
-              ? `NFT${token.balance === 1 ? '' : 's'}`
-              : getBlockchainDisplaySymbol(token.ticker)}
-          </Typography>
-        </Box>
-      </Grid>
-      <Grid item xs={graphWidth === 0 ? 0 : graphWidth || 4}>
-        {showGraph && token.history && (
-          <Box className={classes.chartContainer}>
-            <Line
-              data={{
-                labels: token.history?.map((_h, i) => i) || [],
-                datasets: [
-                  {
-                    label: token.name,
-                    data: token.history?.map(h => h.value) || [],
-                    pointBackgroundColor: 'rgba(0, 0, 0, 0)',
-                    pointBorderColor: 'rgba(0, 0, 0, 0)',
-                    backgroundColor:
-                      (token.pctChange || 0) > 0
-                        ? theme.palette.wallet.chart.up
-                        : theme.palette.wallet.chart.down,
-                    borderColor:
-                      (token.pctChange || 0) > 0
-                        ? theme.palette.wallet.chart.up
-                        : theme.palette.wallet.chart.down,
-                    fill: false,
-                  },
-                ],
-              }}
-              options={{
-                events: [],
-                scales: {
-                  x: {
-                    display: false,
-                  },
-                  y: {
-                    display: false,
-                  },
-                },
-                plugins: {
-                  title: {
-                    display: false,
-                  },
-                  legend: {
-                    display: false,
-                  },
-                },
-              }}
-            />
-          </Box>
-        )}
-      </Grid>
-      {!hideBalance && (
-        <Grid item xs={balanceWidth || 2}>
-          <Box
-            display="flex"
-            flexDirection="column"
-            textAlign="right"
-            justifyContent="right"
-            justifyItems="right"
-          >
-            <Typography variant="caption" className={classes.txBalance}>
-              {token.value.toLocaleString('en-US', {
-                style: 'currency',
-                currency: 'USD',
-              })}
-            </Typography>
-            <Typography
-              variant="caption"
-              className={
-                !token.pctChange
-                  ? classes.txPctChangeNeutral
-                  : token.pctChange < 0
-                  ? classes.txPctChangeDown
-                  : classes.txPctChangeUp
-              }
-            >
-              {token.pctChange
-                ? `${token.pctChange > 0 ? '+' : ''}${numeral(
-                    token.pctChange,
-                  ).format('0.[00]')}%`
-                : `---`}
-            </Typography>
-          </Box>
+          </Grid>
+          {!hideBalance && (
+            <Grid item xs={balanceWidth || 2}>
+              <Box
+                display="flex"
+                flexDirection="column"
+                textAlign="right"
+                justifyContent="right"
+                justifyItems="right"
+              >
+                <Typography variant="caption" className={classes.txBalance}>
+                  {token.value.toLocaleString('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                  })}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  className={
+                    !token.pctChange
+                      ? classes.txPctChangeNeutral
+                      : token.pctChange < 0
+                      ? classes.txPctChangeDown
+                      : classes.txPctChangeUp
+                  }
+                >
+                  {token.pctChange
+                    ? `${token.pctChange > 0 ? '+' : ''}${numeral(
+                        token.pctChange,
+                      ).format('0.[00]')}%`
+                    : `---`}
+                </Typography>
+              </Box>
+            </Grid>
+          )}
         </Grid>
+      ) : (
+        <Skeleton variant="rectangular" height={40} width="100%" />
       )}
-    </Grid>
+    </VisibilitySensor>
   );
 };
 

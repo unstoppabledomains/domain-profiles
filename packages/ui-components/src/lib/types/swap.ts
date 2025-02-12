@@ -57,3 +57,12 @@ export interface SwapQuoteRequest {
 }
 
 export type SwapQuoteResponse = SwapQuote[];
+
+export interface SwapToken {
+  chain: string;
+  symbol: string;
+  address: string;
+  decimals: number;
+  logo: string;
+  priceUsd: number;
+}

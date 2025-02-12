@@ -8,7 +8,21 @@ import type {
   SwapQuote,
   SwapQuoteRequest,
   SwapQuoteResponse,
+  SwapToken,
 } from '../lib/types/swap';
+
+export const getSwapChains = async () => {
+  try {
+    return await fetchApi<string[]>(`/public/swap/chains`, {
+      host: config.PROFILE.HOST_URL,
+    });
+  } catch (e) {
+    notifyEvent(e, 'warning', 'Wallet', 'Transaction', {
+      msg: 'error fetching swap chains',
+    });
+  }
+  return [];
+};
 
 export const getSwapQuote = async (address: string, opts: SwapQuoteRequest) => {
   try {
@@ -29,6 +43,34 @@ export const getSwapQuote = async (address: string, opts: SwapQuoteRequest) => {
     });
   }
   return undefined;
+};
+
+export const getSwapTokens = async () => {
+  const chains = await getSwapChains();
+  const tokens = await Promise.all(
+    chains.map(chain => getSwapTokensForChain(chain)),
+  );
+  return tokens
+    ?.flat()
+    .filter(t => t?.symbol && t?.priceUsd && t?.address)
+    .sort((a, b) => a.symbol.localeCompare(b.symbol));
+};
+
+export const getSwapTokensForChain = async (chain: string) => {
+  try {
+    return await fetchApi<SwapToken[]>(
+      `/public/swap/tokens?${qs.stringify({chain})}`,
+      {
+        host: config.PROFILE.HOST_URL,
+      },
+    );
+  } catch (e) {
+    notifyEvent(e, 'warning', 'Wallet', 'Transaction', {
+      msg: 'error fetching swap tokens',
+      meta: {chain},
+    });
+  }
+  return [];
 };
 
 export const getSwapTransactionPlan = async (

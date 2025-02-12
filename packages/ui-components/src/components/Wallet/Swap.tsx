@@ -15,6 +15,7 @@ import type {Theme} from '@mui/material/styles';
 import cloneDeep from 'lodash/cloneDeep';
 import numeral from 'numeral';
 import React, {useEffect, useRef, useState} from 'react';
+import useAsyncEffect from 'use-async-effect';
 import {useDebounce} from 'usehooks-ts';
 
 import config from '@unstoppabledomains/config';
@@ -25,7 +26,11 @@ import {
   createTransactionOperation,
   getOperationStatus,
 } from '../../actions/fireBlocksActions';
-import {getSwapQuote, getSwapTransactionPlan} from '../../actions/swapActions';
+import {
+  getSwapQuote,
+  getSwapTokens,
+  getSwapTransactionPlan,
+} from '../../actions/swapActions';
 import {useDomainConfig, useFireblocksState} from '../../hooks';
 import useFireblocksMessageSigner from '../../hooks/useFireblocksMessageSigner';
 import type {SerializedWalletBalance, TokenEntry} from '../../lib';
@@ -42,7 +47,11 @@ import {
   OperationStatusType,
 } from '../../lib/types/fireBlocks';
 import type {GetOperationResponse} from '../../lib/types/fireBlocks';
-import type {SwapQuote, SwapQuoteRequest} from '../../lib/types/swap';
+import type {
+  SwapQuote,
+  SwapQuoteRequest,
+  SwapToken as SwingSwapToken,
+} from '../../lib/types/swap';
 import {getAsset} from '../../lib/wallet/asset';
 import {getAllTokens} from '../../lib/wallet/evm/token';
 import {
@@ -54,7 +63,10 @@ import {
 import {localStorageWrapper} from '../Chat';
 import Link from '../Link';
 import ManageInput from '../Manage/common/ManageInput';
-import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
+import {
+  getBlockchainDisplaySymbol,
+  getBlockchainSymbol,
+} from '../Manage/common/verification/types';
 import Modal from '../Modal';
 import FundWalletModal from './FundWalletModal';
 import type {SwapToken, SwapTokenModalMode} from './SwapTokenModal';
@@ -171,6 +183,7 @@ const Swap: React.FC<Props> = ({
   const [errorMessage, setErrorMessage] = useState<string>();
 
   // swap pair state
+  const [allSwapTokens, setAllSwapTokens] = useState<SwingSwapToken[]>([]);
   const [sliderValue, setSliderValue] = useState(0);
   const [sourceTokenAmountUsd, setSourceTokenAmountUsd] = useState(0);
   const sourceTokenAmountUsdDebounced = useDebounce<number>(
@@ -208,8 +221,8 @@ const Swap: React.FC<Props> = ({
   ): TokenEntry | undefined => {
     const entry = allTokens?.find(
       token =>
-        token.walletName === swapConfig.chainName &&
-        token.ticker === swapConfig.tokenSymbol,
+        token.walletName.toLowerCase() === swapConfig.chainName.toLowerCase() &&
+        token.ticker.toLowerCase() === swapConfig.tokenSymbol.toLowerCase(),
     );
     if (entry) {
       return entry;
@@ -344,83 +357,111 @@ const Swap: React.FC<Props> = ({
       ? getTokenEntry(sourceToken)!.value > getSourceGasFees(quoteSelected)
       : false;
 
+  const allTokenConfigs: SwapConfig[] = allSwapTokens.map(token => {
+    return {
+      swing: {
+        chain: token.chain,
+        symbol: token.symbol,
+        type: [
+          '11111111111111111111111111111111',
+          '0x0000000000000000000000000000000000000000',
+        ].includes(token.address)
+          ? 'native'
+          : token.chain === 'solana'
+          ? 'spl'
+          : 'erc20',
+      },
+      walletType: getBlockchainSymbol(token.symbol),
+      chainName: token.chain,
+      chainSymbol: getBlockchainSymbol(token.symbol),
+      tokenSymbol: token.symbol,
+      imageUrl: token.logo,
+    };
+  });
+
   // build list of supported source tokens with sufficient balance
-  const sourceTokens: SwapToken[] =
-    config.WALLETS.SWAP.SUPPORTED_TOKENS.SOURCE.filter(configToken =>
-      getTokenEntry(configToken),
-    )
-      .map(configToken => {
-        const walletToken = getTokenEntry(configToken)!;
-        return {
-          ...configToken,
-          walletAddress: walletToken.walletAddress,
-          balance: walletToken.balance,
-          value: walletToken.value,
-          disabledReason:
-            configToken.disabledReason ||
-            (!walletToken.value ||
-            walletToken.value < config.WALLETS.SWAP.MIN_BALANCE_USD
-              ? t('wallet.insufficientBalance')
-              : undefined),
-        };
-      })
-      .sort(
-        (a, b) =>
-          // sort be enabled first
-          (!!a.disabledReason === !!b.disabledReason
-            ? 0
-            : b.disabledReason
-            ? -1
-            : 1) ||
-          // sort by value descending
-          b.value - a.value ||
-          // sort by balance descending
-          b.balance - a.balance ||
-          // sort by chain name ascending
-          a.chainName.localeCompare(b.chainName) ||
-          // sort by symbol ascending
-          a.tokenSymbol.localeCompare(b.tokenSymbol),
-      );
+  const sourceTokens: SwapToken[] = (
+    allTokenConfigs.length > 0
+      ? allTokenConfigs
+      : config.WALLETS.SWAP.SUPPORTED_TOKENS.SOURCE
+  )
+    .filter(configToken => getTokenEntry(configToken))
+    .map(configToken => {
+      const walletToken = getTokenEntry(configToken)!;
+      return {
+        ...configToken,
+        walletAddress: walletToken.walletAddress,
+        balance: walletToken.balance,
+        value: walletToken.value,
+        disabledReason:
+          configToken.disabledReason ||
+          (!walletToken.value ||
+          walletToken.value < config.WALLETS.SWAP.MIN_BALANCE_USD
+            ? t('wallet.insufficientBalance')
+            : undefined),
+      };
+    })
+    .sort(
+      (a, b) =>
+        // sort be enabled first
+        (!!a.disabledReason === !!b.disabledReason
+          ? 0
+          : b.disabledReason
+          ? -1
+          : 1) ||
+        // sort by value descending
+        b.value - a.value ||
+        // sort by balance descending
+        b.balance - a.balance ||
+        // sort by chain name ascending
+        a.chainName.localeCompare(b.chainName) ||
+        // sort by symbol ascending
+        a.tokenSymbol.localeCompare(b.tokenSymbol),
+    );
 
   // build list of supported destination tokens
-  const destinationTokens: SwapToken[] =
-    config.WALLETS.SWAP.SUPPORTED_TOKENS.DESTINATION.map(configToken => {
+  const destinationTokens: SwapToken[] = (
+    allTokenConfigs.length > 0
+      ? allTokenConfigs
+      : config.WALLETS.SWAP.SUPPORTED_TOKENS.DESTINATION
+  )
+    .filter(configToken => getTokenEntry(configToken))
+    .map(configToken => {
       return {
         ...configToken,
         walletAddress:
           wallets.find(w => w.symbol === configToken.walletType)?.address || '',
       };
     })
-      .map(configToken => {
-        const walletToken = getTokenEntry(configToken)!;
-        return {
-          ...configToken,
-          walletAddress:
-            walletToken?.walletAddress || configToken.walletAddress,
-          balance: walletToken?.balance,
-          value: walletToken?.value,
-        };
-      })
-      .filter(
-        v =>
-          `${v.swing.chain}/${v.tokenSymbol}` !==
-          `${sourceToken?.swing.chain}/${sourceToken?.tokenSymbol}`,
-      )
-      .sort(
-        (a, b) =>
-          (b.value || 0) - (a.value || 0) ||
-          (b.balance || 0) - (a.balance || 0) ||
-          a.chainName.localeCompare(b.chainName) ||
-          a.tokenSymbol.localeCompare(b.tokenSymbol),
-      );
+    .map(configToken => {
+      const walletToken = getTokenEntry(configToken)!;
+      return {
+        ...configToken,
+        walletAddress: walletToken?.walletAddress || configToken.walletAddress,
+        balance: walletToken?.balance,
+        value: walletToken?.value,
+      };
+    })
+    .filter(
+      v =>
+        `${v.swing.chain}/${v.tokenSymbol}` !==
+        `${sourceToken?.swing.chain}/${sourceToken?.tokenSymbol}`,
+    )
+    .sort(
+      (a, b) =>
+        (b.value || 0) - (a.value || 0) ||
+        (b.balance || 0) - (a.balance || 0) ||
+        a.chainName.localeCompare(b.chainName) ||
+        a.tokenSymbol.localeCompare(b.tokenSymbol),
+    );
 
-  useEffect(() => {
-    const loadSwapPage = async () => {
-      // determine swap intro visibility
-      const swapIntroState = await localStorageWrapper.getItem(swapIntroFlag);
-      setShowSwapIntro(swapIntroState === null);
-    };
-    void loadSwapPage();
+  useAsyncEffect(async () => {
+    // determine swap intro visibility
+    const swapIntroState = await localStorageWrapper.getItem(swapIntroFlag);
+    setShowSwapIntro(swapIntroState === null);
+
+    // load all available tokens
+    setAllSwapTokens(await getSwapTokens());
 
     // determine mounted state
     isMounted.current = true;
@@ -1197,8 +1238,14 @@ const Swap: React.FC<Props> = ({
           <SwapTokenModal
             getTokenEntry={getTokenEntry}
             mode={tokenChooserMode}
-            availableTokens={
+            availableTokens={allSwapTokens}
+            walletTokens={
               tokenChooserMode === 'source' ? sourceTokens : destinationTokens
+            }
+            filterChain={
+              tokenChooserMode === 'source'
+                ? undefined
+                : sourceToken?.swing.chain
             }
             onSelectedToken={handleTokenSelected}
           />

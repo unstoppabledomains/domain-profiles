@@ -1,5 +1,6 @@
 import {isEmailValid} from '../isEmailValid';
 import type {WebacyRiskScore} from './webacy';
+import type {BitscrunchRiskScore} from './bitscrunch';
 
 export enum AffiliateTier {
   EarlyAdopter = 'early-adopter',
@@ -71,6 +72,7 @@ export enum DomainFieldTypes {
   ReferralCode = 'referralCode',
   ReferralTier = 'referralTier',
   WebacyScore = 'webacyScore',
+  BitscrunchScore = 'bitscrunchScore',
   Market = 'market',
   Portfolio = 'portfolio',
   WalletBalances = 'walletBalances',
@@ -376,6 +378,7 @@ export type SerializedPublicDomainProfileData = {
   referralTier?: AffiliateTier;
   walletBalances?: SerializedWalletBalance[];
   webacy?: WebacyRiskScore;
+  bitscrunch?: BitscrunchRiskScore;
   messaging?: MessagingAttributes;
   market?: SerializedDomainMarket;
   portfolio?: SerializedPortfolioSummary;

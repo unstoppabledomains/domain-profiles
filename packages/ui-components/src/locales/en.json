@@ -1081,5 +1081,14 @@
     "riskScoreDescription": "Webacy analysis indicates a Safety Score to measure risk when interacting with the account owning this domain.",
     "share": "Share your Webacy Safety Score on X",
     "shareMessage": "Check out my Safety Score powered by @unstoppableweb and @mywebacy on my UD profile #safetyscore #walletrisk"
+  },
+  "bitscrunch": {
+    "excellent": "Excellent",
+    "good": "Good",
+    "normal": "Normal",
+    "risk": "Risk",
+    "highRisk": "High Risk",
+    "riskScore": "Bitscrunch Score",
+    "riskScoreDescription": "Bitscrunch analysis indicates a Safety Score to measure risk when interacting with the account owning this domain."
   }
 }

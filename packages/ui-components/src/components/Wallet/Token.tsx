@@ -93,6 +93,7 @@ type Props = {
   balanceWidth?: number;
   descriptionWidth?: number;
   compact?: boolean;
+  useVisibilitySensor?: boolean;
 };
 
 const Token: React.FC<Props> = ({
@@ -105,6 +106,7 @@ const Token: React.FC<Props> = ({
   graphWidth,
   balanceWidth,
   compact,
+  useVisibilitySensor = false,
 }) => {
   const {classes, cx} = useStyles();
   const theme = useTheme();
@@ -117,7 +119,7 @@ const Token: React.FC<Props> = ({
 
   return (
     <VisibilitySensor onChange={(isVis: boolean) => setIsVisible(isVis)}>
-      {isVisible ? (
+      {isVisible || !useVisibilitySensor ? (
         <Grid
           container
           item

@@ -48,10 +48,12 @@ import {
 } from '../../lib/types/fireBlocks';
 import type {GetOperationResponse} from '../../lib/types/fireBlocks';
 import type {
+  SwapConfigToken,
   SwapQuote,
   SwapQuoteRequest,
   SwapToken as SwingSwapToken,
 } from '../../lib/types/swap';
+import {isSwapConfigTokenEqual} from '../../lib/types/swap';
 import {getAsset} from '../../lib/wallet/asset';
 import {getAllTokens} from '../../lib/wallet/evm/token';
 import {
@@ -61,15 +63,15 @@ import {
   waitForTx,
 } from '../../lib/wallet/solana/transaction';
 import {localStorageWrapper} from '../Chat';
-import Link from '../Link';
 import ManageInput from '../Manage/common/ManageInput';
 import {
   getBlockchainDisplaySymbol,
   getBlockchainSymbol,
 } from '../Manage/common/verification/types';
 import Modal from '../Modal';
+import FullScreenCta from './FullScreenCta';
 import FundWalletModal from './FundWalletModal';
-import type {SwapToken, SwapTokenModalMode} from './SwapTokenModal';
+import type {SwapTokenModalMode} from './SwapTokenModal';
 import SwapTokenModal from './SwapTokenModal';
 import {TitleWithBackButton} from './TitleWithBackButton';
 import Token from './Token';
@@ -140,13 +142,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   learnMoreLink: {
     display: 'inline-flex',
   },
-  welcomeIcon: {
-    '& > svg': {
-      width: '150px',
-      height: '150px',
-      fill: theme.palette.neutralShades[300],
-    },
-  },
 }));
 
 type Props = {
@@ -190,9 +185,9 @@ const Swap: React.FC<Props> = ({
     sourceTokenAmountUsd,
     750,
   );
-  const [sourceToken, setSourceToken] = useState<SwapToken>();
+  const [sourceToken, setSourceToken] = useState<SwapConfigToken>();
   const [destinationTokenAmountUsd, setDestinationTokenAmountUsd] = useState(0);
-  const [destinationToken, setDestinationToken] = useState<SwapToken>();
+  const [destinationToken, setDestinationToken] = useState<SwapConfigToken>();
   const [showSlider, setShowSlider] = useState(false);
 
   // token chooser state
@@ -215,6 +210,11 @@ const Swap: React.FC<Props> = ({
       token.type === TokenType.Native,
   );
 
+  // wallet balance
+  const allTokensValueUsd = allTokens
+    .map(token => token.balance)
+    .reduce((a, b) => a + b, 0);
+
   const getTokenEntry = (
     swapConfig: SwapConfig,
     placeholder?: boolean,
@@ -228,11 +228,11 @@ const Swap: React.FC<Props> = ({
       return entry;
     }
     if (placeholder) {
-      return {
+      const token: TokenEntry = {
         type: swapConfig.swing.type as TokenType,
         symbol: swapConfig.chainSymbol,
         ticker: swapConfig.tokenSymbol,
-        name: swapConfig.chainName,
+        name: swapConfig.tokenSymbol,
         imageUrl: swapConfig.imageUrl,
         walletName: swapConfig.chainName,
         walletAddress: '',
@@ -241,6 +241,7 @@ const Swap: React.FC<Props> = ({
         balance: 0,
         value: 0,
       };
+      return token;
     }
     return undefined;
   };
@@ -358,10 +359,11 @@ const Swap: React.FC<Props> = ({
       : false;
 
   const allTokenConfigs: SwapConfig[] = allSwapTokens.map(token => {
+    const walletType = getBlockchainSymbol(token.chain);
     return {
       swing: {
         chain: token.chain,
-        symbol: token.symbol,
+        symbol: token.address,
         type: [
           '11111111111111111111111111111111',
           '0x0000000000000000000000000000000000000000',
@@ -371,16 +373,18 @@ const Swap: React.FC<Props> = ({
           ? 'spl'
           : 'erc20',
       },
-      walletType: getBlockchainSymbol(token.symbol),
+      walletAddress:
+        allTokens?.find(v => v.walletType === walletType)?.walletAddress || '',
       chainName: token.chain,
-      chainSymbol: getBlockchainSymbol(token.symbol),
+      chainSymbol: walletType,
       tokenSymbol: token.symbol,
       imageUrl: token.logo,
+      walletType,
     };
   });
 
   // build list of supported source tokens with sufficient balance
-  const sourceTokens: SwapToken[] = (
+  const sourceTokens: SwapConfigToken[] = (
     allTokenConfigs.length > 0
       ? allTokenConfigs
       : config.WALLETS.SWAP.SUPPORTED_TOKENS.SOURCE
@@ -420,12 +424,12 @@ const Swap: React.FC<Props> = ({
     );
 
   // build list of supported destination tokens
-  const destinationTokens: SwapToken[] = (
+  const destinationTokens: SwapConfigToken[] = (
     allTokenConfigs.length > 0
       ? allTokenConfigs
       : config.WALLETS.SWAP.SUPPORTED_TOKENS.DESTINATION
   )
-    .filter(configToken => getTokenEntry(configToken))
+    .filter(configToken => getTokenEntry(configToken, true))
     .map(configToken => {
       return {
         ...configToken,
@@ -442,11 +446,7 @@ const Swap: React.FC<Props> = ({
         value: walletToken?.value,
       };
     })
-    .filter(
-      v =>
-        `${v.swing.chain}/${v.tokenSymbol}` !==
-        `${sourceToken?.swing.chain}/${sourceToken?.tokenSymbol}`,
-    )
+    .filter(v => !isSwapConfigTokenEqual(v, sourceToken))
     .sort(
       (a, b) =>
         (b.value || 0) - (a.value || 0) ||
@@ -478,7 +478,9 @@ const Swap: React.FC<Props> = ({
     if (!sourceTokens || sourceTokens.length === 0) {
       return;
     }
-    setSourceToken(sourceTokens[0]);
+    if (!isSwapConfigTokenEqual(sourceTokens[0], sourceToken)) {
+      setSourceToken(sourceTokens[0]);
+    }
   }, [sourceToken, sourceTokens]);
 
   // automatically select the first destination token
@@ -489,7 +491,9 @@ const Swap: React.FC<Props> = ({
     if (!sourceToken || !destinationTokens || destinationTokens.length === 0) {
       return;
     }
-    setDestinationToken(destinationTokens[0]);
+    if (!isSwapConfigTokenEqual(destinationTokens[0], destinationToken)) {
+      setDestinationToken(destinationTokens[0]);
+    }
   }, [sourceToken, destinationToken, destinationTokens]);
 
   // update the destination token if it conflicts with source token
@@ -497,10 +501,7 @@ const Swap: React.FC<Props> = ({
     if (!sourceToken || !destinationToken) {
       return;
     }
-    if (
-      `${sourceToken.swing.chain}/${sourceToken.tokenSymbol}` ===
-      `${destinationToken.swing.chain}/${destinationToken.tokenSymbol}`
-    ) {
+    if (isSwapConfigTokenEqual(sourceToken, destinationToken)) {
       setDestinationToken(destinationTokens[0]);
     }
   }, [sourceToken]);
@@ -618,7 +619,10 @@ const Swap: React.FC<Props> = ({
     setTokenChooserOpen(true);
   };
 
-  const handleTokenSelected = (mode: SwapTokenModalMode, v: SwapToken) => {
+  const handleTokenSelected = (
+    mode: SwapTokenModalMode,
+    v: SwapConfigToken,
+  ) => {
     setTokenChooserOpen(false);
     handleResetState();
     setQuoteType('cheapest');
@@ -940,52 +944,26 @@ const Swap: React.FC<Props> = ({
         label={t('swap.description')}
       />
       <Box className={classes.container}>
-        {allTokens.length > 0 &&
-        sourceTokens.filter(v => !v.disabledReason).length === 0 &&
-        onClickBuy &&
-        onClickReceive ? (
+        {showSwapIntro ? (
+          <FullScreenCta
+            onClick={handleSwapInfoClicked}
+            icon={<SwapHorizIcon />}
+            title={t('swap.introTitle')}
+            description={t('swap.introContent')}
+            learnMoreLink={config.WALLETS.SWAP.DOCUMENTATION_URL}
+            buttonText={t('wallet.letsGo')}
+          />
+        ) : allTokensValueUsd === 0 &&
+          allTokens.length > 0 &&
+          sourceTokens.filter(v => !v.disabledReason).length === 0 &&
+          onClickBuy &&
+          onClickReceive ? (
           <Box className={classes.noTokensContainer}>
             <FundWalletModal
               onBuyClicked={onClickBuy}
               onReceiveClicked={onClickReceive}
               icon={<SwapHorizIcon />}
             />
-          </Box>
-        ) : showSwapIntro ? (
-          <Box className={classes.container}>
-            <Box
-              className={cx(
-                classes.content,
-                classes.flexColCenterAligned,
-                classes.noTokensContainer,
-              )}
-            >
-              <Box className={classes.welcomeIcon}>
-                <SwapHorizIcon />
-              </Box>
-              <Typography variant="h5">{t('swap.introTitle')}</Typography>
-              <Typography variant="body2" mt={1} mb={1}>
-                {t('swap.introContent')}
-              </Typography>
-              <Link
-                href={config.WALLETS.SWAP.DOCUMENTATION_URL}
-                target="_blank"
-                className={classes.learnMoreLink}
-              >
-                <Typography variant="body2" fontWeight="bold">
-                  {t('common.learnMore')}
-                </Typography>
-              </Link>
-            </Box>
-            <Box mb={1}>
-              <Button
-                fullWidth
-                variant="contained"
-                onClick={handleSwapInfoClicked}
-              >
-                {t('wallet.letsGo')}
-              </Button>
-            </Box>
           </Box>
         ) : (
           <Box className={classes.content}>
@@ -1015,7 +993,12 @@ const Swap: React.FC<Props> = ({
                         iconWidth={6}
                         descriptionWidth={6}
                         graphWidth={0}
-                        onClick={() => handleTokenClicked('source')}
+                        onClick={
+                          sourceTokens.filter(v => !v.disabledReason).length ===
+                          0
+                            ? undefined
+                            : () => handleTokenClicked('source')
+                        }
                       />
                     </Box>
                   )
@@ -1238,7 +1221,6 @@ const Swap: React.FC<Props> = ({
           <SwapTokenModal
             getTokenEntry={getTokenEntry}
             mode={tokenChooserMode}
-            availableTokens={allSwapTokens}
             walletTokens={
               tokenChooserMode === 'source' ? sourceTokens : destinationTokens
             }

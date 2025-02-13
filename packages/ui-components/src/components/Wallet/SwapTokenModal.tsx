@@ -9,7 +9,6 @@ import type {Theme} from '@mui/material/styles';
 import React, {useEffect, useState} from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import {titleCase} from 'title-case';
-import useAsyncEffect from 'use-async-effect';
 import {useDebounce} from 'usehooks-ts';
 
 import type {SwapConfig} from '@unstoppabledomains/config/build/src/env/types';
@@ -17,20 +16,12 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {TokenEntry} from '../../lib';
 import {useTranslationContext} from '../../lib';
-import type {SwapToken as SwingSwapToken} from '../../lib/types/swap';
+import type {SwapConfigToken} from '../../lib/types/swap';
 import ManageInput from '../Manage/common/ManageInput';
-import {getBlockchainSymbol} from '../Manage/common/verification/types';
 import Token from './Token';
 
 // infinite scroll page size
 const PAGE_SIZE = 25;
-
-// internal type used to define a swap pair
-export type SwapToken = SwapConfig & {
-  balance?: number;
-  value?: number;
-  walletAddress: string;
-};
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -73,10 +64,9 @@ export type SwapTokenModalMode = 'source' | 'destination';
 
 type Props = {
   mode: SwapTokenModalMode;
-  walletTokens: SwapToken[];
-  availableTokens: SwingSwapToken[];
+  walletTokens: SwapConfigToken[];
   filterChain?: string;
-  onSelectedToken: (mode: SwapTokenModalMode, token: SwapToken) => void;
+  onSelectedToken: (mode: SwapTokenModalMode, token: SwapConfigToken) => void;
   getTokenEntry: (
     swapConfig: SwapConfig,
     placeholder?: boolean,
@@ -86,15 +76,15 @@ type Props = {
 const SwapTokenModal: React.FC<Props> = ({
   mode,
   walletTokens,
-  availableTokens,
   filterChain: initialFilterChain,
   onSelectedToken,
   getTokenEntry,
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
-  const [aggregatedTokens, setAggregatedTokens] = useState<SwapToken[]>([]);
-  const [dynamicTokens, setDynamicTokens] = useState<SwapToken[]>([]);
+  const [aggregatedTokens, setAggregatedTokens] = useState<SwapConfigToken[]>(
+    [],
+  );
   const [searchTerm, setSearchTerm] = useState<string>();
   const [filterChain, setFilterChain] = useState(initialFilterChain);
   const searchTermDebounced = useDebounce(searchTerm, 250);
@@ -116,54 +106,18 @@ const SwapTokenModal: React.FC<Props> = ({
         )),
   );
 
-  useAsyncEffect(async () => {
-    // no more work to do if we are in source mode
-    if (mode === 'source') {
-      return;
-    }
-
-    const newTokens: SwapToken[] = [];
-    availableTokens.map(token => {
-      // check if the token is already in the walletTokens array
-      const existingToken = walletTokens.find(
-        v =>
-          v.swing.chain.toLowerCase() === token.chain.toLowerCase() &&
-          v.swing.symbol.toLowerCase() === token.symbol.toLowerCase(),
-      );
-      if (existingToken) {
-        return;
-      }
-
-      // add the token to the dynamicTokens array
-      const walletType = getBlockchainSymbol(token.chain);
-      newTokens.push({
-        swing: {
-          chain: token.chain,
-          symbol: token.address,
-          type: token.chain === 'solana' ? 'spl' : 'erc20',
-        },
-        walletAddress:
-          walletTokens.find(v => v.walletType === walletType)?.walletAddress ||
-          '',
-        chainName: token.chain,
-        chainSymbol: walletType,
-        tokenSymbol: token.symbol,
-        imageUrl: token.logo,
-        walletType,
-      });
-    });
-
-    // render the new tokens
-    setDynamicTokens(newTokens);
-  }, [availableTokens]);
-
   useEffect(() => {
     setAggregatedTokens(
-      [...walletTokens, ...dynamicTokens].filter(v =>
-        getTokenEntry(v, mode !== 'source'),
-      ),
+      walletTokens
+        .filter(v => getTokenEntry(v, mode !== 'source'))
+        .sort((a, b) => {
+          return (
+            (b.value || 0) - (a.value || 0) ||
+            a.tokenSymbol.localeCompare(b.tokenSymbol)
+          );
+        }),
     );
-  }, [walletTokens, dynamicTokens]);
+  }, [walletTokens]);
 
   useEffect(() => {
     handleLoadMore();
@@ -191,7 +145,7 @@ const SwapTokenModal: React.FC<Props> = ({
     setHasMore(aggregatedTokens.length > walletTokens.length);
   };
 
-  const renderMenuItem = (type: string, v: SwapToken) => {
+  const renderMenuItem = (type: string, v: SwapConfigToken) => {
     const tokenEntry = getTokenEntry(v, true);
     if (!tokenEntry) {
       return null;
@@ -207,6 +161,7 @@ const SwapTokenModal: React.FC<Props> = ({
           key={`token-${key}`}
           token={tokenEntry}
           isOwner
+          useVisibilitySensor={true}
           onClick={() => onSelectedToken(mode, v)}
         />
       </MenuItem>

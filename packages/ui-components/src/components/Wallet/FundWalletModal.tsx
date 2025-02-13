@@ -1,5 +1,4 @@
 import RocketLaunchOutlined from '@mui/icons-material/RocketLaunchOutlined';
-import Alert from '@mui/lab/Alert';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import type {Theme} from '@mui/material/styles';
@@ -8,7 +7,6 @@ import React from 'react';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useFireblocksState} from '../../hooks';
-import {useTranslationContext} from '../../lib';
 import {getBootstrapState} from '../../lib/wallet/storage/state';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {BuyCryptoButton, ReceiveCryptoButton} from './LetsGetStartedCta';
@@ -59,7 +57,6 @@ const FundWalletModal: React.FC<Props> = ({
   icon,
 }) => {
   const {classes, cx} = useStyles();
-  const [t] = useTranslationContext();
   const [state] = useFireblocksState();
   const walletState = getBootstrapState(state);
 
@@ -83,9 +80,6 @@ const FundWalletModal: React.FC<Props> = ({
         <Box className={classes.icon}>
           {icon ? icon : <RocketLaunchOutlined />}
         </Box>
-        <Alert className={classes.alert} severity="info">
-          {t('wallet.noTokensAvailableForSend')}
-        </Alert>
       </Box>
       <Box mt={3} className={classes.content}>
         <BuyCryptoButton

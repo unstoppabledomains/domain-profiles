@@ -722,7 +722,13 @@ const Swap: React.FC<Props> = ({
       const destinationUsd =
         quotesResponse[0].quote.amountUSD &&
         parseFloat(quotesResponse[0].quote.amountUSD)
-          ? parseFloat(quotesResponse[0].quote.amountUSD)
+          ? Math.min(
+              parseFloat(quotesResponse[0].quote.amountUSD) -
+                quotesResponse[0].quote.fees
+                  ?.map(f => parseFloat(f.amountUSD))
+                  .reduce((a, b) => a + b, 0),
+              sourceTokenAmountUsd,
+            )
           : sourceToken.tokenSymbol === destinationToken.tokenSymbol &&
             sourceToken.value &&
             sourceToken.balance
@@ -929,14 +935,13 @@ const Swap: React.FC<Props> = ({
 
   const getQuoteDescription = (q: SwapQuote) => {
     // calculate fees on the source chain
-    const sourceFees = getSourceGasFees(q);
-
+    const fees = Math.max(sourceTokenAmountUsd - destinationTokenAmountUsd, 0);
     return `${
-      sourceFees > 0
-        ? `+ ${sourceFees.toLocaleString('en-US', {
+      fees > 0
+        ? `${fees.toLocaleString('en-US', {
             style: 'currency',
             currency: 'USD',
-          })} ${t('wallet.networkFee').toLowerCase()} / `
+          })} ${t('wallet.fees').toLowerCase()} / `
         : ''
     } ETA ~ ${q.duration} ${t('common.minute')}${q.duration > 1 ? 's' : ''}`;
   };

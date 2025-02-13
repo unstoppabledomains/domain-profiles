@@ -981,6 +981,7 @@
     "enterTimeLockDays": "Choose number of days",
     "errorConfirming": "Error confirming operation",
     "errorCreatingWallet": "There was an error creating your wallet. Try again in a few minutes.",
+    "fees": "fees",
     "fundWithPurchaseDescription": "Deposit funds from your bank account",
     "fundWithPurchaseTitle": "Buy crypto",
     "fundWithTransferDescription": "Transfer funds from another wallet",

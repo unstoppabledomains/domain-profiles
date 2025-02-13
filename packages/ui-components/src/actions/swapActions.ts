@@ -11,6 +11,8 @@ import type {
   SwapToken,
 } from '../lib/types/swap';
 
+const MAX_PRICE_IMPACT = 25;
+
 export const getSwapChains = async () => {
   try {
     return await fetchApi<string[]>(`/public/swap/chains`, {
@@ -27,7 +29,7 @@ export const getSwapChains = async () => {
 export const getSwapQuote = async (address: string, opts: SwapQuoteRequest) => {
   try {
     // request the quote
-    return await fetchApi<SwapQuoteResponse>(
+    const quotes = await fetchApi<SwapQuoteResponse>(
       `/public/${address}/swap?${qs.stringify(opts)}`,
       {
         host: config.PROFILE.HOST_URL,
@@ -36,6 +38,14 @@ export const getSwapQuote = async (address: string, opts: SwapQuoteRequest) => {
         },
       },
     );
+    const filteredQuotes = quotes.filter(
+      q =>
+        q.quote.priceImpact &&
+        Math.abs(parseFloat(q.quote.priceImpact)) < MAX_PRICE_IMPACT,
+    );
+    if (filteredQuotes.length > 0) {
+      return filteredQuotes;
+    }
   } catch (e) {
     notifyEvent(e, 'warning', 'Wallet', 'Transaction', {
       msg: 'error fetching swap quote',

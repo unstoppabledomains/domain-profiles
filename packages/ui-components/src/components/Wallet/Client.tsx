@@ -214,7 +214,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
 );
 
 // define a timer to refresh the page periodically
-let refreshTimer: NodeJS.Timeout;
+let refreshTimer: NodeJS.Timeout | undefined;
 const REFRESH_BALANCE_MS = 10000;
 
 export const Client: React.FC<ClientProps> = ({
@@ -287,7 +287,9 @@ export const Client: React.FC<ClientProps> = ({
 
     // clear timer on unload
     return () => {
-      clearTimeout(refreshTimer);
+      if (refreshTimer) {
+        clearTimeout(refreshTimer);
+      }
     };
   }, [accessToken]);
 
@@ -429,6 +431,19 @@ export const Client: React.FC<ClientProps> = ({
     showPasswordCtaTimer = setTimeout(showPasswordCta, 2000);
   }, [accessToken, cryptoValue]);
 
+  useEffect(() => {
+    if (!refreshTimer) {
+      return;
+    }
+
+    // do not use the refresh timer if the swap modal is open
+    if (isSwap) {
+      clearTimeout(refreshTimer);
+    } else {
+      resetRefreshTimer(getTabFields(tabValue));
+    }
+  }, [isSwap]);
+
   // wrapper for the refresh method
   const refresh = async (showSpinner?: boolean, fields?: string[]) => {
     // skip background refresh if already locked
@@ -461,7 +476,9 @@ export const Client: React.FC<ClientProps> = ({
   };
 
   const resetRefreshTimer = (fields: string[]) => {
-    clearTimeout(refreshTimer);
+    if (refreshTimer) {
+      clearTimeout(refreshTimer);
+    }
     refreshTimer = setInterval(
       () => refresh(false, fields),
       REFRESH_BALANCE_MS,

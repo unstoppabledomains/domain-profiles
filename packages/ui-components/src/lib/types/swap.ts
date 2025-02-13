@@ -1,3 +1,5 @@
+import type {SwapConfig} from '@unstoppabledomains/config/build/src/env/types';
+
 import type {CreateTransaction} from './fireBlocks';
 
 export interface Fee {
@@ -33,6 +35,13 @@ export interface Route {
   part: number;
 }
 
+// internal type used to define a swap pair
+export type SwapConfigToken = SwapConfig & {
+  balance?: number;
+  value?: number;
+  walletAddress: string;
+};
+
 export type SwapPlannedTransaction = {
   id?: string;
   type: 'approval' | 'execution';
@@ -57,3 +66,25 @@ export interface SwapQuoteRequest {
 }
 
 export type SwapQuoteResponse = SwapQuote[];
+
+export interface SwapToken {
+  chain: string;
+  symbol: string;
+  address: string;
+  decimals: number;
+  logo: string;
+  priceUsd: number;
+}
+
+export const isSwapConfigTokenEqual = (
+  a?: SwapConfigToken,
+  b?: SwapConfigToken,
+) => {
+  if (!a || !b) {
+    return false;
+  }
+  return (
+    a.swing.chain.toLowerCase() === b.swing.chain.toLowerCase() &&
+    a.tokenSymbol.toLowerCase() === b.tokenSymbol.toLowerCase()
+  );
+};

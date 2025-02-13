@@ -132,6 +132,7 @@ const Receive: React.FC<Props> = ({
           label={t('wallet.selectAssetToReceive')}
           supportedAssetList={config.WALLETS.CHAINS.RECEIVE}
           hideBalance={true}
+          bannerType="receive"
         />
       </Box>
     );

@@ -117,6 +117,7 @@ const Buy: React.FC<Props> = ({isSellEnabled, onCancelClick, wallets}) => {
             : 'wallet.selectAssetToBuy',
         )}
         supportedAssetList={config.WALLETS.CHAINS.BUY}
+        bannerType="buy"
       />
     </Box>
   );

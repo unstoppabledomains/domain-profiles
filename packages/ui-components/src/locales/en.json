@@ -99,6 +99,35 @@
     "totalVolume": "Total volume",
     "viewLeaderboard": "More Details & Stats"
   },
+  "banner": {
+    "buy": {
+      "buttonText": "Let's go!",
+      "description": "Choose the token you want to deposit using your bank account or card to start the purchase process.",
+      "learnMoreLink": "https://support.unstoppabledomains.com/support/solutions/48000457487",
+      "title": "Buy tokens"
+    },
+    "receive": {
+      "buttonText": "Let's go!",
+      "description": "Choose one of your tokens and share your wallet address with friends to start receiving crypto.",
+      "learnMoreLink": "https://support.unstoppabledomains.com/support/solutions/48000457487",
+      "title": "Receive tokens"
+    },
+    "send": {
+      "buttonText": "Let's go!",
+      "description": "Choose one of the tokens from your wallet and send it to a friend or anyone else who needs crypto.",
+      "learnMoreLink": "https://support.unstoppabledomains.com/support/solutions/48000457487",
+      "title": "Send tokens"
+    }
+  },
+  "bitscrunch": {
+    "excellent": "Excellent",
+    "good": "Good",
+    "highRisk": "High Risk",
+    "normal": "Normal",
+    "risk": "Risk",
+    "riskScore": "Bitscrunch Score",
+    "riskScoreDescription": "Bitscrunch analysis indicates a Safety Score to measure risk when interacting with the account owning this domain."
+  },
   "cards": {
     "available": "Available"
   },
@@ -841,7 +870,7 @@
     "errorSwappingTokens": "Failed to complete swap, but your funds are safe. Refresh the quote or choose a different amount.",
     "gettingQuote": "Getting a quote to swap your {{source}} \u2192 {{destination}}",
     "introContent": "Choose a token from your wallet and turn it into a token you want. You'll be able to preview your new tokens before starting the swap.",
-    "introTitle": "Convert your tokens",
+    "introTitle": "Convert tokens",
     "noQuoteAvailable": "No quotes available for {{source}}  \u2192 {{destination}} at this time. Select new tokens or try a different amount.",
     "noTokensFound": "No tokens found. Try another search.",
     "pairNotSupported": "Swapping {{source}}  \u2192 {{destination}} is not supported at this time. Choose another token and try again.",
@@ -1018,7 +1047,7 @@
     "securityHealthCheckDescription": "You can visit the security center to view recommendations to keep your crypto safe.",
     "selectAssetToBuy": "Select token to deposit using a bank account",
     "selectAssetToBuySell": "Select token to deposit or withdraw using a bank account",
-    "selectAssetToReceive": "Select network",
+    "selectAssetToReceive": "Select token to receive",
     "selectAssetToSend": "Select token to send",
     "sendByEmail": "Send to email address",
     "sendTransactionFailed": "{{amount}} {{sourceSymbol}} failed to send to {{recipientDomain}}",
@@ -1081,14 +1110,5 @@
     "riskScoreDescription": "Webacy analysis indicates a Safety Score to measure risk when interacting with the account owning this domain.",
     "share": "Share your Webacy Safety Score on X",
     "shareMessage": "Check out my Safety Score powered by @unstoppableweb and @mywebacy on my UD profile #safetyscore #walletrisk"
-  },
-  "bitscrunch": {
-    "excellent": "Excellent",
-    "good": "Good",
-    "normal": "Normal",
-    "risk": "Risk",
-    "highRisk": "High Risk",
-    "riskScore": "Bitscrunch Score",
-    "riskScoreDescription": "Bitscrunch analysis indicates a Safety Score to measure risk when interacting with the account owning this domain."
   }
 }

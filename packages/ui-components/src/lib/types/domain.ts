@@ -1,6 +1,6 @@
 import {isEmailValid} from '../isEmailValid';
-import type {WebacyRiskScore} from './webacy';
 import type {BitscrunchRiskScore} from './bitscrunch';
+import type {WebacyRiskScore} from './webacy';
 
 export enum AffiliateTier {
   EarlyAdopter = 'early-adopter',
@@ -48,6 +48,8 @@ export type DiscordUserInfo = {
   userName: string;
 } | null;
 
+export type DomainBannerType = 'receive' | 'send' | 'buy';
+
 export type DomainCryptoVerificationBodyPOST = {
   symbol: string;
   address: string;
@@ -90,6 +92,8 @@ export enum DomainProfileKeys {
   EncryptedPIN = 'encryptedPin',
   LockStatus = 'lockStatus',
   BannerHealthCheck = 'banner-health-check',
+  BannerSwapIntro = 'banner-swap-intro',
+  Banner = 'banner',
 }
 
 export enum DomainProfileSocialMedia {

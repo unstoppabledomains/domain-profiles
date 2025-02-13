@@ -361,6 +361,7 @@ const Send: React.FC<Props> = ({
           supportedAssetList={config.WALLETS.CHAINS.SEND}
           supportErc20={true}
           supportSpl={true}
+          bannerType="send"
         />
       </Box>
     );

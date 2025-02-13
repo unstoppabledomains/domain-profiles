@@ -35,6 +35,7 @@ import {useDomainConfig, useFireblocksState} from '../../hooks';
 import useFireblocksMessageSigner from '../../hooks/useFireblocksMessageSigner';
 import type {SerializedWalletBalance, TokenEntry} from '../../lib';
 import {
+  DomainProfileKeys,
   TokenType,
   getBootstrapState,
   notifyEvent,
@@ -75,8 +76,6 @@ import type {SwapTokenModalMode} from './SwapTokenModal';
 import SwapTokenModal from './SwapTokenModal';
 import {TitleWithBackButton} from './TitleWithBackButton';
 import Token from './Token';
-
-const swapIntroFlag = 'swap-intro-flag';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -457,7 +456,9 @@ const Swap: React.FC<Props> = ({
 
   useAsyncEffect(async () => {
     // determine swap intro visibility
-    const swapIntroState = await localStorageWrapper.getItem(swapIntroFlag);
+    const swapIntroState = await localStorageWrapper.getItem(
+      DomainProfileKeys.BannerSwapIntro,
+    );
     setShowSwapIntro(swapIntroState === null);
 
     // load all available tokens
@@ -533,7 +534,10 @@ const Swap: React.FC<Props> = ({
 
   const handleSwapInfoClicked = async () => {
     setShowSwapIntro(false);
-    await localStorageWrapper.setItem(swapIntroFlag, swapIntroFlag);
+    await localStorageWrapper.setItem(
+      DomainProfileKeys.BannerSwapIntro,
+      String(Date.now()),
+    );
   };
 
   const handleSwitchQuotes = () => {
@@ -939,14 +943,17 @@ const Swap: React.FC<Props> = ({
 
   return (
     <Box className={classes.flexColCenterAligned}>
-      <TitleWithBackButton
-        onCancelClick={onCancelClick}
-        label={t('swap.description')}
-      />
+      {!showSwapIntro && (
+        <TitleWithBackButton
+          onCancelClick={onCancelClick}
+          label={t('swap.description')}
+        />
+      )}
       <Box className={classes.container}>
         {showSwapIntro ? (
           <FullScreenCta
             onClick={handleSwapInfoClicked}
+            onCancelClick={onCancelClick}
             icon={<SwapHorizIcon />}
             title={t('swap.introTitle')}
             description={t('swap.introContent')}

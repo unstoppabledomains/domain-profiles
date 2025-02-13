@@ -20,9 +20,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
   flexColCenterAligned: {
     display: 'flex',
     flexDirection: 'column',
+    justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
     height: '100%',
+    marginBottom: theme.spacing(4),
   },
   content: {
     display: 'flex',
@@ -48,6 +50,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 type Props = {
   onClick: () => void;
+  onCancelClick?: () => void;
   icon: React.ReactNode;
   title: string;
   description?: string;
@@ -57,6 +60,7 @@ type Props = {
 
 const FullScreenCta: React.FC<Props> = ({
   onClick,
+  onCancelClick,
   icon,
   title,
   description,
@@ -97,8 +101,15 @@ const FullScreenCta: React.FC<Props> = ({
         )}
       </Box>
       <Box mb={1}>
+        {onCancelClick && (
+          <Box mb={1}>
+            <Button fullWidth variant="outlined" onClick={onCancelClick}>
+              {t('common.cancel')}
+            </Button>
+          </Box>
+        )}
         <Button fullWidth variant="contained" onClick={onClick}>
-          {buttonText || t('common.continue')}
+          {buttonText || t('common.letsGo')}
         </Button>
       </Box>
     </Box>

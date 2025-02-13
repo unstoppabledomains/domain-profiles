@@ -1,17 +1,27 @@
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import QrCodeIcon from '@mui/icons-material/QrCode';
+import SendIcon from '@mui/icons-material/Send';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import React from 'react';
+import React, {useState} from 'react';
+import useAsyncEffect from 'use-async-effect';
 
 import type {ImmutableArray} from '@unstoppabledomains/config/build/src/env/types';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import type {SerializedWalletBalance, TokenEntry} from '../../lib';
-import {TokenType, useTranslationContext} from '../../lib';
+import type {
+  DomainBannerType,
+  SerializedWalletBalance,
+  TokenEntry,
+} from '../../lib';
+import {DomainProfileKeys, TokenType, useTranslationContext} from '../../lib';
 import {getAllTokens} from '../../lib/wallet/evm/token';
 import {filterWallets} from '../../lib/wallet/filter';
+import {localStorageWrapper} from '../Chat';
+import FullScreenCta from './FullScreenCta';
 import FundWalletModal from './FundWalletModal';
 import {TitleWithBackButton} from './TitleWithBackButton';
 import Token from './Token';
@@ -76,6 +86,7 @@ type Props = {
   supportedAssetList: ImmutableArray<string>;
   supportErc20?: boolean;
   supportSpl?: boolean;
+  bannerType?: DomainBannerType;
 };
 
 export const SelectAsset: React.FC<Props> = ({
@@ -91,9 +102,11 @@ export const SelectAsset: React.FC<Props> = ({
   supportedAssetList,
   supportErc20,
   supportSpl,
+  bannerType,
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const [showBanner, setShowBanner] = useState<boolean>(false);
 
   const wallets = filterWallets(initialWallets, supportedAssetList);
   const missingWallets = supportedAssetList.filter(
@@ -121,59 +134,103 @@ export const SelectAsset: React.FC<Props> = ({
           b.value - a.value || b.balance - a.balance,
     );
 
+  useAsyncEffect(async () => {
+    // banner not specified
+    if (!bannerType) {
+      return;
+    }
+
+    // check if banner should be shown
+    const bannerState = await localStorageWrapper.getItem(
+      `${DomainProfileKeys.Banner}-${bannerType}`,
+    );
+    setShowBanner(!bannerState);
+  }, [bannerType]);
+
+  const handleBannerClick = async () => {
+    setShowBanner(false);
+    await localStorageWrapper.setItem(
+      `${DomainProfileKeys.Banner}-${bannerType}`,
+      String(Date.now()),
+    );
+  };
+
+  const getBannerImage = () =>
+    bannerType === 'buy' ? (
+      <AttachMoneyIcon />
+    ) : bannerType === 'send' ? (
+      <SendIcon />
+    ) : (
+      <QrCodeIcon />
+    );
+
   return (
     <Box className={classes.container} data-testid={'select-asset-container'}>
-      <TitleWithBackButton onCancelClick={onCancelClick} label={label} />
-      <Box className={classes.assetsContainer} mt={2}>
-        {requireBalance &&
-          allTokens.length > 0 &&
-          filteredTokens.length === 0 &&
-          onClickBuy &&
-          onClickReceive && (
-            <Box className={classes.noTokensContainer}>
-              <FundWalletModal
-                onBuyClicked={onClickBuy}
-                onReceiveClicked={onClickReceive}
-              />
+      {!showBanner && (
+        <TitleWithBackButton onCancelClick={onCancelClick} label={label} />
+      )}
+      {showBanner ? (
+        <FullScreenCta
+          onClick={handleBannerClick}
+          onCancelClick={onCancelClick}
+          icon={getBannerImage()}
+          title={t(`banner.${bannerType}.title`)}
+          description={t(`banner.${bannerType}.description`)}
+          buttonText={t(`banner.${bannerType}.buttonText`)}
+          learnMoreLink={t(`banner.${bannerType}.learnMoreLink`)}
+        />
+      ) : (
+        <Box className={classes.assetsContainer} mt={2}>
+          {requireBalance &&
+            allTokens.length > 0 &&
+            filteredTokens.length === 0 &&
+            onClickBuy &&
+            onClickReceive && (
+              <Box className={classes.noTokensContainer}>
+                <FundWalletModal
+                  onBuyClicked={onClickBuy}
+                  onReceiveClicked={onClickReceive}
+                />
+              </Box>
+            )}
+          {filteredTokens.map(token => {
+            const handleClick = () => {
+              onSelectAsset(token);
+            };
+            return (
+              <div
+                className={classes.asset}
+                id={token.name}
+                key={`${token.type}/${token.symbol}/${token.ticker}/${token.walletAddress}`}
+              >
+                <Token
+                  isOwner
+                  token={token}
+                  onClick={handleClick}
+                  hideBalance={hideBalance}
+                  showGraph={showGraph}
+                />
+              </div>
+            );
+          })}
+          {missingWallets && missingWallets.length > 0 && (
+            <Box className={classes.loadingContainer}>
+              <CircularProgress size={20} className={classes.loadingSpinner} />
+              <Typography variant="body2">
+                {t('wallet.creatingWallets')}
+              </Typography>
             </Box>
           )}
-        {filteredTokens.map(token => {
-          const handleClick = () => {
-            onSelectAsset(token);
-          };
-          return (
-            <div
+          {missingWallets?.map(missingWallet => (
+            <Skeleton
+              key={`missingWallet-${missingWallet}`}
               className={classes.asset}
-              id={token.name}
-              key={`${token.type}/${token.symbol}/${token.ticker}/${token.walletAddress}`}
-            >
-              <Token
-                isOwner
-                token={token}
-                onClick={handleClick}
-                hideBalance={hideBalance}
-                showGraph={showGraph}
-              />
-            </div>
-          );
-        })}
-        {missingWallets && missingWallets.length > 0 && (
-          <Box className={classes.loadingContainer}>
-            <CircularProgress size={20} className={classes.loadingSpinner} />
-            <Typography variant="body2">
-              {t('wallet.creatingWallets')}
-            </Typography>
-          </Box>
-        )}
-        {missingWallets?.map(missingWallet => (
-          <Skeleton
-            key={`missingWallet-${missingWallet}`}
-            className={classes.asset}
-            variant="rectangular"
-            height="65px"
-          />
-        ))}
-      </Box>
+              variant="rectangular"
+              height="65px"
+            />
+          ))}
+        </Box>
+      )}
     </Box>
   );
 };

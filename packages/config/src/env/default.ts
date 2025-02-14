@@ -129,7 +129,6 @@ export default function getDefaultConfig(): Config {
         EXCHANGE_HOST_URL: 'https://swap.prod.swing.xyz/v0',
         PLATFORM_HOST_URL:
           'https://platform.swing.xyz/api/v1/projects/unstoppable-domains-staging',
-        API_KEY: 'swing-8faf57ed-6f1d-4dbc-94a0-00c28bd1a277',
         ENVIRONMENT: 'testnet',
         PROJECT_ID: 'unstoppable-domains-staging',
         DOCUMENTATION_URL:

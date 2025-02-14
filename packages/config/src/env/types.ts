@@ -130,7 +130,6 @@ export type Config = {
     SWAP: {
       PLATFORM_HOST_URL: string;
       EXCHANGE_HOST_URL: string;
-      API_KEY: string;
       ENVIRONMENT: string;
       PROJECT_ID: string;
       DOCUMENTATION_URL: string;

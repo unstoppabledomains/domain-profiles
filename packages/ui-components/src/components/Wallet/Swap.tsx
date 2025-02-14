@@ -190,6 +190,7 @@ const Swap: React.FC<Props> = ({
   const [showSlider, setShowSlider] = useState(false);
 
   // token chooser state
+  const [isTokensLoading, setIsTokensLoading] = useState(false);
   const [tokenChooserOpen, setTokenChooserOpen] = useState(false);
   const [tokenChooserMode, setTokenChooserMode] =
     useState<SwapTokenModalMode>('source');
@@ -462,7 +463,9 @@ const Swap: React.FC<Props> = ({
     setShowSwapIntro(swapIntroState === null);
 
     // load all available tokens
+    setIsTokensLoading(true);
     setAllSwapTokens(await getSwapTokens());
+    setIsTokensLoading(false);
 
     // determine mounted state
     isMounted.current = true;
@@ -1241,6 +1244,7 @@ const Swap: React.FC<Props> = ({
                 ? undefined
                 : sourceToken?.swing.chain
             }
+            isTokensLoading={isTokensLoading}
             onSelectedToken={handleTokenSelected}
           />
         </Modal>

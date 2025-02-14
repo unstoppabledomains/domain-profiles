@@ -55,6 +55,27 @@ export const getSwapQuote = async (address: string, opts: SwapQuoteRequest) => {
   return undefined;
 };
 
+export const getSwapToken = async (chain: string, token: string) => {
+  try {
+    const swapToken = await fetchApi<SwapToken[]>(
+      `/public/swap/tokens?${qs.stringify({chain, token})}`,
+      {
+        host: config.PROFILE.HOST_URL,
+      },
+    );
+    if (!swapToken || swapToken.length === 0 || !swapToken[0]?.address) {
+      throw new Error('token not found');
+    }
+    return swapToken[0];
+  } catch (e) {
+    notifyEvent(e, 'warning', 'Wallet', 'Transaction', {
+      msg: 'error fetching swap tokens',
+      meta: {chain},
+    });
+  }
+  return undefined;
+};
+
 export const getSwapTokens = async () => {
   const chains = await getSwapChains();
   const tokens = await Promise.all(

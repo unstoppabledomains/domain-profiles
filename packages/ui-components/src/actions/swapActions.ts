@@ -90,7 +90,7 @@ export const getSwapTokens = async () => {
 export const getSwapTokensForChain = async (chain: string) => {
   try {
     return await fetchApi<SwapToken[]>(
-      `/public/swap/tokens?${qs.stringify({chain})}`,
+      `/public/swap/tokens?${qs.stringify({chain, validateLiquidity: 'true'})}`,
       {
         host: config.PROFILE.HOST_URL,
       },

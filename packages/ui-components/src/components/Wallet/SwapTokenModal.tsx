@@ -108,6 +108,7 @@ const SwapTokenModal: React.FC<Props> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>();
   const [filterChain, setFilterChain] = useState(initialFilterChain);
+  const [hideAllChainButton, setHideAllChainButton] = useState(false);
   const searchTermDebounced = useDebounce(searchTerm, 250);
 
   // infinite scroll state
@@ -131,7 +132,11 @@ const SwapTokenModal: React.FC<Props> = ({
         .filter(v => getTokenEntry(v, mode !== 'source'))
         .sort((a, b) => {
           return (
+            // sort by value descending if available
             (b.value || 0) - (a.value || 0) ||
+            // sort by liquidity descending if available
+            b.liquidityUsd - a.liquidityUsd ||
+            // otherwise sort by symbol ascending
             a.tokenSymbol.localeCompare(b.tokenSymbol)
           );
         }),
@@ -141,6 +146,24 @@ const SwapTokenModal: React.FC<Props> = ({
   useEffect(() => {
     handleLoadMore();
   }, [aggregatedTokens]);
+
+  useEffect(() => {
+    if (
+      searchTermDebounced ||
+      !initialFilterChain ||
+      aggregatedTokens.length === 0 ||
+      filteredTokensWithSearch.length > 0
+    ) {
+      return;
+    }
+    setHideAllChainButton(true);
+    handleToggleShowAllChains();
+  }, [
+    aggregatedTokens,
+    filteredTokensWithSearch,
+    initialFilterChain,
+    searchTermDebounced,
+  ]);
 
   useAsyncEffect(async () => {
     // chain filter is required
@@ -179,6 +202,7 @@ const SwapTokenModal: React.FC<Props> = ({
         chainSymbol,
         tokenSymbol: token.symbol,
         imageUrl: token.logo,
+        liquidityUsd: token.liquidityUsd || 0,
         walletType: chainSymbol,
         walletAddress:
           walletTokens.find(wt => wt.swing.chain === token.chain)
@@ -208,7 +232,13 @@ const SwapTokenModal: React.FC<Props> = ({
   const handleClearSearch = () => {
     setSearchTerm('');
     setVisibleItems(Math.min(PAGE_SIZE, walletTokens.length));
-    setHasMore(aggregatedTokens.length > walletTokens.length);
+    setHasMore(true);
+  };
+
+  const handleToggleShowAllChains = () => {
+    setFilterChain(filterChain ? undefined : initialFilterChain);
+    setVisibleItems(Math.min(PAGE_SIZE, walletTokens.length));
+    setHasMore(true);
   };
 
   const renderMenuItem = (type: string, v: SwapConfigToken) => {
@@ -260,14 +290,12 @@ const SwapTokenModal: React.FC<Props> = ({
             )
           }
         />
-        {initialFilterChain && (
+        {initialFilterChain && !hideAllChainButton && (
           <Button
             variant="text"
             fullWidth
             size="small"
-            onClick={() =>
-              setFilterChain(filterChain ? undefined : initialFilterChain)
-            }
+            onClick={handleToggleShowAllChains}
           >
             {filterChain
               ? t('swap.showAllChains')

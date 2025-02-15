@@ -375,6 +375,7 @@ const Swap: React.FC<Props> = ({
       },
       walletAddress:
         allTokens?.find(v => v.walletType === walletType)?.walletAddress || '',
+      liquidityUsd: token.liquidityUsd,
       chainName: token.chain,
       chainSymbol: walletType,
       tokenSymbol: token.symbol,
@@ -394,6 +395,7 @@ const Swap: React.FC<Props> = ({
       const walletToken = getTokenEntry(configToken)!;
       return {
         ...configToken,
+        liquidityUsd: configToken.liquidityUsd || 0,
         walletAddress: walletToken.walletAddress,
         balance: walletToken.balance,
         value: walletToken.value,
@@ -433,6 +435,7 @@ const Swap: React.FC<Props> = ({
     .map(configToken => {
       return {
         ...configToken,
+        liquidityUsd: configToken.liquidityUsd || 0,
         walletAddress:
           wallets.find(w => w.symbol === configToken.walletType)?.address || '',
       };
@@ -451,6 +454,7 @@ const Swap: React.FC<Props> = ({
       (a, b) =>
         (b.value || 0) - (a.value || 0) ||
         (b.balance || 0) - (a.balance || 0) ||
+        (b.liquidityUsd || 0) - (a.liquidityUsd || 0) ||
         a.chainName.localeCompare(b.chainName) ||
         a.tokenSymbol.localeCompare(b.tokenSymbol),
     );

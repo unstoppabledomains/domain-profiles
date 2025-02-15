@@ -39,6 +39,7 @@ export interface Route {
 export type SwapConfigToken = SwapConfig & {
   balance?: number;
   value?: number;
+  liquidityUsd: number;
   walletAddress: string;
 };
 
@@ -74,6 +75,7 @@ export interface SwapToken {
   decimals: number;
   logo: string;
   priceUsd: number;
+  liquidityUsd?: number;
 }
 
 export const isSwapConfigTokenEqual = (

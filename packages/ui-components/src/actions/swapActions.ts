@@ -10,6 +10,7 @@ import type {
   SwapQuoteResponse,
   SwapToken,
 } from '../lib/types/swap';
+import {SWAP_CHAINS_WITH_LIQUIDITY_CHECK} from '../lib/types/swap';
 
 const MAX_PRICE_IMPACT = 25;
 
@@ -90,7 +91,12 @@ export const getSwapTokens = async () => {
 export const getSwapTokensForChain = async (chain: string) => {
   try {
     return await fetchApi<SwapToken[]>(
-      `/public/swap/tokens?${qs.stringify({chain, validateLiquidity: 'true'})}`,
+      `/public/swap/tokens?${qs.stringify({
+        chain,
+        validateLiquidity: SWAP_CHAINS_WITH_LIQUIDITY_CHECK.includes(
+          chain.toLowerCase(),
+        ),
+      })}`,
       {
         host: config.PROFILE.HOST_URL,
       },

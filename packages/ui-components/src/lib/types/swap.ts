@@ -35,6 +35,8 @@ export interface Route {
   part: number;
 }
 
+export const SWAP_CHAINS_WITH_LIQUIDITY_CHECK = ['solana', 'ethereum', 'base'];
+
 // internal type used to define a swap pair
 export type SwapConfigToken = SwapConfig & {
   balance?: number;

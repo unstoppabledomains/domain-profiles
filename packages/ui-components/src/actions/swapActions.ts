@@ -83,7 +83,7 @@ export const getSwapTokens = async () => {
   );
   return tokens
     ?.flat()
-    .filter(t => t?.symbol && t?.priceUsd && t?.address)
+    .filter(t => t?.symbol && t?.address)
     .sort((a, b) => a.symbol.localeCompare(b.symbol));
 };
 

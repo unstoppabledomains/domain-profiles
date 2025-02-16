@@ -67,6 +67,7 @@ import {localStorageWrapper} from '../Chat';
 import ManageInput from '../Manage/common/ManageInput';
 import {
   getBlockchainDisplaySymbol,
+  getBlockchainGasSymbol,
   getBlockchainSymbol,
 } from '../Manage/common/verification/types';
 import Modal from '../Modal';
@@ -360,25 +361,24 @@ const Swap: React.FC<Props> = ({
 
   const allTokenConfigs: SwapConfig[] = allSwapTokens.map(token => {
     const walletType = getBlockchainSymbol(token.chain);
+    const isNative = [
+      '11111111111111111111111111111111',
+      '0x0000000000000000000000000000000000000000',
+    ].includes(token.address);
     return {
       swing: {
         chain: token.chain,
         symbol: token.address,
-        type: [
-          '11111111111111111111111111111111',
-          '0x0000000000000000000000000000000000000000',
-        ].includes(token.address)
-          ? 'native'
-          : token.chain === 'solana'
-          ? 'spl'
-          : 'erc20',
+        type: isNative ? 'native' : token.chain === 'solana' ? 'spl' : 'erc20',
       },
       walletAddress:
         allTokens?.find(v => v.walletType === walletType)?.walletAddress || '',
       liquidityUsd: token.liquidityUsd,
       chainName: token.chain,
       chainSymbol: walletType,
-      tokenSymbol: token.symbol,
+      tokenSymbol: isNative
+        ? getBlockchainGasSymbol(token.symbol)
+        : token.symbol,
       imageUrl: token.logo,
       walletType,
     };

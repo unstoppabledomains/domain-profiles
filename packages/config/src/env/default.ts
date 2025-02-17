@@ -95,6 +95,9 @@ export default function getDefaultConfig(): Config {
       REDIRECT_URI:
         process.env.NEXT_PUBLIC_CLIENT_URL || 'http://localhost:3000',
     },
+    RESOLUTION: {
+      BASE_URL: 'https://api.ud-staging.com/resolve',
+    },
     BUGSNAG: {
       API_KEY: process.env.NEXT_PUBLIC_BUGSNAG_API_KEY || '',
     },

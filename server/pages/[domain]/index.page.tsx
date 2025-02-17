@@ -1762,7 +1762,7 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
   ) {
     // validate whether the domain is an ICANN domain
     const icannTlds = await getValidIcannEndings();
-    if (!icannTlds.has(domain.split('.').pop()?.toLowerCase() || '')) {
+    if (!icannTlds.includes(domain.split('.').pop()?.toLowerCase() || '')) {
       // domain not valid
       return redirectToSearch;
     }

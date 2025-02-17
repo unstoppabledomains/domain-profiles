@@ -13,6 +13,7 @@ import type {
   SerializedDomainRank,
   SerializedTxns,
 } from '../lib/types/domain';
+import {TldCache} from '../lib/types/domain';
 
 export const getDomainBadges = async (
   domain: string,
@@ -142,8 +143,15 @@ export const getTransactionsByDomain = async (
 };
 
 // getIcannTlds retrieves list of all known ICANN domains
-export const getValidIcannEndings = async (): Promise<Set<string>> => {
+export const getValidIcannEndings = async (): Promise<string[]> => {
   try {
+    // get cached TLD data
+    const cachedTlds = await TldCache.get('web2');
+    if (cachedTlds) {
+      return cachedTlds;
+    }
+
+    // retrieve new TLD data
     const icannResponse = await fetch(
       `https://data.iana.org/TLD/tlds-alpha-by-domain.txt`,
     );
@@ -151,20 +159,33 @@ export const getValidIcannEndings = async (): Promise<Set<string>> => {
       const icannData = await icannResponse.text();
       const tlds = icannData.split(/\n/);
       if (tlds.length > 1) {
-        return new Set(tlds.slice(1).map(d => d.toLowerCase()));
+        const icannTlds = [...new Set(tlds.slice(1).map(d => d.toLowerCase()))];
+        await TldCache.set('web2', icannTlds);
+        return icannTlds;
       }
     }
   } catch (e) {
     // fail silently
   }
-  return new Set<string>();
+  return [];
 };
 
 export const getValidWeb3Endings = async (): Promise<string[]> => {
+  // get cached TLD data
+  const cachedTlds = await TldCache.get('web3');
+  if (cachedTlds) {
+    return cachedTlds;
+  }
+
+  // retrieve new TLD data
   const data = await fetchApi(`/supported_tlds`, {
     host: config.RESOLUTION.BASE_URL,
   });
-  return data?.tlds || [];
+  if (!data?.tlds) {
+    return [];
+  }
+  await TldCache.set('web3', data.tlds);
+  return data.tlds;
 };
 
 export const getVerificationMessage = async (

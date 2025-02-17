@@ -12,6 +12,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import Slider from '@mui/material/Slider';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {darken} from '@mui/material/styles';
 import cloneDeep from 'lodash/cloneDeep';
 import numeral from 'numeral';
 import React, {useEffect, useRef, useState} from 'react';
@@ -111,14 +112,37 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginLeft: theme.spacing(1),
     marginRight: theme.spacing(2),
   },
+  tokenContainer: {
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    width: '100%',
+    borderRadius: theme.shape.borderRadius,
+    paddingRight: theme.spacing(2),
+    paddingLeft: theme.spacing(2),
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(2),
+    backgroundColor: darken(
+      theme.palette.background.paper,
+      theme.palette.mode === 'dark' ? 0.15 : 0.05,
+    ),
+  },
   tokenBalanceContainer: {
     marginLeft: theme.spacing(0.5),
     marginRight: theme.spacing(0.5),
     color: theme.palette.neutralShades[600],
-    minHeight: '20px',
+  },
+  tokenInputRoot: {
+    '& .MuiOutlinedInput-notchedOutline': {
+      display: 'none',
+    },
   },
   tokenInput: {
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: darken(
+      theme.palette.background.paper,
+      theme.palette.mode === 'dark' ? 0.15 : 0.05,
+    ),
   },
   tokenSelected: {
     display: 'flex',
@@ -126,12 +150,31 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'center',
     width: '250px',
     padding: theme.spacing(1),
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: theme.shape.borderRadius,
+    boxShadow: theme.shadows[2],
   },
-  swapIcon: {
-    marginTop: theme.spacing(2),
-    color: theme.palette.neutralShades[400],
+  swapIconContainer: {
+    position: 'absolute',
+    top: '-28px',
+    left: '50%',
+    transform: 'translate(-50%)',
+    borderRadius: '50%',
+    padding: theme.spacing(0.5),
+    border: `${theme.spacing(0.5)}px solid ${theme.palette.background.paper}`,
+    backgroundColor: theme.palette.background.paper,
     width: '50px',
     height: '50px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  swapIcon: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+    color: theme.palette.neutralShades[400],
+    width: '30px',
+    height: '30px',
   },
   loadingSpinner: {
     padding: theme.spacing(0.5),
@@ -535,8 +578,8 @@ const Swap: React.FC<Props> = ({
     void handleGetQuote();
   }, [sourceTokenAmountUsdDebounced, sourceToken, destinationToken]);
 
-  const handleInputClicked = () => {
-    setShowSlider(true);
+  const handleToggleSlider = (show: boolean) => {
+    setShowSlider(show);
   };
 
   const handleSwapInfoClicked = async () => {
@@ -986,125 +1029,140 @@ const Swap: React.FC<Props> = ({
           </Box>
         ) : (
           <Box className={classes.content}>
-            <FormControl disabled={isLoading}>
-              <ManageInput
-                id="source-token-amount"
-                label={t('swap.payWithToken')}
-                placeholder="0.00"
-                value={
-                  sourceTokenAmountUsd ? sourceTokenAmountUsd.toString() : ''
-                }
-                stacked={true}
-                disabled={isLoading}
-                classes={{root: classes.tokenInput, input: classes.tokenInput}}
-                onChange={handleAmountChanged}
-                onClick={handleInputClicked}
-                startAdornment={<Typography ml={2}>$</Typography>}
-                endAdornment={
-                  sourceToken && (
-                    <Box className={classes.tokenSelected}>
-                      <Token
-                        key={`source-token-${sourceToken.swing.symbol}`}
-                        token={getTokenEntry(sourceToken, true)}
-                        hideBalance
-                        isOwner
-                        compact
-                        iconWidth={6}
-                        descriptionWidth={6}
-                        graphWidth={0}
-                        onClick={
-                          sourceTokens.filter(v => !v.disabledReason).length ===
-                          0
-                            ? undefined
-                            : () => handleTokenClicked('source')
-                        }
-                      />
-                    </Box>
-                  )
-                }
-              />
-              <FormHelperText className={classes.tokenBalanceContainer}>
-                {showSlider && (
-                  <Box
-                    display="flex"
-                    justifyContent="space-between"
-                    width="100%"
-                  >
-                    <Box className={classes.sliderContainer}>
-                      <Slider
-                        step={5}
-                        size="small"
-                        defaultValue={0}
-                        disabled={isLoading}
-                        value={sliderValue}
-                        onChange={handleSliderChange}
-                        valueLabelDisplay="off"
-                        marks={[
-                          {value: 0, label: '0%'},
-                          {value: 25, label: '25%'},
-                          {value: 50, label: '50%'},
-                          {value: 75, label: '75%'},
-                          {value: 100, label: 'Max'},
-                        ]}
-                      />
-                    </Box>
-                  </Box>
-                )}
-              </FormHelperText>
-            </FormControl>
-            {txId ? (
-              errorMessage ? (
-                <ErrorOutlineIcon className={classes.swapIcon} />
-              ) : (
-                <TaskAltIcon
-                  className={cx(classes.swapIcon, {
-                    [classes.successIcon]: isTxComplete,
-                  })}
+            <Box
+              className={classes.tokenContainer}
+              onMouseEnter={() => handleToggleSlider(true)}
+              onMouseLeave={() => handleToggleSlider(false)}
+            >
+              <FormControl disabled={isLoading}>
+                <ManageInput
+                  id="source-token-amount"
+                  label={t('swap.payWithToken')}
+                  placeholder="0.00"
+                  value={
+                    sourceTokenAmountUsd ? sourceTokenAmountUsd.toString() : ''
+                  }
+                  stacked={true}
+                  disabled={isLoading}
+                  classes={{
+                    root: classes.tokenInputRoot,
+                    input: classes.tokenInput,
+                  }}
+                  onClick={() => handleToggleSlider(true)}
+                  onChange={handleAmountChanged}
+                  startAdornment={<Typography ml={2}>$</Typography>}
+                  endAdornment={
+                    sourceToken && (
+                      <Box className={classes.tokenSelected}>
+                        <Token
+                          key={`source-token-${sourceToken.swing.symbol}`}
+                          token={getTokenEntry(sourceToken, true)}
+                          hideBalance
+                          isOwner
+                          compact
+                          iconWidth={6}
+                          descriptionWidth={6}
+                          graphWidth={0}
+                          onClick={
+                            sourceTokens.filter(v => !v.disabledReason)
+                              .length === 0
+                              ? undefined
+                              : () => handleTokenClicked('source')
+                          }
+                        />
+                      </Box>
+                    )
+                  }
                 />
-              )
-            ) : isLoading ? (
-              <CircularProgress
-                size="50px"
-                className={cx(classes.swapIcon, classes.loadingSpinner)}
-              />
-            ) : (
-              <ImportExportIcon className={classes.swapIcon} />
-            )}
-            <FormControl disabled={isLoading}>
-              <ManageInput
-                id="destination-token-amount"
-                label={t('swap.receiveToken')}
-                placeholder="0.00"
-                value={
-                  destinationTokenAmountUsd
-                    ? destinationTokenAmountUsd.toString()
-                    : ''
-                }
-                stacked={true}
-                disabled={isLoading}
-                classes={{root: classes.tokenInput, input: classes.tokenInput}}
-                onChange={handleAmountChanged}
-                onClick={handleInputClicked}
-                startAdornment={<Typography ml={2}>$</Typography>}
-                endAdornment={
-                  destinationToken && (
-                    <Box className={classes.tokenSelected}>
-                      <Token
-                        key={`destination-token-${destinationToken.swing.symbol}`}
-                        token={getTokenEntry(destinationToken, true)}
-                        hideBalance
-                        isOwner
-                        compact
-                        iconWidth={6}
-                        descriptionWidth={6}
-                        graphWidth={0}
-                        onClick={() => handleTokenClicked('destination')}
-                      />
+                <FormHelperText className={classes.tokenBalanceContainer}>
+                  {showSlider && (
+                    <Box
+                      display="flex"
+                      justifyContent="space-between"
+                      width="100%"
+                    >
+                      <Box className={classes.sliderContainer}>
+                        <Slider
+                          step={5}
+                          size="small"
+                          defaultValue={0}
+                          disabled={isLoading}
+                          value={sliderValue}
+                          onChange={handleSliderChange}
+                          valueLabelDisplay="off"
+                          marks={[
+                            {value: 0, label: '0%'},
+                            {value: 25, label: '25%'},
+                            {value: 50, label: '50%'},
+                            {value: 75, label: '75%'},
+                            {value: 100, label: 'Max'},
+                          ]}
+                        />
+                      </Box>
                     </Box>
+                  )}
+                </FormHelperText>
+              </FormControl>
+            </Box>
+            <Box className={classes.tokenContainer} mt={1}>
+              <Box className={classes.swapIconContainer}>
+                {txId ? (
+                  errorMessage ? (
+                    <ErrorOutlineIcon className={classes.swapIcon} />
+                  ) : (
+                    <TaskAltIcon
+                      className={cx(classes.swapIcon, {
+                        [classes.successIcon]: isTxComplete,
+                      })}
+                    />
                   )
-                }
-              />
-            </FormControl>
+                ) : isLoading ? (
+                  <CircularProgress
+                    size="30px"
+                    className={cx(classes.swapIcon, classes.loadingSpinner)}
+                  />
+                ) : (
+                  <ImportExportIcon className={classes.swapIcon} />
+                )}
+              </Box>
+              <FormControl disabled={isLoading}>
+                <ManageInput
+                  id="destination-token-amount"
+                  label={t('swap.receiveToken')}
+                  placeholder="0.00"
+                  value={
+                    destinationTokenAmountUsd
+                      ? destinationTokenAmountUsd.toString()
+                      : ''
+                  }
+                  stacked={true}
+                  disabled={isLoading}
+                  classes={{
+                    root: classes.tokenInputRoot,
+                    input: classes.tokenInput,
+                  }}
+                  onChange={handleAmountChanged}
+                  startAdornment={<Typography ml={2}>$</Typography>}
+                  endAdornment={
+                    destinationToken && (
+                      <Box className={classes.tokenSelected}>
+                        <Token
+                          key={`destination-token-${destinationToken.swing.symbol}`}
+                          token={getTokenEntry(destinationToken, true)}
+                          hideBalance
+                          isOwner
+                          compact
+                          iconWidth={6}
+                          descriptionWidth={6}
+                          graphWidth={0}
+                          onClick={() => handleTokenClicked('destination')}
+                        />
+                      </Box>
+                    )
+                  }
+                />
+              </FormControl>
+            </Box>
           </Box>
         )}
         {txId && !errorMessage && (

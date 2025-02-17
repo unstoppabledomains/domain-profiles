@@ -121,8 +121,8 @@ const SwapTokenModal: React.FC<Props> = ({
       (!filterChain ||
         filterChain.toLowerCase() === v.swing.chain.toLowerCase()) &&
       (!searchTermDebounced ||
-        v.tokenSymbol
-          .toLowerCase()
+        [v.tokenSymbol, v.swing.symbol]
+          .map(match => match.toLowerCase())
           .includes(searchTermDebounced.toLowerCase())),
   );
 
@@ -190,7 +190,7 @@ const SwapTokenModal: React.FC<Props> = ({
         return;
       }
       const chainSymbol = getBlockchainSymbol(token.chain);
-      walletTokens.push({
+      const newToken: SwapConfigToken = {
         ...token,
         swing: {
           chain: token.chain,
@@ -207,7 +207,8 @@ const SwapTokenModal: React.FC<Props> = ({
         walletAddress:
           walletTokens.find(wt => wt.swing.chain === token.chain)
             ?.walletAddress || '',
-      });
+      };
+      setAggregatedTokens(prev => [...prev, newToken]);
     } finally {
       setIsSearching(false);
     }

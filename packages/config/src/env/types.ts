@@ -71,6 +71,7 @@ export interface SwapConfig {
   chainSymbol: string;
   tokenSymbol: string;
   imageUrl: string;
+  liquidityUsd?: number;
   disabledReason?: string;
 }
 

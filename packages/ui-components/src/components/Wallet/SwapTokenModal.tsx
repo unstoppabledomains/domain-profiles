@@ -121,9 +121,10 @@ const SwapTokenModal: React.FC<Props> = ({
       (!filterChain ||
         filterChain.toLowerCase() === v.swing.chain.toLowerCase()) &&
       (!searchTermDebounced ||
-        [v.tokenSymbol, v.swing.symbol]
-          .map(match => match.toLowerCase())
-          .includes(searchTermDebounced.toLowerCase())),
+        searchTermDebounced.length < 3 ||
+        [v.tokenSymbol, v.swing.symbol].find(match =>
+          match.toLowerCase().includes(searchTermDebounced.toLowerCase()),
+        )),
   );
 
   useEffect(() => {

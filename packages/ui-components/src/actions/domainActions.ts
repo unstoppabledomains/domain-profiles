@@ -141,6 +141,32 @@ export const getTransactionsByDomain = async (
   return data[symbol.toUpperCase()];
 };
 
+// getIcannTlds retrieves list of all known ICANN domains
+export const getValidIcannEndings = async (): Promise<Set<string>> => {
+  try {
+    const icannResponse = await fetch(
+      `https://data.iana.org/TLD/tlds-alpha-by-domain.txt`,
+    );
+    if (icannResponse.ok) {
+      const icannData = await icannResponse.text();
+      const tlds = icannData.split(/\n/);
+      if (tlds.length > 1) {
+        return new Set(tlds.slice(1).map(d => d.toLowerCase()));
+      }
+    }
+  } catch (e) {
+    // fail silently
+  }
+  return new Set<string>();
+};
+
+export const getValidWeb3Endings = async (): Promise<string[]> => {
+  const data = await fetchApi(`/supported_tlds`, {
+    host: config.RESOLUTION.BASE_URL,
+  });
+  return data?.tlds || [];
+};
+
 export const getVerificationMessage = async (
   domain: string,
   symbol: string,

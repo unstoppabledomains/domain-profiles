@@ -94,6 +94,9 @@ export type Config = {
   UNSTOPPABLE_API_URL: string;
   UNSTOPPABLE_METADATA_ENDPOINT: string;
   UNSTOPPABLE_CONTRACT_ADDRESS: string;
+  RESOLUTION: {
+    BASE_URL: string;
+  };
   IPFS_BASE_URL: string;
   LOGIN_WITH_UNSTOPPABLE: {
     CLIENT_ID: string;

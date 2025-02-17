@@ -47,6 +47,9 @@ export default function getProductionConfig(): ConfigOverride {
       CLIENT_ID: 'c3af833f-3fd5-46fd-ac3e-bfc136624d1b',
       REDIRECT_URI: 'https://ud.me',
     },
+    RESOLUTION: {
+      BASE_URL: 'https://api.unstoppabledomains.com/resolve',
+    },
     MESSAGING: {
       EMAIL_DOMAIN: 'ud.me',
       HOST_URL: 'https://api.unstoppabledomains.com/messaging',

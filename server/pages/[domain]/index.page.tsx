@@ -115,6 +115,10 @@ import {
   useWeb3Context,
 } from '@unstoppabledomains/ui-components';
 import {
+  getValidIcannEndings,
+  getValidWeb3Endings,
+} from '@unstoppabledomains/ui-components/src/actions/domainActions';
+import {
   getDomainConnections,
   getOwnerDomains,
 } from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
@@ -1745,6 +1749,26 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
     },
   };
 
+  // validate the domain name and redirect the user to search if
+  // the domain name is not valid
+  if (!isDomainValidForManagement(domain)) {
+    return redirectToSearch;
+  }
+
+  // validate the domain ending is a valid web3 domain
+  const allDomainEndings = await getValidWeb3Endings();
+  if (
+    !allDomainEndings.includes(domain.split('.').pop()?.toLowerCase() || '')
+  ) {
+    // validate whether the domain is an ICANN domain
+    const icannTlds = await getValidIcannEndings();
+    if (!icannTlds.has(domain.split('.').pop()?.toLowerCase() || '')) {
+      // domain not valid
+      return redirectToSearch;
+    }
+  }
+
+  // request domain profile data
   let profileData: SerializedPublicDomainProfileData | undefined;
   let identity = null;
   try {

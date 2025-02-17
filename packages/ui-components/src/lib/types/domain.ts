@@ -1,3 +1,5 @@
+import Keyv from 'keyv';
+
 import {isEmailValid} from '../isEmailValid';
 import type {BitscrunchRiskScore} from './bitscrunch';
 import type {WebacyRiskScore} from './webacy';
@@ -23,6 +25,7 @@ export enum AffiliateTier {
   ThirtyFiveApril2022 = 'thirty-five-april-2022',
   ThirtyFebruary2022 = 'thirty-february-2022',
 }
+
 export const DOMAIN_PROFILE_VISIBILITY_VALUES: DomainProfileVisibilityValues = {
   displayNamePublic: false,
   descriptionPublic: false,
@@ -32,7 +35,6 @@ export const DOMAIN_PROFILE_VISIBILITY_VALUES: DomainProfileVisibilityValues = {
   imagePathPublic: true,
   coverPathPublic: true,
 };
-
 export const DOMAIN_SOCIAL_VISIBILITY_VALUES: SocialProfileVisibilityValues = {
   youtubePublic: false,
   twitterPublic: false,
@@ -145,11 +147,11 @@ export enum DomainSuffixes {
 }
 
 export const EXTERNAL_DOMAIN_SUFFIXES = ['eth'];
+
 export type EnsDomainExpiryResponse = {
   expiresAt?: string | null;
   isAvailable?: boolean;
 };
-
 export type EnsDomainStatusResponse = EnsDomainExpiryResponse & {
   rentPrice?: number;
   registrationFees?: number;
@@ -534,6 +536,10 @@ export type TelegramUserInfo = {
   kind: DomainProfileSocialMedia.Telegram;
   userName: string;
 } | null;
+
+export const TldCache = new Keyv<string[]>({
+  ttl: 1000 * 60 * 60, // 1 hour
+});
 
 export enum TokenType {
   Native = 'native',

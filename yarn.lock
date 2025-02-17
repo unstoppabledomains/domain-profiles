@@ -2129,6 +2129,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@keyv/serialize@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@keyv/serialize@npm:1.0.2"
+  dependencies:
+    buffer: ^6.0.3
+  checksum: c1788186d490521d67f3f6367effe2a2ccf2804960f449d728dc50a65ff2840501865f95ed5181c4b773cdeed61ebedb01c0f781a881034c8f3dafc1b98fef12
+  languageName: node
+  linkType: hard
+
 "@kurkle/color@npm:^0.3.0":
   version: 0.3.2
   resolution: "@kurkle/color@npm:0.3.2"
@@ -5556,6 +5565,7 @@ __metadata:
     is-ipfs: ^8.0.4
     jest: ^29.1.0
     js-base64: ^3.7.5
+    keyv: ^5.2.3
     lodash: ^4.17.21
     lodash.merge: ^4.6.2
     markdown-to-jsx: ^7.4.1
@@ -13910,6 +13920,15 @@ __metadata:
   dependencies:
     json-buffer: 3.0.1
   checksum: 74a24395b1c34bd44ad5cb2b49140d087553e170625240b86755a6604cd65aa16efdbdeae5cdb17ba1284a0fbb25ad06263755dbc71b8d8b06f74232ce3cdd72
+  languageName: node
+  linkType: hard
+
+"keyv@npm:^5.2.3":
+  version: 5.2.3
+  resolution: "keyv@npm:5.2.3"
+  dependencies:
+    "@keyv/serialize": ^1.0.2
+  checksum: b317a71550431ba6238bc8c71ce9ab263560df2227ca7933f7a3f18f0fa1a931312b02951cbcce9d316689709f67c5e4a4095e8e6b9aa13d19ce82c5dd7293e2
   languageName: node
   linkType: hard
 

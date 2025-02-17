@@ -78,6 +78,7 @@
     "humanize-plus": "^1.8.2",
     "is-ipfs": "^8.0.4",
     "js-base64": "^3.7.5",
+    "keyv": "^5.2.3",
     "lodash": "^4.17.21",
     "lodash.merge": "^4.6.2",
     "markdown-to-jsx": "^7.4.1",

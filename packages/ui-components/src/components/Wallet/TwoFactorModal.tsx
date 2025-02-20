@@ -13,7 +13,6 @@ import {
   getTwoFactorChallenge,
   verifyTwoFactorChallenge,
 } from '../../actions/walletMfaActions';
-import {useFireblocksAccessToken} from '../../hooks';
 import ManageInput from '../Manage/common/ManageInput';
 import Modal from '../Modal';
 
@@ -43,6 +42,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 interface TwoFactorModalProps {
+  accessToken?: string;
   emailAddress: string;
   enabled?: boolean;
   open?: boolean;
@@ -51,6 +51,7 @@ interface TwoFactorModalProps {
 }
 
 export const TwoFactorModal: React.FC<TwoFactorModalProps> = ({
+  accessToken,
   emailAddress,
   enabled = false,
   open,
@@ -58,18 +59,9 @@ export const TwoFactorModal: React.FC<TwoFactorModalProps> = ({
   onUpdated,
 }) => {
   const {classes, cx} = useStyles();
-  const getAccessToken = useFireblocksAccessToken();
-  const [accessToken, setAccessToken] = useState('');
   const [qrCodeContent, setQrCodeContent] = useState<string>();
   const [errorMessage, setErrorMessage] = useState<string>();
   const [otp, setOtp] = useState<string>();
-
-  useEffect(() => {
-    const loadAccessToken = async () => {
-      setAccessToken(await getAccessToken());
-    };
-    void loadAccessToken();
-  }, []);
 
   useEffect(() => {
     if (!accessToken || !emailAddress) {
@@ -99,7 +91,7 @@ export const TwoFactorModal: React.FC<TwoFactorModalProps> = ({
 
   const handleClick = async () => {
     // validate OTP is set
-    if (!otp) {
+    if (!otp || !accessToken) {
       return;
     }
 

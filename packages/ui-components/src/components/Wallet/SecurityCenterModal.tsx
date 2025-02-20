@@ -513,6 +513,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
       )}
       {isMfaModalOpen && (
         <TwoFactorModal
+          accessToken={accessToken}
           emailAddress="no-reply@unstoppabledomains.com"
           enabled={isMfaEnabled}
           open={isMfaModalOpen}

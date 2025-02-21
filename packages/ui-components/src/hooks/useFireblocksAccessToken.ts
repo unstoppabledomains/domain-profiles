@@ -19,7 +19,9 @@ import {isChromeStorageSupported} from './useChromeStorage';
 import useFireblocksState from './useFireblocksState';
 import useWeb3Context from './useWeb3Context';
 
-export type FireblocksTokenRetriever = () => Promise<string>;
+export type FireblocksTokenRetriever = (
+  forceRefresh?: boolean,
+) => Promise<string>;
 
 // ensure a single access token is requested at a time
 const accessTokenMutex = new Mutex();
@@ -28,7 +30,7 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
   const [state, saveState] = useFireblocksState();
   const {accessToken: existingAccessToken, setAccessToken} = useWeb3Context();
 
-  return async (): Promise<string> => {
+  return async (forceRefresh = false): Promise<string> => {
     return await accessTokenMutex.runExclusive(async () => {
       // retrieve and validate key state
       const clientState = getBootstrapState(state);
@@ -41,30 +43,33 @@ const useFireblocksAccessToken = (): FireblocksTokenRetriever => {
         throw new Error('access token not available in custody state');
       }
 
-      // retrieve from chrome storage if available
-      const isChromeExtension = isChromeStorageSupported('local');
-      const existingLocalAccessToken = isChromeExtension
-        ? await localStorageWrapper.getItem(DomainProfileKeys.AccessToken)
-        : undefined;
-
       // default access token definition
       let accessToken: string | undefined;
+      const isChromeExtension = isChromeStorageSupported('local');
 
-      // test the local token for validity
-      if (existingLocalAccessToken) {
-        const accounts = await getAccounts(existingLocalAccessToken);
-        if (accounts) {
-          accessToken = existingLocalAccessToken;
+      // look for an existing access token if not forcing a refresh
+      if (!forceRefresh) {
+        // retrieve from chrome storage if available
+        const existingLocalAccessToken = isChromeExtension
+          ? await localStorageWrapper.getItem(DomainProfileKeys.AccessToken)
+          : undefined;
+
+        // test the local token for validity
+        if (existingLocalAccessToken) {
+          const accounts = await getAccounts(existingLocalAccessToken);
+          if (accounts) {
+            accessToken = existingLocalAccessToken;
+          }
         }
-      }
 
-      // test the context token for validity
-      if (!accessToken && existingAccessToken) {
-        const accounts = await getAccounts(existingAccessToken);
-        if (accounts) {
-          accessToken = existingAccessToken;
-        } else {
-          setAccessToken('');
+        // test the context token for validity
+        if (!accessToken && existingAccessToken) {
+          const accounts = await getAccounts(existingAccessToken);
+          if (accounts) {
+            accessToken = existingAccessToken;
+          } else {
+            setAccessToken('');
+          }
         }
       }
 

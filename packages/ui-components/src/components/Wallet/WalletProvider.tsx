@@ -10,11 +10,13 @@ import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Bluebird from 'bluebird';
+import {jwtDecode} from 'jwt-decode';
 import Markdown from 'markdown-to-jsx';
 import {useRouter} from 'next/router';
 import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 import truncateMiddle from 'truncate-middle';
+import useAsyncEffect from 'use-async-effect';
 
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -258,22 +260,86 @@ export const WalletProvider: React.FC<
     onError();
   }, [errorMessage]);
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     if (
       // require completed state
       configState === WalletConfigState.Complete &&
       // require either the access token or custody secret
       (accessToken || custodySecret)
     ) {
+      // define the access token refresh timer
+      let tokenRefreshTimer: NodeJS.Timeout;
+
       // update state
       if (accessToken) {
+        // set timer to refresh the access token
+        const jwtToken = jwtDecode(accessToken);
+        if (jwtToken?.exp && jwtToken.iat) {
+          // determine the time remaining before the access token expires
+          const timeRemaining = (jwtToken.exp - jwtToken.iat) * 1000;
+          const tokenRefreshInterval = timeRemaining / 2;
+
+          // set the timer to refresh the access token
+          if (chrome?.alarms) {
+            // use chrome alarms if available
+            notifyEvent(
+              'setting alarm to refresh access token',
+              'info',
+              'Wallet',
+              'Authorization',
+              {
+                meta: {
+                  expiresInMinutes: timeRemaining / 60000,
+                  refreshInMinutes: tokenRefreshInterval / 60000,
+                },
+              },
+            );
+            const alarmName = 'accessTokenRefresh';
+            await chrome.alarms.create(alarmName, {
+              delayInMinutes: tokenRefreshInterval / 60000,
+              periodInMinutes: tokenRefreshInterval / 60000,
+            });
+            chrome.alarms.onAlarm.addListener(
+              async (alarm: chrome.alarms.Alarm) => {
+                if (alarm.name === alarmName) {
+                  await handleRefreshAccessToken();
+                }
+              },
+            );
+          } else {
+            // use react timeout if chrome alarms are not available
+            notifyEvent(
+              'setting timer to refresh access token',
+              'info',
+              'Wallet',
+              'Authorization',
+              {
+                meta: {
+                  expiresInMs: timeRemaining,
+                  refreshInMs: tokenRefreshInterval,
+                },
+              },
+            );
+            tokenRefreshTimer = setTimeout(async () => {
+              await handleRefreshAccessToken();
+            }, tokenRefreshInterval);
+          }
+        }
+
+        // callback with access token
         onUpdate(DomainProfileTabType.Wallet, {accessToken});
       }
-      setIsWalletLoaded(false);
 
       // retrieve the MPC wallets on page load
-      void loadMpcWallets();
+      if (mpcWallets.length === 0) {
+        setIsWalletLoaded(false);
+        await loadMpcWallets();
+      }
+
+      // cleanup the access token refresh timer
+      return () => clearTimeout(tokenRefreshTimer);
     }
+    return;
   }, [configState, accessToken, custodySecret]);
 
   useEffect(() => {
@@ -778,6 +844,24 @@ export const WalletProvider: React.FC<
       await handleLogout();
     } finally {
       setIsWalletLoaded(true);
+    }
+  };
+
+  const handleRefreshAccessToken = async () => {
+    try {
+      notifyEvent('refreshing access token', 'info', 'Wallet', 'Authorization');
+      const newAccessToken = await getAccessToken(true);
+      if (newAccessToken) {
+        setAccessToken(newAccessToken);
+      }
+    } catch (e) {
+      if (e instanceof SessionLockError) {
+        notifyEvent('session is locked', 'warning', 'Wallet', 'Authorization');
+        return;
+      }
+      notifyEvent(e, 'warning', 'Wallet', 'Authorization', {
+        msg: 'unable to retrieve access token',
+      });
     }
   };
 

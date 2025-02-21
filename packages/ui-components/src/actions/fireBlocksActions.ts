@@ -380,7 +380,7 @@ export const getAccounts = async (
 ): Promise<GetAccountsResponse | undefined> => {
   try {
     // retrieve a new set of tokens using the refresh token
-    return await fetchApi<GetAccountsResponse>('/v1/accounts', {
+    const accounts = await fetchApi<GetAccountsResponse>('/v1/accounts', {
       mode: 'cors',
       headers: {
         'Access-Control-Allow-Credentials': 'true',
@@ -389,6 +389,9 @@ export const getAccounts = async (
       },
       host: config.WALLETS.HOST_URL,
     });
+    if (accounts.items.length > 0) {
+      return accounts;
+    }
   } catch (e) {
     notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error retrieving accounts',

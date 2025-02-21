@@ -90,7 +90,8 @@ export const getSortedTokens = (
     ...(wallets || []).flatMap(wallet =>
       (wallet?.tokens || []).map(walletToken => {
         return {
-          type: 'Token' as never,
+          address: walletToken.address,
+          type: wallet.symbol === 'SOL' ? TokenType.Spl : TokenType.Erc20,
           name: walletToken.name,
           value: walletToken.value?.walletUsdAmt || 0,
           balance: walletToken.balanceAmt || 0,

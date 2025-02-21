@@ -64,7 +64,7 @@ import {
   signTransaction,
   waitForTx,
 } from '../../lib/wallet/solana/transaction';
-import {localStorageWrapper} from '../Chat';
+import {isEthAddress, localStorageWrapper} from '../Chat';
 import ManageInput from '../Manage/common/ManageInput';
 import {
   getBlockchainDisplaySymbol,
@@ -411,6 +411,12 @@ const Swap: React.FC<Props> = ({
     return {
       swing: {
         chain: token.chain,
+        chainId: isEthAddress(token.address)
+          ? config.WALLETS.SWAP.SUPPORTED_TOKENS.SOURCE.find(
+              tConfig =>
+                tConfig.swing.chain.toLowerCase() === token.chain.toLowerCase(),
+            )?.swing.chainId
+          : undefined,
         symbol: token.address,
         type: isNative ? 'native' : token.chain === 'solana' ? 'spl' : 'erc20',
       },

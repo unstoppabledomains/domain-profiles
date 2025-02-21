@@ -280,21 +280,50 @@ export const WalletProvider: React.FC<
           const tokenRefreshInterval = timeRemaining / 2;
 
           // set the timer to refresh the access token
-          notifyEvent(
-            'setting timer to refresh access token',
-            'info',
-            'Wallet',
-            'Authorization',
-            {
-              meta: {
-                expiresInMs: timeRemaining,
-                refreshInMs: tokenRefreshInterval,
+          if (chrome?.alarms) {
+            // use chrome alarms if available
+            notifyEvent(
+              'setting alarm to refresh access token',
+              'info',
+              'Wallet',
+              'Authorization',
+              {
+                meta: {
+                  expiresInMinutes: timeRemaining / 60000,
+                  refreshInMinutes: tokenRefreshInterval / 60000,
+                },
               },
-            },
-          );
-          tokenRefreshTimer = setTimeout(async () => {
-            await handleRefreshAccessToken();
-          }, tokenRefreshInterval);
+            );
+            const alarmName = 'accessTokenRefresh';
+            await chrome.alarms.create(alarmName, {
+              delayInMinutes: tokenRefreshInterval / 60000,
+              periodInMinutes: tokenRefreshInterval / 60000,
+            });
+            chrome.alarms.onAlarm.addListener(
+              async (alarm: chrome.alarms.Alarm) => {
+                if (alarm.name === alarmName) {
+                  await handleRefreshAccessToken();
+                }
+              },
+            );
+          } else {
+            // use react timeout if chrome alarms are not available
+            notifyEvent(
+              'setting timer to refresh access token',
+              'info',
+              'Wallet',
+              'Authorization',
+              {
+                meta: {
+                  expiresInMs: timeRemaining,
+                  refreshInMs: tokenRefreshInterval,
+                },
+              },
+            );
+            tokenRefreshTimer = setTimeout(async () => {
+              await handleRefreshAccessToken();
+            }, tokenRefreshInterval);
+          }
         }
 
         // callback with access token

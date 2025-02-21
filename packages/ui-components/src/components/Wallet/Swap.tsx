@@ -402,13 +402,14 @@ const Swap: React.FC<Props> = ({
       ? getTokenEntry(sourceToken)!.value > getSourceGasFees(quoteSelected)
       : false;
 
-  const allTokenConfigs: SwapConfig[] = allSwapTokens.map(token => {
+  // list of swap pairs found on DEX
+  const allDexTokenConfigs: SwapConfig[] = allSwapTokens.map(token => {
     const walletType = getBlockchainSymbol(token.chain);
     const isNative = [
       '11111111111111111111111111111111',
       '0x0000000000000000000000000000000000000000',
     ].includes(token.address);
-    return {
+    const retVal: SwapConfig = {
       swing: {
         chain: token.chain,
         chainId: isEthAddress(token.address)
@@ -420,8 +421,6 @@ const Swap: React.FC<Props> = ({
         symbol: token.address,
         type: isNative ? 'native' : token.chain === 'solana' ? 'spl' : 'erc20',
       },
-      walletAddress:
-        allTokens?.find(v => v.walletType === walletType)?.walletAddress || '',
       liquidityUsd: token.liquidityUsd,
       chainName: token.chain,
       chainSymbol: walletType,
@@ -431,11 +430,53 @@ const Swap: React.FC<Props> = ({
       imageUrl: token.logo,
       walletType,
     };
+    return retVal;
   });
+
+  // augment list with tokens found in wallet
+  const allWalletTokenConfigs: SwapConfig[] = allTokens
+    .filter(token => {
+      return !allDexTokenConfigs.find(
+        tokenConfig =>
+          tokenConfig.swing.chain.toLowerCase() ===
+            token.walletName.toLowerCase() &&
+          tokenConfig.tokenSymbol.toLowerCase() === token.ticker.toLowerCase(),
+      );
+    })
+    .map(token => {
+      const retVal: SwapConfig = {
+        swing: {
+          chain: token.walletName.toLowerCase(),
+          chainId: isEthAddress(token.walletAddress)
+            ? config.WALLETS.SWAP.SUPPORTED_TOKENS.SOURCE.find(
+                tConfig =>
+                  tConfig.swing.chain.toLowerCase() ===
+                  token.walletName.toLowerCase(),
+              )?.swing.chainId
+            : undefined,
+          symbol: token.address || token.ticker,
+          type:
+            token.type === TokenType.Native
+              ? 'native'
+              : token.type === TokenType.Erc20
+              ? 'erc20'
+              : 'spl',
+        },
+        chainName: token.walletName,
+        chainSymbol: token.symbol,
+        tokenSymbol: token.ticker,
+        imageUrl: token.imageUrl || '',
+        walletType: token.walletType || '',
+      };
+      return retVal;
+    });
+
+  // aggregated list of token configs
+  const allTokenConfigs = [...allDexTokenConfigs, ...allWalletTokenConfigs];
 
   // build list of supported source tokens with sufficient balance
   const sourceTokens: SwapConfigToken[] = (
-    allTokenConfigs.length > 0
+    allDexTokenConfigs.length > 0
       ? allTokenConfigs
       : config.WALLETS.SWAP.SUPPORTED_TOKENS.SOURCE
   )
@@ -476,7 +517,7 @@ const Swap: React.FC<Props> = ({
 
   // build list of supported destination tokens
   const destinationTokens: SwapConfigToken[] = (
-    allTokenConfigs.length > 0
+    allDexTokenConfigs.length > 0
       ? allTokenConfigs
       : config.WALLETS.SWAP.SUPPORTED_TOKENS.DESTINATION
   )

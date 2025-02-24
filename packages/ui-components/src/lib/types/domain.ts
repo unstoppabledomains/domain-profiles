@@ -93,6 +93,8 @@ export enum DomainProfileKeys {
   GenericKeyValue = 'kv',
   EncryptedPIN = 'encryptedPin',
   LockStatus = 'lockStatus',
+  WalletBalances = 'wallet-balances',
+  WalletTransactions = 'wallet-transactions',
   BannerHealthCheck = 'banner-health-check',
   BannerSwapIntro = 'banner-swap-intro',
   Banner = 'banner',

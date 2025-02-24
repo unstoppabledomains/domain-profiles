@@ -215,7 +215,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
 
 // define a timer to refresh the page periodically
 let refreshTimer: NodeJS.Timeout | undefined;
-const REFRESH_BALANCE_MS = 10000;
+const REFRESH_BALANCE_MS = 30 * 1000; // 30 second interval to refresh the balance
 
 export const Client: React.FC<ClientProps> = ({
   accessToken,

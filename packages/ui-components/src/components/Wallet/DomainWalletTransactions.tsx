@@ -18,17 +18,24 @@ import type {Theme} from '@mui/material/styles';
 import Bluebird from 'bluebird';
 import moment from 'moment';
 import numeral from 'numeral';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import truncateEthAddress from 'truncate-eth-address';
+import useAsyncEffect from 'use-async-effect';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getTransactionsByAddress, getTransactionsByDomain} from '../../actions';
 import type {CurrenciesType, SerializedTx} from '../../lib';
-import {TokenType, WALLET_CARD_HEIGHT, useTranslationContext} from '../../lib';
+import {
+  DomainProfileKeys,
+  TokenType,
+  WALLET_CARD_HEIGHT,
+  useTranslationContext,
+} from '../../lib';
 import {notifyEvent} from '../../lib/error';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
+import {localStorageWrapper} from '../Chat';
 import {CryptoIcon} from '../Image';
 import {
   getBlockchainDisplaySymbol,
@@ -206,7 +213,19 @@ export const DomainWalletTransactions: React.FC<
   const [hasMore, setHasMore] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
+  // load previously known transactions from local state
+  useAsyncEffect(async () => {
+    // retrieve previously known transactions from local state
+    const cachedTxns = await localStorageWrapper.getItem(
+      DomainProfileKeys.WalletTransactions,
+    );
+    if (cachedTxns) {
+      setTxns(JSON.parse(cachedTxns));
+    }
+  }, []);
+
+  // update transactions dynamically
+  useAsyncEffect(async () => {
     const initialTxns: SerializedTx[] = [];
     const initialCursors: Record<string, string> = {};
     wallets?.map(w => {
@@ -223,8 +242,16 @@ export const DomainWalletTransactions: React.FC<
           tx.symbol = w.symbol;
         });
     });
+
+    // show the initial transactions
     setTxns(initialTxns);
     setCursors(initialCursors);
+
+    // store the initial transactions in local state
+    await localStorageWrapper.setItem(
+      DomainProfileKeys.WalletTransactions,
+      JSON.stringify(initialTxns),
+    );
   }, [wallets]);
 
   const handleClick = (link: string) => {

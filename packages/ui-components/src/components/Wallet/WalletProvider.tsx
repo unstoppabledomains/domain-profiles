@@ -44,6 +44,7 @@ import useFireblocksState from '../../hooks/useFireblocksState';
 import type {SerializedWalletBalance} from '../../lib';
 import {
   CustodyState,
+  DomainProfileKeys,
   SessionLockError,
   disablePin,
   isEmailValid,
@@ -524,7 +525,7 @@ export const WalletProvider: React.FC<
 
     // wallets may be loaded into cached local storage for up to
     // an hour, to improve loading UX
-    const walletCachePrefix = 'portfolio-state';
+    const walletCachePrefix = DomainProfileKeys.WalletBalances;
     const walletCacheExpiry = await localStorageWrapper.getItem(
       `${walletCachePrefix}-expiry`,
     );
@@ -683,7 +684,7 @@ export const WalletProvider: React.FC<
 
     // wallets may be loaded into cached local storage for up to
     // an hour, to improve loading UX
-    const walletCachePrefix = 'portfolio-state';
+    const walletCachePrefix = DomainProfileKeys.WalletBalances;
     const walletCacheExpiry = await localStorageWrapper.getItem(
       `${walletCachePrefix}-expiry`,
     );

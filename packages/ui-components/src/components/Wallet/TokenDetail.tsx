@@ -1,13 +1,8 @@
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import QrCodeIcon from '@mui/icons-material/QrCode';
-import SendIcon from '@mui/icons-material/Send';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import Box from '@mui/material/Box';
-import type {ButtonProps} from '@mui/material/Button';
-import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {styled, useTheme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
 import numeral from 'numeral';
 import React from 'react';
 import {Line} from 'react-chartjs-2';
@@ -16,7 +11,12 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {TokenEntry} from '../../lib';
 import {useTranslationContext} from '../../lib';
+import {
+  isBuySellEnabled,
+  openBuySellPopup,
+} from '../../lib/wallet/buySellCrypto';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
+import ActionButton from './ActionButton';
 import {TitleWithBackButton} from './TitleWithBackButton';
 import Token from './Token';
 
@@ -47,30 +47,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'center',
     marginTop: theme.spacing(3),
     marginBottom: theme.spacing(3),
-  },
-  actionButton: {
-    marginRight: theme.spacing(2),
-    width: '70px',
-    height: '70px',
-    cursor: 'pointer',
-    [theme.breakpoints.down('sm')]: {
-      width: '55px',
-      height: '55px',
-    },
-  },
-  actionIcon: {
-    width: '25px',
-    height: '25px',
-    [theme.breakpoints.down('sm')]: {
-      width: '15px',
-      height: '15px',
-    },
-  },
-  actionContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   contentContainer: {
     display: 'flex',
@@ -115,7 +91,6 @@ type Props = {
   token: TokenEntry;
   onCancelClick: () => void;
   onClickReceive: () => void;
-  onClickBuy: () => void;
   onClickSend: () => void;
   onClickSwap: () => void;
 };
@@ -124,13 +99,26 @@ const TokenDetail: React.FC<Props> = ({
   token,
   onCancelClick,
   onClickReceive,
-  onClickBuy,
   onClickSend,
   onClickSwap,
 }) => {
-  const {classes, cx} = useStyles();
+  const {classes} = useStyles();
   const [t] = useTranslationContext();
   const theme = useTheme();
+
+  // calculate latest spot price
+  const spotPrice =
+    token.history && token.history.length > 0
+      ? token.history[token.history.length - 1].value
+      : token.tokenConversionUsd;
+
+  const handleBuyClicked = async () => {
+    await openBuySellPopup(token);
+  };
+
+  const handleTokenClicked = () => {
+    window.open(token.walletBlockChainLink, '_blank');
+  };
 
   return (
     <Box className={classes.container}>
@@ -145,13 +133,12 @@ const TokenDetail: React.FC<Props> = ({
         />
         <Box className={classes.contentContainer}>
           <Typography variant="h3" mt={3}>
-            {(token.history && token.history.length > 0
-              ? token.history[token.history.length - 1].value
-              : token.tokenConversionUsd
-            ).toLocaleString('en-US', {
-              style: 'currency',
-              currency: 'USD',
-            })}
+            {spotPrice > 1
+              ? spotPrice.toLocaleString('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                })
+              : `$${numeral(spotPrice).format('0.[0000000]')}`}
           </Typography>
           <Typography
             variant="body2"
@@ -173,7 +160,10 @@ const TokenDetail: React.FC<Props> = ({
             <Box className={classes.chartContainer}>
               <Line
                 data={{
-                  labels: token.history?.map((_h, i) => i) || [],
+                  labels:
+                    token.history?.map(h =>
+                      new Date(h.timestamp).toLocaleString(),
+                    ) || [],
                   datasets: [
                     {
                       label: token.name,
@@ -193,7 +183,7 @@ const TokenDetail: React.FC<Props> = ({
                   ],
                 }}
                 options={{
-                  events: [],
+                  events: ['mousemove'],
                   scales: {
                     x: {
                       display: false,
@@ -215,58 +205,38 @@ const TokenDetail: React.FC<Props> = ({
             </Box>
           )}
           <Box className={classes.actionContainer}>
-            <StyledButton
-              className={classes.actionButton}
-              onClick={onClickReceive}
-              variant="contained"
-              colorPalette={theme.palette.neutralShades}
-              shade={theme.palette.mode === 'light' ? 100 : 600}
-              size="small"
-            >
-              <Box className={classes.actionContent}>
-                <QrCodeIcon className={classes.actionIcon} />
-                {t('common.receive')}
-              </Box>
-            </StyledButton>
-            <StyledButton
-              className={classes.actionButton}
-              onClick={onClickSend}
-              variant="contained"
-              colorPalette={theme.palette.neutralShades}
-              shade={theme.palette.mode === 'light' ? 100 : 600}
-              size="small"
-            >
-              <Box className={classes.actionContent}>
-                <SendIcon className={classes.actionIcon} />
-                {t('common.send')}
-              </Box>
-            </StyledButton>
-            <StyledButton
-              className={classes.actionButton}
-              onClick={onClickSwap}
-              variant="contained"
-              colorPalette={theme.palette.neutralShades}
-              shade={theme.palette.mode === 'light' ? 100 : 600}
-              size="small"
-            >
-              <Box className={classes.actionContent}>
-                <SwapHorizIcon className={classes.actionIcon} />
-                {t('swap.title')}
-              </Box>
-            </StyledButton>
-            <StyledButton
-              className={classes.actionButton}
-              onClick={onClickBuy}
-              variant="contained"
-              colorPalette={theme.palette.neutralShades}
-              shade={theme.palette.mode === 'light' ? 100 : 600}
-              size="small"
-            >
-              <Box className={classes.actionContent}>
-                <AttachMoneyIcon className={classes.actionIcon} />
-                {t('common.buySell')}
-              </Box>
-            </StyledButton>
+            <Grid container spacing={2}>
+              <Grid item>
+                <ActionButton
+                  onClick={onClickReceive}
+                  size="small"
+                  variant="receive"
+                />
+              </Grid>
+              <Grid item>
+                <ActionButton
+                  onClick={onClickSend}
+                  size="small"
+                  variant="send"
+                />
+              </Grid>
+              <Grid item>
+                <ActionButton
+                  onClick={onClickSwap}
+                  size="small"
+                  variant="swap"
+                />
+              </Grid>
+              {isBuySellEnabled(token) && (
+                <Grid item>
+                  <ActionButton
+                    onClick={handleBuyClicked}
+                    size="small"
+                    variant="buySell"
+                  />
+                </Grid>
+              )}
+            </Grid>
           </Box>
         </Box>
         <Box className={classes.footerContainer}>
@@ -274,27 +244,17 @@ const TokenDetail: React.FC<Props> = ({
             <Typography variant="h6">{t('swap.balance')}</Typography>
           </Box>
           <Box className={classes.tokenContainer}>
-            <Token token={token} isOwner={true} showGraph={false} />
+            <Token
+              token={token}
+              isOwner={true}
+              showGraph={false}
+              onClick={handleTokenClicked}
+            />
           </Box>
         </Box>
       </Box>
     </Box>
   );
 };
-
-type StyledButtonProps = ButtonProps & {
-  colorPalette: Record<number, string>;
-  shade: number;
-};
-
-const StyledButton = styled(Button)<StyledButtonProps>(
-  ({theme, shade, colorPalette}) => ({
-    color: theme.palette.getContrastText(colorPalette[shade]),
-    backgroundColor: colorPalette[shade],
-    '&:hover': {
-      backgroundColor: colorPalette[shade + 100],
-    },
-  }),
-);
 
 export default TokenDetail;

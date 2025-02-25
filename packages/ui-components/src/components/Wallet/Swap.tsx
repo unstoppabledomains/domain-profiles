@@ -149,10 +149,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
     width: '250px',
+    minHeight: '58px',
     padding: theme.spacing(1),
     backgroundColor: theme.palette.background.paper,
     borderRadius: theme.shape.borderRadius,
     boxShadow: theme.shadows[2],
+  },
+  tokenLoading: {
+    color: theme.palette.neutralShades[400],
   },
   swapIconContainer: {
     position: 'absolute',
@@ -193,6 +197,7 @@ type Props = {
   onClickBuy?: () => void;
   accessToken: string;
   wallets: SerializedWalletBalance[];
+  initialSelectedToken?: TokenEntry;
 };
 
 const Swap: React.FC<Props> = ({
@@ -201,6 +206,7 @@ const Swap: React.FC<Props> = ({
   onClickReceive,
   accessToken,
   wallets,
+  initialSelectedToken,
 }) => {
   // page state
   const [t] = useTranslationContext();
@@ -568,20 +574,37 @@ const Swap: React.FC<Props> = ({
     };
   }, []);
 
-  // automatically select the first source token
+  // automatically select a source token
   useEffect(() => {
     if (sourceToken) {
       return;
     }
-    if (!sourceTokens || sourceTokens.length === 0) {
+    if (
+      !sourceTokens ||
+      sourceTokens.length === 0 ||
+      (isTokensLoading && initialSelectedToken)
+    ) {
       return;
     }
-    if (!isSwapConfigTokenEqual(sourceTokens[0], sourceToken)) {
+    if (initialSelectedToken) {
+      const initialSelectedConfig = sourceTokens.find(
+        configToken =>
+          configToken.swing.chain.toLowerCase() ===
+            initialSelectedToken.walletName.toLowerCase() &&
+          (configToken.swing.symbol.toLowerCase() ===
+            initialSelectedToken.address?.toLowerCase() ||
+            configToken.tokenSymbol.toLowerCase() ===
+              initialSelectedToken.ticker.toLowerCase()),
+      );
+      if (initialSelectedConfig) {
+        setSourceToken(initialSelectedConfig);
+      }
+    } else if (!isSwapConfigTokenEqual(sourceTokens[0], sourceToken)) {
       setSourceToken(sourceTokens[0]);
     }
-  }, [sourceToken, sourceTokens]);
+  }, [initialSelectedToken, sourceToken, sourceTokens, isTokensLoading]);
 
-  // automatically select the first destination token
+  // automatically select a destination token
   useEffect(() => {
     if (destinationToken) {
       return;
@@ -589,9 +612,14 @@ const Swap: React.FC<Props> = ({
     if (!sourceToken || !destinationTokens || destinationTokens.length === 0) {
       return;
     }
-    if (!isSwapConfigTokenEqual(destinationTokens[0], destinationToken)) {
-      setDestinationToken(destinationTokens[0]);
-    }
+    const swapTokensOnSameChain = destinationTokens.filter(
+      configToken => configToken.swing.chain === sourceToken.swing.chain,
+    );
+    const swapDestinationConfig =
+      swapTokensOnSameChain.length > 0
+        ? swapTokensOnSameChain[0]
+        : destinationTokens[0];
+    setDestinationToken(swapDestinationConfig);
   }, [sourceToken, destinationToken, destinationTokens]);
 
   // update the destination token if it conflicts with source token
@@ -1099,10 +1127,10 @@ const Swap: React.FC<Props> = ({
                   onChange={handleAmountChanged}
                   startAdornment={<Typography ml={2}>$</Typography>}
                   endAdornment={
-                    sourceToken && (
-                      <Box className={classes.tokenSelected}>
+                    <Box className={classes.tokenSelected}>
+                      {sourceToken ? (
                         <Token
-                          key={`source-token-${sourceToken.swing.symbol}`}
+                          key={`source-token-${sourceToken.swing.chain}-${sourceToken.swing.symbol}`}
                           token={getTokenEntry(sourceToken, true)}
                           hideBalance
                           isOwner
@@ -1117,8 +1145,13 @@ const Swap: React.FC<Props> = ({
                               : () => handleTokenClicked('source')
                           }
                         />
-                      </Box>
-                    )
+                      ) : (
+                        <CircularProgress
+                          size="30px"
+                          className={classes.tokenLoading}
+                        />
+                      )}
+                    </Box>
                   }
                 />
                 <FormHelperText className={classes.tokenBalanceContainer}>
@@ -1191,10 +1224,10 @@ const Swap: React.FC<Props> = ({
                   onChange={handleAmountChanged}
                   startAdornment={<Typography ml={2}>$</Typography>}
                   endAdornment={
-                    destinationToken && (
-                      <Box className={classes.tokenSelected}>
+                    <Box className={classes.tokenSelected}>
+                      {destinationToken ? (
                         <Token
-                          key={`destination-token-${destinationToken.swing.symbol}`}
+                          key={`destination-token-${destinationToken.swing.chain}-${destinationToken.swing.symbol}`}
                           token={getTokenEntry(destinationToken, true)}
                           hideBalance
                           isOwner
@@ -1204,8 +1237,13 @@ const Swap: React.FC<Props> = ({
                           graphWidth={0}
                           onClick={() => handleTokenClicked('destination')}
                         />
-                      </Box>
-                    )
+                      ) : (
+                        <CircularProgress
+                          size="30px"
+                          className={classes.tokenLoading}
+                        />
+                      )}
+                    </Box>
                   }
                 />
               </FormControl>

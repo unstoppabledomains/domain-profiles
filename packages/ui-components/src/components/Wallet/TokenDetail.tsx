@@ -218,6 +218,7 @@ const TokenDetail: React.FC<Props> = ({
                   onClick={onClickSend}
                   size="small"
                   variant="send"
+                  disabled={token.balance === 0}
                 />
               </Grid>
               <Grid item>
@@ -225,6 +226,7 @@ const TokenDetail: React.FC<Props> = ({
                   onClick={onClickSwap}
                   size="small"
                   variant="swap"
+                  disabled={token.balance === 0}
                 />
               </Grid>
               {isBuySellEnabled(token) && (

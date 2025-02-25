@@ -28,8 +28,8 @@ const useStyles = makeStyles<{size: 'small' | 'medium' | 'large'}>()((
       height: `${baseSize}px`,
       cursor: 'pointer',
       [theme.breakpoints.down('sm')]: {
-        width: `${baseSize - 16}px`,
-        height: `${baseSize - 16}px`,
+        width: `${baseSize - 8}px`,
+        height: `${baseSize - 8}px`,
       },
     },
     actionIcon: {
@@ -60,10 +60,16 @@ const useStyles = makeStyles<{size: 'small' | 'medium' | 'large'}>()((
 type Props = {
   size: 'small' | 'medium' | 'large';
   variant: 'receive' | 'send' | 'swap' | 'buySell';
+  disabled?: boolean;
   onClick: () => void;
 };
 
-const ActionButton: React.FC<Props> = ({variant, onClick, size = 'large'}) => {
+const ActionButton: React.FC<Props> = ({
+  variant,
+  onClick,
+  size = 'large',
+  disabled = false,
+}) => {
   const {classes} = useStyles({size});
   const [t] = useTranslationContext();
   const theme = useTheme();
@@ -76,6 +82,7 @@ const ActionButton: React.FC<Props> = ({variant, onClick, size = 'large'}) => {
       colorPalette={theme.palette.neutralShades}
       shade={theme.palette.mode === 'light' ? 100 : 600}
       size={size}
+      disabled={disabled}
     >
       {variant === 'receive' ? (
         <Box className={classes.actionContent}>

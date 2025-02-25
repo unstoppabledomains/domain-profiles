@@ -156,30 +156,6 @@ export const AddAvatarPopup: React.FC<Props> = ({
           variant="outlined"
           color="inherit"
           disabled={uiDisabled}
-          onClick={handleUrlPopupOpen}
-          classes={{
-            startIcon: classes.buttonIconContainer,
-            disabled: classes.buttonDisabled,
-          }}
-          className={cx(classes.button, classes.marginButton)}
-          startIcon={
-            <AddLinkIcon color="primary" className={classes.buttonStartIcon} />
-          }
-          endIcon={
-            <KeyboardArrowRightOutlinedIcon className={classes.buttonEndIcon} />
-          }
-        >
-          <div className={classes.buttonText}>
-            {t('manage.enterAvatarUrl')}
-            <Typography variant="body2" color="textSecondary">
-              {t('manage.avatarUrlRequirements')}
-            </Typography>
-          </div>
-        </Button>
-        <Button
-          variant="outlined"
-          color="inherit"
-          disabled={uiDisabled}
           onClick={handleNftPopupOpen}
           classes={{
             startIcon: classes.buttonIconContainer,

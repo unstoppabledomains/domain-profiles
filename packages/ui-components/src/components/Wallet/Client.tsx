@@ -66,6 +66,7 @@ import ReceiveDomainModal from './ReceiveDomainModal';
 import Send from './Send';
 import SetupTxLockModal from './SetupTxLockModal';
 import Swap from './Swap';
+import TokenDetail from './TokenDetail';
 import {TokensPortfolio} from './TokensPortfolio';
 import {WalletBanner} from './WalletBanner';
 
@@ -374,7 +375,7 @@ export const Client: React.FC<ClientProps> = ({
       void handleLoadDomains(true);
     }
     setIsHeaderClicked(false);
-    void handleCancel();
+    void handleCancelAction();
   }, [address, isHeaderClicked]);
 
   useEffect(() => {
@@ -629,15 +630,7 @@ export const Client: React.FC<ClientProps> = ({
   };
 
   const handleTokenClicked = (token: TokenEntry) => {
-    // set the token
     setSelectedToken(token);
-
-    // choose wether to show the receive or send screen
-    if (token.balance > 0) {
-      handleClickedSend();
-    } else {
-      handleClickedReceive();
-    }
   };
 
   const handleClickedSend = () => {
@@ -689,13 +682,17 @@ export const Client: React.FC<ClientProps> = ({
     setIsSwap(false);
   };
 
-  const handleCancel = async () => {
+  const handleCancelAction = () => {
     // restore the wallet home screen
     setIsSend(false);
     setIsReceive(false);
     setIsBuy(false);
     setIsSwap(false);
+  };
+
+  const handleCancelToken = () => {
     setSelectedToken(undefined);
+    handleCancelAction();
   };
 
   const handleLearnMoreClicked = () => {
@@ -715,7 +712,7 @@ export const Client: React.FC<ClientProps> = ({
           <Box className={classes.panelContainer}>
             <Send
               accessToken={accessToken}
-              onCancelClick={handleCancel}
+              onCancelClick={handleCancelAction}
               onClickBuy={handleClickedBuy}
               onClickReceive={handleClickedReceive}
               wallets={wallets}
@@ -726,7 +723,7 @@ export const Client: React.FC<ClientProps> = ({
           <Box className={classes.panelContainer}>
             <Swap
               accessToken={accessToken}
-              onCancelClick={handleCancel}
+              onCancelClick={handleCancelAction}
               onClickBuy={handleClickedBuy}
               onClickReceive={handleClickedReceive}
               wallets={wallets}
@@ -735,7 +732,7 @@ export const Client: React.FC<ClientProps> = ({
         ) : isReceive ? (
           <Box className={classes.panelContainer}>
             <Receive
-              onCancelClick={handleCancel}
+              onCancelClick={handleCancelAction}
               wallets={wallets}
               initialSelectedToken={selectedToken}
             />
@@ -743,9 +740,21 @@ export const Client: React.FC<ClientProps> = ({
         ) : isBuy ? (
           <Box className={classes.panelContainer}>
             <Buy
-              onCancelClick={handleCancel}
+              onCancelClick={handleCancelAction}
               isSellEnabled={isSellEnabled}
               wallets={wallets}
+            />
+          </Box>
+        ) : selectedToken && accessToken ? (
+          <Box className={classes.panelContainer}>
+            <TokenDetail
+              accessToken={accessToken}
+              token={selectedToken}
+              onCancelClick={handleCancelToken}
+              onClickReceive={handleClickedReceive}
+              onClickBuy={handleClickedBuy}
+              onClickSwap={handleClickedSwap}
+              onClickSend={handleClickedSend}
             />
           </Box>
         ) : (
@@ -1055,12 +1064,12 @@ export const getMinClientHeight = (isMobile: boolean, offset = 0) => {
 };
 
 type StyledButtonProps = ButtonProps & {
-  colorPalette?: Record<number, string>;
+  colorPalette: Record<number, string>;
   shade: number;
 };
 
 const StyledButton = styled(Button)<StyledButtonProps>(
-  ({theme, shade, colorPalette = theme.palette.primaryShades}) => ({
+  ({theme, shade, colorPalette}) => ({
     color: theme.palette.getContrastText(colorPalette[shade]),
     backgroundColor: colorPalette[shade],
     '&:hover': {

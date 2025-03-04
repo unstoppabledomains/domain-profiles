@@ -147,7 +147,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
   // recursively load remaining NFT gallery data pages in the background
   // so they are available to the user later
   useEffect(() => {
-    if (!enabled) {
+    if (!enabled || !expanded) {
       return;
     }
 

@@ -88,6 +88,8 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
+const CAROUSEL_MAX_COUNT = 5;
+
 const TokenGallery: React.FC<TokenGalleryProps> = ({
   domain,
   enabled,
@@ -147,7 +149,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
   // recursively load remaining NFT gallery data pages in the background
   // so they are available to the user later
   useEffect(() => {
-    if (!enabled || !expanded) {
+    if (!enabled || (!expanded && nfts && nfts.length >= CAROUSEL_MAX_COUNT)) {
       return;
     }
 
@@ -287,7 +289,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
         <NFTGalleryCarousel
           domain={domain}
           address={ownerAddress}
-          maxNftCount={5}
+          maxNftCount={CAROUSEL_MAX_COUNT}
           nfts={
             nfts
               ? nfts.filter(nft => nft.public && nft.verified).length < 15

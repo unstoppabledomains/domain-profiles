@@ -1,5 +1,5 @@
 export const hasChromePermission = async (
-  permission: string,
+  permission: 'tabs' | 'alarms',
 ): Promise<boolean> => {
   try {
     return await chrome.permissions.contains({permissions: [permission]});

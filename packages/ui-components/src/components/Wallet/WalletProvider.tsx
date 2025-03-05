@@ -55,6 +55,7 @@ import {notifyEvent} from '../../lib/error';
 import {sleep} from '../../lib/sleep';
 import type {TokenRefreshResponse} from '../../lib/types/fireBlocks';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
+import {hasChromePermission} from '../../lib/wallet/chromeRuntime';
 import {isValidWalletPasswordFormat} from '../../lib/wallet/password';
 import {
   getBootstrapState,
@@ -280,7 +281,8 @@ export const WalletProvider: React.FC<
           const timeRemaining = (jwtToken.exp - jwtToken.iat) * 1000;
           const tokenRefreshInterval = timeRemaining / 2;
 
-          try {
+          // set a timer depending on runtime environment
+          if (await hasChromePermission('alarms')) {
             // use chrome alarms if available
             notifyEvent(
               'setting alarm to refresh access token',
@@ -306,7 +308,7 @@ export const WalletProvider: React.FC<
                 }
               },
             );
-          } catch (e) {
+          } else {
             // use react timeout if chrome alarms are not available
             notifyEvent(
               'setting timer to refresh access token',

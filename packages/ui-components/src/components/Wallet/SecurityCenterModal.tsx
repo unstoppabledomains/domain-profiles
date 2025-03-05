@@ -30,6 +30,10 @@ import type {
   RecoveryStatusResponse,
   TransactionLockStatusResponse,
 } from '../../lib/types/fireBlocks';
+import {
+  hasChromePermission,
+  isChromeExtension,
+} from '../../lib/wallet/chromeRuntime';
 import Modal from '../Modal';
 import ChangePasswordModal from './ChangePasswordModal';
 import RecoverySetupModal from './RecoverySetupModal';
@@ -121,9 +125,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           getTwoFactorStatus(accessToken),
           getRecoveryKitStatus(accessToken),
           getTransactionLockStatus(accessToken),
-          chrome.permissions
-            ? chrome.permissions.contains({permissions: ['tabs']})
-            : undefined,
+          hasChromePermission('tabs'),
         ]);
         setIsLockEnabled(pinStatus);
         setIsMfaEnabled(mfaStatus);
@@ -136,7 +138,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
             ? txLockStatus.validUntil
             : undefined,
         );
-        setIsAppConnectionEnabled(!!tabsPermission);
+        setIsAppConnectionEnabled(tabsPermission);
       } finally {
         setIsLoaded(true);
       }
@@ -411,7 +413,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           </Typography>
         </Box>
         <Box>
-          {chrome.permissions && (
+          {isChromeExtension() && (
             <WalletPreference
               title={t('extension.appConnections')}
               description={t('extension.appConnectionsDescription')}

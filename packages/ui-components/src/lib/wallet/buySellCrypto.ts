@@ -2,6 +2,7 @@ import {stringify} from 'querystring';
 
 import config from '@unstoppabledomains/config';
 
+import {getBlockchainDisplaySymbol} from '../../components/Manage/common/verification/types';
 import {notifyEvent} from '../error';
 import type {TokenEntry} from '../types';
 
@@ -20,7 +21,7 @@ export const openBuySellPopup = async (asset: TokenEntry) => {
   const queryParams = stringify({
     blockchain: asset.name.toLowerCase(),
     address: asset.walletAddress,
-    token: asset.symbol,
+    token: getBlockchainDisplaySymbol(asset.ticker),
     utm_source: 'ud_me',
   });
   const url = `${config.UNSTOPPABLE_WEBSITE_URL}/fiat-ramps/popup?${queryParams}`;

@@ -280,8 +280,7 @@ export const WalletProvider: React.FC<
           const timeRemaining = (jwtToken.exp - jwtToken.iat) * 1000;
           const tokenRefreshInterval = timeRemaining / 2;
 
-          // set the timer to refresh the access token
-          if (chrome?.alarms) {
+          try {
             // use chrome alarms if available
             notifyEvent(
               'setting alarm to refresh access token',
@@ -307,7 +306,7 @@ export const WalletProvider: React.FC<
                 }
               },
             );
-          } else {
+          } catch (e) {
             // use react timeout if chrome alarms are not available
             notifyEvent(
               'setting timer to refresh access token',

@@ -163,6 +163,7 @@ const Send: React.FC<Props> = ({
   const [sendConfirmation, setSendConfirmation] = useState(false);
   const [resolvedDomain, setResolvedDomain] = useState('');
   const [gasFeeEstimate, setGasFeeEstimate] = useState('');
+  const [gasFeeError, setGasFeeError] = useState<string>();
   const {classes, cx} = useStyles();
   const amountInputRef = useRef<HTMLInputElement>(null);
 
@@ -242,6 +243,10 @@ const Send: React.FC<Props> = ({
         accessToken,
         transferTx,
       );
+      if (!transferTxGas?.networkFee?.amount) {
+        setGasFeeError(t('wallet.gasPriceError'));
+        return;
+      }
       setGasFeeEstimate(transferTxGas.networkFee?.amount || '0');
     } else if (token.type === TokenType.Spl && token.address) {
       // TODO - potentially update this gas estimation
@@ -253,6 +258,10 @@ const Send: React.FC<Props> = ({
         // Use a small test amount to measure gas
         '0.0001',
       );
+      if (!transferGas?.networkFee?.amount) {
+        setGasFeeError(t('wallet.gasPriceError'));
+        return;
+      }
       setGasFeeEstimate(transferGas.networkFee?.amount || '0');
     } else {
       // retrieve gas for a transfer
@@ -264,6 +273,10 @@ const Send: React.FC<Props> = ({
         // Use a small test amount to measure gas
         '0.0001',
       );
+      if (!transferGas?.networkFee?.amount) {
+        setGasFeeError(t('wallet.gasPriceError'));
+        return;
+      }
       setGasFeeEstimate(transferGas.networkFee?.amount || '0');
     }
   };
@@ -473,8 +486,11 @@ const Send: React.FC<Props> = ({
             gasFeeEstimate={
               selectedToken.symbol === selectedToken.ticker
                 ? gasFeeEstimate
-                : '0'
+                : gasFeeEstimate
+                ? '0'
+                : ''
             }
+            gasFeeError={gasFeeError}
             amountInputRef={amountInputRef}
             token={selectedToken}
             initialAmount={amount}
@@ -482,7 +498,7 @@ const Send: React.FC<Props> = ({
           />
           <Box className={cx(classes.fullWidth, classes.footer)}>
             <Box />
-            <Box display="flex" mt={3}>
+            <Box display="flex" mt={3} mb={1}>
               <Button
                 fullWidth
                 onClick={handleSendConfirmationClick}

@@ -1,6 +1,7 @@
 import SwapVertIcon from '@mui/icons-material/SwapVert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useState} from 'react';
@@ -8,7 +9,7 @@ import React, {useState} from 'react';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {TokenEntry} from '../../lib';
-import { useTranslationContext} from '../../lib';
+import {useTranslationContext} from '../../lib';
 import ManageInput from '../Manage/common/ManageInput';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 
@@ -38,6 +39,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   swapIcon: {
     fontSize: '16px',
   },
+  errorText: {
+    color: theme.palette.error.main,
+  },
 }));
 
 type Props = {
@@ -46,6 +50,7 @@ type Props = {
   token: TokenEntry;
   onTokenAmountChange: (tokenAmount: string) => void;
   gasFeeEstimate: string;
+  gasFeeError?: string;
 };
 
 const AmountInput: React.FC<Props> = ({
@@ -54,11 +59,12 @@ const AmountInput: React.FC<Props> = ({
   token,
   onTokenAmountChange,
   gasFeeEstimate,
+  gasFeeError,
 }) => {
   const [tokenAmount, setTokenAmount] = useState(initialAmount);
   const [fiatAmount, setFiatAmount] = useState('0');
   const [showFiat, setShowFiat] = useState(false);
-  const {classes} = useStyles();
+  const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
 
   const MaxAvailableAmount =
@@ -122,8 +128,12 @@ const AmountInput: React.FC<Props> = ({
           error={insufficientBalance}
           errorText={insufficientBalance ? t('wallet.insufficientBalance') : ''}
           endAdornment={
-            <Button onClick={handleMaxClick} data-testid="max-amount-button">
-              Max
+            <Button
+              disabled={!gasFeeEstimate}
+              onClick={handleMaxClick}
+              data-testid="max-amount-button"
+            >
+              {t('wallet.max')}
             </Button>
           }
         />
@@ -150,18 +160,32 @@ const AmountInput: React.FC<Props> = ({
                 )} ${getBlockchainDisplaySymbol(token.ticker)}`}
             <SwapVertIcon className={classes.swapIcon} />
           </Typography>
-          <Typography variant="subtitle1" className={classes.availableBalance}>
-            {showFiat
-              ? t('wallet.availableUsd', {
-                  amount: (
-                    MaxAvailableAmount * token.tokenConversionUsd
-                  ).toFixed(2),
-                })
-              : t('wallet.availableAmount', {
-                  amount: MaxAvailableAmount.toFixed(5),
-                  symbol: getBlockchainDisplaySymbol(token.ticker),
-                })}
-          </Typography>
+          {gasFeeError ? (
+            <Typography
+              variant="subtitle1"
+              className={cx(classes.availableBalance, classes.errorText)}
+            >
+              {gasFeeError}
+            </Typography>
+          ) : gasFeeEstimate ? (
+            <Typography
+              variant="subtitle1"
+              className={classes.availableBalance}
+            >
+              {showFiat
+                ? t('wallet.availableUsd', {
+                    amount: (
+                      MaxAvailableAmount * token.tokenConversionUsd
+                    ).toFixed(2),
+                  })
+                : t('wallet.availableAmount', {
+                    amount: MaxAvailableAmount.toFixed(5),
+                    symbol: getBlockchainDisplaySymbol(token.ticker),
+                  })}
+            </Typography>
+          ) : (
+            <Skeleton variant="text" width={135} />
+          )}
         </Box>
       )}
     </Box>

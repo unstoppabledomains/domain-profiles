@@ -9,6 +9,7 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
+import Grid from '@mui/material/Grid';
 import Slider from '@mui/material/Slider';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -89,6 +90,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'space-between',
     height: '100%',
     marginTop: theme.spacing(2),
+    overflowY: 'auto',
   },
   flexColCenterAligned: {
     display: 'flex',
@@ -268,6 +270,16 @@ const Swap: React.FC<Props> = ({
       token.type === TokenType.Native,
   );
 
+  // retrieve a reference to the gas token
+  const gasToken = sourceToken
+    ? allTokens?.find(
+        configToken =>
+          configToken.type === TokenType.Native &&
+          configToken.ticker ===
+            getBlockchainGasSymbol(sourceToken.chainSymbol),
+      )
+    : undefined;
+
   // wallet balance
   const allTokensValueUsd = allTokens
     .map(token => token.balance)
@@ -304,28 +316,99 @@ const Swap: React.FC<Props> = ({
     return undefined;
   };
 
-  const getSourceGasFees = (q: SwapQuote) => {
+  // retrieves only fees associated with the source blockchain
+  const getSourceGasFees = (q: SwapQuote, nativeOnly = false) => {
     return q.quote.fees
-      .filter(
-        f =>
-          f.chainSlug === sourceToken?.swing.chain && f.deductedFromSourceToken,
-      )
+      .filter(f => f.type === 'gas')
       .map(f =>
-        sourceTokenAmountMode === 'usd'
+        sourceTokenAmountMode === 'usd' && !nativeOnly
           ? parseFloat(f.amountUSD)
           : parseFloat(f.amount) / Math.pow(10, f.decimals),
       )
       .reduce((a, b) => a + b, 0);
   };
 
+  // retrieves total USD amount for all fees
+  const getTotalFeesUsd = (q: SwapQuote) => {
+    return q.quote.fees
+      .map(f => parseFloat(f.amountUSD))
+      .reduce((a, b) => a + b, 0);
+  };
+
+  const getFeeSummaryTable = (q: SwapQuote) => {
+    const aggregatedFees: Record<string, {amount: number; amountUSD: number}> =
+      {};
+    q.quote.fees.map(f => {
+      const existing = aggregatedFees[f.tokenSymbol];
+      if (existing) {
+        existing.amount += parseFloat(f.amount) / Math.pow(10, f.decimals);
+        existing.amountUSD += parseFloat(f.amountUSD);
+      } else {
+        aggregatedFees[f.tokenSymbol] = {
+          amount: parseFloat(f.amount) / Math.pow(10, f.decimals),
+          amountUSD: parseFloat(f.amountUSD),
+        };
+      }
+    });
+
+    return (
+      <Box mb={1} mt={1} width="100%">
+        <Alert severity="info">
+          <Typography variant="body2" fontWeight="bold" mb={1}>
+            {t('wallet.feeSummary')}
+          </Typography>
+          <Grid container spacing={1}>
+            <Grid item xs={4}>
+              <Typography variant="caption" fontWeight="bold">
+                {t('verifiedWallets.token')}
+              </Typography>
+            </Grid>
+            <Grid item xs={4}>
+              <Typography variant="caption" fontWeight="bold">
+                {t('wallet.amount')}
+              </Typography>
+            </Grid>
+            <Grid item xs={4}>
+              <Typography variant="caption" fontWeight="bold">
+                $ USD
+              </Typography>
+            </Grid>
+            {Object.keys(aggregatedFees).map(tokenSymbol => (
+              <>
+                <Grid item xs={4}>
+                  <Typography variant="caption">{tokenSymbol}</Typography>
+                </Grid>
+                <Grid item xs={4}>
+                  <Typography variant="caption">
+                    {numeral(aggregatedFees[tokenSymbol].amount).format(
+                      NATIVE_DECIMAL_FORMAT,
+                    )}
+                  </Typography>
+                </Grid>
+                <Grid item xs={4}>
+                  <Typography variant="caption">
+                    {aggregatedFees[tokenSymbol].amountUSD.toLocaleString(
+                      'en-US',
+                      {
+                        style: 'currency',
+                        currency: 'USD',
+                      },
+                    )}
+                  </Typography>
+                </Grid>
+              </>
+            ))}
+          </Grid>
+        </Alert>
+      </Box>
+    );
+  };
+
   // sort quotes sorted by fastest execution
   const quotesByLowestTime = cloneDeep(quotes)
     // only show quotes the user can afford
     ?.filter(q =>
-      q && sourceToken && getTokenEntry(sourceToken)
-        ? getTokenEntry(sourceToken)!.value >
-          sourceTokenAmount + getSourceGasFees(q)
-        : false,
+      q && gasToken ? gasToken.balance > getSourceGasFees(q, true) : false,
     )
     // sort by fastest execution time
     .sort((a, b) => {
@@ -419,14 +502,23 @@ const Swap: React.FC<Props> = ({
   // determine if sufficient funds
   const isInsufficientFunds =
     quoteSelected && sourceToken && getTokenEntry(sourceToken)
-      ? sourceTokenAmountMode === 'usd'
-        ? getTokenEntry(sourceToken)!.value <
-          sourceTokenAmount + getSourceGasFees(quoteSelected)
-        : getTokenEntry(sourceToken)!.balance <
-          sourceTokenAmount + getSourceGasFees(quoteSelected)
-      : false;
+      ? sourceToken.swing.type === 'native'
+        ? // handle native funding requirements
+          sourceTokenAmountMode === 'usd'
+          ? getTokenEntry(sourceToken)!.value <
+            sourceTokenAmount + getSourceGasFees(quoteSelected)
+          : getTokenEntry(sourceToken)!.balance <
+            sourceTokenAmount + getSourceGasFees(quoteSelected)
+        : // handle token funding requirements
+          getTokenEntry(sourceToken)!.balance < sourceTokenAmount ||
+          (gasToken?.balance || 0) < getSourceGasFees(quoteSelected, true)
+      : // no quote selected
+        false;
   const isFundingPossible =
-    quoteSelected && sourceToken && getTokenEntry(sourceToken)
+    quoteSelected &&
+    sourceToken &&
+    getTokenEntry(sourceToken) &&
+    sourceToken.swing.type === 'native'
       ? sourceTokenAmountMode === 'usd'
         ? getTokenEntry(sourceToken)!.value > getSourceGasFees(quoteSelected)
         : getTokenEntry(sourceToken)!.balance > getSourceGasFees(quoteSelected)
@@ -780,7 +872,9 @@ const Swap: React.FC<Props> = ({
       (pctSelected / 100);
     setSliderValue(pctSelected);
     setSourceTokenAmountStr(
-      numeral(valueSelected).format(NATIVE_DECIMAL_FORMAT),
+      sourceTokenAmountMode === 'usd'
+        ? numeral(valueSelected).format('0.00')
+        : numeral(valueSelected).format(NATIVE_DECIMAL_FORMAT),
     );
   };
 
@@ -1176,13 +1270,18 @@ const Swap: React.FC<Props> = ({
       return '';
     }
 
-    // calculate fees on the source chain
+    // calculate total fees associated with the quote for display on the
+    // execution button in basic mode
     const fees =
-      sourceTokenAmountMode === 'usd'
-        ? Math.max(sourceTokenAmount - destinationTokenAmount, 0)
-        : getSourceGasFees(q);
+      // prefer to show the delta between requested and resulting amount in USD
+      Math.max(sourceTokenAmount - destinationTokenAmount, 0) ||
+      // fallback to showing a sum of all USD fees
+      getTotalFeesUsd(q);
+
+    // return summarized quote information
     return `${
-      fees > 0
+      // only show fees in the summary for basic mode
+      sourceTokenAmountMode === 'usd' && fees > 0
         ? `${
             sourceTokenAmountMode === 'usd'
               ? fees.toLocaleString('en-US', {
@@ -1461,6 +1560,8 @@ const Swap: React.FC<Props> = ({
                   ? t('swap.tryFasterOption')
                   : t('swap.tryCheaperOption')}
               </Button>
+            ) : sourceTokenAmountMode === 'native' ? (
+              getFeeSummaryTable(quoteSelected)
             ) : null}
             <Button
               fullWidth

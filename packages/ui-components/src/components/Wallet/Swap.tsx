@@ -457,25 +457,6 @@ const Swap: React.FC<Props> = ({
   // currently selected quote
   const quoteSelected = quoteType === 'cheapest' ? quoteCheapest : quoteFastest;
 
-  // determines if the page is in loading state
-  const isLoading = isGettingQuote || isSwapping;
-
-  // determines if button is visible
-  const isButtonHidden =
-    txId ||
-    isTxComplete ||
-    isSwapping ||
-    isGettingQuote ||
-    !!errorMessage ||
-    !sourceToken ||
-    !destinationToken ||
-    !sourceTokenAmount ||
-    !quoteSelected;
-
-  // determines if the switch currency button is visible
-  const isSwitchCurrencyButtonVisible =
-    !isLoading && !errorMessage && !txId && !isTxComplete;
-
   const isCheapestQuote = (q: SwapQuote) => {
     if (!quotesByLowestFee || quotesByLowestFee.length === 0) {
       return false;
@@ -514,15 +495,30 @@ const Swap: React.FC<Props> = ({
           (gasToken?.balance || 0) < getSourceGasFees(quoteSelected, true)
       : // no quote selected
         false;
-  const isFundingPossible =
-    quoteSelected &&
-    sourceToken &&
-    getTokenEntry(sourceToken) &&
-    sourceToken.swing.type === 'native'
-      ? sourceTokenAmountMode === 'usd'
-        ? getTokenEntry(sourceToken)!.value > getSourceGasFees(quoteSelected)
-        : getTokenEntry(sourceToken)!.balance > getSourceGasFees(quoteSelected)
-      : false;
+
+  // determines if button is visible
+  const isButtonHidden =
+    txId ||
+    isTxComplete ||
+    isSwapping ||
+    isGettingQuote ||
+    !!errorMessage ||
+    !sourceToken ||
+    !destinationToken ||
+    !sourceTokenAmount ||
+    !quoteSelected ||
+    isInsufficientFunds;
+
+  // determines if the page is in loading state
+  const isLoading = isGettingQuote || isSwapping;
+
+  // determines if the switch currency button is visible
+  const isSwitchModeButtonVisible =
+    !isLoading &&
+    !errorMessage &&
+    !txId &&
+    !isTxComplete &&
+    !isInsufficientFunds;
 
   // list of swap pairs found on DEX
   const allDexTokenConfigs: SwapConfig[] = allSwapTokens.map(token => {
@@ -615,10 +611,10 @@ const Swap: React.FC<Props> = ({
         disabledReason:
           configToken.disabledReason ||
           (!walletToken.value
-            ? t('wallet.insufficientBalance')
+            ? t('swap.insufficientBalance', {symbol: ''})
             : walletToken.value < config.WALLETS.SWAP.MIN_BALANCE_USD
             ? configToken.swing.type === 'native'
-              ? t('wallet.insufficientBalance')
+              ? t('swap.insufficientBalance', {symbol: ''})
               : undefined
             : undefined),
       };
@@ -950,33 +946,6 @@ const Swap: React.FC<Props> = ({
       return;
     } catch (e) {}
     handleResetState({sourceAmtUsd: true});
-  };
-
-  const handleUseMax = async () => {
-    if (!quoteSelected || !sourceToken) {
-      return;
-    }
-    const tokenEntry = getTokenEntry(sourceToken);
-    if (!tokenEntry) {
-      return;
-    }
-
-    // determine available source token amount and associated source
-    // token required fees
-    const sourceAvailableAmt =
-      sourceTokenAmountMode === 'usd' ? tokenEntry.value : tokenEntry.balance;
-    const sourceFees = getSourceGasFees(quoteSelected);
-
-    // set the source token amount to the max available amount accounting
-    // for the required fees
-    await handleAmountChanged(
-      'source-token-amount',
-      sourceTokenAmountMode === 'usd'
-        ? String(Math.floor(sourceAvailableAmt - sourceFees))
-        : numeral(sourceAvailableAmt - sourceFees).format(
-            NATIVE_DECIMAL_FORMAT,
-          ),
-    );
   };
 
   const handleGetQuote = async () => {
@@ -1519,6 +1488,20 @@ const Swap: React.FC<Props> = ({
             </Alert>
           </Box>
         )}
+        {isInsufficientFunds && (
+          <Box width="100%" mb={1}>
+            <Alert severity="warning">
+              {t('swap.insufficientBalance', {
+                symbol:
+                  sourceToken?.swing.type === 'native'
+                    ? sourceToken.tokenSymbol
+                    : `${getBlockchainDisplaySymbol(
+                        getBlockchainGasSymbol(sourceToken?.chainSymbol || ''),
+                      )} or ${sourceToken?.swing.symbol}`,
+              })}
+            </Alert>
+          </Box>
+        )}
         {isSwapping &&
           !txId &&
           sourceToken &&
@@ -1537,19 +1520,7 @@ const Swap: React.FC<Props> = ({
           )}
         {!isButtonHidden && quoteSelected ? (
           <Box className={classes.content}>
-            {isInsufficientFunds ? (
-              <Button
-                fullWidth
-                size="small"
-                variant="text"
-                onClick={handleUseMax}
-                disabled={!isFundingPossible}
-              >
-                {isFundingPossible
-                  ? t('swap.useMax')
-                  : t('wallet.insufficientBalance')}
-              </Button>
-            ) : isMultipleQuotes() ? (
+            {isMultipleQuotes() ? (
               <Button
                 fullWidth
                 size="small"
@@ -1568,7 +1539,6 @@ const Swap: React.FC<Props> = ({
               variant="contained"
               onClick={handleSubmitTransaction}
               className={classes.button}
-              disabled={isInsufficientFunds}
             >
               <Box display="flex" flexDirection="column" alignItems="center">
                 <Typography variant="body1" fontWeight="bold">
@@ -1604,7 +1574,7 @@ const Swap: React.FC<Props> = ({
             </Button>
           </Box>
         ) : (
-          isSwitchCurrencyButtonVisible && (
+          isSwitchModeButtonVisible && (
             <Box className={classes.content} mb={1}>
               <Button
                 fullWidth

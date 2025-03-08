@@ -888,10 +888,12 @@
     "swap": "Swap",
     "swapNotAvailable": "Swap is not available in your region",
     "swapping": "Swapping your {{source}} \u2192 {{destination}}. The estimated processing time is about {{minutes}} minute{{s}}. Leave this window open until complete.",
+    "switchToNative": "Switch to advanced mode",
+    "switchToUsd": "Switch to basic mode",
     "title": "Swap",
     "tryCheaperOption": "Try cheaper option",
     "tryFasterOption": "Try faster option",
-    "useMax": "Adjust for fees"
+    "useMax": "Use max available"
   },
   "tokensPortfolio": {
     "all": "All",

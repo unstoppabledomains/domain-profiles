@@ -357,7 +357,7 @@ const Swap: React.FC<Props> = ({
           <Typography variant="body2" fontWeight="bold" mb={1}>
             {t('wallet.feeSummary')}
           </Typography>
-          <Grid container spacing={1}>
+          <Grid container spacing={0.5}>
             <Grid item xs={4}>
               <Typography variant="caption" fontWeight="bold">
                 {t('verifiedWallets.token')}
@@ -480,8 +480,14 @@ const Swap: React.FC<Props> = ({
     );
   };
 
-  // determine if sufficient funds
-  const isInsufficientFunds =
+  // determine if there are sufficient gas funds
+  const isInsufficientGasFunds =
+    quoteSelected && sourceToken && sourceToken.swing.type !== 'native'
+      ? (gasToken?.balance || 0) < getSourceGasFees(quoteSelected, true)
+      : false;
+
+  // determine if there are sufficient token funds
+  const isInsufficientTokenFunds =
     quoteSelected && sourceToken && getTokenEntry(sourceToken)
       ? sourceToken.swing.type === 'native'
         ? // handle native funding requirements
@@ -491,10 +497,13 @@ const Swap: React.FC<Props> = ({
           : getTokenEntry(sourceToken)!.balance <
             sourceTokenAmount + getSourceGasFees(quoteSelected)
         : // handle token funding requirements
-          getTokenEntry(sourceToken)!.balance < sourceTokenAmount ||
-          (gasToken?.balance || 0) < getSourceGasFees(quoteSelected, true)
+          getTokenEntry(sourceToken)!.balance < sourceTokenAmount
       : // no quote selected
         false;
+
+  // determine if sufficient overall funds
+  const isInsufficientFunds =
+    isInsufficientGasFunds || isInsufficientTokenFunds;
 
   // determines if button is visible
   const isButtonHidden =
@@ -611,10 +620,10 @@ const Swap: React.FC<Props> = ({
         disabledReason:
           configToken.disabledReason ||
           (!walletToken.value
-            ? t('swap.insufficientBalance', {symbol: ''})
+            ? t('wallet.insufficientBalance')
             : walletToken.value < config.WALLETS.SWAP.MIN_BALANCE_USD
             ? configToken.swing.type === 'native'
-              ? t('swap.insufficientBalance', {symbol: ''})
+              ? t('wallet.insufficientBalance')
               : undefined
             : undefined),
       };
@@ -998,8 +1007,10 @@ const Swap: React.FC<Props> = ({
       if (!quotesResponse) {
         setErrorMessage(
           t('swap.noQuoteAvailable', {
-            source: sourceToken.tokenSymbol,
-            destination: destinationToken.tokenSymbol,
+            source: getBlockchainDisplaySymbol(sourceToken.tokenSymbol),
+            destination: getBlockchainDisplaySymbol(
+              destinationToken.tokenSymbol,
+            ),
           }),
         );
         return;
@@ -1482,23 +1493,36 @@ const Swap: React.FC<Props> = ({
           <Box mb={1}>
             <Alert severity="info">
               {t('swap.gettingQuote', {
-                source: sourceToken.tokenSymbol,
-                destination: destinationToken.tokenSymbol,
+                source: getBlockchainDisplaySymbol(sourceToken.tokenSymbol),
+                destination: getBlockchainDisplaySymbol(
+                  destinationToken.tokenSymbol,
+                ),
               })}
             </Alert>
           </Box>
         )}
-        {isInsufficientFunds && (
+        {isInsufficientFunds && sourceToken && (
           <Box width="100%" mb={1}>
             <Alert severity="warning">
-              {t('swap.insufficientBalance', {
-                symbol:
-                  sourceToken?.swing.type === 'native'
-                    ? sourceToken.tokenSymbol
-                    : `${getBlockchainDisplaySymbol(
-                        getBlockchainGasSymbol(sourceToken?.chainSymbol || ''),
-                      )} or ${sourceToken?.swing.symbol}`,
-              })}
+              {isInsufficientTokenFunds
+                ? t(
+                    sourceToken.swing.type === 'native'
+                      ? 'swap.insufficientNativeBalance'
+                      : 'swap.insufficientTokenBalance',
+                    {
+                      tokenSymbol: getBlockchainDisplaySymbol(
+                        sourceToken.tokenSymbol,
+                      ),
+                    },
+                  )
+                : t('swap.insufficientGasBalance', {
+                    tokenSymbol: getBlockchainDisplaySymbol(
+                      sourceToken.tokenSymbol,
+                    ),
+                    gasSymbol: getBlockchainDisplaySymbol(
+                      getBlockchainGasSymbol(sourceToken.chainSymbol),
+                    ),
+                  })}
             </Alert>
           </Box>
         )}
@@ -1510,8 +1534,10 @@ const Swap: React.FC<Props> = ({
             <Box mb={1}>
               <Alert severity="info">
                 {t('swap.swapping', {
-                  source: sourceToken.tokenSymbol,
-                  destination: destinationToken.tokenSymbol,
+                  source: getBlockchainDisplaySymbol(sourceToken.tokenSymbol),
+                  destination: getBlockchainDisplaySymbol(
+                    destinationToken.tokenSymbol,
+                  ),
                   minutes: quoteSelected.duration,
                   s: quoteSelected.duration > 1 ? 's' : '',
                 })}
@@ -1520,7 +1546,9 @@ const Swap: React.FC<Props> = ({
           )}
         {!isButtonHidden && quoteSelected ? (
           <Box className={classes.content}>
-            {isMultipleQuotes() ? (
+            {sourceTokenAmountMode === 'native' &&
+              getFeeSummaryTable(quoteSelected)}
+            {isMultipleQuotes() && (
               <Button
                 fullWidth
                 size="small"
@@ -1531,9 +1559,7 @@ const Swap: React.FC<Props> = ({
                   ? t('swap.tryFasterOption')
                   : t('swap.tryCheaperOption')}
               </Button>
-            ) : sourceTokenAmountMode === 'native' ? (
-              getFeeSummaryTable(quoteSelected)
-            ) : null}
+            )}
             <Button
               fullWidth
               variant="contained"

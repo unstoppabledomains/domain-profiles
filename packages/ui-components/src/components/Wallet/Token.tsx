@@ -16,6 +16,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import type {CurrenciesType, TokenEntry} from '../../lib';
 import {TokenType} from '../../lib';
+import type {SwapMode} from '../../lib/types/swap';
 import {CryptoIcon} from '../Image';
 import {getBlockchainDisplaySymbol} from '../Manage/common/verification/types';
 
@@ -94,6 +95,7 @@ type Props = {
   descriptionWidth?: number;
   compact?: boolean;
   useVisibilitySensor?: boolean;
+  mode?: SwapMode;
 };
 
 const Token: React.FC<Props> = ({
@@ -107,6 +109,7 @@ const Token: React.FC<Props> = ({
   balanceWidth,
   compact,
   useVisibilitySensor = false,
+  mode = 'usd',
 }) => {
   const {classes, cx} = useStyles();
   const theme = useTheme();
@@ -179,8 +182,10 @@ const Token: React.FC<Props> = ({
                   : token.name}
               </Typography>
               <Typography variant="caption" className={classes.txSubTitle}>
-                {compact && numeral(token.value).format('($0.00a)')}
-                {!hideBalance &&
+                {compact &&
+                  mode === 'usd' &&
+                  numeral(token.value).format('($0.00a)')}
+                {(!hideBalance || mode === 'native') &&
                   numeral(token.balance).format('0.[000000]')}{' '}
                 {compact
                   ? ''

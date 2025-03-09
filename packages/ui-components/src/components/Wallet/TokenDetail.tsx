@@ -133,7 +133,9 @@ const TokenDetail: React.FC<Props> = ({
         />
         <Box className={classes.contentContainer}>
           <Typography variant="h3" mt={3}>
-            {spotPrice > 1
+            {isNaN(spotPrice) || spotPrice < 0.000001
+              ? '$0.00'
+              : spotPrice > 1
               ? spotPrice.toLocaleString('en-US', {
                   style: 'currency',
                   currency: 'USD',

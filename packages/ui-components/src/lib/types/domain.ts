@@ -95,6 +95,7 @@ export enum DomainProfileKeys {
   LockStatus = 'lockStatus',
   WalletBalances = 'wallet-balances',
   WalletTransactions = 'wallet-transactions',
+  WalletSwapMode = 'wallet-swap-mode',
   BannerHealthCheck = 'banner-health-check',
   BannerSwapIntro = 'banner-swap-intro',
   Banner = 'banner',

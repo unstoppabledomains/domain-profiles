@@ -1110,6 +1110,7 @@
     "txLockTimeTip": "You won't be able to unlock your wallet or send crypto before your chosen date. Please choose carefully.",
     "unlock": "Unlock",
     "verifyEmail": "Verify email address",
+    "viewToken": "View {{symbol}} details",
     "viewTransaction": "View on blockchain",
     "yourWalletIsSecure": "Security health check is complete"
   },

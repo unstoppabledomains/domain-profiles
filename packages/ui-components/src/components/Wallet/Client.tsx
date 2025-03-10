@@ -607,6 +607,11 @@ export const Client: React.FC<ClientProps> = ({
     setSelectedToken(token);
   };
 
+  const handleViewSwapToken = (token: TokenEntry) => {
+    setSelectedToken(token);
+    setIsSwap(false);
+  };
+
   const handleClickedSend = () => {
     if (!accessToken) {
       if (!cryptoValue) {
@@ -700,6 +705,7 @@ export const Client: React.FC<ClientProps> = ({
               onCancelClick={handleCancelAction}
               onClickBuy={handleClickedBuy}
               onClickReceive={handleClickedReceive}
+              onViewTokenClick={handleViewSwapToken}
               wallets={wallets}
               initialSelectedToken={selectedToken}
             />

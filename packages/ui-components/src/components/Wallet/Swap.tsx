@@ -200,6 +200,7 @@ type Props = {
   onCancelClick: () => void;
   onClickReceive?: () => void;
   onClickBuy?: () => void;
+  onViewTokenClick?: (token: TokenEntry) => void;
   accessToken: string;
   wallets: SerializedWalletBalance[];
   initialSelectedToken?: TokenEntry;
@@ -209,6 +210,7 @@ const Swap: React.FC<Props> = ({
   onCancelClick,
   onClickBuy,
   onClickReceive,
+  onViewTokenClick,
   accessToken,
   wallets,
   initialSelectedToken,
@@ -849,6 +851,15 @@ const Swap: React.FC<Props> = ({
     );
   };
 
+  const handleViewTokenClick = () => {
+    if (onViewTokenClick && destinationToken) {
+      const tokenEntry = getTokenEntry(destinationToken);
+      if (tokenEntry) {
+        onViewTokenClick(tokenEntry);
+      }
+    }
+  };
+
   const handleResetState = (opts?: {sourceAmtUsd?: boolean}) => {
     // default items to clear
     setIsTxComplete(false);
@@ -1473,7 +1484,7 @@ const Swap: React.FC<Props> = ({
           </Box>
         )}
         {txId && !errorMessage && (
-          <Box>
+          <Box className={classes.content}>
             <Button
               fullWidth
               variant="outlined"
@@ -1482,6 +1493,20 @@ const Swap: React.FC<Props> = ({
             >
               {t('wallet.viewTransaction')}
             </Button>
+            {destinationToken && onViewTokenClick && (
+              <Button
+                fullWidth
+                variant="contained"
+                className={classes.button}
+                onClick={handleViewTokenClick}
+              >
+                {t('wallet.viewToken', {
+                  symbol: getBlockchainDisplaySymbol(
+                    destinationToken.tokenSymbol,
+                  ),
+                })}
+              </Button>
+            )}
           </Box>
         )}
         {errorMessage && (

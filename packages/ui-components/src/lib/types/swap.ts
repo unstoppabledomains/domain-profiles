@@ -12,7 +12,6 @@ export interface Fee {
   decimals: number;
   deductedFromSourceToken: boolean;
 }
-
 export interface Quote {
   integration: string;
   type: string;
@@ -45,6 +44,8 @@ export type SwapConfigToken = SwapConfig & {
   walletAddress: string;
 };
 
+export type SwapMode = 'usd' | 'native';
+
 export type SwapPlannedTransaction = {
   id?: string;
   type: 'approval' | 'execution';
@@ -62,7 +63,8 @@ export interface SwapQuote {
 export interface SwapQuoteRequest {
   fromChain: string;
   fromToken: string;
-  fromTokenAmountUsd: string;
+  fromTokenAmount?: string;
+  fromTokenAmountUsd?: string;
   toChain: string;
   toToken: string;
   toWalletAddress: string;

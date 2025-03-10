@@ -1,5 +1,5 @@
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import ImportExportIcon from '@mui/icons-material/ImportExport';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 // eslint-disable-next-line no-restricted-imports
@@ -9,6 +9,7 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
+import Grid from '@mui/material/Grid';
 import Slider from '@mui/material/Slider';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -51,6 +52,7 @@ import {
 import type {GetOperationResponse} from '../../lib/types/fireBlocks';
 import type {
   SwapConfigToken,
+  SwapMode,
   SwapQuote,
   SwapQuoteRequest,
   SwapToken as SwingSwapToken,
@@ -79,6 +81,8 @@ import SwapTokenModal from './SwapTokenModal';
 import {TitleWithBackButton} from './TitleWithBackButton';
 import Token from './Token';
 
+const NATIVE_DECIMAL_FORMAT = '0.[000000]';
+
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
@@ -86,6 +90,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'space-between',
     height: '100%',
     marginTop: theme.spacing(2),
+    overflowY: 'auto',
   },
   flexColCenterAligned: {
     display: 'flex',
@@ -195,6 +200,7 @@ type Props = {
   onCancelClick: () => void;
   onClickReceive?: () => void;
   onClickBuy?: () => void;
+  onViewTokenClick?: (token: TokenEntry) => void;
   accessToken: string;
   wallets: SerializedWalletBalance[];
   initialSelectedToken?: TokenEntry;
@@ -204,6 +210,7 @@ const Swap: React.FC<Props> = ({
   onCancelClick,
   onClickBuy,
   onClickReceive,
+  onViewTokenClick,
   accessToken,
   wallets,
   initialSelectedToken,
@@ -229,13 +236,18 @@ const Swap: React.FC<Props> = ({
   // swap pair state
   const [allSwapTokens, setAllSwapTokens] = useState<SwingSwapToken[]>([]);
   const [sliderValue, setSliderValue] = useState(0);
-  const [sourceTokenAmountUsd, setSourceTokenAmountUsd] = useState(0);
-  const sourceTokenAmountUsdDebounced = useDebounce<number>(
-    sourceTokenAmountUsd,
-    750,
+  const [sourceTokenAmountMode, setSourceTokenAmountMode] =
+    useState<SwapMode>('usd');
+  const [sourceTokenAmountStr, setSourceTokenAmountStr] = useState<string>();
+  const sourceTokenAmount = parseFloat(sourceTokenAmountStr || '0');
+  const sourceTokenAmountDebounced = useDebounce<number>(
+    sourceTokenAmount,
+    1250, // 1.25 seconds debounce
   );
   const [sourceToken, setSourceToken] = useState<SwapConfigToken>();
-  const [destinationTokenAmountUsd, setDestinationTokenAmountUsd] = useState(0);
+  const [destinationTokenAmountStr, setDestinationTokenAmountStr] =
+    useState<string>();
+  const destinationTokenAmount = parseFloat(destinationTokenAmountStr || '0');
   const [destinationToken, setDestinationToken] = useState<SwapConfigToken>();
   const [showSlider, setShowSlider] = useState(false);
 
@@ -259,6 +271,16 @@ const Swap: React.FC<Props> = ({
       token.type === TokenType.Spl ||
       token.type === TokenType.Native,
   );
+
+  // retrieve a reference to the gas token
+  const gasToken = sourceToken
+    ? allTokens?.find(
+        configToken =>
+          configToken.type === TokenType.Native &&
+          configToken.ticker ===
+            getBlockchainGasSymbol(sourceToken.chainSymbol),
+      )
+    : undefined;
 
   // wallet balance
   const allTokensValueUsd = allTokens
@@ -296,21 +318,107 @@ const Swap: React.FC<Props> = ({
     return undefined;
   };
 
-  const getSourceGasFees = (q: SwapQuote) => {
+  // retrieves only fees associated with the source blockchain
+  const getSourceGasFees = (q: SwapQuote, nativeOnly = false) => {
+    if (!q?.quote?.fees) {
+      return 0;
+    }
+
     return q.quote.fees
-      .filter(f => f.chainSlug === sourceToken?.swing.chain)
+      .filter(f => f.type === 'gas')
+      .map(f =>
+        sourceTokenAmountMode === 'usd' && !nativeOnly
+          ? parseFloat(f.amountUSD)
+          : parseFloat(f.amount) / Math.pow(10, f.decimals),
+      )
+      .reduce((a, b) => a + b, 0);
+  };
+
+  // retrieves total USD amount for all fees
+  const getTotalFeesUsd = (q: SwapQuote) => {
+    if (!q?.quote?.fees) {
+      return 0;
+    }
+
+    return q.quote.fees
       .map(f => parseFloat(f.amountUSD))
       .reduce((a, b) => a + b, 0);
+  };
+
+  const getFeeSummaryTable = (q: SwapQuote) => {
+    const aggregatedFees: Record<string, {amount: number; amountUSD: number}> =
+      {};
+    q.quote.fees?.map(f => {
+      const existing = aggregatedFees[f.tokenSymbol];
+      if (existing) {
+        existing.amount += parseFloat(f.amount) / Math.pow(10, f.decimals);
+        existing.amountUSD += parseFloat(f.amountUSD);
+      } else {
+        aggregatedFees[f.tokenSymbol] = {
+          amount: parseFloat(f.amount) / Math.pow(10, f.decimals),
+          amountUSD: parseFloat(f.amountUSD),
+        };
+      }
+    });
+
+    return (
+      <Box mb={1} mt={1} width="100%">
+        <Alert severity="info" data-testid="fee-summary-table">
+          <Typography variant="body2" fontWeight="bold" mb={1}>
+            {t('wallet.feeSummary')}
+          </Typography>
+          <Grid container spacing={0.5}>
+            <Grid item xs={4}>
+              <Typography variant="caption" fontWeight="bold">
+                {t('verifiedWallets.token')}
+              </Typography>
+            </Grid>
+            <Grid item xs={4}>
+              <Typography variant="caption" fontWeight="bold">
+                {t('wallet.amount')}
+              </Typography>
+            </Grid>
+            <Grid item xs={4}>
+              <Typography variant="caption" fontWeight="bold">
+                $ USD
+              </Typography>
+            </Grid>
+            {Object.keys(aggregatedFees).map(tokenSymbol => (
+              <>
+                <Grid item xs={4}>
+                  <Typography variant="caption">{tokenSymbol}</Typography>
+                </Grid>
+                <Grid item xs={4}>
+                  <Typography variant="caption">
+                    {numeral(aggregatedFees[tokenSymbol].amount).format(
+                      NATIVE_DECIMAL_FORMAT,
+                    )}
+                  </Typography>
+                </Grid>
+                <Grid item xs={4}>
+                  <Typography variant="caption">
+                    {aggregatedFees[tokenSymbol].amountUSD.toLocaleString(
+                      'en-US',
+                      {
+                        style: 'currency',
+                        currency: 'USD',
+                      },
+                    )}
+                  </Typography>
+                </Grid>
+              </>
+            ))}
+          </Grid>
+        </Alert>
+      </Box>
+    );
   };
 
   // sort quotes sorted by fastest execution
   const quotesByLowestTime = cloneDeep(quotes)
     // only show quotes the user can afford
     ?.filter(q =>
-      q && sourceToken && getTokenEntry(sourceToken)
-        ? getTokenEntry(sourceToken)!.value >
-          sourceTokenAmountUsd + getSourceGasFees(q)
-        : false,
+      q && gasToken ? gasToken.balance > getSourceGasFees(q, true) : false,
     )
     // sort by fastest execution time
     .sort((a, b) => {
@@ -359,21 +467,6 @@ const Swap: React.FC<Props> = ({
   // currently selected quote
   const quoteSelected = quoteType === 'cheapest' ? quoteCheapest : quoteFastest;
 
-  // determines if button is visible
-  const isButtonHidden =
-    txId ||
-    isTxComplete ||
-    isSwapping ||
-    isGettingQuote ||
-    !!errorMessage ||
-    !sourceToken ||
-    !destinationToken ||
-    !sourceTokenAmountUsd ||
-    !quoteSelected;
-
-  // determines if the page is in loading state
-  const isLoading = isGettingQuote || isSwapping;
-
   const isCheapestQuote = (q: SwapQuote) => {
     if (!quotesByLowestFee || quotesByLowestFee.length === 0) {
       return false;
@@ -397,16 +490,55 @@ const Swap: React.FC<Props> = ({
     );
   };
 
-  // determine if sufficient funds
+  // determine if there are sufficient gas funds
+  const isInsufficientGasFunds =
+    quoteSelected && sourceToken && sourceToken.swing.type !== 'native'
+      ? (gasToken?.balance || 0) < getSourceGasFees(quoteSelected, true)
+      : false;
+
+  // determine if there are sufficient token funds
+  const isInsufficientTokenFunds =
+    quoteSelected && sourceToken && getTokenEntry(sourceToken)
+      ? sourceToken.swing.type === 'native'
+        ? // handle native funding requirements
+          sourceTokenAmountMode === 'usd'
+          ? getTokenEntry(sourceToken)!.value <
+            sourceTokenAmount + getSourceGasFees(quoteSelected)
+          : getTokenEntry(sourceToken)!.balance <
+            sourceTokenAmount + getSourceGasFees(quoteSelected)
+        : // handle token funding requirements
+          getTokenEntry(sourceToken)!.balance < sourceTokenAmount
+      : // no quote selected
+        false;
+
+  // determine if sufficient overall funds
   const isInsufficientFunds =
-    quoteSelected && sourceToken && getTokenEntry(sourceToken)
-      ? getTokenEntry(sourceToken)!.value <
-        sourceTokenAmountUsd + getSourceGasFees(quoteSelected)
-      : false;
-  const isFundingPossible =
-    quoteSelected && sourceToken && getTokenEntry(sourceToken)
-      ? getTokenEntry(sourceToken)!.value > getSourceGasFees(quoteSelected)
-      : false;
+    isInsufficientGasFunds || isInsufficientTokenFunds;
+
+  // determines if button is visible
+  const isButtonHidden =
+    txId ||
+    isTxComplete ||
+    isSwapping ||
+    isGettingQuote ||
+    !!errorMessage ||
+    !sourceToken ||
+    !destinationToken ||
+    !sourceTokenAmount ||
+    !quoteSelected ||
+    isInsufficientFunds;
+
+  // determines if the page is in loading state
+  const isLoading = isGettingQuote || isSwapping;
+
+  // determines if the switch currency button is visible
+  const isSwitchModeButtonVisible =
+    !isLoading &&
+    !errorMessage &&
+    !txId &&
+    !isTxComplete &&
+    !isInsufficientFunds &&
+    !showSwapIntro;
 
   // list of swap pairs found on DEX
   const allDexTokenConfigs: SwapConfig[] = allSwapTokens.map(token => {
@@ -426,6 +558,7 @@ const Swap: React.FC<Props> = ({
           : undefined,
         symbol: token.address,
         type: isNative ? 'native' : token.chain === 'solana' ? 'spl' : 'erc20',
+        priceUsd: token.priceUsd,
       },
       liquidityUsd: token.liquidityUsd,
       chainName: token.chain,
@@ -497,9 +630,12 @@ const Swap: React.FC<Props> = ({
         value: walletToken.value,
         disabledReason:
           configToken.disabledReason ||
-          (!walletToken.value ||
-          walletToken.value < config.WALLETS.SWAP.MIN_BALANCE_USD
+          (!walletToken.value
             ? t('wallet.insufficientBalance')
+            : walletToken.value < config.WALLETS.SWAP.MIN_BALANCE_USD
+            ? configToken.swing.type === 'native'
+              ? t('wallet.insufficientBalance')
+              : undefined
             : undefined),
       };
     })
@@ -561,6 +697,14 @@ const Swap: React.FC<Props> = ({
       DomainProfileKeys.BannerSwapIntro,
     );
     setShowSwapIntro(swapIntroState === null);
+
+    // determine swap mode
+    const swapMode = await localStorageWrapper.getItem(
+      DomainProfileKeys.WalletSwapMode,
+    );
+    if (swapMode) {
+      setSourceTokenAmountMode(swapMode as SwapMode);
+    }
 
     // load all available tokens
     setIsTokensLoading(true);
@@ -634,7 +778,7 @@ const Swap: React.FC<Props> = ({
 
   // retrieve quote when a swap pair is selected
   useEffect(() => {
-    if (!sourceTokenAmountUsdDebounced || !sourceToken || !destinationToken) {
+    if (!sourceTokenAmountDebounced || !sourceToken || !destinationToken) {
       return;
     }
 
@@ -642,7 +786,7 @@ const Swap: React.FC<Props> = ({
     const tokenEntry = getTokenEntry(sourceToken);
     if (tokenEntry) {
       const pctValue = Math.floor(
-        100 * (sourceTokenAmountUsdDebounced / tokenEntry.value),
+        100 * (sourceTokenAmountDebounced / tokenEntry.value),
       );
       if (sliderValue !== pctValue) {
         setSliderValue(pctValue);
@@ -651,10 +795,19 @@ const Swap: React.FC<Props> = ({
 
     // get the quote
     void handleGetQuote();
-  }, [sourceTokenAmountUsdDebounced, sourceToken, destinationToken]);
+  }, [sourceTokenAmountDebounced, sourceToken, destinationToken]);
 
   const handleToggleSlider = (show: boolean) => {
     setShowSlider(show);
+  };
+
+  const handleToggleMode = async () => {
+    const newMode = sourceTokenAmountMode === 'usd' ? 'native' : 'usd';
+    setSourceTokenAmountMode(newMode);
+    await localStorageWrapper.setItem(
+      DomainProfileKeys.WalletSwapMode,
+      newMode,
+    );
   };
 
   const handleSwapInfoClicked = async () => {
@@ -671,19 +824,15 @@ const Swap: React.FC<Props> = ({
     }
     if (isCheapestQuote(quoteSelected)) {
       setQuoteType('fastest');
-      const v = parseFloat(
-        numeral(quoteFastest?.quote.amountUSD || '0').format('0.00'),
-      );
+      const v = numeral(quoteFastest?.quote.amountUSD || '0').format('0.00');
       if (v) {
-        setDestinationTokenAmountUsd(v);
+        setDestinationTokenAmountStr(v);
       }
     } else {
       setQuoteType('cheapest');
-      const v = parseFloat(
-        numeral(quoteCheapest?.quote.amountUSD || '0').format('0.00'),
-      );
+      const v = numeral(quoteCheapest?.quote.amountUSD || '0').format('0.00');
       if (v) {
-        setDestinationTokenAmountUsd(v);
+        setDestinationTokenAmountStr(v);
       }
     }
   };
@@ -702,19 +851,28 @@ const Swap: React.FC<Props> = ({
     );
   };
 
+  const handleViewTokenClick = () => {
+    if (onViewTokenClick && destinationToken) {
+      const tokenEntry = getTokenEntry(destinationToken);
+      if (tokenEntry) {
+        onViewTokenClick(tokenEntry);
+      }
+    }
+  };
+
   const handleResetState = (opts?: {sourceAmtUsd?: boolean}) => {
     // default items to clear
     setIsTxComplete(false);
     setTxId(undefined);
     setQuotes(undefined);
     setErrorMessage(undefined);
-    setDestinationTokenAmountUsd(0);
+    setDestinationTokenAmountStr(undefined);
     setShowSuccessAnimation(false);
 
     // optional items to clear
     if (opts?.sourceAmtUsd) {
       setSliderValue(0);
-      setSourceTokenAmountUsd(0);
+      setSourceTokenAmountStr(undefined);
     }
   };
 
@@ -732,9 +890,17 @@ const Swap: React.FC<Props> = ({
 
     // set the form elements
     const pctSelected = v as number;
-    const valueSelected = tokenEntry.value * (pctSelected / 100);
+    const valueSelected =
+      (sourceTokenAmountMode === 'usd'
+        ? tokenEntry.value
+        : tokenEntry.balance) *
+      (pctSelected / 100);
     setSliderValue(pctSelected);
-    setSourceTokenAmountUsd(parseFloat(numeral(valueSelected).format('0.')));
+    setSourceTokenAmountStr(
+      sourceTokenAmountMode === 'usd'
+        ? numeral(valueSelected).format('0.00')
+        : numeral(valueSelected).format(NATIVE_DECIMAL_FORMAT),
+    );
   };
 
   const handleTokenClicked = (mode: SwapTokenModalMode) => {
@@ -769,29 +935,46 @@ const Swap: React.FC<Props> = ({
       setQuoteType('cheapest');
 
       // parse provided text
-      const parsedValue = parseFloat(v.replaceAll('$', ''));
+      const parsedValue = v.replaceAll('$', '');
       if (parsedValue) {
-        setSourceTokenAmountUsd(parsedValue);
-        setDestinationTokenAmountUsd(parsedValue);
-        return;
+        // set the source token amount
+        if (id === 'source-token-amount') {
+          setSourceTokenAmountStr(parsedValue);
+          return;
+        }
+
+        // set the destination token amount and derive the source token amount
+        setDestinationTokenAmountStr(parsedValue);
+        if (sourceTokenAmountMode === 'usd') {
+          // set the source amount to the USD value
+          setDestinationTokenAmountStr(parsedValue);
+          setSourceTokenAmountStr(parsedValue);
+        } else if (sourceToken?.value && sourceToken?.balance) {
+          // source token spot price
+          const sourceTokenSpotPrice = sourceToken.value / sourceToken.balance;
+
+          // destination token spot price
+          const destinationTokenSpotPrice =
+            destinationToken?.value && destinationToken.balance
+              ? destinationToken.value / destinationToken.balance
+              : destinationToken?.swing.priceUsd
+              ? destinationToken.swing.priceUsd
+              : 0;
+
+          // derive the expected source token amount in native currency
+          const derivedSourceAmount =
+            (parseFloat(parsedValue) * destinationTokenSpotPrice) /
+            sourceTokenSpotPrice;
+
+          // set the derived source token amount
+          setSourceTokenAmountStr(
+            numeral(derivedSourceAmount).format(NATIVE_DECIMAL_FORMAT),
+          );
+        }
       }
+      return;
     } catch (e) {}
     handleResetState({sourceAmtUsd: true});
-  };
-
-  const handleUseMax = async () => {
-    if (!quoteSelected || !sourceToken) {
-      return;
-    }
-    const tokenEntry = getTokenEntry(sourceToken);
-    if (!tokenEntry) {
-      return;
-    }
-
-    const sourceAvailableValue = tokenEntry.value;
-    const sourceFees = getSourceGasFees(quoteSelected);
-    const maxAvailable = Math.floor(sourceAvailableValue - sourceFees);
-    await handleAmountChanged('', String(maxAvailable));
   };
 
   const handleGetQuote = async () => {
@@ -813,8 +996,22 @@ const Swap: React.FC<Props> = ({
         // information about source token
         fromChain: sourceToken.swing.chain,
         fromToken: sourceToken.swing.symbol,
-        fromTokenAmountUsd: String(sourceTokenAmountUsd),
-
+        fromTokenAmount:
+          sourceTokenAmountMode === 'native'
+            ? // swap the native token amount
+              String(sourceTokenAmount)
+            : sliderValue === 100 &&
+              sourceToken.swing.type !== 'native' &&
+              sourceToken.balance
+            ? // swap the entire on-native token balance if "max" slider is selected
+              String(sourceToken.balance)
+            : // no value required
+              undefined,
+        fromTokenAmountUsd:
+          sourceTokenAmountMode === 'usd'
+            ? // swap the specified USD amount
+              String(sourceTokenAmount)
+            : undefined,
         // information about destination token
         toChain: destinationToken.swing.chain,
         toToken: destinationToken.swing.symbol,
@@ -830,8 +1027,10 @@ const Swap: React.FC<Props> = ({
       if (!quotesResponse) {
         setErrorMessage(
           t('swap.noQuoteAvailable', {
-            source: sourceToken.tokenSymbol,
-            destination: destinationToken.tokenSymbol,
+            source: getBlockchainDisplaySymbol(sourceToken.tokenSymbol),
+            destination: getBlockchainDisplaySymbol(
+              destinationToken.tokenSymbol,
+            ),
           }),
         );
         return;
@@ -841,27 +1040,35 @@ const Swap: React.FC<Props> = ({
       setQuotes(quotesResponse);
 
       // set quote amounts for each token
-      const destinationTokenBalance =
-        parseFloat(quotesResponse[0].quote.amount) /
-        Math.pow(10, quotesResponse[0].quote.decimals);
-      const destinationUsd =
-        quotesResponse[0].quote.amountUSD &&
-        parseFloat(quotesResponse[0].quote.amountUSD)
-          ? Math.min(
-              parseFloat(quotesResponse[0].quote.amountUSD) -
-                quotesResponse[0].quote.fees
-                  ?.map(f => parseFloat(f.amountUSD))
-                  .reduce((a, b) => a + b, 0),
-              sourceTokenAmountUsd,
-            )
-          : sourceToken.tokenSymbol === destinationToken.tokenSymbol &&
-            sourceToken.value &&
-            sourceToken.balance
-          ? (sourceToken.value / sourceToken.balance) * destinationTokenBalance
-          : 0;
-      setDestinationTokenAmountUsd(
-        parseFloat(numeral(destinationUsd).format('0.00')),
-      );
+      if (sourceTokenAmountMode === 'usd') {
+        const destinationTokenBalance =
+          parseFloat(quotesResponse[0].quote.amount) /
+          Math.pow(10, quotesResponse[0].quote.decimals);
+        const destinationUsd =
+          quotesResponse[0].quote.amountUSD &&
+          parseFloat(quotesResponse[0].quote.amountUSD)
+            ? Math.min(
+                parseFloat(quotesResponse[0].quote.amountUSD) -
+                  quotesResponse[0].quote.fees
+                    ?.map(f => parseFloat(f.amountUSD))
+                    .reduce((a, b) => a + b, 0),
+                sourceTokenAmount,
+              )
+            : sourceToken.tokenSymbol === destinationToken.tokenSymbol &&
+              sourceToken.value &&
+              sourceToken.balance
+            ? (sourceToken.value / sourceToken.balance) *
+              destinationTokenBalance
+            : 0;
+        setDestinationTokenAmountStr(numeral(destinationUsd).format('0.00'));
+      } else {
+        setDestinationTokenAmountStr(
+          numeral(
+            parseFloat(quotesResponse[0].quote.amount) /
+              Math.pow(10, quotesResponse[0].quote.decimals),
+          ).format(NATIVE_DECIMAL_FORMAT),
+        );
+      }
     } catch (e) {
       notifyEvent(e, 'error', 'Wallet', 'Transaction', {
         msg: 'error retrieving swap quote',
@@ -1059,14 +1266,34 @@ const Swap: React.FC<Props> = ({
   };
 
   const getQuoteDescription = (q: SwapQuote) => {
-    // calculate fees on the source chain
-    const fees = Math.max(sourceTokenAmountUsd - destinationTokenAmountUsd, 0);
+    if (!sourceToken) {
+      return '';
+    }
+
+    // calculate total fees associated with the quote for display on the
+    // execution button in basic mode
+    const fees =
+      // prefer to show the delta between requested and resulting amount in USD
+      Math.max(sourceTokenAmount - destinationTokenAmount, 0) ||
+      // fallback to showing a sum of all USD fees
+      getTotalFeesUsd(q);
+
+    // return summarized quote information
     return `${
-      fees > 0
-        ? `${fees.toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'USD',
-          })} ${t('wallet.fees').toLowerCase()} / `
+      // only show fees in the summary for basic mode
+      sourceTokenAmountMode === 'usd' && fees > 0
+        ? `${
+            sourceTokenAmountMode === 'usd'
+              ? fees.toLocaleString('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                })
+              : `${numeral(fees).format(
+                  NATIVE_DECIMAL_FORMAT,
+                )} ${getBlockchainDisplaySymbol(
+                  getBlockchainGasSymbol(sourceToken.chainSymbol),
+                )}`
+          } ${t('wallet.fees').toLowerCase()} / `
         : ''
     } ETA ~ ${q.duration} ${t('common.minute')}${q.duration > 1 ? 's' : ''}`;
   };
@@ -1113,10 +1340,8 @@ const Swap: React.FC<Props> = ({
                 <ManageInput
                   id="source-token-amount"
                   label={t('swap.payWithToken')}
-                  placeholder="0.00"
-                  value={
-                    sourceTokenAmountUsd ? sourceTokenAmountUsd.toString() : ''
-                  }
+                  placeholder={sourceTokenAmountMode === 'usd' ? '0.00' : '0'}
+                  value={sourceTokenAmountStr || ''}
                   stacked={true}
                   disabled={isLoading}
                   classes={{
@@ -1125,16 +1350,22 @@ const Swap: React.FC<Props> = ({
                   }}
                   onClick={() => handleToggleSlider(true)}
                   onChange={handleAmountChanged}
-                  startAdornment={<Typography ml={2}>$</Typography>}
+                  startAdornment={
+                    sourceTokenAmountMode === 'usd' ? (
+                      <Typography ml={2}>$</Typography>
+                    ) : undefined
+                  }
                   endAdornment={
                     <Box className={classes.tokenSelected}>
                       {sourceToken ? (
                         <Token
+                          id="source"
                           key={`source-token-${sourceToken.swing.chain}-${sourceToken.swing.symbol}`}
                           token={getTokenEntry(sourceToken, true)}
                           hideBalance
                           isOwner
                           compact
+                          mode={sourceTokenAmountMode}
                           iconWidth={6}
                           descriptionWidth={6}
                           graphWidth={0}
@@ -1202,19 +1433,15 @@ const Swap: React.FC<Props> = ({
                     className={cx(classes.swapIcon, classes.loadingSpinner)}
                   />
                 ) : (
-                  <ImportExportIcon className={classes.swapIcon} />
+                  <ArrowDownwardIcon className={classes.swapIcon} />
                 )}
               </Box>
               <FormControl disabled={isLoading}>
                 <ManageInput
                   id="destination-token-amount"
                   label={t('swap.receiveToken')}
-                  placeholder="0.00"
-                  value={
-                    destinationTokenAmountUsd
-                      ? destinationTokenAmountUsd.toString()
-                      : ''
-                  }
+                  placeholder={sourceTokenAmountMode === 'usd' ? '0.00' : '0'}
+                  value={destinationTokenAmountStr || ''}
                   stacked={true}
                   disabled={isLoading}
                   classes={{
@@ -1222,16 +1449,22 @@ const Swap: React.FC<Props> = ({
                     input: classes.tokenInput,
                   }}
                   onChange={handleAmountChanged}
-                  startAdornment={<Typography ml={2}>$</Typography>}
+                  startAdornment={
+                    sourceTokenAmountMode === 'usd' ? (
+                      <Typography ml={2}>$</Typography>
+                    ) : undefined
+                  }
                   endAdornment={
                     <Box className={classes.tokenSelected}>
                       {destinationToken ? (
                         <Token
+                          id="destination"
                           key={`destination-token-${destinationToken.swing.chain}-${destinationToken.swing.symbol}`}
                           token={getTokenEntry(destinationToken, true)}
                           hideBalance
                           isOwner
                           compact
+                          mode={sourceTokenAmountMode}
                           iconWidth={6}
                           descriptionWidth={6}
                           graphWidth={0}
@@ -1251,7 +1484,7 @@ const Swap: React.FC<Props> = ({
           </Box>
         )}
         {txId && !errorMessage && (
-          <Box>
+          <Box className={classes.content}>
             <Button
               fullWidth
               variant="outlined"
@@ -1260,11 +1493,26 @@ const Swap: React.FC<Props> = ({
             >
               {t('wallet.viewTransaction')}
             </Button>
+            {destinationToken && onViewTokenClick && (
+              <Button
+                fullWidth
+                variant="contained"
+                className={classes.button}
+                onClick={handleViewTokenClick}
+              >
+                {t('wallet.viewToken', {
+                  symbol: getBlockchainDisplaySymbol(
+                    destinationToken.tokenSymbol,
+                  ),
+                })}
+              </Button>
+            )}
           </Box>
         )}
         {errorMessage && (
           <Box mb={1}>
             <Alert
+              data-testid="error-message"
               severity="error"
               action={
                 errorMessage.toLowerCase().includes('refresh') ? (
@@ -1282,9 +1530,36 @@ const Swap: React.FC<Props> = ({
           <Box mb={1}>
             <Alert severity="info">
               {t('swap.gettingQuote', {
-                source: sourceToken.tokenSymbol,
-                destination: destinationToken.tokenSymbol,
+                source: getBlockchainDisplaySymbol(sourceToken.tokenSymbol),
+                destination: getBlockchainDisplaySymbol(
+                  destinationToken.tokenSymbol,
+                ),
               })}
+            </Alert>
+          </Box>
+        )}
+        {isInsufficientFunds && sourceToken && (
+          <Box width="100%" mb={1}>
+            <Alert severity="warning">
+              {isInsufficientTokenFunds
+                ? t(
+                    sourceToken.swing.type === 'native'
+                      ? 'swap.insufficientNativeBalance'
+                      : 'swap.insufficientTokenBalance',
+                    {
+                      tokenSymbol: getBlockchainDisplaySymbol(
+                        sourceToken.tokenSymbol,
+                      ),
+                    },
+                  )
+                : t('swap.insufficientGasBalance', {
+                    tokenSymbol: getBlockchainDisplaySymbol(
+                      sourceToken.tokenSymbol,
+                    ),
+                    gasSymbol: getBlockchainDisplaySymbol(
+                      getBlockchainGasSymbol(sourceToken.chainSymbol),
+                    ),
+                  })}
             </Alert>
           </Box>
         )}
@@ -1296,29 +1571,21 @@ const Swap: React.FC<Props> = ({
             <Box mb={1}>
               <Alert severity="info">
                 {t('swap.swapping', {
-                  source: sourceToken.tokenSymbol,
-                  destination: destinationToken.tokenSymbol,
+                  source: getBlockchainDisplaySymbol(sourceToken.tokenSymbol),
+                  destination: getBlockchainDisplaySymbol(
+                    destinationToken.tokenSymbol,
+                  ),
                   minutes: quoteSelected.duration,
                   s: quoteSelected.duration > 1 ? 's' : '',
                 })}
               </Alert>
             </Box>
           )}
-        {!isButtonHidden && quoteSelected && (
+        {!isButtonHidden && quoteSelected ? (
           <Box className={classes.content}>
-            {isInsufficientFunds ? (
-              <Button
-                fullWidth
-                size="small"
-                variant="text"
-                onClick={handleUseMax}
-                disabled={!isFundingPossible}
-              >
-                {isFundingPossible
-                  ? t('swap.useMax')
-                  : t('wallet.insufficientBalance')}
-              </Button>
-            ) : isMultipleQuotes() ? (
+            {sourceTokenAmountMode === 'native' &&
+              getFeeSummaryTable(quoteSelected)}
+            {isMultipleQuotes() && (
               <Button
                 fullWidth
                 size="small"
@@ -1329,13 +1596,13 @@ const Swap: React.FC<Props> = ({
                   ? t('swap.tryFasterOption')
                   : t('swap.tryCheaperOption')}
               </Button>
-            ) : null}
+            )}
             <Button
+              data-testid="execute-swap-button"
               fullWidth
               variant="contained"
               onClick={handleSubmitTransaction}
               className={classes.button}
-              disabled={isInsufficientFunds}
             >
               <Box display="flex" flexDirection="column" alignItems="center">
                 <Typography variant="body1" fontWeight="bold">
@@ -1343,14 +1610,16 @@ const Swap: React.FC<Props> = ({
                     sourceToken.tokenSymbol !== destinationToken.tokenSymbol
                       ? t('swap.swap')
                       : t('swap.bridge')
-                  } ${sourceTokenAmountUsd
-                    .toLocaleString('en-US', {
-                      style: 'currency',
-                      currency: 'USD',
-                    })
-                    .replace('.00', '')} ${getBlockchainDisplaySymbol(
-                    sourceToken.tokenSymbol,
-                  )}${
+                  } ${
+                    sourceTokenAmountMode === 'usd'
+                      ? sourceTokenAmount
+                          .toLocaleString('en-US', {
+                            style: 'currency',
+                            currency: 'USD',
+                          })
+                          .replace('.00', '')
+                      : sourceTokenAmount
+                  } ${getBlockchainDisplaySymbol(sourceToken.tokenSymbol)}${
                     sourceToken.tokenSymbol !== destinationToken.tokenSymbol
                       ? ` ${t(
                           'common.to',
@@ -1368,6 +1637,22 @@ const Swap: React.FC<Props> = ({
               </Box>
             </Button>
           </Box>
+        ) : (
+          isSwitchModeButtonVisible && (
+            <Box className={classes.content} mb={1}>
+              <Button
+                fullWidth
+                variant="text"
+                size="small"
+                onClick={handleToggleMode}
+                data-testid="switch-mode-button"
+              >
+                {sourceTokenAmountMode === 'usd'
+                  ? t('swap.switchToNative')
+                  : t('swap.switchToUsd')}
+              </Button>
+            </Box>
+          )
         )}
       </Box>
       {tokenChooserOpen && (

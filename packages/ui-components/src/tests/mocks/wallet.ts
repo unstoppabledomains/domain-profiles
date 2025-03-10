@@ -10,7 +10,8 @@ import {VALID_ETH_ADDRESS} from '../common';
 export const mockAccountAsset = (): AccountAsset => {
   return {
     '@type': '',
-    id: 'account',
+    id: 'assetId',
+    accountId: 'accountId',
     address: VALID_ETH_ADDRESS,
     blockchainAsset: {
       '@type': '',
@@ -23,7 +24,6 @@ export const mockAccountAsset = (): AccountAsset => {
         networkId: 1,
       },
     },
-    accountId: '',
   };
 };
 
@@ -102,6 +102,7 @@ export const mockWallets = (
       nfts: [],
       tokens: [],
       blockchainScanUrl: 'https://etherscan.io/address/0x123',
+      totalValueUsdAmt: 10,
       totalValueUsd: '10',
     },
   ];

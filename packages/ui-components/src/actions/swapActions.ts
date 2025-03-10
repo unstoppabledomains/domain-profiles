@@ -39,7 +39,7 @@ export const getSwapQuote = async (address: string, opts: SwapQuoteRequest) => {
         },
       },
     );
-    const filteredQuotes = quotes.filter(
+    const filteredQuotes = quotes?.filter(
       q =>
         q.quote.priceImpact &&
         Math.abs(parseFloat(q.quote.priceImpact)) < MAX_PRICE_IMPACT,

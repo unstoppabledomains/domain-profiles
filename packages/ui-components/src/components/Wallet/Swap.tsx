@@ -318,6 +318,10 @@ const Swap: React.FC<Props> = ({
 
   // retrieves only fees associated with the source blockchain
   const getSourceGasFees = (q: SwapQuote, nativeOnly = false) => {
+    if (!q?.quote?.fees) {
+      return 0;
+    }
+
     return q.quote.fees
       .filter(f => f.type === 'gas')
       .map(f =>
@@ -330,6 +334,10 @@ const Swap: React.FC<Props> = ({
 
   // retrieves total USD amount for all fees
   const getTotalFeesUsd = (q: SwapQuote) => {
+    if (!q?.quote?.fees) {
+      return 0;
+    }
+
     return q.quote.fees
       .map(f => parseFloat(f.amountUSD))
       .reduce((a, b) => a + b, 0);
@@ -338,7 +346,7 @@ const Swap: React.FC<Props> = ({
   const getFeeSummaryTable = (q: SwapQuote) => {
     const aggregatedFees: Record<string, {amount: number; amountUSD: number}> =
       {};
-    q.quote.fees.map(f => {
+    q.quote.fees?.map(f => {
       const existing = aggregatedFees[f.tokenSymbol];
       if (existing) {
         existing.amount += parseFloat(f.amount) / Math.pow(10, f.decimals);
@@ -353,7 +361,7 @@ const Swap: React.FC<Props> = ({
 
     return (
       <Box mb={1} mt={1} width="100%">
-        <Alert severity="info">
+        <Alert severity="info" data-testid="fee-summary-table">
           <Typography variant="body2" fontWeight="bold" mb={1}>
             {t('wallet.feeSummary')}
           </Typography>
@@ -527,7 +535,8 @@ const Swap: React.FC<Props> = ({
     !errorMessage &&
     !txId &&
     !isTxComplete &&
-    !isInsufficientFunds;
+    !isInsufficientFunds &&
+    !showSwapIntro;
 
   // list of swap pairs found on DEX
   const allDexTokenConfigs: SwapConfig[] = allSwapTokens.map(token => {
@@ -1339,6 +1348,7 @@ const Swap: React.FC<Props> = ({
                     <Box className={classes.tokenSelected}>
                       {sourceToken ? (
                         <Token
+                          id="source"
                           key={`source-token-${sourceToken.swing.chain}-${sourceToken.swing.symbol}`}
                           token={getTokenEntry(sourceToken, true)}
                           hideBalance
@@ -1437,6 +1447,7 @@ const Swap: React.FC<Props> = ({
                     <Box className={classes.tokenSelected}>
                       {destinationToken ? (
                         <Token
+                          id="destination"
                           key={`destination-token-${destinationToken.swing.chain}-${destinationToken.swing.symbol}`}
                           token={getTokenEntry(destinationToken, true)}
                           hideBalance
@@ -1476,6 +1487,7 @@ const Swap: React.FC<Props> = ({
         {errorMessage && (
           <Box mb={1}>
             <Alert
+              data-testid="error-message"
               severity="error"
               action={
                 errorMessage.toLowerCase().includes('refresh') ? (
@@ -1561,6 +1573,7 @@ const Swap: React.FC<Props> = ({
               </Button>
             )}
             <Button
+              data-testid="execute-swap-button"
               fullWidth
               variant="contained"
               onClick={handleSubmitTransaction}
@@ -1607,6 +1620,7 @@ const Swap: React.FC<Props> = ({
                 variant="text"
                 size="small"
                 onClick={handleToggleMode}
+                data-testid="switch-mode-button"
               >
                 {sourceTokenAmountMode === 'usd'
                   ? t('swap.switchToNative')

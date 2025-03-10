@@ -84,6 +84,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 type Props = {
+  id?: string;
   token?: TokenEntry;
   onClick?: () => void;
   isOwner?: boolean;
@@ -99,6 +100,7 @@ type Props = {
 };
 
 const Token: React.FC<Props> = ({
+  id,
   token,
   onClick,
   showGraph,
@@ -129,7 +131,7 @@ const Token: React.FC<Props> = ({
           xs={12}
           onClick={onClick}
           className={classes.txLink}
-          data-testid={`token-${token.symbol}`}
+          data-testid={`${id ? `${id}-` : ''}token-${token.ticker}`}
         >
           <Grid item xs={iconWidth || 2}>
             <Box display="flex" justifyContent="left" textAlign="left">

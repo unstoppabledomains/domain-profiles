@@ -248,18 +248,20 @@ const SwapTokenModal: React.FC<Props> = ({
     if (!tokenEntry) {
       return null;
     }
-    const key = `${mode}-${type}-${v.swing.chain}/${v.swing.symbol}`;
+    const key = `${mode}-${type}-${v.swing.chain}/${v.tokenSymbol}`;
     return (
       <MenuItem
+        data-testid={`menu-item-${v.swing.chain}/${v.tokenSymbol}`}
         key={`menu-item-${key}`}
         value={`${v.swing.chain}/${v.swing.symbol}`}
         disabled={!!v.disabledReason}
       >
         <Token
+          id={`menu-item`}
           key={`token-${key}`}
           token={tokenEntry}
           isOwner
-          useVisibilitySensor={true}
+          useVisibilitySensor={process.env.NODE_ENV !== 'test'}
           onClick={() => onSelectedToken(mode, v)}
         />
       </MenuItem>
@@ -267,7 +269,7 @@ const SwapTokenModal: React.FC<Props> = ({
   };
 
   return (
-    <Box className={classes.container}>
+    <Box className={classes.container} data-testid="swap-token-modal">
       <Box className={classes.searchContainer}>
         <ManageInput
           id="token-search"
@@ -294,6 +296,7 @@ const SwapTokenModal: React.FC<Props> = ({
         />
         {initialFilterChain && !hideAllChainButton && (
           <Button
+            data-testid="show-all-chains-button"
             variant="text"
             fullWidth
             size="small"

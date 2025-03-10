@@ -853,7 +853,7 @@ const Swap: React.FC<Props> = ({
 
   const handleViewTokenClick = () => {
     if (onViewTokenClick && destinationToken) {
-      const tokenEntry = getTokenEntry(destinationToken);
+      const tokenEntry = getTokenEntry(destinationToken, true);
       if (tokenEntry) {
         onViewTokenClick(tokenEntry);
       }

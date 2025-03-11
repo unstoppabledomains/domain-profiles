@@ -530,6 +530,11 @@ export const Client: React.FC<ClientProps> = ({
     setIsTransactionsLoading(false);
   };
 
+  const handleManualRefresh = async () => {
+    resetRefreshTimer(getTabFields(tabValue));
+    await refresh(true, getTabFields(tabValue));
+  };
+
   const handleRetrieveOwnerDomains = async (
     ownerAddress: string,
     reload?: boolean,
@@ -731,10 +736,12 @@ export const Client: React.FC<ClientProps> = ({
             <TokenDetail
               accessToken={accessToken}
               token={selectedToken}
+              wallets={wallets}
               onCancelClick={handleCancelToken}
               onClickReceive={handleClickedReceive}
               onClickSwap={handleClickedSwap}
               onClickSend={handleClickedSend}
+              onRefreshClicked={handleManualRefresh}
             />
           </Box>
         ) : (

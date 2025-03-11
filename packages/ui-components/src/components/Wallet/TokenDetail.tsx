@@ -1,16 +1,18 @@
+import RefreshIcon from '@mui/icons-material/Refresh';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import numeral from 'numeral';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Line} from 'react-chartjs-2';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import type {TokenEntry} from '../../lib';
-import {useTranslationContext} from '../../lib';
+import type {SerializedWalletBalance, TokenEntry} from '../../lib';
+import {getSortedTokens, useTranslationContext} from '../../lib';
 import {
   isBuySellEnabled,
   openBuySellPopup,
@@ -70,10 +72,16 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   headerText: {
     display: 'flex',
-    justifyContent: 'left',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     textAlign: 'left',
     width: '100%',
     marginBottom: theme.spacing(1),
+  },
+  refreshIcon: {
+    color: theme.palette.text.secondary,
+    width: '20px',
+    height: '20px',
   },
   txPctChangeDown: {
     color: theme.palette.wallet.chart.down,
@@ -89,22 +97,43 @@ const useStyles = makeStyles()((theme: Theme) => ({
 type Props = {
   accessToken: string;
   token: TokenEntry;
+  wallets?: SerializedWalletBalance[];
   onCancelClick: () => void;
   onClickReceive: () => void;
   onClickSend: () => void;
   onClickSwap: () => void;
+  onRefreshClicked: () => void;
 };
 
 const TokenDetail: React.FC<Props> = ({
-  token,
+  token: requestedToken,
+  wallets,
   onCancelClick,
   onClickReceive,
   onClickSend,
   onClickSwap,
+  onRefreshClicked,
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const [allTokens, setAllTokens] = useState<TokenEntry[]>([]);
   const theme = useTheme();
+
+  useEffect(() => {
+    if (!wallets) {
+      return;
+    }
+    setAllTokens(getSortedTokens(wallets));
+  }, [wallets]);
+
+  // dynamically load the token definition
+  const token =
+    allTokens?.find(
+      w =>
+        w.walletName.toLowerCase() ===
+          requestedToken.walletName.toLowerCase() &&
+        w.ticker.toLowerCase() === requestedToken.ticker.toLowerCase(),
+    ) || requestedToken;
 
   // calculate latest spot price
   const spotPrice =
@@ -246,6 +275,9 @@ const TokenDetail: React.FC<Props> = ({
         <Box className={classes.footerContainer}>
           <Box className={classes.headerText}>
             <Typography variant="h6">{t('swap.balance')}</Typography>
+            <IconButton size="small" onClick={onRefreshClicked}>
+              <RefreshIcon className={classes.refreshIcon} />
+            </IconButton>
           </Box>
           <Box className={classes.tokenContainer}>
             <Token

@@ -853,7 +853,7 @@ const Swap: React.FC<Props> = ({
 
   const handleViewTokenClick = () => {
     if (onViewTokenClick && destinationToken) {
-      const tokenEntry = getTokenEntry(destinationToken);
+      const tokenEntry = getTokenEntry(destinationToken, true);
       if (tokenEntry) {
         onViewTokenClick(tokenEntry);
       }
@@ -959,7 +959,13 @@ const Swap: React.FC<Props> = ({
               ? destinationToken.value / destinationToken.balance
               : destinationToken?.swing.priceUsd
               ? destinationToken.swing.priceUsd
-              : 0;
+              : allDexTokenConfigs.find(
+                  dexToken =>
+                    dexToken.chainName.toLowerCase() ===
+                      destinationToken?.swing.chain.toLowerCase() &&
+                    dexToken.tokenSymbol.toLowerCase() ===
+                      destinationToken?.tokenSymbol.toLowerCase(),
+                )?.swing.priceUsd || 0;
 
           // derive the expected source token amount in native currency
           const derivedSourceAmount =

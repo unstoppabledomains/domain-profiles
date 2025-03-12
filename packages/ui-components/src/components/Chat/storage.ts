@@ -2,8 +2,13 @@ import type * as PushAPI from '@pushprotocol/restapi';
 import {fetcher} from '@xmtp/proto';
 import {compress, decompress} from 'compress-json';
 
-import {isChromeStorageSupported} from '../../hooks/useChromeStorage';
+import type {ChromeStorageType} from '../../hooks/useChromeStorage';
+import {
+  isChromeStorageSupported,
+  isChromeStorageType,
+} from '../../hooks/useChromeStorage';
 import {DomainProfileKeys} from '../../lib/types/domain';
+import {WalletStorageProvider} from '../../lib/wallet/storage/provider';
 import type {AddressResolution} from './types';
 
 export const PUSH_MESSAGES: Record<string, PushAPI.IMessageIPFS> = {};
@@ -58,39 +63,82 @@ export const getXmtpLocalKey = async (
   return;
 };
 
+type localStorageType = ChromeStorageType | 'wallet';
+
+interface localStorageWrapperOptions {
+  type: localStorageType;
+  accountId?: string;
+  accessToken?: string;
+}
+
 export class localStorageWrapper {
-  static async getItem(k: string): Promise<string | null> {
-    return isChromeStorageSupported('local')
-      ? await localStorageWrapper.getChromeStorage(k)
+  static async getItem(
+    k: string,
+    opts: localStorageWrapperOptions = {type: 'local'},
+  ): Promise<string | null> {
+    return isChromeStorageType(opts.type) && isChromeStorageSupported(opts.type)
+      ? await localStorageWrapper.getChromeStorage(k, opts.type)
+      : opts.type === 'wallet' && opts.accessToken && opts.accountId
+      ? WalletStorageProvider.getItem(k, opts.accountId, opts.accessToken)
       : localStorage.getItem(k);
   }
 
-  static async setItem(k: string, v: string): Promise<void> {
-    if (isChromeStorageSupported('local')) {
-      await chrome.storage.local.set({[k]: v});
+  static async setItem(
+    k: string,
+    v: string,
+    opts: localStorageWrapperOptions = {type: 'local'},
+  ): Promise<void> {
+    if (isChromeStorageType(opts.type) && isChromeStorageSupported(opts.type)) {
+      await chrome.storage[opts.type].set({[k]: v});
+      return;
+    } else if (opts.type === 'wallet' && opts.accessToken && opts.accountId) {
+      await WalletStorageProvider.setItem(
+        k,
+        v,
+        opts.accountId,
+        opts.accessToken,
+      );
       return;
     }
     localStorage.setItem(k, v);
   }
 
-  static async removeItem(k: string): Promise<void> {
-    if (isChromeStorageSupported('local')) {
-      await chrome.storage.local.remove(k);
+  static async removeItem(
+    k: string,
+    opts: localStorageWrapperOptions = {type: 'local'},
+  ): Promise<void> {
+    if (isChromeStorageType(opts.type) && isChromeStorageSupported(opts.type)) {
+      await chrome.storage[opts.type].remove(k);
+      return;
+    } else if (opts.type === 'wallet' && opts.accessToken && opts.accountId) {
+      await WalletStorageProvider.removeItem(
+        k,
+        opts.accountId,
+        opts.accessToken,
+      );
       return;
     }
     localStorage.removeItem(k);
   }
 
-  static async clear(): Promise<void> {
-    if (isChromeStorageSupported('local')) {
-      await chrome.storage.local.clear();
+  static async clear(
+    opts: localStorageWrapperOptions = {type: 'local'},
+  ): Promise<void> {
+    if (isChromeStorageType(opts.type) && isChromeStorageSupported(opts.type)) {
+      await chrome.storage[opts.type].clear();
+      return;
+    } else if (opts.type === 'wallet' && opts.accessToken && opts.accountId) {
+      await WalletStorageProvider.clear(opts.accountId, opts.accessToken);
       return;
     }
     localStorage.clear();
   }
 
-  private static async getChromeStorage(k: string): Promise<string | null> {
-    const v = await chrome.storage.local.get(k);
+  private static async getChromeStorage(
+    k: string,
+    type: ChromeStorageType,
+  ): Promise<string | null> {
+    const v = await chrome.storage[type].get(k);
     if (v[k]) {
       return v[k];
     }

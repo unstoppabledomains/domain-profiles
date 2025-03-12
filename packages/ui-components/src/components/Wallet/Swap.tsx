@@ -39,6 +39,7 @@ import type {SerializedWalletBalance, TokenEntry} from '../../lib';
 import {
   DomainProfileKeys,
   TokenType,
+  getAccountIdFromBootstrapState,
   getBootstrapState,
   notifyEvent,
   useTranslationContext,
@@ -224,6 +225,7 @@ const Swap: React.FC<Props> = ({
 
   // fireblocks state
   const [state] = useFireblocksState();
+  const clientState = getBootstrapState(state);
   const fireblocksMessageSigner = useFireblocksMessageSigner();
 
   // operation state
@@ -693,14 +695,25 @@ const Swap: React.FC<Props> = ({
 
   useAsyncEffect(async () => {
     // determine swap intro visibility
+    const accountId = getAccountIdFromBootstrapState(clientState);
     const swapIntroState = await localStorageWrapper.getItem(
       DomainProfileKeys.BannerSwapIntro,
+      {
+        type: 'wallet',
+        accessToken,
+        accountId,
+      },
     );
     setShowSwapIntro(swapIntroState === null);
 
     // determine swap mode
     const swapMode = await localStorageWrapper.getItem(
       DomainProfileKeys.WalletSwapMode,
+      {
+        type: 'wallet',
+        accessToken,
+        accountId,
+      },
     );
     if (swapMode) {
       setSourceTokenAmountMode(swapMode as SwapMode);
@@ -807,6 +820,11 @@ const Swap: React.FC<Props> = ({
     await localStorageWrapper.setItem(
       DomainProfileKeys.WalletSwapMode,
       newMode,
+      {
+        type: 'wallet',
+        accessToken,
+        accountId: getAccountIdFromBootstrapState(clientState),
+      },
     );
   };
 
@@ -815,6 +833,11 @@ const Swap: React.FC<Props> = ({
     await localStorageWrapper.setItem(
       DomainProfileKeys.BannerSwapIntro,
       String(Date.now()),
+      {
+        type: 'wallet',
+        accessToken,
+        accountId: getAccountIdFromBootstrapState(clientState),
+      },
     );
   };
 
@@ -1098,7 +1121,6 @@ const Swap: React.FC<Props> = ({
     try {
       // retrieve and validate fireblocks state
       setIsSwapping(true);
-      const clientState = getBootstrapState(state);
       if (!clientState) {
         throw new Error('invalid wallet client state');
       }

@@ -36,6 +36,7 @@ import {
   getProfileData,
 } from '../../actions';
 import {getTransactionLockStatus} from '../../actions/fireBlocksActions';
+import {getWalletStorageData} from '../../actions/walletStorageActions';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
 import type {SerializedWalletBalance, TokenEntry} from '../../lib';
@@ -44,6 +45,8 @@ import {
   DomainFieldTypes,
   DomainProfileKeys,
   WALLET_CARD_HEIGHT,
+  getAccountIdFromBootstrapState,
+  getBootstrapState,
   isLocked,
   useTranslationContext,
 } from '../../lib';
@@ -216,6 +219,7 @@ export const Client: React.FC<ClientProps> = ({
 
   // wallet state variables
   const [state, saveState] = useFireblocksState();
+  const clientState = getBootstrapState(state);
   const [fundingModalTitle, setFundingModalTitle] = useState<string>();
   const [fundingModalIcon, setFundingModalIcon] = useState<React.ReactNode>();
   const [banner, setBanner] = useState<React.ReactNode>(externalBanner);
@@ -254,8 +258,18 @@ export const Client: React.FC<ClientProps> = ({
       return;
     }
 
-    // retrieve wallet lock status
-    setTxLockStatus(await getTransactionLockStatus(accessToken));
+    // retrieve API calls concurrently
+    const [lockStatus] = await Promise.all([
+      getTransactionLockStatus(accessToken),
+      getWalletStorageData(
+        getAccountIdFromBootstrapState(clientState),
+        accessToken,
+        true,
+      ),
+    ]);
+
+    // set wallet lock status
+    setTxLockStatus(lockStatus);
 
     // start a new refresh timer
     resetRefreshTimer(getTabFields(tabValue));

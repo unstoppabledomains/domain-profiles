@@ -8,6 +8,18 @@ import {
   BootstrapStatePrefix,
 } from '../../types/fireBlocks';
 
+export const getAccountIdFromBootstrapState = (
+  state?: BootstrapState,
+): string => {
+  if (!state?.assets || state.assets.length === 0) {
+    throw new Error('No assets found in bootstrap state');
+  }
+  if (!state.assets[0].accountId) {
+    throw new Error('No account ID found in bootstrap state');
+  }
+  return state.assets[0].accountId;
+};
+
 export const getBootstrapState = (
   state: Record<string, Record<string, string>>,
 ): BootstrapState | undefined => {

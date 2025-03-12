@@ -63,7 +63,8 @@ const WalletPage = () => {
       return;
     }
     if (Object.keys(walletState).length > 0) {
-      void localStorageWrapper.clear();
+      void localStorageWrapper.clear({type: 'local'});
+      void localStorageWrapper.clear({type: 'session'});
       sessionStorage.clear();
       window.location.reload();
       return;

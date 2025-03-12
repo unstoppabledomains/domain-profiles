@@ -9,7 +9,14 @@ import React, {useState} from 'react';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {createPIN, unlock, useTranslationContext} from '../../lib';
+import {useFireblocksState} from '../../hooks';
+import {
+  createPIN,
+  getAccountIdFromBootstrapState,
+  getBootstrapState,
+  unlock,
+  useTranslationContext,
+} from '../../lib';
 import ManageInput from '../Manage/common/ManageInput';
 import {OperationStatus} from './OperationStatus';
 
@@ -46,6 +53,8 @@ type Props = {
 const SetupPinModal: React.FC<Props> = ({accessToken, onComplete, onClose}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const [state] = useFireblocksState();
+  const clientState = getBootstrapState(state);
   const [password, setPassword] = useState<string>();
   const [isSuccess, setIsSuccess] = useState<boolean>();
   const [isSaving, setIsSaving] = useState(false);
@@ -77,11 +86,17 @@ const SetupPinModal: React.FC<Props> = ({accessToken, onComplete, onClose}) => {
       return;
     }
 
+    // retrieve account ID
+    const accountId = getAccountIdFromBootstrapState(clientState);
+    if (!accountId) {
+      return;
+    }
+
     // set saving state
     setIsSaving(true);
 
     // enable the PIN with provided value
-    await createPIN(password, accessToken);
+    await createPIN(password, accountId, accessToken);
     await unlock(password, config.WALLETS.DEFAULT_PIN_TIMEOUT_MS);
 
     // set success state

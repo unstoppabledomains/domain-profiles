@@ -24,8 +24,14 @@ import {
   getTransactionLockStatus,
 } from '../../actions/fireBlocksActions';
 import {getTwoFactorStatus} from '../../actions/walletMfaActions';
-import {useWeb3Context} from '../../hooks';
-import {disablePin, isPinEnabled, useTranslationContext} from '../../lib';
+import {useFireblocksState, useWeb3Context} from '../../hooks';
+import {
+  disablePin,
+  getAccountIdFromBootstrapState,
+  getBootstrapState,
+  isPinEnabled,
+  useTranslationContext,
+} from '../../lib';
 import type {
   RecoveryStatusResponse,
   TransactionLockStatusResponse,
@@ -91,6 +97,8 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
   const {setTxLockStatus} = useWeb3Context();
+  const [state] = useFireblocksState();
+  const clientState = getBootstrapState(state);
   const theme = useTheme();
   const {data: featureFlags} = useFeatureFlags(false);
   const [recoveryKitStatus, setRecoveryKitStatus] =
@@ -161,7 +169,10 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
 
   const handleLockClicked = async () => {
     if (isLockEnabled) {
-      await disablePin();
+      await disablePin({
+        accessToken,
+        accountId: getAccountIdFromBootstrapState(clientState),
+      });
       setIsLockEnabled(false);
     } else {
       setIsLockModalOpen(true);

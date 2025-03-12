@@ -3,7 +3,17 @@ import useAsyncEffect from 'use-async-effect';
 
 import config from '@unstoppabledomains/config';
 
-import {isLocked, isPinEnabled, lock, notifyEvent, unlock} from '../lib';
+import {getAccounts} from '../actions/fireBlocksActions';
+import {getWalletStorageData} from '../actions/walletStorageActions';
+import {localStorageWrapper} from '../components';
+import {
+  DomainProfileKeys,
+  isLocked,
+  isPinEnabled,
+  lock,
+  notifyEvent,
+  unlock,
+} from '../lib';
 import {getPinFromToken} from '../lib/wallet/pin/store';
 import {Web3Context} from '../providers/Web3ContextProvider';
 
@@ -67,6 +77,9 @@ const useWeb3Context = () => {
       setShowPinCta(false);
       clearTimeout(lockScreenTimeout);
 
+      // synchronize the encrypted PIN
+      await synchronizeEncryptedPin();
+
       // check if session lock is enabled
       if (await isPinEnabled()) {
         // bump the lock state to the future due to usage
@@ -98,6 +111,64 @@ const useWeb3Context = () => {
     };
     void checkPinState();
   }, [accessToken, persistentKeyState, sessionKeyState, showPinCta]);
+
+  const synchronizeEncryptedPin = async () => {
+    // access token is required
+    if (!accessToken) {
+      return;
+    }
+
+    try {
+      // retrieve encrypted PIN from remote configuration
+      const accounts = await getAccounts(accessToken);
+      const accountId =
+        accounts?.items && accounts.items.length > 0
+          ? accounts.items[0].id
+          : undefined;
+      const encryptedPin = accountId
+        ? await localStorageWrapper.getItem(DomainProfileKeys.EncryptedPIN, {
+            type: 'wallet',
+            accessToken,
+            accountId,
+          })
+        : undefined;
+
+      // synchronize the remote and local encrypted PIN configurations
+      if (encryptedPin) {
+        // set the local encrypted PIN to the one set remotely
+        await localStorageWrapper.setItem(
+          DomainProfileKeys.EncryptedPIN,
+          encryptedPin,
+        );
+      } else if (accountId) {
+        // only sync local configuration if remote configuration is empty
+        const walletConfig = await getWalletStorageData(accountId, accessToken);
+
+        // set the remote encrypted PIN to the one set locally
+        if (
+          !walletConfig?.data ||
+          Object.keys(JSON.parse(walletConfig.data)).length === 0
+        ) {
+          const localEncryptedPin = await localStorageWrapper.getItem(
+            DomainProfileKeys.EncryptedPIN,
+          );
+          if (localEncryptedPin) {
+            await localStorageWrapper.setItem(
+              DomainProfileKeys.EncryptedPIN,
+              localEncryptedPin,
+              {
+                type: 'wallet',
+                accessToken,
+                accountId,
+              },
+            );
+          }
+        }
+      }
+    } catch (e) {
+      notifyEvent(e, 'warning', 'Wallet', 'Configuration');
+    }
+  };
 
   const handleLockScreen = async () => {
     if (!persistentKeyState) {

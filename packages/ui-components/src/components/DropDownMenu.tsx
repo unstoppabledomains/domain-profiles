@@ -148,7 +148,8 @@ const DropDownMenu: React.FC<Props> = ({
 
   const handleLogout = async () => {
     setLoggingOut(prev => !prev);
-    await localStorageWrapper.clear();
+    await localStorageWrapper.clear({type: 'local'});
+    await localStorageWrapper.clear({type: 'session'});
     sessionStorage.clear();
     if (onLogout) {
       onLogout();

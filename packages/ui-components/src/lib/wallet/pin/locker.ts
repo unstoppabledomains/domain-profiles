@@ -18,8 +18,11 @@ import {
 } from './store';
 import {SessionLockError} from './types';
 
-export const disablePin = async () => {
-  await Promise.all([removeEncryptedPin(), removeLockStatus()]);
+export const disablePin = async (opts?: {
+  accessToken?: string;
+  accountId?: string;
+}) => {
+  await Promise.all([removeEncryptedPin(opts), removeLockStatus()]);
 };
 
 export const isLocked = async () => {

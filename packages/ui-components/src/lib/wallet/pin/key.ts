@@ -9,6 +9,7 @@ import {SessionLockError} from './types';
 
 export const createPIN = async (
   pin: string,
+  accountId: string,
   accessToken: string,
 ): Promise<string> => {
   // create a new public key pair
@@ -23,11 +24,14 @@ export const createPIN = async (
 
   // store the public key and encrypted private key
   const publicKey = pinKeypair.publicKey.toBase58();
-  await saveEncryptedPin({
-    encryptedPrivateKey,
-    encryptedPin,
-    publicKey,
-  });
+  await saveEncryptedPin(
+    {
+      encryptedPrivateKey,
+      encryptedPin,
+      publicKey,
+    },
+    {accessToken, accountId},
+  );
   return publicKey;
 };
 

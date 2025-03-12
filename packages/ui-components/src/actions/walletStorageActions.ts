@@ -36,7 +36,7 @@ export const getWalletStorageData = async (
   accountId: string,
   accessToken: string,
   forceRefresh = false,
-) => {
+): Promise<WalletStorageData | undefined> => {
   try {
     // retrieve from session storage if available
     const data = sessionStorage.getItem(WALLET_KEY_NAME);

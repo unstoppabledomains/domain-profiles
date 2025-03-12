@@ -215,6 +215,11 @@ export const DomainWalletTransactions: React.FC<
 
   // load previously known transactions from local state
   useAsyncEffect(async () => {
+    // only load transactions if the wallet is owned
+    if (!isOwner) {
+      return;
+    }
+
     // retrieve previously known transactions from local state
     const cachedTxns = await localStorageWrapper.getItem(
       DomainProfileKeys.WalletTransactions,
@@ -222,7 +227,7 @@ export const DomainWalletTransactions: React.FC<
     if (cachedTxns) {
       setTxns(JSON.parse(cachedTxns));
     }
-  }, []);
+  }, [isOwner]);
 
   // update transactions dynamically
   useAsyncEffect(async () => {

@@ -316,6 +316,11 @@ export const Client: React.FC<ClientProps> = ({
     // prioritize security health check
     const isHealthCheckCleared = await localStorageWrapper.getItem(
       DomainProfileKeys.BannerHealthCheck,
+      {
+        type: 'wallet',
+        accessToken,
+        accountId: getAccountIdFromBootstrapState(clientState),
+      },
     );
     if (!isHealthCheckCleared && onSecurityCenterClicked) {
       setBanner(
@@ -512,6 +517,11 @@ export const Client: React.FC<ClientProps> = ({
     await localStorageWrapper.setItem(
       DomainProfileKeys.BannerHealthCheck,
       String(Date.now()),
+      {
+        type: 'wallet',
+        accessToken,
+        accountId: getAccountIdFromBootstrapState(clientState),
+      },
     );
     if (enabled && onSecurityCenterClicked) {
       onSecurityCenterClicked();

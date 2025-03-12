@@ -259,13 +259,12 @@ export const Client: React.FC<ClientProps> = ({
     }
 
     // retrieve API calls concurrently
+    const accountId = getAccountIdFromBootstrapState(clientState);
     const [lockStatus] = await Promise.all([
       getTransactionLockStatus(accessToken),
-      getWalletStorageData(
-        getAccountIdFromBootstrapState(clientState),
-        accessToken,
-        true,
-      ),
+      accountId
+        ? getWalletStorageData(accountId, accessToken, true)
+        : undefined,
     ]);
 
     // set wallet lock status

@@ -10,12 +10,12 @@ import {
 
 export const getAccountIdFromBootstrapState = (
   state?: BootstrapState,
-): string => {
+): string | undefined => {
   if (!state?.assets || state.assets.length === 0) {
-    throw new Error('No assets found in bootstrap state');
+    return undefined;
   }
   if (!state.assets[0].accountId) {
-    throw new Error('No account ID found in bootstrap state');
+    return undefined;
   }
   return state.assets[0].accountId;
 };

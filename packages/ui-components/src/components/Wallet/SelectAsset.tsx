@@ -12,12 +12,19 @@ import useAsyncEffect from 'use-async-effect';
 import type {ImmutableArray} from '@unstoppabledomains/config/build/src/env/types';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {useFireblocksState, useWeb3Context} from '../../hooks';
 import type {
   DomainBannerType,
   SerializedWalletBalance,
   TokenEntry,
 } from '../../lib';
-import {DomainProfileKeys, TokenType, useTranslationContext} from '../../lib';
+import {
+  DomainProfileKeys,
+  TokenType,
+  getAccountIdFromBootstrapState,
+  getBootstrapState,
+  useTranslationContext,
+} from '../../lib';
 import {getAllTokens} from '../../lib/wallet/evm/token';
 import {filterWallets} from '../../lib/wallet/filter';
 import {localStorageWrapper} from '../Chat';
@@ -106,6 +113,9 @@ export const SelectAsset: React.FC<Props> = ({
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const {accessToken} = useWeb3Context();
+  const [state] = useFireblocksState();
+  const clientState = getBootstrapState(state);
   const [showBanner, setShowBanner] = useState<boolean>(false);
 
   const wallets = filterWallets(initialWallets, supportedAssetList);
@@ -143,6 +153,11 @@ export const SelectAsset: React.FC<Props> = ({
     // check if banner should be shown
     const bannerState = await localStorageWrapper.getItem(
       `${DomainProfileKeys.Banner}-${bannerType}`,
+      {
+        type: 'wallet',
+        accessToken,
+        accountId: getAccountIdFromBootstrapState(clientState),
+      },
     );
     setShowBanner(!bannerState);
   }, [bannerType]);
@@ -152,6 +167,11 @@ export const SelectAsset: React.FC<Props> = ({
     await localStorageWrapper.setItem(
       `${DomainProfileKeys.Banner}-${bannerType}`,
       String(Date.now()),
+      {
+        type: 'wallet',
+        accessToken,
+        accountId: getAccountIdFromBootstrapState(clientState),
+      },
     );
   };
 

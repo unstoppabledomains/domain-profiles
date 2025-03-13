@@ -4,6 +4,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import LockIcon from '@mui/icons-material/LockOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import SendIcon from '@mui/icons-material/Send';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
@@ -23,6 +24,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import {Mutex} from 'async-mutex';
 import Markdown from 'markdown-to-jsx';
 import {useSnackbar} from 'notistack';
+import numeral from 'numeral';
 import React, {useEffect, useState} from 'react';
 import useAsyncEffect from 'use-async-effect';
 
@@ -36,6 +38,7 @@ import {
   getProfileData,
 } from '../../actions';
 import {getTransactionLockStatus} from '../../actions/fireBlocksActions';
+import {getWalletStorageData} from '../../actions/walletStorageActions';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
 import type {SerializedWalletBalance, TokenEntry} from '../../lib';
@@ -44,6 +47,8 @@ import {
   DomainFieldTypes,
   DomainProfileKeys,
   WALLET_CARD_HEIGHT,
+  getAccountIdFromBootstrapState,
+  getBootstrapState,
   isLocked,
   useTranslationContext,
 } from '../../lib';
@@ -97,6 +102,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
     balanceContainer: {
       display: 'flex',
       justifyContent: 'center',
+      alignItems: 'center',
     },
     snackBarButton: {
       marginLeft: theme.spacing(1),
@@ -185,12 +191,13 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
     fundWalletCtaText: {
       maxWidth: '350px',
     },
+    refreshIcon: {
+      color: theme.palette.wallet.text.secondary,
+      width: '20px',
+      height: '20px',
+    },
   }),
 );
-
-// define a timer to refresh the page periodically
-let refreshTimer: NodeJS.Timeout | undefined;
-const REFRESH_BALANCE_MS = 30 * 1000; // 30 second interval to refresh the balance
 
 export const Client: React.FC<ClientProps> = ({
   accessToken,
@@ -216,6 +223,7 @@ export const Client: React.FC<ClientProps> = ({
 
   // wallet state variables
   const [state, saveState] = useFireblocksState();
+  const clientState = getBootstrapState(state);
   const [fundingModalTitle, setFundingModalTitle] = useState<string>();
   const [fundingModalIcon, setFundingModalIcon] = useState<React.ReactNode>();
   const [banner, setBanner] = useState<React.ReactNode>(externalBanner);
@@ -248,24 +256,23 @@ export const Client: React.FC<ClientProps> = ({
   // owner address
   const address = wallets.find(w => isEthAddress(w.address))?.address;
 
-  // initialize the page refresh timer
+  // initialize wallet security features
   useAsyncEffect(async () => {
     if (!accessToken) {
       return;
     }
 
-    // retrieve wallet lock status
-    setTxLockStatus(await getTransactionLockStatus(accessToken));
+    // retrieve API calls concurrently
+    const accountId = getAccountIdFromBootstrapState(clientState);
+    const [lockStatus] = await Promise.all([
+      getTransactionLockStatus(accessToken),
+      accountId
+        ? getWalletStorageData(accessToken, accountId, true)
+        : undefined,
+    ]);
 
-    // start a new refresh timer
-    resetRefreshTimer(getTabFields(tabValue));
-
-    // clear timer on unload
-    return () => {
-      if (refreshTimer) {
-        clearTimeout(refreshTimer);
-      }
-    };
+    // set wallet lock status
+    setTxLockStatus(lockStatus);
   }, [accessToken]);
 
   // banner management
@@ -303,6 +310,11 @@ export const Client: React.FC<ClientProps> = ({
     // prioritize security health check
     const isHealthCheckCleared = await localStorageWrapper.getItem(
       DomainProfileKeys.BannerHealthCheck,
+      {
+        type: 'wallet',
+        accessToken,
+        accountId: getAccountIdFromBootstrapState(clientState),
+      },
     );
     if (!isHealthCheckCleared && onSecurityCenterClicked) {
       setBanner(
@@ -406,19 +418,6 @@ export const Client: React.FC<ClientProps> = ({
     showPasswordCtaTimer = setTimeout(showPasswordCta, 2000);
   }, [accessToken, cryptoValue]);
 
-  useEffect(() => {
-    if (!refreshTimer) {
-      return;
-    }
-
-    // do not use the refresh timer if the swap modal is open
-    if (isSwap) {
-      clearTimeout(refreshTimer);
-    } else {
-      resetRefreshTimer(getTabFields(tabValue));
-    }
-  }, [isSwap]);
-
   // wrapper for the refresh method
   const refresh = async (showSpinner?: boolean, fields?: string[]) => {
     // skip background refresh if already locked
@@ -448,16 +447,6 @@ export const Client: React.FC<ClientProps> = ({
     status: TransactionLockStatusResponse,
   ) => {
     setTxLockStatus(status);
-  };
-
-  const resetRefreshTimer = (fields: string[]) => {
-    if (refreshTimer) {
-      clearTimeout(refreshTimer);
-    }
-    refreshTimer = setInterval(
-      () => refresh(false, fields),
-      REFRESH_BALANCE_MS,
-    );
   };
 
   // configure a CTA to prompt the user to set their password if the wallet
@@ -499,6 +488,11 @@ export const Client: React.FC<ClientProps> = ({
     await localStorageWrapper.setItem(
       DomainProfileKeys.BannerHealthCheck,
       String(Date.now()),
+      {
+        type: 'wallet',
+        accessToken,
+        accountId: getAccountIdFromBootstrapState(clientState),
+      },
     );
     if (enabled && onSecurityCenterClicked) {
       onSecurityCenterClicked();
@@ -522,8 +516,7 @@ export const Client: React.FC<ClientProps> = ({
       void handleLoadDomains(true);
     }
 
-    // reset the refresh timer and call refresh
-    resetRefreshTimer(getTabFields(tv));
+    // call the refresh method on tab change
     await refresh(true, getTabFields(tv));
 
     // transactions have been loaded
@@ -531,7 +524,6 @@ export const Client: React.FC<ClientProps> = ({
   };
 
   const handleManualRefresh = async () => {
-    resetRefreshTimer(getTabFields(tabValue));
     await refresh(true, getTabFields(tabValue));
   };
 
@@ -749,21 +741,26 @@ export const Client: React.FC<ClientProps> = ({
             {cryptoValue ? (
               <Box className={classes.header}>
                 <Box className={classes.balanceContainer}>
-                  <Typography variant="h3">
-                    {(tabValue === ClientTabType.Domains
-                      ? // show only domain value on domain tab
-                        domainsValue
-                      : tabValue === ClientTabType.Portfolio
-                      ? // show only crypto value on crypto tab
-                        cryptoValue
-                      : tabValue === ClientTabType.Transactions &&
-                        // show aggregate value (domains + crypto) on activity tab
-                        domainsValue + cryptoValue
-                    ).toLocaleString('en-US', {
-                      style: 'currency',
-                      currency: 'USD',
-                    })}
+                  <Typography ml={1} variant="h3">
+                    {numeral(
+                      tabValue === ClientTabType.Domains
+                        ? // show only domain value on domain tab
+                          domainsValue
+                        : tabValue === ClientTabType.Portfolio
+                        ? // show only crypto value on crypto tab
+                          cryptoValue
+                        : tabValue === ClientTabType.Transactions &&
+                          // show aggregate value (domains + crypto) on activity tab
+                          domainsValue + cryptoValue,
+                    ).format('$0,0')}
                   </Typography>
+                  <Box ml={1}>
+                    <Tooltip title={t('common.refresh')}>
+                      <IconButton size="small" onClick={handleManualRefresh}>
+                        <RefreshIcon className={classes.refreshIcon} />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </Box>
                 <Grid container spacing={2} className={classes.actionContainer}>
                   <Grid item>

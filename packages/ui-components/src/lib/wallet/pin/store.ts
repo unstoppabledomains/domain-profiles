@@ -73,20 +73,52 @@ export const getPublicKey = async (): Promise<PublicKey | undefined> => {
   return new PublicKey(encryptedPin.publicKey);
 };
 
-export const removeEncryptedPin = async () => {
+export const removeEncryptedPin = async (opts?: {
+  accessToken?: string;
+  accountId?: string;
+}) => {
+  // remove the PIN from local storage
   await localStorageWrapper.removeItem(DomainProfileKeys.EncryptedPIN);
+
+  // if requested, also remove the configuration from wallet storage
+  if (opts?.accessToken && opts?.accountId) {
+    await localStorageWrapper.removeItem(DomainProfileKeys.EncryptedPIN, {
+      type: 'wallet',
+      accessToken: opts.accessToken,
+      accountId: opts.accountId,
+    });
+  }
 };
 
 export const removeLockStatus = async () => {
   await localStorageWrapper.removeItem(DomainProfileKeys.LockStatus);
 };
 
-export const saveEncryptedPin = async (data: EncryptedPin) => {
-  // store the public key and encrypted private key
+export const saveEncryptedPin = async (
+  data: EncryptedPin,
+  opts?: {
+    accessToken?: string;
+    accountId?: string;
+  },
+) => {
+  // store the public key and encrypted private key to local storage
   await localStorageWrapper.setItem(
     DomainProfileKeys.EncryptedPIN,
     JSON.stringify(data),
   );
+
+  // if requested, also store the configuration to wallet storage
+  if (opts?.accessToken && opts?.accountId) {
+    await localStorageWrapper.setItem(
+      DomainProfileKeys.EncryptedPIN,
+      JSON.stringify(data),
+      {
+        type: 'wallet',
+        accessToken: opts.accessToken,
+        accountId: opts.accountId,
+      },
+    );
+  }
 };
 
 export const saveLockStatus = async (data: LockStatus) => {

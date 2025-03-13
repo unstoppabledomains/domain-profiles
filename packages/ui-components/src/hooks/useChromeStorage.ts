@@ -2,9 +2,9 @@ import {useEffect, useState} from 'react';
 
 import {notifyEvent} from '../lib/error';
 
-type chromeStorageType = 'local' | 'session' | 'sync';
+export type ChromeStorageType = 'local' | 'session' | 'sync';
 
-export const isChromeStorageSupported = (type: chromeStorageType) => {
+export const isChromeStorageSupported = (type: ChromeStorageType) => {
   try {
     if (chrome?.storage?.[type]) {
       return true;
@@ -15,10 +15,16 @@ export const isChromeStorageSupported = (type: chromeStorageType) => {
   return false;
 };
 
+export const isChromeStorageType = (
+  type: string,
+): type is ChromeStorageType => {
+  return ['local', 'session', 'sync'].includes(type);
+};
+
 const useChromeStorage = <T>(
   key: string,
   initialValue: T,
-  type: chromeStorageType = 'session',
+  type: ChromeStorageType = 'session',
 ): [T, (state: T) => void] => {
   const [chromeStorageState, setChromeStorageState] = useState<T>(initialValue);
 

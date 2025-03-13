@@ -8,6 +8,18 @@ import {
   BootstrapStatePrefix,
 } from '../../types/fireBlocks';
 
+export const getAccountIdFromBootstrapState = (
+  state?: BootstrapState,
+): string | undefined => {
+  if (!state?.assets || state.assets.length === 0) {
+    return undefined;
+  }
+  if (!state.assets[0].accountId) {
+    return undefined;
+  }
+  return state.assets[0].accountId;
+};
+
 export const getBootstrapState = (
   state: Record<string, Record<string, string>>,
 ): BootstrapState | undefined => {

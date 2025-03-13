@@ -79,7 +79,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginBottom: theme.spacing(1),
   },
   refreshIcon: {
-    color: theme.palette.text.secondary,
+    color: theme.palette.wallet.text.secondary,
     width: '20px',
     height: '20px',
   },

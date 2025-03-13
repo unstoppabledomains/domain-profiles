@@ -104,6 +104,9 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       justifyContent: 'center',
       alignItems: 'center',
     },
+    balanceText: {
+      position: 'relative',
+    },
     snackBarButton: {
       marginLeft: theme.spacing(1),
       color: theme.palette.getContrastText(theme.palette.primary.main),
@@ -190,6 +193,11 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
     },
     fundWalletCtaText: {
       maxWidth: '350px',
+    },
+    refreshContainer: {
+      position: 'absolute',
+      right: theme.spacing(-4),
+      top: theme.spacing(-0.75),
     },
     refreshIcon: {
       color: theme.palette.wallet.text.secondary,
@@ -741,7 +749,7 @@ export const Client: React.FC<ClientProps> = ({
             {cryptoValue ? (
               <Box className={classes.header}>
                 <Box className={classes.balanceContainer}>
-                  <Typography ml={1} variant="h3">
+                  <Typography className={classes.balanceText} variant="h3">
                     {numeral(
                       tabValue === ClientTabType.Domains
                         ? // show only domain value on domain tab
@@ -753,14 +761,14 @@ export const Client: React.FC<ClientProps> = ({
                           // show aggregate value (domains + crypto) on activity tab
                           domainsValue + cryptoValue,
                     ).format('$0,0')}
+                    <Box className={classes.refreshContainer}>
+                      <Tooltip title={t('common.refresh')}>
+                        <IconButton size="small" onClick={handleManualRefresh}>
+                          <RefreshIcon className={classes.refreshIcon} />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
                   </Typography>
-                  <Box ml={1}>
-                    <Tooltip title={t('common.refresh')}>
-                      <IconButton size="small" onClick={handleManualRefresh}>
-                        <RefreshIcon className={classes.refreshIcon} />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
                 </Box>
                 <Grid container spacing={2} className={classes.actionContainer}>
                   <Grid item>

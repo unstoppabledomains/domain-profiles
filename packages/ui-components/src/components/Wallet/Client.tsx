@@ -689,6 +689,19 @@ export const Client: React.FC<ClientProps> = ({
       : ['native', 'price', 'token'];
   };
 
+  // calculate the balance amount based on the current tab
+  const balanceAmount =
+    tabValue === ClientTabType.Domains
+      ? // show only domain value on domain tab
+        domainsValue
+      : tabValue === ClientTabType.Portfolio
+      ? // show only crypto value on crypto tab
+        cryptoValue
+      : tabValue === ClientTabType.Transactions
+      ? // show aggregate value (domains + crypto) on activity tab
+        domainsValue + cryptoValue
+      : 0;
+
   return (
     <Box className={classes.container}>
       <Box className={classes.walletContainer}>
@@ -750,17 +763,9 @@ export const Client: React.FC<ClientProps> = ({
               <Box className={classes.header}>
                 <Box className={classes.balanceContainer}>
                   <Typography className={classes.balanceText} variant="h3">
-                    {numeral(
-                      tabValue === ClientTabType.Domains
-                        ? // show only domain value on domain tab
-                          domainsValue
-                        : tabValue === ClientTabType.Portfolio
-                        ? // show only crypto value on crypto tab
-                          cryptoValue
-                        : tabValue === ClientTabType.Transactions &&
-                          // show aggregate value (domains + crypto) on activity tab
-                          domainsValue + cryptoValue,
-                    ).format('$0,0')}
+                    {numeral(balanceAmount).format(
+                      balanceAmount < 1000 ? '$0,0.00' : '$0,0',
+                    )}
                     <Box className={classes.refreshContainer}>
                       <Tooltip title={t('common.refresh')}>
                         <IconButton size="small" onClick={handleManualRefresh}>

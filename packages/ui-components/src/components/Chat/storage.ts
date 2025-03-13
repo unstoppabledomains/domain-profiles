@@ -78,8 +78,8 @@ export class localStorageWrapper {
   ): Promise<string | null> {
     return isChromeStorageType(opts.type) && isChromeStorageSupported(opts.type)
       ? await localStorageWrapper.getChromeStorage(k, opts.type)
-      : opts.type === 'wallet' && opts.accessToken && opts.accountId
-      ? WalletStorageProvider.getItem(k, opts.accountId, opts.accessToken)
+      : opts.type === 'wallet' && opts.accessToken
+      ? WalletStorageProvider.getItem(k, opts.accessToken, opts.accountId)
       : localStorage.getItem(k);
   }
 
@@ -91,12 +91,12 @@ export class localStorageWrapper {
     if (isChromeStorageType(opts.type) && isChromeStorageSupported(opts.type)) {
       await chrome.storage[opts.type].set({[k]: v});
       return;
-    } else if (opts.type === 'wallet' && opts.accessToken && opts.accountId) {
+    } else if (opts.type === 'wallet' && opts.accessToken) {
       await WalletStorageProvider.setItem(
         k,
         v,
-        opts.accountId,
         opts.accessToken,
+        opts.accountId,
       );
       return;
     }
@@ -110,11 +110,11 @@ export class localStorageWrapper {
     if (isChromeStorageType(opts.type) && isChromeStorageSupported(opts.type)) {
       await chrome.storage[opts.type].remove(k);
       return;
-    } else if (opts.type === 'wallet' && opts.accessToken && opts.accountId) {
+    } else if (opts.type === 'wallet' && opts.accessToken) {
       await WalletStorageProvider.removeItem(
         k,
-        opts.accountId,
         opts.accessToken,
+        opts.accountId,
       );
       return;
     }
@@ -127,8 +127,8 @@ export class localStorageWrapper {
     if (isChromeStorageType(opts.type) && isChromeStorageSupported(opts.type)) {
       await chrome.storage[opts.type].clear();
       return;
-    } else if (opts.type === 'wallet' && opts.accessToken && opts.accountId) {
-      await WalletStorageProvider.clear(opts.accountId, opts.accessToken);
+    } else if (opts.type === 'wallet' && opts.accessToken) {
+      await WalletStorageProvider.clear(opts.accessToken, opts.accountId);
       return;
     }
     localStorage.clear();

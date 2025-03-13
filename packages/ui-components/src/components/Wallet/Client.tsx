@@ -263,7 +263,7 @@ export const Client: React.FC<ClientProps> = ({
     const [lockStatus] = await Promise.all([
       getTransactionLockStatus(accessToken),
       accountId
-        ? getWalletStorageData(accountId, accessToken, true)
+        ? getWalletStorageData(accessToken, accountId, true)
         : undefined,
     ]);
 

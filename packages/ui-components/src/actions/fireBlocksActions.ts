@@ -1,3 +1,4 @@
+import {Mutex} from 'async-mutex';
 import Bluebird from 'bluebird';
 import {utils as EthersUtils} from 'ethers';
 import QueryString from 'qs';
@@ -37,6 +38,10 @@ import {
   getBootstrapState,
   saveBootstrapState,
 } from '../lib/wallet/storage/state';
+
+// account list cache control
+const accountsCache: Record<string, GetAccountsResponse> = {};
+const accountsCacheMutex = new Mutex();
 
 export enum OperationStatus {
   QUEUED = 'QUEUED',
@@ -375,11 +380,51 @@ export const getAccountAssets = async (
   return undefined;
 };
 
+/**
+ * getAccountId
+ *
+ * Retrieves the account ID for the given access token.
+ *
+ * @param accessToken - The access token to retrieve the account ID for.
+ * @param useCache - Whether to use the cache.
+ * @returns The account ID for the given access token.
+ */
+export const getAccountId = async (
+  accessToken: string,
+  useCache = false,
+): Promise<string | undefined> => {
+  const accounts = await getAccounts(accessToken, useCache);
+  return accounts?.items[0].id;
+};
+
+/**
+ * getAccounts
+ *
+ * Retrieves the accounts for the given access token.
+ *
+ * @param accessToken - The access token to retrieve the accounts for.
+ * @param useCache - Whether to use the cache.
+ * @returns The accounts for the given access token.
+ */
 export const getAccounts = async (
   accessToken: string,
+  useCache = false,
 ): Promise<GetAccountsResponse | undefined> => {
+  // retrieve from cache if enabled
+  if (useCache && accountsCache[accessToken]) {
+    return accountsCache[accessToken];
+  }
+
+  // acquire a lock to prevent race conditions on the cache
+  const unlock = await accountsCacheMutex.acquire();
+
+  // check cache again before making an API call
+  if (useCache && accountsCache[accessToken]) {
+    return accountsCache[accessToken];
+  }
+
+  // retrieve a new set of tokens using the refresh token
   try {
-    // retrieve a new set of tokens using the refresh token
     const accounts = await fetchApi<GetAccountsResponse>('/v1/accounts', {
       mode: 'cors',
       headers: {
@@ -389,13 +434,19 @@ export const getAccounts = async (
       },
       host: config.WALLETS.HOST_URL,
     });
+
+    // validate the accounts are not empty
     if (accounts.items.length > 0) {
+      // populate the cache and return
+      accountsCache[accessToken] = accounts;
       return accounts;
     }
   } catch (e) {
     notifyEvent(e, 'error', 'Wallet', 'Fetch', {
       msg: 'error retrieving accounts',
     });
+  } finally {
+    unlock();
   }
   return undefined;
 };

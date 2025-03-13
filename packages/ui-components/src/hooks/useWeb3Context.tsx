@@ -3,7 +3,6 @@ import useAsyncEffect from 'use-async-effect';
 
 import config from '@unstoppabledomains/config';
 
-import {getAccounts} from '../actions/fireBlocksActions';
 import {getWalletStorageData} from '../actions/walletStorageActions';
 import {localStorageWrapper} from '../components';
 import {
@@ -119,19 +118,14 @@ const useWeb3Context = () => {
     }
 
     try {
-      // retrieve encrypted PIN from remote configuration
-      const accounts = await getAccounts(accessToken);
-      const accountId =
-        accounts?.items && accounts.items.length > 0
-          ? accounts.items[0].id
-          : undefined;
-      const encryptedPin = accountId
-        ? await localStorageWrapper.getItem(DomainProfileKeys.EncryptedPIN, {
-            type: 'wallet',
-            accessToken,
-            accountId,
-          })
-        : undefined;
+      // retrieve the encrypted PIN from remote wallet configuration
+      const encryptedPin = await localStorageWrapper.getItem(
+        DomainProfileKeys.EncryptedPIN,
+        {
+          type: 'wallet',
+          accessToken,
+        },
+      );
 
       // synchronize the remote and local encrypted PIN configurations
       if (encryptedPin) {
@@ -140,9 +134,12 @@ const useWeb3Context = () => {
           DomainProfileKeys.EncryptedPIN,
           encryptedPin,
         );
-      } else if (accountId) {
+      } else {
+        // TODO: this code can be removed in a future release once migration
+        // has had an opportunity to complete
+
         // only sync local configuration if remote configuration is empty
-        const walletConfig = await getWalletStorageData(accountId, accessToken);
+        const walletConfig = await getWalletStorageData(accessToken);
 
         // set the remote encrypted PIN to the one set locally
         if (
@@ -159,7 +156,6 @@ const useWeb3Context = () => {
               {
                 type: 'wallet',
                 accessToken,
-                accountId,
               },
             );
           }

@@ -7,13 +7,13 @@ import {
 export class WalletStorageProvider {
   static async getItem(
     k: string,
-    accountId: string,
     accessToken: string,
+    accountId?: string,
   ): Promise<string | null> {
     // retrieve wallet storage data
     const walletPreferences = await getWalletStorageData(
-      accountId,
       accessToken,
+      accountId,
     );
     if (!walletPreferences?.data) {
       return null;
@@ -27,13 +27,13 @@ export class WalletStorageProvider {
   static async setItem(
     k: string,
     v: string,
-    accountId: string,
     accessToken: string,
+    accountId?: string,
   ): Promise<void> {
     // retrieve wallet storage data
     const walletPreferences = await getWalletStorageData(
-      accountId,
       accessToken,
+      accountId,
     );
 
     // return the value for requested key if present
@@ -45,18 +45,18 @@ export class WalletStorageProvider {
     data[k] = v;
 
     // update wallet storage data
-    await setWalletStorageData(data, accountId, accessToken);
+    await setWalletStorageData(data, accessToken, accountId);
   }
 
   static async removeItem(
     k: string,
-    accountId: string,
     accessToken: string,
+    accountId?: string,
   ): Promise<void> {
     // retrieve wallet storage data
     const walletPreferences = await getWalletStorageData(
-      accountId,
       accessToken,
+      accountId,
     );
     if (!walletPreferences?.data) {
       return;
@@ -67,10 +67,10 @@ export class WalletStorageProvider {
     delete data[k];
 
     // update wallet storage data
-    await setWalletStorageData(data, accountId, accessToken);
+    await setWalletStorageData(data, accessToken, accountId);
   }
 
-  static async clear(accountId: string, accessToken: string): Promise<void> {
-    await clearWalletStorageData(accountId, accessToken);
+  static async clear(accessToken: string, accountId?: string): Promise<void> {
+    await clearWalletStorageData(accessToken, accountId);
   }
 }

@@ -2,17 +2,25 @@ import config from '@unstoppabledomains/config';
 
 import {fetchApi} from '../lib/fetchApi';
 import type {WalletStorageData} from '../lib/types/walletStorage';
+import {getAccountId} from './fireBlocksActions';
 
 const WALLET_KEY_NAME = 'general-preferences';
 
 export const clearWalletStorageData = async (
-  accountId: string,
   accessToken: string,
+  accountId?: string,
 ) => {
   try {
+    // retrieve account ID if empty
+    const normalizedAccountId =
+      accountId ?? (await getAccountId(accessToken, true));
+    if (!normalizedAccountId) {
+      return undefined;
+    }
+
     // remove data from storage
     const response = await fetchApi<WalletStorageData>(
-      `/user/${accountId}/wallet/storage/${WALLET_KEY_NAME}`,
+      `/user/${normalizedAccountId}/wallet/storage/${WALLET_KEY_NAME}`,
       {
         host: config.PROFILE.HOST_URL,
         method: 'DELETE',
@@ -33,8 +41,8 @@ export const clearWalletStorageData = async (
 };
 
 export const getWalletStorageData = async (
-  accountId: string,
   accessToken: string,
+  accountId?: string,
   forceRefresh = false,
 ): Promise<WalletStorageData | undefined> => {
   try {
@@ -44,9 +52,16 @@ export const getWalletStorageData = async (
       return JSON.parse(data);
     }
 
+    // retrieve account ID if empty
+    const normalizedAccountId =
+      accountId ?? (await getAccountId(accessToken, true));
+    if (!normalizedAccountId) {
+      return undefined;
+    }
+
     // retrieve new data if not available in session storage
     const response = await fetchApi<WalletStorageData>(
-      `/user/${accountId}/wallet/storage/${WALLET_KEY_NAME}`,
+      `/user/${normalizedAccountId}/wallet/storage/${WALLET_KEY_NAME}`,
       {
         host: config.PROFILE.HOST_URL,
         method: 'GET',
@@ -71,12 +86,20 @@ export const getWalletStorageData = async (
 
 export const setWalletStorageData = async (
   data: Record<string, string>,
-  accountId: string,
   accessToken: string,
+  accountId?: string,
 ) => {
   try {
+    // retrieve account ID if empty
+    const normalizedAccountId =
+      accountId ?? (await getAccountId(accessToken, true));
+    if (!normalizedAccountId) {
+      return undefined;
+    }
+
+    // set the wallet storage data
     const response = await fetchApi<WalletStorageData>(
-      `/user/${accountId}/wallet/storage/${WALLET_KEY_NAME}`,
+      `/user/${normalizedAccountId}/wallet/storage/${WALLET_KEY_NAME}`,
       {
         host: config.PROFILE.HOST_URL,
         method: 'POST',

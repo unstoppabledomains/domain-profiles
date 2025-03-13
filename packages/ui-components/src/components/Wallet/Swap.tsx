@@ -704,7 +704,7 @@ const Swap: React.FC<Props> = ({
         accountId,
       },
     );
-    setShowSwapIntro(swapIntroState === null);
+    setShowSwapIntro(!swapIntroState);
 
     // determine swap mode
     const swapMode = await localStorageWrapper.getItem(

@@ -104,6 +104,9 @@ export const useConversationBubbleStyles = makeStyles<{
     backgroundColor: isAttachment
       ? theme.palette.background.default
       : theme.palette.grey[100],
+    color: theme.palette.getContrastText(
+      isAttachment ? theme.palette.background.default : theme.palette.grey[100],
+    ),
   },
   right: {
     borderTopLeftRadius: theme.spacing(2.5),

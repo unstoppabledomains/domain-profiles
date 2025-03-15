@@ -56,7 +56,7 @@ export const getSortedTokens = (
         ) {
           fpEntry[0].history.push({
             timestamp: new Date(),
-            value: fpEntry[0].value || 0,
+            value: fpEntry[0].valueUsdAmt || 0,
           });
         }
         return {

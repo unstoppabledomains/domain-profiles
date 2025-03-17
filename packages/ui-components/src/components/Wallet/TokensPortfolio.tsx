@@ -83,6 +83,11 @@ const useStyles = makeStyles<{fullHeight?: boolean; isBanner?: boolean}>()(
       width: '100%',
       borderRadius: theme.shape.borderRadius,
     },
+    tokenPlaceholder: {
+      width: '100%',
+      borderRadius: theme.shape.borderRadius,
+      height: theme.spacing(5),
+    },
     sectionHeaderContainer: {
       display: 'flex',
       alignItems: 'center',
@@ -148,6 +153,7 @@ const useStyles = makeStyles<{fullHeight?: boolean; isBanner?: boolean}>()(
 export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   domain,
   wallets,
+  isWalletsLoading,
   isError,
   isOwner,
   verified,
@@ -304,7 +310,16 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
                   </Box>
                 )}
               </Grid>
-              {!isError && groupedTokens.length > 0 ? (
+              {isWalletsLoading ? (
+                [...new Array(10)].map((_, index) => (
+                  <Grid item xs={12} key={`token-placeholder-${index}`}>
+                    <Skeleton
+                      variant="rectangular"
+                      className={classes.tokenPlaceholder}
+                    />
+                  </Grid>
+                ))
+              ) : !isError && groupedTokens.length > 0 ? (
                 groupedTokens
                   .filter(token => tokenTypes.includes(token.type))
                   .map(token => (
@@ -356,6 +371,7 @@ export type TokensPortfolioProps = {
   maxCount?: number;
   isError?: boolean;
   isOwner?: boolean;
+  isWalletsLoading?: boolean;
   verified: boolean;
   boxShadow?: number;
   fullHeight?: boolean;

@@ -41,11 +41,14 @@ import {
   getProfileData,
 } from '../../actions';
 import {getTransactionLockStatus} from '../../actions/fireBlocksActions';
-import {getWalletNftCollections} from '../../actions/nftActions';
+import {
+  getWalletCollectionNfts,
+  getWalletNftCollections,
+} from '../../actions/nftActions';
 import {getWalletStorageData} from '../../actions/walletStorageActions';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
-import type {SerializedWalletBalance, TokenEntry} from '../../lib';
+import type {Nft, SerializedWalletBalance, TokenEntry} from '../../lib';
 import {
   CustodyState,
   DomainFieldTypes,
@@ -65,6 +68,7 @@ import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileList} from '../Domain';
 import {DomainProfileModal} from '../Manage';
 import Modal from '../Modal';
+import NftModal from '../TokenGallery/NftModal';
 import ActionButton from './ActionButton';
 import Buy from './Buy';
 import FundWalletModal from './FundWalletModal';
@@ -235,11 +239,6 @@ export const Client: React.FC<ClientProps> = ({
   const [t] = useTranslationContext();
   const {enqueueSnackbar, closeSnackbar} = useSnackbar();
 
-  // NFT gallery state variables
-  const [nftWallets, setNftWallets] = useState<SerializedWalletBalance[]>([]);
-  const [selectedNftCollection, setSelectedNftCollection] =
-    useState<TokenEntry>();
-
   // wallet state variables
   const [state, saveState] = useFireblocksState();
   const clientState = getBootstrapState(state);
@@ -272,6 +271,13 @@ export const Client: React.FC<ClientProps> = ({
   const [isDomainsLoading, setIsDomainsLoading] = useState(true);
   const [retrievedAll, setRetrievedAll] = useState(false);
   const [domainToManage, setDomainToManage] = useState<string>();
+
+  // NFT gallery state variables
+  const [nftWallets, setNftWallets] = useState<SerializedWalletBalance[]>([]);
+  const [selectedNftCollection, setSelectedNftCollection] =
+    useState<TokenEntry>();
+  const [selectedNft, setSelectedNft] = useState<Nft>();
+  const [isNftLoading, setIsNftLoading] = useState(false);
 
   // owner address
   const address = wallets.find(w => isEthAddress(w.address))?.address;
@@ -378,7 +384,11 @@ export const Client: React.FC<ClientProps> = ({
       return;
     }
     if (address) {
-      void handleLoadDomains(true);
+      if (theme.wallet.type === 'udme') {
+        void handleLoadDomains(true);
+      } else {
+        void handleLoadCollectibles(true);
+      }
     }
     setIsHeaderClicked(false);
     void handleCancelAction();
@@ -532,18 +542,25 @@ export const Client: React.FC<ClientProps> = ({
     const tv = newValue as ClientTabType;
     setIsTransactionsLoading(true);
     setTabValue(tv);
-    if (address && tv === ClientTabType.Domains) {
-      void handleLoadDomains(true);
-    }
-    if (address && tv === ClientTabType.Collectibles) {
-      void handleLoadCollectibles(true);
-    }
+    try {
+      // special handling for domain listing
+      if (address && tv === ClientTabType.Domains) {
+        void handleLoadDomains(false);
+        return;
+      }
 
-    // call the refresh method on tab change
-    await refresh(true, getTabFields(tv));
+      // special handling for collectibles listing
+      if (address && tv === ClientTabType.Collectibles) {
+        void handleLoadCollectibles(false);
+        return;
+      }
 
-    // transactions have been loaded
-    setIsTransactionsLoading(false);
+      // general handling for tab change
+      await refresh(true, getTabFields(tv));
+    } finally {
+      // transactions have been loaded
+      setIsTransactionsLoading(false);
+    }
   };
 
   const handleManualRefresh = async () => {
@@ -589,6 +606,9 @@ export const Client: React.FC<ClientProps> = ({
   };
 
   const handleLoadCollectibles = async (reload?: boolean) => {
+    // set loading state
+    setIsNftLoading(true);
+
     // get the nft collections from all EVM and Solana wallets
     const walletAddresses = [
       ...new Set(
@@ -619,8 +639,15 @@ export const Client: React.FC<ClientProps> = ({
       }
     });
 
+    // calculate NFT portfolio value
+    const nftPortfolioValue = aggregatedNftWallets
+      .map(w => w.nfts?.reduce((p, c) => p + (c.totalValueUsdAmt || 0), 0) || 0)
+      .reduce((p, c) => p + c, 0);
+    setCollectiblesValue(nftPortfolioValue);
+
     // prepare the NFT wallets for display
     setNftWallets(aggregatedNftWallets);
+    setIsNftLoading(false);
   };
 
   const handleLoadDomains = async (reload?: boolean) => {
@@ -662,8 +689,25 @@ export const Client: React.FC<ClientProps> = ({
     setSelectedToken(token);
   };
 
-  const handleNftClicked = (nft: TokenEntry) => {
-    setSelectedNftCollection(nft);
+  const handleNftClicked = async (collection: TokenEntry) => {
+    if (collection.balance === 1 && collection.address) {
+      // retrieve the single NFT and display it in modal
+      const nftData = await getWalletCollectionNfts(
+        collection.symbol,
+        collection.walletAddress,
+        collection.address,
+      );
+      const nftList = nftData?.[collection.symbol]?.nfts;
+      if (nftList && nftList.length > 0) {
+        // normalize NFT data
+        const nft = nftList[0];
+        nft.symbol = collection.symbol;
+        setSelectedNft(nft);
+      }
+    } else {
+      // view the collection NFT list
+      setSelectedNftCollection(collection);
+    }
   };
 
   const handleViewSwapToken = (token: TokenEntry) => {
@@ -935,6 +979,7 @@ export const Client: React.FC<ClientProps> = ({
                 >
                   <Box className={classes.listContainer}>
                     <TokensPortfolio
+                      isWalletsLoading={isNftLoading}
                       tokenTypes={[TokenType.Nft]}
                       banner={banner}
                       wallets={nftWallets}
@@ -1057,6 +1102,13 @@ export const Client: React.FC<ClientProps> = ({
           </TabContext>
         )}
       </Box>
+      {selectedNft && (
+        <NftModal
+          open={true}
+          nft={selectedNft}
+          handleClose={() => setSelectedNft(undefined)}
+        />
+      )}
       {domainToManage && (
         <DomainProfileModal
           domain={domainToManage}

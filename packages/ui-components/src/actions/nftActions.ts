@@ -31,8 +31,10 @@ export const getWalletNftCollections = async (
   address: string,
   forceRefresh?: boolean,
 ): Promise<Record<string, SerializedWalletNftCollection[]> | undefined> => {
-  const domainProfileUrl = `/user/${address}/nfts/collections?forceRefresh=${
-    forceRefresh ? Date.now() : undefined
-  }`;
+  const domainProfileUrl = `/user/${address}/nfts/collections?${QueryString.stringify(
+    {
+      forceRefresh: forceRefresh ? Date.now() : undefined,
+    },
+  )}`;
   return await fetchApi(domainProfileUrl, {host: config.PROFILE.HOST_URL});
 };

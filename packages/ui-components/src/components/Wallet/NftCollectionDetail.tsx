@@ -57,9 +57,12 @@ const NftCollectionDetail: React.FC<Props> = ({collection, onCancelClick}) => {
   }, [collection]);
 
   const getNextPage = async () => {
+    // no work to do if no collection address
     if (!collection?.address) {
       return;
     }
+
+    // retrieve the next page of NFTs for the collection
     const data = await getWalletCollectionNfts(
       collection.symbol,
       collection.walletAddress,
@@ -74,7 +77,9 @@ const NftCollectionDetail: React.FC<Props> = ({collection, onCancelClick}) => {
       // set NFT data state
       setNfts([...nfts, ...newNfts]);
       setCursor(data[collection.symbol].cursor);
-      setHasMore(newNfts.length < NFT_PAGE_SIZE);
+      setHasMore(
+        !!data[collection.symbol].cursor && newNfts.length < NFT_PAGE_SIZE,
+      );
     }
   };
 

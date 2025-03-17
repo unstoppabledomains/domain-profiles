@@ -4,6 +4,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import LockIcon from '@mui/icons-material/LockOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
+import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import SendIcon from '@mui/icons-material/Send';
@@ -22,6 +23,8 @@ import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import {Mutex} from 'async-mutex';
+import Bluebird from 'bluebird';
+import cloneDeep from 'lodash/cloneDeep';
 import Markdown from 'markdown-to-jsx';
 import {useSnackbar} from 'notistack';
 import numeral from 'numeral';
@@ -38,6 +41,7 @@ import {
   getProfileData,
 } from '../../actions';
 import {getTransactionLockStatus} from '../../actions/fireBlocksActions';
+import {getWalletNftCollections} from '../../actions/nftActions';
 import {getWalletStorageData} from '../../actions/walletStorageActions';
 import {useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
@@ -46,6 +50,7 @@ import {
   CustodyState,
   DomainFieldTypes,
   DomainProfileKeys,
+  TokenType,
   WALLET_CARD_HEIGHT,
   getAccountIdFromBootstrapState,
   getBootstrapState,
@@ -64,6 +69,7 @@ import ActionButton from './ActionButton';
 import Buy from './Buy';
 import FundWalletModal from './FundWalletModal';
 import {LetsGetStartedCta} from './LetsGetStartedCta';
+import NftCollectionDetail from './NftCollectionDetail';
 import Receive from './Receive';
 import ReceiveDomainModal from './ReceiveDomainModal';
 import Send from './Send';
@@ -229,6 +235,11 @@ export const Client: React.FC<ClientProps> = ({
   const [t] = useTranslationContext();
   const {enqueueSnackbar, closeSnackbar} = useSnackbar();
 
+  // NFT gallery state variables
+  const [nftWallets, setNftWallets] = useState<SerializedWalletBalance[]>([]);
+  const [selectedNftCollection, setSelectedNftCollection] =
+    useState<TokenEntry>();
+
   // wallet state variables
   const [state, saveState] = useFireblocksState();
   const clientState = getBootstrapState(state);
@@ -256,6 +267,7 @@ export const Client: React.FC<ClientProps> = ({
   // domain list state
   const [domains, setDomains] = useState<string[]>([]);
   const [domainsValue, setDomainsValue] = useState<number>(0);
+  const [collectiblesValue, setCollectiblesValue] = useState<number>(0);
   const [cursor, setCursor] = useState<number | string>();
   const [isDomainsLoading, setIsDomainsLoading] = useState(true);
   const [retrievedAll, setRetrievedAll] = useState(false);
@@ -523,6 +535,9 @@ export const Client: React.FC<ClientProps> = ({
     if (address && tv === ClientTabType.Domains) {
       void handleLoadDomains(true);
     }
+    if (address && tv === ClientTabType.Collectibles) {
+      void handleLoadCollectibles(true);
+    }
 
     // call the refresh method on tab change
     await refresh(true, getTabFields(tv));
@@ -573,6 +588,41 @@ export const Client: React.FC<ClientProps> = ({
     return retData;
   };
 
+  const handleLoadCollectibles = async (reload?: boolean) => {
+    // get the nft collections from all EVM and Solana wallets
+    const walletAddresses = [
+      ...new Set(
+        wallets
+          .filter(w => ['ETH', 'SOL'].includes(w.symbol.toUpperCase()))
+          .map(w => w.address),
+      ),
+    ];
+
+    // aggregate all NFT collections across chains
+    const aggregatedNftWallets = cloneDeep(wallets);
+    await Bluebird.map(walletAddresses, async walletAddress => {
+      const nftCollections = await getWalletNftCollections(
+        walletAddress,
+        reload,
+      );
+      if (nftCollections && Object.keys(nftCollections).length > 0) {
+        Object.keys(nftCollections).forEach(symbol => {
+          const nftWallet = aggregatedNftWallets.find(
+            w =>
+              w.address.toLowerCase() === walletAddress.toLowerCase() &&
+              w.symbol === symbol,
+          );
+          if (nftWallet) {
+            nftWallet.nfts = nftCollections[symbol];
+          }
+        });
+      }
+    });
+
+    // prepare the NFT wallets for display
+    setNftWallets(aggregatedNftWallets);
+  };
+
   const handleLoadDomains = async (reload?: boolean) => {
     if (!address) {
       return;
@@ -610,6 +660,10 @@ export const Client: React.FC<ClientProps> = ({
 
   const handleTokenClicked = (token: TokenEntry) => {
     setSelectedToken(token);
+  };
+
+  const handleNftClicked = (nft: TokenEntry) => {
+    setSelectedNftCollection(nft);
   };
 
   const handleViewSwapToken = (token: TokenEntry) => {
@@ -679,6 +733,11 @@ export const Client: React.FC<ClientProps> = ({
     handleCancelAction();
   };
 
+  const handleCancelNftCollection = () => {
+    setSelectedNftCollection(undefined);
+    handleCancelAction();
+  };
+
   const handleLearnMoreClicked = () => {
     window.open(config.WALLETS.LANDING_PAGE_URL, '_blank');
   };
@@ -700,6 +759,9 @@ export const Client: React.FC<ClientProps> = ({
       : tabValue === ClientTabType.Transactions
       ? // show aggregate value (domains + crypto) on activity tab
         domainsValue + cryptoValue
+      : tabValue === ClientTabType.Collectibles
+      ? // show only collectibles value on collectibles tab
+        collectiblesValue
       : 0;
 
   return (
@@ -755,6 +817,14 @@ export const Client: React.FC<ClientProps> = ({
               onClickSwap={handleClickedSwap}
               onClickSend={handleClickedSend}
               onRefreshClicked={handleManualRefresh}
+            />
+          </Box>
+        ) : selectedNftCollection && accessToken ? (
+          <Box className={classes.panelContainer}>
+            <NftCollectionDetail
+              accessToken={accessToken}
+              collection={selectedNftCollection}
+              onCancelClick={handleCancelNftCollection}
             />
           </Box>
         ) : (
@@ -837,6 +907,11 @@ export const Client: React.FC<ClientProps> = ({
                   {cryptoValue ? (
                     <Box className={classes.listContainer}>
                       <TokensPortfolio
+                        tokenTypes={[
+                          TokenType.Native,
+                          TokenType.Erc20,
+                          TokenType.Spl,
+                        ]}
                         banner={banner}
                         wallets={wallets}
                         isOwner={true}
@@ -853,6 +928,22 @@ export const Client: React.FC<ClientProps> = ({
                       />
                     </Box>
                   )}
+                </TabPanel>
+                <TabPanel
+                  value={ClientTabType.Collectibles}
+                  className={classes.tabContentItem}
+                >
+                  <Box className={classes.listContainer}>
+                    <TokensPortfolio
+                      tokenTypes={[TokenType.Nft]}
+                      banner={banner}
+                      wallets={nftWallets}
+                      isOwner={true}
+                      verified={true}
+                      fullHeight={isMobile}
+                      onTokenClick={handleNftClicked}
+                    />
+                  </Box>
                 </TabPanel>
                 <TabPanel
                   value={ClientTabType.Domains}
@@ -929,12 +1020,21 @@ export const Client: React.FC<ClientProps> = ({
                     label={t('tokensPortfolio.crypto')}
                     iconPosition="start"
                   />
-                  <Tab
-                    icon={<ListOutlinedIcon />}
-                    value={ClientTabType.Domains}
-                    label={t('common.domains')}
-                    iconPosition="start"
-                  />
+                  {theme.wallet.type === 'udme' ? (
+                    <Tab
+                      icon={<ListOutlinedIcon />}
+                      value={ClientTabType.Domains}
+                      label={t('common.domains')}
+                      iconPosition="start"
+                    />
+                  ) : (
+                    <Tab
+                      icon={<PhotoLibraryOutlinedIcon />}
+                      value={ClientTabType.Collectibles}
+                      label={t('wallet.gallery')}
+                      iconPosition="start"
+                    />
+                  )}
                   <Tab
                     icon={<HistoryIcon />}
                     value={ClientTabType.Transactions}
@@ -1020,6 +1120,7 @@ export type ClientProps = {
 };
 
 export enum ClientTabType {
+  Collectibles = 'collectibles',
   Domains = 'domains',
   Portfolio = 'portfolio',
   Transactions = 'txns',

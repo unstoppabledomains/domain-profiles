@@ -994,6 +994,7 @@
     "fundWithPurchaseTitle": "Buy crypto",
     "fundWithTransferDescription": "Transfer funds from another wallet",
     "fundWithTransferTitle": "Receive crypto",
+    "gallery": "Gallery",
     "gasPriceError": "Error estimating network fee",
     "getLiteWallet": "Create new wallet",
     "insufficientBalance": "Insufficient balance",

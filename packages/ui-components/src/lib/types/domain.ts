@@ -480,6 +480,7 @@ export type SerializedWalletBalance = SerializedWalletToken & {
 };
 
 export type SerializedWalletNftCollection = {
+  collectionId?: string;
   category?: string;
   contractAddresses: string[];
   collectionImageUrl?: string;

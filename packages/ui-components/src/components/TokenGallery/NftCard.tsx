@@ -10,7 +10,8 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
-import {useTheme, type Theme} from '@mui/material/styles';
+import type {Theme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
 import React, {useEffect, useRef, useState} from 'react';
 import type {MouseEvent} from 'react';
 import VisibilitySensor from 'react-visibility-sensor';
@@ -76,14 +77,22 @@ const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 interface Props {
-  domain: string;
-  address: string;
+  domain?: string;
+  address?: string;
   nft: Nft;
   placeholder?: boolean;
   compact?: boolean;
+  onClick?: (selected: Nft) => void;
 }
 
-const NftCard = ({domain, address, nft, compact, placeholder}: Props) => {
+const NftCard = ({
+  domain,
+  address,
+  nft,
+  compact,
+  placeholder,
+  onClick,
+}: Props) => {
   const [t] = useTranslationContext();
   const videoRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -177,6 +186,12 @@ const NftCard = ({domain, address, nft, compact, placeholder}: Props) => {
   const handleClose = () => setOpen(false);
 
   const handleClick = async () => {
+    // use custom onClick if provided
+    if (onClick) {
+      onClick(nft);
+      return;
+    }
+
     //only open modal if feature flag is set
     if (!nft.link) {
       return;
@@ -412,14 +427,16 @@ const NftCard = ({domain, address, nft, compact, placeholder}: Props) => {
             </Typography>
           </MenuItem>
         </Menu>
-        <NftModal
-          handleClose={handleClose}
-          open={open}
-          nft={nft}
-          domain={domain}
-          address={address}
-        />
-        {pfpModalOpen && (
+        {open && (
+          <NftModal
+            handleClose={handleClose}
+            open={open}
+            nft={nft}
+            domain={domain}
+            address={address}
+          />
+        )}
+        {pfpModalOpen && domain && address && (
           <SelectNftPopup
             domain={domain}
             address={address}

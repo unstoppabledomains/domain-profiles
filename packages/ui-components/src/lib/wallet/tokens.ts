@@ -60,6 +60,7 @@ export const getSortedTokens = (
           });
         }
         return {
+          address: walletNft.collectionId,
           type: TokenType.Nft,
           name: walletNft.name,
           value: walletNft.totalValueUsdAmt || 0,

@@ -20,6 +20,7 @@ import {
   getSortedTokens,
   useTranslationContext,
 } from '../../lib';
+import {TokenType} from '../../lib/types/domain';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
 import CopyToClipboard from '../CopyToClipboard';
 import {CryptoIcon} from '../Image';
@@ -153,6 +154,12 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   boxShadow,
   fullHeight,
   banner,
+  tokenTypes = [
+    TokenType.Native,
+    TokenType.Erc20,
+    TokenType.Spl,
+    TokenType.Nft,
+  ],
   onTokenClick,
 }) => {
   const {classes, cx} = useStyles({fullHeight, isBanner: !!banner});
@@ -298,22 +305,24 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
                 )}
               </Grid>
               {!isError && groupedTokens.length > 0 ? (
-                groupedTokens.map(token => (
-                  <Grid
-                    item
-                    xs={12}
-                    key={`${token.type}/${token.symbol}/${token.ticker}/${token.walletAddress}`}
-                  >
-                    <Box className={classes.tokenContainer}>
-                      <Token
-                        isOwner
-                        token={token}
-                        onClick={() => handleClick(token)}
-                        showGraph
-                      />
-                    </Box>
-                  </Grid>
-                ))
+                groupedTokens
+                  .filter(token => tokenTypes.includes(token.type))
+                  .map(token => (
+                    <Grid
+                      item
+                      xs={12}
+                      key={`${token.type}/${token.symbol}/${token.ticker}/${token.walletAddress}`}
+                    >
+                      <Box className={classes.tokenContainer}>
+                        <Token
+                          isOwner
+                          token={token}
+                          onClick={() => handleClick(token)}
+                          showGraph
+                        />
+                      </Box>
+                    </Grid>
+                  ))
               ) : (
                 <Grid item xs={12}>
                   <Typography className={classes.noActivity} textAlign="center">
@@ -351,5 +360,6 @@ export type TokensPortfolioProps = {
   boxShadow?: number;
   fullHeight?: boolean;
   banner?: React.ReactNode;
+  tokenTypes?: TokenType[];
   onTokenClick?: (token: TokenEntry) => void;
 };

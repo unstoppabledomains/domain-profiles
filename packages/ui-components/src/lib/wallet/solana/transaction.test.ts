@@ -32,7 +32,7 @@ describe('solana transactions', () => {
     const tx = await createSplTransferTx(
       '8DyNeQYMWY6NLpPN7S1nTcDy2WXLnm5rzrtdWA2H2t6Y',
       'HLAkHNm1qqGDZxyhoKGWPVwgXAaPSHA2fH5WKLouUJZT',
-      '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr',
+      'dog1viwbb2vWDpER5FrJ4YFG6gq6XuyFohUe9TXN65u',
       1,
       mockSigner,
       mockAccessToken,

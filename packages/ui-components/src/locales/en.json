@@ -901,7 +901,10 @@
   "tokensPortfolio": {
     "all": "All",
     "crypto": "Crypto",
-    "noTokens": "No tokens in portfolio",
+    "noNftsFound": "The gallery is empty. Add some collectibles to your gallery to get started.",
+    "noNftsOnChain": "No collectibles found on **{{chain}}**",
+    "noTokensFound": "No tokens in portfolio",
+    "noTokensOnChain": "No tokens found on **{{chain}}**",
     "retrieveError": "Error retrieving portfolio details",
     "title": "Portfolio"
   },
@@ -994,6 +997,7 @@
     "fundWithPurchaseTitle": "Buy crypto",
     "fundWithTransferDescription": "Transfer funds from another wallet",
     "fundWithTransferTitle": "Receive crypto",
+    "gallery": "Collectibles",
     "gasPriceError": "Error estimating network fee",
     "getLiteWallet": "Create new wallet",
     "insufficientBalance": "Insufficient balance",

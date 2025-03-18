@@ -1,5 +1,6 @@
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
@@ -9,6 +10,7 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {CategoryScale} from 'chart.js';
 import Chart from 'chart.js/auto';
+import Markdown from 'markdown-to-jsx';
 import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 
@@ -20,6 +22,7 @@ import {
   getSortedTokens,
   useTranslationContext,
 } from '../../lib';
+import {TokenType} from '../../lib/types/domain';
 import type {SerializedWalletBalance} from '../../lib/types/domain';
 import CopyToClipboard from '../CopyToClipboard';
 import {CryptoIcon} from '../Image';
@@ -82,6 +85,11 @@ const useStyles = makeStyles<{fullHeight?: boolean; isBanner?: boolean}>()(
       width: '100%',
       borderRadius: theme.shape.borderRadius,
     },
+    tokenPlaceholder: {
+      width: '100%',
+      borderRadius: theme.shape.borderRadius,
+      height: theme.spacing(5),
+    },
     sectionHeaderContainer: {
       display: 'flex',
       alignItems: 'center',
@@ -122,9 +130,25 @@ const useStyles = makeStyles<{fullHeight?: boolean; isBanner?: boolean}>()(
       padding: theme.spacing(2),
       borderRadius: theme.shape.borderRadius,
       backgroundColor: isBanner ? theme.palette.background.default : undefined,
+      height: '100%',
+    },
+    noActivityContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      textAlign: 'center',
+      height: '100%',
     },
     noActivity: {
       color: theme.palette.wallet.text.secondary,
+      marginBottom: theme.spacing(5),
+    },
+    noActivityIcon: {
+      color: theme.palette.wallet.text.secondary,
+      marginBottom: theme.spacing(1),
+      width: '65px',
+      height: '65px',
     },
     tokenContainer: {
       display: 'flex',
@@ -147,12 +171,19 @@ const useStyles = makeStyles<{fullHeight?: boolean; isBanner?: boolean}>()(
 export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
   domain,
   wallets,
+  isWalletsLoading,
   isError,
   isOwner,
   verified,
   boxShadow,
   fullHeight,
   banner,
+  tokenTypes = [
+    TokenType.Native,
+    TokenType.Erc20,
+    TokenType.Spl,
+    TokenType.Nft,
+  ],
   onTokenClick,
 }) => {
   const {classes, cx} = useStyles({fullHeight, isBanner: !!banner});
@@ -168,7 +199,11 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
     }
 
     // retrieve a list of sorted tokens
-    setGroupedTokens(getSortedTokens(wallets, filterAddress));
+    setGroupedTokens(
+      getSortedTokens(wallets, filterAddress).filter(token =>
+        tokenTypes.includes(token.type),
+      ),
+    );
   }, [wallets, filterAddress]);
 
   // total value of the portfolio
@@ -288,7 +323,11 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
         >
           {banner && <Box mb={2}>{banner}</Box>}
           <Box className={classes.gradientContainer}>
-            <Grid container spacing={1}>
+            <Grid
+              container
+              spacing={1}
+              height={groupedTokens.length === 0 ? '100%' : undefined}
+            >
               <Grid item xs={12}>
                 {wallets && (
                   <Box className={cx(classes.walletListContainer)}>
@@ -297,7 +336,16 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
                   </Box>
                 )}
               </Grid>
-              {!isError && groupedTokens.length > 0 ? (
+              {isWalletsLoading ? (
+                [...new Array(10)].map((_, index) => (
+                  <Grid item xs={12} key={`token-placeholder-${index}`}>
+                    <Skeleton
+                      variant="rectangular"
+                      className={classes.tokenPlaceholder}
+                    />
+                  </Grid>
+                ))
+              ) : !isError && groupedTokens.length > 0 ? (
                 groupedTokens.map(token => (
                   <Grid
                     item
@@ -315,11 +363,29 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
                   </Grid>
                 ))
               ) : (
-                <Grid item xs={12}>
-                  <Typography className={classes.noActivity} textAlign="center">
-                    {isError
-                      ? t('tokensPortfolio.retrieveError')
-                      : t('tokensPortfolio.noTokens')}
+                <Grid item xs={12} className={classes.noActivityContainer}>
+                  <SearchOutlinedIcon className={classes.noActivityIcon} />
+                  <Typography variant="body1" className={classes.noActivity}>
+                    <Markdown>
+                      {isError
+                        ? t('tokensPortfolio.retrieveError')
+                        : filterAddress
+                        ? t(
+                            tokenTypes.length === 1 &&
+                              tokenTypes.includes(TokenType.Nft)
+                              ? 'tokensPortfolio.noNftsOnChain'
+                              : 'tokensPortfolio.noTokensOnChain',
+                            {
+                              chain: filterAddress.name || filterAddress.symbol,
+                            },
+                          )
+                        : t(
+                            tokenTypes.length === 1 &&
+                              tokenTypes.includes(TokenType.Nft)
+                              ? 'tokensPortfolio.noNftsFound'
+                              : 'tokensPortfolio.noTokensFound',
+                          )}
+                    </Markdown>
                   </Typography>
                 </Grid>
               )}
@@ -347,9 +413,11 @@ export type TokensPortfolioProps = {
   maxCount?: number;
   isError?: boolean;
   isOwner?: boolean;
+  isWalletsLoading?: boolean;
   verified: boolean;
   boxShadow?: number;
   fullHeight?: boolean;
   banner?: React.ReactNode;
+  tokenTypes?: TokenType[];
   onTokenClick?: (token: TokenEntry) => void;
 };

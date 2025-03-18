@@ -129,10 +129,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     color: theme.palette.common.white,
   },
   currencyIcon: {
-    width: 15,
-    height: 15,
-    marginLeft: '0.2rem',
-    paddingTop: '0.3rem',
+    marginRight: theme.spacing(1),
+    width: '25px',
+    height: '25px',
   },
   description: {
     paddingTop: '3rem',
@@ -217,8 +216,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export interface NftModalProps {
   handleClose: () => void;
-  domain: string;
-  address: string;
+  domain?: string;
+  address?: string;
   open: boolean;
   nft: Nft;
 }
@@ -349,24 +348,31 @@ const NftModal: React.FC<NftModalProps> = ({
               </section>
             )}
             <section>
-              <Typography variant="body1">
-                {nft.collectionLink ? (
-                  <a
-                    className={classes.descriptionLink}
-                    href={`${nft.collectionLink}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {getCollectionTitle()}
-                  </a>
-                ) : (
-                  getCollectionTitle()
-                )}
+              <Box
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                width="100%"
+              >
                 <CryptoIcon
                   currency={nft.symbol as CurrenciesType}
                   className={classes.currencyIcon}
                 />
-              </Typography>
+                <Typography variant="body1">
+                  {nft.collectionLink ? (
+                    <a
+                      className={classes.descriptionLink}
+                      href={`${nft.collectionLink}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {getCollectionTitle()}
+                    </a>
+                  ) : (
+                    getCollectionTitle()
+                  )}
+                </Typography>
+              </Box>
               <Typography variant="h4">
                 {nft.link ? (
                   <a
@@ -393,7 +399,7 @@ const NftModal: React.FC<NftModalProps> = ({
                   </Button>
                 </Box>
               )}
-              {avatarClicked && (
+              {avatarClicked && domain && address && (
                 <SelectNftPopup
                   domain={domain}
                   address={address}
@@ -514,25 +520,27 @@ const NftModal: React.FC<NftModalProps> = ({
                   {t('nftCollection.attributes')}
                 </Typography>
                 <Box className={classes.detailsText}>
-                  {Object.keys(nft.traits).map(trait => (
-                    <div
-                      key={trait}
-                      className={cx(
-                        classes.detailSections,
-                        classes.attributeContainer,
-                      )}
-                    >
-                      <Typography
-                        className={classes.nftDetailsSectionName}
-                        variant="caption"
+                  {Object.keys(nft.traits)
+                    .filter(trait => typeof nft.traits![trait] !== 'object')
+                    .map(trait => (
+                      <div
+                        key={trait}
+                        className={cx(
+                          classes.detailSections,
+                          classes.attributeContainer,
+                        )}
                       >
-                        {trait}
-                      </Typography>
-                      <Typography variant="caption" fontWeight="bold">
-                        {nft.traits![trait]}
-                      </Typography>
-                    </div>
-                  ))}
+                        <Typography
+                          className={classes.nftDetailsSectionName}
+                          variant="caption"
+                        >
+                          {trait}
+                        </Typography>
+                        <Typography variant="caption" fontWeight="bold">
+                          {nft.traits![trait]}
+                        </Typography>
+                      </div>
+                    ))}
                 </Box>
               </section>
             )}

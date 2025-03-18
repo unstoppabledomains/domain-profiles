@@ -129,10 +129,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     color: theme.palette.common.white,
   },
   currencyIcon: {
-    width: 15,
-    height: 15,
-    marginLeft: '0.2rem',
-    paddingTop: '0.3rem',
+    marginRight: theme.spacing(1),
+    width: '25px',
+    height: '25px',
   },
   description: {
     paddingTop: '3rem',
@@ -349,24 +348,31 @@ const NftModal: React.FC<NftModalProps> = ({
               </section>
             )}
             <section>
-              <Typography variant="body1">
-                {nft.collectionLink ? (
-                  <a
-                    className={classes.descriptionLink}
-                    href={`${nft.collectionLink}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {getCollectionTitle()}
-                  </a>
-                ) : (
-                  getCollectionTitle()
-                )}
+              <Box
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                width="100%"
+              >
                 <CryptoIcon
                   currency={nft.symbol as CurrenciesType}
                   className={classes.currencyIcon}
                 />
-              </Typography>
+                <Typography variant="body1">
+                  {nft.collectionLink ? (
+                    <a
+                      className={classes.descriptionLink}
+                      href={`${nft.collectionLink}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {getCollectionTitle()}
+                    </a>
+                  ) : (
+                    getCollectionTitle()
+                  )}
+                </Typography>
+              </Box>
               <Typography variant="h4">
                 {nft.link ? (
                   <a

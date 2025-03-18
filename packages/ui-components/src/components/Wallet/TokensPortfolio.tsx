@@ -137,6 +137,7 @@ const useStyles = makeStyles<{fullHeight?: boolean; isBanner?: boolean}>()(
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
+      textAlign: 'center',
       height: '100%',
     },
     noActivity: {

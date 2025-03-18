@@ -71,6 +71,7 @@ export enum DomainFieldTypes {
   HumanityCheck = 'humanityCheck',
   Messaging = 'messaging',
   Profile = 'profile',
+  Social = 'social',
   SocialAccounts = 'socialAccounts',
   Records = 'records',
   ReferralCode = 'referralCode',

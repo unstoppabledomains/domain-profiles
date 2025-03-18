@@ -108,7 +108,6 @@ import {
   useDomainConfig,
   useEnsDomainStatus,
   useFeatureFlags,
-  useFireblocksState,
   useTokenGallery,
   useTranslationContext,
   useUnstoppableMessaging,
@@ -185,10 +184,6 @@ const DomainProfile = ({
   );
   const [featuredPartner, setFeaturedPartner] =
     useState<SerializedCryptoWalletBadge>();
-
-  // MPC wallet state
-  const [isMpcWallet, setIsMpcWallet] = useState(false);
-  const [state] = useFireblocksState();
 
   const {
     data: featureFlags,
@@ -398,9 +393,6 @@ const DomainProfile = ({
     setAuthAddress(newAddress);
     setAuthDomain(newDomain);
     setIsOwner(ownerAddress.toLowerCase() === newAddress.toLowerCase());
-
-    // determine if logged in user is an MPC wallet
-    setIsMpcWallet(Object.keys(state).length > 0);
   };
 
   const hasBadges =
@@ -456,9 +448,6 @@ const DomainProfile = ({
         setAuthDomain(localAuthDomain);
         isAuthorized =
           ownerAddress.toLowerCase() === localAuthAddress.toLowerCase();
-
-        // determine if logged in user is an MPC wallet
-        setIsMpcWallet(Object.keys(state).length > 0);
 
         // check for a new resolved domain name
         void loginWithAddress(localAuthAddress).then(r =>
@@ -1776,6 +1765,7 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
       getProfileData(domain, [
         DomainFieldTypes.Messaging,
         DomainFieldTypes.Profile,
+        DomainFieldTypes.Social,
         DomainFieldTypes.SocialAccounts,
         DomainFieldTypes.Records,
         DomainFieldTypes.Market,

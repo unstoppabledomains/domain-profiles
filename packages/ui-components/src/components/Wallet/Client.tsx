@@ -801,8 +801,8 @@ export const Client: React.FC<ClientProps> = ({
       ? // show only crypto value on crypto tab
         cryptoValue
       : tabValue === ClientTabType.Transactions
-      ? // show aggregate value (domains + crypto) on activity tab
-        domainsValue + cryptoValue
+      ? // show aggregate value (domains + collectibles + crypto) on activity tab
+        domainsValue + cryptoValue + collectiblesValue
       : tabValue === ClientTabType.Collectibles
       ? // show only collectibles value on collectibles tab
         collectiblesValue

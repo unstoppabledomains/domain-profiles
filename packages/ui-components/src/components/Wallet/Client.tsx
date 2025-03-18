@@ -1,7 +1,7 @@
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import HistoryIcon from '@mui/icons-material/History';
-import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
+import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import LockIcon from '@mui/icons-material/LockOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined';
@@ -383,16 +383,9 @@ export const Client: React.FC<ClientProps> = ({
     if (!isHeaderClicked || !setIsHeaderClicked) {
       return;
     }
-    if (address) {
-      if (theme.wallet.type === 'udme') {
-        void handleLoadDomains(true);
-      } else {
-        void handleLoadCollectibles(true);
-      }
-    }
     setIsHeaderClicked(false);
     void handleCancelAction();
-  }, [address, isHeaderClicked]);
+  }, [isHeaderClicked]);
 
   useEffect(() => {
     if (!paymentConfigStatus?.status) {
@@ -545,13 +538,13 @@ export const Client: React.FC<ClientProps> = ({
     try {
       // special handling for domain listing
       if (address && tv === ClientTabType.Domains) {
-        void handleLoadDomains(false);
+        void handleLoadDomains(true);
         return;
       }
 
       // special handling for collectibles listing
       if (address && tv === ClientTabType.Collectibles) {
-        void handleLoadCollectibles(false);
+        void handleLoadCollectibles(true);
         return;
       }
 
@@ -1060,30 +1053,39 @@ export const Client: React.FC<ClientProps> = ({
                   textColor="primary"
                 >
                   <Tab
-                    icon={<PaidOutlinedIcon />}
+                    icon={
+                      <Tooltip title={t('tokensPortfolio.crypto')}>
+                        <PaidOutlinedIcon />
+                      </Tooltip>
+                    }
                     value={ClientTabType.Portfolio}
-                    label={t('tokensPortfolio.crypto')}
                     iconPosition="start"
                   />
-                  {theme.wallet.type === 'udme' ? (
-                    <Tab
-                      icon={<ListOutlinedIcon />}
-                      value={ClientTabType.Domains}
-                      label={t('common.domains')}
-                      iconPosition="start"
-                    />
-                  ) : (
-                    <Tab
-                      icon={<PhotoLibraryOutlinedIcon />}
-                      value={ClientTabType.Collectibles}
-                      label={t('wallet.gallery')}
-                      iconPosition="start"
-                    />
-                  )}
                   <Tab
-                    icon={<HistoryIcon />}
+                    icon={
+                      <Tooltip title={t('wallet.gallery')}>
+                        <PhotoLibraryOutlinedIcon />
+                      </Tooltip>
+                    }
+                    value={ClientTabType.Collectibles}
+                    iconPosition="start"
+                  />
+                  <Tab
+                    icon={
+                      <Tooltip title={t('common.domains')}>
+                        <LanguageOutlinedIcon />
+                      </Tooltip>
+                    }
+                    value={ClientTabType.Domains}
+                    iconPosition="start"
+                  />
+                  <Tab
+                    icon={
+                      <Tooltip title={t('activity.title')}>
+                        <HistoryIcon />
+                      </Tooltip>
+                    }
                     value={ClientTabType.Transactions}
-                    label={t('activity.title')}
                     iconPosition="start"
                   />
                 </TabList>

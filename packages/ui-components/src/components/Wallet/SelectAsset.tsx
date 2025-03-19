@@ -75,8 +75,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     fontSize: '60px',
   },
   noTokensContainer: {
-    textAlign: 'center',
+    marginBottom: theme.spacing(1),
     height: '100%',
+    width: '98%',
   },
 }));
 

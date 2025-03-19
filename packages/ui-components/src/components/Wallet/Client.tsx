@@ -383,9 +383,16 @@ export const Client: React.FC<ClientProps> = ({
     if (!isHeaderClicked || !setIsHeaderClicked) {
       return;
     }
+
+    // look up available domains if the address is present
+    if (address) {
+      void handleLoadDomains(true);
+    }
+
+    // reset the header clicked state
     setIsHeaderClicked(false);
     void handleCancelAction();
-  }, [isHeaderClicked]);
+  }, [address, isHeaderClicked]);
 
   useEffect(() => {
     if (!paymentConfigStatus?.status) {
@@ -644,12 +651,17 @@ export const Client: React.FC<ClientProps> = ({
   };
 
   const handleLoadDomains = async (reload?: boolean) => {
+    // skip if no address is present
     if (!address) {
       return;
     }
+
+    // skip if all domains have already been retrieved
     if (retrievedAll && !reload) {
       return;
     }
+
+    // set loading state
     setIsDomainsLoading(true);
     const resp = await handleRetrieveOwnerDomains(address, reload);
     if (resp.domains.length) {
@@ -941,7 +953,7 @@ export const Client: React.FC<ClientProps> = ({
                   value={ClientTabType.Portfolio}
                   className={classes.tabContentItem}
                 >
-                  {cryptoValue ? (
+                  {cryptoValue || (domains && domains.length > 0) ? (
                     <Box className={classes.listContainer}>
                       <TokensPortfolio
                         tokenTypes={[

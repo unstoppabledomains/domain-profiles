@@ -88,8 +88,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
+    alignItems: 'center',
     justifyContent: 'space-between',
     height: '100%',
+    width: '100%',
     marginTop: theme.spacing(2),
     overflowY: 'auto',
   },
@@ -107,8 +109,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '100%',
   },
   noTokensContainer: {
-    textAlign: 'center',
+    marginBottom: theme.spacing(1),
     height: '100%',
+    width: '98%',
   },
   button: {
     marginBottom: theme.spacing(1),

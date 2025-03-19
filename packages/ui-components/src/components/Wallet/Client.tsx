@@ -282,6 +282,10 @@ export const Client: React.FC<ClientProps> = ({
   // owner address
   const address = wallets.find(w => isEthAddress(w.address))?.address;
 
+  // empty state flag
+  const isEmptyState =
+    !cryptoValue && !collectiblesValue && !domainsValue && domains.length === 0;
+
   // initialize wallet security features
   useAsyncEffect(async () => {
     if (!accessToken) {
@@ -878,7 +882,19 @@ export const Client: React.FC<ClientProps> = ({
           </Box>
         ) : (
           <TabContext value={tabValue as ClientTabType}>
-            {cryptoValue ? (
+            {isEmptyState ? (
+              <Box className={classes.balanceContainer}>
+                <Typography
+                  variant="h3"
+                  color={theme.palette.neutralShades[500]}
+                >
+                  {cryptoValue.toLocaleString('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                  })}
+                </Typography>
+              </Box>
+            ) : (
               <Box className={classes.header}>
                 <Box className={classes.balanceContainer}>
                   <Typography className={classes.balanceText} variant="h3">
@@ -925,27 +941,6 @@ export const Client: React.FC<ClientProps> = ({
                   </Grid>
                 </Grid>
               </Box>
-            ) : (
-              <Box className={classes.balanceContainer}>
-                <Typography
-                  variant="h3"
-                  color={theme.palette.neutralShades[500]}
-                >
-                  {(tabValue === ClientTabType.Domains
-                    ? // show only domain value on domain tab
-                      domainsValue
-                    : tabValue === ClientTabType.Portfolio
-                    ? // show only crypto value on crypto tab
-                      cryptoValue
-                    : tabValue === ClientTabType.Transactions &&
-                      // show aggregate value (domains + crypto) on activity tab
-                      domainsValue + cryptoValue
-                  ).toLocaleString('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                  })}
-                </Typography>
-              </Box>
             )}
             <Grid container className={classes.portfolioContainer}>
               <Grid item xs={12} height="100%">
@@ -953,7 +948,14 @@ export const Client: React.FC<ClientProps> = ({
                   value={ClientTabType.Portfolio}
                   className={classes.tabContentItem}
                 >
-                  {cryptoValue || (domains && domains.length > 0) ? (
+                  {isEmptyState ? (
+                    <Box mt={2}>
+                      <LetsGetStartedCta
+                        onBuyClicked={handleClickedBuy}
+                        onReceiveClicked={handleClickedReceive}
+                      />
+                    </Box>
+                  ) : (
                     <Box className={classes.listContainer}>
                       <TokensPortfolio
                         tokenTypes={[
@@ -967,13 +969,6 @@ export const Client: React.FC<ClientProps> = ({
                         verified={true}
                         fullHeight={isMobile}
                         onTokenClick={handleTokenClicked}
-                      />
-                    </Box>
-                  ) : (
-                    <Box mt={2}>
-                      <LetsGetStartedCta
-                        onBuyClicked={handleClickedBuy}
-                        onReceiveClicked={handleClickedReceive}
                       />
                     </Box>
                   )}
@@ -1055,7 +1050,17 @@ export const Client: React.FC<ClientProps> = ({
             </Grid>
             <Box className={classes.footer}>
               <Box />
-              {cryptoValue ? (
+              {isEmptyState ? (
+                <Button
+                  variant="text"
+                  size="small"
+                  fullWidth
+                  color="inherit"
+                  onClick={handleLearnMoreClicked}
+                >
+                  {t('common.learnMore')}
+                </Button>
+              ) : (
                 <TabList
                   orientation="horizontal"
                   onChange={handleTabChange}
@@ -1101,16 +1106,6 @@ export const Client: React.FC<ClientProps> = ({
                     iconPosition="start"
                   />
                 </TabList>
-              ) : (
-                <Button
-                  variant="text"
-                  size="small"
-                  fullWidth
-                  color="inherit"
-                  onClick={handleLearnMoreClicked}
-                >
-                  {t('common.learnMore')}
-                </Button>
               )}
             </Box>
           </TabContext>

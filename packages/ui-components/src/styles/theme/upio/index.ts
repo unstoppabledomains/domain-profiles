@@ -9,8 +9,10 @@ import {
 import type {ThemeMode} from '../index';
 import {THEME_SHAPE_BORDER_RADIUS} from '../index';
 
-// all primary colors should use darken() and lighten() based upon this color
+// all primary colors should use darken() and lighten() based upon the
+// following base colors
 const PRIMARY_BASE_COLOR = '#00c742';
+const PRIMARY_SUCCESS_COLOR = '#00c742';
 
 // more info on dark mode: https://mui.com/material-ui/customization/dark-mode/
 const buildThemeOptions = (mode: ThemeMode): ThemeOptions => ({
@@ -116,7 +118,7 @@ const buildThemeOptions = (mode: ThemeMode): ThemeOptions => ({
       main: '#454545',
     },
     success: {
-      main: PRIMARY_BASE_COLOR,
+      main: PRIMARY_SUCCESS_COLOR,
     },
     background: {
       default: mode === 'dark' ? '#121212' : '#F5F5F5',
@@ -186,14 +188,14 @@ const buildThemeOptions = (mode: ThemeMode): ThemeOptions => ({
       900: '#000000',
     },
     successShades: {
-      100: lighten(PRIMARY_BASE_COLOR, 0.45),
-      200: lighten(PRIMARY_BASE_COLOR, 0.4),
-      300: lighten(PRIMARY_BASE_COLOR, 0.35),
-      400: lighten(PRIMARY_BASE_COLOR, 0.3),
-      500: PRIMARY_BASE_COLOR,
-      600: darken(PRIMARY_BASE_COLOR, 0.1),
-      700: darken(PRIMARY_BASE_COLOR, 0.2),
-      900: darken(PRIMARY_BASE_COLOR, 0.4),
+      100: lighten(PRIMARY_SUCCESS_COLOR, 0.45),
+      200: lighten(PRIMARY_SUCCESS_COLOR, 0.4),
+      300: lighten(PRIMARY_SUCCESS_COLOR, 0.35),
+      400: lighten(PRIMARY_SUCCESS_COLOR, 0.3),
+      500: PRIMARY_SUCCESS_COLOR,
+      600: darken(PRIMARY_SUCCESS_COLOR, 0.1),
+      700: darken(PRIMARY_SUCCESS_COLOR, 0.2),
+      900: darken(PRIMARY_SUCCESS_COLOR, 0.4),
     },
     warningShades: {
       100: '#FEF9E1',

@@ -9,6 +9,9 @@ import {
 import type {ThemeMode} from '../index';
 import {THEME_SHAPE_BORDER_RADIUS} from '../index';
 
+// all primary colors should use darken() and lighten() based upon this color
+const PRIMARY_BASE_COLOR = '#00c742';
+
 // more info on dark mode: https://mui.com/material-ui/customization/dark-mode/
 const buildThemeOptions = (mode: ThemeMode): ThemeOptions => ({
   breakpoints: {
@@ -107,13 +110,13 @@ const buildThemeOptions = (mode: ThemeMode): ThemeOptions => ({
     purple: {main: '#797ff2'},
     nightBlue: {main: '#061543'},
     primary: {
-      main: '#00ca00',
+      main: PRIMARY_BASE_COLOR,
     },
     secondary: {
       main: '#454545',
     },
     success: {
-      main: '#00ca00',
+      main: PRIMARY_BASE_COLOR,
     },
     background: {
       default: mode === 'dark' ? '#121212' : '#F5F5F5',
@@ -126,28 +129,38 @@ const buildThemeOptions = (mode: ThemeMode): ThemeOptions => ({
           : `rgba(255,255,255,${alpha})`,
     },
     white: '#ffffff',
-    hero: 'linear-gradient(75deg, #009100, #006e00, #006359)',
+    hero: `linear-gradient(75deg, ${darken(PRIMARY_BASE_COLOR, 0.2)}, ${darken(
+      PRIMARY_BASE_COLOR,
+      0.4,
+    )}, ${darken(PRIMARY_BASE_COLOR, 0.5)})`,
     heroText: `linear-gradient(30deg, ${darken(
-      '#00ca00',
+      PRIMARY_BASE_COLOR,
       mode === 'dark' ? 0.95 : 0.85,
-    )}, ${darken('#00ca00', mode === 'dark' ? 0.55 : 0.45)}, ${
-      mode === 'dark' ? darken('#00ca00', 0.15) : lighten('#00ca00', 0.3)
+    )}, ${darken(PRIMARY_BASE_COLOR, mode === 'dark' ? 0.55 : 0.45)}, ${
+      mode === 'dark'
+        ? darken(PRIMARY_BASE_COLOR, 0.15)
+        : lighten(PRIMARY_BASE_COLOR, 0.3)
     })`,
-    profileImageGradient:
-      'linear-gradient(45deg, #009100 0%, #006e00 52.08%, #006359 100%)',
+    profileImageGradient: `linear-gradient(45deg, ${darken(
+      PRIMARY_BASE_COLOR,
+      0.2,
+    )} 0%, ${darken(PRIMARY_BASE_COLOR, 0.4)} 52.08%, ${darken(
+      PRIMARY_BASE_COLOR,
+      0.5,
+    )} 100%)`,
     mobileNavGradient:
       'linear-gradient(272deg, #F5F5F5 25%, rgba(249, 250, 255, 0) 100%)',
     pressedPaper: '#F3F4FB',
     primaryShades: {
-      100: '#c9f0bf',
-      200: '#a3e695',
-      300: '#78db67',
-      400: '#50d340',
-      500: '#00ca00',
-      600: '#00ba00',
-      700: '#00a500',
-      800: '#009100',
-      900: '#006e00',
+      100: lighten(PRIMARY_BASE_COLOR, 0.4),
+      200: lighten(PRIMARY_BASE_COLOR, 0.3),
+      300: lighten(PRIMARY_BASE_COLOR, 0.2),
+      400: lighten(PRIMARY_BASE_COLOR, 0.1),
+      500: PRIMARY_BASE_COLOR,
+      600: darken(PRIMARY_BASE_COLOR, 0.1),
+      700: darken(PRIMARY_BASE_COLOR, 0.2),
+      800: darken(PRIMARY_BASE_COLOR, 0.3),
+      900: darken(PRIMARY_BASE_COLOR, 0.4),
     },
     blueGreyShades: {
       25: '#F9FAFF',
@@ -173,14 +186,14 @@ const buildThemeOptions = (mode: ThemeMode): ThemeOptions => ({
       900: '#000000',
     },
     successShades: {
-      100: '#EDF7F3',
-      200: '#E2F3EC',
-      300: '#ECFEF6',
-      400: '#D9EAE3',
-      500: '#36AB61',
-      600: '#0DA767',
-      700: '#258F56',
-      900: '#0E5F43',
+      100: lighten(PRIMARY_BASE_COLOR, 0.45),
+      200: lighten(PRIMARY_BASE_COLOR, 0.4),
+      300: lighten(PRIMARY_BASE_COLOR, 0.35),
+      400: lighten(PRIMARY_BASE_COLOR, 0.3),
+      500: PRIMARY_BASE_COLOR,
+      600: darken(PRIMARY_BASE_COLOR, 0.1),
+      700: darken(PRIMARY_BASE_COLOR, 0.2),
+      900: darken(PRIMARY_BASE_COLOR, 0.4),
     },
     warningShades: {
       100: '#FEF9E1',
@@ -240,7 +253,7 @@ const buildThemeOptions = (mode: ThemeMode): ThemeOptions => ({
               secondary: '#979797',
             },
             chart: {
-              up: '#00ca00',
+              up: PRIMARY_BASE_COLOR,
               down: '#9f9fa7',
             },
           }
@@ -268,7 +281,7 @@ const buildThemeOptions = (mode: ThemeMode): ThemeOptions => ({
               secondary: '#979797',
             },
             chart: {
-              up: '#00ca00',
+              up: PRIMARY_BASE_COLOR,
               down: '#9f9fa7',
             },
           },

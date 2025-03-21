@@ -231,6 +231,7 @@ export const AccessWallet = (props: Props) => {
                 display="flex"
                 justifyContent="center"
                 height="100%"
+                width="100%"
               >
                 <Box className={classes.udConfigContainer}>
                   {(!messageToSign && !txToSign) || !udConfigSuccess ? (

@@ -99,6 +99,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     justifyContent: 'center',
     height: '100%',
+    width: '100%',
   },
   column: {
     display: 'flex',
@@ -160,6 +161,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    width: '100%',
     maxWidth: '505px',
     minHeight: '485px',
     height: '100%',

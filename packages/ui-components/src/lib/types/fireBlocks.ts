@@ -4,7 +4,6 @@ export interface Account {
   '@type': string;
   id: string;
 }
-
 export interface AccountAsset {
   '@type': string;
   id: string;
@@ -55,7 +54,9 @@ export interface CreateTransaction {
 }
 
 export const EIP_712_KEY = 'EIP712Domain';
+
 export const FB_MAX_RETRY = 100;
+
 export const FB_WAIT_TIME_MS = 1000;
 
 export const FireblocksStateKey = 'fireblocks-state';
@@ -104,6 +105,7 @@ export interface GetEstimateTransactionResponse {
     };
   };
 }
+
 export interface GetOperationListResponse {
   '@type': string;
   items: Operation[];
@@ -112,6 +114,11 @@ export interface GetOperationListResponse {
 export interface GetOperationResponse {
   '@type': string;
   operation: Operation;
+}
+
+export interface GetOperationResponseError {
+  code: string;
+  message: string;
 }
 
 export interface GetOperationStatusResponse {
@@ -127,12 +134,18 @@ export interface GetOperationStatusResponse {
     externalVendorTransactionId?: string;
   };
 }
+
 export interface GetTokenResponse {
   code?: 'SUCCESS' | 'PROCESSING';
   accessToken: string;
   refreshToken: string;
   bootstrapToken: string;
 }
+
+export const OPERATION_CODE_EMAIL_OTP_REQUIRED = 'EMAIL_OTP_REQUIRED';
+
+export const OPERATION_CODE_MFA_REQUIRED = 'OTP_TOKEN_REQUIRED';
+
 export interface Operation {
   '@type': string;
   id: string;
@@ -206,6 +219,21 @@ export interface TransactionRuleCondition {
   value: number | string;
 }
 
+export class TransactionRuleEmailOtpRequiredError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'TransactionRuleEmailOtpRequiredError';
+  }
+}
+
+// define a new error type for MFA required
+export class TransactionRuleMfaRequiredError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'TransactionRuleMfaRequiredError';
+  }
+}
+
 export interface TransactionRuleRequest {
   name: string;
   type: TransactionRuleType;
@@ -240,3 +268,9 @@ export interface VerifyTokenResponse {
   isValid: boolean;
   validations: Validations;
 }
+
+export const isOperationResponseError = (
+  response: GetOperationResponse | GetOperationResponseError,
+): response is GetOperationResponseError => {
+  return typeof response === 'object' && 'code' in response;
+};

@@ -176,6 +176,7 @@ export const createSignatureOperation = async (
       mode: 'cors',
       headers,
       host: config.WALLETS.HOST_URL,
+      acceptStatusCodes: [400], // for custom validation response handling
       body: JSON.stringify({
         message,
         encoding: EthersUtils.isHexString(message) ? 'hex' : 'utf8',

@@ -186,6 +186,45 @@ export interface TransactionLockStatusResponse {
   validUntil?: number;
 }
 
+export interface TransactionRule {
+  '@type': string;
+  id: string;
+  name: string;
+  active: boolean;
+  validUntil: string | null;
+  type: TransactionRuleType;
+  parameters: {
+    conditions: {
+      any: TransactionRuleCondition[];
+    };
+  };
+}
+
+export interface TransactionRuleCondition {
+  field: 'AMOUNT' | 'SYMBOL' | 'BLOCKCHAIN.ID';
+  operator: 'EQ' | 'GT' | 'GTE' | 'LT' | 'LTE';
+  value: number | string;
+}
+
+export interface TransactionRuleRequest {
+  name: string;
+  type: TransactionRuleType;
+  active: boolean;
+  parameters: {
+    conditions: {
+      any: TransactionRuleCondition[];
+    };
+  };
+}
+
+export type TransactionRuleType = 'SEND_FUNDS' | 'SIGN_ANYTHING';
+
+export interface TransactionRulesListResponse {
+  '@type': string;
+  items: TransactionRule[];
+  next: string | null;
+}
+
 export interface Validations {
   isAuthToken: boolean;
   isTemporary: boolean;

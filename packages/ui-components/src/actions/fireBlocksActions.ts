@@ -31,6 +31,9 @@ import type {
   TokenRefreshResponse,
   TransactionLockRequest,
   TransactionLockStatusResponse,
+  TransactionRule,
+  TransactionRuleRequest,
+  TransactionRulesListResponse,
   VerifyTokenResponse,
 } from '../lib/types/fireBlocks';
 import {getAsset} from '../lib/wallet/asset';
@@ -209,11 +212,71 @@ export const createTransactionOperation = async (
   return undefined;
 };
 
+export const createTransactionRule = async (
+  accessToken: string,
+  rule: TransactionRuleRequest,
+): Promise<string | undefined> => {
+  const createRuleResponse = await fetchApi<TransactionRule>(
+    `/v1/settings/security/rules`,
+    {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify(rule),
+    },
+  );
+  if (createRuleResponse?.id) {
+    return createRuleResponse.id;
+  }
+  return undefined;
+};
+
+export const createTransactionRuleAcceptanceCriteria = async (
+  accessToken: string,
+  ruleId: string,
+  type: 'MFA_CODE' | 'BLOCK',
+) => {
+  const createCriteriaResponse = await fetchApi<TransactionRulesListResponse>(
+    `/v1/settings/security/rules/${ruleId}/acceptance-criteria`,
+    {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        type,
+        name: `${ruleId}-criteria`,
+        status: 'ACTIVE',
+      }),
+    },
+  );
+  return createCriteriaResponse;
+};
+
+export const deleteTransactionRule = async (
+  accessToken: string,
+  rule: TransactionRule,
+) => {
+  return await updateTransactionRule(accessToken, rule.id, {
+    type: rule.type,
+    active: false,
+  });
+};
+
 export const disableTransactionLock = async (
   accessToken: string,
   otp: string,
 ) => {
-  return fetchApi<TransactionLockStatusResponse>(`/v1/signature-lock`, {
+  return await fetchApi<TransactionLockStatusResponse>(`/v1/signature-lock`, {
     method: 'DELETE',
     mode: 'cors',
     headers: {
@@ -230,7 +293,7 @@ export const enableTransactionLock = async (
   accessToken: string,
   opts: TransactionLockRequest = {},
 ) => {
-  return fetchApi<TransactionLockStatusResponse>(`/v1/signature-lock`, {
+  return await fetchApi<TransactionLockStatusResponse>(`/v1/signature-lock`, {
     method: 'POST',
     mode: 'cors',
     headers: {
@@ -556,7 +619,7 @@ export const getTransactionGasEstimate = async (
   accessToken: string,
   tx: CreateTransaction,
 ) => {
-  return fetchApi<GetEstimateTransactionResponse>(
+  return await fetchApi<GetEstimateTransactionResponse>(
     `/v1/estimates/accounts/${asset.accountId}/assets/${asset.id}/transactions`,
     {
       method: 'POST',
@@ -600,13 +663,74 @@ export const getTransactionLockStatus = async (accessToken: string) => {
   return lockStatus;
 };
 
+export const getTransactionRule = async (
+  accessToken: string,
+  ruleId: string,
+) => {
+  const ruleResponse = await fetchApi<TransactionRule>(
+    `/v1/settings/security/rules/${ruleId}`,
+    {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+    },
+  );
+  if (!ruleResponse?.id) {
+    return undefined;
+  }
+  return ruleResponse;
+};
+
+export const getTransactionRules = async (
+  accessToken: string,
+): Promise<TransactionRule[] | undefined> => {
+  const rulesResponse = await fetchApi<TransactionRulesListResponse>(
+    `/v1/settings/security/rules`,
+    {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+    },
+  );
+  if (!rulesResponse?.items || rulesResponse.items.length === 0) {
+    return undefined;
+  }
+
+  // saturate any active items with the rule details
+  const saturatedRules: TransactionRule[] = [];
+  await Bluebird.map(
+    rulesResponse.items.filter(r => r.active),
+    async rule => {
+      const ruleDetails = await getTransactionRule(accessToken, rule.id);
+      if (ruleDetails) {
+        saturatedRules.push(ruleDetails);
+      }
+    },
+    {concurrency: 1},
+  );
+
+  // return a list of active/saturated rules followed by inactive rules
+  // that have not been saturated
+  return [...saturatedRules, ...rulesResponse.items.filter(r => !r.active)];
+};
+
 export const getTransferGasEstimate = async (
   asset: AccountAsset,
   accessToken: string,
   destinationAddress: string,
   amount: string,
 ) => {
-  return fetchApi<GetEstimateTransactionResponse>(
+  return await fetchApi<GetEstimateTransactionResponse>(
     `/v1/estimates/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
     {
       method: 'POST',
@@ -625,13 +749,13 @@ export const getTransferGasEstimate = async (
   );
 };
 
-export const getTransferOperationResponse = (
+export const getTransferOperationResponse = async (
   asset: AccountAsset,
   accessToken: string,
   destinationAddress: string,
   amount: number,
 ) => {
-  return fetchApi<GetOperationResponse>(
+  return await fetchApi<GetOperationResponse>(
     `/v1/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
     {
       method: 'POST',
@@ -1001,4 +1125,25 @@ export const signMessage = async (
     },
   });
   return signatureOp.result.signature;
+};
+
+export const updateTransactionRule = async (
+  accessToken: string,
+  ruleId: string,
+  rule: Partial<TransactionRuleRequest>,
+) => {
+  return await fetchApi<TransactionRule>(
+    `/v1/settings/security/rules/${ruleId}`,
+    {
+      method: 'PATCH',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify(rule),
+    },
+  );
 };

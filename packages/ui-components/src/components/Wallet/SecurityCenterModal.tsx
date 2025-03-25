@@ -5,6 +5,7 @@ import GppGoodOutlinedIcon from '@mui/icons-material/GppGoodOutlined';
 import LockOpenOutlinedIcon from '@mui/icons-material/LockOpenOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Alert from '@mui/lab/Alert';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
@@ -14,14 +15,18 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useFeatureFlags} from '../../actions';
 import {
+  createTransactionRule,
+  deleteTransactionRule,
   getRecoveryKitStatus,
   getTransactionLockStatus,
+  getTransactionRules,
+  updateTransactionRule,
 } from '../../actions/fireBlocksActions';
 import {getTwoFactorStatus} from '../../actions/walletMfaActions';
 import {useFireblocksState, useWeb3Context} from '../../hooks';
@@ -35,11 +40,14 @@ import {
 import type {
   RecoveryStatusResponse,
   TransactionLockStatusResponse,
+  TransactionRule,
+  TransactionRuleRequest,
 } from '../../lib/types/fireBlocks';
 import {
   hasChromePermission,
   isChromeExtension,
 } from '../../lib/wallet/chromeRuntime';
+import ManageInput from '../Manage/common/ManageInput';
 import Modal from '../Modal';
 import ChangePasswordModal from './ChangePasswordModal';
 import RecoverySetupModal from './RecoverySetupModal';
@@ -66,6 +74,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     maxHeight: '500px',
     overflow: 'auto',
     padding: '1px',
+  },
+  flexContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
   },
   recommendedContainer: {
     marginBottom: theme.spacing(2),
@@ -108,12 +121,40 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isMfaModalOpen, setIsMfaModalOpen] = useState(false);
   const [isMfaEnabled, setIsMfaEnabled] = useState(false);
+  const [isAppConnectionEnabled, setIsAppConnectionEnabled] = useState(false);
+
+  // transaction lock state
   const [isTxLockManualEnabled, setIsTxLockManualEnabled] = useState<boolean>();
   const [isTxLockTimeEnabled, setIsTxLockTimeEnabled] = useState<number>();
   const [isLockEnabled, setIsLockEnabled] = useState(false);
   const [isLockModalOpen, setIsLockModalOpen] = useState(false);
   const [isTxLockModalOpen, setIsTxLockModalOpen] = useState(false);
-  const [isAppConnectionEnabled, setIsAppConnectionEnabled] = useState(false);
+
+  // transaction rule filters
+  const isLargeTxRule = (rule: TransactionRule) => {
+    return (
+      rule.type === 'SEND_FUNDS' &&
+      rule.active &&
+      rule.name === t('wallet.largeTxProtection')
+    );
+  };
+
+  // transaction rule state
+  const [txRules, setTxRules] = useState<TransactionRule[]>([]);
+  const [largeTxAmount, setLargeTxAmount] = useState<number>();
+  const [isSavingLargeTxProtection, setIsSavingLargeTxProtection] =
+    useState(false);
+  const isLargeTxProtectionEnabled = useMemo(() => {
+    return txRules.some(isLargeTxRule);
+  }, [txRules]);
+  const largeTxDefaultAmount = useMemo(() => {
+    return isLargeTxProtectionEnabled
+      ? txRules.find(isLargeTxRule)?.parameters?.conditions?.any
+        ? (txRules.find(isLargeTxRule)?.parameters?.conditions?.any?.[0]
+            ?.value as number)
+        : undefined
+      : undefined;
+  }, [txRules, isLargeTxProtectionEnabled]);
 
   useEffect(() => {
     if (!accessToken) {
@@ -127,12 +168,14 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           mfaStatus,
           recoveryStatus,
           txLockStatus,
+          txRuleList,
           tabsPermission,
         ] = await Promise.all([
           isPinEnabled(),
           getTwoFactorStatus(accessToken),
           getRecoveryKitStatus(accessToken),
           getTransactionLockStatus(accessToken),
+          getTransactionRules(accessToken),
           hasChromePermission('tabs'),
         ]);
         setIsLockEnabled(pinStatus);
@@ -146,6 +189,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
             ? txLockStatus.validUntil
             : undefined,
         );
+        setTxRules(txRuleList ?? []);
         setIsAppConnectionEnabled(tabsPermission);
       } finally {
         setIsLoaded(true);
@@ -179,8 +223,132 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
     }
   };
 
-  const handleTxLockManualClicked = async () => {
+  const handleTxLockManualClicked = () => {
     setIsTxLockModalOpen(true);
+  };
+
+  const handleUpdateLargeTxProtectionClicked = async () => {
+    // check if access token is available
+    if (!accessToken || !largeTxAmount) {
+      return;
+    }
+
+    // show loading spinner
+    setIsSavingLargeTxProtection(true);
+
+    // check if large tx protection is already enabled
+    if (!isLargeTxProtectionEnabled) {
+      // update existing rule if possible
+      const existingRule = txRules.find(
+        r =>
+          !r.active &&
+          r.type === 'SEND_FUNDS' &&
+          r.name === t('wallet.largeTxProtection'),
+      );
+      if (existingRule) {
+        // update the existing rule
+        const updatedRule: Partial<TransactionRuleRequest> = {
+          type: 'SEND_FUNDS',
+          active: true,
+          parameters: {
+            conditions: {
+              any: [
+                {
+                  field: 'AMOUNT',
+                  operator: 'GT',
+                  value: largeTxAmount,
+                },
+              ],
+            },
+          },
+        };
+        await updateTransactionRule(accessToken, existingRule.id, updatedRule);
+
+        // refresh the tx rules
+        const updatedRules = await getTransactionRules(accessToken);
+        if (updatedRules) {
+          setTxRules(updatedRules);
+        }
+      } else {
+        // create a new rule
+        const rule: TransactionRuleRequest = {
+          name: t('wallet.largeTxProtection'),
+          type: 'SEND_FUNDS',
+          active: true,
+          parameters: {
+            conditions: {
+              any: [
+                {
+                  field: 'AMOUNT',
+                  operator: 'GT',
+                  value: largeTxAmount,
+                },
+              ],
+            },
+          },
+        };
+        const ruleId = await createTransactionRule(accessToken, rule);
+        if (!ruleId) {
+          return;
+        }
+        setTxRules([
+          {
+            ...rule,
+            '@type': 'TransactionRule',
+            validUntil: null,
+            id: ruleId,
+          },
+        ]);
+      }
+    } else {
+      // update existing rule
+      const rule = txRules.find(isLargeTxRule);
+      if (!rule) {
+        return;
+      }
+      const updatedRule: Partial<TransactionRuleRequest> = {
+        type: 'SEND_FUNDS',
+        parameters: {
+          conditions: {
+            any: [
+              {
+                field: 'AMOUNT',
+                operator: 'GT',
+                value: largeTxAmount,
+              },
+            ],
+          },
+        },
+      };
+      await updateTransactionRule(accessToken, rule.id, updatedRule);
+    }
+
+    // hide loading spinner
+    setIsSavingLargeTxProtection(false);
+  };
+
+  const handleDisableLargeTxProtectionClicked = async () => {
+    // check if access token is available
+    if (!accessToken) {
+      return;
+    }
+
+    // check if large tx protection is already enabled
+    if (!isLargeTxProtectionEnabled) {
+      return;
+    }
+
+    // find the rule
+    const rule = txRules.find(r => r.type === 'SEND_FUNDS');
+    if (!rule) {
+      return;
+    }
+
+    // hide the rule first for responsive UX
+    setTxRules(txRules.filter(r => r.id !== rule.id));
+
+    // delete the rule
+    await deleteTransactionRule(accessToken, rule);
   };
 
   const handleTxLockComplete = async (
@@ -213,6 +381,12 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
     } else {
       await chrome.permissions.remove({permissions: ['tabs']});
       setIsAppConnectionEnabled(false);
+    }
+  };
+
+  const handleLargeTxAmountChange = async (id: string, v: string) => {
+    if (id === 'large-tx-amount') {
+      setLargeTxAmount(Number(v || '0'));
     }
   };
 
@@ -456,6 +630,78 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
             </WalletPreference>
           )}
           <WalletPreference
+            title={t('wallet.largeTxProtection')}
+            description={t('wallet.largeTxProtectionDescription')}
+            icon={
+              isLargeTxProtectionEnabled ? (
+                <LockOutlinedIcon
+                  className={cx(classes.icon, classes.iconEnabled)}
+                />
+              ) : (
+                <LockOpenOutlinedIcon className={classes.icon} />
+              )
+            }
+            statusElement={renderStatus(
+              isLargeTxProtectionEnabled ? t('common.on') : t('common.off'),
+            )}
+          >
+            {!featureFlags?.variations?.udMeServiceDomainsEnableManagement ? (
+              <Alert severity="info">{t('common.comingSoon')}</Alert>
+            ) : isMfaEnabled ? (
+              <Box className={classes.flexContainer}>
+                <ManageInput
+                  value={
+                    largeTxAmount !== undefined
+                      ? String(largeTxAmount)
+                      : largeTxDefaultAmount
+                      ? String(largeTxDefaultAmount)
+                      : undefined
+                  }
+                  onChange={handleLargeTxAmountChange}
+                  id="large-tx-amount"
+                  label={t('wallet.amount')}
+                  placeholder={t('manage.enterAmount')}
+                  startAdornment={<Typography ml={2}>$</Typography>}
+                  disabled={isSavingLargeTxProtection}
+                  mt={2}
+                />
+                <LoadingButton
+                  className={classes.button}
+                  variant="contained"
+                  fullWidth
+                  onClick={handleUpdateLargeTxProtectionClicked}
+                  size="small"
+                  disabled={!largeTxAmount}
+                  loading={isSavingLargeTxProtection}
+                >
+                  {isLargeTxProtectionEnabled
+                    ? t('manage.update')
+                    : t('manage.enable')}
+                </LoadingButton>
+                {isLargeTxProtectionEnabled && (
+                  <Box width="100%" mt={1}>
+                    <Button
+                      color={isLargeTxProtectionEnabled ? 'warning' : undefined}
+                      variant={
+                        isLargeTxProtectionEnabled ? 'outlined' : 'contained'
+                      }
+                      fullWidth
+                      onClick={handleDisableLargeTxProtectionClicked}
+                      disabled={isSavingLargeTxProtection}
+                      size="small"
+                    >
+                      {t('manage.disable')} ({t('common.notRecommended')})
+                    </Button>
+                  </Box>
+                )}
+              </Box>
+            ) : (
+              <Alert severity="warning">
+                {t('wallet.largeTxPrerequisite')}
+              </Alert>
+            )}
+          </WalletPreference>
+          <WalletPreference
             title={t('wallet.txLockManual')}
             description={t('wallet.txLockDescription')}
             icon={
@@ -474,9 +720,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
                 : t('common.off'),
             )}
           >
-            {!featureFlags?.variations?.udMeServiceDomainsEnableManagement ? (
-              <Alert severity="info">{t('common.comingSoon')}</Alert>
-            ) : isMfaEnabled ? (
+            {isMfaEnabled ? (
               isTxLockTimeEnabled && isTxLockTimeEnabled > Date.now() ? (
                 <Alert severity="info">
                   <Markdown>

@@ -14,7 +14,6 @@ import QueryString from 'qs';
 import React, {useState} from 'react';
 
 import config from '@unstoppabledomains/config';
-import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useUnstoppableMessaging} from '../../hooks';
@@ -78,6 +77,12 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
       width: '20px',
       height: '20px',
     },
+    avatarIcon: {
+      '& > img': {
+        width: '20px',
+        height: '20px',
+      },
+    },
     descriptionText: {
       color: theme.palette.neutralShades[50],
     },
@@ -122,15 +127,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
       height: AVATAR_PLACEHOLDER_SIZE - avatarSizeOffset,
       overflow: 'hidden',
     },
-    icon: {
-      '& > svg': {
-        width: AVATAR_SIZE - avatarSizeOffset,
-        height: AVATAR_SIZE - avatarSizeOffset,
-        padding: theme.spacing(2),
-        fill: theme.palette.common.white,
-        color: theme.palette.common.white,
-      },
-    },
+
     optionsContainer: {
       display: 'flex',
       position: 'absolute',
@@ -280,16 +277,7 @@ export const Header: React.FC<Props> = ({
               classes.imagePlaceholderWrapper,
             )}
           >
-            <Box className={classes.icon}>
-              <IconPlate
-                size={
-                  isMobile ? AVATAR_SIZE - AVATAR_MOBILE_OFFSET : AVATAR_SIZE
-                }
-                variant="info"
-              >
-                <WalletIcon />
-              </IconPlate>
-            </Box>
+            <WalletIcon />
           </Box>
         </Box>
       </Box>
@@ -351,9 +339,9 @@ export const Header: React.FC<Props> = ({
                 horizontal: 'right',
               }}
             >
-              <IconPlate size={20} variant="info">
+              <Box className={classes.avatarIcon}>
                 <WalletIcon />
-              </IconPlate>
+              </Box>
             </StyledBadge>
           </Tooltip>
         )}

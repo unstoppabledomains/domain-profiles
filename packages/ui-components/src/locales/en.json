@@ -1076,6 +1076,7 @@
     "sendByEmail": "Send to email address",
     "sendTransactionFailed": "{{amount}} {{sourceSymbol}} failed to send to {{recipientDomain}}",
     "sendTransactionSuccess": "{{amount}} {{sourceSymbol}} was successfully sent to {{recipientDomain}}",
+    "sessionIsLocked": "Wallet is Locked",
     "sessionLock": "Session Timeout",
     "sessionLockDisabledDescription": "We recommend protecting your wallet with a session timeout. You'll be prompted for a password if you're away longer than an hour.",
     "sessionLockEnabledDescription": "Your wallet will be automatically locked after an hour of inactivity.",

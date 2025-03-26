@@ -9,7 +9,6 @@ import React, {useState} from 'react';
 import useAsyncEffect from 'use-async-effect';
 
 import config from '@unstoppabledomains/config';
-import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {
@@ -65,6 +64,15 @@ const useStyles = makeStyles()((theme: Theme) => ({
   button: {
     marginTop: theme.spacing(1),
     width: '100%',
+  },
+  walletIcon: {
+    marginBottom: theme.spacing(5),
+    '& > img': {
+      width: '100px',
+      height: '100px',
+      boxShadow: theme.shadows[3],
+      borderRadius: '20px',
+    },
   },
 }));
 
@@ -175,13 +183,11 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
   return (
     <Box className={classes.container}>
       <Box className={classes.content}>
-        <Box mb={5}>
-          <IconPlate size={100} variant="info">
-            <WalletIcon />
-          </IconPlate>
+        <Box className={classes.walletIcon}>
+          <WalletIcon />
         </Box>
-        <Typography variant="h4" mb={5}>
-          {theme.wallet.title}
+        <Typography variant="h5" mb={5}>
+          {t('wallet.sessionIsLocked')}
         </Typography>
         <Box className={classes.inputContainer}>
           <ManageInput

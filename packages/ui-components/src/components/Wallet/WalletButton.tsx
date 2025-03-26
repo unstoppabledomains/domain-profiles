@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
@@ -5,7 +6,6 @@ import type {Theme} from '@mui/material/styles';
 import Image from 'next/image';
 import React from 'react';
 
-import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import getImageUrl from '../../lib/domain/getImageUrl';
@@ -128,6 +128,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   iconText: {
     verticalAlign: 'middle',
+  },
+  walletIcon: {
+    '& > img': {
+      width: '40px',
+      height: '40px',
+    },
   },
 }));
 
@@ -279,9 +285,9 @@ const WalletButton: React.FC<Props> = ({
     case WalletName.UnstoppableWalletExtension:
       props.title = theme.wallet.titleShort;
       props.icon = (
-        <IconPlate size={size} variant="info">
+        <Box className={classes.walletIcon}>
           <WalletIcon />
-        </IconPlate>
+        </Box>
       );
       break;
     case WalletName.MetaMask:

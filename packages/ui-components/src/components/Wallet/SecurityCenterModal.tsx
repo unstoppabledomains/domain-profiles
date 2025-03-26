@@ -1,5 +1,6 @@
 import CallMissedOutgoingIcon from '@mui/icons-material/CallMissedOutgoing';
 import CallReceivedIcon from '@mui/icons-material/CallReceived';
+import CheckIcon from '@mui/icons-material/Check';
 import GppBadOutlinedIcon from '@mui/icons-material/GppBadOutlined';
 import GppGoodOutlinedIcon from '@mui/icons-material/GppGoodOutlined';
 import LockOpenOutlinedIcon from '@mui/icons-material/LockOpenOutlined';
@@ -141,13 +142,17 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
 
   // transaction rule state
   const [txRules, setTxRules] = useState<TransactionRule[]>([]);
-  const [largeTxAmount, setLargeTxAmount] = useState<number>();
+  const [largeTxAmountInput, setLargeTxAmountInput] = useState<number>();
   const [isSavingLargeTxProtection, setIsSavingLargeTxProtection] =
     useState(false);
+  const [
+    isSavingLargeTxProtectionSuccess,
+    setIsSavingLargeTxProtectionSuccess,
+  ] = useState(false);
   const isLargeTxProtectionEnabled = useMemo(() => {
     return txRules.some(isLargeTxRule);
   }, [txRules]);
-  const largeTxDefaultAmount = useMemo(() => {
+  const largeTxDisplayAmount = useMemo(() => {
     return isLargeTxProtectionEnabled
       ? txRules.find(isLargeTxRule)?.parameters?.conditions?.any
         ? (txRules.find(isLargeTxRule)?.parameters?.conditions?.any?.[0]
@@ -229,7 +234,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
 
   const handleUpdateLargeTxProtectionClicked = async () => {
     // check if access token is available
-    if (!accessToken || !largeTxAmount) {
+    if (!accessToken || !largeTxAmountInput) {
       return;
     }
 
@@ -256,7 +261,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
                 {
                   field: 'AMOUNT',
                   operator: 'GT',
-                  value: largeTxAmount,
+                  value: largeTxAmountInput,
                 },
               ],
             },
@@ -281,7 +286,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
                 {
                   field: 'AMOUNT',
                   operator: 'GT',
-                  value: largeTxAmount,
+                  value: largeTxAmountInput,
                 },
               ],
             },
@@ -301,7 +306,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
         ]);
       }
     } else {
-      // update existing rule
+      // prepare to update the rule
       const rule = txRules.find(isLargeTxRule);
       if (!rule) {
         return;
@@ -314,16 +319,25 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
               {
                 field: 'AMOUNT',
                 operator: 'GT',
-                value: largeTxAmount,
+                value: largeTxAmountInput,
               },
             ],
           },
         },
       };
+
+      // update the rule
       await updateTransactionRule(accessToken, rule.id, updatedRule);
+
+      // refresh the tx rules
+      const updatedRules = await getTransactionRules(accessToken);
+      if (updatedRules) {
+        setTxRules(updatedRules);
+      }
     }
 
-    // hide loading spinner
+    // hide loading spinner and success state
+    setIsSavingLargeTxProtectionSuccess(true);
     setIsSavingLargeTxProtection(false);
   };
 
@@ -386,7 +400,8 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
 
   const handleLargeTxAmountChange = async (id: string, v: string) => {
     if (id === 'large-tx-amount') {
-      setLargeTxAmount(Number(v || '0'));
+      setLargeTxAmountInput(Number(v || '0'));
+      setIsSavingLargeTxProtectionSuccess(false);
     }
   };
 
@@ -642,19 +657,26 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
               )
             }
             statusElement={renderStatus(
-              isLargeTxProtectionEnabled ? t('common.on') : t('common.off'),
+              isLargeTxProtectionEnabled && largeTxDisplayAmount !== undefined
+                ? ` > ${largeTxDisplayAmount
+                    .toLocaleString('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                    })
+                    .replace('.00', '')}`
+                : t('common.off'),
             )}
           >
             {!featureFlags?.variations?.udMeServiceDomainsEnableManagement ? (
               <Alert severity="info">{t('common.comingSoon')}</Alert>
-            ) : isMfaEnabled ? (
+            ) : (
               <Box className={classes.flexContainer}>
                 <ManageInput
                   value={
-                    largeTxAmount !== undefined
-                      ? String(largeTxAmount)
-                      : largeTxDefaultAmount
-                      ? String(largeTxDefaultAmount)
+                    largeTxAmountInput !== undefined
+                      ? String(largeTxAmountInput)
+                      : largeTxDisplayAmount
+                      ? String(largeTxDisplayAmount)
                       : undefined
                   }
                   onChange={handleLargeTxAmountChange}
@@ -671,11 +693,18 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
                   fullWidth
                   onClick={handleUpdateLargeTxProtectionClicked}
                   size="small"
-                  disabled={!largeTxAmount}
+                  disabled={
+                    !largeTxAmountInput || isSavingLargeTxProtectionSuccess
+                  }
                   loading={isSavingLargeTxProtection}
+                  startIcon={
+                    isSavingLargeTxProtectionSuccess ? <CheckIcon /> : undefined
+                  }
                 >
                   {isLargeTxProtectionEnabled
-                    ? t('manage.update')
+                    ? isSavingLargeTxProtectionSuccess
+                      ? t('common.success')
+                      : t('manage.update')
                     : t('manage.enable')}
                 </LoadingButton>
                 {isLargeTxProtectionEnabled && (
@@ -695,10 +724,6 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
                   </Box>
                 )}
               </Box>
-            ) : (
-              <Alert severity="warning">
-                {t('wallet.largeTxPrerequisite')}
-              </Alert>
             )}
           </WalletPreference>
           <WalletPreference

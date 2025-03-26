@@ -283,10 +283,11 @@ export async function getServerSideProps(props: WalletServerSideProps) {
 
   // perform the redirection if necessary
   if (shouldRedirect) {
+    const urlParts = props.req.url?.split('?');
     const redirectToUpIo = {
       redirect: {
-        destination: `${config.UP_IO_BASE_URL}/wallet?${
-          props.req.url?.split('?')[1]
+        destination: `${config.UP_IO_BASE_URL}/wallet${
+          urlParts && urlParts.length > 1 ? `?${urlParts[1]}` : ''
         }`,
         permanent: true,
       },

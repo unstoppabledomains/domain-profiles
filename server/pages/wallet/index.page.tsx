@@ -278,6 +278,19 @@ export async function getServerSideProps(props: WalletServerSideProps) {
     return redirectToUpIo;
   }
 
+  // debug logging, remove me before merge
+  console.log(
+    'AJQ remove me logging',
+    JSON.stringify({
+      req: {
+        headers: props.req.headers,
+        url: props.req.url,
+        resolvedUrl: props.resolvedUrl,
+        params: props.params,
+      },
+    }),
+  );
+
   // continue processing the request
   return {
     props: {},

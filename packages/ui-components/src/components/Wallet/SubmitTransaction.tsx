@@ -10,9 +10,10 @@ import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {SendCryptoStatusMessage} from '../../actions/fireBlocksActions';
+import {useFireblocksState} from '../../hooks';
 import {Status, useSubmitTransaction} from '../../hooks/useSubmitTransaction';
 import type {TokenEntry} from '../../lib';
-import {useTranslationContext} from '../../lib';
+import {getBootstrapState, useTranslationContext} from '../../lib';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
 import {
   getBlockchainDisplaySymbol,
@@ -72,8 +73,13 @@ export const SubmitTransaction: React.FC<Props> = ({
   amount,
 }) => {
   const [t] = useTranslationContext();
+  const [state] = useFireblocksState();
   const {classes} = useStyles();
   const [otpToken, setOtpToken] = useState<string>();
+
+  // get the email address from the bootstrap state
+  const bootstrapState = getBootstrapState(state);
+  const emailAddress = bootstrapState?.userName;
 
   const {transactionId, status, statusMessage} = useSubmitTransaction({
     accessToken,
@@ -173,8 +179,9 @@ export const SubmitTransaction: React.FC<Props> = ({
       )}
       {statusMessage === SendCryptoStatusMessage.PROMPT_FOR_MFA && (
         <TwoFactorPromptModal
-          mode="totp"
-          action={t('common.transaction')}
+          message={t('wallet.twoFactorAuthenticationTotpDescription', {
+            action: t('common.transaction').toLowerCase(),
+          })}
           open={true}
           onClose={onCloseClick}
           onComplete={setOtpToken}
@@ -182,8 +189,10 @@ export const SubmitTransaction: React.FC<Props> = ({
       )}
       {statusMessage === SendCryptoStatusMessage.PROMPT_FOR_EMAIL_OTP && (
         <TwoFactorPromptModal
-          mode="email"
-          action={t('common.transaction')}
+          message={t('wallet.twoFactorAuthenticationEmailDescription', {
+            action: t('common.transaction').toLowerCase(),
+            emailAddress: emailAddress || t('common.yourEmailAddress'),
+          })}
           open={true}
           onClose={onCloseClick}
           onComplete={setOtpToken}

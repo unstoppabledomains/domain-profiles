@@ -38,6 +38,7 @@ import {
   isPinEnabled,
   useTranslationContext,
 } from '../../lib';
+import {isNumeric} from '../../lib/number';
 import type {
   RecoveryStatusResponse,
   TransactionLockStatusResponse,
@@ -55,6 +56,7 @@ import RecoverySetupModal from './RecoverySetupModal';
 import SetupPinModal from './SetupPinModal';
 import SetupTxLockModal from './SetupTxLockModal';
 import {TwoFactorModal} from './TwoFactorModal';
+import {TwoFactorPromptModal} from './TwoFactorPromptModal';
 import {WalletPreference} from './WalletPreference';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -123,6 +125,9 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   const [isMfaModalOpen, setIsMfaModalOpen] = useState(false);
   const [isMfaEnabled, setIsMfaEnabled] = useState(false);
   const [isAppConnectionEnabled, setIsAppConnectionEnabled] = useState(false);
+
+  // OTP prompt state
+  const [otpPrompt, setOtpPrompt] = useState<'update' | 'disable'>();
 
   // transaction lock state
   const [isTxLockManualEnabled, setIsTxLockManualEnabled] = useState<boolean>();
@@ -232,7 +237,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
     setIsTxLockModalOpen(true);
   };
 
-  const handleUpdateLargeTxProtectionClicked = async () => {
+  const handleUpdateLargeTxProtectionClicked = async (otpCode?: string) => {
     // check if access token is available
     if (!accessToken || largeTxAmountInput === undefined) {
       return;
@@ -267,7 +272,12 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
             },
           },
         };
-        await updateTransactionRule(accessToken, existingRule.id, updatedRule);
+        await updateTransactionRule(
+          accessToken,
+          '',
+          existingRule.id,
+          updatedRule,
+        );
 
         // refresh the tx rules
         const updatedRules = await getTransactionRules(accessToken);
@@ -306,6 +316,15 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
         ]);
       }
     } else {
+      // prompt for OTP if not yet provided
+      if (!otpCode) {
+        setOtpPrompt('update');
+        return;
+      }
+
+      // clear OTP state
+      setOtpPrompt(undefined);
+
       // prepare to update the rule
       const rule = txRules.find(isLargeTxRule);
       if (!rule) {
@@ -327,7 +346,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
       };
 
       // update the rule
-      await updateTransactionRule(accessToken, rule.id, updatedRule);
+      await updateTransactionRule(accessToken, otpCode, rule.id, updatedRule);
 
       // refresh the tx rules
       const updatedRules = await getTransactionRules(accessToken);
@@ -341,7 +360,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
     setIsSavingLargeTxProtection(false);
   };
 
-  const handleDisableLargeTxProtectionClicked = async () => {
+  const handleDisableLargeTxProtectionClicked = async (otpCode?: string) => {
     // check if access token is available
     if (!accessToken) {
       return;
@@ -352,6 +371,15 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
       return;
     }
 
+    // prompt for OTP if not yet provided
+    if (!otpCode) {
+      setOtpPrompt('disable');
+      return;
+    }
+
+    // clear OTP state
+    setOtpPrompt(undefined);
+
     // find the rule
     const rule = txRules.find(r => r.type === 'SEND_FUNDS');
     if (!rule) {
@@ -360,9 +388,13 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
 
     // hide the rule first for responsive UX
     setTxRules(txRules.filter(r => r.id !== rule.id));
+    setIsSavingLargeTxProtectionSuccess(false);
+    setLargeTxAmountInput(undefined);
 
     // delete the rule
-    await deleteTransactionRule(accessToken, rule);
+    setIsSavingLargeTxProtection(true);
+    await deleteTransactionRule(accessToken, otpCode, rule);
+    setIsSavingLargeTxProtection(false);
   };
 
   const handleTxLockComplete = async (
@@ -400,8 +432,10 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
 
   const handleLargeTxAmountChange = async (id: string, v: string) => {
     if (id === 'large-tx-amount') {
-      setLargeTxAmountInput(Number(v || '0'));
-      setIsSavingLargeTxProtectionSuccess(false);
+      if (isNumeric(v)) {
+        setLargeTxAmountInput(Number(v));
+        setIsSavingLargeTxProtectionSuccess(false);
+      }
     }
   };
 
@@ -691,7 +725,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
                   className={classes.button}
                   variant="contained"
                   fullWidth
-                  onClick={handleUpdateLargeTxProtectionClicked}
+                  onClick={() => handleUpdateLargeTxProtectionClicked()}
                   size="small"
                   disabled={
                     largeTxAmountInput === undefined ||
@@ -716,7 +750,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
                         isLargeTxProtectionEnabled ? 'outlined' : 'contained'
                       }
                       fullWidth
-                      onClick={handleDisableLargeTxProtectionClicked}
+                      onClick={() => handleDisableLargeTxProtectionClicked()}
                       disabled={isSavingLargeTxProtection}
                       size="small"
                     >
@@ -831,6 +865,32 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
             onClose={() => setIsTxLockModalOpen(false)}
           />
         </Modal>
+      )}
+      {otpPrompt && (
+        <TwoFactorPromptModal
+          message={
+            isMfaEnabled
+              ? t('wallet.twoFactorAuthenticationTotpDescription', {
+                  action: t('common.operation').toLowerCase(),
+                })
+              : t('wallet.twoFactorAuthenticationEmailDescription', {
+                  action: t('common.operation').toLowerCase(),
+                  emailAddress:
+                    clientState?.userName || t('common.yourEmailAddress'),
+                })
+          }
+          open={true}
+          onClose={() => {
+            setIsSavingLargeTxProtection(false);
+            setIsSavingLargeTxProtectionSuccess(false);
+            setOtpPrompt(undefined);
+          }}
+          onComplete={
+            otpPrompt === 'update'
+              ? handleUpdateLargeTxProtectionClicked
+              : handleDisableLargeTxProtectionClicked
+          }
+        />
       )}
     </Box>
   );

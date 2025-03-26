@@ -370,9 +370,10 @@ export const createTransferOperation = async (
 
 export const deleteTransactionRule = async (
   accessToken: string,
+  otpCode: string,
   rule: TransactionRule,
 ) => {
-  return await updateTransactionRule(accessToken, rule.id, {
+  return await updateTransactionRule(accessToken, otpCode, rule.id, {
     type: rule.type,
     active: false,
   });
@@ -1222,6 +1223,7 @@ export const signMessage = async (
 
 export const updateTransactionRule = async (
   accessToken: string,
+  otpCode: string,
   ruleId: string,
   rule: Partial<TransactionRuleRequest>,
 ) => {
@@ -1234,6 +1236,7 @@ export const updateTransactionRule = async (
         'Access-Control-Allow-Credentials': 'true',
         'Content-Type': 'application/json',
         Authorization: `Bearer ${accessToken}`,
+        'X-OTP-Code': otpCode,
       },
       host: config.WALLETS.HOST_URL,
       body: JSON.stringify(rule),

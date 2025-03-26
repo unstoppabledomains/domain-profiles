@@ -7,8 +7,7 @@ import React, {useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {useFireblocksState} from '../../hooks';
-import {getBootstrapState, useTranslationContext} from '../../lib';
+import {useTranslationContext} from '../../lib';
 import ManageInput from '../Manage/common/ManageInput';
 import Modal from '../Modal';
 
@@ -24,28 +23,22 @@ const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 interface TwoFactorPromptModalProps {
-  mode: 'email' | 'totp';
-  action: string;
+  message: string;
   open?: boolean;
   onClose: () => void;
   onComplete: (otpCode: string) => void;
 }
 
 export const TwoFactorPromptModal: React.FC<TwoFactorPromptModalProps> = ({
-  mode,
-  action,
+  message,
   open,
   onClose,
   onComplete,
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
-  const [state] = useFireblocksState();
   const [otp, setOtp] = useState<string>();
   const [isButtonClicked, setIsButtonClicked] = useState(false);
-  // get the email address from the bootstrap state
-  const bootstrapState = getBootstrapState(state);
-  const emailAddress = bootstrapState?.userName;
 
   const handleSubmitOtp = async () => {
     // validate OTP is set
@@ -76,16 +69,7 @@ export const TwoFactorPromptModal: React.FC<TwoFactorPromptModalProps> = ({
     >
       <Box className={classes.container}>
         <Typography variant="body2">
-          <Markdown>
-            {mode === 'email'
-              ? t('wallet.twoFactorAuthenticationEmailDescription', {
-                  action: action.toLowerCase(),
-                  emailAddress: emailAddress || t('common.yourEmailAddress'),
-                })
-              : t('wallet.twoFactorAuthenticationTotpDescription', {
-                  action: action.toLowerCase(),
-                })}
-          </Markdown>
+          <Markdown>{message}</Markdown>
         </Typography>
         <Box className={classes.container}>
           <ManageInput

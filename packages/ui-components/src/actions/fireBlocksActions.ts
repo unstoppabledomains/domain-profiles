@@ -70,6 +70,27 @@ export enum SendCryptoStatusMessage {
   PROMPT_FOR_EMAIL_OTP = 'Waiting for email OTP code...',
 }
 
+const buildHeadersWithAuth = (accessToken: string, otpToken?: string) => {
+  const headers: Record<string, string> = {
+    'Access-Control-Allow-Credentials': 'true',
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${accessToken}`,
+  };
+  if (otpToken) {
+    headers['X-Otp-Token'] = otpToken;
+  }
+  return headers;
+};
+
+const handleTransactionRuleError = (e: GetOperationResponseError): never => {
+  if (e.code === OPERATION_CODE_EMAIL_OTP_REQUIRED) {
+    throw new TransactionRuleEmailOtpRequiredError(e.message);
+  } else if (e.code === OPERATION_CODE_MFA_REQUIRED) {
+    throw new TransactionRuleMfaRequiredError(e.message);
+  }
+  throw new Error('Unknown OperationResponseError');
+};
+
 export const cancelOperation = async (
   accessToken: string,
   operationId: string,
@@ -116,14 +137,7 @@ export const changePassword = async (
 > => {
   try {
     // build required headers
-    const headers: Record<string, string> = {
-      'Access-Control-Allow-Credentials': 'true',
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    };
-    if (otp) {
-      headers['X-Otp-Token'] = otp;
-    }
+    const headers = buildHeadersWithAuth(accessToken, otp);
 
     // make request to change password
     const changePwResult = await fetchApi('/v1/settings/security/login', {
@@ -161,14 +175,7 @@ export const createSignatureOperation = async (
 ): Promise<GetOperationResponse | undefined> => {
   try {
     // build headers, including the optional OTP token if provided
-    const headers: Record<string, string> = {
-      'Access-Control-Allow-Credentials': 'true',
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    };
-    if (otpToken) {
-      headers['X-Otp-Token'] = otpToken;
-    }
+    const headers = buildHeadersWithAuth(accessToken, otpToken);
 
     // call the signature endpoint
     const maybeSignatureOperation = await fetchApi<
@@ -189,16 +196,8 @@ export const createSignatureOperation = async (
     // if the response is a 400, check the error code and possibly throw an error
     // when the code is related to transaction rules
     if (isOperationResponseError(maybeSignatureOperation)) {
-      if (maybeSignatureOperation.code === OPERATION_CODE_EMAIL_OTP_REQUIRED) {
-        throw new TransactionRuleEmailOtpRequiredError(
-          maybeSignatureOperation.message,
-        );
-      } else if (maybeSignatureOperation.code === OPERATION_CODE_MFA_REQUIRED) {
-        throw new TransactionRuleMfaRequiredError(
-          maybeSignatureOperation.message,
-        );
-      }
-      return undefined;
+      handleTransactionRuleError(maybeSignatureOperation);
+      return;
     }
 
     // return the operation
@@ -220,14 +219,7 @@ export const createTransactionOperation = async (
 ): Promise<GetOperationResponse | undefined> => {
   try {
     // build headers, including the optional OTP token if provided
-    const headers: Record<string, string> = {
-      'Access-Control-Allow-Credentials': 'true',
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    };
-    if (otpToken) {
-      headers['X-Otp-Token'] = otpToken;
-    }
+    const headers = buildHeadersWithAuth(accessToken, otpToken);
 
     // request the transfer
     const maybeTxOperation = await fetchApi<
@@ -249,13 +241,7 @@ export const createTransactionOperation = async (
     // if the response is a 400, check the error code and possibly throw an error
     // when the code is related to transaction rules
     if (isOperationResponseError(maybeTxOperation)) {
-      if (maybeTxOperation.code === OPERATION_CODE_EMAIL_OTP_REQUIRED) {
-        throw new TransactionRuleEmailOtpRequiredError(
-          maybeTxOperation.message,
-        );
-      } else if (maybeTxOperation.code === OPERATION_CODE_MFA_REQUIRED) {
-        throw new TransactionRuleMfaRequiredError(maybeTxOperation.message);
-      }
+      handleTransactionRuleError(maybeTxOperation);
       return undefined;
     }
 
@@ -327,14 +313,7 @@ export const createTransferOperation = async (
   otpToken?: string,
 ) => {
   // build headers, including the optional OTP token if provided
-  const headers: Record<string, string> = {
-    'Access-Control-Allow-Credentials': 'true',
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${accessToken}`,
-  };
-  if (otpToken) {
-    headers['X-Otp-Token'] = otpToken;
-  }
+  const headers = buildHeadersWithAuth(accessToken, otpToken);
 
   // request the transfer
   const maybeTransferOperation = await fetchApi<
@@ -354,13 +333,7 @@ export const createTransferOperation = async (
   // if the response is a 400, check the error code and possibly throw an error
   // when the code is related to transaction rules
   if (isOperationResponseError(maybeTransferOperation)) {
-    if (maybeTransferOperation.code === OPERATION_CODE_EMAIL_OTP_REQUIRED) {
-      throw new TransactionRuleEmailOtpRequiredError(
-        maybeTransferOperation.message,
-      );
-    } else if (maybeTransferOperation.code === OPERATION_CODE_MFA_REQUIRED) {
-      throw new TransactionRuleMfaRequiredError(maybeTransferOperation.message);
-    }
+    handleTransactionRuleError(maybeTransferOperation);
     return undefined;
   }
 

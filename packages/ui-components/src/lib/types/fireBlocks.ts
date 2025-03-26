@@ -208,7 +208,8 @@ export interface TransactionRule {
   type: TransactionRuleType;
   parameters: {
     conditions: {
-      any: TransactionRuleCondition[];
+      any?: TransactionRuleCondition[];
+      all?: TransactionRuleCondition[];
     };
   };
 }

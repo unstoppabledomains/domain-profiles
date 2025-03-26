@@ -432,8 +432,8 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
 
   const handleLargeTxAmountChange = async (id: string, v: string) => {
     if (id === 'large-tx-amount') {
-      if (isNumeric(v)) {
-        setLargeTxAmountInput(Number(v));
+      if (isNumeric(v) && Number(v) >= 0) {
+        setLargeTxAmountInput(Math.max(Number(v), 0));
         setIsSavingLargeTxProtectionSuccess(false);
       }
     }

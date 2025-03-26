@@ -258,10 +258,23 @@ export async function getServerSideProps(props: WalletServerSideProps) {
   // check can be removed after the launch date
   const isPastLaunchDate = new Date('2025-04-10') <= new Date();
 
+  // extract the x-forwarded-host header into a string if it exists
+  const forwardedHosts = props.req.headers['x-forwarded-host']
+    ? typeof props.req.headers['x-forwarded-host'] === 'string'
+      ? props.req.headers['x-forwarded-host'].toLowerCase()
+      : Array.isArray(props.req.headers['x-forwarded-host'])
+      ? props.req.headers['x-forwarded-host'].join(',').toLowerCase()
+      : ''
+    : '';
+
+  // define a variable that includes only the hostname from the
+  // config UD_ME_BASE_URL
+  const udMeHost = new URL(config.UD_ME_BASE_URL).hostname.toLowerCase();
+
   // redirect to UP.io with exact query string parameters if the request for
   // the wallet homepage is to the UD.me domain
   const shouldRedirect =
-    props.req.headers.host?.includes(config.UD_ME_BASE_URL) &&
+    forwardedHosts.includes(udMeHost) &&
     (config.APP_ENV === 'staging' ||
       (config.APP_ENV === 'production' && isPastLaunchDate));
 
@@ -278,18 +291,11 @@ export async function getServerSideProps(props: WalletServerSideProps) {
     return redirectToUpIo;
   }
 
-  // debug logging, remove me before merge
-  console.log(
-    'AJQ remove me logging',
-    JSON.stringify({
-      req: {
-        headers: props.req.headers,
-        url: props.req.url,
-        resolvedUrl: props.resolvedUrl,
-        params: props.params,
-      },
-    }),
-  );
+  // temporary debugging to ensure we have the x-forwarded-host header in
+  // all of our environments
+  notifyEvent('forwarded by host header', 'info', 'Wallet', 'Configuration', {
+    meta: {name: 'x-forwarded-host', data: forwardedHosts, udMeHost},
+  });
 
   // continue processing the request
   return {

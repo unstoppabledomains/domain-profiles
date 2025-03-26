@@ -22,7 +22,6 @@ import {isChromeStorageSupported} from '../../hooks/useChromeStorage';
 import {useTranslationContext} from '../../lib';
 import {UnstoppableMessaging} from '../Chat';
 import DropDownMenu from '../DropDownMenu';
-import Link from '../Link';
 import {DomainProfileModal} from '../Manage';
 import WalletIcon from './WalletIcon';
 import type {WalletMode} from './index';
@@ -261,7 +260,9 @@ export const Header: React.FC<Props> = ({
     }
 
     window.location.href = `${
-      config.UD_ME_BASE_URL
+      theme.wallet.type === 'udme'
+        ? config.UD_ME_BASE_URL
+        : config.UP_IO_BASE_URL
     }/wallet?${QueryString.stringify(
       {email: emailAddress},
       {skipNulls: true},
@@ -299,15 +300,6 @@ export const Header: React.FC<Props> = ({
               ? t('manage.cryptoWalletDescriptionMobile')
               : t('manage.cryptoWalletDescription')}
           </Typography>
-          {!isMobile && (
-            <Link
-              className={classes.learnMoreLink}
-              external={true}
-              to={config.WALLETS.LANDING_PAGE_URL}
-            >
-              {t('profile.learnMore')}
-            </Link>
-          )}
         </Box>
       </Box>
     </Box>

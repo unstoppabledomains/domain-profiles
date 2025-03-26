@@ -5,6 +5,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import Footer from 'components/app/Footer';
 import {MobileCta} from 'components/wallet/MobileCta';
 import {EMAIL_PARAM, RECOVERY_TOKEN_PARAM} from 'lib/types';
+import type {GetServerSidePropsContext} from 'next';
 import {NextSeo} from 'next-seo';
 import {useRouter} from 'next/router';
 import React, {useEffect, useState} from 'react';
@@ -243,5 +244,44 @@ const WalletPage = () => {
     </Box>
   );
 };
+
+// server side props for the wallet page
+type WalletServerSideProps = GetServerSidePropsContext & {
+  params: {
+    emailAddress?: string;
+    recoveryToken?: string;
+  };
+};
+
+export async function getServerSideProps(props: WalletServerSideProps) {
+  // determine if we have reached the launch date of April 10, 2025. This
+  // check can be removed after the launch date
+  const isPastLaunchDate = new Date('2025-04-10') <= new Date();
+
+  // redirect to UP.io with exact query string parameters if the request for
+  // the wallet homepage is to the UD.me domain
+  const shouldRedirect =
+    props.req.headers.host?.includes(config.UD_ME_BASE_URL) &&
+    (config.APP_ENV === 'staging' ||
+      (config.APP_ENV === 'production' && isPastLaunchDate));
+
+  // perform the redirection if necessary
+  if (shouldRedirect) {
+    const redirectToUpIo = {
+      redirect: {
+        destination: `${config.UP_IO_BASE_URL}/wallet?${
+          props.req.url?.split('?')[1]
+        }`,
+        permanent: true,
+      },
+    };
+    return redirectToUpIo;
+  }
+
+  // continue processing the request
+  return {
+    props: {},
+  };
+}
 
 export default WalletPage;

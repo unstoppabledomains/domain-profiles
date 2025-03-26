@@ -96,9 +96,9 @@ const buildThemeOptions = (mode: ThemeMode): ThemeOptions => ({
   },
   wallet: {
     type: 'upio',
-    title: 'UP.io Wallet',
+    title: 'UP.io',
     titleShort: 'Up.io',
-    subTitle: 'The best place to watch your crypto grow up.',
+    subTitle: 'Watch your crypto grow up.',
   },
   palette: {
     mode,

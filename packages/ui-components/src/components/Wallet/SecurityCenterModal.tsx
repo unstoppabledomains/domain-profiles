@@ -234,7 +234,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
 
   const handleUpdateLargeTxProtectionClicked = async () => {
     // check if access token is available
-    if (!accessToken || !largeTxAmountInput) {
+    if (!accessToken || largeTxAmountInput === undefined) {
       return;
     }
 
@@ -694,7 +694,8 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
                   onClick={handleUpdateLargeTxProtectionClicked}
                   size="small"
                   disabled={
-                    !largeTxAmountInput || isSavingLargeTxProtectionSuccess
+                    largeTxAmountInput === undefined ||
+                    isSavingLargeTxProtectionSuccess
                   }
                   loading={isSavingLargeTxProtection}
                   startIcon={

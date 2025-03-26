@@ -2,6 +2,7 @@ import {Mutex} from 'async-mutex';
 
 import config from '@unstoppabledomains/config';
 
+import {notifyEvent} from '../lib';
 import {fetchApi} from '../lib/fetchApi';
 import type {WalletStorageData} from '../lib/types/walletStorage';
 import {getAccountId} from './fireBlocksActions';
@@ -9,6 +10,7 @@ import {getAccountId} from './fireBlocksActions';
 // wallet storage control variables
 const WALLET_KEY_NAME = 'general-preferences';
 const walletStorageMutex = new Mutex();
+let walletStorageCache: WalletStorageData | undefined;
 
 export const clearWalletStorageData = async (
   accessToken: string,
@@ -37,7 +39,7 @@ export const clearWalletStorageData = async (
 
       // update cache and return
       if (response) {
-        sessionStorage.removeItem(WALLET_KEY_NAME);
+        walletStorageCache = undefined;
         return response;
       }
     } catch (e) {}
@@ -53,9 +55,8 @@ export const getWalletStorageData = async (
   return await walletStorageMutex.runExclusive(async () => {
     try {
       // retrieve from session storage if available
-      const data = sessionStorage.getItem(WALLET_KEY_NAME);
-      if (data && !forceRefresh) {
-        return JSON.parse(data);
+      if (walletStorageCache && !forceRefresh) {
+        return walletStorageCache;
       }
 
       // retrieve account ID if empty
@@ -78,13 +79,14 @@ export const getWalletStorageData = async (
       );
 
       // update cache and return
-      sessionStorage.setItem(WALLET_KEY_NAME, JSON.stringify(response || {}));
       if (response) {
+        walletStorageCache = response;
         return response;
       }
     } catch (e) {
       // set empty object in session storage
-      sessionStorage.setItem(WALLET_KEY_NAME, JSON.stringify({}));
+      notifyEvent(e, 'error', 'Wallet', 'Configuration');
+      walletStorageCache = undefined;
     }
     return undefined;
   });
@@ -119,10 +121,12 @@ export const setWalletStorageData = async (
 
       // update cache and return
       if (response) {
-        sessionStorage.setItem(WALLET_KEY_NAME, JSON.stringify(response));
+        walletStorageCache = response;
         return response;
       }
-    } catch (e) {}
+    } catch (e) {
+      notifyEvent(e, 'error', 'Wallet', 'Configuration');
+    }
     return undefined;
   });
 };

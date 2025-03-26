@@ -270,11 +270,14 @@ export async function getServerSideProps(props: WalletServerSideProps) {
   // define a variable that includes only the hostname from the
   // config UD_ME_BASE_URL
   const udMeHost = new URL(config.UD_ME_BASE_URL).hostname.toLowerCase();
+  const upIoHost = new URL(config.UP_IO_BASE_URL).hostname.toLowerCase();
 
   // redirect to UP.io with exact query string parameters if the request for
-  // the wallet homepage is to the UD.me domain
+  // the wallet homepage is to the UD.me domain. As an infinite redirect
+  // safeguard, we also check that the forwarder does not include UP.io host.
   const shouldRedirect =
     forwardedHosts.includes(udMeHost) &&
+    !forwardedHosts.includes(upIoHost) &&
     (config.APP_ENV === 'staging' ||
       (config.APP_ENV === 'production' && isPastLaunchDate));
 

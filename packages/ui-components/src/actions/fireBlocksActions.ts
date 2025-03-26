@@ -66,6 +66,8 @@ export enum SendCryptoStatusMessage {
   WAITING_FOR_TRANSACTION = 'Successfully submitted your transfer!',
   TRANSACTION_COMPLETED = 'Transfer completed!',
   TRANSACTION_FAILED = 'Transfer failed',
+  PROMPT_FOR_MFA = 'Waiting for 2FA code...',
+  PROMPT_FOR_EMAIL_OTP = 'Waiting for email OTP code...',
 }
 
 export const cancelOperation = async (
@@ -1036,6 +1038,16 @@ export const signAndWait = async (
     // reaching this point means the signature was not successful
     throw new Error('failed to sign');
   } catch (e) {
+    // the transaction rule errors are expected and should be rethrown so that
+    // the UI can prompt the user for the OTP code
+    if (
+      e instanceof TransactionRuleMfaRequiredError ||
+      e instanceof TransactionRuleEmailOtpRequiredError
+    ) {
+      throw e;
+    }
+
+    // handle the unknown error
     if (opts?.onStatusChange) {
       opts.onStatusChange('signature failed');
     }
@@ -1103,6 +1115,7 @@ export const signMessage = async (
   message: string,
   auth: {
     accessToken: string;
+    otpToken?: string;
     state: Record<string, Record<string, string>>;
     saveState: (
       state: Record<string, Record<string, string>>,
@@ -1177,6 +1190,7 @@ export const signMessage = async (
         asset.id,
         message,
         isTypedMessage,
+        auth.otpToken,
       );
     },
     {

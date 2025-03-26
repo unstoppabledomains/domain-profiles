@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import React from 'react';
+import React, {useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -19,6 +19,7 @@ import {
   getBlockchainSymbol,
 } from '../Manage/common/verification/types';
 import {OperationStatus} from './OperationStatus';
+import {TwoFactorPromptModal} from './TwoFactorPromptModal';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   fullWidth: {
@@ -72,6 +73,7 @@ export const SubmitTransaction: React.FC<Props> = ({
 }) => {
   const [t] = useTranslationContext();
   const {classes} = useStyles();
+  const [otpToken, setOtpToken] = useState<string>();
 
   const {transactionId, status, statusMessage} = useSubmitTransaction({
     accessToken,
@@ -79,6 +81,7 @@ export const SubmitTransaction: React.FC<Props> = ({
     token,
     recipientAddress,
     amount,
+    otpToken,
     onInvitation,
   });
 
@@ -145,7 +148,9 @@ export const SubmitTransaction: React.FC<Props> = ({
                 window.open(
                   `${
                     config.BLOCKCHAINS[
-                      getBlockchainSymbol(asset.blockchainAsset.blockchain.id)
+                      getBlockchainSymbol(
+                        asset.blockchainAsset.blockchain.id,
+                      ) as keyof typeof config.BLOCKCHAINS
                     ].BLOCK_EXPLORER_TX_URL
                   }${transactionId}`,
                   '_blank',
@@ -165,6 +170,24 @@ export const SubmitTransaction: React.FC<Props> = ({
               : t('common.cancel')}
           </Button>
         </Box>
+      )}
+      {statusMessage === SendCryptoStatusMessage.PROMPT_FOR_MFA && (
+        <TwoFactorPromptModal
+          mode="totp"
+          action={t('common.transaction')}
+          open={true}
+          onClose={onCloseClick}
+          onComplete={setOtpToken}
+        />
+      )}
+      {statusMessage === SendCryptoStatusMessage.PROMPT_FOR_EMAIL_OTP && (
+        <TwoFactorPromptModal
+          mode="email"
+          action={t('common.transaction')}
+          open={true}
+          onClose={onCloseClick}
+          onComplete={setOtpToken}
+        />
       )}
     </Box>
   );

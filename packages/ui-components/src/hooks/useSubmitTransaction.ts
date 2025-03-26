@@ -39,6 +39,7 @@ export type Params = {
   token: TokenEntry;
   recipientAddress: string;
   amount: string;
+  otpToken?: string;
   onInvitation: (
     emailAddress: string,
   ) => Promise<Record<string, string> | undefined>;
@@ -58,11 +59,12 @@ export const useSubmitTransaction = ({
   token,
   recipientAddress: initialRecipientAddress,
   amount,
+  otpToken,
   onInvitation,
 }: Params) => {
   const {mappedResolverKeys} = useResolverKeys();
   const {setShowSuccessAnimation} = useDomainConfig();
-  const fireblocksMessageSigner = useFireblocksMessageSigner();
+  const fireblocksMessageSigner = useFireblocksMessageSigner(otpToken);
   const [transactionId, setTransactionId] = useState('');
   const [status, setStatus] = useState(Status.Pending);
   const [statusMessage, setStatusMessage] = useState<SendCryptoStatusMessage>(
@@ -76,7 +78,7 @@ export const useSubmitTransaction = ({
     return () => {
       isMounted.current = false;
     };
-  }, []);
+  }, [otpToken]);
 
   const submitTransaction = async () => {
     setShowSuccessAnimation(false);
@@ -169,12 +171,14 @@ export const useSubmitTransaction = ({
           // handle the transaction MFA required error
           if (e instanceof TransactionRuleMfaRequiredError) {
             setStatus(Status.PromptForMfa);
+            setStatusMessage(SendCryptoStatusMessage.PROMPT_FOR_MFA);
             return;
           }
 
           // handle the transaction email OTP required error
           if (e instanceof TransactionRuleEmailOtpRequiredError) {
             setStatus(Status.PromptForEmailOtp);
+            setStatusMessage(SendCryptoStatusMessage.PROMPT_FOR_EMAIL_OTP);
             return;
           }
 
@@ -228,12 +232,14 @@ export const useSubmitTransaction = ({
           // handle the transaction MFA required error
           if (e instanceof TransactionRuleMfaRequiredError) {
             setStatus(Status.PromptForMfa);
+            setStatusMessage(SendCryptoStatusMessage.PROMPT_FOR_MFA);
             return;
           }
 
           // handle the transaction email OTP required error
           if (e instanceof TransactionRuleEmailOtpRequiredError) {
             setStatus(Status.PromptForEmailOtp);
+            setStatusMessage(SendCryptoStatusMessage.PROMPT_FOR_EMAIL_OTP);
             return;
           }
 
@@ -272,12 +278,14 @@ export const useSubmitTransaction = ({
               asset.accountId,
               asset.id,
               transferErc20Tx,
+              otpToken,
             )
           : await createTransferOperation(
               asset,
               accessToken,
               recipientAddress,
               parseFloat(amount),
+              otpToken,
             );
       if (!operationResponse) {
         throw new Error('Error starting transaction');
@@ -292,6 +300,7 @@ export const useSubmitTransaction = ({
       if (error instanceof TransactionRuleMfaRequiredError) {
         // indicate that the user needs to provide a MFA code
         setStatus(Status.PromptForMfa);
+        setStatusMessage(SendCryptoStatusMessage.PROMPT_FOR_MFA);
         return;
       }
 
@@ -299,6 +308,7 @@ export const useSubmitTransaction = ({
       if (error instanceof TransactionRuleEmailOtpRequiredError) {
         // indicate that the user needs to provide an email OTP
         setStatus(Status.PromptForEmailOtp);
+        setStatusMessage(SendCryptoStatusMessage.PROMPT_FOR_EMAIL_OTP);
         return;
       }
 

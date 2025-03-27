@@ -9,13 +9,13 @@ import React, {useEffect, useState} from 'react';
 import 'react-medium-image-zoom/dist/styles.css';
 import 'swiper/css/bundle';
 
-import config from '@unstoppabledomains/config';
 import {
   BaseProvider,
   DomainConfigProvider,
   TokenGalleryProvider,
   UnstoppableMessagingProvider,
   getTheme,
+  getThemeName,
 } from '@unstoppabledomains/ui-components';
 import type {
   ThemeMode,
@@ -44,15 +44,8 @@ const WrappedApp = (props: WrappedAppProps) => {
     const pagePath = window.location.href.toLowerCase();
     const pageQuery = window.location.search.toLowerCase();
 
-    // initialize the theme name
-    const name =
-      pagePath.includes(config.UD_ME_BASE_URL) ||
-      pageQuery.includes('theme=udme')
-        ? 'udme'
-        : pagePath.includes(config.UP_IO_BASE_URL) ||
-          pageQuery.includes('theme=upio')
-        ? 'upio'
-        : 'udme';
+    // set the theme name
+    const name = getThemeName(pagePath + pageQuery);
     setThemeName(name);
 
     // initialize the theme mode

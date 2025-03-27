@@ -2,14 +2,34 @@ import Document, {Head, Html, Main, NextScript} from 'next/document';
 import React from 'react';
 
 import config from '@unstoppabledomains/config';
-import {getImageUrl, withEmotionCache} from '@unstoppabledomains/ui-components';
+import {
+  getImageUrl,
+  getThemeName,
+  withEmotionCache,
+} from '@unstoppabledomains/ui-components';
 import theme from '@unstoppabledomains/ui-kit/styles';
 
 class MyDocument extends Document {
   render() {
-    const shortcutIcon = getImageUrl('/favicon/favicon-v3.ico');
-    const svgFavicon = getImageUrl('/favicon/icon.svg');
-    const appleTouchIcon = getImageUrl('/favicon/apple-touch-icon.png');
+    // retrieve the theme name from the document properties
+    const themeName = getThemeName(this.props.__NEXT_DATA__.page);
+
+    // determine the favicon based on the theme name
+    const legacyFavIcon = getImageUrl(
+      themeName === 'upio'
+        ? '/upio/favicon/beta.ico'
+        : '/favicon/favicon-v3.ico',
+    );
+    const appleFavIcon = getImageUrl(
+      themeName === 'upio'
+        ? '/upio/favicon/beta-apple-touch-icon.png'
+        : '/favicon/apple-touch-icon.png',
+    );
+    const svgFavIcon = getImageUrl(
+      themeName === 'upio' ? '/upio/favicon/beta.svg' : '/favicon/icon.svg',
+    );
+
+    // render the base document
     return (
       <Html>
         <Head>
@@ -36,11 +56,11 @@ class MyDocument extends Document {
             crossOrigin="anonymous"
           />
           {/* Legacy favicon without transparent pixels, to fix transparency issues */}
-          <link rel="icon" href={shortcutIcon} sizes="any" />
+          <link rel="icon" href={legacyFavIcon} sizes="any" />
           {/* Responsive, future-proof SVG favicon, supports dark/light themes */}
-          <link rel="icon" type="image/svg+xml" href={svgFavicon} />
+          <link rel="icon" type="image/svg+xml" href={svgFavIcon} />
           {/* 3072x3072 iOS friendly icon */}
-          <link rel="apple-touch-icon" href={appleTouchIcon} />
+          <link rel="apple-touch-icon" href={appleFavIcon} />
           <meta httpEquiv="Content-type" content="text/html" charSet="UTF-8" />
           <meta name="theme-color" content={theme.palette.background.default} />
         </Head>

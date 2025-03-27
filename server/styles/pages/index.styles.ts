@@ -45,8 +45,9 @@ export const useStyles = makeStyles<
     justifyContent: 'center',
     borderRadius: theme.shape.borderRadius,
     backgroundColor: theme.palette.background.paper,
+    marginTop: theme.spacing(3),
     padding: theme.spacing(2),
-    boxShadow: theme.shadows[6],
+    boxShadow: theme.shadows[3],
   },
   walletInfoContainer: {
     width: '535px',

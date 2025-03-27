@@ -77,17 +77,6 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
       width: '20px',
       height: '20px',
     },
-    avatarIcon: {
-      '& > img': {
-        width: '20px',
-        height: '20px',
-      },
-      '& > svg': {
-        width: '20px',
-        height: '20px',
-        color: theme.palette.primary.main,
-      },
-    },
     descriptionText: {
       color: theme.palette.neutralShades[50],
     },
@@ -282,7 +271,7 @@ export const Header: React.FC<Props> = ({
               classes.imagePlaceholderWrapper,
             )}
           >
-            <WalletIcon />
+            <WalletIcon size={AVATAR_SIZE} />
           </Box>
         </Box>
       </Box>
@@ -344,9 +333,7 @@ export const Header: React.FC<Props> = ({
                 horizontal: 'right',
               }}
             >
-              <Box display="flex" className={classes.avatarIcon}>
-                <WalletIcon />
-              </Box>
+              <WalletIcon size={20} />
             </StyledBadge>
           </Tooltip>
         )}

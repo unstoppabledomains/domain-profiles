@@ -1,4 +1,3 @@
-import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
@@ -128,18 +127,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   iconText: {
     verticalAlign: 'middle',
-  },
-  walletIcon: {
-    '& > img': {
-      width: '40px',
-      height: '40px',
-    },
-    '& > svg': {
-      width: '40px',
-      height: '40px',
-      color: theme.palette.primary.main,
-      backgroundColor: theme.palette.white,
-    },
   },
 }));
 
@@ -290,11 +277,7 @@ const WalletButton: React.FC<Props> = ({
     case WalletName.UnstoppableWalletReact:
     case WalletName.UnstoppableWalletExtension:
       props.title = theme.wallet.titleShort;
-      props.icon = (
-        <Box className={classes.walletIcon}>
-          <WalletIcon />
-        </Box>
-      );
+      props.icon = <WalletIcon size={size} beta={true} />;
       break;
     case WalletName.MetaMask:
       props.title = 'MetaMask';

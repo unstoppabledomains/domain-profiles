@@ -65,22 +65,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginTop: theme.spacing(1),
     width: '100%',
   },
-  walletIcon: {
+  walletIconContainer: {
     marginBottom: theme.spacing(5),
-    '& > img': {
-      width: '100px',
-      height: '100px',
-      boxShadow: theme.shadows[3],
-      borderRadius: '20px',
-    },
-    '& > svg': {
-      width: '100px',
-      height: '100px',
-      color: theme.palette.primary.main,
-      backgroundColor: theme.palette.white,
-      boxShadow: theme.shadows[3],
-      borderRadius: '20px',
-    },
+    display: 'flex',
   },
 }));
 
@@ -191,8 +178,8 @@ const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
   return (
     <Box className={classes.container}>
       <Box className={classes.content}>
-        <Box className={classes.walletIcon}>
-          <WalletIcon />
+        <Box className={classes.walletIconContainer}>
+          <WalletIcon size={100} boxShadow={true} beta={true} />
         </Box>
         <Typography variant="h5" mb={5}>
           {t('wallet.sessionIsLocked')}

@@ -97,9 +97,17 @@ const useStyles = makeStyles<{
         : '100%',
     alignItems: 'center',
   },
+  headerTitle: {
+    marginTop: theme.spacing(0),
+  },
+  headerContent: {
+    color: theme.palette.wallet.text.primary,
+  },
+  primaryButton: {
+    color: theme.palette.white,
+  },
   infoContainer: {
     marginBottom: theme.spacing(3),
-    marginTop: theme.spacing(-2),
     textAlign: 'center',
     display: 'flex',
     flexDirection: 'column',
@@ -129,22 +137,10 @@ const useStyles = makeStyles<{
   passwordIcon: {
     margin: theme.spacing(0.5),
   },
-  walletIcon: {
-    '& > img': {
-      width: '100px',
-      height: '100px',
-      boxShadow: theme.shadows[3],
-      borderRadius: '20px',
-    },
-    '& > svg': {
-      width: '100px',
-      height: '100px',
-      color: theme.palette.primary.main,
-      backgroundColor: theme.palette.white,
-      borderRadius: '20px',
-      boxShadow: theme.shadows[3],
-    },
-    marginBottom: theme.spacing(2),
+  walletIconContainer: {
+    display: 'flex',
+    marginTop: theme.spacing(3),
+    marginBottom: theme.spacing(1),
   },
 }));
 
@@ -411,6 +407,7 @@ export const WalletProvider: React.FC<
     setButtonComponent(
       <Box className={classes.continueActionContainer}>
         <LoadingButton
+          className={classes.primaryButton}
           variant="contained"
           onClick={handleSave}
           loading={isSaving}
@@ -1203,15 +1200,15 @@ export const WalletProvider: React.FC<
     // render the text and image components
     return (
       <Box className={classes.infoContainer}>
-        <Typography variant="body1" component="div">
-          <Markdown>{header}</Markdown>
-        </Typography>
         {withImage && (
-          <Box className={classes.walletIcon}>
-            <WalletIcon />
+          <Box className={classes.walletIconContainer}>
+            <WalletIcon size={100} boxShadow={true} beta={true} />
           </Box>
         )}
-        <Typography variant="body1" component="div">
+        <Typography variant="body1" className={classes.headerTitle}>
+          <Markdown>{header}</Markdown>
+        </Typography>
+        <Typography variant="body2" className={classes.headerContent}>
           <Markdown>{content.join('\n')}</Markdown>
         </Typography>
       </Box>

@@ -22,6 +22,7 @@ const useStyles = makeStyles<{size: number; boxShadow: boolean}>()((
 
   return {
     walletIcon: {
+      display: 'flex',
       '& > img': {
         ...commonFeatures,
         ...borderStyle,

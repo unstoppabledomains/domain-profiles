@@ -1,6 +1,5 @@
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Footer from 'components/app/Footer';
 import {MobileCta} from 'components/wallet/MobileCta';
@@ -150,6 +149,7 @@ const WalletPage = () => {
   const renderWallet = () => (
     <Wallet
       mode={authAddress ? 'portfolio' : 'basic'}
+      disableBasicHeader={true}
       emailAddress={emailAddress}
       address={authAddress}
       domain={authDomain}
@@ -183,11 +183,6 @@ const WalletPage = () => {
       <Box className={classes.content}>
         {isLoaded && (
           <Grid container data-testid="mainContentContainer">
-            <Grid item xs={12} className={classes.item}>
-              <Typography variant="h2" className={classes.sectionTitle}>
-                {theme.wallet.subTitle}
-              </Typography>
-            </Grid>
             <Grid item xs={12} className={classes.item}>
               {isMobile && authAddress ? (
                 <Modal

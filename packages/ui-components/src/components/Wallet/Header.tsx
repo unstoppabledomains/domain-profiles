@@ -82,6 +82,11 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
         width: '20px',
         height: '20px',
       },
+      '& > svg': {
+        width: '20px',
+        height: '20px',
+        color: theme.palette.primary.main,
+      },
     },
     descriptionText: {
       color: theme.palette.neutralShades[50],
@@ -339,7 +344,7 @@ export const Header: React.FC<Props> = ({
                 horizontal: 'right',
               }}
             >
-              <Box className={classes.avatarIcon}>
+              <Box display="flex" className={classes.avatarIcon}>
                 <WalletIcon />
               </Box>
             </StyledBadge>

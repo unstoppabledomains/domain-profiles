@@ -134,6 +134,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
       width: '40px',
       height: '40px',
     },
+    '& > svg': {
+      width: '40px',
+      height: '40px',
+      color: theme.palette.primary.main,
+      backgroundColor: theme.palette.white,
+    },
   },
 }));
 

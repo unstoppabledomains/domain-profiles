@@ -47,10 +47,6 @@ export const useStyles = makeStyles<
     backgroundColor: theme.palette.background.paper,
     padding: theme.spacing(2),
     boxShadow: theme.shadows[6],
-    minHeight: '405px',
-    [theme.breakpoints.down('sm')]: {
-      minHeight: '330px',
-    },
   },
   walletInfoContainer: {
     width: '535px',

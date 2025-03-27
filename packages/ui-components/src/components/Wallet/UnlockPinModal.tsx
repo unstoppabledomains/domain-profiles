@@ -73,6 +73,14 @@ const useStyles = makeStyles()((theme: Theme) => ({
       boxShadow: theme.shadows[3],
       borderRadius: '20px',
     },
+    '& > svg': {
+      width: '100px',
+      height: '100px',
+      color: theme.palette.primary.main,
+      backgroundColor: theme.palette.white,
+      boxShadow: theme.shadows[3],
+      borderRadius: '20px',
+    },
   },
 }));
 

@@ -313,6 +313,8 @@ export const Client: React.FC<ClientProps> = ({
     if (txLockStatus?.enabled) {
       setBanner(
         <WalletBanner
+          backgroundColor={theme.palette.primary.main}
+          textColor={theme.palette.white}
           icon={<LockIcon fontSize="small" />}
           action={
             txLockStatus?.validUntil ? undefined : (
@@ -353,6 +355,8 @@ export const Client: React.FC<ClientProps> = ({
         <Tooltip arrow title={t('wallet.securityHealthCheckDescription')}>
           <Box>
             <WalletBanner
+              backgroundColor={theme.palette.primary.main}
+              textColor={theme.palette.white}
               icon={<SecurityOutlinedIcon fontSize="small" />}
               action={
                 <Box display="flex">
@@ -925,6 +929,7 @@ export const Client: React.FC<ClientProps> = ({
                       onClick={handleClickedSend}
                       size="medium"
                       variant="send"
+                      disabled={txLockStatus?.enabled}
                     />
                   </Grid>
                   <Grid item>
@@ -932,6 +937,7 @@ export const Client: React.FC<ClientProps> = ({
                       onClick={handleClickedSwap}
                       size="medium"
                       variant="swap"
+                      disabled={txLockStatus?.enabled}
                     />
                   </Grid>
                   <Grid item>

@@ -68,12 +68,11 @@ export const TwoFactorPromptModal: React.FC<TwoFactorPromptModalProps> = ({
       title={t('wallet.twoFactorAuthentication')}
     >
       <Box className={classes.container}>
-        <Typography variant="body2">
+        <Typography mb={2} variant="body2">
           <Markdown>{message}</Markdown>
         </Typography>
         <Box className={classes.container}>
           <ManageInput
-            mt={1}
             id="otp"
             value={otp}
             label={t('wallet.oneTimeCode')}

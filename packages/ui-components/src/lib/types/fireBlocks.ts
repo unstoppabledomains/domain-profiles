@@ -212,7 +212,21 @@ export interface TransactionRule {
       all?: TransactionRuleCondition[];
     };
   };
+  acceptanceCriteria?: {
+    '@type': string;
+    items: TransactionRuleAcceptanceCriteria[];
+  };
 }
+
+export interface TransactionRuleAcceptanceCriteria {
+  '@type': string;
+  id: string;
+  name: string;
+  type: TransactionRuleAcceptanceCriteriaType;
+  status: string;
+}
+
+export type TransactionRuleAcceptanceCriteriaType = 'MFA_CODE' | 'BLOCK';
 
 export interface TransactionRuleCondition {
   field: 'AMOUNT' | 'SYMBOL' | 'BLOCKCHAIN.ID';

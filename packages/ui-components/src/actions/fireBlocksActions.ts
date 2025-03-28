@@ -38,6 +38,7 @@ import type {
   TransactionLockRequest,
   TransactionLockStatusResponse,
   TransactionRule,
+  TransactionRuleAcceptanceCriteriaType,
   TransactionRuleRequest,
   TransactionRulesListResponse,
   VerifyTokenResponse,
@@ -282,7 +283,7 @@ export const createTransactionRule = async (
 export const createTransactionRuleAcceptanceCriteria = async (
   accessToken: string,
   ruleId: string,
-  type: 'MFA_CODE' | 'BLOCK',
+  type: TransactionRuleAcceptanceCriteriaType,
 ) => {
   const createCriteriaResponse = await fetchApi<TransactionRulesListResponse>(
     `/v1/settings/security/rules/${ruleId}/acceptance-criteria`,
@@ -744,7 +745,7 @@ export const getTransactionRule = async (
   ruleId: string,
 ) => {
   const ruleResponse = await fetchApi<TransactionRule>(
-    `/v1/settings/security/rules/${ruleId}`,
+    `/v1/settings/security/rules/${ruleId}?$expand=acceptanceCriteria`,
     {
       method: 'GET',
       mode: 'cors',

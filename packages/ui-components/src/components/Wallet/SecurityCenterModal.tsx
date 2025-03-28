@@ -23,6 +23,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {useFeatureFlags} from '../../actions';
 import {
   createTransactionRule,
+  createTransactionRuleAcceptanceCriteria,
   deleteTransactionRule,
   getRecoveryKitStatus,
   getTransactionLockStatus,
@@ -279,6 +280,20 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           updatedRule,
         );
 
+        // create the acceptance criteria if it doesn't exist
+        if (
+          !existingRule.acceptanceCriteria?.items ||
+          existingRule.acceptanceCriteria.items.filter(
+            c => c.status === 'ACTIVE',
+          ).length === 0
+        ) {
+          await createTransactionRuleAcceptanceCriteria(
+            accessToken,
+            existingRule.id,
+            'MFA_CODE',
+          );
+        }
+
         // refresh the tx rules
         const updatedRules = await getTransactionRules(accessToken);
         if (updatedRules) {
@@ -306,14 +321,19 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
         if (!ruleId) {
           return;
         }
-        setTxRules([
-          {
-            ...rule,
-            '@type': 'TransactionRule',
-            validUntil: null,
-            id: ruleId,
-          },
-        ]);
+
+        // create the acceptance criteria
+        await createTransactionRuleAcceptanceCriteria(
+          accessToken,
+          ruleId,
+          'MFA_CODE',
+        );
+
+        // refresh the tx rules
+        const updatedRules = await getTransactionRules(accessToken);
+        if (updatedRules) {
+          setTxRules(updatedRules);
+        }
       }
     } else {
       // prompt for OTP if not yet provided
@@ -347,6 +367,19 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
 
       // update the rule
       await updateTransactionRule(accessToken, otpCode, rule.id, updatedRule);
+
+      // create the acceptance criteria if it doesn't exist
+      if (
+        !rule.acceptanceCriteria?.items ||
+        rule.acceptanceCriteria.items.filter(c => c.status === 'ACTIVE')
+          .length === 0
+      ) {
+        await createTransactionRuleAcceptanceCriteria(
+          accessToken,
+          rule.id,
+          'MFA_CODE',
+        );
+      }
 
       // refresh the tx rules
       const updatedRules = await getTransactionRules(accessToken);

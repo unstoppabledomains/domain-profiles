@@ -257,6 +257,15 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           r.name === t('wallet.largeTxProtection'),
       );
       if (existingRule) {
+        // prompt for OTP if not yet provided
+        if (!otpCode) {
+          setOtpPrompt('update');
+          return;
+        }
+
+        // clear OTP state
+        setOtpPrompt(undefined);
+
         // update the existing rule
         const updatedRule: Partial<TransactionRuleRequest> = {
           type: 'SEND_FUNDS',
@@ -275,7 +284,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
         };
         await updateTransactionRule(
           accessToken,
-          '',
+          otpCode,
           existingRule.id,
           updatedRule,
         );

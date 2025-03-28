@@ -16,6 +16,7 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
+import {useSnackbar} from 'notistack';
 import React, {useEffect, useMemo, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -113,6 +114,7 @@ type Props = {
 const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
+  const {enqueueSnackbar} = useSnackbar();
   const {setTxLockStatus} = useWeb3Context();
   const [state] = useFireblocksState();
   const clientState = getBootstrapState(state);
@@ -151,6 +153,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   const [largeTxAmountInput, setLargeTxAmountInput] = useState<number>();
   const [isSavingLargeTxProtection, setIsSavingLargeTxProtection] =
     useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>();
   const [
     isSavingLargeTxProtectionSuccess,
     setIsSavingLargeTxProtectionSuccess,
@@ -210,6 +213,14 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
     void loadSettings();
   }, [accessToken]);
 
+  useEffect(() => {
+    if (errorMessage) {
+      enqueueSnackbar(errorMessage, {
+        variant: 'error',
+      });
+    }
+  }, [errorMessage]);
+
   const handleRecoveryKitClicked = () => {
     setIsRecoveryModalOpen(true);
   };
@@ -245,6 +256,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
     }
 
     // show loading spinner
+    setErrorMessage(undefined);
     setIsSavingLargeTxProtection(true);
 
     // check if large tx protection is already enabled
@@ -282,12 +294,19 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
             },
           },
         };
-        await updateTransactionRule(
+        const updatedResponse = await updateTransactionRule(
           accessToken,
           otpCode,
           existingRule.id,
           updatedRule,
         );
+        if (!updatedResponse) {
+          setIsSavingLargeTxProtection(false);
+          setErrorMessage(
+            t('wallet.largeTxProtectionError', {action: 'creating'}),
+          );
+          return;
+        }
 
         // create the acceptance criteria if it doesn't exist
         if (
@@ -375,7 +394,19 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
       };
 
       // update the rule
-      await updateTransactionRule(accessToken, otpCode, rule.id, updatedRule);
+      const updateResponse = await updateTransactionRule(
+        accessToken,
+        otpCode,
+        rule.id,
+        updatedRule,
+      );
+      if (!updateResponse) {
+        setIsSavingLargeTxProtection(false);
+        setErrorMessage(
+          t('wallet.largeTxProtectionError', {action: 'updating'}),
+        );
+        return;
+      }
 
       // create the acceptance criteria if it doesn't exist
       if (
@@ -428,14 +459,28 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
       return;
     }
 
-    // hide the rule first for responsive UX
+    // delete the rule
+    setErrorMessage(undefined);
+    setIsSavingLargeTxProtection(true);
+    const disableResponse = await deleteTransactionRule(
+      accessToken,
+      otpCode,
+      rule,
+    );
+    if (!disableResponse) {
+      setIsSavingLargeTxProtection(false);
+      setErrorMessage(
+        t('wallet.largeTxProtectionError', {action: 'disabling'}),
+      );
+      return;
+    }
+
+    // hide the rule after successful removal
     setTxRules(txRules.filter(r => r.id !== rule.id));
     setIsSavingLargeTxProtectionSuccess(false);
     setLargeTxAmountInput(undefined);
 
-    // delete the rule
-    setIsSavingLargeTxProtection(true);
-    await deleteTransactionRule(accessToken, otpCode, rule);
+    // success
     setIsSavingLargeTxProtection(false);
   };
 
@@ -477,6 +522,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
       if (isNumeric(v) && Number(v) >= 0) {
         setLargeTxAmountInput(Math.max(Number(v), 0));
         setIsSavingLargeTxProtectionSuccess(false);
+        setErrorMessage(undefined);
       }
     }
   };

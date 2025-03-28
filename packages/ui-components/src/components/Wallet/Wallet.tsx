@@ -43,6 +43,7 @@ export const Wallet: React.FC<
     recoveryToken?: string;
     showMessages?: boolean;
     mode?: WalletMode;
+    disableSignInHeader?: boolean;
     disableBasicHeader?: boolean;
     fullScreenModals?: boolean;
     forceRememberOnDevice?: boolean;
@@ -73,6 +74,7 @@ export const Wallet: React.FC<
   recoveryToken,
   showMessages,
   mode = 'basic',
+  disableSignInHeader,
   disableBasicHeader,
   isNewUser,
   loginClicked,
@@ -163,7 +165,8 @@ export const Wallet: React.FC<
 
   return (
     <Box className={classes.container}>
-      {(mode !== 'basic' || !disableBasicHeader) && (
+      {((mode !== 'basic' && (accessToken || !disableSignInHeader)) ||
+        !disableBasicHeader) && (
         <Header
           mode={mode}
           isLoaded={isLoaded}

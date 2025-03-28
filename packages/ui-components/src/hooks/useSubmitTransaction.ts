@@ -4,8 +4,8 @@ import {
   SendCryptoStatusMessage,
   cancelPendingOperations,
   createTransactionOperation,
+  createTransferOperation,
   getOperationStatus,
-  getTransferOperationResponse,
 } from '../actions/fireBlocksActions';
 import {getRecordKeys} from '../components/Manage/common/verification/types';
 import type {TokenEntry} from '../lib';
@@ -13,7 +13,13 @@ import {TokenType} from '../lib';
 import {notifyEvent} from '../lib/error';
 import {isEmailValid} from '../lib/isEmailValid';
 import {pollForSuccess} from '../lib/poll';
-import {FB_MAX_RETRY, FB_WAIT_TIME_MS,OperationStatusType} from '../lib/types/fireBlocks';
+import {
+  FB_MAX_RETRY,
+  FB_WAIT_TIME_MS,
+  OperationStatusType,
+  TransactionRuleEmailOtpRequiredError,
+  TransactionRuleMfaRequiredError,
+} from '../lib/types/fireBlocks';
 import type {AccountAsset, GetOperationResponse} from '../lib/types/fireBlocks';
 import {createErc20TransferTx} from '../lib/wallet/evm/token';
 import {
@@ -33,6 +39,7 @@ export type Params = {
   token: TokenEntry;
   recipientAddress: string;
   amount: string;
+  otpToken?: string;
   onInvitation: (
     emailAddress: string,
   ) => Promise<Record<string, string> | undefined>;
@@ -42,6 +49,8 @@ export enum Status {
   Pending = 'pending',
   Success = 'success',
   Failed = 'failed',
+  PromptForMfa = 'promptForMfa',
+  PromptForEmailOtp = 'promptForEmailOtp',
 }
 
 export const useSubmitTransaction = ({
@@ -50,11 +59,12 @@ export const useSubmitTransaction = ({
   token,
   recipientAddress: initialRecipientAddress,
   amount,
+  otpToken,
   onInvitation,
 }: Params) => {
   const {mappedResolverKeys} = useResolverKeys();
   const {setShowSuccessAnimation} = useDomainConfig();
-  const fireblocksMessageSigner = useFireblocksMessageSigner();
+  const fireblocksMessageSigner = useFireblocksMessageSigner(otpToken);
   const [transactionId, setTransactionId] = useState('');
   const [status, setStatus] = useState(Status.Pending);
   const [statusMessage, setStatusMessage] = useState<SendCryptoStatusMessage>(
@@ -68,7 +78,7 @@ export const useSubmitTransaction = ({
     return () => {
       isMounted.current = false;
     };
-  }, []);
+  }, [otpToken]);
 
   const submitTransaction = async () => {
     setShowSuccessAnimation(false);
@@ -158,6 +168,21 @@ export const useSubmitTransaction = ({
           setStatusMessage(SendCryptoStatusMessage.TRANSACTION_COMPLETED);
           setStatus(Status.Success);
         } catch (e) {
+          // handle the transaction MFA required error
+          if (e instanceof TransactionRuleMfaRequiredError) {
+            setStatus(Status.PromptForMfa);
+            setStatusMessage(SendCryptoStatusMessage.PROMPT_FOR_MFA);
+            return;
+          }
+
+          // handle the transaction email OTP required error
+          if (e instanceof TransactionRuleEmailOtpRequiredError) {
+            setStatus(Status.PromptForEmailOtp);
+            setStatusMessage(SendCryptoStatusMessage.PROMPT_FOR_EMAIL_OTP);
+            return;
+          }
+
+          // handle the unknown error
           notifyEvent(e, 'error', 'Wallet', 'Transaction', {
             msg: 'error sending SPL token',
             meta: {token, recipientAddress, amount},
@@ -204,6 +229,21 @@ export const useSubmitTransaction = ({
           setStatusMessage(SendCryptoStatusMessage.TRANSACTION_COMPLETED);
           setStatus(Status.Success);
         } catch (e) {
+          // handle the transaction MFA required error
+          if (e instanceof TransactionRuleMfaRequiredError) {
+            setStatus(Status.PromptForMfa);
+            setStatusMessage(SendCryptoStatusMessage.PROMPT_FOR_MFA);
+            return;
+          }
+
+          // handle the transaction email OTP required error
+          if (e instanceof TransactionRuleEmailOtpRequiredError) {
+            setStatus(Status.PromptForEmailOtp);
+            setStatusMessage(SendCryptoStatusMessage.PROMPT_FOR_EMAIL_OTP);
+            return;
+          }
+
+          // handle the unknown error
           notifyEvent(e, 'error', 'Wallet', 'Transaction', {
             msg: 'error sending SOL native transfer',
             meta: {recipientAddress, amount},
@@ -238,12 +278,14 @@ export const useSubmitTransaction = ({
               asset.accountId,
               asset.id,
               transferErc20Tx,
+              otpToken,
             )
-          : await getTransferOperationResponse(
+          : await createTransferOperation(
               asset,
               accessToken,
               recipientAddress,
               parseFloat(amount),
+              otpToken,
             );
       if (!operationResponse) {
         throw new Error('Error starting transaction');
@@ -254,6 +296,23 @@ export const useSubmitTransaction = ({
       await pollForCompletion(operationResponse);
       setStatus(Status.Success);
     } catch (error) {
+      // handle the transaction MFA required error
+      if (error instanceof TransactionRuleMfaRequiredError) {
+        // indicate that the user needs to provide a MFA code
+        setStatus(Status.PromptForMfa);
+        setStatusMessage(SendCryptoStatusMessage.PROMPT_FOR_MFA);
+        return;
+      }
+
+      // handle the transaction email OTP required error
+      if (error instanceof TransactionRuleEmailOtpRequiredError) {
+        // indicate that the user needs to provide an email OTP
+        setStatus(Status.PromptForEmailOtp);
+        setStatusMessage(SendCryptoStatusMessage.PROMPT_FOR_EMAIL_OTP);
+        return;
+      }
+
+      // handle the unknown error
       notifyEvent(error, 'error', 'Wallet', 'Signature', {
         msg: 'Error sending crypto',
       });

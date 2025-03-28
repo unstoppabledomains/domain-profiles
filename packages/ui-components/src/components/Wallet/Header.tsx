@@ -14,7 +14,6 @@ import QueryString from 'qs';
 import React, {useState} from 'react';
 
 import config from '@unstoppabledomains/config';
-import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useUnstoppableMessaging} from '../../hooks';
@@ -22,7 +21,6 @@ import {isChromeStorageSupported} from '../../hooks/useChromeStorage';
 import {useTranslationContext} from '../../lib';
 import {UnstoppableMessaging} from '../Chat';
 import DropDownMenu from '../DropDownMenu';
-import Link from '../Link';
 import {DomainProfileModal} from '../Manage';
 import WalletIcon from './WalletIcon';
 import type {WalletMode} from './index';
@@ -123,15 +121,7 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
       height: AVATAR_PLACEHOLDER_SIZE - avatarSizeOffset,
       overflow: 'hidden',
     },
-    icon: {
-      '& > svg': {
-        width: AVATAR_SIZE - avatarSizeOffset,
-        height: AVATAR_SIZE - avatarSizeOffset,
-        padding: theme.spacing(2),
-        fill: theme.palette.common.white,
-        color: theme.palette.common.white,
-      },
-    },
+
     optionsContainer: {
       display: 'flex',
       position: 'absolute',
@@ -261,7 +251,9 @@ export const Header: React.FC<Props> = ({
     }
 
     window.location.href = `${
-      config.UD_ME_BASE_URL
+      theme.wallet.type === 'udme'
+        ? config.UD_ME_BASE_URL
+        : config.UP_IO_BASE_URL
     }/wallet?${QueryString.stringify(
       {email: emailAddress},
       {skipNulls: true},
@@ -279,16 +271,7 @@ export const Header: React.FC<Props> = ({
               classes.imagePlaceholderWrapper,
             )}
           >
-            <Box className={classes.icon}>
-              <IconPlate
-                size={
-                  isMobile ? AVATAR_SIZE - AVATAR_MOBILE_OFFSET : AVATAR_SIZE
-                }
-                variant="info"
-              >
-                <WalletIcon />
-              </IconPlate>
-            </Box>
+            <WalletIcon size={AVATAR_SIZE} />
           </Box>
         </Box>
       </Box>
@@ -299,15 +282,6 @@ export const Header: React.FC<Props> = ({
               ? t('manage.cryptoWalletDescriptionMobile')
               : t('manage.cryptoWalletDescription')}
           </Typography>
-          {!isMobile && (
-            <Link
-              className={classes.learnMoreLink}
-              external={true}
-              to={config.WALLETS.LANDING_PAGE_URL}
-            >
-              {t('profile.learnMore')}
-            </Link>
-          )}
         </Box>
       </Box>
     </Box>
@@ -359,9 +333,7 @@ export const Header: React.FC<Props> = ({
                 horizontal: 'right',
               }}
             >
-              <IconPlate size={20} variant="info">
-                <WalletIcon />
-              </IconPlate>
+              <WalletIcon size={20} />
             </StyledBadge>
           </Tooltip>
         )}

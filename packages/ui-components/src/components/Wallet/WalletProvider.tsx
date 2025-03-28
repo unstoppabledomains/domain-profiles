@@ -70,6 +70,7 @@ import type {ManageTabProps} from '../Manage/common/types';
 import {Client, getMinClientHeight} from './Client';
 import {OperationStatus} from './OperationStatus';
 import type {WalletMode} from './index';
+import {WalletIcon} from './index';
 
 const EMAIL_PARAM = 'email';
 
@@ -96,9 +97,22 @@ const useStyles = makeStyles<{
         : '100%',
     alignItems: 'center',
   },
+  headerTitle: {
+    marginTop: theme.spacing(0),
+  },
+  headerContent: {
+    color: theme.palette.wallet.text.primary,
+  },
+  primaryButton: {
+    color: theme.palette.white,
+  },
   infoContainer: {
     marginBottom: theme.spacing(3),
-    marginTop: theme.spacing(-2),
+    textAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   checkboxContainer: {
     marginTop: theme.spacing(3),
@@ -122,6 +136,11 @@ const useStyles = makeStyles<{
   },
   passwordIcon: {
     margin: theme.spacing(0.5),
+  },
+  walletIconContainer: {
+    display: 'flex',
+    marginTop: theme.spacing(3),
+    marginBottom: theme.spacing(1),
   },
 }));
 
@@ -388,6 +407,7 @@ export const WalletProvider: React.FC<
     setButtonComponent(
       <Box className={classes.continueActionContainer}>
         <LoadingButton
+          className={classes.primaryButton}
           variant="contained"
           onClick={handleSave}
           loading={isSaving}
@@ -1170,6 +1190,31 @@ export const WalletProvider: React.FC<
     setConfigState(WalletConfigState.Complete);
   };
 
+  const renderHeaderWithDescription = (
+    descriptionText: string,
+    withImage?: boolean,
+  ) => {
+    // split the text into header and content
+    const [header, ...content] = descriptionText.split('\n');
+
+    // render the text and image components
+    return (
+      <Box className={classes.infoContainer}>
+        {withImage && (
+          <Box className={classes.walletIconContainer}>
+            <WalletIcon size={100} boxShadow={true} beta={true} />
+          </Box>
+        )}
+        <Typography variant="body1" className={classes.headerTitle}>
+          <Markdown>{header}</Markdown>
+        </Typography>
+        <Typography variant="body2" className={classes.headerContent}>
+          <Markdown>{content.join('\n')}</Markdown>
+        </Typography>
+      </Box>
+    );
+  };
+
   // indicates the wallet is ready for user interaction
   const isReadyForUser =
     ![WalletConfigState.Complete].includes(configState) ||
@@ -1181,52 +1226,38 @@ export const WalletProvider: React.FC<
     <Box className={classes.container}>
       {isWalletLoaded && isReadyForUser ? (
         configState === WalletConfigState.NeedsOnboarding && emailAddress ? (
-          <Box>
-            <Typography
-              variant="body1"
-              className={classes.infoContainer}
-              component="div"
-            >
-              <Markdown>
-                {t('wallet.onboardingMessage', {emailAddress})}
-              </Markdown>
-            </Typography>
-          </Box>
+          renderHeaderWithDescription(
+            t('wallet.onboardingMessage', {emailAddress}),
+            true,
+          )
         ) : [WalletConfigState.OtpEntry].includes(configState) && loginState ? (
           <Box>
-            <Typography
-              variant="body1"
-              className={classes.infoContainer}
-              component="div"
-            >
-              <Markdown>
-                {loginState.status === 'MFA_EMAIL_REQUIRED'
-                  ? t('wallet.oneTimeCodeEmailDescription', {
-                      operation: recoveryToken
-                        ? t('wallet.passwordReset')
-                        : t('wallet.signIn'),
-                      emailAddress:
-                        emailAddress || t('common.yourEmailAddress'),
-                    })
-                  : loginState.status === 'MFA_OTP_REQUIRED'
-                  ? t('wallet.oneTimeCodeTotpDescription', {
-                      operation: recoveryToken
-                        ? t('wallet.passwordReset')
-                        : t('wallet.beginSetup'),
-                    })
-                  : t('wallet.oneTimeCodeGenericDescription', {
-                      operation: recoveryToken
-                        ? t('wallet.passwordReset')
-                        : t('wallet.beginSetup'),
-                    })}
-              </Markdown>
-            </Typography>
+            {renderHeaderWithDescription(
+              loginState.status === 'MFA_EMAIL_REQUIRED'
+                ? t('wallet.oneTimeCodeEmailDescription', {
+                    operation: recoveryToken
+                      ? t('wallet.passwordReset')
+                      : t('wallet.signIn'),
+                    emailAddress: emailAddress || t('common.yourEmailAddress'),
+                  })
+                : loginState.status === 'MFA_OTP_REQUIRED'
+                ? t('wallet.oneTimeCodeTotpDescription', {
+                    operation: recoveryToken
+                      ? t('wallet.passwordReset')
+                      : t('wallet.beginSetup'),
+                  })
+                : t('wallet.oneTimeCodeGenericDescription', {
+                    operation: recoveryToken
+                      ? t('wallet.passwordReset')
+                      : t('wallet.beginSetup'),
+                  }),
+              true,
+            )}
             <ManageInput
               mt={2}
               id="oneTimeCode"
               value={oneTimeCode}
               autoComplete="one-time-code"
-              label={t('wallet.oneTimeCode')}
               placeholder={t('wallet.enterOneTimeCode')}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
@@ -1273,19 +1304,14 @@ export const WalletProvider: React.FC<
             WalletConfigState.OnboardWithCustody,
           ].includes(configState) ? (
           <Box>
-            <Typography
-              variant="body1"
-              className={classes.infoContainer}
-              component="div"
-            >
-              <Markdown>
-                {configState === WalletConfigState.OnboardWithCustody
-                  ? t('wallet.onboardWithCustodyDescription')
-                  : recoveryToken
-                  ? t('wallet.resetPasswordDescription')
-                  : t('wallet.recoveryPhraseDescription')}
-              </Markdown>
-            </Typography>
+            {renderHeaderWithDescription(
+              configState === WalletConfigState.OnboardWithCustody
+                ? t('wallet.onboardWithCustodyDescription')
+                : recoveryToken
+                ? t('wallet.resetPasswordDescription')
+                : t('wallet.recoveryPhraseDescription'),
+              true,
+            )}
             {configState !== WalletConfigState.OnboardWithCustody ? (
               <Box mt={5}>
                 <form>
@@ -1296,11 +1322,10 @@ export const WalletProvider: React.FC<
                         id="emailAddress"
                         value={emailAddress}
                         autoComplete="username"
-                        label={t('wallet.emailAddress')}
                         placeholder={t('common.enterYourEmail')}
                         onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
-                        stacked={false}
+                        stacked={true}
                         disabled={isSaving}
                       />
                     )}
@@ -1308,11 +1333,6 @@ export const WalletProvider: React.FC<
                     mt={2}
                     id="recoveryPhrase"
                     value={recoveryPhrase}
-                    label={
-                      recoveryToken
-                        ? t('wallet.resetPassword')
-                        : t('wallet.recoveryPhrase')
-                    }
                     placeholder={
                       recoveryToken
                         ? t('wallet.enterResetPassword')
@@ -1323,18 +1343,17 @@ export const WalletProvider: React.FC<
                     disabled={isSaving}
                     type={'password'}
                     autoComplete="current-password"
-                    stacked={false}
+                    stacked={true}
                   />
                   {recoveryToken && (
                     <ManageInput
                       mt={2}
                       id="recoveryPhraseConfirmation"
                       value={recoveryPhraseConfirmation}
-                      label={t('wallet.confirmRecoveryPhrase')}
                       placeholder={t('wallet.enterRecoveryPhraseConfirmation')}
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
-                      stacked={false}
+                      stacked={true}
                       type={'password'}
                       autoComplete="current-password"
                       disabled={isSaving}

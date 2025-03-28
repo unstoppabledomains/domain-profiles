@@ -16,6 +16,11 @@ import {
   EIP_712_KEY,
   FB_MAX_RETRY,
   FB_WAIT_TIME_MS,
+  OPERATION_CODE_EMAIL_OTP_REQUIRED,
+  OPERATION_CODE_MFA_REQUIRED,
+  TransactionRuleEmailOtpRequiredError,
+  TransactionRuleMfaRequiredError,
+  isOperationResponseError,
 } from '../lib/types/fireBlocks';
 import type {
   AccountAsset,
@@ -25,12 +30,17 @@ import type {
   GetEstimateTransactionResponse,
   GetOperationListResponse,
   GetOperationResponse,
+  GetOperationResponseError,
   GetOperationStatusResponse,
   GetTokenResponse,
   RecoveryStatusResponse,
   TokenRefreshResponse,
   TransactionLockRequest,
   TransactionLockStatusResponse,
+  TransactionRule,
+  TransactionRuleAcceptanceCriteriaType,
+  TransactionRuleRequest,
+  TransactionRulesListResponse,
   VerifyTokenResponse,
 } from '../lib/types/fireBlocks';
 import {getAsset} from '../lib/wallet/asset';
@@ -57,7 +67,30 @@ export enum SendCryptoStatusMessage {
   WAITING_FOR_TRANSACTION = 'Successfully submitted your transfer!',
   TRANSACTION_COMPLETED = 'Transfer completed!',
   TRANSACTION_FAILED = 'Transfer failed',
+  PROMPT_FOR_MFA = 'Waiting for 2FA code...',
+  PROMPT_FOR_EMAIL_OTP = 'Waiting for email OTP code...',
 }
+
+const buildHeadersWithAuth = (accessToken: string, otpToken?: string) => {
+  const headers: Record<string, string> = {
+    'Access-Control-Allow-Credentials': 'true',
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${accessToken}`,
+  };
+  if (otpToken) {
+    headers['X-Otp-Token'] = otpToken;
+  }
+  return headers;
+};
+
+const handleTransactionRuleError = (e: GetOperationResponseError): never => {
+  if (e.code === OPERATION_CODE_EMAIL_OTP_REQUIRED) {
+    throw new TransactionRuleEmailOtpRequiredError(e.message);
+  } else if (e.code === OPERATION_CODE_MFA_REQUIRED) {
+    throw new TransactionRuleMfaRequiredError(e.message);
+  }
+  throw new Error('Unknown OperationResponseError');
+};
 
 export const cancelOperation = async (
   accessToken: string,
@@ -105,14 +138,7 @@ export const changePassword = async (
 > => {
   try {
     // build required headers
-    const headers: Record<string, string> = {
-      'Access-Control-Allow-Credentials': 'true',
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    };
-    if (otp) {
-      headers['X-Otp-Token'] = otp;
-    }
+    const headers = buildHeadersWithAuth(accessToken, otp);
 
     // make request to change password
     const changePwResult = await fetchApi('/v1/settings/security/login', {
@@ -146,27 +172,37 @@ export const createSignatureOperation = async (
   assetId: string,
   message: string,
   isTypedMessage?: boolean,
+  otpToken?: string,
 ): Promise<GetOperationResponse | undefined> => {
   try {
+    // build headers, including the optional OTP token if provided
+    const headers = buildHeadersWithAuth(accessToken, otpToken);
+
     // call the signature endpoint
-    return await fetchApi<GetOperationResponse>(
-      `/v1/accounts/${accountId}/assets/${assetId}/signatures`,
-      {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Access-Control-Allow-Credentials': 'true',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        host: config.WALLETS.HOST_URL,
-        body: JSON.stringify({
-          message,
-          encoding: EthersUtils.isHexString(message) ? 'hex' : 'utf8',
-          type: isTypedMessage ? 'ERC712' : 'RAW',
-        }),
-      },
-    );
+    const maybeSignatureOperation = await fetchApi<
+      GetOperationResponse | GetOperationResponseError
+    >(`/v1/accounts/${accountId}/assets/${assetId}/signatures`, {
+      method: 'POST',
+      mode: 'cors',
+      headers,
+      host: config.WALLETS.HOST_URL,
+      acceptStatusCodes: [400], // for custom validation response handling
+      body: JSON.stringify({
+        message,
+        encoding: EthersUtils.isHexString(message) ? 'hex' : 'utf8',
+        type: isTypedMessage ? 'ERC712' : 'RAW',
+      }),
+    });
+
+    // if the response is a 400, check the error code and possibly throw an error
+    // when the code is related to transaction rules
+    if (isOperationResponseError(maybeSignatureOperation)) {
+      handleTransactionRuleError(maybeSignatureOperation);
+      return;
+    }
+
+    // return the operation
+    return maybeSignatureOperation;
   } catch (e) {
     notifyEvent(e, 'warning', 'Wallet', 'Signature', {
       meta: {accountId, assetId, message},
@@ -180,27 +216,38 @@ export const createTransactionOperation = async (
   accountId: string,
   assetId: string,
   tx: CreateTransaction,
+  otpToken?: string,
 ): Promise<GetOperationResponse | undefined> => {
   try {
-    return await fetchApi<GetOperationResponse>(
-      `/v1/accounts/${accountId}/assets/${assetId}/transactions`,
-      {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Access-Control-Allow-Credentials': 'true',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        host: config.WALLETS.HOST_URL,
-        body: JSON.stringify({
-          destinationAddress: tx.to,
-          data: tx.data,
-          value: tx.value,
-          gasLimit: tx.gasLimit,
-        }),
-      },
-    );
+    // build headers, including the optional OTP token if provided
+    const headers = buildHeadersWithAuth(accessToken, otpToken);
+
+    // request the transfer
+    const maybeTxOperation = await fetchApi<
+      GetOperationResponse | GetOperationResponseError
+    >(`/v1/accounts/${accountId}/assets/${assetId}/transactions`, {
+      method: 'POST',
+      mode: 'cors',
+      headers,
+      host: config.WALLETS.HOST_URL,
+      acceptStatusCodes: [400], // for custom validation response handling
+      body: JSON.stringify({
+        destinationAddress: tx.to,
+        data: tx.data,
+        value: tx.value,
+        gasLimit: tx.gasLimit,
+      }),
+    });
+
+    // if the response is a 400, check the error code and possibly throw an error
+    // when the code is related to transaction rules
+    if (isOperationResponseError(maybeTxOperation)) {
+      handleTransactionRuleError(maybeTxOperation);
+      return undefined;
+    }
+
+    // return the operation
+    return maybeTxOperation;
   } catch (e) {
     notifyEvent(e, 'warning', 'Wallet', 'Signature', {
       meta: {accountId, assetId, tx},
@@ -209,19 +256,112 @@ export const createTransactionOperation = async (
   return undefined;
 };
 
+export const createTransactionRule = async (
+  accessToken: string,
+  rule: TransactionRuleRequest,
+): Promise<string | undefined> => {
+  const createRuleResponse = await fetchApi<TransactionRule>(
+    `/v1/settings/security/rules`,
+    {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify(rule),
+    },
+  );
+  if (createRuleResponse?.id) {
+    return createRuleResponse.id;
+  }
+  return undefined;
+};
+
+export const createTransactionRuleAcceptanceCriteria = async (
+  accessToken: string,
+  ruleId: string,
+  type: TransactionRuleAcceptanceCriteriaType,
+) => {
+  const createCriteriaResponse = await fetchApi<TransactionRulesListResponse>(
+    `/v1/settings/security/rules/${ruleId}/acceptance-criteria`,
+    {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify({
+        type,
+        name: `${ruleId}-criteria`,
+        status: 'ACTIVE',
+      }),
+    },
+  );
+  return createCriteriaResponse;
+};
+
+export const createTransferOperation = async (
+  asset: AccountAsset,
+  accessToken: string,
+  destinationAddress: string,
+  amount: number,
+  otpToken?: string,
+) => {
+  // build headers, including the optional OTP token if provided
+  const headers = buildHeadersWithAuth(accessToken, otpToken);
+
+  // request the transfer
+  const maybeTransferOperation = await fetchApi<
+    GetOperationResponse | GetOperationResponseError
+  >(`/v1/accounts/${asset.accountId}/assets/${asset.id}/transfers`, {
+    method: 'POST',
+    mode: 'cors',
+    headers,
+    acceptStatusCodes: [400], // for custom validation response handling
+    host: config.WALLETS.HOST_URL,
+    body: JSON.stringify({
+      destinationAddress,
+      amount: String(amount),
+    }),
+  });
+
+  // if the response is a 400, check the error code and possibly throw an error
+  // when the code is related to transaction rules
+  if (isOperationResponseError(maybeTransferOperation)) {
+    handleTransactionRuleError(maybeTransferOperation);
+    return undefined;
+  }
+
+  // return the operation
+  return maybeTransferOperation;
+};
+
+export const deleteTransactionRule = async (
+  accessToken: string,
+  otpCode: string,
+  rule: TransactionRule,
+) => {
+  return await updateTransactionRule(accessToken, otpCode, rule.id, {
+    type: rule.type,
+    active: false,
+  });
+};
+
 export const disableTransactionLock = async (
   accessToken: string,
   otp: string,
 ) => {
-  return fetchApi<TransactionLockStatusResponse>(`/v1/signature-lock`, {
+  const headers = buildHeadersWithAuth(accessToken, otp);
+  return await fetchApi<TransactionLockStatusResponse>(`/v1/signature-lock`, {
     method: 'DELETE',
     mode: 'cors',
-    headers: {
-      'Access-Control-Allow-Credentials': 'true',
-      'Content-Type': 'application/json',
-      'X-Otp-Token': otp,
-      Authorization: `Bearer ${accessToken}`,
-    },
+    headers,
     host: config.WALLETS.HOST_URL,
   });
 };
@@ -230,7 +370,7 @@ export const enableTransactionLock = async (
   accessToken: string,
   opts: TransactionLockRequest = {},
 ) => {
-  return fetchApi<TransactionLockStatusResponse>(`/v1/signature-lock`, {
+  return await fetchApi<TransactionLockStatusResponse>(`/v1/signature-lock`, {
     method: 'POST',
     mode: 'cors',
     headers: {
@@ -556,7 +696,7 @@ export const getTransactionGasEstimate = async (
   accessToken: string,
   tx: CreateTransaction,
 ) => {
-  return fetchApi<GetEstimateTransactionResponse>(
+  return await fetchApi<GetEstimateTransactionResponse>(
     `/v1/estimates/accounts/${asset.accountId}/assets/${asset.id}/transactions`,
     {
       method: 'POST',
@@ -600,13 +740,74 @@ export const getTransactionLockStatus = async (accessToken: string) => {
   return lockStatus;
 };
 
+export const getTransactionRule = async (
+  accessToken: string,
+  ruleId: string,
+) => {
+  const ruleResponse = await fetchApi<TransactionRule>(
+    `/v1/settings/security/rules/${ruleId}?$expand=acceptanceCriteria`,
+    {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+    },
+  );
+  if (!ruleResponse?.id) {
+    return undefined;
+  }
+  return ruleResponse;
+};
+
+export const getTransactionRules = async (
+  accessToken: string,
+): Promise<TransactionRule[] | undefined> => {
+  const rulesResponse = await fetchApi<TransactionRulesListResponse>(
+    `/v1/settings/security/rules`,
+    {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      host: config.WALLETS.HOST_URL,
+    },
+  );
+  if (!rulesResponse?.items || rulesResponse.items.length === 0) {
+    return undefined;
+  }
+
+  // saturate any active items with the rule details
+  const saturatedRules: TransactionRule[] = [];
+  await Bluebird.map(
+    rulesResponse.items.filter(r => r.active),
+    async rule => {
+      const ruleDetails = await getTransactionRule(accessToken, rule.id);
+      if (ruleDetails) {
+        saturatedRules.push(ruleDetails);
+      }
+    },
+    {concurrency: 1},
+  );
+
+  // return a list of active/saturated rules followed by inactive rules
+  // that have not been saturated
+  return [...saturatedRules, ...rulesResponse.items.filter(r => !r.active)];
+};
+
 export const getTransferGasEstimate = async (
   asset: AccountAsset,
   accessToken: string,
   destinationAddress: string,
   amount: string,
 ) => {
-  return fetchApi<GetEstimateTransactionResponse>(
+  return await fetchApi<GetEstimateTransactionResponse>(
     `/v1/estimates/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
     {
       method: 'POST',
@@ -620,31 +821,6 @@ export const getTransferGasEstimate = async (
       body: JSON.stringify({
         destinationAddress,
         amount,
-      }),
-    },
-  );
-};
-
-export const getTransferOperationResponse = (
-  asset: AccountAsset,
-  accessToken: string,
-  destinationAddress: string,
-  amount: number,
-) => {
-  return fetchApi<GetOperationResponse>(
-    `/v1/accounts/${asset.accountId}/assets/${asset.id}/transfers`,
-    {
-      method: 'POST',
-      mode: 'cors',
-      headers: {
-        'Access-Control-Allow-Credentials': 'true',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      host: config.WALLETS.HOST_URL,
-      body: JSON.stringify({
-        destinationAddress,
-        amount: String(amount),
       }),
     },
   );
@@ -833,6 +1009,16 @@ export const signAndWait = async (
     // reaching this point means the signature was not successful
     throw new Error('failed to sign');
   } catch (e) {
+    // the transaction rule errors are expected and should be rethrown so that
+    // the UI can prompt the user for the OTP code
+    if (
+      e instanceof TransactionRuleMfaRequiredError ||
+      e instanceof TransactionRuleEmailOtpRequiredError
+    ) {
+      throw e;
+    }
+
+    // handle the unknown error
     if (opts?.onStatusChange) {
       opts.onStatusChange('signature failed');
     }
@@ -900,6 +1086,7 @@ export const signMessage = async (
   message: string,
   auth: {
     accessToken: string;
+    otpToken?: string;
     state: Record<string, Record<string, string>>;
     saveState: (
       state: Record<string, Record<string, string>>,
@@ -974,6 +1161,7 @@ export const signMessage = async (
         asset.id,
         message,
         isTypedMessage,
+        auth.otpToken,
       );
     },
     {
@@ -1001,4 +1189,23 @@ export const signMessage = async (
     },
   });
   return signatureOp.result.signature;
+};
+
+export const updateTransactionRule = async (
+  accessToken: string,
+  otpCode: string,
+  ruleId: string,
+  rule: Partial<TransactionRuleRequest>,
+) => {
+  const headers = buildHeadersWithAuth(accessToken, otpCode);
+  return await fetchApi<TransactionRule>(
+    `/v1/settings/security/rules/${ruleId}`,
+    {
+      method: 'PATCH',
+      mode: 'cors',
+      headers,
+      host: config.WALLETS.HOST_URL,
+      body: JSON.stringify(rule),
+    },
+  );
 };

@@ -5,7 +5,6 @@ import type {Theme} from '@mui/material/styles';
 import Image from 'next/image';
 import React from 'react';
 
-import IconPlate from '@unstoppabledomains/ui-kit/icons/IconPlate';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import getImageUrl from '../../lib/domain/getImageUrl';
@@ -278,11 +277,7 @@ const WalletButton: React.FC<Props> = ({
     case WalletName.UnstoppableWalletReact:
     case WalletName.UnstoppableWalletExtension:
       props.title = theme.wallet.titleShort;
-      props.icon = (
-        <IconPlate size={size} variant="info">
-          <WalletIcon />
-        </IconPlate>
-      );
+      props.icon = <WalletIcon size={size} beta={true} />;
       break;
     case WalletName.MetaMask:
       props.title = 'MetaMask';

@@ -8,7 +8,9 @@ export type FireblocksMessageSigner = (
   chainId?: number,
 ) => Promise<string>;
 
-const useFireblocksMessageSigner = (): FireblocksMessageSigner => {
+const useFireblocksMessageSigner = (
+  otpToken?: string,
+): FireblocksMessageSigner => {
   const [state, saveState] = useFireblocksState();
   const getAccessToken = useFireblocksAccessToken();
   return async (
@@ -21,6 +23,7 @@ const useFireblocksMessageSigner = (): FireblocksMessageSigner => {
       message,
       {
         accessToken: await getAccessToken(),
+        otpToken,
         state,
         saveState,
       },

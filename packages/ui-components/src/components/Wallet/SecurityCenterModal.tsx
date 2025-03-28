@@ -716,7 +716,11 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           </Box>
         ) : (
           <Box className={classes.noRecommendationContainer}>
-            <Alert severity="success" variant="filled">
+            <Alert
+              severity="success"
+              variant="filled"
+              sx={{color: theme.palette.white}}
+            >
               {t('wallet.yourWalletIsSecure')}
             </Alert>
             <Typography mt={4} variant="h6">

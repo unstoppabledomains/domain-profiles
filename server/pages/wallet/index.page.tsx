@@ -55,26 +55,20 @@ export async function getServerSideProps(props: WalletServerSideProps) {
   // redirect to UP.io with exact query string parameters if the request for
   // the wallet homepage is to the UD.me domain. As an infinite redirect
   // safeguard, we also check that the forwarder does not include UP.io host.
-  const shouldRedirect = config.APP_ENV !== 'production' || isPastLaunchDate;
+  const shouldRedirectUpio =
+    config.APP_ENV !== 'production' || isPastLaunchDate;
 
-  // perform the redirection if necessary
-  if (shouldRedirect) {
-    const urlParts = props.req.url?.split('?');
-    const redirectToUpIo = {
-      redirect: {
-        destination: `${config.UP_IO_BASE_URL}/app${
-          urlParts && urlParts.length > 1 ? `?${urlParts[1]}` : ''
-        }`,
-        permanent: true,
-      },
-    };
-    return redirectToUpIo;
-  }
-
-  // continue processing the request
-  return {
-    props: {},
+  // create the redirect config
+  const urlParts = props.req.url?.split('?');
+  const redirectConfig = {
+    redirect: {
+      destination: `${
+        shouldRedirectUpio ? config.UP_IO_BASE_URL : config.UD_ME_BASE_URL
+      }/app${urlParts && urlParts.length > 1 ? `?${urlParts[1]}` : ''}`,
+      permanent: true,
+    },
   };
+  return redirectConfig;
 }
 
 export default WalletPage;

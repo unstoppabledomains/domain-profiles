@@ -356,15 +356,11 @@ export const disableTransactionLock = async (
   accessToken: string,
   otp: string,
 ) => {
+  const headers = buildHeadersWithAuth(accessToken, otp);
   return await fetchApi<TransactionLockStatusResponse>(`/v1/signature-lock`, {
     method: 'DELETE',
     mode: 'cors',
-    headers: {
-      'Access-Control-Allow-Credentials': 'true',
-      'Content-Type': 'application/json',
-      'X-Otp-Token': otp,
-      Authorization: `Bearer ${accessToken}`,
-    },
+    headers,
     host: config.WALLETS.HOST_URL,
   });
 };
@@ -1200,17 +1196,13 @@ export const updateTransactionRule = async (
   ruleId: string,
   rule: Partial<TransactionRuleRequest>,
 ) => {
+  const headers = buildHeadersWithAuth(accessToken, otpCode);
   return await fetchApi<TransactionRule>(
     `/v1/settings/security/rules/${ruleId}`,
     {
       method: 'PATCH',
       mode: 'cors',
-      headers: {
-        'Access-Control-Allow-Credentials': 'true',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-        'X-OTP-Code': otpCode,
-      },
+      headers,
       host: config.WALLETS.HOST_URL,
       body: JSON.stringify(rule),
     },

@@ -119,7 +119,9 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
     },
     snackBarButton: {
       marginLeft: theme.spacing(1),
-      color: theme.palette.getContrastText(theme.palette.primary.main),
+      color:
+        theme.palette.primary.contrastText ||
+        theme.palette.getContrastText(theme.palette.primary.main),
     },
     actionContainer: {
       display: 'flex',

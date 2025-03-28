@@ -109,7 +109,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     transform: 'translateY(-50%)',
   },
   loader: {
-    color: theme.palette.getContrastText(theme.palette.primary.main),
+    color:
+      theme.palette.primary.contrastText ||
+      theme.palette.getContrastText(theme.palette.primary.main),
   },
   metamaskBackground: {
     backgroundColor: '#25292E',

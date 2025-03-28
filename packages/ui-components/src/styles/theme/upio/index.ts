@@ -113,12 +113,14 @@ const buildThemeOptions = (mode: ThemeMode): ThemeOptions => ({
     nightBlue: {main: '#061543'},
     primary: {
       main: PRIMARY_BASE_COLOR,
+      contrastText: '#ffffff',
     },
     secondary: {
       main: '#454545',
     },
     success: {
       main: PRIMARY_SUCCESS_COLOR,
+      contrastText: '#ffffff',
     },
     background: {
       default: mode === 'dark' ? '#121212' : '#F5F5F5',

@@ -67,7 +67,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   primary: {
     backgroundColor: theme.palette.primary.main,
-    color: theme.palette.getContrastText(theme.palette.primary.main),
+    color:
+      theme.palette.primary.contrastText ||
+      theme.palette.getContrastText(theme.palette.primary.main),
   },
   secondary: {
     backgroundColor: theme.palette.background.paper,
@@ -87,8 +89,11 @@ export const BuyCryptoButton: React.FC<Props> = ({onBuyClicked}) => {
 
   return (
     <Box className={cx(classes.buttonContainer, classes.primary)}>
-      <Box className={classes.buttonContent}>
-        <Typography variant="subtitle1" className={classes.buttonTitle}>
+      <Box className={cx(classes.buttonContent, classes.primary)}>
+        <Typography
+          variant="subtitle1"
+          className={cx(classes.buttonTitle, classes.primary)}
+        >
           {t('wallet.fundWithPurchaseDescription')}
         </Typography>
         <PaymentIcon className={classes.icon} />

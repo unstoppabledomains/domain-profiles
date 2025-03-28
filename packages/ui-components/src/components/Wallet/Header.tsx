@@ -45,7 +45,9 @@ const useStyles = makeStyles<{isMobile: boolean}>()((
       background: theme.palette.heroText,
       borderTopRightRadius: theme.shape.borderRadius,
       borderTopLeftRadius: theme.shape.borderRadius,
-      color: theme.palette.getContrastText(theme.palette.primary.main),
+      color:
+        theme.palette.primary.contrastText ||
+        theme.palette.getContrastText(theme.palette.primary.main),
     },
     iconContainer: {
       position: 'absolute',

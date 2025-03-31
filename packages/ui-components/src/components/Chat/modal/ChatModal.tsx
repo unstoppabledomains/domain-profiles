@@ -25,13 +25,17 @@ import type {Theme} from '@mui/material/styles';
 import {styled, useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import type {IMessageIPFS} from '@pushprotocol/restapi';
-import {ContentTypeText} from '@xmtp/content-type-text';
 import type {
   DecodedMessage,
   Conversation as XmtpConversation,
-} from '@xmtp/xmtp-js';
+} from '@xmtp/browser-sdk';
+import {ConsentState} from '@xmtp/browser-sdk';
+import {ContentTypeText} from '@xmtp/content-type-text';
+import Bluebird from 'bluebird';
+import {ethers} from 'ethers';
 import React, {useEffect, useState} from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import useAsyncEffect from 'use-async-effect';
 
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -57,7 +61,10 @@ import {getAddressMetadata} from '../protocol/resolution';
 import type {ConversationMeta} from '../protocol/xmtp';
 import {
   getConversation,
+  getConversationById,
+  getConversationPeerAddress,
   getConversations,
+  getXmtpInboxId,
   isAllowListed,
 } from '../protocol/xmtp';
 import {localStorageWrapper} from '../storage';
@@ -252,9 +259,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   // conversations to display in the current inbox view
   const visibleConversations = conversations?.filter(c =>
     conversationRequestView
-      ? !acceptedTopics.includes(c.conversation.topic) &&
-        !blockedTopics.includes(c.conversation.topic)
-      : acceptedTopics.includes(c.conversation.topic),
+      ? !acceptedTopics.includes(c.conversation.id) &&
+        !blockedTopics.includes(c.conversation.id)
+      : acceptedTopics.includes(c.conversation.id),
   );
 
   useEffect(() => {
@@ -329,7 +336,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     }
   }, [acceptedTopics, blockedTopics]);
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     if (!conversations || conversations.length === 0) {
       return;
     }
@@ -337,22 +344,30 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     // set initial topic consent values
     if (acceptedTopics.length === 0 && blockedTopics.length === 0) {
       setAcceptedTopics(
-        conversations
-          .filter(
-            c =>
-              c.consentState === 'allowed' ||
-              isAllowListed(c.conversation.peerAddress),
-          )
-          .map(c => c.conversation.topic),
+        (
+          await Bluebird.filter(conversations, async c => {
+            const peerAddress = await getConversationPeerAddress(
+              c.conversation,
+            );
+            return (
+              c.consentState === ConsentState.Allowed ||
+              isAllowListed(peerAddress)
+            );
+          })
+        ).map(c => c.conversation.id),
       );
       setBlockedTopics(
-        conversations
-          .filter(
-            c =>
-              c.consentState === 'denied' &&
-              !isAllowListed(c.conversation.peerAddress),
-          )
-          .map(c => c.conversation.topic),
+        (
+          await Bluebird.filter(conversations, async c => {
+            const peerAddress = await getConversationPeerAddress(
+              c.conversation,
+            );
+            return (
+              c.consentState === ConsentState.Denied &&
+              !isAllowListed(peerAddress)
+            );
+          })
+        ).map(c => c.conversation.id),
       );
     }
   }, [conversations]);
@@ -544,8 +559,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     // find an existing conversation and update it in the timeline
     const conversationIndex = localConversations?.findIndex(
       item =>
-        item.conversation.topic.toLowerCase() ===
-        msg.conversation.topic.toLowerCase(),
+        item.conversation.id.toLowerCase() === msg.conversationId.toLowerCase(),
     );
 
     // manage timeline depending on state
@@ -555,8 +569,11 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       conversationIndex >= 0
     ) {
       // update the existing entry
-      localConversations[conversationIndex].preview = getMessagePreview(msg);
-      localConversations[conversationIndex].timestamp = msg.sent.getTime();
+      localConversations[conversationIndex].preview =
+        await getMessagePreview(msg);
+      localConversations[conversationIndex].timestamp = Number(
+        msg.sentAtNs / 1000000n,
+      );
 
       // resort the timeline
       setConversations([
@@ -569,14 +586,13 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     else if (localConversations) {
       // create new conversation
       const newConversation: ConversationMeta = {
-        conversation: msg.conversation,
-        preview: getMessagePreview(msg),
-        timestamp: msg.sent.getTime(),
+        conversation: await getConversationById(msg.conversationId),
+        preview: await getMessagePreview(msg),
+        timestamp: Number(msg.sentAtNs / 1000000n),
         consentState:
-          msg.senderAddress.toLowerCase() ===
-          msg.conversation.clientAddress.toLowerCase()
-            ? 'allowed' // messages sent by client are allowed by default
-            : 'unknown', // messages received by client are unknown by default
+          msg.senderInboxId === (await getXmtpInboxId())
+            ? ConsentState.Allowed // messages sent by client are allowed by default
+            : ConsentState.Unknown, // messages received by client are unknown by default
         visible: true,
       };
 
@@ -589,10 +605,12 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       ]);
 
       // associate the new conversation with the wallet address
-      await registerClientTopics(msg.conversation.clientAddress, [
+      await registerClientTopics(await getXmtpInboxId(), [
         {
-          topic: msg.conversation.topic,
-          peerAddress: msg.conversation.peerAddress,
+          topic: msg.conversationId,
+          peerAddress: await getConversationPeerAddress(
+            newConversation.conversation,
+          ),
         },
       ]);
     }
@@ -600,14 +618,13 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     else {
       // create new conversation
       const newConversation: ConversationMeta = {
-        conversation: msg.conversation,
-        preview: getMessagePreview(msg),
-        timestamp: msg.sent.getTime(),
+        conversation: await getConversationById(msg.conversationId),
+        preview: await getMessagePreview(msg),
+        timestamp: Number(msg.sentAtNs / 1000000n),
         consentState:
-          msg.senderAddress.toLowerCase() ===
-          msg.conversation.clientAddress.toLowerCase()
-            ? 'allowed' // messages sent by client are allowed by default
-            : 'unknown', // messages received by client are unknown by default
+          msg.senderInboxId === (await getXmtpInboxId())
+            ? ConsentState.Allowed // messages sent by client are allowed by default
+            : ConsentState.Unknown, // messages received by client are unknown by default
         visible: true,
       };
 
@@ -615,10 +632,12 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       setConversations([newConversation]);
 
       // associate the new conversation with the wallet address
-      await registerClientTopics(msg.conversation.clientAddress, [
+      await registerClientTopics(await getXmtpInboxId(), [
         {
-          topic: msg.conversation.topic,
-          peerAddress: msg.conversation.peerAddress,
+          topic: msg.conversationId,
+          peerAddress: await getConversationPeerAddress(
+            newConversation.conversation,
+          ),
         },
       ]);
     }
@@ -632,10 +651,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     }
   };
 
-  const getMessagePreview = (msg: DecodedMessage): string => {
+  const getMessagePreview = async (msg: DecodedMessage): Promise<string> => {
     return `${
-      msg.senderAddress.toLowerCase() ===
-      msg.conversation.clientAddress.toLowerCase()
+      msg.senderInboxId === (await getXmtpInboxId())
         ? `${t('common.you')}: `
         : ''
     }${
@@ -673,23 +691,6 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
   const handleOpenChatFromAddress = async (peer: AddressResolution) => {
     try {
-      // open chat from already listed conversation records
-      const localConversations =
-        conversations && conversations.length > 0
-          ? conversations
-          : await loadConversations();
-      if (localConversations) {
-        const matchingConversation = localConversations.filter(
-          c =>
-            c.conversation.peerAddress.toLowerCase() ===
-            peer.address.toLowerCase(),
-        );
-        if (matchingConversation.length > 0) {
-          handleOpenChat(matchingConversation[0].conversation);
-          return;
-        }
-      }
-
       // open the chat using direct lookup
       const conversationLower = await getConversation(
         xmtpAddress,
@@ -699,7 +700,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         try {
           const conversationNormalized = await getConversation(
             xmtpAddress,
-            conversationLower.peerAddress,
+            ethers.utils.getAddress(peer.address),
           );
           if (conversationNormalized) {
             handleOpenChat(conversationNormalized);
@@ -740,19 +741,20 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     setActiveCommunity(undefined);
   };
 
-  const handleConversationMessage = (
+  const handleConversationMessage = async (
     msg: DecodedMessage,
     conversation?: XmtpConversation,
   ) => {
     if (!conversation || !conversations) return;
     const conversationIndex = conversations.findIndex(
       item =>
-        item.conversation.topic.toLowerCase() ===
-        conversation.topic.toLowerCase(),
+        item.conversation.id.toLowerCase() === conversation.id.toLowerCase(),
     );
     if (conversationIndex >= 0 && conversations[conversationIndex]) {
-      conversations[conversationIndex].preview = getMessagePreview(msg);
-      conversations[conversationIndex].timestamp = msg.sent.getTime();
+      conversations[conversationIndex].preview = await getMessagePreview(msg);
+      conversations[conversationIndex].timestamp = Number(
+        msg.sentAtNs / 1000000n,
+      );
       setConversations([
         ...conversations.sort((a, b): number => {
           return b.timestamp - a.timestamp;
@@ -762,13 +764,12 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       setConversations([
         {
           conversation,
-          preview: getMessagePreview(msg),
-          timestamp: msg.sent.getTime(),
+          preview: await getMessagePreview(msg),
+          timestamp: Number(msg.sentAtNs / 1000000n),
           consentState:
-            msg.senderAddress.toLowerCase() ===
-            conversation.clientAddress.toLowerCase()
-              ? 'allowed' // messages sent by client are allowed by default
-              : 'unknown', // messages received by client are unknown by default
+            msg.senderInboxId === (await getXmtpInboxId())
+              ? ConsentState.Allowed // messages sent by client are allowed by default
+              : ConsentState.Unknown, // messages received by client are unknown by default
           visible: true,
         },
         ...conversations.sort((a, b): number => {
@@ -811,8 +812,8 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     return (
       conversations?.filter(
         c =>
-          !acceptedTopics.includes(c.conversation.topic) &&
-          !blockedTopics.includes(c.conversation.topic),
+          !acceptedTopics.includes(c.conversation.id) &&
+          !blockedTopics.includes(c.conversation.id),
       ).length || 0
     );
   };
@@ -1044,7 +1045,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                     {visibleConversations && visibleConversations.length > 0 ? (
                       visibleConversations.map(c => (
                         <ConversationPreview
-                          key={c.conversation.topic}
+                          key={c.conversation.id}
                           selectedCallback={handleOpenChat}
                           searchTermCallback={(visible: boolean) =>
                             handleSearchCallback(c, visible)

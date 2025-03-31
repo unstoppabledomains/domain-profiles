@@ -51,6 +51,18 @@ export const getPushLocalKey = async (address: string): Promise<string> => {
   return '';
 };
 
+export const getXmtpLocalAddress = async (): Promise<string | null> => {
+  return await localStorageWrapper.getItem(getCacheKey('xmtp', 'address'));
+};
+
+type localStorageType = ChromeStorageType | 'wallet';
+
+interface localStorageWrapperOptions {
+  type: localStorageType;
+  accountId?: string;
+  accessToken?: string;
+}
+
 export const getXmtpLocalKey = async (
   address: string,
 ): Promise<Uint8Array | undefined> => {
@@ -62,14 +74,6 @@ export const getXmtpLocalKey = async (
   }
   return;
 };
-
-type localStorageType = ChromeStorageType | 'wallet';
-
-interface localStorageWrapperOptions {
-  type: localStorageType;
-  accountId?: string;
-  accessToken?: string;
-}
 
 export class localStorageWrapper {
   static async getItem(
@@ -183,6 +187,10 @@ export const setPushLocalKey = async (address: string, key: string) => {
     getCacheKey('pushKey', address.toLowerCase()),
     Buffer.from(key, 'utf8').toString('base64'),
   );
+};
+
+export const setXmtpLocalAddress = async (address: string) => {
+  await localStorageWrapper.setItem(getCacheKey('xmtp', 'address'), address);
 };
 
 export const setXmtpLocalKey = async (address: string, key: Uint8Array) => {

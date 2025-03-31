@@ -1,4 +1,11 @@
 import type {
+  Conversation,
+  DecodedMessage,
+  Identifier,
+  Signer as XmtpSigner,
+} from '@xmtp/browser-sdk';
+import {Client, ConsentState, SortDirection} from '@xmtp/browser-sdk';
+import type {
   Attachment,
   RemoteAttachment,
 } from '@xmtp/content-type-remote-attachment';
@@ -8,18 +15,10 @@ import {
   RemoteAttachmentCodec,
 } from '@xmtp/content-type-remote-attachment';
 import {ContentTypeText} from '@xmtp/content-type-text';
-import type {signature} from '@xmtp/proto';
-import type {
-  ConsentState,
-  Conversation,
-  DecodedMessage,
-  SignedPublicKeyBundle,
-} from '@xmtp/xmtp-js';
-import {Client, SortDirection, StaticKeystoreProvider} from '@xmtp/xmtp-js';
 import Bluebird from 'bluebird';
 import type {Signer} from 'ethers';
-import {sha256} from 'ethers/lib/utils';
 import {filesize} from 'filesize';
+import {toBytes} from 'viem';
 
 import config from '@unstoppabledomains/config';
 
@@ -27,8 +26,12 @@ import {getUnstoppableConsents} from '../../../actions/messageActions';
 import {notifyEvent} from '../../../lib/error';
 import {sleep} from '../../../lib/sleep';
 import type {ConsentPreferences} from '../../../lib/types/message';
-import {getXmtpLocalKey, setXmtpLocalKey} from '../storage';
-import {registerClientTopics} from './registration';
+import {
+  getXmtpLocalAddress,
+  getXmtpLocalKey,
+  setXmtpLocalAddress,
+  setXmtpLocalKey,
+} from '../storage';
 import {uploadAttachment} from './upload';
 
 export interface ConversationMeta {
@@ -49,16 +52,105 @@ export const formatFileSize = (bytes: number): string => {
   return filesize(bytes, {base: 2, standard: 'jedec'}) as string;
 };
 
+export const getAddressFromInboxId = async (
+  inboxId: string,
+): Promise<string | undefined> => {
+  const client = await getXmtpClientFromLocal();
+  if (!client) {
+    return undefined;
+  }
+  const inboxState = await client.preferences.inboxStateFromInboxIds(
+    [inboxId],
+    true,
+  );
+  if (inboxState && inboxState.length > 0) {
+    return inboxState[0].accountIdentifiers.find(
+      i => i.identifierKind === 'Ethereum',
+    )?.identifier;
+  }
+  return undefined;
+};
+
+const getIdentifierFromAddress = (address: string): Identifier => {
+  return {
+    identifier: address,
+    identifierKind: 'Ethereum',
+  };
+};
+
+const getInboxIdFromIdentifier = async (
+  identifier: Identifier,
+): Promise<string | undefined> => {
+  const xmtp = await getXmtpClientFromLocal();
+  if (!xmtp) {
+    return undefined;
+  }
+  return await xmtp.findInboxIdByIdentifier(identifier);
+};
+
+const getInboxIdFromAddress = async (
+  address: string,
+): Promise<string | undefined> => {
+  const xmtp = await getXmtpClientFromLocal();
+  if (!xmtp) {
+    return undefined;
+  }
+  return await getInboxIdFromIdentifier(getIdentifierFromAddress(address));
+};
+
 export const getConversation = async (
   address: string,
   peerAddress: string,
 ): Promise<Conversation | undefined> => {
   const xmtp = await getXmtpClient(address);
-  const isAvailable = await xmtp.canMessage(peerAddress);
+  const isAvailable = await xmtp.canMessage([
+    getIdentifierFromAddress(peerAddress),
+  ]);
   if (!isAvailable) {
     return undefined;
   }
-  return await xmtp.conversations.newConversation(peerAddress);
+  const inboxId = await getInboxIdFromAddress(peerAddress);
+  if (!inboxId) {
+    return undefined;
+  }
+  return await xmtp.conversations.newDm(inboxId);
+};
+
+export const getConversationById = async (
+  conversationId: string,
+): Promise<Conversation> => {
+  const xmtp = await getXmtpClientFromLocal();
+  if (!xmtp) {
+    throw new Error('no XMTP client found');
+  }
+  const conversation =
+    await xmtp.conversations.getConversationById(conversationId);
+  if (!conversation) {
+    throw new Error('conversation not found');
+  }
+  return conversation;
+};
+
+export const getConversationPeerAddress = async (
+  conversation: Conversation,
+): Promise<string> => {
+  const xmtpClient = await getXmtpClientFromLocal();
+  if (!xmtpClient) {
+    throw new Error('no XMTP client found');
+  }
+  const members = await conversation.members();
+  const peerAddress = members
+    .filter(m => m.inboxId !== xmtpClient.inboxId)
+    .map(
+      m =>
+        m.accountIdentifiers.find(i => i.identifierKind === 'Ethereum')
+          ?.identifier,
+    )
+    .find(m => m);
+  if (!peerAddress) {
+    throw new Error('no peer address found');
+  }
+  return peerAddress;
 };
 
 export const getConversations = async (
@@ -71,24 +163,17 @@ export const getConversations = async (
     xmtp.conversations.list(),
     // retrieve existing UD consents
     getUnstoppableConsents(address),
-    // retrieve XMTP protocol consents
-    xmtp.contacts.refreshConsentList(),
   ]);
 
   // build a list of filtered conversations
   for (const conversation of conversations) {
-    // filter self conversations
-    if (conversation.peerAddress.toLowerCase() === address.toLowerCase()) {
-      continue;
-    }
-
     // create a default conversation metadata object
     chats.push({
       conversation,
       preview: 'New conversation',
       timestamp: 0,
       visible: true,
-      consentState: 'unknown',
+      consentState: ConsentState.Unknown,
     });
   }
 
@@ -112,15 +197,18 @@ export const getConversations = async (
   );
 
   // associate owner's conversation topics with their wallet address
+  // TODO: AJQ future XMTP v3 work, register topics for push notifications
+  /*
   await registerClientTopics(
-    xmtp.address,
+    address,
     chats.map(chat => {
       return {
-        topic: chat.conversation.topic,
+        topic: chat.conversation.id,
         peerAddress: chat.conversation.peerAddress,
       };
     }),
   );
+  */
 
   // sort and return conversations
   return (
@@ -136,7 +224,10 @@ export const getRemoteAttachment = async (
   message: DecodedMessage,
 ): Promise<Attachment | undefined> => {
   try {
-    const xmtp = await getXmtpClient(message.conversation.clientAddress);
+    const xmtp = await getXmtpClientFromLocal();
+    if (!xmtp) {
+      throw new Error('no XMTP client found');
+    }
     const remoteAttachment: RemoteAttachment = message.content;
     const attachment: Attachment = await RemoteAttachmentCodec.load(
       remoteAttachment,
@@ -151,43 +242,107 @@ export const getRemoteAttachment = async (
   return;
 };
 
-export const getSignedPublicKey = async (
-  address: string,
-): Promise<SignedPublicKeyBundle> => {
-  const xmtp = await getXmtpClient(address);
-  return xmtp.signedPublicKeyBundle;
-};
-
 export const getXmtpClient = async (
   address: string,
   signer?: Signer,
 ): Promise<Client> => {
-  // established local encryption keys
-  let xmtpKey = await getXmtpLocalKey(address);
-  if (!xmtpKey) {
+  // retrieve the local encryption key
+  let xmtpLocalEncryptionKey = await getXmtpLocalKey(address);
+
+  // if no local encryption key is available, create a new XMTP client
+  // instance by creating a new encryption key and signing with the provided
+  // wallet signer reference.
+  if (!xmtpLocalEncryptionKey) {
     if (!signer) {
       throw new Error('signer is required to create a new account');
     }
-    xmtpKey = await Client.getKeys(signer, xmtpOpts);
-    await setXmtpLocalKey(address, xmtpKey);
+
+    // create the new XMTP client
+    xmtpLocalEncryptionKey = window.crypto.getRandomValues(new Uint8Array(32));
+    const newClient = await Client.create(
+      getXmtpSigner(address, signer),
+      xmtpLocalEncryptionKey,
+      {
+        ...xmtpOpts,
+      },
+    );
+
+    // store the local encryption key and address
+    await setXmtpLocalKey(address, xmtpLocalEncryptionKey);
+    await setXmtpLocalAddress(address);
+
+    // store the client in memory for use
+    xmtpClients[address.toLowerCase()] = newClient;
+    return newClient;
   }
 
-  // return existing client if available
+  // return an in-memory existing client if available
   if (xmtpClients[address.toLowerCase()]) {
     return xmtpClients[address.toLowerCase()];
   }
 
-  // create client from local encryption keys
-  const xmtpClient = await Client.create(null, {
-    persistConversations: true,
-    privateKeyOverride: xmtpKey,
-    keystoreProviders: [new StaticKeystoreProvider()],
+  // restore from locally stored encryption key with a dummy signer
+  const dummySigner: XmtpSigner = {
+    type: 'EOA',
+    getIdentifier: () => {
+      return getIdentifierFromAddress(address);
+    },
+    signMessage: async (message: string): Promise<Uint8Array> => {
+      return new Uint8Array();
+    },
+  };
+  return await Client.create(dummySigner, xmtpLocalEncryptionKey, {
     ...xmtpOpts,
   });
-  xmtpClient.registerCodec(new AttachmentCodec());
-  xmtpClient.registerCodec(new RemoteAttachmentCodec());
-  xmtpClients[address.toLowerCase()] = xmtpClient;
-  return xmtpClient;
+};
+
+export const getXmtpInboxId = async (): Promise<string> => {
+  const xmtp = await getXmtpClientFromLocal();
+  if (!xmtp) {
+    throw new Error('no XMTP client found');
+  }
+  const inboxId = xmtp.inboxId;
+  if (!inboxId) {
+    throw new Error('no inbox ID found');
+  }
+  return inboxId;
+};
+
+export const getXmtpSigner = (address: string, signer: Signer): XmtpSigner => {
+  return {
+    type: 'EOA',
+    getIdentifier: () => {
+      return getIdentifierFromAddress(address);
+    },
+    signMessage: async (message: string): Promise<Uint8Array> => {
+      const signature = await signer.signMessage(message);
+      return toBytes(signature);
+    },
+  };
+};
+
+export const getXmtpWalletAddress = async (): Promise<string> => {
+  const authAddress = await getXmtpLocalAddress();
+  if (!authAddress) {
+    throw new Error('no auth address found');
+  }
+  return authAddress;
+};
+
+const getXmtpClientFromLocal = async (): Promise<Client | undefined> => {
+  const authAddress = await getXmtpLocalAddress();
+  if (!authAddress) {
+    return undefined;
+  }
+  return await getXmtpClient(authAddress);
+};
+
+const getXmtpClientInboxId = async (): Promise<string | undefined> => {
+  const xmtp = await getXmtpClientFromLocal();
+  if (!xmtp) {
+    return undefined;
+  }
+  return xmtp.inboxId;
 };
 
 export const initXmtpAccount = async (address: string, signer: Signer) => {
@@ -207,7 +362,13 @@ export const isAllowListed = (address: string) => {
 };
 
 export const isXmtpUser = async (address: string): Promise<boolean> => {
-  return await Client.canMessage(address, xmtpOpts);
+  const addressIdentifier = getIdentifierFromAddress(address);
+  const xmtp = await getXmtpClientFromLocal();
+  if (!xmtp) {
+    return false;
+  }
+  const canMessage = await xmtp.canMessage([addressIdentifier]);
+  return Object.values(canMessage).some(Boolean);
 };
 
 // loadConversationConsentState retrieves the consent state for this conversation
@@ -216,20 +377,20 @@ export const loadConversationConsentState = async (
   chat: ConversationMeta,
   udConsents?: ConsentPreferences,
 ): Promise<ConversationMeta> => {
-  // retrieve the protocol layer consent state
-  let consentState = xmtp.contacts.consentState(chat.conversation.peerAddress);
+  // retrieve the protocol layer consent state );
+  let consentState = await chat.conversation.consentState();
 
   // attempt to migrate UD consent state if protocol state is unknown
-  if (udConsents && consentState === 'unknown') {
-    if (udConsents.accepted_topics?.includes(chat.conversation.topic)) {
+  if (udConsents && consentState === ConsentState.Unknown) {
+    if (udConsents.accepted_topics?.includes(chat.conversation.id)) {
       // migrate existing UD allowlist entry to XMTP allowlist
-      await chat.conversation.allow();
-      consentState = 'allowed';
+      await chat.conversation.updateConsentState(ConsentState.Allowed);
+      consentState = ConsentState.Allowed;
     }
-    if (udConsents.blocked_topics?.includes(chat.conversation.topic)) {
+    if (udConsents.blocked_topics?.includes(chat.conversation.id)) {
       // migrate existing UD blocklist entry to XMTP blocklist
-      await chat.conversation.deny();
-      consentState = 'denied';
+      await chat.conversation.updateConsentState(ConsentState.Denied);
+      consentState = ConsentState.Denied;
     }
   }
 
@@ -244,19 +405,20 @@ export const loadConversationPreview = async (
 ): Promise<ConversationMeta> => {
   // retrieve conversation metadata
   const latestMessage = await conversation.conversation.messages({
-    limit: 1,
-    direction: SortDirection.SORT_DIRECTION_DESCENDING,
+    limit: 1n,
+    direction: SortDirection.Descending,
   });
-  conversation.timestamp = conversation.conversation.createdAt.getTime();
+  conversation.timestamp =
+    conversation.conversation.createdAt?.getTime() || Date.now();
   if (latestMessage && latestMessage.length > 0) {
     const message = latestMessage[0];
 
+    // my inbox ID
+    const myInboxId = await getXmtpClientInboxId();
+
     // set the preview text
     conversation.preview = `${
-      message.senderAddress.toLowerCase() ===
-      message.conversation.clientAddress.toLowerCase()
-        ? 'You: '
-        : ''
+      message.senderInboxId === myInboxId ? 'You: ' : ''
     }${
       message.contentType.sameAs(ContentTypeText)
         ? message.content
@@ -264,7 +426,7 @@ export const loadConversationPreview = async (
     }`;
 
     // set the timestamp
-    conversation.timestamp = message.sent.getTime();
+    conversation.timestamp = Number(message.sentAtNs / 1000000n);
   }
   return conversation;
 };
@@ -335,9 +497,10 @@ export const sendRemoteAttachment = async (
   };
 
   // send the attachment to the conversation
-  const sentMessage = await conversation.send(remoteAttachment, {
-    contentType: ContentTypeRemoteAttachment,
-  });
+  const sentMessage = await conversation.send(
+    remoteAttachment,
+    ContentTypeRemoteAttachment,
+  );
 
   // wait a moment, as there seems to be a bug on the w3s IPFS gateway that results
   // in the wrong URL format (https://<cid>.ipfs.dweb.link/) to be requested if the
@@ -345,19 +508,17 @@ export const sendRemoteAttachment = async (
   // correct (https://w3s.link/ipfs/<cid>), but results in a redirect on the client
   // side if used immediately in the client UX and causes a broken image link.
   await sleep(3000);
-  return sentMessage;
-};
 
-export const signMessage = async (
-  walletAddress: string,
-  message: string,
-): Promise<signature.Signature> => {
-  const xmtp = await getXmtpClient(walletAddress);
-  return await xmtp.keystore.signDigest({
-    digest: new TextEncoder().encode(sha256(new TextEncoder().encode(message))),
-    identityKey: undefined,
-    prekeyIndex: 0,
+  // retrieve the message by ID
+  const messageList = await conversation.messages({
+    direction: SortDirection.Descending,
+    limit: 5n,
   });
+  const message = messageList.find(m => m.id === sentMessage);
+  if (!message) {
+    throw new Error('message not sent');
+  }
+  return message;
 };
 
 export const waitForXmtpMessages = async (
@@ -368,15 +529,21 @@ export const waitForXmtpMessages = async (
   const xmtp = await getXmtpClient(address);
   if (conversation) {
     // stream a specific conversation
-    for await (const message of await conversation.streamMessages()) {
-      if (message.senderAddress.toLowerCase() !== xmtp.address.toLowerCase()) {
+    for await (const message of await conversation.stream()) {
+      if (!message) {
+        continue;
+      }
+      if (message.senderInboxId !== xmtp.inboxId) {
         callback(message);
       }
     }
   } else {
     // stream all conversations
     for await (const message of await xmtp.conversations.streamAllMessages()) {
-      if (message.senderAddress.toLowerCase() !== xmtp.address.toLowerCase()) {
+      if (!message) {
+        continue;
+      }
+      if (message.senderInboxId !== xmtp.inboxId) {
         callback(message);
       }
     }

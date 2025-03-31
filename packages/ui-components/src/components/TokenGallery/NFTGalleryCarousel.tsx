@@ -149,12 +149,12 @@ const NFTGalleryCarousel = ({
             <>
               {visibleNfts.map((nft, index) => (
                 <SwiperSlide
-                  key={index}
+                  key={`${index}-slide`}
                   data-testid={`nft-carousel-item-${index}`}
                 >
                   <NftCard
                     nft={nft}
-                    key={index}
+                    key={`${index}-card`}
                     domain={domain}
                     address={address}
                     compact={true}

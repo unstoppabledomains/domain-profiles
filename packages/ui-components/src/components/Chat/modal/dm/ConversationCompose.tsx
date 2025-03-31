@@ -6,7 +6,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import InputBase from '@mui/material/InputBase';
 import Tooltip from '@mui/material/Tooltip';
-import type {Conversation, DecodedMessage} from '@xmtp/xmtp-js';
+import type {Conversation, DecodedMessage} from '@xmtp/browser-sdk';
+import {SortDirection} from '@xmtp/browser-sdk';
 import type {DragEvent} from 'react';
 import React, {useEffect, useRef, useState} from 'react';
 
@@ -19,7 +20,11 @@ import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedUserDomainProfileData} from '../../../../lib/types/domain';
 import {DomainProfileKeys} from '../../../../lib/types/domain';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
-import {formatFileSize, sendRemoteAttachment} from '../../protocol/xmtp';
+import {
+  formatFileSize,
+  getXmtpWalletAddress,
+  sendRemoteAttachment,
+} from '../../protocol/xmtp';
 import {localStorageWrapper} from '../../storage';
 import {useConversationComposeStyles} from '../styles';
 
@@ -52,7 +57,7 @@ export const Compose: React.FC<ComposeProps> = ({
       setAuthDomain(
         await localStorageWrapper.getItem(DomainProfileKeys.AuthDomain),
       );
-      setAuthAddress(conversation?.clientAddress.toLowerCase());
+      setAuthAddress(await getXmtpWalletAddress());
     };
     void loadConversation();
   }, [conversation]);
@@ -130,7 +135,20 @@ export const Compose: React.FC<ComposeProps> = ({
     if (conversation) {
       setIsSending(true);
       try {
-        const sentMessage = await conversation.send(textboxTerm);
+        // send the message
+        const sentMessageId = await conversation.send(textboxTerm);
+
+        // retrieve the message
+        const messages = await conversation.messages({
+          limit: 1n,
+          direction: SortDirection.Descending,
+        });
+        if (messages.length === 0) {
+          throw new Error('no messages found');
+        }
+        const sentMessage = messages[0];
+
+        // callback with the message
         sendCallback(sentMessage);
         setTextboxTerm('');
         setErrorMessage('');

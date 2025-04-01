@@ -19,8 +19,8 @@ import {Mutex} from 'async-mutex';
 import Bluebird from 'bluebird';
 import type {Signer} from 'ethers';
 import {ethers} from 'ethers';
+import {arrayify} from 'ethers/lib/utils';
 import {filesize} from 'filesize';
-import {toBytes} from 'viem';
 
 import config from '@unstoppabledomains/config';
 
@@ -352,7 +352,7 @@ export const getXmtpSigner = (address: string, signer: Signer): XmtpSigner => {
     },
     signMessage: async (message: string): Promise<Uint8Array> => {
       const signature = await signer.signMessage(message);
-      return toBytes(signature);
+      return arrayify(signature);
     },
   };
 };

@@ -23,7 +23,7 @@ import type {
   DecodedMessage,
   Conversation as XmtpConversation,
 } from '@xmtp/browser-sdk';
-import {SortDirection} from '@xmtp/browser-sdk';
+import {ContentType, SortDirection} from '@xmtp/browser-sdk';
 import type {MouseEvent} from 'react';
 import React, {useEffect, useState} from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
@@ -137,12 +137,16 @@ export const Conversation: React.FC<ConversationProps> = ({
         limit: BigInt(PAGE_SIZE),
         direction: SortDirection.Descending,
         sentBeforeNs: xmtpMessages[xmtpMessages.length - 1].sentAtNs,
+        contentTypes: [ContentType.Text, ContentType.RemoteAttachment],
       });
       if (previousMessages.length < PAGE_SIZE) {
         setHasMoreMessages(false);
       }
       if (previousMessages.length > 0) {
-        setXmtpMessages([...xmtpMessages, ...previousMessages.slice(1)]);
+        setXmtpMessages([
+          ...xmtpMessages,
+          ...previousMessages.filter(filterMessage),
+        ]);
       }
     } catch (e) {
       notifyEvent(e, 'error', 'Messaging', 'XMTP', {
@@ -155,12 +159,17 @@ export const Conversation: React.FC<ConversationProps> = ({
     try {
       // render the existing messages if available
       if (conversation) {
+        // retrieve all messages
         const initialMessages = await conversation.messages({
           limit: BigInt(PAGE_SIZE),
           direction: SortDirection.Descending,
+          contentTypes: [ContentType.Text, ContentType.RemoteAttachment],
         });
         setHasMoreMessages(initialMessages.length >= PAGE_SIZE);
-        setXmtpMessages(initialMessages);
+
+        // filter to the types of messages we want to display
+        const filteredMessages = initialMessages.filter(filterMessage);
+        setXmtpMessages(filteredMessages);
 
         // determine if this is a new chat
         setIsChatRequest(
@@ -184,6 +193,13 @@ export const Conversation: React.FC<ConversationProps> = ({
       // loading complete
       setIsLoading(false);
     }
+  };
+
+  const filterMessage = (message: DecodedMessage) => {
+    return (
+      message.contentType.typeId === 'text' ||
+      message.contentType.typeId === 'remoteAttachment'
+    );
   };
 
   const scrollToLatestMessage = (ref: React.RefObject<HTMLElement>) => {

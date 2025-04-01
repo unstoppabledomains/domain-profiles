@@ -187,10 +187,14 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
             )}
           </Typography>
           <Tooltip
-            title={new Date(Number(message.sentAtNs)).toLocaleTimeString()}
+            title={new Date(
+              Number(message.sentAtNs / 1000000n),
+            ).toLocaleTimeString()}
           >
             <Typography variant="caption" className={classes.chatTimestamp}>
-              {new Date(Number(message.sentAtNs)).toLocaleTimeString()}
+              {new Date(
+                Number(message.sentAtNs / 1000000n),
+              ).toLocaleTimeString()}
             </Typography>
           </Tooltip>
         </Box>

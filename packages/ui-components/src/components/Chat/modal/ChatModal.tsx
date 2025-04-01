@@ -325,29 +325,12 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     if (getRequestCount() === 0) {
       setConversationRequestView(false);
     }
-    if (conversations) {
-      setConversations([...conversations]);
-    }
   }, [acceptedTopics, blockedTopics]);
 
   useAsyncEffect(async () => {
     if (!conversations || conversations.length === 0) {
       return;
     }
-
-    // conversations to display in the current inbox view
-    setVisibleConversations(
-      await Bluebird.filter(conversations, async c => {
-        const peerAddress = await getConversationPeerAddress(c.conversation);
-        if (!peerAddress) {
-          return false;
-        }
-        return conversationRequestView
-          ? !acceptedTopics.includes(c.conversation.id) &&
-              !blockedTopics.includes(c.conversation.id)
-          : acceptedTopics.includes(c.conversation.id);
-      }),
-    );
 
     // set initial topic consent values
     if (acceptedTopics.length === 0 && blockedTopics.length === 0) {
@@ -385,6 +368,26 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       );
     }
   }, [conversations]);
+
+  useAsyncEffect(async () => {
+    if (!conversations || conversations.length === 0) {
+      return;
+    }
+
+    // conversations to display in the current inbox view
+    setVisibleConversations(
+      await Bluebird.filter(conversations, async c => {
+        const peerAddress = await getConversationPeerAddress(c.conversation);
+        if (!peerAddress) {
+          return false;
+        }
+        return conversationRequestView
+          ? !acceptedTopics.includes(c.conversation.id) &&
+              !blockedTopics.includes(c.conversation.id)
+          : acceptedTopics.includes(c.conversation.id);
+      }),
+    );
+  }, [conversations, acceptedTopics, blockedTopics, conversationRequestView]);
 
   useEffect(() => {
     if (!visibleConversations) {
@@ -828,7 +831,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
   const getRequestCount = () => {
     return (
-      visibleConversations?.filter(
+      conversations?.filter(
         c =>
           !acceptedTopics.includes(c.conversation.id) &&
           !blockedTopics.includes(c.conversation.id),
@@ -1097,7 +1100,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                         {requestCount === 0 && (
                           <ConversationSuggestions
                             address={xmtpAddress}
-                            conversations={conversations}
+                            conversations={visibleConversations}
                             onSelect={handleOpenChatFromAddress}
                             onSuggestionsLoaded={setSuggestions}
                           />

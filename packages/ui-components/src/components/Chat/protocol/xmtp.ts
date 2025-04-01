@@ -278,7 +278,6 @@ const getXmtpClient = async (
         xmtpLocalEncryptionKey,
         {
           ...xmtpOpts,
-          loggingLevel: 'debug',
         },
       );
 
@@ -288,6 +287,9 @@ const getXmtpClient = async (
 
       // store the client in memory for use
       xmtpClients[address.toLowerCase()] = newClient;
+
+      // sync the consent state and return
+      await newClient.conversations.syncAll();
       return newClient;
     }
 
@@ -312,22 +314,16 @@ const getXmtpClient = async (
       xmtpLocalEncryptionKey,
       {
         ...xmtpOpts,
-        loggingLevel: 'debug',
       },
     );
 
     // store the existing client in memory for use
     xmtpClients[address.toLowerCase()] = existingClient;
+
+    // sync the consent state and return
+    await existingClient.conversations.syncAll();
     return existingClient;
   });
-};
-
-const getXmtpClientFromLocal = async (): Promise<Client | undefined> => {
-  const authAddress = await getXmtpLocalAddress();
-  if (!authAddress) {
-    return undefined;
-  }
-  return await getXmtpClient(authAddress);
 };
 
 export const getXmtpInboxId = async (): Promise<string> => {
@@ -340,6 +336,14 @@ export const getXmtpInboxId = async (): Promise<string> => {
     throw new Error('no inbox ID found');
   }
   return inboxId;
+};
+
+const getXmtpClientFromLocal = async (): Promise<Client | undefined> => {
+  const authAddress = await getXmtpLocalAddress();
+  if (!authAddress) {
+    return undefined;
+  }
+  return await getXmtpClient(authAddress);
 };
 
 export const getXmtpSigner = (address: string, signer: Signer): XmtpSigner => {
@@ -363,14 +367,6 @@ export const getXmtpWalletAddress = async (): Promise<string> => {
   return authAddress;
 };
 
-const getXmtpClientInboxId = async (): Promise<string | undefined> => {
-  const xmtp = await getXmtpClientFromLocal();
-  if (!xmtp) {
-    return undefined;
-  }
-  return xmtp.inboxId;
-};
-
 export const initXmtpAccount = async (address: string, signer: Signer) => {
   try {
     // create a client for the first time using the wallet signer reference
@@ -379,6 +375,14 @@ export const initXmtpAccount = async (address: string, signer: Signer) => {
     notifyEvent(e, 'warning', 'Messaging', 'XMTP');
     throw e;
   }
+};
+
+const getXmtpClientInboxId = async (): Promise<string | undefined> => {
+  const xmtp = await getXmtpClientFromLocal();
+  if (!xmtp) {
+    return undefined;
+  }
+  return xmtp.inboxId;
 };
 
 export const isAllowListed = (address: string) => {
@@ -409,7 +413,7 @@ export const loadConversationConsentState = async (
   chat: ConversationMeta,
   udConsents?: ConsentPreferences,
 ): Promise<ConversationMeta> => {
-  // retrieve the protocol layer consent state );
+  // retrieve the protocol layer consent state
   let consentState = await chat.conversation.consentState();
 
   // attempt to migrate UD consent state if protocol state is unknown
@@ -552,6 +556,14 @@ export const sendRemoteAttachment = async (
     throw new Error('message not sent');
   }
   return message;
+};
+
+export const syncXmtpState = async () => {
+  const xmtp = await getXmtpClientFromLocal();
+  if (!xmtp) {
+    return;
+  }
+  await xmtp.conversations.syncAll();
 };
 
 export const waitForXmtpMessages = async (

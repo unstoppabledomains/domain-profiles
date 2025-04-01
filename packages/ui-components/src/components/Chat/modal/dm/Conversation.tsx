@@ -44,6 +44,7 @@ import {
   getXmtpInboxId,
   getXmtpWalletAddress,
   isAllowListed,
+  syncXmtpState,
   waitForXmtpMessages,
 } from '../../protocol/xmtp';
 import type {AddressResolution} from '../../types';
@@ -277,8 +278,12 @@ export const Conversation: React.FC<ConversationProps> = ({
       ...acceptedTopics.filter(v => v !== conversation.id),
     ];
     if (!blockedValue) {
+      // update local consent status
       updatedAcceptedTopics.push(conversation.id);
       setIsChatRequest(false);
+
+      // update remove consent status
+      await conversation.updateConsentState(ConsentState.Allowed);
     }
 
     // update blocked topics
@@ -286,8 +291,15 @@ export const Conversation: React.FC<ConversationProps> = ({
       ...blockedTopics.filter(v => v !== conversation.id),
     ];
     if (blockedValue) {
+      // update local consent status
       updatedBlockedTopics.push(conversation.id);
+
+      // update block consent status
+      await conversation.updateConsentState(ConsentState.Denied);
     }
+
+    // sync the consent state to the network
+    await syncXmtpState();
 
     // update blocking preferences
     if (peerAddress) {

@@ -104,7 +104,7 @@ export const ConversationSuggestions: React.FC<
       setIsSuggestionsLoading(false);
     };
     void loadSuggestions();
-  }, [conversations]);
+  }, []);
 
   return (
     <Grid container gap={1} className={classes.container}>

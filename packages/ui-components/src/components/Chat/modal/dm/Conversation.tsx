@@ -171,7 +171,6 @@ export const Conversation: React.FC<ConversationProps> = ({
         // listen for new messages
         if (clientAddress) {
           void waitForXmtpMessages(
-            clientAddress,
             (message: DecodedMessage) => setIncomingMessage(message),
             conversation,
           );

@@ -738,7 +738,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     }
 
     // wait for XMTP messages if initialized
-    void waitForXmtpMessages(chatAddress, async (data: DecodedMessage) => {
+    void waitForXmtpMessages(async (data: DecodedMessage) => {
       // derive the sender address
       const senderAddress = await getAddressFromInboxId(data.senderInboxId);
       if (!senderAddress) {

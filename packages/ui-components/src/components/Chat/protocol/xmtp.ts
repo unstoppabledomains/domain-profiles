@@ -15,8 +15,10 @@ import {
   RemoteAttachmentCodec,
 } from '@xmtp/content-type-remote-attachment';
 import {ContentTypeText} from '@xmtp/content-type-text';
+import {Mutex} from 'async-mutex';
 import Bluebird from 'bluebird';
 import type {Signer} from 'ethers';
+import {ethers} from 'ethers';
 import {filesize} from 'filesize';
 import {toBytes} from 'viem';
 
@@ -43,6 +45,10 @@ export interface ConversationMeta {
 }
 
 // single reference to the XMTP client for reuse
+const xmtpMutex = new Mutex();
+
+// in-memory cache of XMTP clients for reuse, prevents the need to rebuild
+// client references multiple times within an page session
 const xmtpClients: Record<string, Client> = {};
 const xmtpOpts = {
   env: config.XMTP.ENVIRONMENT,
@@ -99,10 +105,12 @@ const getInboxIdFromAddress = async (
 };
 
 export const getConversation = async (
-  address: string,
   peerAddress: string,
 ): Promise<Conversation | undefined> => {
-  const xmtp = await getXmtpClient(address);
+  const xmtp = await getXmtpClientFromLocal();
+  if (!xmtp) {
+    return undefined;
+  }
   const isAvailable = await xmtp.canMessage([
     getIdentifierFromAddress(peerAddress),
   ]);
@@ -156,7 +164,10 @@ export const getConversationPeerAddress = async (
 export const getConversations = async (
   address: string,
 ): Promise<ConversationMeta[]> => {
-  const xmtp = await getXmtpClient(address);
+  const xmtp = await getXmtpClientFromLocal();
+  if (!xmtp) {
+    return [];
+  }
   const chats: ConversationMeta[] = [];
   const [conversations, udConsents] = await Promise.all([
     // load conversations from XMTP network
@@ -242,58 +253,81 @@ export const getRemoteAttachment = async (
   return;
 };
 
-export const getXmtpClient = async (
+const getXmtpClient = async (
   address: string,
   signer?: Signer,
 ): Promise<Client> => {
-  // retrieve the local encryption key
-  let xmtpLocalEncryptionKey = await getXmtpLocalKey(address);
+  return await xmtpMutex.runExclusive(async () => {
+    // retrieve the local encryption key
+    let xmtpLocalEncryptionKey = await getXmtpLocalKey(address);
 
-  // if no local encryption key is available, create a new XMTP client
-  // instance by creating a new encryption key and signing with the provided
-  // wallet signer reference.
-  if (!xmtpLocalEncryptionKey) {
-    if (!signer) {
-      throw new Error('signer is required to create a new account');
+    // if no local encryption key is available, create a new XMTP client
+    // instance by creating a new encryption key and signing with the provided
+    // wallet signer reference.
+    if (!xmtpLocalEncryptionKey) {
+      if (!signer) {
+        throw new Error('signer is required to create a new account');
+      }
+
+      // create the new XMTP client
+      xmtpLocalEncryptionKey = window.crypto.getRandomValues(
+        new Uint8Array(32),
+      );
+      const newClient = await Client.create(
+        getXmtpSigner(address, signer),
+        xmtpLocalEncryptionKey,
+        {
+          ...xmtpOpts,
+          loggingLevel: 'debug',
+        },
+      );
+
+      // store the local encryption key and address
+      await setXmtpLocalKey(address, xmtpLocalEncryptionKey);
+      await setXmtpLocalAddress(address);
+
+      // store the client in memory for use
+      xmtpClients[address.toLowerCase()] = newClient;
+      return newClient;
     }
 
-    // create the new XMTP client
-    xmtpLocalEncryptionKey = window.crypto.getRandomValues(new Uint8Array(32));
-    const newClient = await Client.create(
-      getXmtpSigner(address, signer),
+    // return an in-memory existing client if available
+    if (xmtpClients[address.toLowerCase()]) {
+      return xmtpClients[address.toLowerCase()];
+    }
+
+    // restore from locally stored encryption key with a dummy signer, since we do not
+    // expect to sign any messages when the encryption key is already established.
+    const dummySigner: XmtpSigner = {
+      type: 'EOA',
+      getIdentifier: () => {
+        return getIdentifierFromAddress(address);
+      },
+      signMessage: async (message: string): Promise<Uint8Array> => {
+        return new Uint8Array();
+      },
+    };
+    const existingClient = await Client.create(
+      dummySigner,
       xmtpLocalEncryptionKey,
       {
         ...xmtpOpts,
+        loggingLevel: 'debug',
       },
     );
 
-    // store the local encryption key and address
-    await setXmtpLocalKey(address, xmtpLocalEncryptionKey);
-    await setXmtpLocalAddress(address);
-
-    // store the client in memory for use
-    xmtpClients[address.toLowerCase()] = newClient;
-    return newClient;
-  }
-
-  // return an in-memory existing client if available
-  if (xmtpClients[address.toLowerCase()]) {
-    return xmtpClients[address.toLowerCase()];
-  }
-
-  // restore from locally stored encryption key with a dummy signer
-  const dummySigner: XmtpSigner = {
-    type: 'EOA',
-    getIdentifier: () => {
-      return getIdentifierFromAddress(address);
-    },
-    signMessage: async (message: string): Promise<Uint8Array> => {
-      return new Uint8Array();
-    },
-  };
-  return await Client.create(dummySigner, xmtpLocalEncryptionKey, {
-    ...xmtpOpts,
+    // store the existing client in memory for use
+    xmtpClients[address.toLowerCase()] = existingClient;
+    return existingClient;
   });
+};
+
+const getXmtpClientFromLocal = async (): Promise<Client | undefined> => {
+  const authAddress = await getXmtpLocalAddress();
+  if (!authAddress) {
+    return undefined;
+  }
+  return await getXmtpClient(authAddress);
 };
 
 export const getXmtpInboxId = async (): Promise<string> => {
@@ -329,14 +363,6 @@ export const getXmtpWalletAddress = async (): Promise<string> => {
   return authAddress;
 };
 
-const getXmtpClientFromLocal = async (): Promise<Client | undefined> => {
-  const authAddress = await getXmtpLocalAddress();
-  if (!authAddress) {
-    return undefined;
-  }
-  return await getXmtpClient(authAddress);
-};
-
 const getXmtpClientInboxId = async (): Promise<string | undefined> => {
   const xmtp = await getXmtpClientFromLocal();
   if (!xmtp) {
@@ -362,13 +388,19 @@ export const isAllowListed = (address: string) => {
 };
 
 export const isXmtpUser = async (address: string): Promise<boolean> => {
-  const addressIdentifier = getIdentifierFromAddress(address);
   const xmtp = await getXmtpClientFromLocal();
   if (!xmtp) {
     return false;
   }
-  const canMessage = await xmtp.canMessage([addressIdentifier]);
-  return Object.values(canMessage).some(Boolean);
+  const canMessage = await xmtp.canMessage([
+    getIdentifierFromAddress(address.toLowerCase()),
+    getIdentifierFromAddress(ethers.utils.getAddress(address)),
+  ]);
+  return (
+    canMessage.get(address.toLowerCase()) ||
+    canMessage.get(ethers.utils.getAddress(address)) ||
+    false
+  );
 };
 
 // loadConversationConsentState retrieves the consent state for this conversation
@@ -522,11 +554,13 @@ export const sendRemoteAttachment = async (
 };
 
 export const waitForXmtpMessages = async (
-  address: string,
   callback: (data: DecodedMessage) => void,
   conversation?: Conversation,
 ): Promise<void> => {
-  const xmtp = await getXmtpClient(address);
+  const xmtp = await getXmtpClientFromLocal();
+  if (!xmtp) {
+    return;
+  }
   if (conversation) {
     // stream a specific conversation
     for await (const message of await conversation.stream()) {

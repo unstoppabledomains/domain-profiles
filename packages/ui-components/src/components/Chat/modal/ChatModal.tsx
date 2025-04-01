@@ -693,13 +693,11 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     try {
       // open the chat using direct lookup
       const conversationLower = await getConversation(
-        xmtpAddress,
         peer.address.toLowerCase(),
       );
       if (conversationLower) {
         try {
           const conversationNormalized = await getConversation(
-            xmtpAddress,
             ethers.utils.getAddress(peer.address),
           );
           if (conversationNormalized) {

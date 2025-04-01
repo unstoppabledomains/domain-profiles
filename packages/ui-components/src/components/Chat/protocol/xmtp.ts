@@ -270,9 +270,7 @@ const getXmtpClient = async (
       }
 
       // create the new XMTP client
-      xmtpLocalEncryptionKey = window.crypto.getRandomValues(
-        new Uint8Array(32),
-      );
+      xmtpLocalEncryptionKey = crypto.getRandomValues(new Uint8Array(32));
       const newClient = await Client.create(
         getXmtpSigner(address, signer),
         xmtpLocalEncryptionKey,

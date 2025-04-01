@@ -6,6 +6,7 @@ import config from '@unstoppabledomains/config';
 import {getProfileData} from '../../actions/domainProfileActions';
 import {AccessWalletModal} from '../../components/Wallet/AccessWallet';
 import useWeb3Context from '../../hooks/useWeb3Context';
+import {isDomainValidForManagement} from '../../lib';
 import {fetchApi} from '../../lib/fetchApi';
 import {sleep} from '../../lib/sleep';
 import {
@@ -137,6 +138,12 @@ const Manager: React.FC<ManagerProps> = ({
   // handlePrepareSignature retrieves the message that must be signed for the profile
   // management request.
   const handlePrepareSignature = async () => {
+    // validate the domain is in expected format
+    if (!isDomainValidForManagement(domain)) {
+      onFailed?.(`Invalid domain: ${domain}`);
+      return;
+    }
+
     // check domain owner address MPC status
     if (!isMpcWallet) {
       const publicData = await getProfileData(domain, [

@@ -50,6 +50,7 @@ export const Compose: React.FC<ComposeProps> = ({
     textboxFocus,
     textboxDrag: isDragging,
   });
+  const isUploadEnabled = authDomain && storageApiKey;
 
   // set the primary domain and wallet address at page load time
   useEffect(() => {
@@ -89,11 +90,11 @@ export const Compose: React.FC<ComposeProps> = ({
 
   // start the file upload once a file is selected and storage key has been obtained
   useEffect(() => {
-    if (!uploadFile || !storageApiKey) {
+    if (!uploadFile || !isUploadEnabled) {
       return;
     }
     void handleUploadFile();
-  }, [uploadFile, storageApiKey]);
+  }, [uploadFile, isUploadEnabled]);
 
   const handleDrop = async (event: DragEvent<HTMLDivElement>) => {
     // upload the file as an attachment
@@ -221,7 +222,7 @@ export const Compose: React.FC<ComposeProps> = ({
 
   // handleUploadFile transmits the selected file to remote storage
   const handleUploadFile = async () => {
-    if (conversation && uploadFile && storageApiKey && authDomain) {
+    if (conversation && uploadFile && isUploadEnabled) {
       try {
         // retrieve the attachment from device
         setIsSending(true);
@@ -266,17 +267,17 @@ export const Compose: React.FC<ComposeProps> = ({
       onDragOver={() => setIsDragging(true)}
       onDragLeave={() => setIsDragging(false)}
     >
-      <IconButton
-        disableRipple={true}
-        component="label"
-        disabled={!authDomain}
-        onClick={() => setSignatureClicked(true)}
-      >
-        <input hidden type="file" onChange={handleUploadClicked} />
-        <Tooltip title={!authDomain ? t('push.domainRequiredUpload') : ''}>
+      <Tooltip title={!isUploadEnabled ? t('push.domainRequiredUpload') : ''}>
+        <IconButton
+          disableRipple={true}
+          component="label"
+          disabled={!isUploadEnabled}
+          onClick={() => setSignatureClicked(true)}
+        >
+          <input hidden type="file" onChange={handleUploadClicked} />
           <AddCircleOutlineOutlinedIcon className={classes.attachIcon} />
-        </Tooltip>
-      </IconButton>
+        </IconButton>
+      </Tooltip>
       <InputBase
         id="textbox-input"
         fullWidth

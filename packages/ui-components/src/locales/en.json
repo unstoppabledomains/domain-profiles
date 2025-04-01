@@ -753,7 +753,7 @@
     "configure": "Enable Unstoppable Messaging on this device for {{domain}}",
     "decrypting": "Loading message...",
     "description": "Connect with friends using Unstoppable Messaging, powered by XMTP. Over 2 million onchain identities use XMTP for secure, private, and portable messaging.",
-    "domainRequiredUpload": "A domain is required to upload attachments",
+    "domainRequiredUpload": "Add an Unstoppable Domain to your wallet to enable attachments",
     "dropToUpload": "Drop file to upload...",
     "emptyNotifications": "No App Notifications",
     "emptyNotificationsDescription": "Subscribe to an app channel to receive notifications like security alerts, crypto news and more.",

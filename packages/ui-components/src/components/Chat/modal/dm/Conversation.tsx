@@ -23,7 +23,7 @@ import type {
   DecodedMessage,
   Conversation as XmtpConversation,
 } from '@xmtp/browser-sdk';
-import {ContentType, SortDirection} from '@xmtp/browser-sdk';
+import {ConsentState, ContentType, SortDirection} from '@xmtp/browser-sdk';
 import type {MouseEvent} from 'react';
 import React, {useEffect, useState} from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
@@ -173,7 +173,8 @@ export const Conversation: React.FC<ConversationProps> = ({
 
         // determine if this is a new chat
         setIsChatRequest(
-          initialMessages.length > 0 &&
+          (await conversation.consentState()) !== ConsentState.Allowed &&
+            filteredMessages.length > 0 &&
             !acceptedTopics.includes(conversation.id),
         );
 

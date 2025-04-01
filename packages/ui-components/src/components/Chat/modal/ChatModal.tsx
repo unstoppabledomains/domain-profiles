@@ -241,6 +241,8 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   const [conversationMetadata, setConversationMetadata] =
     useState<AddressResolution>();
   const [conversations, setConversations] = useState<ConversationMeta[]>();
+  const [visibleConversations, setVisibleConversations] =
+    useState<ConversationMeta[]>();
   const [conversationRequestView, setConversationRequestView] =
     useState<boolean>();
   const [notifications, setNotifications] = useState<PayloadData[]>([]);
@@ -255,14 +257,6 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   // mobile behavior flag
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  // conversations to display in the current inbox view
-  const visibleConversations = conversations?.filter(c =>
-    conversationRequestView
-      ? !acceptedTopics.includes(c.conversation.id) &&
-        !blockedTopics.includes(c.conversation.id)
-      : acceptedTopics.includes(c.conversation.id),
-  );
 
   useEffect(() => {
     if (open) {
@@ -341,6 +335,20 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       return;
     }
 
+    // conversations to display in the current inbox view
+    setVisibleConversations(
+      await Bluebird.filter(conversations, async c => {
+        const peerAddress = await getConversationPeerAddress(c.conversation);
+        if (!peerAddress) {
+          return false;
+        }
+        return conversationRequestView
+          ? !acceptedTopics.includes(c.conversation.id) &&
+              !blockedTopics.includes(c.conversation.id)
+          : acceptedTopics.includes(c.conversation.id);
+      }),
+    );
+
     // set initial topic consent values
     if (acceptedTopics.length === 0 && blockedTopics.length === 0) {
       setAcceptedTopics(
@@ -349,6 +357,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
             const peerAddress = await getConversationPeerAddress(
               c.conversation,
             );
+            if (!peerAddress) {
+              return false;
+            }
             return (
               c.consentState === ConsentState.Allowed ||
               isAllowListed(peerAddress)
@@ -362,6 +373,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
             const peerAddress = await getConversationPeerAddress(
               c.conversation,
             );
+            if (!peerAddress) {
+              return false;
+            }
             return (
               c.consentState === ConsentState.Denied &&
               !isAllowListed(peerAddress)
@@ -605,14 +619,17 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       ]);
 
       // associate the new conversation with the wallet address
-      await registerClientTopics(await getXmtpInboxId(), [
-        {
-          topic: msg.conversationId,
-          peerAddress: await getConversationPeerAddress(
-            newConversation.conversation,
-          ),
-        },
-      ]);
+      const peerAddress = await getConversationPeerAddress(
+        newConversation.conversation,
+      );
+      if (peerAddress) {
+        await registerClientTopics(await getXmtpInboxId(), [
+          {
+            topic: msg.conversationId,
+            peerAddress,
+          },
+        ]);
+      }
     }
     // initialize a new timeline
     else {
@@ -632,14 +649,17 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       setConversations([newConversation]);
 
       // associate the new conversation with the wallet address
-      await registerClientTopics(await getXmtpInboxId(), [
-        {
-          topic: msg.conversationId,
-          peerAddress: await getConversationPeerAddress(
-            newConversation.conversation,
-          ),
-        },
-      ]);
+      const peerAddress = await getConversationPeerAddress(
+        newConversation.conversation,
+      );
+      if (peerAddress) {
+        await registerClientTopics(await getXmtpInboxId(), [
+          {
+            topic: msg.conversationId,
+            peerAddress,
+          },
+        ]);
+      }
     }
 
     // set notification dot if needed
@@ -808,7 +828,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
   const getRequestCount = () => {
     return (
-      conversations?.filter(
+      visibleConversations?.filter(
         c =>
           !acceptedTopics.includes(c.conversation.id) &&
           !blockedTopics.includes(c.conversation.id),

@@ -141,10 +141,10 @@ export const getConversationById = async (
 
 export const getConversationPeerAddress = async (
   conversation: Conversation,
-): Promise<string> => {
+): Promise<string | undefined> => {
   const xmtpClient = await getXmtpClientFromLocal();
   if (!xmtpClient) {
-    throw new Error('no XMTP client found');
+    return undefined;
   }
   const members = await conversation.members();
   const peerAddress = members
@@ -156,7 +156,7 @@ export const getConversationPeerAddress = async (
     )
     .find(m => m);
   if (!peerAddress) {
-    throw new Error('no peer address found');
+    return undefined;
   }
   return peerAddress;
 };
@@ -449,13 +449,14 @@ export const loadConversationPreview = async (
     const myInboxId = await getXmtpClientInboxId();
 
     // set the preview text
+    const previewText = message.contentType.sameAs(ContentTypeText)
+      ? message.content
+      : message.contentType.sameAs(ContentTypeRemoteAttachment)
+      ? 'Attachment'
+      : '';
     conversation.preview = `${
-      message.senderInboxId === myInboxId ? 'You: ' : ''
-    }${
-      message.contentType.sameAs(ContentTypeText)
-        ? message.content
-        : 'Attachment'
-    }`;
+      message.senderInboxId === myInboxId && previewText ? 'You: ' : ''
+    }${previewText}`;
 
     // set the timestamp
     conversation.timestamp = Number(message.sentAtNs / 1000000n);

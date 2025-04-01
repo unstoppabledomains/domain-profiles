@@ -113,6 +113,9 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
       const conversationPeerAddress = await getConversationPeerAddress(
         conversation.conversation,
       );
+      if (!conversationPeerAddress) {
+        return;
+      }
       setPeerAddress(conversationPeerAddress);
       setDisplayName(truncateEthAddress(conversationPeerAddress));
 
@@ -185,13 +188,13 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
                 ) : conversation.preview ? (
                   <Emoji>{conversation.preview}</Emoji>
                 ) : (
-                  <Skeleton variant="text" className={classes.textLoading} />
+                  <Box>&nbsp;</Box>
                 )}
               </Typography>
             </Box>
           </Box>
         )
-      ) : (
+      ) : peerAddress ? (
         <Box className={classes.conversationContainer}>
           <Box>
             <Skeleton variant="circular" className={classes.avatarLoading} />
@@ -201,6 +204,8 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
             <Skeleton variant="text" className={classes.textLoading} />
           </Box>
         </Box>
+      ) : (
+        <Box />
       )}
     </Box>
   ) : null;

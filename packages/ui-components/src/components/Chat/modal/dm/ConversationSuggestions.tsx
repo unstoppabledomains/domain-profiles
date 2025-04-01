@@ -85,7 +85,7 @@ export const ConversationSuggestions: React.FC<
         conversations || [],
         async c => {
           const peerAddress = await getConversationPeerAddress(c.conversation);
-          return peerAddress.toLowerCase();
+          return peerAddress?.toLowerCase();
         },
       );
 

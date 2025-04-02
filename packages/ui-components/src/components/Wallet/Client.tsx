@@ -1150,8 +1150,12 @@ export const Client: React.FC<ClientProps> = ({
                             {t('push.preparingChatDescription')}
                           </Box>
                         }
-                        buttonText={t('push.openInbox')}
-                        handleButtonClick={handleXmtpOpenInboxClicked}
+                        buttonText={
+                          isChatReady ? t('push.openInbox') : undefined
+                        }
+                        handleButtonClick={
+                          isChatReady ? handleXmtpOpenInboxClicked : undefined
+                        }
                       >
                         <Button
                           variant="text"

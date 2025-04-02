@@ -67,7 +67,7 @@ export const getXmtpLocalKey = async (
   address: string,
 ): Promise<Uint8Array | undefined> => {
   const cachedKey = await localStorageWrapper.getItem(
-    getCacheKey('xmtpKey', address.toLowerCase()),
+    getCacheKey('xmtpInboxKey', address.toLowerCase()),
   );
   if (cachedKey) {
     return fetcher.b64Decode(cachedKey);
@@ -195,7 +195,7 @@ export const setXmtpLocalAddress = async (address: string) => {
 
 export const setXmtpLocalKey = async (address: string, key: Uint8Array) => {
   await localStorageWrapper.setItem(
-    getCacheKey('xmtpKey', address.toLowerCase()),
+    getCacheKey('xmtpInboxKey', address.toLowerCase()),
     fetcher.b64Encode(key, 0, key.length),
   );
 };

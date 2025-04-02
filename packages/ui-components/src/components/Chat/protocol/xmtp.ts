@@ -121,6 +121,11 @@ export const getConversation = async (
   if (!inboxId) {
     return undefined;
   }
+
+  // sync the conversation state from the network
+  await syncXmtpState(xmtp);
+
+  // retrieve the conversation for the peer inbox
   return await xmtp.conversations.newDm(inboxId);
 };
 
@@ -131,6 +136,11 @@ export const getConversationById = async (
   if (!xmtp) {
     throw new Error('no XMTP client found');
   }
+
+  // sync the conversation state from the network
+  await syncXmtpState(xmtp);
+
+  // retrieve the conversation from the network
   const conversation =
     await xmtp.conversations.getConversationById(conversationId);
   if (!conversation) {
@@ -168,6 +178,11 @@ export const getConversations = async (
   if (!xmtp) {
     return [];
   }
+
+  // sync the conversation state from the network
+  await syncXmtpState(xmtp);
+
+  // get conversations and UD consents
   const chats: ConversationMeta[] = [];
   const [conversations, udConsents] = await Promise.all([
     // load conversations from XMTP network
@@ -199,7 +214,7 @@ export const getConversations = async (
         // retrieve the message preview
         loadConversationPreview(chat),
         // retrieve the consent state
-        loadConversationConsentState(xmtp, chat, udConsents),
+        loadConversationConsentState(chat, udConsents),
       ]);
     },
     {
@@ -287,7 +302,7 @@ const getXmtpClient = async (
       xmtpClients[address.toLowerCase()] = newClient;
 
       // sync the consent state and return
-      await newClient.conversations.syncAll();
+      await syncXmtpState(newClient);
       return newClient;
     }
 
@@ -319,7 +334,7 @@ const getXmtpClient = async (
     xmtpClients[address.toLowerCase()] = existingClient;
 
     // sync the consent state and return
-    await existingClient.conversations.syncAll();
+    await syncXmtpState(existingClient);
     return existingClient;
   });
 };
@@ -407,7 +422,6 @@ export const isXmtpUser = async (address: string): Promise<boolean> => {
 
 // loadConversationConsentState retrieves the consent state for this conversation
 export const loadConversationConsentState = async (
-  xmtp: Client,
   chat: ConversationMeta,
   udConsents?: ConsentPreferences,
 ): Promise<ConversationMeta> => {
@@ -544,6 +558,9 @@ export const sendRemoteAttachment = async (
   // side if used immediately in the client UX and causes a broken image link.
   await sleep(3000);
 
+  // sync the conversation state from the network
+  await syncXmtpState();
+
   // retrieve the message by ID
   const messageList = await conversation.messages({
     direction: SortDirection.Descending,
@@ -556,8 +573,8 @@ export const sendRemoteAttachment = async (
   return message;
 };
 
-export const syncXmtpState = async () => {
-  const xmtp = await getXmtpClientFromLocal();
+export const syncXmtpState = async (client?: Client) => {
+  const xmtp = client || (await getXmtpClientFromLocal());
   if (!xmtp) {
     return;
   }

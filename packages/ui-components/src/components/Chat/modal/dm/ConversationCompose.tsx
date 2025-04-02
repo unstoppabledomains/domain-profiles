@@ -24,6 +24,7 @@ import {
   formatFileSize,
   getXmtpWalletAddress,
   sendRemoteAttachment,
+  syncXmtpState,
 } from '../../protocol/xmtp';
 import {localStorageWrapper} from '../../storage';
 import {useConversationComposeStyles} from '../styles';
@@ -137,7 +138,7 @@ export const Compose: React.FC<ComposeProps> = ({
       setIsSending(true);
       try {
         // send the message
-        const sentMessageId = await conversation.send(textboxTerm);
+        await conversation.send(textboxTerm);
 
         // retrieve the message
         const messages = await conversation.messages({
@@ -148,6 +149,9 @@ export const Compose: React.FC<ComposeProps> = ({
           throw new Error('no messages found');
         }
         const sentMessage = messages[0];
+
+        // sync the conversation state from the network
+        await syncXmtpState();
 
         // callback with the message
         sendCallback(sentMessage);

@@ -160,6 +160,9 @@ export const Conversation: React.FC<ConversationProps> = ({
     try {
       // render the existing messages if available
       if (conversation) {
+        // sync the conversation state from network
+        await syncXmtpState();
+
         // retrieve all messages
         const initialMessages = await conversation.messages({
           limit: BigInt(PAGE_SIZE),

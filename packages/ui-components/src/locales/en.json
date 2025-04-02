@@ -811,7 +811,9 @@
     "notificationsShort": "Apps",
     "open": "Show messages for {{domain}}",
     "openGroupChat": "Open group chat",
+    "openInbox": "Open my inbox",
     "preparingChat": "Setting up your secure inbox...",
+    "preparingChatDescription": "We use XMTP to provide decentralized messaging with end-to-end encryption.",
     "reacted": "reacted",
     "searchChat": "Search wallets or domains",
     "searchCommunities": "Search groups",
@@ -856,7 +858,8 @@
     "unsupportedContent": "Unsupported content type",
     "uploading": "Uploading file...",
     "userJoinedGroup": "User joined the group",
-    "userLeftGroup": "User left the group"
+    "userLeftGroup": "User left the group",
+    "yourInboxIsReady": "Your secure inbox is ready!"
   },
   "search": {
     "availableDomainsFor": "Available for purchase matching \"{{searchTerm}}\"",

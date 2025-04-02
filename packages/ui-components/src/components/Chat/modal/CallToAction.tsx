@@ -103,7 +103,7 @@ export type CallToActionProps = {
     | 'GroupsIcon'
     | 'NotificationsActiveOutlinedIcon'
     | 'LockOutlinedIcon';
-  title: string;
+  title: React.ReactNode | string;
   subTitle?: React.ReactNode;
   buttonText?: string;
   loading?: boolean;

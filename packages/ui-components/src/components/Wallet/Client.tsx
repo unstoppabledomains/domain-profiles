@@ -220,7 +220,9 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       height: '20px',
     },
     loadingSpinner: {
-      marginTop: theme.spacing(1),
+      width: '20px',
+      height: '20px',
+      marginRight: theme.spacing(1),
       color: theme.palette.wallet.text.secondary,
     },
   }),
@@ -251,7 +253,6 @@ export const Client: React.FC<ClientProps> = ({
 
   // wallet state variables
   const [state, saveState] = useFireblocksState();
-  const {setOpenChat, isChatReady} = useUnstoppableMessaging();
   const clientState = getBootstrapState(state);
   const [fundingModalTitle, setFundingModalTitle] = useState<string>();
   const [fundingModalIcon, setFundingModalIcon] = useState<React.ReactNode>();
@@ -263,6 +264,10 @@ export const Client: React.FC<ClientProps> = ({
     .reduce((p, c) => p + c, 0);
   const isSellEnabled = cryptoValue >= 15;
   const refreshMutex = new Mutex();
+
+  // chat state
+  const {setOpenChat, isChatReady} = useUnstoppableMessaging();
+  const [isXmtpIntroConfirmed, setIsXmtpIntroConfirmed] = useState(false);
 
   // component state variables
   const [isChat, setIsChat] = useState(false);
@@ -312,6 +317,17 @@ export const Client: React.FC<ClientProps> = ({
         ? getWalletStorageData(accessToken, accountId, true)
         : undefined,
     ]);
+
+    // load messaging intro status
+    if (
+      await localStorageWrapper.getItem(DomainProfileKeys.MessagingIntro, {
+        type: 'wallet',
+        accessToken,
+        accountId: getAccountIdFromBootstrapState(clientState),
+      })
+    ) {
+      setIsXmtpIntroConfirmed(true);
+    }
 
     // set wallet lock status
     setTxLockStatus(lockStatus);
@@ -469,10 +485,10 @@ export const Client: React.FC<ClientProps> = ({
   }, [accessToken, cryptoValue]);
 
   useEffect(() => {
-    if (isChat && isChatReady) {
+    if (isChat && isChatReady && isXmtpIntroConfirmed) {
       setOpenChat(t('push.messages'));
     }
-  }, [isChat, isChatReady]);
+  }, [isChat, isChatReady, isXmtpIntroConfirmed]);
 
   // wrapper for the refresh method
   const refresh = async (showSpinner?: boolean, fields?: string[]) => {
@@ -837,6 +853,23 @@ export const Client: React.FC<ClientProps> = ({
     window.open(config.WALLETS.LANDING_PAGE_URL, '_blank');
   };
 
+  const handleXmtpLearnMoreClicked = () => {
+    window.open('https://xmtp.org', '_blank');
+  };
+
+  const handleXmtpOpenInboxClicked = async () => {
+    setIsXmtpIntroConfirmed(true);
+    await localStorageWrapper.setItem(
+      DomainProfileKeys.MessagingIntro,
+      String(Date.now()),
+      {
+        type: 'wallet',
+        accessToken,
+        accountId: getAccountIdFromBootstrapState(clientState),
+      },
+    );
+  };
+
   const getTabFields = (tv: ClientTabType) => {
     return tv === ClientTabType.Transactions
       ? ['native', 'price', 'token', 'tx']
@@ -1096,12 +1129,39 @@ export const Client: React.FC<ClientProps> = ({
                   className={classes.tabContentItem}
                 >
                   <Box className={classes.listContainer}>
-                    <CallToAction
-                      icon="ForumOutlinedIcon"
-                      title={t('push.preparingChat')}
-                    >
-                      <CircularProgress className={classes.loadingSpinner} />
-                    </CallToAction>
+                    {!isXmtpIntroConfirmed && (
+                      <CallToAction
+                        icon="ForumOutlinedIcon"
+                        title={
+                          isChatReady ? (
+                            t('push.yourInboxIsReady')
+                          ) : (
+                            <Box display="flex" alignItems="center">
+                              <CircularProgress
+                                className={classes.loadingSpinner}
+                                size={20}
+                              />
+                              {t('push.preparingChat')}
+                            </Box>
+                          )
+                        }
+                        subTitle={
+                          <Box width="350px">
+                            {t('push.preparingChatDescription')}
+                          </Box>
+                        }
+                        buttonText={t('push.openInbox')}
+                        handleButtonClick={handleXmtpOpenInboxClicked}
+                      >
+                        <Button
+                          variant="text"
+                          size="small"
+                          onClick={handleXmtpLearnMoreClicked}
+                        >
+                          {t('common.learnMore')}
+                        </Button>
+                      </CallToAction>
+                    )}
                   </Box>
                 </TabPanel>
               </Grid>

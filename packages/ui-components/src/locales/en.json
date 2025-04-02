@@ -811,6 +811,7 @@
     "notificationsShort": "Apps",
     "open": "Show messages for {{domain}}",
     "openGroupChat": "Open group chat",
+    "preparingChat": "Setting up your secure inbox...",
     "reacted": "reacted",
     "searchChat": "Search wallets or domains",
     "searchCommunities": "Search groups",

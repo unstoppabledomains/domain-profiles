@@ -80,112 +80,114 @@ import Community from './group/Community';
 import CommunityList from './group/CommunityList';
 import NotificationPreview from './notification/NotificationPreview';
 
-const useStyles = makeStyles()((theme: Theme) => ({
-  chatModalContainer: {
-    position: 'fixed',
-    bottom: '15px',
-    right: '10px',
-    width: '450px',
-    height: '600px',
-    margin: theme.spacing(1),
-    boxShadow: theme.shadows[6],
-    zIndex: 200,
-  },
-  chatModalContentContainer: {
-    padding: theme.spacing(1),
-    border: 'none',
-    backgroundColor: 'transparent',
-    [theme.breakpoints.down('sm')]: {
+const useStyles = makeStyles<{fullScreen?: boolean}>()(
+  (theme: Theme, {fullScreen}) => ({
+    chatModalContainer: {
+      position: 'fixed',
+      bottom: '15px',
+      right: '10px',
+      width: '450px',
+      height: '600px',
+      margin: theme.spacing(1),
+      boxShadow: theme.shadows[6],
+      zIndex: 200,
+    },
+    chatModalContentContainer: {
+      padding: fullScreen ? 0 : theme.spacing(1),
+      border: 'none',
+      backgroundColor: 'transparent',
+      [theme.breakpoints.down('sm')]: {
+        padding: 0,
+      },
+    },
+    chatMobileContainer: {
+      width: '100%',
+      height: '100%',
+      margin: 0,
+      backgroundColor: 'transparent',
+    },
+    chatMobilePaper: {
+      backgroundColor: theme.palette.background.default,
+    },
+    loadingContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      width: '100%',
+      alignItems: 'center',
+      textAlign: 'center',
+      justifyContent: 'center',
+      marginTop: theme.spacing(10),
+      color: theme.palette.neutralShades[400],
+    },
+    loadingTab: {
+      display: 'flex',
+      alignItems: 'center',
+      height: '100%',
+      marginTop: theme.spacing(-3),
+    },
+    loadingText: {
+      marginTop: theme.spacing(1),
+      color: 'inherit',
+    },
+    loadingSpinner: {
+      color: 'inherit',
+    },
+    headerActionContainer: {
+      display: 'flex',
+      color: theme.palette.neutralShades[600],
+      marginRight: theme.spacing(1),
+    },
+    headerTitleContainer: {
+      display: 'flex',
+      width: '100%',
+      alignItems: 'center',
+    },
+    newChatIcon: {
+      color: theme.palette.primary.main,
+      transform: 'rotateY(180deg)',
+      marginTop: '2px',
+    },
+    headerActionIcon: {
+      marginLeft: theme.spacing(1),
+      cursor: 'pointer',
+    },
+    tabHeaderContainer: {
+      marginTop: theme.spacing(-3),
+      width: '100%',
+    },
+    tabContentContainer: {
+      width: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      overflowY: 'auto',
+      overflowX: 'hidden',
+      overscrollBehavior: 'contain',
+      height: fullScreen ? 'calc(100vh - 175px)' : '425px',
+      [theme.breakpoints.down('sm')]: {
+        height: 'calc(100vh - 175px)',
+      },
+    },
+    tabList: {
+      marginRight: theme.spacing(-4),
+    },
+    tabContentItem: {
+      marginLeft: theme.spacing(-3),
+      marginRight: theme.spacing(-3),
+    },
+    searchContainer: {
+      marginTop: theme.spacing(2),
+    },
+    infiniteScroll: {
+      margin: 0,
       padding: 0,
     },
-  },
-  chatMobileContainer: {
-    width: '100%',
-    height: '100%',
-    margin: 0,
-    backgroundColor: 'transparent',
-  },
-  chatMobilePaper: {
-    backgroundColor: theme.palette.background.default,
-  },
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    width: '100%',
-    alignItems: 'center',
-    textAlign: 'center',
-    justifyContent: 'center',
-    marginTop: theme.spacing(10),
-    color: theme.palette.neutralShades[400],
-  },
-  loadingTab: {
-    display: 'flex',
-    alignItems: 'center',
-    height: '100%',
-    marginTop: theme.spacing(-3),
-  },
-  loadingText: {
-    marginTop: theme.spacing(1),
-    color: 'inherit',
-  },
-  loadingSpinner: {
-    color: 'inherit',
-  },
-  headerActionContainer: {
-    display: 'flex',
-    color: theme.palette.neutralShades[600],
-    marginRight: theme.spacing(1),
-  },
-  headerTitleContainer: {
-    display: 'flex',
-    width: '100%',
-    alignItems: 'center',
-  },
-  newChatIcon: {
-    color: theme.palette.primary.main,
-    transform: 'rotateY(180deg)',
-    marginTop: '2px',
-  },
-  headerActionIcon: {
-    marginLeft: theme.spacing(1),
-    cursor: 'pointer',
-  },
-  tabHeaderContainer: {
-    marginTop: theme.spacing(-3),
-    width: '100%',
-  },
-  tabContentContainer: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    overscrollBehavior: 'contain',
-    height: '425px',
-    [theme.breakpoints.down('sm')]: {
-      height: 'calc(100vh - 175px)',
+    viewRequestsButton: {
+      marginTop: theme.spacing(-1),
+      marginBottom: theme.spacing(3),
     },
-  },
-  tabList: {
-    marginRight: theme.spacing(-4),
-  },
-  tabContentItem: {
-    marginLeft: theme.spacing(-3),
-    marginRight: theme.spacing(-3),
-  },
-  searchContainer: {
-    marginTop: theme.spacing(2),
-  },
-  infiniteScroll: {
-    margin: 0,
-    padding: 0,
-  },
-  viewRequestsButton: {
-    marginTop: theme.spacing(-1),
-    marginBottom: theme.spacing(3),
-  },
-}));
+  }),
+);
 
 const StyledTabBadge = styled(Badge)<BadgeProps>(({theme}) => ({
   '& .MuiBadge-badge': {
@@ -215,8 +217,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   onPopoutClick,
   setActiveChat,
   setActiveCommunity,
+  fullScreen,
 }) => {
-  const {cx, classes} = useStyles();
+  const {cx, classes} = useStyles({fullScreen});
   const [t] = useTranslationContext();
   const {data: featureFlags} = useFeatureFlags(false, authDomain);
   const [loadingText, setLoadingText] = useState<string>();
@@ -256,15 +259,17 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
   // mobile behavior flag
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const fullScreenModal =
+    useMediaQuery(theme.breakpoints.down('sm')) || fullScreen;
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     if (open) {
-      // browser settings check
-      void checkBrowserSettings();
-
-      // load user settings
-      void loadUserProfile();
+      await Promise.all([
+        // browser settings check
+        checkBrowserSettings(),
+        // load user settings
+        loadUserProfile(),
+      ]);
 
       // tab handling
       if (tabValue === TabType.Chat) {
@@ -276,16 +281,16 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         }
         if (activeChat) {
           setActiveChatHandled(true);
-          void handleOpenChatFromName(activeChat);
+          await handleOpenChatFromName(activeChat);
         } else {
-          void loadConversations(false);
+          await loadConversations(false);
         }
       } else if (tabValue === TabType.Notification) {
-        void loadNotifications(true);
+        await loadNotifications(true);
       }
     } else if (conversations === undefined) {
       // preload conversations to improve perceived performance
-      void loadConversations(false);
+      await loadConversations(false);
     }
   }, [activeChat, activeChatHandled, open, tabValue]);
 
@@ -390,10 +395,6 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   }, [conversations, acceptedTopics, blockedTopics, conversationRequestView]);
 
   useEffect(() => {
-    if (!visibleConversations) {
-      return;
-    }
-
     // disable search panel if not on the chat tab
     if (tabValue !== TabType.Chat) {
       setConversationSearch(false);
@@ -402,9 +403,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
     // enable search panel if no conversations are visible
     if (searchValue !== '') {
-      const visibleNonFilteredConversations = visibleConversations.filter(
-        c => c.visible,
-      );
+      const visibleNonFilteredConversations = (
+        visibleConversations || []
+      ).filter(c => c.visible);
       setConversationSearch(visibleNonFilteredConversations.length === 0);
     }
   }, [visibleConversations, searchValue, tabValue]);
@@ -844,7 +845,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
   // display wrapper element
   const wrapChatComponent = (children: React.ReactNode) => {
-    return isMobile ? (
+    return fullScreenModal ? (
       <Modal
         open={open}
         onClose={onClose}
@@ -885,6 +886,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         acceptedTopics={acceptedTopics}
         blockedTopics={blockedTopics}
         storageApiKey={userProfile?.storage?.apiKey}
+        fullScreen={fullScreenModal}
         setAcceptedTopics={setAcceptedTopics}
         setBlockedTopics={setBlockedTopics}
         setWeb3Deps={setWeb3Deps}
@@ -903,6 +905,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         pushKey={pushKey}
         incomingMessage={incomingGroup}
         storageApiKey={userProfile?.storage?.apiKey}
+        fullScreen={fullScreenModal}
         setWeb3Deps={setWeb3Deps}
         onBack={handleCloseChat}
         onClose={onClose}
@@ -924,7 +927,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       >
         <CardHeader
           title={
-            isMobile ? (
+            fullScreenModal ? (
               <Box className={classes.headerTitleContainer}>
                 <IconButton onClick={onClose}>
                   <ArrowBackOutlinedIcon />
@@ -953,7 +956,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                   />
                 </Tooltip>
               )}
-              {!isMobile && (
+              {!fullScreenModal && (
                 <Tooltip title={t('common.close')}>
                   <CloseIcon
                     className={classes.headerActionIcon}
@@ -1073,7 +1076,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                           }
                           searchTerm={searchValue}
                           acceptedTopics={acceptedTopics}
-                          skipObserver={isMobile}
+                          skipObserver={fullScreenModal}
                           conversation={c}
                         />
                       ))
@@ -1225,6 +1228,7 @@ export type ChatModalProps = {
   onPopoutClick?: (address?: string) => void;
   setActiveChat: (v?: string) => void;
   setActiveCommunity: (v?: SerializedCryptoWalletBadge) => void;
+  fullScreen?: boolean;
 };
 
 export default ChatModal;

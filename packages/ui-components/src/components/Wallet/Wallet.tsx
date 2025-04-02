@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
 import type {Theme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
 import React, {useState} from 'react';
 
 import config from '@unstoppabledomains/config';
@@ -96,6 +97,7 @@ export const Wallet: React.FC<
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
+  const theme = useTheme();
   const [state] = useFireblocksState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isFetching, setIsFetching] = useState<boolean>();
@@ -172,7 +174,7 @@ export const Wallet: React.FC<
           isLoaded={isLoaded}
           isFetching={isFetching}
           avatarUrl={avatarUrl}
-          showMessages={showMessages}
+          showMessages={theme.wallet.type === 'udme'}
           address={address}
           accessToken={accessToken}
           emailAddress={emailAddress}
@@ -207,6 +209,7 @@ export const Wallet: React.FC<
         isHeaderClicked={isHeaderClicked}
         setIsHeaderClicked={setIsHeaderClicked}
         setAuthAddress={setAuthAddress}
+        showMessages={theme.wallet.type === 'upio'}
         fullScreenModals={fullScreenModals}
         forceRememberOnDevice={forceRememberOnDevice || isNewUser}
         loginClicked={loginClicked}

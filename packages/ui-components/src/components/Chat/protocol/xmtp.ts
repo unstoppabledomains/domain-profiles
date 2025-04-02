@@ -123,7 +123,7 @@ export const getConversation = async (
   }
 
   // sync the conversation state from the network
-  await syncXmtpState(xmtp);
+  await syncXmtpState({client: xmtp});
 
   // retrieve the conversation for the peer inbox
   return await xmtp.conversations.newDm(inboxId);
@@ -138,7 +138,7 @@ export const getConversationById = async (
   }
 
   // sync the conversation state from the network
-  await syncXmtpState(xmtp);
+  await syncXmtpState({client: xmtp});
 
   // retrieve the conversation from the network
   const conversation =
@@ -180,7 +180,7 @@ export const getConversations = async (
   }
 
   // sync the conversation state from the network
-  await syncXmtpState(xmtp);
+  await syncXmtpState({client: xmtp, waitForSync: true});
 
   // get conversations and UD consents
   const chats: ConversationMeta[] = [];
@@ -302,7 +302,7 @@ const getXmtpClient = async (
       xmtpClients[address.toLowerCase()] = newClient;
 
       // sync the consent state and return
-      await syncXmtpState(newClient);
+      await syncXmtpState({client: newClient, waitForSync: true});
       return newClient;
     }
 
@@ -334,7 +334,7 @@ const getXmtpClient = async (
     xmtpClients[address.toLowerCase()] = existingClient;
 
     // sync the consent state and return
-    await syncXmtpState(existingClient);
+    await syncXmtpState({client: existingClient, waitForSync: true});
     return existingClient;
   });
 };
@@ -559,7 +559,7 @@ export const sendRemoteAttachment = async (
   await sleep(3000);
 
   // sync the conversation state from the network
-  await syncXmtpState();
+  await syncXmtpState({waitForSync: false});
 
   // retrieve the message by ID
   const messageList = await conversation.messages({
@@ -573,12 +573,23 @@ export const sendRemoteAttachment = async (
   return message;
 };
 
-export const syncXmtpState = async (client?: Client) => {
-  const xmtp = client || (await getXmtpClientFromLocal());
+export const syncXmtpState = async (opts?: {
+  client?: Client;
+  waitForSync?: boolean;
+}) => {
+  const xmtp = opts?.client || (await getXmtpClientFromLocal());
   if (!xmtp) {
     return;
   }
-  await xmtp.conversations.syncAll();
+
+  // block and wait for sync
+  if (opts?.waitForSync) {
+    await xmtp.conversations.syncAll();
+    return;
+  }
+
+  // start the sync in background and return
+  void xmtp.conversations.syncAll();
 };
 
 export const waitForXmtpMessages = async (

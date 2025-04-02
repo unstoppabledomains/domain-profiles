@@ -67,6 +67,7 @@ export const Conversation: React.FC<ConversationProps> = ({
   acceptedTopics,
   blockedTopics,
   storageApiKey,
+  fullScreen,
   setAcceptedTopics,
   setBlockedTopics,
   setWeb3Deps,
@@ -88,6 +89,7 @@ export const Conversation: React.FC<ConversationProps> = ({
   const [isChatRequest, setIsChatRequest] = useState<boolean>();
   const {classes} = useConversationStyles({
     isChatRequest,
+    fullScreen,
   });
 
   useAsyncEffect(async () => {
@@ -567,6 +569,7 @@ export type ConversationProps = {
   acceptedTopics: string[];
   blockedTopics: string[];
   storageApiKey?: string;
+  fullScreen?: boolean;
   setAcceptedTopics: (v: string[]) => void;
   setBlockedTopics: (v: string[]) => void;
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;

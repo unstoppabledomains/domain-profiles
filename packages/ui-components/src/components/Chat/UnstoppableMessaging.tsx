@@ -125,6 +125,8 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
   silentOnboard = false,
   initCallback,
   onPopoutClick,
+  onClose,
+  fullScreen,
 }) => {
   const {classes} = useStyles({inheritStyle});
   const web3Context = useContext(Web3Context);
@@ -888,6 +890,11 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     setChatWindowOpen(false);
     setActiveChat(undefined);
     setActiveTab(undefined);
+
+    // call the optional onClose callback
+    if (onClose) {
+      onClose();
+    }
   };
 
   const handleOpenSetup = async () => {
@@ -1128,6 +1135,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
             tabRefresh={chatWindowUpdated}
             blockedTopics={blockedTopics}
             setBlockedTopics={setBlockedTopics}
+            fullScreen={fullScreen}
             setWeb3Deps={setWeb3Deps}
             onPopoutClick={onPopoutClick}
             onClose={handleClosePush}
@@ -1161,4 +1169,6 @@ export type UnstoppableMessagingProps = {
   hideIcon?: boolean;
   initCallback?: () => void;
   onPopoutClick?: (address?: string) => void;
+  onClose?: () => void;
+  fullScreen?: boolean;
 };

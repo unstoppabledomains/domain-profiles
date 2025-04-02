@@ -176,6 +176,7 @@ export const WalletProvider: React.FC<
     setAuthAddress?: (v: string) => void;
     initialState?: WalletConfigState;
     initialLoginState?: TokenRefreshResponse;
+    showMessages?: boolean;
     fullScreenModals?: boolean;
     forceRememberOnDevice?: boolean;
     loginClicked?: boolean;
@@ -195,6 +196,7 @@ export const WalletProvider: React.FC<
   setIsHeaderClicked,
   mode = 'basic',
   fullScreenModals,
+  showMessages,
   forceRememberOnDevice = false,
   emailAddress: initialEmailAddress,
   recoveryPhrase: initialRecoveryPhrase,
@@ -1394,6 +1396,7 @@ export const WalletProvider: React.FC<
                 isHeaderClicked={isHeaderClicked}
                 setIsHeaderClicked={setIsHeaderClicked}
                 externalBanner={banner}
+                showMessages={showMessages}
               />
             )
           ))

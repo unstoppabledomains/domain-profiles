@@ -174,7 +174,7 @@ export const Wallet: React.FC<
           isLoaded={isLoaded}
           isFetching={isFetching}
           avatarUrl={avatarUrl}
-          showMessages={theme.wallet.type === 'udme'}
+          showMessages={theme.wallet.type === 'udme' && showMessages}
           address={address}
           accessToken={accessToken}
           emailAddress={emailAddress}
@@ -209,7 +209,7 @@ export const Wallet: React.FC<
         isHeaderClicked={isHeaderClicked}
         setIsHeaderClicked={setIsHeaderClicked}
         setAuthAddress={setAuthAddress}
-        showMessages={theme.wallet.type === 'upio'}
+        showMessages={theme.wallet.type === 'upio' && showMessages}
         fullScreenModals={fullScreenModals}
         forceRememberOnDevice={forceRememberOnDevice || isNewUser}
         loginClicked={loginClicked}

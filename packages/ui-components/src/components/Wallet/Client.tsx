@@ -266,7 +266,7 @@ export const Client: React.FC<ClientProps> = ({
   const refreshMutex = new Mutex();
 
   // chat state
-  const {setOpenChat, isChatReady} = useUnstoppableMessaging();
+  const {setOpenChat, openChat, isChatReady} = useUnstoppableMessaging();
   const [isXmtpIntroConfirmed, setIsXmtpIntroConfirmed] = useState(false);
 
   // component state variables
@@ -484,7 +484,7 @@ export const Client: React.FC<ClientProps> = ({
     showPasswordCtaTimer = setTimeout(showPasswordCta, 2000);
   }, [accessToken, cryptoValue]);
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     if (isChat && isChatReady && isXmtpIntroConfirmed) {
       setOpenChat(t('push.messages'));
     }
@@ -858,6 +858,7 @@ export const Client: React.FC<ClientProps> = ({
   };
 
   const handleXmtpOpenInboxClicked = async () => {
+    setOpenChat(t('push.messages'));
     setIsXmtpIntroConfirmed(true);
     await localStorageWrapper.setItem(
       DomainProfileKeys.MessagingIntro,
@@ -1129,7 +1130,7 @@ export const Client: React.FC<ClientProps> = ({
                   className={classes.tabContentItem}
                 >
                   <Box className={classes.listContainer}>
-                    {!isXmtpIntroConfirmed && (
+                    {(!isXmtpIntroConfirmed || !openChat) && (
                       <CallToAction
                         icon="ForumOutlinedIcon"
                         title={

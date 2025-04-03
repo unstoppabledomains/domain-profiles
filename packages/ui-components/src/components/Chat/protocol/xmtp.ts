@@ -31,6 +31,7 @@ import type {ConsentPreferences} from '../../../lib/types/message';
 import {
   getXmtpLocalAddress,
   getXmtpLocalKey,
+  removeXmtpLocalKey,
   setXmtpLocalAddress,
   setXmtpLocalKey,
 } from '../storage';
@@ -78,8 +79,14 @@ export const getAddressFromInboxId = async (
 };
 
 const getIdentifierFromAddress = (address: string): Identifier => {
+  // validate the EVM address
+  if (!ethers.utils.isAddress(address)) {
+    throw new Error(`invalid EVM address: ${address}`);
+  }
+
+  // return the formatted identifier
   return {
-    identifier: address,
+    identifier: ethers.utils.getAddress(address),
     identifierKind: 'Ethereum',
   };
 };
@@ -385,6 +392,13 @@ export const initXmtpAccount = async (address: string, signer: Signer) => {
     // create a client for the first time using the wallet signer reference
     await getXmtpClient(address, signer);
   } catch (e) {
+    // attempt to try once more with a fresh encryption key
+    await removeXmtpLocalKey(address);
+    if (await getXmtpClient(address, signer)) {
+      return;
+    }
+
+    // otherwise throw
     notifyEvent(e, 'warning', 'Messaging', 'XMTP');
     throw e;
   }

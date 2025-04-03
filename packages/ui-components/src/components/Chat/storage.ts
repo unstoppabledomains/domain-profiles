@@ -70,7 +70,20 @@ export const getXmtpLocalKey = async (
     getCacheKey('xmtpInboxKey', address.toLowerCase()),
   );
   if (cachedKey) {
-    return fetcher.b64Decode(cachedKey);
+    try {
+      // decode the local key
+      const localKeyBytes = fetcher.b64Decode(cachedKey);
+
+      // validate the local key
+      if (localKeyBytes.length !== 32) {
+        return;
+      }
+
+      // return the local key
+      return localKeyBytes;
+    } catch (e) {
+      return;
+    }
   }
   return;
 };
@@ -149,6 +162,12 @@ export class localStorageWrapper {
     return null;
   }
 }
+
+export const removeXmtpLocalKey = async (address: string) => {
+  await localStorageWrapper.removeItem(
+    getCacheKey('xmtpInboxKey', address.toLowerCase()),
+  );
+};
 
 export const setCachedResolution = async (
   resolution: AddressResolution,

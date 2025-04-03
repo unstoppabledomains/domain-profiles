@@ -206,7 +206,11 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
 
     //set badge modal open if query param matches badge code
     const query = QueryString.parse(window.location.search.replace('?', ''));
-    if (messagingInitialized && query[ChatModalQueryString] !== undefined) {
+    if (
+      messagingInitialized &&
+      query &&
+      query[ChatModalQueryString] !== undefined
+    ) {
       setExternalChatId(
         query[ChatModalQueryString]
           ? (query[ChatModalQueryString] as string)

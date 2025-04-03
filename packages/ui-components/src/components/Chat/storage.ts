@@ -14,6 +14,18 @@ import type {AddressResolution} from './types';
 export const PUSH_MESSAGES: Record<string, PushAPI.IMessageIPFS> = {};
 export const PUSH_USERS: Record<string, PushAPI.IUser> = {};
 
+export const clearMessagingConfig = async () => {
+  const address = await getXmtpLocalAddress();
+  if (address) {
+    await localStorageWrapper.removeItem(
+      getCacheKey(DomainProfileKeys.GenericKeyValue, ''),
+    );
+    await localStorageWrapper.removeItem(getCacheKey('xmtp', 'address'));
+    await removeXmtpLocalKey(address);
+    await removePushLocalKey(address);
+  }
+};
+
 export const getCacheKey = (prefix: string, address: string): string => {
   return `${DomainProfileKeys.Messaging}-${prefix}-${address}`;
 };
@@ -51,10 +63,6 @@ export const getPushLocalKey = async (address: string): Promise<string> => {
   return '';
 };
 
-export const getXmtpLocalAddress = async (): Promise<string | null> => {
-  return await localStorageWrapper.getItem(getCacheKey('xmtp', 'address'));
-};
-
 type localStorageType = ChromeStorageType | 'wallet';
 
 interface localStorageWrapperOptions {
@@ -62,6 +70,10 @@ interface localStorageWrapperOptions {
   accountId?: string;
   accessToken?: string;
 }
+
+export const getXmtpLocalAddress = async (): Promise<string | null> => {
+  return await localStorageWrapper.getItem(getCacheKey('xmtp', 'address'));
+};
 
 export const getXmtpLocalKey = async (
   address: string,
@@ -162,6 +174,12 @@ export class localStorageWrapper {
     return null;
   }
 }
+
+export const removePushLocalKey = async (address: string) => {
+  await localStorageWrapper.removeItem(
+    getCacheKey('pushKey', address.toLowerCase()),
+  );
+};
 
 export const removeXmtpLocalKey = async (address: string) => {
   await localStorageWrapper.removeItem(

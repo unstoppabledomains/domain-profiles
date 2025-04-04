@@ -33,9 +33,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     border: 'none',
     height: '100%',
   },
-  fullHeight: {
-    height: '100%',
-  },
   loadingContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -108,12 +105,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: 50,
     color: theme.palette.getContrastText(theme.palette.primary.main),
   },
-  callToActionContainer: {
-    display: 'flex',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
 }));
 
 export const ConversationStart: React.FC<ConversationStartProps> = ({
@@ -157,101 +148,94 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
   };
 
   return (
-    <Box className={classes.fullHeight}>
-      <Card
-        style={{border: 'none', boxShadow: 'none'}}
-        className={classes.cardContainer}
-        variant="outlined"
-      >
-        <CardHeader
-          title={t('push.newMessage')}
-          action={
-            <Box className={classes.headerActionContainer}>
-              <CloseIcon
-                className={classes.headerCloseIcon}
-                onClick={onClose}
-              />
-            </Box>
-          }
-        />
-        <CardContent className={classes.fullHeight}>
-          <Box className={classes.searchContainer}>
-            <ArrowBackOutlinedIcon
-              className={classes.headerBackIcon}
-              onClick={onBack}
-            />
-            <Search
-              handleSearch={handleSearch}
-              tab={TabType.Chat}
-              initialValue={initialSearch}
-            />
+    <Card
+      style={{border: 'none', boxShadow: 'none'}}
+      className={classes.cardContainer}
+      variant="outlined"
+    >
+      <CardHeader
+        title={t('push.newMessage')}
+        action={
+          <Box className={classes.headerActionContainer}>
+            <CloseIcon className={classes.headerCloseIcon} onClick={onClose} />
           </Box>
-          {loading && (
-            <Box className={classes.loadingContainer}>
-              <CircularProgress className={classes.loadingSpinner} />
-            </Box>
-          )}
-          {selectedPeer && !loading && (
-            <Box
-              className={cx(
-                classes.resultContainer,
-                isAvailable ? classes.available : classes.notAvailable,
-              )}
-              onClick={isAvailable ? () => handleSelect() : undefined}
-            >
-              <Avatar src={selectedPeer.avatarUrl} className={classes.avatar} />
-              <Box className={classes.resultStatus}>
-                <Typography variant="subtitle2">
-                  {selectedPeer.name ||
-                    `${t('common.wallet')} ${truncateEthAddress(
-                      selectedPeer.address,
-                    )}`}
+        }
+      />
+      <CardContent>
+        <Box className={classes.searchContainer}>
+          <ArrowBackOutlinedIcon
+            className={classes.headerBackIcon}
+            onClick={onBack}
+          />
+          <Search
+            handleSearch={handleSearch}
+            tab={TabType.Chat}
+            initialValue={initialSearch}
+          />
+        </Box>
+        {loading && (
+          <Box className={classes.loadingContainer}>
+            <CircularProgress className={classes.loadingSpinner} />
+          </Box>
+        )}
+        {selectedPeer && !loading && (
+          <Box
+            className={cx(
+              classes.resultContainer,
+              isAvailable ? classes.available : classes.notAvailable,
+            )}
+            onClick={isAvailable ? () => handleSelect() : undefined}
+          >
+            <Avatar src={selectedPeer.avatarUrl} className={classes.avatar} />
+            <Box className={classes.resultStatus}>
+              <Typography variant="subtitle2">
+                {selectedPeer.name ||
+                  `${t('common.wallet')} ${truncateEthAddress(
+                    selectedPeer.address,
+                  )}`}
+              </Typography>
+              <Box
+                className={cx(
+                  classes.chatAvailability,
+                  isAvailable ? classes.chatReady : classes.chatNotReady,
+                )}
+              >
+                {isAvailable ? (
+                  <CheckIcon className={classes.chatAvailableIcon} />
+                ) : (
+                  <CloudOffIcon className={classes.chatAvailableIcon} />
+                )}
+                <Typography variant="caption">
+                  {isAvailable ? t('push.chatReady') : t('push.chatNotReady')}
                 </Typography>
-                <Box
-                  className={cx(
-                    classes.chatAvailability,
-                    isAvailable ? classes.chatReady : classes.chatNotReady,
-                  )}
-                >
-                  {isAvailable ? (
-                    <CheckIcon className={classes.chatAvailableIcon} />
-                  ) : (
-                    <CloudOffIcon className={classes.chatAvailableIcon} />
-                  )}
-                  <Typography variant="caption">
-                    {isAvailable ? t('push.chatReady') : t('push.chatNotReady')}
-                  </Typography>
-                </Box>
               </Box>
             </Box>
-          )}
-          {!selectedPeer && !loading && (
-            <Box className={classes.callToActionContainer}>
-              <CallToAction
-                icon={'ForumOutlinedIcon'}
-                title={
-                  suggestions
-                    ? `${t('common.recommended')} ${t('common.connections')}`
-                    : t('push.chatNew')
-                }
-                subTitle={
-                  suggestions
-                    ? t('push.chatNewRecommendations')
-                    : t('push.chatNewDescription')
-                }
-              >
-                <ConversationSuggestions
-                  address={address}
-                  conversations={conversations}
-                  onSelect={handleSelect}
-                  onSuggestionsLoaded={setSuggestions}
-                />
-              </CallToAction>
-            </Box>
-          )}
-        </CardContent>
-      </Card>
-    </Box>
+          </Box>
+        )}
+        {!selectedPeer && !loading && (
+          <CallToAction
+            icon={'ForumOutlinedIcon'}
+            title={
+              suggestions
+                ? `${t('common.recommended')} ${t('common.connections')}`
+                : t('push.chatNew')
+            }
+            subTitle={
+              suggestions
+                ? t('push.chatNewRecommendations')
+                : t('push.chatNewDescription')
+            }
+          >
+            <ConversationSuggestions
+              address={address}
+              conversations={conversations}
+              onSelect={handleSelect}
+              onSuggestionsLoaded={setSuggestions}
+            />
+          </CallToAction>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

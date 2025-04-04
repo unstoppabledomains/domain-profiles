@@ -104,7 +104,7 @@ const useStyles = makeStyles<{fullScreen?: boolean}>()(
       backgroundColor: 'transparent',
     },
     chatMobilePaper: {
-      minHeight: '650px',
+      minHeight: '600px',
       width: '520px',
     },
     loadingContainer: {

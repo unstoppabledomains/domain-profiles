@@ -147,10 +147,9 @@ export default function getDefaultConfig(): Config {
       MOBILE: {
         ANDROID_URL:
           'https://play.google.com/store/apps/details?id=com.unstoppabledomains.manager',
-        APPLE_URL:
-          'https://apps.apple.com/us/app/unstoppable-domains/id1544748602',
+        APPLE_URL: 'https://testflight.apple.com/join/m38AeGFb',
         CHROME_STORE_URL:
-          'https://chromewebstore.google.com/detail/unstoppable-domains/beelkklmblgdljamcmoffgfbdddfpnnl',
+          'https://chromewebstore.google.com/detail/cigfdaeondbdnogeplpdlmcnoeagdoih',
       },
       SIGNATURE_SYMBOL: 'ETHEREUM/ETH,SOLANA/SOL',
       MAX_CLOCK_DRIFT_MS: 2 * 60 * 1000, // 2 minutes

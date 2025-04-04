@@ -734,7 +734,7 @@
     "blockCount": "Blocked ({{count}})",
     "chat": "Chat",
     "chatNew": "Start a new chat",
-    "chatNewDescription": "Start by searching for a domain or wallet address. Don't see your conversations? <a href='https://support.unstoppabledomains.com/support/solutions/articles/48001270559-end-to-end-encrypted-chat-with-xmtp' target='_blank'>Learn more</a> about history sync across your devices.",
+    "chatNewDescription": "Start by searching for a domain or wallet address. Don't see your conversations? <a href='https://support.unstoppabledomains.com/support/solutions/articles/48001270559-end-to-end-encrypted-chat-with-xmtp#Common-Issues-and-Solutions' target='_blank'>Learn more</a> about history sync across your devices.",
     "chatNewRecommendations": "Search for a domain or wallet address, or get started with one of these wallets recommended from your onchain activity.",
     "chatNewRequest": "You have a chat request",
     "chatNewRequestDescription": "Click the chat requests button to view your requests",

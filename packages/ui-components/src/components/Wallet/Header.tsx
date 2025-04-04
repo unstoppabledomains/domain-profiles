@@ -376,9 +376,7 @@ export const Header: React.FC<Props> = ({
           isOwner={true}
           authDomain={domain}
           marginTop={30}
-          onMessagingClicked={
-            showMessages && isChatReady ? handleMessagingClicked : undefined
-          }
+          onMessagingClicked={showMessages ? handleMessagingClicked : undefined}
           onSettingsClicked={accessToken ? onSettingsClick : undefined}
           onSidePanelClicked={accessToken ? onSidePanelClick : undefined}
           onSecurityCenterClicked={

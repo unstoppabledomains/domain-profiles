@@ -9,14 +9,17 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import SupportIcon from '@mui/icons-material/Support';
 import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import Card from '@mui/material/Card';
+import CircularProgress from '@mui/material/CircularProgress';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {useTheme} from '@mui/material/styles';
+import {lighten, useTheme} from '@mui/material/styles';
 import React, {useEffect, useRef, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import {useUnstoppableMessaging} from '../hooks';
 import useFireblocksState from '../hooks/useFireblocksState';
 import {isDomainValidForManagement} from '../lib';
 import useTranslationContext from '../lib/i18n';
@@ -64,16 +67,28 @@ const useStyles = makeStyles<{marginTop?: number}>()(
       '&:hover': {
         backgroundColor: theme.palette.background.default,
       },
+      color: theme.palette.getContrastText(theme.palette.background.default),
+    },
+    disabled: {
+      cursor: 'auto',
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+      color: lighten(
+        theme.palette.getContrastText(theme.palette.background.default),
+        0.5,
+      ),
     },
     settingsIcon: {
       marginRight: '10px',
-    },
-    red: {
-      color: theme.palette.error.main,
+      width: '22px',
+      height: '22px',
     },
     font: {
       fontWeight: 600,
-      color: theme.palette.getContrastText(theme.palette.background.default),
+    },
+    red: {
+      color: theme.palette.error.main,
     },
   }),
 );
@@ -101,6 +116,9 @@ const DropDownMenu: React.FC<Props> = ({
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles({marginTop});
   const theme = useTheme();
+
+  // chat state
+  const {isChatReady} = useUnstoppableMessaging();
 
   // MPC wallet state
   const [isMpcWallet, setIsMpcWallet] = useState(false);
@@ -169,7 +187,7 @@ const DropDownMenu: React.FC<Props> = ({
           }
         >
           <AccountCircleIcon className={classes.settingsIcon} />
-          <Typography className={cx(classes.font)} color="text.secondary">
+          <Typography className={classes.font}>
             {t('profile.viewMyProfile')}
           </Typography>
         </div>
@@ -181,7 +199,7 @@ const DropDownMenu: React.FC<Props> = ({
           onClick={onDomainsClicked}
         >
           <ListOutlinedIcon className={classes.settingsIcon} />
-          <Typography className={cx(classes.font)} color="text.secondary">
+          <Typography className={classes.font}>
             {t('profile.viewMyDomains')}
           </Typography>
         </div>
@@ -193,7 +211,7 @@ const DropDownMenu: React.FC<Props> = ({
           onClick={onGetDomainClicked}
         >
           <AddHomeOutlinedIcon className={classes.settingsIcon} />
-          <Typography className={cx(classes.font)} color="text.secondary">
+          <Typography className={classes.font}>
             {t('wallet.addDomain')}
           </Typography>
         </div>
@@ -205,9 +223,7 @@ const DropDownMenu: React.FC<Props> = ({
           onClick={onWalletClicked}
         >
           <WalletOutlinedIcon className={classes.settingsIcon} />
-          <Typography className={cx(classes.font)} color="text.secondary">
-            {theme.wallet.title}
-          </Typography>
+          <Typography className={classes.font}>{theme.wallet.title}</Typography>
         </div>
       )}
       {onSettingsClicked && (
@@ -217,9 +233,7 @@ const DropDownMenu: React.FC<Props> = ({
           onClick={onSettingsClicked}
         >
           <SettingsOutlinedIcon className={classes.settingsIcon} />
-          <Typography className={cx(classes.font)} color="text.secondary">
-            {t('push.settings')}
-          </Typography>
+          <Typography className={classes.font}>{t('push.settings')}</Typography>
         </div>
       )}
       {onSecurityCenterClicked && (
@@ -229,7 +243,7 @@ const DropDownMenu: React.FC<Props> = ({
           onClick={onSecurityCenterClicked}
         >
           <SecurityOutlinedIcon className={classes.settingsIcon} />
-          <Typography className={cx(classes.font)} color="text.secondary">
+          <Typography className={classes.font}>
             {t('wallet.securityCenter')}
           </Typography>
         </div>
@@ -241,27 +255,41 @@ const DropDownMenu: React.FC<Props> = ({
           onClick={onClaimWalletClicked}
         >
           <SecurityOutlinedIcon className={classes.settingsIcon} />
-          <Typography className={cx(classes.font)} color="text.secondary">
+          <Typography className={classes.font}>
             {t('wallet.securityCenter')}
           </Typography>
         </div>
       )}
       {onMessagingClicked && (
-        <div className={classes.container} onClick={onMessagingClicked}>
-          <ChatOutlinedIcon className={classes.settingsIcon} />
-          <Typography className={cx(classes.font)} color="text.secondary">
-            {t('push.messages')}
-          </Typography>
-        </div>
+        <Tooltip title={isChatReady ? '' : t('push.preparingChat')}>
+          <div
+            className={cx(classes.container, {
+              [classes.disabled]: !isChatReady,
+            })}
+            onClick={isChatReady ? onMessagingClicked : undefined}
+          >
+            {isChatReady ? (
+              <ChatOutlinedIcon className={classes.settingsIcon} />
+            ) : (
+              <CircularProgress
+                className={cx(classes.disabled, classes.settingsIcon)}
+                size={22}
+              />
+            )}
+            <Typography className={classes.font}>
+              {t('push.messages')}
+            </Typography>
+          </div>
+        </Tooltip>
       )}
       {onSupportClicked && (
         <div
           data-testid={`support-button`}
-          className={classes.container}
+          className={cx(classes.container)}
           onClick={onSupportClicked}
         >
           <SupportIcon className={classes.settingsIcon} />
-          <Typography className={cx(classes.font)} color="text.secondary">
+          <Typography className={classes.font}>
             {t('common.support')}
           </Typography>
         </div>
@@ -273,7 +301,7 @@ const DropDownMenu: React.FC<Props> = ({
           onClick={onSidePanelClicked}
         >
           <LaunchIcon className={classes.settingsIcon} />
-          <Typography className={cx(classes.font)} color="text.secondary">
+          <Typography className={classes.font}>
             {t('extension.sidePanel')}
           </Typography>
         </div>

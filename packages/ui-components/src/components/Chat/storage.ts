@@ -14,6 +14,18 @@ import type {AddressResolution} from './types';
 export const PUSH_MESSAGES: Record<string, PushAPI.IMessageIPFS> = {};
 export const PUSH_USERS: Record<string, PushAPI.IUser> = {};
 
+export const clearMessagingConfig = async () => {
+  const address = await getXmtpLocalAddress();
+  if (address) {
+    await localStorageWrapper.removeItem(
+      getCacheKey(DomainProfileKeys.GenericKeyValue, ''),
+    );
+    await localStorageWrapper.removeItem(getCacheKey('xmtp', 'address'));
+    await removeXmtpLocalKey(address);
+    await removePushLocalKey(address);
+  }
+};
+
 export const getCacheKey = (prefix: string, address: string): string => {
   return `${DomainProfileKeys.Messaging}-${prefix}-${address}`;
 };
@@ -51,18 +63,6 @@ export const getPushLocalKey = async (address: string): Promise<string> => {
   return '';
 };
 
-export const getXmtpLocalKey = async (
-  address: string,
-): Promise<Uint8Array | undefined> => {
-  const cachedKey = await localStorageWrapper.getItem(
-    getCacheKey('xmtpKey', address.toLowerCase()),
-  );
-  if (cachedKey) {
-    return fetcher.b64Decode(cachedKey);
-  }
-  return;
-};
-
 type localStorageType = ChromeStorageType | 'wallet';
 
 interface localStorageWrapperOptions {
@@ -70,6 +70,35 @@ interface localStorageWrapperOptions {
   accountId?: string;
   accessToken?: string;
 }
+
+export const getXmtpLocalAddress = async (): Promise<string | null> => {
+  return await localStorageWrapper.getItem(getCacheKey('xmtp', 'address'));
+};
+
+export const getXmtpLocalKey = async (
+  address: string,
+): Promise<Uint8Array | undefined> => {
+  const cachedKey = await localStorageWrapper.getItem(
+    getCacheKey('xmtpInboxKey', address.toLowerCase()),
+  );
+  if (cachedKey) {
+    try {
+      // decode the local key
+      const localKeyBytes = fetcher.b64Decode(cachedKey);
+
+      // validate the local key
+      if (localKeyBytes.length !== 32) {
+        return;
+      }
+
+      // return the local key
+      return localKeyBytes;
+    } catch (e) {
+      return;
+    }
+  }
+  return;
+};
 
 export class localStorageWrapper {
   static async getItem(
@@ -146,6 +175,18 @@ export class localStorageWrapper {
   }
 }
 
+export const removePushLocalKey = async (address: string) => {
+  await localStorageWrapper.removeItem(
+    getCacheKey('pushKey', address.toLowerCase()),
+  );
+};
+
+export const removeXmtpLocalKey = async (address: string) => {
+  await localStorageWrapper.removeItem(
+    getCacheKey('xmtpInboxKey', address.toLowerCase()),
+  );
+};
+
 export const setCachedResolution = async (
   resolution: AddressResolution,
 ): Promise<void> => {
@@ -185,9 +226,13 @@ export const setPushLocalKey = async (address: string, key: string) => {
   );
 };
 
+export const setXmtpLocalAddress = async (address: string) => {
+  await localStorageWrapper.setItem(getCacheKey('xmtp', 'address'), address);
+};
+
 export const setXmtpLocalKey = async (address: string, key: Uint8Array) => {
   await localStorageWrapper.setItem(
-    getCacheKey('xmtpKey', address.toLowerCase()),
+    getCacheKey('xmtpInboxKey', address.toLowerCase()),
     fetcher.b64Encode(key, 0, key.length),
   );
 };

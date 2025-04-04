@@ -6,7 +6,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import InputBase from '@mui/material/InputBase';
 import Tooltip from '@mui/material/Tooltip';
-import type {Conversation, DecodedMessage} from '@xmtp/xmtp-js';
+import type {Conversation, DecodedMessage} from '@xmtp/browser-sdk';
+import {SortDirection} from '@xmtp/browser-sdk';
 import type {DragEvent} from 'react';
 import React, {useEffect, useRef, useState} from 'react';
 
@@ -19,7 +20,12 @@ import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedUserDomainProfileData} from '../../../../lib/types/domain';
 import {DomainProfileKeys} from '../../../../lib/types/domain';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
-import {formatFileSize, sendRemoteAttachment} from '../../protocol/xmtp';
+import {
+  formatFileSize,
+  getXmtpWalletAddress,
+  sendRemoteAttachment,
+  syncXmtpState,
+} from '../../protocol/xmtp';
 import {localStorageWrapper} from '../../storage';
 import {useConversationComposeStyles} from '../styles';
 
@@ -45,6 +51,7 @@ export const Compose: React.FC<ComposeProps> = ({
     textboxFocus,
     textboxDrag: isDragging,
   });
+  const isUploadEnabled = authDomain && storageApiKey;
 
   // set the primary domain and wallet address at page load time
   useEffect(() => {
@@ -52,7 +59,7 @@ export const Compose: React.FC<ComposeProps> = ({
       setAuthDomain(
         await localStorageWrapper.getItem(DomainProfileKeys.AuthDomain),
       );
-      setAuthAddress(conversation?.clientAddress.toLowerCase());
+      setAuthAddress(await getXmtpWalletAddress());
     };
     void loadConversation();
   }, [conversation]);
@@ -84,11 +91,11 @@ export const Compose: React.FC<ComposeProps> = ({
 
   // start the file upload once a file is selected and storage key has been obtained
   useEffect(() => {
-    if (!uploadFile || !storageApiKey) {
+    if (!uploadFile || !isUploadEnabled) {
       return;
     }
     void handleUploadFile();
-  }, [uploadFile, storageApiKey]);
+  }, [uploadFile, isUploadEnabled]);
 
   const handleDrop = async (event: DragEvent<HTMLDivElement>) => {
     // upload the file as an attachment
@@ -130,7 +137,23 @@ export const Compose: React.FC<ComposeProps> = ({
     if (conversation) {
       setIsSending(true);
       try {
-        const sentMessage = await conversation.send(textboxTerm);
+        // send the message
+        await conversation.send(textboxTerm);
+
+        // retrieve the message
+        const messages = await conversation.messages({
+          limit: 1n,
+          direction: SortDirection.Descending,
+        });
+        if (messages.length === 0) {
+          throw new Error('no messages found');
+        }
+        const sentMessage = messages[0];
+
+        // sync the conversation state from the network
+        await syncXmtpState();
+
+        // callback with the message
         sendCallback(sentMessage);
         setTextboxTerm('');
         setErrorMessage('');
@@ -203,7 +226,7 @@ export const Compose: React.FC<ComposeProps> = ({
 
   // handleUploadFile transmits the selected file to remote storage
   const handleUploadFile = async () => {
-    if (conversation && uploadFile && storageApiKey && authDomain) {
+    if (conversation && uploadFile && isUploadEnabled) {
       try {
         // retrieve the attachment from device
         setIsSending(true);
@@ -248,17 +271,17 @@ export const Compose: React.FC<ComposeProps> = ({
       onDragOver={() => setIsDragging(true)}
       onDragLeave={() => setIsDragging(false)}
     >
-      <IconButton
-        disableRipple={true}
-        component="label"
-        disabled={!authDomain}
-        onClick={() => setSignatureClicked(true)}
-      >
-        <input hidden type="file" onChange={handleUploadClicked} />
-        <Tooltip title={!authDomain ? t('push.domainRequiredUpload') : ''}>
+      <Tooltip title={!isUploadEnabled ? t('push.domainRequiredUpload') : ''}>
+        <IconButton
+          disableRipple={true}
+          component="label"
+          disabled={!isUploadEnabled}
+          onClick={() => setSignatureClicked(true)}
+        >
+          <input hidden type="file" onChange={handleUploadClicked} />
           <AddCircleOutlineOutlinedIcon className={classes.attachIcon} />
-        </Tooltip>
-      </IconButton>
+        </IconButton>
+      </Tooltip>
       <InputBase
         id="textbox-input"
         fullWidth

@@ -63,10 +63,11 @@ export const Community: React.FC<CommunityProps> = ({
   pushKey,
   incomingMessage,
   storageApiKey,
+  fullScreen,
   setWeb3Deps,
   onBack,
 }) => {
-  const {classes} = useConversationStyles({isChatRequest: false});
+  const {classes} = useConversationStyles({isChatRequest: false, fullScreen});
   const [t] = useTranslationContext();
   const {enqueueSnackbar} = useSnackbar();
   const [isLoading, setIsLoading] = useState(true);
@@ -551,6 +552,7 @@ export type CommunityProps = {
   pushKey: string;
   incomingMessage?: IMessageIPFS;
   storageApiKey?: string;
+  fullScreen?: boolean;
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;
   onBack: () => void;
   onClose: () => void;

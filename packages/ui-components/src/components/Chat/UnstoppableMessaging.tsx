@@ -11,7 +11,7 @@ import type {IMessageIPFS} from '@pushprotocol/restapi';
 import * as PushAPI from '@pushprotocol/restapi';
 import {EVENTS, createSocketConnection} from '@pushprotocol/socket';
 import {ENV} from '@pushprotocol/socket/src/lib/constants';
-import type {DecodedMessage} from '@xmtp/xmtp-js';
+import type {DecodedMessage} from '@xmtp/browser-sdk';
 import {ethers} from 'ethers';
 import {useSnackbar} from 'notistack';
 import QueryString from 'qs';
@@ -23,7 +23,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {getProfileData, getProfileReverseResolution} from '../../actions';
 import {getNotificationConfigurations} from '../../actions/backendActions';
 import {getDomainBadges} from '../../actions/domainActions';
-import {isAddressSpam, joinBadgeGroupChat} from '../../actions/messageActions';
+import {joinBadgeGroupChat} from '../../actions/messageActions';
 import {AccessWalletModal} from '../../components/Wallet/AccessWallet';
 import {parsePartnerMetadata} from '../../hooks/useFetchNotification';
 import useUnstoppableMessaging from '../../hooks/useUnstoppableMessaging';
@@ -38,10 +38,15 @@ import type {Web3Dependencies} from '../../lib/types/web3';
 import {Web3Context} from '../../providers/Web3ContextProvider';
 import {IncomingChatSnackbar, IncomingSnackbar} from './IncomingSnackbar';
 import SupportBubble from './SupportBubble';
+import type {ChatModalVariant} from './modal/ChatModal';
 import ChatModal from './modal/ChatModal';
 import SetupModal from './modal/SetupModal';
 import {acceptGroupInvite, getPushUser} from './protocol/push';
-import {initXmtpAccount, waitForXmtpMessages} from './protocol/xmtp';
+import {
+  getAddressFromInboxId,
+  initXmtpAccount,
+  waitForXmtpMessages,
+} from './protocol/xmtp';
 import {getPushLocalKey, getXmtpLocalKey, setPushLocalKey} from './storage';
 import type {InitChatOptions, PayloadData} from './types';
 import {
@@ -121,6 +126,8 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
   silentOnboard = false,
   initCallback,
   onPopoutClick,
+  onClose,
+  variant,
 }) => {
   const {classes} = useStyles({inheritStyle});
   const web3Context = useContext(Web3Context);
@@ -200,7 +207,11 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
 
     //set badge modal open if query param matches badge code
     const query = QueryString.parse(window.location.search.replace('?', ''));
-    if (messagingInitialized && query[ChatModalQueryString] !== undefined) {
+    if (
+      messagingInitialized &&
+      query &&
+      query[ChatModalQueryString] !== undefined
+    ) {
       setExternalChatId(
         query[ChatModalQueryString]
           ? (query[ChatModalQueryString] as string)
@@ -734,16 +745,17 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     }
 
     // wait for XMTP messages if initialized
-    void waitForXmtpMessages(chatAddress, async (data: DecodedMessage) => {
-      // check for spam and discard the message if necessary
-      if (await isAddressSpam(data.senderAddress)) {
+    void waitForXmtpMessages(async (data: DecodedMessage) => {
+      // derive the sender address
+      const senderAddress = await getAddressFromInboxId(data.senderInboxId);
+      if (!senderAddress) {
         return;
       }
 
       // raise notification
       setChatSnackbar({
-        senderAddress: data.senderAddress,
-        topic: data.conversation.topic,
+        senderAddress,
+        topic: data.conversationId,
       });
       setChatIncomingMessage(data);
       setChatWindowUpdated({
@@ -883,6 +895,11 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
     setChatWindowOpen(false);
     setActiveChat(undefined);
     setActiveTab(undefined);
+
+    // call the optional onClose callback
+    if (onClose) {
+      onClose();
+    }
   };
 
   const handleOpenSetup = async () => {
@@ -1123,6 +1140,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
             tabRefresh={chatWindowUpdated}
             blockedTopics={blockedTopics}
             setBlockedTopics={setBlockedTopics}
+            variant={variant}
             setWeb3Deps={setWeb3Deps}
             onPopoutClick={onPopoutClick}
             onClose={handleClosePush}
@@ -1156,4 +1174,6 @@ export type UnstoppableMessagingProps = {
   hideIcon?: boolean;
   initCallback?: () => void;
   onPopoutClick?: (address?: string) => void;
+  onClose?: () => void;
+  variant?: ChatModalVariant;
 };

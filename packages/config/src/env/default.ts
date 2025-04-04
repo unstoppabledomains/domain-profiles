@@ -119,8 +119,8 @@ export default function getDefaultConfig(): Config {
       HOST_URL: 'https://api.ud-staging.com/wallet',
       GET_WALLET_URL: 'https://ud-staging.com/cart?product=unstoppable-wallet',
       DOCUMENTATION_URL:
-        'https://support.unstoppabledomains.com/support/solutions/48000457487',
-      LANDING_PAGE_URL: 'https://unstoppabledomains.com/products/wallet',
+        'https://support.unstoppabledomains.com/support/solutions/48000458123',
+      LANDING_PAGE_URL: 'https://up.io',
       DEFAULT_PIN_TIMEOUT_MS: 1 * 60 * 60 * 1000, // 1 hour
       CHAINS: {
         BUY: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'ETH/ETH', 'BASE/ETH'],
@@ -135,7 +135,7 @@ export default function getDefaultConfig(): Config {
         ENVIRONMENT: 'testnet',
         PROJECT_ID: 'unstoppable-domains-staging',
         DOCUMENTATION_URL:
-          'https://support.unstoppabledomains.com/support/solutions/articles/48001265076-token-swap-with-unstoppable-lite-wallet',
+          'https://support.unstoppabledomains.com/support/solutions/articles/48001269491-how-to-swap-tokens',
         FEE_BPS: 85, // 0.85%
         MIN_BALANCE_USD: 5,
         DISABLED_INTEGRATIONS: ['hop'],
@@ -147,10 +147,9 @@ export default function getDefaultConfig(): Config {
       MOBILE: {
         ANDROID_URL:
           'https://play.google.com/store/apps/details?id=com.unstoppabledomains.manager',
-        APPLE_URL:
-          'https://apps.apple.com/us/app/unstoppable-domains/id1544748602',
+        APPLE_URL: 'https://testflight.apple.com/join/m38AeGFb',
         CHROME_STORE_URL:
-          'https://chromewebstore.google.com/detail/unstoppable-domains/beelkklmblgdljamcmoffgfbdddfpnnl',
+          'https://chromewebstore.google.com/detail/cigfdaeondbdnogeplpdlmcnoeagdoih',
       },
       SIGNATURE_SYMBOL: 'ETHEREUM/ETH,SOLANA/SOL',
       MAX_CLOCK_DRIFT_MS: 2 * 60 * 1000, // 2 minutes

@@ -25,6 +25,7 @@ const config: InitialOptionsTsJest = {
   testPathIgnorePatterns: ['/node_modules/', '/build/', '/e2e/'],
   moduleNameMapper: {
     ['@bugsnag/(.*)']: '<rootDir>/tests/mocks/empty.js',
+    ['@xmtp/(.*)']: '<rootDir>/tests/mocks/empty.js',
     ...sharedModules.reduce(
       (acc, name) => ({
         ...acc,

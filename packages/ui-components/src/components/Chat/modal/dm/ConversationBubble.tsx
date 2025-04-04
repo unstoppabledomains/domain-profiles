@@ -4,17 +4,22 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import type {DecodedMessage} from '@xmtp/browser-sdk';
 import {ContentTypeRemoteAttachment} from '@xmtp/content-type-remote-attachment';
 import {ContentTypeText} from '@xmtp/content-type-text';
-import type {DecodedMessage} from '@xmtp/xmtp-js';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import Emoji from 'react-emoji-render';
 import Linkify from 'react-linkify';
 import Zoom from 'react-medium-image-zoom';
+import useAsyncEffect from 'use-async-effect';
 
 import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
-import {formatFileSize, getRemoteAttachment} from '../../protocol/xmtp';
+import {
+  formatFileSize,
+  getRemoteAttachment,
+  getXmtpInboxId,
+} from '../../protocol/xmtp';
 import LinkWarningModal from '../LinkWarningModal';
 import {useConversationBubbleStyles} from '../styles';
 
@@ -31,13 +36,15 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
   const [renderedContent, setRenderedContent] = useState<React.ReactElement>();
   const [clickedUrl, setClickedUrl] = useState<string>();
   const {cx, classes} = useConversationBubbleStyles({isAttachment});
+  const [clientInboxId, setClientInboxId] = useState<string>();
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     if (renderCallback) {
       renderCallback(messageRef);
     }
     try {
-      void renderContent();
+      setClientInboxId(await getXmtpInboxId());
+      await renderContent();
     } catch (e) {
       notifyEvent(e, 'error', 'Messaging', 'XMTP', {
         msg: 'error loading message',
@@ -88,8 +95,7 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
               <Zoom>
                 <img
                   className={
-                    message.senderAddress.toLowerCase() ===
-                    address.toLowerCase()
+                    message.senderInboxId === clientInboxId
                       ? classes.imageAttachmentRight
                       : classes.imageAttachmentLeft
                   }
@@ -124,7 +130,7 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
       } else {
         // show the fallback message if there was a problem getting attachment
         setRenderedContent(
-          <Box>{message.contentFallback || t('push.attachment')}</Box>,
+          <Box>{message.fallback || t('push.attachment')}</Box>,
         );
       }
       setIsLoading(false);
@@ -135,17 +141,17 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
     <Box
       ref={messageRef}
       className={cx(
-        message.senderAddress.toLowerCase() === address.toLowerCase()
+        message.senderInboxId === clientInboxId
           ? classes.rightRow
           : classes.leftRow,
-        message.senderAddress.toLowerCase() === address.toLowerCase()
+        message.senderInboxId === clientInboxId
           ? classes.rightMargin
           : classes.leftMargin,
       )}
     >
       <Box
         className={cx(
-          message.senderAddress.toLowerCase() === address.toLowerCase()
+          message.senderInboxId === clientInboxId
             ? classes.rightRow
             : classes.leftRow,
         )}
@@ -155,10 +161,10 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
             variant="body2"
             className={cx(
               classes.msg,
-              message.senderAddress.toLowerCase() === address.toLowerCase()
+              message.senderInboxId === clientInboxId
                 ? classes.right
                 : classes.left,
-              message.senderAddress.toLowerCase() === address.toLowerCase()
+              message.senderInboxId === clientInboxId
                 ? classes.rightFirst
                 : classes.leftFirst,
             )}
@@ -166,7 +172,7 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
             {isLoading ? (
               <Box
                 className={
-                  message.senderAddress.toLowerCase() === address.toLowerCase()
+                  message.senderInboxId === clientInboxId
                     ? classes.loadingContainerRight
                     : classes.loadingContainerLeft
                 }
@@ -180,9 +186,15 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
               renderedContent
             )}
           </Typography>
-          <Tooltip title={message.sent.toLocaleString()}>
+          <Tooltip
+            title={new Date(
+              Number(message.sentAtNs / 1000000n),
+            ).toLocaleTimeString()}
+          >
             <Typography variant="caption" className={classes.chatTimestamp}>
-              {message.sent.toLocaleTimeString()}
+              {new Date(
+                Number(message.sentAtNs / 1000000n),
+              ).toLocaleTimeString()}
             </Typography>
           </Tooltip>
         </Box>

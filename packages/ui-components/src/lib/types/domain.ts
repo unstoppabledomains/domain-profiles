@@ -89,6 +89,7 @@ export enum DomainProfileKeys {
   AuthAddress = 'authAddress',
   AuthDomain = 'authDomain',
   Messaging = 'web3-messaging',
+  MessagingIntro = 'web3-messaging-intro',
   Signature = 'domain-sig',
   Resolution = 'reverse-resolution',
   GenericKeyValue = 'kv',

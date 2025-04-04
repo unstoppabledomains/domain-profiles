@@ -346,11 +346,11 @@ export const TokensPortfolio: React.FC<TokensPortfolioProps> = ({
                   </Grid>
                 ))
               ) : !isError && groupedTokens.length > 0 ? (
-                groupedTokens.map(token => (
+                groupedTokens.map((token, index) => (
                   <Grid
                     item
                     xs={12}
-                    key={`${token.type}/${token.symbol}/${token.ticker}/${token.walletAddress}`}
+                    key={`${token.type}/${token.symbol}/${token.ticker}/${token.walletAddress}-${index}`}
                   >
                     <Box className={classes.tokenContainer}>
                       <Token

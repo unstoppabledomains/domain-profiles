@@ -63,7 +63,7 @@ import {
   saveMpcCustodyState,
 } from '../../lib/wallet/storage/state';
 import {isEthAddress} from '../Chat/protocol/resolution';
-import {localStorageWrapper} from '../Chat/storage';
+import {clearMessagingConfig, localStorageWrapper} from '../Chat/storage';
 import {DomainProfileTabType} from '../Manage/DomainProfile';
 import ManageInput from '../Manage/common/ManageInput';
 import type {ManageTabProps} from '../Manage/common/types';
@@ -174,8 +174,10 @@ export const WalletProvider: React.FC<
     isHeaderClicked: boolean;
     setIsHeaderClicked?: (v: boolean) => void;
     setAuthAddress?: (v: string) => void;
+    setShowMessagesInHeader?: (v: boolean) => void;
     initialState?: WalletConfigState;
     initialLoginState?: TokenRefreshResponse;
+    showMessages?: boolean;
     fullScreenModals?: boolean;
     forceRememberOnDevice?: boolean;
     loginClicked?: boolean;
@@ -192,9 +194,11 @@ export const WalletProvider: React.FC<
   setIsFetching,
   setAuthAddress,
   isHeaderClicked,
+  setShowMessagesInHeader,
   setIsHeaderClicked,
   mode = 'basic',
   fullScreenModals,
+  showMessages,
   forceRememberOnDevice = false,
   emailAddress: initialEmailAddress,
   recoveryPhrase: initialRecoveryPhrase,
@@ -950,9 +954,14 @@ export const WalletProvider: React.FC<
   };
 
   const handleSave = async () => {
+    // indicate saving in progress
     setIsSaving(true);
     setIsDirty(false);
 
+    // clear various storage state
+    await clearMessagingConfig();
+
+    // process operation specific logic
     if (configState === WalletConfigState.NeedsOnboarding) {
       // switch to onboarding mode
       processNeedsOnboarding();
@@ -1393,7 +1402,9 @@ export const WalletProvider: React.FC<
                 isWalletLoading={isWalletLoading}
                 isHeaderClicked={isHeaderClicked}
                 setIsHeaderClicked={setIsHeaderClicked}
+                setShowMessagesInHeader={setShowMessagesInHeader}
                 externalBanner={banner}
+                showMessages={showMessages}
               />
             )
           ))

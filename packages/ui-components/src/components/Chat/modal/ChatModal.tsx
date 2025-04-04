@@ -25,13 +25,17 @@ import type {Theme} from '@mui/material/styles';
 import {styled, useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import type {IMessageIPFS} from '@pushprotocol/restapi';
-import {ContentTypeText} from '@xmtp/content-type-text';
 import type {
   DecodedMessage,
   Conversation as XmtpConversation,
-} from '@xmtp/xmtp-js';
+} from '@xmtp/browser-sdk';
+import {ConsentState} from '@xmtp/browser-sdk';
+import {ContentTypeText} from '@xmtp/content-type-text';
+import Bluebird from 'bluebird';
+import {ethers} from 'ethers';
 import React, {useEffect, useState} from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import useAsyncEffect from 'use-async-effect';
 
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -57,7 +61,10 @@ import {getAddressMetadata} from '../protocol/resolution';
 import type {ConversationMeta} from '../protocol/xmtp';
 import {
   getConversation,
+  getConversationById,
+  getConversationPeerAddress,
   getConversations,
+  getXmtpInboxId,
   isAllowListed,
 } from '../protocol/xmtp';
 import {localStorageWrapper} from '../storage';
@@ -73,112 +80,109 @@ import Community from './group/Community';
 import CommunityList from './group/CommunityList';
 import NotificationPreview from './notification/NotificationPreview';
 
-const useStyles = makeStyles()((theme: Theme) => ({
-  chatModalContainer: {
-    position: 'fixed',
-    bottom: '15px',
-    right: '10px',
-    width: '450px',
-    height: '600px',
-    margin: theme.spacing(1),
-    boxShadow: theme.shadows[6],
-    zIndex: 200,
-  },
-  chatModalContentContainer: {
-    padding: theme.spacing(1),
-    border: 'none',
-    backgroundColor: 'transparent',
-    [theme.breakpoints.down('sm')]: {
+const useStyles = makeStyles<{fullScreen?: boolean}>()(
+  (theme: Theme, {fullScreen}) => ({
+    chatModalContainer: {
+      position: 'fixed',
+      bottom: '15px',
+      right: '10px',
+      width: '450px',
+      height: '600px',
+      margin: theme.spacing(1),
+      boxShadow: theme.shadows[6],
+      zIndex: 200,
+    },
+    chatModalContentContainer: {
+      padding: fullScreen ? 0 : theme.spacing(1),
+      border: 'none',
+      backgroundColor: 'transparent',
+    },
+    chatMobileContainer: {
+      width: '100%',
+      height: '100%',
+      margin: 0,
+      backgroundColor: 'transparent',
+    },
+    chatMobilePaper: {
+      minHeight: '600px',
+      width: '520px',
+    },
+    loadingContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      width: '100%',
+      alignItems: 'center',
+      textAlign: 'center',
+      justifyContent: 'center',
+      marginTop: theme.spacing(10),
+      color: theme.palette.neutralShades[400],
+    },
+    loadingTab: {
+      display: 'flex',
+      alignItems: 'center',
+      height: '100%',
+      marginTop: theme.spacing(-3),
+    },
+    loadingText: {
+      marginTop: theme.spacing(1),
+      color: 'inherit',
+    },
+    loadingSpinner: {
+      color: 'inherit',
+    },
+    headerActionContainer: {
+      display: 'flex',
+      color: theme.palette.neutralShades[600],
+      marginRight: theme.spacing(1),
+    },
+    headerTitleContainer: {
+      display: 'flex',
+      width: '100%',
+      alignItems: 'center',
+    },
+    newChatIcon: {
+      color: theme.palette.primary.main,
+      transform: 'rotateY(180deg)',
+      marginTop: '2px',
+    },
+    headerActionIcon: {
+      marginLeft: theme.spacing(1),
+      cursor: 'pointer',
+    },
+    tabHeaderContainer: {
+      marginTop: theme.spacing(-3),
+      width: '100%',
+    },
+    tabContentContainer: {
+      width: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      overflowY: 'auto',
+      overflowX: 'hidden',
+      overscrollBehavior: 'contain',
+      height: fullScreen ? 'calc(100vh - 175px)' : '425px',
+    },
+    tabList: {
+      marginRight: theme.spacing(-4),
+    },
+    tabContentItem: {
+      marginLeft: theme.spacing(-3),
+      marginRight: theme.spacing(-3),
+    },
+    searchContainer: {
+      marginTop: theme.spacing(2),
+    },
+    infiniteScroll: {
+      margin: 0,
       padding: 0,
     },
-  },
-  chatMobileContainer: {
-    width: '100%',
-    height: '100%',
-    margin: 0,
-    backgroundColor: 'transparent',
-  },
-  chatMobilePaper: {
-    backgroundColor: theme.palette.background.default,
-  },
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    width: '100%',
-    alignItems: 'center',
-    textAlign: 'center',
-    justifyContent: 'center',
-    marginTop: theme.spacing(10),
-    color: theme.palette.neutralShades[400],
-  },
-  loadingTab: {
-    display: 'flex',
-    alignItems: 'center',
-    height: '100%',
-    marginTop: theme.spacing(-3),
-  },
-  loadingText: {
-    marginTop: theme.spacing(1),
-    color: 'inherit',
-  },
-  loadingSpinner: {
-    color: 'inherit',
-  },
-  headerActionContainer: {
-    display: 'flex',
-    color: theme.palette.neutralShades[600],
-    marginRight: theme.spacing(1),
-  },
-  headerTitleContainer: {
-    display: 'flex',
-    width: '100%',
-    alignItems: 'center',
-  },
-  newChatIcon: {
-    color: theme.palette.primary.main,
-    transform: 'rotateY(180deg)',
-    marginTop: '2px',
-  },
-  headerActionIcon: {
-    marginLeft: theme.spacing(1),
-    cursor: 'pointer',
-  },
-  tabHeaderContainer: {
-    marginTop: theme.spacing(-3),
-    width: '100%',
-  },
-  tabContentContainer: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    overscrollBehavior: 'contain',
-    height: '425px',
-    [theme.breakpoints.down('sm')]: {
-      height: 'calc(100vh - 175px)',
+    viewRequestsButton: {
+      marginTop: theme.spacing(-1),
+      marginBottom: theme.spacing(3),
     },
-  },
-  tabList: {
-    marginRight: theme.spacing(-4),
-  },
-  tabContentItem: {
-    marginLeft: theme.spacing(-3),
-    marginRight: theme.spacing(-3),
-  },
-  searchContainer: {
-    marginTop: theme.spacing(2),
-  },
-  infiniteScroll: {
-    margin: 0,
-    padding: 0,
-  },
-  viewRequestsButton: {
-    marginTop: theme.spacing(-1),
-    marginBottom: theme.spacing(3),
-  },
-}));
+  }),
+);
 
 const StyledTabBadge = styled(Badge)<BadgeProps>(({theme}) => ({
   '& .MuiBadge-badge': {
@@ -208,8 +212,15 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   onPopoutClick,
   setActiveChat,
   setActiveCommunity,
+  fullScreen,
+  variant = 'docked',
 }) => {
-  const {cx, classes} = useStyles();
+  // mobile behavior flags
+  const theme = useTheme();
+  const fullScreenModal =
+    useMediaQuery(theme.breakpoints.down('sm')) || fullScreen;
+
+  const {cx, classes} = useStyles({fullScreen: fullScreenModal});
   const [t] = useTranslationContext();
   const {data: featureFlags} = useFeatureFlags(false, authDomain);
   const [loadingText, setLoadingText] = useState<string>();
@@ -234,6 +245,8 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   const [conversationMetadata, setConversationMetadata] =
     useState<AddressResolution>();
   const [conversations, setConversations] = useState<ConversationMeta[]>();
+  const [visibleConversations, setVisibleConversations] =
+    useState<ConversationMeta[]>();
   const [conversationRequestView, setConversationRequestView] =
     useState<boolean>();
   const [notifications, setNotifications] = useState<PayloadData[]>([]);
@@ -245,25 +258,14 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   const {fetchNotifications, loading: notificationsLoading} =
     useFetchNotifications(getCaip10Address(pushAccount));
 
-  // mobile behavior flag
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  // conversations to display in the current inbox view
-  const visibleConversations = conversations?.filter(c =>
-    conversationRequestView
-      ? !acceptedTopics.includes(c.conversation.topic) &&
-        !blockedTopics.includes(c.conversation.topic)
-      : acceptedTopics.includes(c.conversation.topic),
-  );
-
-  useEffect(() => {
+  useAsyncEffect(async () => {
     if (open) {
-      // browser settings check
-      void checkBrowserSettings();
-
-      // load user settings
-      void loadUserProfile();
+      await Promise.all([
+        // browser settings check
+        checkBrowserSettings(),
+        // load user settings
+        loadUserProfile(),
+      ]);
 
       // tab handling
       if (tabValue === TabType.Chat) {
@@ -275,16 +277,16 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         }
         if (activeChat) {
           setActiveChatHandled(true);
-          void handleOpenChatFromName(activeChat);
+          await handleOpenChatFromName(activeChat);
         } else {
-          void loadConversations(false);
+          await loadConversations(false);
         }
       } else if (tabValue === TabType.Notification) {
-        void loadNotifications(true);
+        await loadNotifications(true);
       }
     } else if (conversations === undefined) {
       // preload conversations to improve perceived performance
-      void loadConversations(false);
+      await loadConversations(false);
     }
   }, [activeChat, activeChatHandled, open, tabValue]);
 
@@ -324,12 +326,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     if (getRequestCount() === 0) {
       setConversationRequestView(false);
     }
-    if (conversations) {
-      setConversations([...conversations]);
-    }
   }, [acceptedTopics, blockedTopics]);
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     if (!conversations || conversations.length === 0) {
       return;
     }
@@ -337,31 +336,61 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     // set initial topic consent values
     if (acceptedTopics.length === 0 && blockedTopics.length === 0) {
       setAcceptedTopics(
-        conversations
-          .filter(
-            c =>
-              c.consentState === 'allowed' ||
-              isAllowListed(c.conversation.peerAddress),
-          )
-          .map(c => c.conversation.topic),
+        (
+          await Bluebird.filter(conversations, async c => {
+            const peerAddress = await getConversationPeerAddress(
+              c.conversation,
+            );
+            if (!peerAddress) {
+              return false;
+            }
+            return (
+              c.consentState === ConsentState.Allowed ||
+              isAllowListed(peerAddress)
+            );
+          })
+        ).map(c => c.conversation.id),
       );
       setBlockedTopics(
-        conversations
-          .filter(
-            c =>
-              c.consentState === 'denied' &&
-              !isAllowListed(c.conversation.peerAddress),
-          )
-          .map(c => c.conversation.topic),
+        (
+          await Bluebird.filter(conversations, async c => {
+            const peerAddress = await getConversationPeerAddress(
+              c.conversation,
+            );
+            if (!peerAddress) {
+              return false;
+            }
+            return (
+              c.consentState === ConsentState.Denied &&
+              !isAllowListed(peerAddress)
+            );
+          })
+        ).map(c => c.conversation.id),
       );
     }
   }, [conversations]);
 
-  useEffect(() => {
-    if (!visibleConversations) {
+  useAsyncEffect(async () => {
+    if (!conversations || conversations.length === 0) {
       return;
     }
 
+    // conversations to display in the current inbox view
+    setVisibleConversations(
+      await Bluebird.filter(conversations, async c => {
+        const peerAddress = await getConversationPeerAddress(c.conversation);
+        if (!peerAddress) {
+          return false;
+        }
+        return conversationRequestView
+          ? !acceptedTopics.includes(c.conversation.id) &&
+              !blockedTopics.includes(c.conversation.id)
+          : acceptedTopics.includes(c.conversation.id);
+      }),
+    );
+  }, [conversations, acceptedTopics, blockedTopics, conversationRequestView]);
+
+  useEffect(() => {
     // disable search panel if not on the chat tab
     if (tabValue !== TabType.Chat) {
       setConversationSearch(false);
@@ -370,9 +399,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
     // enable search panel if no conversations are visible
     if (searchValue !== '') {
-      const visibleNonFilteredConversations = visibleConversations.filter(
-        c => c.visible,
-      );
+      const visibleNonFilteredConversations = (
+        visibleConversations || []
+      ).filter(c => c.visible);
       setConversationSearch(visibleNonFilteredConversations.length === 0);
     }
   }, [visibleConversations, searchValue, tabValue]);
@@ -544,8 +573,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     // find an existing conversation and update it in the timeline
     const conversationIndex = localConversations?.findIndex(
       item =>
-        item.conversation.topic.toLowerCase() ===
-        msg.conversation.topic.toLowerCase(),
+        item.conversation.id.toLowerCase() === msg.conversationId.toLowerCase(),
     );
 
     // manage timeline depending on state
@@ -555,8 +583,11 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       conversationIndex >= 0
     ) {
       // update the existing entry
-      localConversations[conversationIndex].preview = getMessagePreview(msg);
-      localConversations[conversationIndex].timestamp = msg.sent.getTime();
+      localConversations[conversationIndex].preview =
+        await getMessagePreview(msg);
+      localConversations[conversationIndex].timestamp = Number(
+        msg.sentAtNs / 1000000n,
+      );
 
       // resort the timeline
       setConversations([
@@ -569,14 +600,13 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     else if (localConversations) {
       // create new conversation
       const newConversation: ConversationMeta = {
-        conversation: msg.conversation,
-        preview: getMessagePreview(msg),
-        timestamp: msg.sent.getTime(),
+        conversation: await getConversationById(msg.conversationId),
+        preview: await getMessagePreview(msg),
+        timestamp: Number(msg.sentAtNs / 1000000n),
         consentState:
-          msg.senderAddress.toLowerCase() ===
-          msg.conversation.clientAddress.toLowerCase()
-            ? 'allowed' // messages sent by client are allowed by default
-            : 'unknown', // messages received by client are unknown by default
+          msg.senderInboxId === (await getXmtpInboxId())
+            ? ConsentState.Allowed // messages sent by client are allowed by default
+            : ConsentState.Unknown, // messages received by client are unknown by default
         visible: true,
       };
 
@@ -589,25 +619,29 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       ]);
 
       // associate the new conversation with the wallet address
-      await registerClientTopics(msg.conversation.clientAddress, [
-        {
-          topic: msg.conversation.topic,
-          peerAddress: msg.conversation.peerAddress,
-        },
-      ]);
+      const peerAddress = await getConversationPeerAddress(
+        newConversation.conversation,
+      );
+      if (peerAddress) {
+        await registerClientTopics(await getXmtpInboxId(), [
+          {
+            topic: msg.conversationId,
+            peerAddress,
+          },
+        ]);
+      }
     }
     // initialize a new timeline
     else {
       // create new conversation
       const newConversation: ConversationMeta = {
-        conversation: msg.conversation,
-        preview: getMessagePreview(msg),
-        timestamp: msg.sent.getTime(),
+        conversation: await getConversationById(msg.conversationId),
+        preview: await getMessagePreview(msg),
+        timestamp: Number(msg.sentAtNs / 1000000n),
         consentState:
-          msg.senderAddress.toLowerCase() ===
-          msg.conversation.clientAddress.toLowerCase()
-            ? 'allowed' // messages sent by client are allowed by default
-            : 'unknown', // messages received by client are unknown by default
+          msg.senderInboxId === (await getXmtpInboxId())
+            ? ConsentState.Allowed // messages sent by client are allowed by default
+            : ConsentState.Unknown, // messages received by client are unknown by default
         visible: true,
       };
 
@@ -615,12 +649,17 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       setConversations([newConversation]);
 
       // associate the new conversation with the wallet address
-      await registerClientTopics(msg.conversation.clientAddress, [
-        {
-          topic: msg.conversation.topic,
-          peerAddress: msg.conversation.peerAddress,
-        },
-      ]);
+      const peerAddress = await getConversationPeerAddress(
+        newConversation.conversation,
+      );
+      if (peerAddress) {
+        await registerClientTopics(await getXmtpInboxId(), [
+          {
+            topic: msg.conversationId,
+            peerAddress,
+          },
+        ]);
+      }
     }
 
     // set notification dot if needed
@@ -632,10 +671,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     }
   };
 
-  const getMessagePreview = (msg: DecodedMessage): string => {
+  const getMessagePreview = async (msg: DecodedMessage): Promise<string> => {
     return `${
-      msg.senderAddress.toLowerCase() ===
-      msg.conversation.clientAddress.toLowerCase()
+      msg.senderInboxId === (await getXmtpInboxId())
         ? `${t('common.you')}: `
         : ''
     }${
@@ -673,33 +711,14 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
   const handleOpenChatFromAddress = async (peer: AddressResolution) => {
     try {
-      // open chat from already listed conversation records
-      const localConversations =
-        conversations && conversations.length > 0
-          ? conversations
-          : await loadConversations();
-      if (localConversations) {
-        const matchingConversation = localConversations.filter(
-          c =>
-            c.conversation.peerAddress.toLowerCase() ===
-            peer.address.toLowerCase(),
-        );
-        if (matchingConversation.length > 0) {
-          handleOpenChat(matchingConversation[0].conversation);
-          return;
-        }
-      }
-
       // open the chat using direct lookup
       const conversationLower = await getConversation(
-        xmtpAddress,
         peer.address.toLowerCase(),
       );
       if (conversationLower) {
         try {
           const conversationNormalized = await getConversation(
-            xmtpAddress,
-            conversationLower.peerAddress,
+            ethers.utils.getAddress(peer.address),
           );
           if (conversationNormalized) {
             handleOpenChat(conversationNormalized);
@@ -740,19 +759,20 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     setActiveCommunity(undefined);
   };
 
-  const handleConversationMessage = (
+  const handleConversationMessage = async (
     msg: DecodedMessage,
     conversation?: XmtpConversation,
   ) => {
     if (!conversation || !conversations) return;
     const conversationIndex = conversations.findIndex(
       item =>
-        item.conversation.topic.toLowerCase() ===
-        conversation.topic.toLowerCase(),
+        item.conversation.id.toLowerCase() === conversation.id.toLowerCase(),
     );
     if (conversationIndex >= 0 && conversations[conversationIndex]) {
-      conversations[conversationIndex].preview = getMessagePreview(msg);
-      conversations[conversationIndex].timestamp = msg.sent.getTime();
+      conversations[conversationIndex].preview = await getMessagePreview(msg);
+      conversations[conversationIndex].timestamp = Number(
+        msg.sentAtNs / 1000000n,
+      );
       setConversations([
         ...conversations.sort((a, b): number => {
           return b.timestamp - a.timestamp;
@@ -762,13 +782,12 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       setConversations([
         {
           conversation,
-          preview: getMessagePreview(msg),
-          timestamp: msg.sent.getTime(),
+          preview: await getMessagePreview(msg),
+          timestamp: Number(msg.sentAtNs / 1000000n),
           consentState:
-            msg.senderAddress.toLowerCase() ===
-            conversation.clientAddress.toLowerCase()
-              ? 'allowed' // messages sent by client are allowed by default
-              : 'unknown', // messages received by client are unknown by default
+            msg.senderInboxId === (await getXmtpInboxId())
+              ? ConsentState.Allowed // messages sent by client are allowed by default
+              : ConsentState.Unknown, // messages received by client are unknown by default
           visible: true,
         },
         ...conversations.sort((a, b): number => {
@@ -811,8 +830,8 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     return (
       conversations?.filter(
         c =>
-          !acceptedTopics.includes(c.conversation.topic) &&
-          !blockedTopics.includes(c.conversation.topic),
+          !acceptedTopics.includes(c.conversation.id) &&
+          !blockedTopics.includes(c.conversation.id),
       ).length || 0
     );
   };
@@ -822,14 +841,14 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
   // display wrapper element
   const wrapChatComponent = (children: React.ReactNode) => {
-    return isMobile ? (
+    return variant === 'modal' || fullScreenModal ? (
       <Modal
         open={open}
         onClose={onClose}
         noModalHeader={true}
         noContentMargin={true}
         noContentPadding={true}
-        fullScreen={true}
+        fullScreen={fullScreenModal}
         dialogPaperStyle={classes.chatMobilePaper}
       >
         <Box className={classes.chatMobileContainer}>{children}</Box>
@@ -863,6 +882,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         acceptedTopics={acceptedTopics}
         blockedTopics={blockedTopics}
         storageApiKey={userProfile?.storage?.apiKey}
+        fullScreen={fullScreenModal}
         setAcceptedTopics={setAcceptedTopics}
         setBlockedTopics={setBlockedTopics}
         setWeb3Deps={setWeb3Deps}
@@ -881,6 +901,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         pushKey={pushKey}
         incomingMessage={incomingGroup}
         storageApiKey={userProfile?.storage?.apiKey}
+        fullScreen={fullScreenModal}
         setWeb3Deps={setWeb3Deps}
         onBack={handleCloseChat}
         onClose={onClose}
@@ -902,7 +923,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
       >
         <CardHeader
           title={
-            isMobile ? (
+            fullScreenModal ? (
               <Box className={classes.headerTitleContainer}>
                 <IconButton onClick={onClose}>
                   <ArrowBackOutlinedIcon />
@@ -931,7 +952,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                   />
                 </Tooltip>
               )}
-              {!isMobile && (
+              {!fullScreenModal && (
                 <Tooltip title={t('common.close')}>
                   <CloseIcon
                     className={classes.headerActionIcon}
@@ -1044,14 +1065,14 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                     {visibleConversations && visibleConversations.length > 0 ? (
                       visibleConversations.map(c => (
                         <ConversationPreview
-                          key={c.conversation.topic}
+                          key={c.conversation.id}
                           selectedCallback={handleOpenChat}
                           searchTermCallback={(visible: boolean) =>
                             handleSearchCallback(c, visible)
                           }
                           searchTerm={searchValue}
                           acceptedTopics={acceptedTopics}
-                          skipObserver={isMobile}
+                          skipObserver={fullScreenModal}
                           conversation={c}
                         />
                       ))
@@ -1078,7 +1099,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                         {requestCount === 0 && (
                           <ConversationSuggestions
                             address={xmtpAddress}
-                            conversations={conversations}
+                            conversations={visibleConversations}
                             onSelect={handleOpenChatFromAddress}
                             onSuggestionsLoaded={setSuggestions}
                           />
@@ -1203,6 +1224,10 @@ export type ChatModalProps = {
   onPopoutClick?: (address?: string) => void;
   setActiveChat: (v?: string) => void;
   setActiveCommunity: (v?: SerializedCryptoWalletBadge) => void;
+  fullScreen?: boolean;
+  variant?: ChatModalVariant;
 };
+
+export type ChatModalVariant = 'modal' | 'docked';
 
 export default ChatModal;

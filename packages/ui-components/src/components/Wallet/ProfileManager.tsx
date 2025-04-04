@@ -1,5 +1,3 @@
-import {fetcher} from '@xmtp/proto';
-import {Signature} from '@xmtp/xmtp-js';
 import {Base64} from 'js-base64';
 import React, {useEffect, useState} from 'react';
 
@@ -8,6 +6,7 @@ import config from '@unstoppabledomains/config';
 import {getProfileData} from '../../actions/domainProfileActions';
 import {AccessWalletModal} from '../../components/Wallet/AccessWallet';
 import useWeb3Context from '../../hooks/useWeb3Context';
+import {isDomainValidForManagement} from '../../lib';
 import {fetchApi} from '../../lib/fetchApi';
 import {sleep} from '../../lib/sleep';
 import {
@@ -17,12 +16,7 @@ import {
 } from '../../lib/types/domain';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import {signMessage as signPushMessage} from '../Chat/protocol/push';
-import {signMessage as signXmtpMessage} from '../Chat/protocol/xmtp';
-import {
-  getPushLocalKey,
-  getXmtpLocalKey,
-  localStorageWrapper,
-} from '../Chat/storage';
+import {getPushLocalKey, localStorageWrapper} from '../Chat/storage';
 
 export type ManagerProps = {
   domain: string;
@@ -34,7 +28,6 @@ export type ManagerProps = {
   onSignature: (signature: string, expiry: string) => void;
   onFailed?: (reason?: string) => void;
   useLocalPushKey?: boolean;
-  useLocalXmtpKey?: boolean;
   forceWalletConnected?: boolean;
   closeAfterSignature?: boolean;
 };
@@ -56,7 +49,6 @@ const Manager: React.FC<ManagerProps> = ({
   onFailed,
   forceWalletConnected,
   closeAfterSignature,
-  useLocalXmtpKey = true,
   useLocalPushKey = false,
 }) => {
   const {web3Deps, messageToSign} = useWeb3Context();
@@ -146,6 +138,12 @@ const Manager: React.FC<ManagerProps> = ({
   // handlePrepareSignature retrieves the message that must be signed for the profile
   // management request.
   const handlePrepareSignature = async () => {
+    // validate the domain is in expected format
+    if (!isDomainValidForManagement(domain)) {
+      onFailed?.(`Invalid domain: ${domain}`);
+      return;
+    }
+
     // check domain owner address MPC status
     if (!isMpcWallet) {
       const publicData = await getProfileData(domain, [
@@ -192,22 +190,6 @@ const Manager: React.FC<ManagerProps> = ({
     );
     if (!responseBody) {
       onFailed?.(`Authentication error for ${domain}`);
-      return;
-    }
-
-    // sign with locally stored XMTP key if available
-    const localXmtpKey = await getXmtpLocalKey(ownerAddress);
-    if (localXmtpKey && useLocalXmtpKey) {
-      const xmtpSignatureBytes = new Signature(
-        await signXmtpMessage(ownerAddress, responseBody.message),
-      ).toBytes();
-      const xmtpSignature = fetcher.b64Encode(
-        xmtpSignatureBytes,
-        0,
-        xmtpSignatureBytes.length,
-      );
-      setSignature(xmtpSignature);
-      setExpiry(String(responseBody.headers['x-auth-expires']));
       return;
     }
 

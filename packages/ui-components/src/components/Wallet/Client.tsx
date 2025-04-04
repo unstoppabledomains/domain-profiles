@@ -1,3 +1,4 @@
+import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import HistoryIcon from '@mui/icons-material/History';
@@ -14,6 +15,7 @@ import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import Tab from '@mui/material/Tab';
@@ -46,7 +48,7 @@ import {
   getWalletNftCollections,
 } from '../../actions/nftActions';
 import {getWalletStorageData} from '../../actions/walletStorageActions';
-import {useWeb3Context} from '../../hooks';
+import {useUnstoppableMessaging, useWeb3Context} from '../../hooks';
 import useFireblocksState from '../../hooks/useFireblocksState';
 import type {Nft, SerializedWalletBalance, TokenEntry} from '../../lib';
 import {
@@ -63,7 +65,8 @@ import {
 import {notifyEvent} from '../../lib/error';
 import type {TransactionLockStatusResponse} from '../../lib/types/fireBlocks';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
-import {localStorageWrapper} from '../Chat';
+import {UnstoppableMessaging, localStorageWrapper} from '../Chat';
+import CallToAction from '../Chat/modal/CallToAction';
 import {isEthAddress} from '../Chat/protocol/resolution';
 import {DomainProfileList} from '../Domain';
 import {DomainProfileModal} from '../Manage';
@@ -216,6 +219,12 @@ const useStyles = makeStyles<{isMobile: boolean}>()(
       width: '20px',
       height: '20px',
     },
+    loadingSpinner: {
+      width: '20px',
+      height: '20px',
+      marginRight: theme.spacing(1),
+      color: theme.palette.wallet.text.secondary,
+    },
   }),
 );
 
@@ -228,9 +237,11 @@ export const Client: React.FC<ClientProps> = ({
   onRefresh,
   onSecurityCenterClicked,
   setIsHeaderClicked,
+  setShowMessagesInHeader,
   isHeaderClicked,
   isWalletLoading,
   externalBanner,
+  showMessages,
 }) => {
   // mobile behavior flag
   const theme = useTheme();
@@ -255,7 +266,12 @@ export const Client: React.FC<ClientProps> = ({
   const isSellEnabled = cryptoValue >= 15;
   const refreshMutex = new Mutex();
 
+  // chat state
+  const {setOpenChat, openChat, isChatReady} = useUnstoppableMessaging();
+  const [isXmtpIntroConfirmed, setIsXmtpIntroConfirmed] = useState(false);
+
   // component state variables
+  const [isChat, setIsChat] = useState(false);
   const [isSend, setIsSend] = useState(false);
   const [isReceive, setIsReceive] = useState(false);
   const [isBuy, setIsBuy] = useState(false);
@@ -303,9 +319,26 @@ export const Client: React.FC<ClientProps> = ({
         : undefined,
     ]);
 
+    // load messaging intro status
+    if (
+      await localStorageWrapper.getItem(DomainProfileKeys.MessagingIntro, {
+        type: 'wallet',
+        accessToken,
+        accountId: getAccountIdFromBootstrapState(clientState),
+      })
+    ) {
+      setIsXmtpIntroConfirmed(true);
+    }
+
     // set wallet lock status
     setTxLockStatus(lockStatus);
   }, [accessToken]);
+
+  useEffect(() => {
+    if (setShowMessagesInHeader) {
+      setShowMessagesInHeader(isEmptyState);
+    }
+  }, [setShowMessagesInHeader, isEmptyState]);
 
   // banner management
   useAsyncEffect(async () => {
@@ -457,6 +490,12 @@ export const Client: React.FC<ClientProps> = ({
     }
     showPasswordCtaTimer = setTimeout(showPasswordCta, 2000);
   }, [accessToken, cryptoValue]);
+
+  useAsyncEffect(async () => {
+    if (isChat && isChatReady && isXmtpIntroConfirmed) {
+      setOpenChat(t('push.messages'));
+    }
+  }, [isChat, isChatReady, isXmtpIntroConfirmed]);
 
   // wrapper for the refresh method
   const refresh = async (showSpinner?: boolean, fields?: string[]) => {
@@ -730,6 +769,17 @@ export const Client: React.FC<ClientProps> = ({
     setIsSwap(false);
   };
 
+  const handleClickedChat = () => {
+    // activate the chat panel
+    setIsChat(true);
+
+    // deactivate other panels
+    setIsSend(false);
+    setIsReceive(false);
+    setIsBuy(false);
+    setIsSwap(false);
+  };
+
   const handleClickedSend = () => {
     if (!accessToken) {
       if (!cryptoValue) {
@@ -738,7 +788,6 @@ export const Client: React.FC<ClientProps> = ({
       } else if (onClaimWallet) {
         onClaimWallet();
       }
-
       return;
     }
 
@@ -746,6 +795,7 @@ export const Client: React.FC<ClientProps> = ({
     setIsReceive(false);
     setIsBuy(false);
     setIsSwap(false);
+    setIsChat(false);
   };
 
   const handleClickedSwap = () => {
@@ -763,6 +813,7 @@ export const Client: React.FC<ClientProps> = ({
     setIsBuy(false);
     setIsSend(false);
     setIsReceive(false);
+    setIsChat(false);
   };
 
   const handleClickedBuy = () => {
@@ -770,6 +821,7 @@ export const Client: React.FC<ClientProps> = ({
     setIsSend(false);
     setIsReceive(false);
     setIsSwap(false);
+    setIsChat(false);
   };
 
   const handleClickedReceive = () => {
@@ -777,6 +829,7 @@ export const Client: React.FC<ClientProps> = ({
     setIsSend(false);
     setIsBuy(false);
     setIsSwap(false);
+    setIsChat(false);
   };
 
   const handleCancelAction = () => {
@@ -785,6 +838,12 @@ export const Client: React.FC<ClientProps> = ({
     setIsReceive(false);
     setIsBuy(false);
     setIsSwap(false);
+    setIsChat(false);
+
+    // if message tab was clicked, go to home
+    if (tabValue === ClientTabType.Messages) {
+      setTabValue(ClientTabType.Portfolio);
+    }
   };
 
   const handleCancelToken = () => {
@@ -801,6 +860,24 @@ export const Client: React.FC<ClientProps> = ({
     window.open(config.WALLETS.LANDING_PAGE_URL, '_blank');
   };
 
+  const handleXmtpLearnMoreClicked = () => {
+    window.open('https://xmtp.org', '_blank');
+  };
+
+  const handleXmtpOpenInboxClicked = async () => {
+    setOpenChat(t('push.messages'));
+    setIsXmtpIntroConfirmed(true);
+    await localStorageWrapper.setItem(
+      DomainProfileKeys.MessagingIntro,
+      String(Date.now()),
+      {
+        type: 'wallet',
+        accessToken,
+        accountId: getAccountIdFromBootstrapState(clientState),
+      },
+    );
+  };
+
   const getTabFields = (tv: ClientTabType) => {
     return tv === ClientTabType.Transactions
       ? ['native', 'price', 'token', 'tx']
@@ -812,7 +889,8 @@ export const Client: React.FC<ClientProps> = ({
     tabValue === ClientTabType.Domains
       ? // show only domain value on domain tab
         domainsValue
-      : tabValue === ClientTabType.Portfolio
+      : tabValue === ClientTabType.Portfolio ||
+        tabValue === ClientTabType.Messages
       ? // show only crypto value on crypto tab
         cryptoValue
       : tabValue === ClientTabType.Transactions
@@ -1054,6 +1132,50 @@ export const Client: React.FC<ClientProps> = ({
                     />
                   </Box>
                 </TabPanel>
+                <TabPanel
+                  value={ClientTabType.Messages}
+                  className={classes.tabContentItem}
+                >
+                  <Box className={classes.listContainer}>
+                    {(!isXmtpIntroConfirmed || !openChat) && (
+                      <CallToAction
+                        icon="ForumOutlinedIcon"
+                        title={
+                          isChatReady ? (
+                            t('push.yourInboxIsReady')
+                          ) : (
+                            <Box display="flex" alignItems="center">
+                              <CircularProgress
+                                className={classes.loadingSpinner}
+                                size={20}
+                              />
+                              {t('push.preparingChat')}
+                            </Box>
+                          )
+                        }
+                        subTitle={
+                          <Box width="350px">
+                            {t('push.preparingChatDescription')}
+                          </Box>
+                        }
+                        buttonText={
+                          isChatReady ? t('push.openInbox') : undefined
+                        }
+                        handleButtonClick={
+                          isChatReady ? handleXmtpOpenInboxClicked : undefined
+                        }
+                      >
+                        <Button
+                          variant="text"
+                          size="small"
+                          onClick={handleXmtpLearnMoreClicked}
+                        >
+                          {t('common.learnMore')}
+                        </Button>
+                      </CallToAction>
+                    )}
+                  </Box>
+                </TabPanel>
               </Grid>
             </Grid>
             <Box className={classes.footer}>
@@ -1095,15 +1217,17 @@ export const Client: React.FC<ClientProps> = ({
                     value={ClientTabType.Collectibles}
                     iconPosition="start"
                   />
-                  <Tab
-                    icon={
-                      <Tooltip title={t('common.domains')}>
-                        <LanguageOutlinedIcon />
-                      </Tooltip>
-                    }
-                    value={ClientTabType.Domains}
-                    iconPosition="start"
-                  />
+                  {!showMessages && (
+                    <Tab
+                      icon={
+                        <Tooltip title={t('common.domains')}>
+                          <LanguageOutlinedIcon />
+                        </Tooltip>
+                      }
+                      value={ClientTabType.Domains}
+                      iconPosition="start"
+                    />
+                  )}
                   <Tab
                     icon={
                       <Tooltip title={t('activity.title')}>
@@ -1113,6 +1237,18 @@ export const Client: React.FC<ClientProps> = ({
                     value={ClientTabType.Transactions}
                     iconPosition="start"
                   />
+                  {showMessages && (
+                    <Tab
+                      icon={
+                        <Tooltip title={t('push.chat')}>
+                          <ChatOutlinedIcon />
+                        </Tooltip>
+                      }
+                      onClick={handleClickedChat}
+                      value={ClientTabType.Messages}
+                      iconPosition="start"
+                    />
+                  )}
                 </TabList>
               )}
             </Box>
@@ -1170,6 +1306,17 @@ export const Client: React.FC<ClientProps> = ({
           />
         </Modal>
       )}
+      {showMessages && accessToken && (
+        <UnstoppableMessaging
+          address={address}
+          silentOnboard
+          hideIcon
+          variant="modal"
+          disableSupportBubble
+          inheritStyle
+          onClose={handleCancelAction}
+        />
+      )}
     </Box>
   );
 };
@@ -1184,13 +1331,16 @@ export type ClientProps = {
   onRefresh: (showSpinner?: boolean, fields?: string[]) => Promise<void>;
   isHeaderClicked: boolean;
   isWalletLoading?: boolean;
+  setShowMessagesInHeader?: (v: boolean) => void;
   setIsHeaderClicked?: (v: boolean) => void;
   externalBanner?: React.ReactNode;
+  showMessages?: boolean;
 };
 
 export enum ClientTabType {
   Collectibles = 'collectibles',
   Domains = 'domains',
+  Messages = 'messages',
   Portfolio = 'portfolio',
   Transactions = 'txns',
 }

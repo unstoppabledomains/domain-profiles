@@ -17,7 +17,6 @@ import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useUnstoppableMessaging} from '../../hooks';
-import {isChromeStorageSupported} from '../../hooks/useChromeStorage';
 import {useTranslationContext} from '../../lib';
 import {UnstoppableMessaging} from '../Chat';
 import DropDownMenu from '../DropDownMenu';
@@ -359,7 +358,8 @@ export const Header: React.FC<Props> = ({
           {showMessages && !!accessToken && (
             <UnstoppableMessaging
               address={address}
-              silentOnboard={!isChromeStorageSupported('local')}
+              variant="modal"
+              silentOnboard={true}
               hideIcon={true}
               onPopoutClick={onMessagePopoutClick}
               disableSupportBubble

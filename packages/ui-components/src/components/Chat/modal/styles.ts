@@ -272,7 +272,8 @@ export const useConversationComposeStyles = makeStyles<{
 
 export const useConversationStyles = makeStyles<{
   isChatRequest?: boolean;
-}>()((theme: Theme, {isChatRequest}) => ({
+  fullScreen?: boolean;
+}>()((theme: Theme, {isChatRequest, fullScreen}) => ({
   cardContainer: {
     backgroundColor: 'transparent',
     padding: theme.spacing(1),
@@ -305,7 +306,7 @@ export const useConversationStyles = makeStyles<{
     overflowY: 'auto',
     overflowX: 'hidden',
     overscrollBehavior: 'contain',
-    height: '430px',
+    height: fullScreen ? 'calc(100vh - 170px)' : '430px',
     [theme.breakpoints.down('sm')]: {
       height: 'calc(100vh - 170px)',
     },

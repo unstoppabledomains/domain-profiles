@@ -22,27 +22,31 @@ import {styled} from '@mui/material/styles';
 import type {
   DecodedMessage,
   Conversation as XmtpConversation,
-} from '@xmtp/xmtp-js';
-import {SortDirection} from '@xmtp/xmtp-js';
+} from '@xmtp/browser-sdk';
+import {ConsentState, ContentType, SortDirection} from '@xmtp/browser-sdk';
 import type {MouseEvent} from 'react';
 import React, {useEffect, useState} from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import truncateEthAddress from 'truncate-eth-address';
+import useAsyncEffect from 'use-async-effect';
 
 import config from '@unstoppabledomains/config';
 
-import type {
-  CurrenciesType} from '../../../../lib';
-import {
-  getBlockScanUrl,
-  isDomainValidForManagement,
-} from '../../../../lib';
+import type {CurrenciesType} from '../../../../lib';
+import {getBlockScanUrl, isDomainValidForManagement} from '../../../../lib';
 import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
 import {registerClientTopics} from '../../protocol/registration';
 import {getAddressMetadata} from '../../protocol/resolution';
-import {isAllowListed, waitForXmtpMessages} from '../../protocol/xmtp';
+import {
+  getConversationPeerAddress,
+  getXmtpInboxId,
+  getXmtpWalletAddress,
+  isAllowListed,
+  syncXmtpState,
+  waitForXmtpMessages,
+} from '../../protocol/xmtp';
 import type {AddressResolution} from '../../types';
 import CallToAction from '../CallToAction';
 import {useConversationStyles} from '../styles';
@@ -63,6 +67,7 @@ export const Conversation: React.FC<ConversationProps> = ({
   acceptedTopics,
   blockedTopics,
   storageApiKey,
+  fullScreen,
   setAcceptedTopics,
   setBlockedTopics,
   setWeb3Deps,
@@ -79,19 +84,26 @@ export const Conversation: React.FC<ConversationProps> = ({
   const [incomingMessage, setIncomingMessage] = useState<DecodedMessage>();
   const [avatarLink, setAvatarLink] = useState<string>();
   const [displayName, setDisplayName] = useState<string>();
+  const [clientAddress, setClientAddress] = useState<string>();
   const [peerAddress, setPeerAddress] = useState<string>();
   const [isChatRequest, setIsChatRequest] = useState<boolean>();
   const {classes} = useConversationStyles({
     isChatRequest,
+    fullScreen,
   });
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     if (!conversation && !metadata) {
       return;
     }
-    void loadAddressData();
-    void loadConversation();
+    await loadAddressData();
   }, [conversation, metadata]);
+
+  useAsyncEffect(async () => {
+    if (clientAddress) {
+      await loadConversation();
+    }
+  }, [clientAddress]);
 
   useEffect(() => {
     if (!incomingMessage) {
@@ -102,7 +114,10 @@ export const Conversation: React.FC<ConversationProps> = ({
   }, [incomingMessage]);
 
   const loadAddressData = async () => {
-    const address = conversation?.peerAddress || metadata?.address;
+    const conversationPeerAddress = conversation
+      ? await getConversationPeerAddress(conversation)
+      : undefined;
+    const address = conversationPeerAddress || metadata?.address;
     if (address) {
       const addressData =
         metadata?.name && metadata?.avatarUrl
@@ -110,6 +125,7 @@ export const Conversation: React.FC<ConversationProps> = ({
           : await getAddressMetadata(address);
       if (addressData?.name) setDisplayName(addressData.name);
       setPeerAddress(address);
+      setClientAddress(await getXmtpWalletAddress());
       setAvatarLink(addressData?.avatarUrl);
     }
   };
@@ -121,15 +137,19 @@ export const Conversation: React.FC<ConversationProps> = ({
     }
     try {
       const previousMessages = await conversation.messages({
-        limit: PAGE_SIZE,
-        direction: SortDirection.SORT_DIRECTION_DESCENDING,
-        endTime: xmtpMessages[xmtpMessages.length - 1].sent,
+        limit: BigInt(PAGE_SIZE),
+        direction: SortDirection.Descending,
+        sentBeforeNs: xmtpMessages[xmtpMessages.length - 1].sentAtNs,
+        contentTypes: [ContentType.Text, ContentType.RemoteAttachment],
       });
       if (previousMessages.length < PAGE_SIZE) {
         setHasMoreMessages(false);
       }
       if (previousMessages.length > 0) {
-        setXmtpMessages([...xmtpMessages, ...previousMessages.slice(1)]);
+        setXmtpMessages([
+          ...xmtpMessages,
+          ...previousMessages.filter(filterMessage),
+        ]);
       }
     } catch (e) {
       notifyEvent(e, 'error', 'Messaging', 'XMTP', {
@@ -142,25 +162,35 @@ export const Conversation: React.FC<ConversationProps> = ({
     try {
       // render the existing messages if available
       if (conversation) {
+        // sync the conversation state from network
+        await syncXmtpState();
+
+        // retrieve all messages
         const initialMessages = await conversation.messages({
-          limit: PAGE_SIZE,
-          direction: SortDirection.SORT_DIRECTION_DESCENDING,
+          limit: BigInt(PAGE_SIZE),
+          direction: SortDirection.Descending,
+          contentTypes: [ContentType.Text, ContentType.RemoteAttachment],
         });
         setHasMoreMessages(initialMessages.length >= PAGE_SIZE);
-        setXmtpMessages(initialMessages);
+
+        // filter to the types of messages we want to display
+        const filteredMessages = initialMessages.filter(filterMessage);
+        setXmtpMessages(filteredMessages);
 
         // determine if this is a new chat
         setIsChatRequest(
-          initialMessages.length > 0 &&
-            !acceptedTopics.includes(conversation.topic),
+          (await conversation.consentState()) !== ConsentState.Allowed &&
+            filteredMessages.length > 0 &&
+            !acceptedTopics.includes(conversation.id),
         );
 
         // listen for new messages
-        void waitForXmtpMessages(
-          conversation.clientAddress,
-          (message: DecodedMessage) => setIncomingMessage(message),
-          conversation,
-        );
+        if (clientAddress) {
+          void waitForXmtpMessages(
+            (message: DecodedMessage) => setIncomingMessage(message),
+            conversation,
+          );
+        }
       }
     } catch (e) {
       notifyEvent(e, 'error', 'Messaging', 'XMTP', {
@@ -172,6 +202,13 @@ export const Conversation: React.FC<ConversationProps> = ({
     }
   };
 
+  const filterMessage = (message: DecodedMessage) => {
+    return (
+      message.contentType.typeId === 'text' ||
+      message.contentType.typeId === 'remoteAttachment'
+    );
+  };
+
   const scrollToLatestMessage = (ref: React.RefObject<HTMLElement>) => {
     ref.current?.scrollIntoView({
       behavior: 'auto',
@@ -179,9 +216,7 @@ export const Conversation: React.FC<ConversationProps> = ({
   };
 
   const isBlocked = () => {
-    return conversation?.topic
-      ? blockedTopics.includes(conversation.topic)
-      : false;
+    return conversation?.id ? blockedTopics.includes(conversation.id) : false;
   };
 
   const handleSend = async (msg: DecodedMessage) => {
@@ -190,24 +225,26 @@ export const Conversation: React.FC<ConversationProps> = ({
 
     // add to local accepted topics list if necessary, since the user
     // has engaged with the conversation
-    if (!acceptedTopics.includes(msg.conversation.topic)) {
+    if (!acceptedTopics.includes(msg.conversationId)) {
       const updatedAcceptedTopics = [
-        ...acceptedTopics.filter(v => v !== msg.conversation.topic),
+        ...acceptedTopics.filter(v => v !== msg.conversationId),
       ];
-      updatedAcceptedTopics.push(msg.conversation.topic);
+      updatedAcceptedTopics.push(msg.conversationId);
       setAcceptedTopics(updatedAcceptedTopics);
     }
 
     // register the topic as accepted, since the user has engaged with
     // the conversation
-    await registerClientTopics(msg.conversation.clientAddress, [
-      {
-        topic: msg.conversation.topic,
-        peerAddress: msg.conversation.peerAddress,
-        accept: true,
-        block: false,
-      },
-    ]);
+    if (conversation && peerAddress) {
+      await registerClientTopics(await getXmtpInboxId(), [
+        {
+          topic: msg.conversationId,
+          peerAddress,
+          accept: true,
+          block: false,
+        },
+      ]);
+    }
   };
 
   const handleIdentityClick = async () => {
@@ -228,12 +265,9 @@ export const Conversation: React.FC<ConversationProps> = ({
     }
   };
 
-  const handleOpenExplorer = () => {
-    if (conversation) {
-      const url = getBlockScanUrl(
-        'MATIC' as CurrenciesType,
-        conversation.peerAddress,
-      );
+  const handleOpenExplorer = async () => {
+    if (conversation && peerAddress) {
+      const url = getBlockScanUrl('MATIC' as CurrenciesType, peerAddress);
       window.open(url, '_blank');
     }
   };
@@ -246,39 +280,58 @@ export const Conversation: React.FC<ConversationProps> = ({
 
     // updated accepted topics
     const updatedAcceptedTopics = [
-      ...acceptedTopics.filter(v => v !== conversation.topic),
+      ...acceptedTopics.filter(v => v !== conversation.id),
     ];
     if (!blockedValue) {
-      updatedAcceptedTopics.push(conversation.topic);
+      // update local consent status
+      updatedAcceptedTopics.push(conversation.id);
       setIsChatRequest(false);
+
+      // update remove consent status
+      await conversation.updateConsentState(ConsentState.Allowed);
     }
 
     // update blocked topics
     const updatedBlockedTopics = [
-      ...blockedTopics.filter(v => v !== conversation.topic),
+      ...blockedTopics.filter(v => v !== conversation.id),
     ];
     if (blockedValue) {
-      updatedBlockedTopics.push(conversation.topic);
+      // update local consent status
+      updatedBlockedTopics.push(conversation.id);
+
+      // update block consent status
+      await conversation.updateConsentState(ConsentState.Denied);
     }
 
+    // sync the consent state to the network
+    await syncXmtpState();
+
     // update blocking preferences
-    await registerClientTopics(conversation.clientAddress, [
-      {
-        topic: conversation.topic,
-        peerAddress: conversation.peerAddress,
-        block: updatedBlockedTopics.includes(conversation.topic),
-        accept: !updatedBlockedTopics.includes(conversation.topic),
-      },
-    ]);
+    if (peerAddress) {
+      await registerClientTopics(await getXmtpInboxId(), [
+        {
+          topic: conversation.id,
+          peerAddress,
+          block: updatedBlockedTopics.includes(conversation.id),
+          accept: !updatedBlockedTopics.includes(conversation.id),
+        },
+      ]);
+    }
 
     // update the blocked topic state
     setAcceptedTopics(updatedAcceptedTopics);
     setBlockedTopics(updatedBlockedTopics);
-    if (updatedBlockedTopics.includes(conversation.topic)) {
+    if (updatedBlockedTopics.includes(conversation.id)) {
       onBack();
     }
   };
 
+  // wait for conversation address to load
+  if (!clientAddress || !peerAddress) {
+    return null;
+  }
+
+  // render the conversation
   return (
     <Card
       className={classes.cardContainer}
@@ -355,7 +408,7 @@ export const Conversation: React.FC<ConversationProps> = ({
                 <MenuItem
                   onClick={() => {
                     handleCloseMenu();
-                    onPopoutClick(conversation?.peerAddress);
+                    onPopoutClick(peerAddress);
                   }}
                 >
                   <ListItemIcon>
@@ -410,12 +463,11 @@ export const Conversation: React.FC<ConversationProps> = ({
               </Typography>
             </Box>
           ) : conversation ? (
-            conversation.clientAddress.toLowerCase() ===
-            conversation.peerAddress.toLowerCase() ? (
+            clientAddress?.toLowerCase() === peerAddress?.toLowerCase() ? (
               <CallToAction
                 icon="BlockIcon"
                 title={t('push.chatWithSelf')}
-                subTitle={truncateEthAddress(conversation.clientAddress)}
+                subTitle={truncateEthAddress(clientAddress)}
               />
             ) : xmtpMessages.length === 0 ? (
               <CallToAction
@@ -449,13 +501,13 @@ export const Conversation: React.FC<ConversationProps> = ({
                     )
                     .map(message => (
                       <ConversationBubble
-                        address={conversation.clientAddress}
+                        address={clientAddress}
                         message={message}
                         key={message.id}
                         onBlockTopic={() => handleBlockClicked(!isBlocked())}
                         renderCallback={
                           xmtpMessages.length > 0 &&
-                          message.sent >= xmtpMessages[0].sent
+                          message.sentAtNs >= xmtpMessages[0].sentAtNs
                             ? scrollToLatestMessage
                             : undefined
                         }
@@ -517,6 +569,7 @@ export type ConversationProps = {
   acceptedTopics: string[];
   blockedTopics: string[];
   storageApiKey?: string;
+  fullScreen?: boolean;
   setAcceptedTopics: (v: string[]) => void;
   setBlockedTopics: (v: string[]) => void;
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;

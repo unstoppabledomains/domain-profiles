@@ -5,6 +5,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import Bluebird from 'bluebird';
 import React, {useEffect, useState} from 'react';
 import truncateEthAddress from 'truncate-eth-address';
 
@@ -15,6 +16,7 @@ import type {SerializedRecommendation} from '../../../../lib';
 import useTranslationContext from '../../../../lib/i18n';
 import ChipControlButton from '../../../ChipControlButton';
 import type {ConversationMeta} from '../../protocol/xmtp';
+import {getConversationPeerAddress} from '../../protocol/xmtp';
 import type {AddressResolution} from '../../types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -78,12 +80,18 @@ export const ConversationSuggestions: React.FC<
         xmtpOnly: true,
       });
 
+      // conversation addresses
+      const conversationAddresses = await Bluebird.map(
+        conversations || [],
+        async c => {
+          const peerAddress = await getConversationPeerAddress(c.conversation);
+          return peerAddress?.toLowerCase();
+        },
+      );
+
       // filter out existing conversations from suggestion list
       const visibleSuggestions = allSuggestions?.filter(
-        s =>
-          !conversations
-            ?.map(c => c.conversation.peerAddress.toLowerCase())
-            .includes(s.address.toLowerCase()),
+        s => !conversationAddresses.includes(s.address.toLowerCase()),
       );
 
       // set the suggestion values to render
@@ -96,7 +104,7 @@ export const ConversationSuggestions: React.FC<
       setIsSuggestionsLoading(false);
     };
     void loadSuggestions();
-  }, [conversations]);
+  }, []);
 
   return (
     <Grid container gap={1} className={classes.container}>

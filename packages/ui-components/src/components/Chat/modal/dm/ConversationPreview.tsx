@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import type {Conversation} from '@xmtp/xmtp-js';
+import type {Conversation} from '@xmtp/browser-sdk';
 import moment from 'moment';
 import React, {useEffect, useRef, useState} from 'react';
 import Emoji from 'react-emoji-render';
@@ -18,7 +18,10 @@ import {isAddressSpam} from '../../../../actions/messageActions';
 import useTranslationContext from '../../../../lib/i18n';
 import {getAddressMetadata} from '../../protocol/resolution';
 import type {ConversationMeta} from '../../protocol/xmtp';
-import {loadConversationPreview} from '../../protocol/xmtp';
+import {
+  getConversationPeerAddress,
+  loadConversationPreview,
+} from '../../protocol/xmtp';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   conversationContainer: {
@@ -93,9 +96,8 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
   const [isVisible, setIsVisible] = useState(true);
   const [isSpam, setIsSpam] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [displayName, setDisplayName] = useState(
-    truncateEthAddress(conversation.conversation.peerAddress),
-  );
+  const [peerAddress, setPeerAddress] = useState<string>();
+  const [displayName, setDisplayName] = useState('');
 
   // determine if conversation is visible on screen
   const nodeRef = useRef<HTMLDivElement | null>(null);
@@ -107,17 +109,25 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
       return;
     }
     const loadAddressData = async () => {
+      // get peer address
+      const conversationPeerAddress = await getConversationPeerAddress(
+        conversation.conversation,
+      );
+      if (!conversationPeerAddress) {
+        return;
+      }
+      setPeerAddress(conversationPeerAddress);
+      setDisplayName(truncateEthAddress(conversationPeerAddress));
+
       // if conversation is not accepted, check spam score
-      if (!acceptedTopics.includes(conversation.conversation.topic)) {
-        if (await isAddressSpam(conversation.conversation.peerAddress)) {
+      if (!acceptedTopics.includes(conversation.conversation.id)) {
+        if (await isAddressSpam(conversationPeerAddress)) {
           setIsSpam(true);
         }
       }
 
       // request peer address metadata
-      const addressData = await getAddressMetadata(
-        conversation.conversation.peerAddress,
-      );
+      const addressData = await getAddressMetadata(conversationPeerAddress);
       if (addressData?.name) setDisplayName(addressData.name);
       setAvatarLink(addressData?.avatarUrl);
 
@@ -140,13 +150,9 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
     if (!searchTerm) {
       return true;
     }
-    const searchParams = [
-      displayName,
-      conversation.conversation.peerAddress,
-      conversation.preview,
-    ];
+    const searchParams = [displayName, peerAddress, conversation.preview];
     for (const param of searchParams) {
-      if (param.toLowerCase().includes(searchTerm.toLowerCase())) {
+      if (param?.toLowerCase().includes(searchTerm.toLowerCase())) {
         return true;
       }
     }
@@ -182,13 +188,13 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
                 ) : conversation.preview ? (
                   <Emoji>{conversation.preview}</Emoji>
                 ) : (
-                  <Skeleton variant="text" className={classes.textLoading} />
+                  <Box>&nbsp;</Box>
                 )}
               </Typography>
             </Box>
           </Box>
         )
-      ) : (
+      ) : peerAddress ? (
         <Box className={classes.conversationContainer}>
           <Box>
             <Skeleton variant="circular" className={classes.avatarLoading} />
@@ -198,6 +204,8 @@ export const ConversationPreview: React.FC<ConversationPreviewProps> = ({
             <Skeleton variant="text" className={classes.textLoading} />
           </Box>
         </Box>
+      ) : (
+        <Box />
       )}
     </Box>
   ) : null;

@@ -101,7 +101,6 @@ export const Wallet: React.FC<
   const [state] = useFireblocksState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isFetching, setIsFetching] = useState<boolean>();
-  const [isCustodyWallet, setIsCustodyWallet] = useState<boolean>();
   const [isWeb3DepsLoading, setIsWeb3DepsLoading] = useState(true);
   const [isHeaderClicked, setIsHeaderClicked] = useState(false);
   const [isSecurityCenterModalOpen, setIsSecurityCenterModalOpen] =
@@ -118,7 +117,6 @@ export const Wallet: React.FC<
   const handleWalletLoaded = async (v: boolean) => {
     const bootstrapState = getBootstrapState(state);
     if (bootstrapState?.custodyState?.state === CustodyState.CUSTODY) {
-      setIsCustodyWallet(true);
       if (setAuthAddress) {
         setAuthAddress(config.UNSTOPPABLE_CONTRACT_ADDRESS);
       }
@@ -177,7 +175,8 @@ export const Wallet: React.FC<
           avatarUrl={avatarUrl}
           showMessages={
             (theme.wallet.type === 'udme' || showMessagesInHeader) &&
-            showMessages
+            showMessages &&
+            !!accessToken
           }
           address={address}
           accessToken={accessToken}
@@ -226,16 +225,18 @@ export const Wallet: React.FC<
         initialLoginState={loginState}
         banner={banner}
       />
-      {isLoaded && !isCustodyWallet && isWeb3DepsLoading && (
-        <AccessWalletModal
-          prompt={true}
-          address={address}
-          onComplete={deps => handleAccessWalletComplete(deps)}
-          open={isWeb3DepsLoading}
-          onClose={() => setIsWeb3DepsLoading(false)}
-          isMpcWallet={true}
-          isMpcPromptDisabled={true}
-        />
+      {isLoaded && accessToken && isWeb3DepsLoading && (
+        <Box sx={{display: 'none'}}>
+          <AccessWalletModal
+            prompt={true}
+            address={address}
+            onComplete={deps => handleAccessWalletComplete(deps)}
+            open={isWeb3DepsLoading}
+            onClose={() => setIsWeb3DepsLoading(false)}
+            isMpcWallet={true}
+            isMpcPromptDisabled={true}
+          />
+        </Box>
       )}
       {showClaimWalletModal && (
         <Modal

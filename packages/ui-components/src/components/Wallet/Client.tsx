@@ -237,6 +237,7 @@ export const Client: React.FC<ClientProps> = ({
   onRefresh,
   onSecurityCenterClicked,
   setIsHeaderClicked,
+  setShowMessagesInHeader,
   isHeaderClicked,
   isWalletLoading,
   externalBanner,
@@ -332,6 +333,12 @@ export const Client: React.FC<ClientProps> = ({
     // set wallet lock status
     setTxLockStatus(lockStatus);
   }, [accessToken]);
+
+  useEffect(() => {
+    if (setShowMessagesInHeader) {
+      setShowMessagesInHeader(isEmptyState);
+    }
+  }, [setShowMessagesInHeader, isEmptyState]);
 
   // banner management
   useAsyncEffect(async () => {
@@ -1304,7 +1311,7 @@ export const Client: React.FC<ClientProps> = ({
           address={address}
           silentOnboard
           hideIcon
-          fullScreen
+          variant="modal"
           disableSupportBubble
           inheritStyle
           onClose={handleCancelAction}
@@ -1324,6 +1331,7 @@ export type ClientProps = {
   onRefresh: (showSpinner?: boolean, fields?: string[]) => Promise<void>;
   isHeaderClicked: boolean;
   isWalletLoading?: boolean;
+  setShowMessagesInHeader?: (v: boolean) => void;
   setIsHeaderClicked?: (v: boolean) => void;
   externalBanner?: React.ReactNode;
   showMessages?: boolean;

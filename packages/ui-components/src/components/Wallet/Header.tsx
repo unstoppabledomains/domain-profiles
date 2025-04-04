@@ -358,6 +358,7 @@ export const Header: React.FC<Props> = ({
           {showMessages && !!accessToken && (
             <UnstoppableMessaging
               address={address}
+              variant="modal"
               silentOnboard={true}
               hideIcon={true}
               onPopoutClick={onMessagePopoutClick}

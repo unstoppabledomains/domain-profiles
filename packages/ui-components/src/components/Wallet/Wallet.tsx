@@ -107,6 +107,7 @@ export const Wallet: React.FC<
   const [isSecurityCenterModalOpen, setIsSecurityCenterModalOpen] =
     useState(false);
   const [showClaimWalletModal, setShowClaimWalletModal] = useState<boolean>();
+  const [showMessagesInHeader, setShowMessagesInHeader] = useState<boolean>();
   const [accessToken, setAccessToken] = useState<string>();
   const {setWeb3Deps, showPinCta} = useWeb3Context();
 
@@ -174,7 +175,10 @@ export const Wallet: React.FC<
           isLoaded={isLoaded}
           isFetching={isFetching}
           avatarUrl={avatarUrl}
-          showMessages={theme.wallet.type === 'udme' && showMessages}
+          showMessages={
+            (theme.wallet.type === 'udme' || showMessagesInHeader) &&
+            showMessages
+          }
           address={address}
           accessToken={accessToken}
           emailAddress={emailAddress}
@@ -209,7 +213,10 @@ export const Wallet: React.FC<
         isHeaderClicked={isHeaderClicked}
         setIsHeaderClicked={setIsHeaderClicked}
         setAuthAddress={setAuthAddress}
-        showMessages={theme.wallet.type === 'upio' && showMessages}
+        setShowMessagesInHeader={setShowMessagesInHeader}
+        showMessages={
+          theme.wallet.type === 'upio' && showMessages && !showMessagesInHeader
+        }
         fullScreenModals={fullScreenModals}
         forceRememberOnDevice={forceRememberOnDevice || isNewUser}
         loginClicked={loginClicked}

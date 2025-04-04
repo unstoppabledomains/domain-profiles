@@ -119,8 +119,8 @@ export default function getDefaultConfig(): Config {
       HOST_URL: 'https://api.ud-staging.com/wallet',
       GET_WALLET_URL: 'https://ud-staging.com/cart?product=unstoppable-wallet',
       DOCUMENTATION_URL:
-        'https://support.unstoppabledomains.com/support/solutions/48000457487',
-      LANDING_PAGE_URL: 'https://unstoppabledomains.com/products/wallet',
+        'https://support.unstoppabledomains.com/support/solutions/48000458123',
+      LANDING_PAGE_URL: 'https://up.io',
       DEFAULT_PIN_TIMEOUT_MS: 1 * 60 * 60 * 1000, // 1 hour
       CHAINS: {
         BUY: ['BTC/BTC', 'MATIC/MATIC', 'SOL/SOL', 'ETH/ETH', 'BASE/ETH'],
@@ -135,7 +135,7 @@ export default function getDefaultConfig(): Config {
         ENVIRONMENT: 'testnet',
         PROJECT_ID: 'unstoppable-domains-staging',
         DOCUMENTATION_URL:
-          'https://support.unstoppabledomains.com/support/solutions/articles/48001265076-token-swap-with-unstoppable-lite-wallet',
+          'https://support.unstoppabledomains.com/support/solutions/articles/48001269491-how-to-swap-tokens',
         FEE_BPS: 85, // 0.85%
         MIN_BALANCE_USD: 5,
         DISABLED_INTEGRATIONS: ['hop'],

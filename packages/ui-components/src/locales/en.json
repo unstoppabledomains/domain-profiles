@@ -103,19 +103,19 @@
     "buy": {
       "buttonText": "Let's go!",
       "description": "Choose the token you want to deposit using your bank account or card to start the purchase process.",
-      "learnMoreLink": "https://support.unstoppabledomains.com/support/solutions/48000457487",
+      "learnMoreLink": "https://support.unstoppabledomains.com/support/solutions/articles/48001269631-how-to-buy-and-sell-cryptocurrency",
       "title": "Buy tokens"
     },
     "receive": {
       "buttonText": "Let's go!",
       "description": "Choose one of your tokens and share your wallet address with friends to start receiving crypto.",
-      "learnMoreLink": "https://support.unstoppabledomains.com/support/solutions/48000457487",
+      "learnMoreLink": "https://support.unstoppabledomains.com/support/solutions/articles/48001269666-how-to-send-or-receive-tokens",
       "title": "Receive tokens"
     },
     "send": {
       "buttonText": "Let's go!",
       "description": "Choose one of the tokens from your wallet and send it to a friend or anyone else who needs crypto.",
-      "learnMoreLink": "https://support.unstoppabledomains.com/support/solutions/48000457487",
+      "learnMoreLink": "https://support.unstoppabledomains.com/support/solutions/articles/48001269666-how-to-send-or-receive-tokens",
       "title": "Send tokens"
     }
   },
@@ -734,7 +734,7 @@
     "blockCount": "Blocked ({{count}})",
     "chat": "Chat",
     "chatNew": "Start a new chat",
-    "chatNewDescription": "Start by searching for a domain or wallet address. Don't see your conversations? <a href='https://docs.xmtp.org/inboxes/history-sync' target='_blank'>Learn more</a> about history sync across your devices.",
+    "chatNewDescription": "Start by searching for a domain or wallet address. Don't see your conversations? <a href='https://support.unstoppabledomains.com/support/solutions/articles/48001270559-end-to-end-encrypted-chat-with-xmtp' target='_blank'>Learn more</a> about history sync across your devices.",
     "chatNewRecommendations": "Search for a domain or wallet address, or get started with one of these wallets recommended from your onchain activity.",
     "chatNewRequest": "You have a chat request",
     "chatNewRequestDescription": "Click the chat requests button to view your requests",

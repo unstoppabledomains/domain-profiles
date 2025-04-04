@@ -38,6 +38,7 @@ import type {Web3Dependencies} from '../../lib/types/web3';
 import {Web3Context} from '../../providers/Web3ContextProvider';
 import {IncomingChatSnackbar, IncomingSnackbar} from './IncomingSnackbar';
 import SupportBubble from './SupportBubble';
+import type {ChatModalVariant} from './modal/ChatModal';
 import ChatModal from './modal/ChatModal';
 import SetupModal from './modal/SetupModal';
 import {acceptGroupInvite, getPushUser} from './protocol/push';
@@ -126,7 +127,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
   initCallback,
   onPopoutClick,
   onClose,
-  fullScreen,
+  variant,
 }) => {
   const {classes} = useStyles({inheritStyle});
   const web3Context = useContext(Web3Context);
@@ -1139,7 +1140,7 @@ export const UnstoppableMessaging: React.FC<UnstoppableMessagingProps> = ({
             tabRefresh={chatWindowUpdated}
             blockedTopics={blockedTopics}
             setBlockedTopics={setBlockedTopics}
-            fullScreen={fullScreen}
+            variant={variant}
             setWeb3Deps={setWeb3Deps}
             onPopoutClick={onPopoutClick}
             onClose={handleClosePush}
@@ -1174,5 +1175,5 @@ export type UnstoppableMessagingProps = {
   initCallback?: () => void;
   onPopoutClick?: (address?: string) => void;
   onClose?: () => void;
-  fullScreen?: boolean;
+  variant?: ChatModalVariant;
 };

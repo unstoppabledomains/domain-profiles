@@ -96,9 +96,6 @@ const useStyles = makeStyles<{fullScreen?: boolean}>()(
       padding: fullScreen ? 0 : theme.spacing(1),
       border: 'none',
       backgroundColor: 'transparent',
-      [theme.breakpoints.down('sm')]: {
-        padding: 0,
-      },
     },
     chatMobileContainer: {
       width: '100%',
@@ -107,7 +104,8 @@ const useStyles = makeStyles<{fullScreen?: boolean}>()(
       backgroundColor: 'transparent',
     },
     chatMobilePaper: {
-      backgroundColor: theme.palette.background.default,
+      minHeight: '650px',
+      width: '520px',
     },
     loadingContainer: {
       display: 'flex',
@@ -164,9 +162,6 @@ const useStyles = makeStyles<{fullScreen?: boolean}>()(
       overflowX: 'hidden',
       overscrollBehavior: 'contain',
       height: fullScreen ? 'calc(100vh - 175px)' : '425px',
-      [theme.breakpoints.down('sm')]: {
-        height: 'calc(100vh - 175px)',
-      },
     },
     tabList: {
       marginRight: theme.spacing(-4),
@@ -218,8 +213,14 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   setActiveChat,
   setActiveCommunity,
   fullScreen,
+  variant = 'docked',
 }) => {
-  const {cx, classes} = useStyles({fullScreen});
+  // mobile behavior flags
+  const theme = useTheme();
+  const fullScreenModal =
+    useMediaQuery(theme.breakpoints.down('sm')) || fullScreen;
+
+  const {cx, classes} = useStyles({fullScreen: fullScreenModal});
   const [t] = useTranslationContext();
   const {data: featureFlags} = useFeatureFlags(false, authDomain);
   const [loadingText, setLoadingText] = useState<string>();
@@ -256,11 +257,6 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     useState<SerializedUserDomainProfileData>();
   const {fetchNotifications, loading: notificationsLoading} =
     useFetchNotifications(getCaip10Address(pushAccount));
-
-  // mobile behavior flag
-  const theme = useTheme();
-  const fullScreenModal =
-    useMediaQuery(theme.breakpoints.down('sm')) || fullScreen;
 
   useAsyncEffect(async () => {
     if (open) {
@@ -845,14 +841,14 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
   // display wrapper element
   const wrapChatComponent = (children: React.ReactNode) => {
-    return fullScreenModal ? (
+    return variant === 'modal' || fullScreenModal ? (
       <Modal
         open={open}
         onClose={onClose}
         noModalHeader={true}
         noContentMargin={true}
         noContentPadding={true}
-        fullScreen={true}
+        fullScreen={fullScreenModal}
         dialogPaperStyle={classes.chatMobilePaper}
       >
         <Box className={classes.chatMobileContainer}>{children}</Box>
@@ -1229,6 +1225,9 @@ export type ChatModalProps = {
   setActiveChat: (v?: string) => void;
   setActiveCommunity: (v?: SerializedCryptoWalletBadge) => void;
   fullScreen?: boolean;
+  variant?: ChatModalVariant;
 };
+
+export type ChatModalVariant = 'modal' | 'docked';
 
 export default ChatModal;

@@ -83,6 +83,14 @@ export const getWalletStorageData = async (
         walletStorageCache = response;
         return response;
       }
+
+      // set empty object in session storage
+      walletStorageCache = {
+        createdDate: new Date(),
+        updatedDate: new Date(),
+        key: WALLET_KEY_NAME,
+        data: '{}',
+      };
     } catch (e) {
       // set empty object in session storage
       notifyEvent(e, 'error', 'Wallet', 'Configuration');

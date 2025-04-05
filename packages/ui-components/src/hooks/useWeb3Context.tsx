@@ -3,7 +3,6 @@ import useAsyncEffect from 'use-async-effect';
 
 import config from '@unstoppabledomains/config';
 
-import {getWalletStorageData} from '../actions/walletStorageActions';
 import {localStorageWrapper} from '../components';
 import {
   DomainProfileKeys,
@@ -134,32 +133,6 @@ const useWeb3Context = () => {
           DomainProfileKeys.EncryptedPIN,
           encryptedPin,
         );
-      } else {
-        // TODO: this code can be removed in a future release once migration
-        // has had an opportunity to complete
-
-        // only sync local configuration if remote configuration is empty
-        const walletConfig = await getWalletStorageData(accessToken);
-
-        // set the remote encrypted PIN to the one set locally
-        if (
-          !walletConfig?.data ||
-          Object.keys(JSON.parse(walletConfig.data)).length === 0
-        ) {
-          const localEncryptedPin = await localStorageWrapper.getItem(
-            DomainProfileKeys.EncryptedPIN,
-          );
-          if (localEncryptedPin) {
-            await localStorageWrapper.setItem(
-              DomainProfileKeys.EncryptedPIN,
-              localEncryptedPin,
-              {
-                type: 'wallet',
-                accessToken,
-              },
-            );
-          }
-        }
       }
     } catch (e) {
       notifyEvent(e, 'warning', 'Wallet', 'Configuration');

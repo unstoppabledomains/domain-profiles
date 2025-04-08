@@ -48,9 +48,9 @@ type WalletServerSideProps = GetServerSidePropsContext & {
 };
 
 export async function getServerSideProps(props: WalletServerSideProps) {
-  // determine if we have reached the launch date of April 10, 2025. This
+  // determine if we have reached the launch date of April 17, 2025. This
   // check can be removed after the launch date
-  const isPastLaunchDate = new Date('2025-04-10') <= new Date();
+  const isPastLaunchDate = new Date('2025-04-17') <= new Date();
 
   // redirect to UP.io with exact query string parameters if the request for
   // the wallet homepage is to the UD.me domain. As an infinite redirect

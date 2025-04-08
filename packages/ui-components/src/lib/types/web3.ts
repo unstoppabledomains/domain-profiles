@@ -26,17 +26,15 @@ export const getBlockScanUrl = (symbol: CurrenciesType, addr: string) => {
     case 'FTM':
     case 'AVAX':
     case 'BASE':
-      return isEthAddress(addr)
-        ? `https://www.oklink.com/${symbol.toLowerCase()}/address/${addr}?channelId=uns001`
-        : '';
+      return isEthAddress(addr) ? `https://basescan.org/address/${addr}` : '';
     case 'MATIC':
       return isEthAddress(addr)
-        ? `https://www.oklink.com/polygon/address/${addr}?channelId=uns001`
+        ? `https://polygonscan.com/address/${addr}`
         : '';
     case 'BTC':
-      return `https://www.oklink.com/${symbol.toLowerCase()}/address/${addr}?channelId=uns001`;
+      return `https://www.blockchain.com/explorer/addresses/btc/${addr}`;
     case 'SOL':
-      return `https://www.oklink.com/sol/account/${addr}?channelId=uns001`;
+      return `https://solscan.io/account/${addr}`;
     default:
       return '';
   }

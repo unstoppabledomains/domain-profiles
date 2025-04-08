@@ -681,7 +681,7 @@
       "to": "To"
     },
     "moreInformation": "More",
-    "openAddress": "Open in OKLink",
+    "openAddress": "Open in blockchain explorer",
     "openSea": "OpenSea",
     "otherDomains": "{{count}} Other domains",
     "ownerAddress": "Owned by {{address}}",

@@ -28,8 +28,8 @@ export type EthereumBlockchainConfig = BaseBlockchainConfig & {
     | 'https://testnets.opensea.io/assets/'
     | 'https://testnets.opensea.io/assets/sepolia/';
   BLOCK_EXPLORER_TX_URL:
-    | 'https://www.oklink.com/sepolia-test/tx/'
-    | 'https://www.oklink.com/eth/tx/';
+    | 'https://sepolia.etherscan.io/tx/'
+    | 'https://etherscan.io/tx/';
 };
 
 export type MaticBlockchainConfig = BaseBlockchainConfig & {
@@ -40,23 +40,25 @@ export type MaticBlockchainConfig = BaseBlockchainConfig & {
     | 'https://opensea.io/assets/matic/'
     | 'https://testnets.opensea.io/assets/amoy/';
   BLOCK_EXPLORER_TX_URL:
-    | 'https://www.oklink.com/amoy/tx/'
-    | 'https://www.oklink.com/polygon/tx/';
+    | 'https://amoy.polygonscan.com/tx/'
+    | 'https://polygonscan.com/tx/';
 };
 
 export type BitcoinBlockchainConfig = BaseBlockchainConfig & {
   CHAIN_ID: 0;
-  BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/btc/tx/';
+  BLOCK_EXPLORER_TX_URL: 'https://www.blockchain.com/explorer/transactions/btc/';
 };
 
 export type SolanaBlockchainConfig = BaseBlockchainConfig & {
   CHAIN_ID: 0;
-  BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/sol/tx/';
+  BLOCK_EXPLORER_TX_URL: 'https://solscan.io/tx/';
 };
 
 export type BaseChainBlockchainConfig = BaseBlockchainConfig & {
   CHAIN_ID: 8453;
-  BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/base/tx/';
+  BLOCK_EXPLORER_TX_URL:
+    | 'https://basescan.org/tx/'
+    | 'https://sepolia.basescan.org/tx/';
 };
 
 export interface SwapConfig {

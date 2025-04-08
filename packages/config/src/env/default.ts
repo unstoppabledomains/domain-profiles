@@ -20,9 +20,9 @@ export default function getDefaultConfig(): Config {
         CHAIN_ID: 11155111,
         NETWORK_NAME: 'sepolia', // testnet
         JSON_RPC_API_URL: `https://sepolia.infura.io/v3/467fd78247874d7e87d34c04fdd09bbb`,
-        BLOCK_EXPLORER_NAME: 'oklink',
-        BLOCK_EXPLORER_BASE_URL: 'https://www.oklink.com/sepolia-test',
-        BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/sepolia-test/tx/',
+        BLOCK_EXPLORER_NAME: 'etherscan',
+        BLOCK_EXPLORER_BASE_URL: 'https://sepolia.etherscan.io',
+        BLOCK_EXPLORER_TX_URL: 'https://sepolia.etherscan.io/tx/',
         DISABLE_CONTRACTS_CACHE: true,
         PROXY_READER_ADDRESS: '0xFc5f608149f4D9e2Ed0733efFe9DD57ee24BCF68',
         OPEN_SEA_BASE_URL: 'https://testnets.opensea.io/assets/sepolia/',
@@ -33,9 +33,9 @@ export default function getDefaultConfig(): Config {
         NETWORK_NAME: 'amoy', // testnet
         JSON_RPC_API_URL:
           'https://polygon-amoy.infura.io/v3/467fd78247874d7e87d34c04fdd09bbb',
-        BLOCK_EXPLORER_NAME: 'oklink',
-        BLOCK_EXPLORER_BASE_URL: 'https://www.oklink.com/amoy',
-        BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/amoy/tx/',
+        BLOCK_EXPLORER_NAME: 'polygonscan',
+        BLOCK_EXPLORER_BASE_URL: 'https://amoy.polygonscan.com',
+        BLOCK_EXPLORER_TX_URL: 'https://amoy.polygonscan.com/tx/',
         DISABLE_CONTRACTS_CACHE: true,
         PROXY_READER_ADDRESS: '0x332A8191905fA8E6eeA7350B5799F225B8ed30a9',
         OPEN_SEA_BASE_URL: 'https://testnets.opensea.io/assets/amoy/',
@@ -45,18 +45,20 @@ export default function getDefaultConfig(): Config {
         NETWORK_NAME: 'base',
         JSON_RPC_API_URL:
           'https://base-mainnet.infura.io/v3/467fd78247874d7e87d34c04fdd09bbb',
-        BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/base/tx/',
-        BLOCK_EXPLORER_NAME: 'oklink',
-        BLOCK_EXPLORER_BASE_URL: 'https://www.oklink.com/base',
+        BLOCK_EXPLORER_TX_URL: 'https://basescan.org/tx/',
+        BLOCK_EXPLORER_NAME: 'basescan',
+        BLOCK_EXPLORER_BASE_URL: 'https://basescan.org',
         DISABLE_CONTRACTS_CACHE: true,
       },
       BTC: {
         CHAIN_ID: 0,
         NETWORK_NAME: 'bitcoin',
         JSON_RPC_API_URL: '',
-        BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/btc/tx/',
-        BLOCK_EXPLORER_NAME: 'oklink',
-        BLOCK_EXPLORER_BASE_URL: 'https://www.oklink.com/btc',
+        BLOCK_EXPLORER_TX_URL:
+          'https://www.blockchain.com/explorer/transactions/btc/',
+        BLOCK_EXPLORER_NAME: 'blockchain.com',
+        BLOCK_EXPLORER_BASE_URL:
+          'https://www.blockchain.com/explorer/assets/btc',
         DISABLE_CONTRACTS_CACHE: true,
       },
       SOL: {
@@ -64,9 +66,9 @@ export default function getDefaultConfig(): Config {
         NETWORK_NAME: 'solana',
         JSON_RPC_API_URL:
           'https://solana-mainnet.g.alchemy.com/v2/NHnzEesdDuX90lFZRMOa4ZSE0wIR-BAo',
-        BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/sol/tx/',
-        BLOCK_EXPLORER_NAME: 'oklink',
-        BLOCK_EXPLORER_BASE_URL: 'https://www.oklink.com/sol',
+        BLOCK_EXPLORER_TX_URL: 'https://solscan.io/tx/',
+        BLOCK_EXPLORER_NAME: 'solscan',
+        BLOCK_EXPLORER_BASE_URL: 'https://solscan.io',
         DISABLE_CONTRACTS_CACHE: true,
       },
     },

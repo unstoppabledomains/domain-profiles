@@ -23,7 +23,7 @@ export default function getProductionConfig(): ConfigOverride {
         JSON_RPC_API_URL:
           'https://mainnet.infura.io/v3/467fd78247874d7e87d34c04fdd09bbb',
         BLOCK_EXPLORER_BASE_URL: 'https://etherscan.io',
-        BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/eth/tx/',
+        BLOCK_EXPLORER_TX_URL: 'https://etherscan.io/tx/',
         PROXY_READER_ADDRESS: '0xc3C2BAB5e3e52DBF311b2aAcEf2e40344f19494E',
         OPEN_SEA_BASE_URL: 'https://opensea.io/assets/',
         ENS_CONTRACT_ADDRESS: '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85',
@@ -34,7 +34,7 @@ export default function getProductionConfig(): ConfigOverride {
         JSON_RPC_API_URL:
           'https://polygon-mainnet.infura.io/v3/467fd78247874d7e87d34c04fdd09bbb',
         BLOCK_EXPLORER_BASE_URL: 'https://polygonscan.com',
-        BLOCK_EXPLORER_TX_URL: 'https://www.oklink.com/polygon/tx/',
+        BLOCK_EXPLORER_TX_URL: 'https://polygonscan.com/tx/',
         PROXY_READER_ADDRESS: '0xA3f32c8cd786dc089Bd1fC175F2707223aeE5d00',
         OPEN_SEA_BASE_URL: 'https://opensea.io/assets/matic/',
       },

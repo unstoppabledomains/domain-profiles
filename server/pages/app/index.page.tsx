@@ -2,7 +2,6 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Footer from 'components/app/Footer';
-import {MobileCta} from 'components/wallet/MobileCta';
 import {EMAIL_PARAM, RECOVERY_TOKEN_PARAM} from 'lib/types';
 import {NextSeo} from 'next-seo';
 import {useRouter} from 'next/router';
@@ -219,13 +218,6 @@ const WalletPage = () => {
                 </Box>
               )}
             </Grid>
-            {authAddress && (
-              <Grid item xs={12}>
-                <Box mt={5}>
-                  <MobileCta />
-                </Box>
-              </Grid>
-            )}
           </Grid>
         )}
       </Box>

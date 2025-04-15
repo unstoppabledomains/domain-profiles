@@ -150,6 +150,7 @@ export type Config = {
     };
     SIGNATURE_SYMBOL: string;
     MOBILE: {
+      INSTALL_APP_URL: string;
       ANDROID_URL: string;
       APPLE_URL: string;
       CHROME_STORE_URL: string;

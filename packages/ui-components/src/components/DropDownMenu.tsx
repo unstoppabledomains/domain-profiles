@@ -1,6 +1,7 @@
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
 import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
+import DownloadIcon from '@mui/icons-material/Download';
 import LaunchIcon from '@mui/icons-material/Launch';
 import ListOutlinedIcon from '@mui/icons-material/ListOutlined';
 import Logout from '@mui/icons-material/Logout';
@@ -38,6 +39,7 @@ interface Props {
   onSupportClicked?: () => void;
   onMessagingClicked?: () => void;
   onClaimWalletClicked?: () => void;
+  onInstallAppClicked?: () => void;
   onLogout?: () => void;
   onDisconnect?: () => void;
   onHideMenu: () => void;
@@ -107,6 +109,7 @@ const DropDownMenu: React.FC<Props> = ({
   onSupportClicked,
   onMessagingClicked,
   onClaimWalletClicked,
+  onInstallAppClicked,
   onDisconnect,
   onLogout,
   onHideMenu,
@@ -291,6 +294,18 @@ const DropDownMenu: React.FC<Props> = ({
           <SupportIcon className={classes.settingsIcon} />
           <Typography className={classes.font}>
             {t('common.support')}
+          </Typography>
+        </div>
+      )}
+      {onInstallAppClicked && (
+        <div
+          data-testid={`install-app-button`}
+          className={cx(classes.container)}
+          onClick={onInstallAppClicked}
+        >
+          <DownloadIcon className={classes.settingsIcon} />
+          <Typography className={classes.font}>
+            {t('wallet.installApp')}
           </Typography>
         </div>
       )}

@@ -147,6 +147,7 @@ export default function getDefaultConfig(): Config {
         },
       },
       MOBILE: {
+        INSTALL_APP_URL: 'http://localhost:3000/download-mobile-app',
         ANDROID_URL:
           'https://play.google.com/store/apps/details?id=com.unstoppabledomains.manager',
         APPLE_URL: 'https://testflight.apple.com/join/m38AeGFb',

@@ -79,7 +79,7 @@ export const SignMessage: React.FC<SignMessageProps> = ({
   const [isSigning, setIsSigning] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>();
-  const {web3Deps} = useWeb3Context();
+  const {web3Deps} = useWeb3Context({enforcePin: true});
   const fireblocksSigner = useFireblocksMessageSigner();
 
   // determine if a specific chain ID should override based upon a typed

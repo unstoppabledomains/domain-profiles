@@ -108,7 +108,7 @@ export const Wallet: React.FC<
   const [showClaimWalletModal, setShowClaimWalletModal] = useState<boolean>();
   const [showMessagesInHeader, setShowMessagesInHeader] = useState<boolean>();
   const [accessToken, setAccessToken] = useState<string>();
-  const {setWeb3Deps, showPinCta} = useWeb3Context();
+  const {setWeb3Deps, showPinCta} = useWeb3Context({enforcePin: true});
 
   // indicates session lock has been checked and the session is
   // not in a locked state

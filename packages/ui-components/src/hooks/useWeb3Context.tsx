@@ -15,7 +15,7 @@ import {
 import {getPinFromToken} from '../lib/wallet/pin/store';
 import {Web3Context} from '../providers/Web3ContextProvider';
 
-const useWeb3Context = () => {
+const useWeb3Context = (opts?: {enforcePin?: boolean}) => {
   const {
     web3Deps,
     setWeb3Deps,
@@ -100,7 +100,9 @@ const useWeb3Context = () => {
     const checkPinState = async () => {
       if (await isLocked()) {
         // show the modal if unlock is required
-        setShowPinCta(true);
+        if (opts?.enforcePin) {
+          setShowPinCta(true);
+        }
         return;
       }
 
@@ -146,7 +148,9 @@ const useWeb3Context = () => {
 
     // show the lock screen and lock the session
     try {
-      setShowPinCta(true);
+      if (opts?.enforcePin) {
+        setShowPinCta(true);
+      }
       await lock(persistentKeyState, setPersistentKeyState);
     } catch (e) {
       notifyEvent(e, 'warning', 'Wallet', 'Configuration');

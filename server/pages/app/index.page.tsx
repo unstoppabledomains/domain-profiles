@@ -2,7 +2,6 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Footer from 'components/app/Footer';
-import {MobileCta} from 'components/wallet/MobileCta';
 import {EMAIL_PARAM, RECOVERY_TOKEN_PARAM} from 'lib/types';
 import {NextSeo} from 'next-seo';
 import {useRouter} from 'next/router';
@@ -35,7 +34,7 @@ const WalletPage = () => {
   const theme = useCustomTheme();
   const [isLoaded, setIsLoaded] = useState(false);
   const [walletState] = useFireblocksState();
-  const {showPinCta} = useWeb3Context();
+  const {showPinCta} = useWeb3Context({enforcePin: true});
   const [authAddress, setAuthAddress] = useState<string>('');
   const [authDomain, setAuthDomain] = useState<string>('');
   const [authAvatar, setAuthAvatar] = useState<string>();
@@ -219,13 +218,6 @@ const WalletPage = () => {
                 </Box>
               )}
             </Grid>
-            {authAddress && (
-              <Grid item xs={12}>
-                <Box mt={5}>
-                  <MobileCta />
-                </Box>
-              </Grid>
-            )}
           </Grid>
         )}
       </Box>

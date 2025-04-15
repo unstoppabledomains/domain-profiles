@@ -3,7 +3,6 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {useTheme} from '@mui/material/styles';
 import Markdown from 'markdown-to-jsx';
 import React, {useState} from 'react';
 import useAsyncEffect from 'use-async-effect';
@@ -78,8 +77,7 @@ type Props = {
 const UnlockPinModal: React.FC<Props> = ({onSuccess}) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
-  const theme = useTheme();
-  const {setShowPinCta} = useWeb3Context();
+  const {setShowPinCta} = useWeb3Context({enforcePin: true});
   const [state, saveState] = useFireblocksState();
   const getAccessToken = useFireblocksAccessToken();
   const [pin, setPin] = useState<string>();

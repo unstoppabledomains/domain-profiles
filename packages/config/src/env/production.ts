@@ -66,6 +66,9 @@ export default function getProductionConfig(): ConfigOverride {
     },
     WALLETS: {
       HOST_URL: 'https://api.unstoppabledomains.com/wallet',
+      MOBILE: {
+        INSTALL_APP_URL: 'https://up.io/download-mobile-app',
+      },
       GET_WALLET_URL:
         'https://unstoppabledomains.com/cart?product=unstoppable-wallet',
       LAUNCH_API_KEY:

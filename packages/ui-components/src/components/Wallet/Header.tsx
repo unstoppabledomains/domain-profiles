@@ -18,6 +18,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useUnstoppableMessaging} from '../../hooks';
 import {useTranslationContext} from '../../lib';
+import {isChromeExtension} from '../../lib/wallet/chromeRuntime';
 import {UnstoppableMessaging} from '../Chat';
 import DropDownMenu from '../DropDownMenu';
 import {DomainProfileModal} from '../Manage';
@@ -245,6 +246,11 @@ export const Header: React.FC<Props> = ({
     enqueueSnackbar(t('manage.updatedDomainSuccess'), {variant: 'success'});
   };
 
+  const handleInstallAppClicked = () => {
+    window.open(config.WALLETS.MOBILE.INSTALL_APP_URL, '_blank');
+    setIsMenuOpen(false);
+  };
+
   const handleLogout = () => {
     if (onLogout) {
       onLogout();
@@ -259,6 +265,16 @@ export const Header: React.FC<Props> = ({
       {email: emailAddress},
       {skipNulls: true},
     )}`;
+  };
+
+  const isAppInstalled = () => {
+    if (isChromeExtension()) {
+      return true;
+    }
+    if (window.unstoppable || window.upio) {
+      return true;
+    }
+    return false;
   };
 
   return mode === 'basic' ? (
@@ -382,6 +398,11 @@ export const Header: React.FC<Props> = ({
           onSecurityCenterClicked={
             accessToken && onSecurityCenterClicked
               ? handleSecurityCenterClicked
+              : undefined
+          }
+          onInstallAppClicked={
+            accessToken && !isAppInstalled()
+              ? handleInstallAppClicked
               : undefined
           }
           onLogout={handleLogout}

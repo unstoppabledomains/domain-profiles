@@ -1,11 +1,15 @@
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
-import type {Theme} from '@mui/material/styles';
+import {useTheme, type Theme} from '@mui/material/styles';
 import {MobileOS, getMobileOperatingSystem} from 'lib/getDevice';
 import React, {useEffect, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
-import {Link, useTranslationContext} from '@unstoppabledomains/ui-components';
+import {
+  Link,
+  WalletIcon,
+  useTranslationContext,
+} from '@unstoppabledomains/ui-components';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -40,6 +44,7 @@ const DownloadMobileApp: React.FC = () => {
   const [t] = useTranslationContext();
   const {classes} = useStyles();
   const [isLoading, setIsLoading] = useState(true);
+  const theme = useTheme();
 
   useEffect(() => {
     const detectedOS = getMobileOperatingSystem();
@@ -63,6 +68,10 @@ const DownloadMobileApp: React.FC = () => {
           <CircularProgress />
         ) : (
           <>
+            <WalletIcon size={100} />
+            <Typography variant="h4" mb={4} mt={2}>
+               {theme.wallet.title} 
+            </Typography>
             <Typography className={classes.title} variant="h5">
               {t('wallet.installMobileApp')}
             </Typography>

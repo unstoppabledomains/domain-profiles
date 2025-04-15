@@ -1009,6 +1009,8 @@
     "gallery": "Collectibles",
     "gasPriceError": "Error estimating network fee",
     "getLiteWallet": "Create new wallet",
+    "installChromeExtension": "Install UP.io on your desktop",
+    "installMobileApp": "Install UP.io on your mobile device",
     "insufficientBalance": "Insufficient balance",
     "invalidEmailAddress": "Invalid email address",
     "invalidRecoveryAccount": "Invalid email address or password",

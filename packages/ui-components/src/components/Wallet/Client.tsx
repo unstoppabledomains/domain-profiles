@@ -259,7 +259,7 @@ export const Client: React.FC<ClientProps> = ({
   const [fundingModalIcon, setFundingModalIcon] = useState<React.ReactNode>();
   const [banner, setBanner] = useState<React.ReactNode>(externalBanner);
   const {setWeb3Deps, setShowPinCta, setTxLockStatus, txLockStatus} =
-    useWeb3Context();
+    useWeb3Context({enforcePin: true});
   const cryptoValue = wallets
     .map(w => w.totalValueUsdAmt || 0)
     .reduce((p, c) => p + c, 0);

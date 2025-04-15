@@ -115,7 +115,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
   const {enqueueSnackbar} = useSnackbar();
-  const {setTxLockStatus} = useWeb3Context();
+  const {setTxLockStatus} = useWeb3Context({enforcePin: true});
   const [state] = useFireblocksState();
   const clientState = getBootstrapState(state);
   const theme = useTheme();

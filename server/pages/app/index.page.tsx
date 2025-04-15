@@ -34,7 +34,7 @@ const WalletPage = () => {
   const theme = useCustomTheme();
   const [isLoaded, setIsLoaded] = useState(false);
   const [walletState] = useFireblocksState();
-  const {showPinCta} = useWeb3Context();
+  const {showPinCta} = useWeb3Context({enforcePin: true});
   const [authAddress, setAuthAddress] = useState<string>('');
   const [authDomain, setAuthDomain] = useState<string>('');
   const [authAvatar, setAuthAvatar] = useState<string>();

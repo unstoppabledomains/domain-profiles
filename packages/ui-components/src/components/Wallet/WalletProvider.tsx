@@ -234,7 +234,9 @@ export const WalletProvider: React.FC<
   const [custodyUpdateMs, setCustodyUpdateMs] = useState<number>();
 
   // wallet recovery state variables
-  const {accessToken, setAccessToken, showPinCta} = useWeb3Context();
+  const {accessToken, setAccessToken, showPinCta} = useWeb3Context({
+    enforcePin: true,
+  });
   const [loginState, setLoginState] = useState(initialLoginState);
   const [oneTimeCode, setOneTimeCode] = useState<string>();
   const [recoveryPhrase, setRecoveryPhrase] = useState(initialRecoveryPhrase);

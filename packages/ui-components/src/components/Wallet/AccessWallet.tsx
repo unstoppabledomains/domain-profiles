@@ -62,7 +62,7 @@ export const AccessWallet = (props: Props) => {
   const [udConfigButton, setUdConfigButton] = useState<React.ReactNode>(<></>);
   const [udConfigSuccess, setUdConfigSuccess] = useState(false);
   const {messageToSign, setMessageToSign, txToSign, setTxToSign} =
-    useWeb3Context();
+    useWeb3Context({enforcePin: true});
 
   // automatically select a connected Unstoppable Wallet if one of the managed
   // addresses matches the requested address

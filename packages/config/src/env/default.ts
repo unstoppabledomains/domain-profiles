@@ -149,7 +149,7 @@ export default function getDefaultConfig(): Config {
       MOBILE: {
         INSTALL_APP_URL: 'http://localhost:3000/download-mobile-app',
         ANDROID_URL:
-          'https://play.google.com/store/apps/details?id=com.unstoppabledomains.manager',
+          'https://play.google.com/store/apps/details?id=io.up.wallet',
         APPLE_URL: 'https://testflight.apple.com/join/m38AeGFb',
         CHROME_STORE_URL:
           'https://chromewebstore.google.com/detail/cigfdaeondbdnogeplpdlmcnoeagdoih',

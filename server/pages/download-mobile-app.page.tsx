@@ -2,7 +2,11 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {MobileOS, getMobileOperatingSystem} from 'lib/getDevice';
+import getDevice, {
+  MobileOS,
+  Platform,
+  isChromeExtensionSupported,
+} from 'lib/getDevice';
 import React, {useEffect, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
@@ -60,15 +64,24 @@ const DownloadMobileApp: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const detectedOS = getMobileOperatingSystem();
+    const detectedOS = getDevice();
 
+    // redirect to Google Play store
     if (detectedOS === MobileOS.Android) {
       window.location.href = config.WALLETS.MOBILE.ANDROID_URL;
       return;
     }
 
+    // redirect to Apple App Store
     if (detectedOS === MobileOS.Ios) {
       window.location.href = config.WALLETS.MOBILE.APPLE_URL;
+      return;
+    }
+
+    // redirect to Chrome Web Store
+    if (detectedOS === Platform.Desktop && isChromeExtensionSupported()) {
+      window.location.href = config.WALLETS.MOBILE.CHROME_STORE_URL;
+      return;
     }
 
     setIsLoading(false);

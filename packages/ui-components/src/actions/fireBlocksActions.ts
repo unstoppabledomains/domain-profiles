@@ -207,6 +207,12 @@ export const createSignatureOperation = async (
     notifyEvent(e, 'warning', 'Wallet', 'Signature', {
       meta: {accountId, assetId, message},
     });
+    if (
+      e instanceof TransactionRuleMfaRequiredError ||
+      e instanceof TransactionRuleEmailOtpRequiredError
+    ) {
+      throw e;
+    }
   }
   return undefined;
 };
@@ -252,6 +258,12 @@ export const createTransactionOperation = async (
     notifyEvent(e, 'warning', 'Wallet', 'Signature', {
       meta: {accountId, assetId, tx},
     });
+    if (
+      e instanceof TransactionRuleMfaRequiredError ||
+      e instanceof TransactionRuleEmailOtpRequiredError
+    ) {
+      throw e;
+    }
   }
   return undefined;
 };

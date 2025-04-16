@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -29,15 +30,18 @@ const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: theme.spacing(4),
-    boxShadow: theme.shadows[3],
+    padding: theme.spacing(2),
     borderRadius: theme.shape.borderRadius,
     backgroundColor: theme.palette.background.paper,
+    marginTop: theme.spacing(2),
+    minWidth: '350px',
+    boxShadow: theme.shadows[2],
   },
   content: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
     marginBottom: theme.spacing(2),
@@ -46,6 +50,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   header: {
     color: theme.palette.wallet.text.primary,
+  },
+  button: {
+    marginTop: theme.spacing(2),
   },
   appLinksContainer: {
     display: 'flex',
@@ -87,55 +94,82 @@ const DownloadMobileApp: React.FC = () => {
     setIsLoading(false);
   }, []);
 
+  const handleOpenInBrowser = () => {
+    window.location.href = `${config.UP_IO_BASE_URL}/app`;
+  };
+
   return (
     <div className={classes.root}>
       <div className={classes.content}>
         {isLoading ? (
           <CircularProgress />
         ) : (
-          <Box className={classes.paper}>
-            <WalletIcon size={100} beta={true} />
+          <Box className={classes.content}>
+            <WalletIcon size={100} beta={true} boxShadow={true} />
             <Typography
               variant="h4"
               className={cx(classes.title, classes.header)}
             >
               {t('wallet.installApp')}
             </Typography>
-            <Typography className={classes.title} variant="h6">
-              {t('wallet.installMobileApp')}
+            <Box className={classes.paper}>
+              <Box mt={-2}>
+                <Typography className={classes.title} variant="h6">
+                  {t('wallet.installMobileApp')}
+                </Typography>
+              </Box>
+              <div className={classes.appLinksContainer}>
+                <Link
+                  className={classes.appStoreLink}
+                  to={config.WALLETS.MOBILE.APPLE_URL}
+                  target="_blank"
+                >
+                  <img
+                    src="https://storage.googleapis.com/unstoppable-client-assets/images/mobile-app/DownloadOnAppStoreBadge.svg"
+                    width={120}
+                    height={40}
+                  />
+                </Link>
+                <Link to={config.WALLETS.MOBILE.ANDROID_URL} target="_blank">
+                  <img
+                    src="https://storage.googleapis.com/unstoppable-client-assets/images/mobile-app/DownloadOnGooglePlayBadge.svg"
+                    width={135}
+                    height={40}
+                  />
+                </Link>
+              </div>
+              <Typography className={classes.title} variant="h6">
+                {t('wallet.installChromeExtension')}
+              </Typography>
+              <div className={classes.appLinksContainer}>
+                <Link
+                  to={config.WALLETS.MOBILE.CHROME_STORE_URL}
+                  target="_blank"
+                >
+                  <img
+                    src="https://storage.googleapis.com/unstoppable-client-assets/images/common/chrome-store-badge.svg"
+                    width={135}
+                    height={40}
+                  />
+                </Link>
+              </div>
+            </Box>
+            <Typography
+              variant="caption"
+              className={classes.title}
+              mt={2}
+              mb={2}
+            >
+              -- {t('common.or')} --
             </Typography>
-            <div className={classes.appLinksContainer}>
-              <Link
-                className={classes.appStoreLink}
-                to={config.WALLETS.MOBILE.APPLE_URL}
-                target="_blank"
-              >
-                <img
-                  src="https://storage.googleapis.com/unstoppable-client-assets/images/mobile-app/DownloadOnAppStoreBadge.svg"
-                  width={120}
-                  height={40}
-                />
-              </Link>
-              <Link to={config.WALLETS.MOBILE.ANDROID_URL} target="_blank">
-                <img
-                  src="https://storage.googleapis.com/unstoppable-client-assets/images/mobile-app/DownloadOnGooglePlayBadge.svg"
-                  width={135}
-                  height={40}
-                />
-              </Link>
-            </div>
-            <Typography className={classes.title} variant="h6">
-              {t('wallet.installChromeExtension')}
-            </Typography>
-            <div className={classes.appLinksContainer}>
-              <Link to={config.WALLETS.MOBILE.CHROME_STORE_URL} target="_blank">
-                <img
-                  src="https://storage.googleapis.com/unstoppable-client-assets/images/common/chrome-store-badge.svg"
-                  width={135}
-                  height={40}
-                />
-              </Link>
-            </div>
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              onClick={handleOpenInBrowser}
+            >
+              {t('wallet.openInBrowser')}
+            </Button>
           </Box>
         )}
       </div>

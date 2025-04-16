@@ -53,6 +53,9 @@ const WalletPage = () => {
   const seoTags = getSeoTags({
     title: theme.wallet.title,
     description: theme.wallet.subTitle,
+    url: `${config.UP_IO_BASE_URL}/app`,
+    domainAvatar:
+      'https://storage.googleapis.com/unstoppable-client-assets/images/upio/logo/beta.png',
   });
 
   // sign the user out if recovery is requested

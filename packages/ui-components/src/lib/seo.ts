@@ -14,6 +14,12 @@ export const getSeoTags = (props: GetSeoTagsProps): NextSeoProps => {
     return {
       title,
       description: props.description || DEFAULT_SEO_DESCRIPTION,
+      openGraph: props.domainAvatar
+        ? {
+            images: [{url: props.domainAvatar}],
+            url: props.url ? props.url : undefined,
+          }
+        : undefined,
     };
   }
 

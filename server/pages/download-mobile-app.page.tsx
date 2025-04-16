@@ -3,17 +3,20 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
 import getDevice, {
   MobileOS,
   Platform,
   isChromeExtensionSupported,
 } from 'lib/getDevice';
+import {NextSeo} from 'next-seo';
 import React, {useEffect, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 import {
   Link,
   WalletIcon,
+  getSeoTags,
   useTranslationContext,
 } from '@unstoppabledomains/ui-components';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -69,6 +72,7 @@ const DownloadMobileApp: React.FC = () => {
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
   const [isLoading, setIsLoading] = useState(true);
+  const theme = useTheme();
 
   useEffect(() => {
     const detectedOS = getDevice();
@@ -98,8 +102,18 @@ const DownloadMobileApp: React.FC = () => {
     window.location.href = `${config.UP_IO_BASE_URL}/app`;
   };
 
+  // build default wallet page SEO tags
+  const seoTags = getSeoTags({
+    title: theme.wallet.title,
+    description: theme.wallet.subTitle,
+    url: `${config.UP_IO_BASE_URL}/download-mobile-app`,
+    domainAvatar:
+      'https://storage.googleapis.com/unstoppable-client-assets/images/upio/logo/beta.png',
+  });
+
   return (
     <div className={classes.root}>
+      <NextSeo {...seoTags} />
       <div className={classes.content}>
         {isLoading ? (
           <CircularProgress />

@@ -12,6 +12,7 @@ export type GetSeoTagsProps = {
   profileData?: SerializedPublicDomainProfileData | null | undefined;
   socialsInfo?: SerializedDomainProfileSocialAccountsUserInfo;
   domainAvatar?: string | null;
+  url?: string;
 };
 
 export const UD_TWITTER_HANDLE = 'unstoppableweb';

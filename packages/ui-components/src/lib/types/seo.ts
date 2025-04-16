@@ -13,6 +13,8 @@ export type GetSeoTagsProps = {
   socialsInfo?: SerializedDomainProfileSocialAccountsUserInfo;
   domainAvatar?: string | null;
   url?: string;
+  twitterSite?: string;
 };
 
 export const UD_TWITTER_HANDLE = 'unstoppableweb';
+export const UP_IO_TWITTER_HANDLE = 'upiowallet';

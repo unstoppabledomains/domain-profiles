@@ -19,6 +19,7 @@ import {
   getSeoTags,
   useTranslationContext,
 } from '@unstoppabledomains/ui-components';
+import {UP_IO_TWITTER_HANDLE} from '@unstoppabledomains/ui-components/src/lib';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -109,6 +110,7 @@ const DownloadMobileApp: React.FC = () => {
     url: `${config.UP_IO_BASE_URL}/download-mobile-app`,
     domainAvatar:
       'https://storage.googleapis.com/unstoppable-client-assets/images/upio/logo/beta.png',
+    twitterSite: UP_IO_TWITTER_HANDLE,
   });
 
   return (

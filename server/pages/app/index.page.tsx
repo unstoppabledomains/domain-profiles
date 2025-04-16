@@ -15,6 +15,7 @@ import type {DomainProfileTabType} from '@unstoppabledomains/ui-components';
 import {
   DomainProfileKeys,
   Modal,
+  UP_IO_TWITTER_HANDLE,
   Wallet,
   getAddressMetadata,
   getBootstrapState,
@@ -56,6 +57,7 @@ const WalletPage = () => {
     url: `${config.UP_IO_BASE_URL}/app`,
     domainAvatar:
       'https://storage.googleapis.com/unstoppable-client-assets/images/upio/logo/beta.png',
+    twitterSite: UP_IO_TWITTER_HANDLE,
   });
 
   // sign the user out if recovery is requested

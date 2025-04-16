@@ -20,6 +20,12 @@ export const getSeoTags = (props: GetSeoTagsProps): NextSeoProps => {
             url: props.url ? props.url : undefined,
           }
         : undefined,
+      twitter: {
+        cardType: 'summary',
+        site: props.twitterSite
+          ? `@${props.twitterSite}`
+          : `@${UD_TWITTER_HANDLE}`,
+      },
     };
   }
 

@@ -207,6 +207,12 @@ export const createSignatureOperation = async (
     notifyEvent(e, 'warning', 'Wallet', 'Signature', {
       meta: {accountId, assetId, message},
     });
+    if (
+      e instanceof TransactionRuleMfaRequiredError ||
+      e instanceof TransactionRuleEmailOtpRequiredError
+    ) {
+      throw e;
+    }
   }
   return undefined;
 };
@@ -252,24 +258,28 @@ export const createTransactionOperation = async (
     notifyEvent(e, 'warning', 'Wallet', 'Signature', {
       meta: {accountId, assetId, tx},
     });
+    if (
+      e instanceof TransactionRuleMfaRequiredError ||
+      e instanceof TransactionRuleEmailOtpRequiredError
+    ) {
+      throw e;
+    }
   }
   return undefined;
 };
 
 export const createTransactionRule = async (
   accessToken: string,
+  otpCode: string,
   rule: TransactionRuleRequest,
 ): Promise<string | undefined> => {
+  const headers = buildHeadersWithAuth(accessToken, otpCode);
   const createRuleResponse = await fetchApi<TransactionRule>(
     `/v1/settings/security/rules`,
     {
       method: 'POST',
       mode: 'cors',
-      headers: {
-        'Access-Control-Allow-Credentials': 'true',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers,
       host: config.WALLETS.HOST_URL,
       body: JSON.stringify(rule),
     },
@@ -347,10 +357,21 @@ export const deleteTransactionRule = async (
   otpCode: string,
   rule: TransactionRule,
 ) => {
-  return await updateTransactionRule(accessToken, otpCode, rule.id, {
-    type: rule.type,
-    active: false,
-  });
+  const headers = buildHeadersWithAuth(accessToken, otpCode);
+  try {
+    await fetchApi<TransactionRule>(`/v1/settings/security/rules/${rule.id}`, {
+      method: 'DELETE',
+      mode: 'cors',
+      headers,
+      host: config.WALLETS.HOST_URL,
+    });
+    return true;
+  } catch (e) {
+    notifyEvent(e, 'error', 'Wallet', 'Fetch', {
+      msg: 'error deleting transaction rule',
+    });
+  }
+  return false;
 };
 
 export const disableTransactionLock = async (

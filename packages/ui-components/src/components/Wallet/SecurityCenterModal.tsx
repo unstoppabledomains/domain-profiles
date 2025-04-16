@@ -259,121 +259,53 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
     setErrorMessage(undefined);
     setIsSavingLargeTxProtection(true);
 
-    // check if large tx protection is already enabled
+    // prompt for OTP if not yet provided
+    if (!otpCode) {
+      setOtpPrompt('update');
+      return;
+    }
+
+    // clear OTP state
+    setOtpPrompt(undefined);
+
+    // create a new rule if large tx protection is not enabled
     if (!isLargeTxProtectionEnabled) {
-      // update existing rule if possible
-      const existingRule = txRules.find(
-        r =>
-          !r.active &&
-          r.type === 'SEND_FUNDS' &&
-          r.name === t('wallet.largeTxProtection'),
-      );
-      if (existingRule) {
-        // prompt for OTP if not yet provided
-        if (!otpCode) {
-          setOtpPrompt('update');
-          return;
-        }
-
-        // clear OTP state
-        setOtpPrompt(undefined);
-
-        // update the existing rule
-        const updatedRule: Partial<TransactionRuleRequest> = {
-          type: 'SEND_FUNDS',
-          active: true,
-          parameters: {
-            conditions: {
-              any: [
-                {
-                  field: 'AMOUNT',
-                  operator: 'GT',
-                  value: largeTxAmountInput,
-                },
-              ],
-            },
+      const rule: TransactionRuleRequest = {
+        name: t('wallet.largeTxProtection'),
+        type: 'SEND_FUNDS',
+        active: true,
+        parameters: {
+          conditions: {
+            any: [
+              {
+                field: 'AMOUNT',
+                operator: 'GT',
+                value: largeTxAmountInput,
+              },
+            ],
           },
-        };
-        const updatedResponse = await updateTransactionRule(
-          accessToken,
-          otpCode,
-          existingRule.id,
-          updatedRule,
-        );
-        if (!updatedResponse) {
-          setIsSavingLargeTxProtection(false);
-          setErrorMessage(
-            t('wallet.largeTxProtectionError', {action: 'creating'}),
-          );
-          return;
-        }
-
-        // create the acceptance criteria if it doesn't exist
-        if (
-          !existingRule.acceptanceCriteria?.items ||
-          existingRule.acceptanceCriteria.items.filter(
-            c => c.status === 'ACTIVE',
-          ).length === 0
-        ) {
-          await createTransactionRuleAcceptanceCriteria(
-            accessToken,
-            existingRule.id,
-            'MFA_CODE',
-          );
-        }
-
-        // refresh the tx rules
-        const updatedRules = await getTransactionRules(accessToken);
-        if (updatedRules) {
-          setTxRules(updatedRules);
-        }
-      } else {
-        // create a new rule
-        const rule: TransactionRuleRequest = {
-          name: t('wallet.largeTxProtection'),
-          type: 'SEND_FUNDS',
-          active: true,
-          parameters: {
-            conditions: {
-              any: [
-                {
-                  field: 'AMOUNT',
-                  operator: 'GT',
-                  value: largeTxAmountInput,
-                },
-              ],
-            },
-          },
-        };
-        const ruleId = await createTransactionRule(accessToken, rule);
-        if (!ruleId) {
-          return;
-        }
-
-        // create the acceptance criteria
-        await createTransactionRuleAcceptanceCriteria(
-          accessToken,
-          ruleId,
-          'MFA_CODE',
-        );
-
-        // refresh the tx rules
-        const updatedRules = await getTransactionRules(accessToken);
-        if (updatedRules) {
-          setTxRules(updatedRules);
-        }
-      }
-    } else {
-      // prompt for OTP if not yet provided
-      if (!otpCode) {
-        setOtpPrompt('update');
+        },
+      };
+      const ruleId = await createTransactionRule(accessToken, otpCode, rule);
+      if (!ruleId) {
         return;
       }
 
-      // clear OTP state
-      setOtpPrompt(undefined);
+      // create the acceptance criteria
+      await createTransactionRuleAcceptanceCriteria(
+        accessToken,
+        ruleId,
+        'MFA_CODE',
+      );
 
-      // prepare to update the rule
+      // refresh the tx rules
+      const updatedRules = await getTransactionRules(accessToken);
+      if (updatedRules) {
+        setTxRules(updatedRules);
+      }
+    }
+    // update the rule if large tx protection is already enabled
+    else {
       const rule = txRules.find(isLargeTxRule);
       if (!rule) {
         return;
@@ -462,12 +394,12 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
     // delete the rule
     setErrorMessage(undefined);
     setIsSavingLargeTxProtection(true);
-    const disableResponse = await deleteTransactionRule(
+    const isDeleteSuccess = await deleteTransactionRule(
       accessToken,
       otpCode,
       rule,
     );
-    if (!disableResponse) {
+    if (!isDeleteSuccess) {
       setIsSavingLargeTxProtection(false);
       setErrorMessage(
         t('wallet.largeTxProtectionError', {action: 'disabling'}),

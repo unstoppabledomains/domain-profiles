@@ -1,5 +1,6 @@
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined';
+import Avatar from '@mui/material/Avatar';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -55,13 +56,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   txPctChangeUp: {
     color: theme.palette.wallet.chart.up,
   },
-  nftCollectionIcon: {
-    borderRadius: theme.shape.borderRadius,
-    width: '40px',
-    height: '40px',
-  },
   tokenIcon: {
-    borderRadius: '50%',
     width: '40px',
     height: '40px',
     backgroundColor: theme.palette.wallet.background.main,
@@ -153,13 +148,13 @@ const Token: React.FC<Props> = ({
                     className={cx(classes.tokenIcon)}
                   />
                 ) : token.imageUrl ? (
-                  <img
+                  <Avatar
                     src={token.imageUrl}
-                    className={
-                      token.type === TokenType.Nft
-                        ? classes.nftCollectionIcon
-                        : classes.tokenIcon
+                    className={classes.tokenIcon}
+                    variant={
+                      token.type === TokenType.Nft ? 'rounded' : 'circular'
                     }
+                    alt={token.name}
                   />
                 ) : token.type === TokenType.Nft ? (
                   <PhotoLibraryOutlinedIcon

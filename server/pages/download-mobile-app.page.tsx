@@ -1,7 +1,7 @@
+import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {useTheme} from '@mui/material/styles';
 import {MobileOS, getMobileOperatingSystem} from 'lib/getDevice';
 import React, {useEffect, useState} from 'react';
 
@@ -20,20 +20,33 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  paper: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing(4),
+    boxShadow: theme.shadows[3],
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: theme.palette.background.paper,
+  },
   content: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
   },
   title: {
-    color: theme.palette.greyShades[600],
     marginBottom: theme.spacing(2),
+    marginTop: theme.spacing(2),
+    color: theme.palette.wallet.text.secondary,
+  },
+  header: {
+    color: theme.palette.wallet.text.primary,
   },
   appLinksContainer: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: theme.spacing(4),
   },
   appStoreLink: {
     marginRight: theme.spacing(1.5),
@@ -43,9 +56,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 const DownloadMobileApp: React.FC = () => {
   const [t] = useTranslationContext();
-  const {classes} = useStyles();
+  const {classes, cx} = useStyles();
   const [isLoading, setIsLoading] = useState(true);
-  const theme = useTheme();
 
   useEffect(() => {
     const detectedOS = getMobileOperatingSystem();
@@ -68,12 +80,15 @@ const DownloadMobileApp: React.FC = () => {
         {isLoading ? (
           <CircularProgress />
         ) : (
-          <>
+          <Box className={classes.paper}>
             <WalletIcon size={100} beta={true} />
-            <Typography variant="h4" mb={4} mt={2}>
+            <Typography
+              variant="h4"
+              className={cx(classes.title, classes.header)}
+            >
               {t('wallet.installApp')}
             </Typography>
-            <Typography className={classes.title} variant="h5">
+            <Typography className={classes.title} variant="h6">
               {t('wallet.installMobileApp')}
             </Typography>
             <div className={classes.appLinksContainer}>
@@ -96,7 +111,7 @@ const DownloadMobileApp: React.FC = () => {
                 />
               </Link>
             </div>
-            <Typography className={classes.title} variant="h5">
+            <Typography className={classes.title} variant="h6">
               {t('wallet.installChromeExtension')}
             </Typography>
             <div className={classes.appLinksContainer}>
@@ -108,7 +123,7 @@ const DownloadMobileApp: React.FC = () => {
                 />
               </Link>
             </div>
-          </>
+          </Box>
         )}
       </div>
     </div>

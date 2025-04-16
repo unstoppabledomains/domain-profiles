@@ -1,6 +1,7 @@
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
-import {useTheme, type Theme} from '@mui/material/styles';
+import type {Theme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
 import {MobileOS, getMobileOperatingSystem} from 'lib/getDevice';
 import React, {useEffect, useState} from 'react';
 
@@ -68,9 +69,9 @@ const DownloadMobileApp: React.FC = () => {
           <CircularProgress />
         ) : (
           <>
-            <WalletIcon size={100} />
+            <WalletIcon size={100} beta={true} />
             <Typography variant="h4" mb={4} mt={2}>
-               {theme.wallet.title} 
+              {t('wallet.installApp')}
             </Typography>
             <Typography className={classes.title} variant="h5">
               {t('wallet.installMobileApp')}

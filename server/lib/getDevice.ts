@@ -36,6 +36,11 @@ export default function getDevice(): Device {
   return Platform.Desktop;
 }
 
+export const isChromeExtensionSupported = (): boolean => {
+  const ua = get(globalThis, 'window.navigator.userAgent');
+  return /Chrome/.test(ua);
+};
+
 export function getMobileOperatingSystem(): MobileOS {
   const userAgent = get(globalThis, 'window.navigator.userAgent');
 

@@ -268,7 +268,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
     // clear OTP state
     setOtpPrompt(undefined);
 
-    // create a new rule if large tx protection is already enabled
+    // create a new rule if large tx protection is not enabled
     if (!isLargeTxProtectionEnabled) {
       const rule: TransactionRuleRequest = {
         name: t('wallet.largeTxProtection'),

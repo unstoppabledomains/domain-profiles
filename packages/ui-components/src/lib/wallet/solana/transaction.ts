@@ -68,7 +68,7 @@ export const createNativeTransferTx = async (
       SystemProgram.transfer({
         fromPubkey: fromWalletSigner.publicKey,
         toPubkey,
-        lamports: amount * LAMPORTS_PER_SOL,
+        lamports: Math.floor(amount * LAMPORTS_PER_SOL),
       }),
     ),
     fromAddress,
@@ -133,7 +133,7 @@ export const createSplTransferTx = async (
         fromTokenAccount.address,
         toTokenAccount.address,
         fromWalletSigner.publicKey,
-        amount * Math.pow(10, tokenDecimals),
+        Math.floor(amount * Math.pow(10, tokenDecimals)),
       ),
     ),
     fromAddress,

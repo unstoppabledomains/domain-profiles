@@ -15,11 +15,10 @@ import type {DomainProfileTabType} from '@unstoppabledomains/ui-components';
 import {
   DomainProfileKeys,
   Modal,
-  UP_IO_TWITTER_HANDLE,
   Wallet,
   getAddressMetadata,
   getBootstrapState,
-  getSeoTags,
+  getWalletSeoTags,
   isEthAddress,
   localStorageWrapper,
   useCustomTheme,
@@ -51,14 +50,7 @@ const WalletPage = () => {
   const isSessionUnlocked = showPinCta === false;
 
   // build default wallet page SEO tags
-  const seoTags = getSeoTags({
-    title: theme.wallet.title,
-    description: theme.wallet.subTitle,
-    url: `${config.UP_IO_BASE_URL}/app`,
-    domainAvatar:
-      'https://storage.googleapis.com/unstoppable-client-assets/images/upio/logo/beta.png',
-    twitterSite: UP_IO_TWITTER_HANDLE,
-  });
+  const seoTags = getWalletSeoTags();
 
   // sign the user out if recovery is requested
   useEffect(() => {

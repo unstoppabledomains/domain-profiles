@@ -95,11 +95,11 @@ import {
   formOpenSeaLink,
   getBlockScanUrl,
   getDomainBadges,
+  getDomainSeoTags,
   getFollowers,
   getHumanityCheckStatus,
   getImageUrl,
   getProfileData,
-  getSeoTags,
   isDomainValidForManagement,
   isExternalDomain,
   localStorageWrapper,
@@ -263,7 +263,7 @@ const DomainProfile = ({
   const domainCover = profileData?.profile?.coverPath
     ? getImageUrl(profileData?.profile?.coverPath)
     : null;
-  const seoTags = getSeoTags({
+  const seoTags = getDomainSeoTags({
     domain,
     title: t('nftCollection.unstoppableDomains'),
     profileData,

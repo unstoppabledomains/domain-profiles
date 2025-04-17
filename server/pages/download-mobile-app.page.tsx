@@ -3,7 +3,6 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import {useTheme} from '@mui/material/styles';
 import getDevice, {
   MobileOS,
   Platform,
@@ -16,10 +15,9 @@ import config from '@unstoppabledomains/config';
 import {
   Link,
   WalletIcon,
-  getSeoTags,
+  getWalletSeoTags,
   useTranslationContext,
 } from '@unstoppabledomains/ui-components';
-import {UP_IO_TWITTER_HANDLE} from '@unstoppabledomains/ui-components/src/lib';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -73,7 +71,6 @@ const DownloadMobileApp: React.FC = () => {
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
   const [isLoading, setIsLoading] = useState(true);
-  const theme = useTheme();
 
   useEffect(() => {
     const detectedOS = getDevice();
@@ -104,14 +101,7 @@ const DownloadMobileApp: React.FC = () => {
   };
 
   // build default wallet page SEO tags
-  const seoTags = getSeoTags({
-    title: theme.wallet.title,
-    description: theme.wallet.subTitle,
-    url: `${config.UP_IO_BASE_URL}/download-mobile-app`,
-    domainAvatar:
-      'https://storage.googleapis.com/unstoppable-client-assets/images/upio/logo/beta.png',
-    twitterSite: UP_IO_TWITTER_HANDLE,
-  });
+  const seoTags = getWalletSeoTags();
 
   return (
     <div className={classes.root}>

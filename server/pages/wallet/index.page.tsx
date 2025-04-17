@@ -7,17 +7,13 @@ import {useStyles} from 'styles/pages/index.styles';
 import {GlobalStyles} from 'tss-react';
 
 import config from '@unstoppabledomains/config';
-import {getSeoTags, useCustomTheme} from '@unstoppabledomains/ui-components';
+import {getWalletSeoTags} from '@unstoppabledomains/ui-components';
 
 const WalletPage = () => {
   const {classes} = useStyles({});
-  const theme = useCustomTheme();
 
   // build default wallet page SEO tags
-  const seoTags = getSeoTags({
-    title: theme.wallet.title,
-    description: theme.wallet.subTitle,
-  });
+  const seoTags = getWalletSeoTags();
 
   return (
     <Box className={classes.container}>

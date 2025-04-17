@@ -10,7 +10,7 @@ import {GlobalStyles} from 'tss-react';
 import config from '@unstoppabledomains/config';
 import {
   ProfileSearchBar,
-  getSeoTags,
+  getDomainSeoTags,
   useTranslationContext,
   useWeb3Context,
 } from '@unstoppabledomains/ui-components';
@@ -37,7 +37,7 @@ const HomePage = () => {
   const [t] = useTranslationContext();
   const [firstNFTCard, secondNFTCard] = getRandomNftCards(nftCardsArray);
 
-  const seoTags = getSeoTags({
+  const seoTags = getDomainSeoTags({
     title: t('nftCollection.unstoppableDomains'),
   });
 

@@ -74,10 +74,6 @@ const WrappedApp = (props: WrappedAppProps) => {
     setPageTheme(getTheme(themeName, themeMode));
   }, [themeName, themeMode]);
 
-  if (!pageTheme) {
-    return null;
-  }
-
   return (
     <>
       <Head>

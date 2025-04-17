@@ -8,12 +8,14 @@ import getDevice, {
   Platform,
   isChromeExtensionSupported,
 } from 'lib/getDevice';
+import {NextSeo} from 'next-seo';
 import React, {useEffect, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
 import {
   Link,
   WalletIcon,
+  getWalletSeoTags,
   useTranslationContext,
 } from '@unstoppabledomains/ui-components';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -98,8 +100,12 @@ const DownloadMobileApp: React.FC = () => {
     window.location.href = `${config.UP_IO_BASE_URL}/app`;
   };
 
+  // build default wallet page SEO tags
+  const seoTags = getWalletSeoTags();
+
   return (
     <div className={classes.root}>
+      <NextSeo {...seoTags} />
       <div className={classes.content}>
         {isLoading ? (
           <CircularProgress />

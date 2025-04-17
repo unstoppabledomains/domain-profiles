@@ -18,7 +18,7 @@ import {
   Wallet,
   getAddressMetadata,
   getBootstrapState,
-  getSeoTags,
+  getWalletSeoTags,
   isEthAddress,
   localStorageWrapper,
   useCustomTheme,
@@ -50,10 +50,7 @@ const WalletPage = () => {
   const isSessionUnlocked = showPinCta === false;
 
   // build default wallet page SEO tags
-  const seoTags = getSeoTags({
-    title: theme.wallet.title,
-    description: theme.wallet.subTitle,
-  });
+  const seoTags = getWalletSeoTags();
 
   // sign the user out if recovery is requested
   useEffect(() => {

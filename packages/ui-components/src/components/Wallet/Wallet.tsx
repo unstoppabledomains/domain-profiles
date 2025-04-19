@@ -53,6 +53,7 @@ export const Wallet: React.FC<
     loginState?: TokenRefreshResponse;
     banner?: React.ReactNode;
     setAuthAddress?: (v: string) => void;
+    setAuthDomain?: (v: string) => void;
     onLoginInitiated?: (
       emailAddress: string,
       password: string,
@@ -93,6 +94,7 @@ export const Wallet: React.FC<
   onMessagesClick,
   onMessagePopoutClick,
   setAuthAddress,
+  setAuthDomain,
   setButtonComponent,
 }) => {
   const {classes} = useStyles();
@@ -212,6 +214,7 @@ export const Wallet: React.FC<
         isHeaderClicked={isHeaderClicked}
         setIsHeaderClicked={setIsHeaderClicked}
         setAuthAddress={setAuthAddress}
+        setAuthDomain={setAuthDomain}
         setShowMessagesInHeader={setShowMessagesInHeader}
         showMessages={
           theme.wallet.type === 'upio' && showMessages && !showMessagesInHeader

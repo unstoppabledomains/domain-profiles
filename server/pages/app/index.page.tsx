@@ -9,6 +9,7 @@ import React, {useEffect, useState} from 'react';
 import useIsMounted from 'react-is-mounted-hook';
 import {useStyles} from 'styles/pages/index.styles';
 import {GlobalStyles} from 'tss-react';
+import useAsyncEffect from 'use-async-effect';
 
 import config from '@unstoppabledomains/config';
 import type {DomainProfileTabType} from '@unstoppabledomains/ui-components';
@@ -35,8 +36,8 @@ const WalletPage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [walletState] = useFireblocksState();
   const {showPinCta} = useWeb3Context({enforcePin: true});
-  const [authAddress, setAuthAddress] = useState<string>('');
-  const [authDomain, setAuthDomain] = useState<string>('');
+  const [authAddress, setAuthAddress] = useState<string>();
+  const [authDomain, setAuthDomain] = useState<string>();
   const [authAvatar, setAuthAvatar] = useState<string>();
   const [authButton, setAuthButton] = useState<React.ReactNode>();
   const [authComplete, setAuthComplete] = useState(false);
@@ -66,6 +67,21 @@ const WalletPage = () => {
     }
     setIsReloadChecked(true);
   }, [walletState, recoveryToken, emailAddress]);
+
+  useAsyncEffect(async () => {
+    if (authAddress !== undefined) {
+      await localStorageWrapper.setItem(
+        DomainProfileKeys.AuthAddress,
+        authAddress,
+      );
+    }
+    if (authDomain !== undefined) {
+      await localStorageWrapper.setItem(
+        DomainProfileKeys.AuthDomain,
+        authDomain,
+      );
+    }
+  }, [authAddress, authDomain]);
 
   // load the existing wallet if singed in
   useEffect(() => {
@@ -147,8 +163,8 @@ const WalletPage = () => {
       mode={authAddress ? 'portfolio' : 'basic'}
       disableBasicHeader={true}
       emailAddress={emailAddress}
-      address={authAddress}
-      domain={authDomain}
+      address={authAddress !== undefined ? authAddress : ''}
+      domain={authDomain !== undefined ? authDomain : ''}
       avatarUrl={authAvatar}
       recoveryToken={recoveryToken}
       showMessages={true}
@@ -156,6 +172,7 @@ const WalletPage = () => {
         handleAuthComplete();
       }}
       setAuthAddress={setAuthAddress}
+      setAuthDomain={setAuthDomain}
       setButtonComponent={setAuthButton}
       isNewUser={!emailAddress}
       fullScreenModals={isMobile}

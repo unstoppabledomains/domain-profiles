@@ -1052,7 +1052,7 @@ export const WalletProvider: React.FC<
       }
 
       // continue waiting for completed state
-      await sleep(1000);
+      await sleep(5000);
     }
 
     // reset the confetti

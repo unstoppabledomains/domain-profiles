@@ -170,6 +170,7 @@ export const WalletProvider: React.FC<
     ) => void;
     onClaimWallet?: () => void;
     onSecurityCenterClicked?: () => void;
+    onUseExistingAccount?: (emailAddress: string) => void;
     setIsFetching?: (v?: boolean) => void;
     isHeaderClicked: boolean;
     setIsHeaderClicked?: (v: boolean) => void;
@@ -191,6 +192,7 @@ export const WalletProvider: React.FC<
   onLoginInitiated,
   onClaimWallet,
   onSecurityCenterClicked,
+  onUseExistingAccount,
   setButtonComponent,
   setIsFetching,
   setAuthAddress,
@@ -1413,6 +1415,7 @@ export const WalletProvider: React.FC<
                 onRefresh={handleRefresh}
                 onClaimWallet={onClaimWallet}
                 onSecurityCenterClicked={onSecurityCenterClicked}
+                onUseExistingAccount={onUseExistingAccount}
                 isWalletLoading={isWalletLoading}
                 isHeaderClicked={isHeaderClicked}
                 setIsHeaderClicked={setIsHeaderClicked}

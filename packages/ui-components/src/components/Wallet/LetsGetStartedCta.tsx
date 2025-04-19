@@ -80,6 +80,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 type Props = {
   onReceiveClicked: () => void;
   onBuyClicked: () => void;
+  onUseExistingAccount?: (emailAddress: string) => void;
 };
 
 export const BuyCryptoButton: React.FC<Props> = ({onBuyClicked}) => {
@@ -168,8 +169,11 @@ export const LetsGetStartedCta: React.FC<Props> = props => {
       {showPasswordCta && (
         <Modal open={showPasswordCta} onClose={handleClose} noModalHeader>
           <Box className={classes.modal}>
-            {showClaimWallet ? (
-              <ClaimWalletModal onComplete={handleComplete} />
+            {showClaimWallet && props.onUseExistingAccount ? (
+              <ClaimWalletModal
+                onComplete={handleComplete}
+                onUseExistingAccount={props.onUseExistingAccount}
+              />
             ) : (
               <Box className={cx(classes.content, classes.centered)}>
                 <OperationStatus

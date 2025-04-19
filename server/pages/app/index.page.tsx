@@ -59,14 +59,25 @@ const WalletPage = () => {
       return;
     }
     if (Object.keys(walletState).length > 0) {
-      void localStorageWrapper.clear({type: 'local'});
-      void localStorageWrapper.clear({type: 'session'});
+      void handleLogout();
       sessionStorage.clear();
       window.location.reload();
       return;
     }
     setIsReloadChecked(true);
   }, [walletState, recoveryToken, emailAddress]);
+
+  const handleLogout = async () => {
+    // clear local storage and session storage
+    await Promise.all([
+      localStorageWrapper.clear({type: 'local'}),
+      localStorageWrapper.clear({type: 'session'}),
+    ]);
+
+    // clear state variables
+    setAuthAddress(undefined);
+    setAuthDomain(undefined);
+  };
 
   useAsyncEffect(async () => {
     if (authAddress !== undefined) {
@@ -158,6 +169,11 @@ const WalletPage = () => {
     setAuthComplete(true);
   };
 
+  const handleUseExistingAccount = async (existingEmailAddress: string) => {
+    setEmailAddress(existingEmailAddress);
+    await handleLogout();
+  };
+
   const renderWallet = () => (
     <Wallet
       mode={authAddress ? 'portfolio' : 'basic'}
@@ -171,6 +187,7 @@ const WalletPage = () => {
       onUpdate={(_t: DomainProfileTabType) => {
         handleAuthComplete();
       }}
+      onUseExistingAccount={handleUseExistingAccount}
       setAuthAddress={setAuthAddress}
       setAuthDomain={setAuthDomain}
       setButtonComponent={setAuthButton}

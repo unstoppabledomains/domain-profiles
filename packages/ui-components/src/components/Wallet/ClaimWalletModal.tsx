@@ -78,18 +78,21 @@ type Props = {
     state: TokenRefreshResponse,
   ) => void;
   onComplete: (accessToken: string) => void;
+  onUseExistingAccount: (emailAddress: string) => void;
 };
 
 const ClaimWalletModal: React.FC<Props> = ({
   custodyWallet: initialCustodyWallet,
   onClaimInitiated,
   onComplete,
+  onUseExistingAccount,
 }) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
   const [claimStatus, setClaimStatus] = useState<TokenRefreshResponse>();
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const [emailError, setEmailError] = useState<string>();
   const [errorMessage, setErrorMessage] = useState<string>();
   const [passwordError, setPasswordError] = useState<string>();
@@ -98,6 +101,7 @@ const ClaimWalletModal: React.FC<Props> = ({
   const [recoveryPhrase, setRecoveryPhrase] = useState<string>();
   const [oneTimeCode, setOneTimeCode] = useState<string>();
   const [custodyWallet, setCustodyWallet] = useState(initialCustodyWallet);
+  const [showSignOut, setShowSignOut] = useState(false);
   const [state, saveState] = useFireblocksState();
 
   useEffect(() => {
@@ -115,6 +119,7 @@ const ClaimWalletModal: React.FC<Props> = ({
     setIsDirty(true);
     setEmailError(undefined);
     setPasswordError(undefined);
+    setShowSignOut(false);
     if (id === 'recoveryPhrase') {
       setRecoveryPhrase(value);
     } else if (id === 'emailAddress') {
@@ -145,6 +150,15 @@ const ClaimWalletModal: React.FC<Props> = ({
     }
   };
 
+  const handleSignOut = async () => {
+    if (!emailAddress) {
+      return;
+    }
+
+    setIsSigningOut(true);
+    onUseExistingAccount(emailAddress);
+  };
+
   const processPassword = async () => {
     if (!custodyWallet?.secret) {
       return;
@@ -159,7 +173,8 @@ const ClaimWalletModal: React.FC<Props> = ({
     // check for email already onboarded
     const onboardStatus = await getOnboardingStatus(emailAddress);
     if (onboardStatus?.active) {
-      setEmailError(t('wallet.emailInUse'));
+      setShowSignOut(true);
+      setEmailError(t('wallet.emailInUse', {emailAddress}));
       return;
     }
 
@@ -329,7 +344,7 @@ const ClaimWalletModal: React.FC<Props> = ({
             errorText={emailError}
           />
         )}
-        {!claimStatus && (
+        {!claimStatus && !showSignOut && (
           <ManageInput
             mt={1}
             id="recoveryPhrase"
@@ -349,27 +364,42 @@ const ClaimWalletModal: React.FC<Props> = ({
       </Box>
       {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
       <Box mt={3} className={classes.content}>
-        <LoadingButton
-          fullWidth
-          onClick={handleSave}
-          variant="contained"
-          disabled={
-            !isDirty || !custodyWallet || !!emailError || !!passwordError
-          }
-          loading={isSaving}
-          loadingIndicator={
-            savingMessage ? (
-              <Box display="flex" alignItems="center">
-                <CircularProgress color="inherit" size={16} />
-                <Box ml={1}>{savingMessage}</Box>
-              </Box>
-            ) : undefined
-          }
-        >
-          {claimStatus
-            ? t('wallet.completeSetup')
-            : t('wallet.claimWalletCtaButton')}
-        </LoadingButton>
+        {!showSignOut && (
+          <LoadingButton
+            fullWidth
+            onClick={handleSave}
+            variant="contained"
+            disabled={
+              !isDirty || !custodyWallet || !!emailError || !!passwordError
+            }
+            loading={isSaving}
+            loadingIndicator={
+              savingMessage ? (
+                <Box display="flex" alignItems="center">
+                  <CircularProgress color="inherit" size={16} />
+                  <Box ml={1}>{savingMessage}</Box>
+                </Box>
+              ) : undefined
+            }
+          >
+            {claimStatus
+              ? t('wallet.completeSetup')
+              : t('wallet.claimWalletCtaButton')}
+          </LoadingButton>
+        )}
+        {showSignOut && emailAddress && (
+          <Box mt={1}>
+            <LoadingButton
+              fullWidth
+              color="warning"
+              variant="contained"
+              onClick={handleSignOut}
+              loading={isSigningOut}
+            >
+              {t('wallet.signOutWithCaution')}
+            </LoadingButton>
+          </Box>
+        )}
       </Box>
     </Box>
   );

@@ -236,6 +236,7 @@ export const Client: React.FC<ClientProps> = ({
   onClaimWallet,
   onRefresh,
   onSecurityCenterClicked,
+  onUseExistingAccount,
   setIsHeaderClicked,
   setShowMessagesInHeader,
   isHeaderClicked,
@@ -1039,6 +1040,7 @@ export const Client: React.FC<ClientProps> = ({
                       <LetsGetStartedCta
                         onBuyClicked={handleClickedBuy}
                         onReceiveClicked={handleClickedReceive}
+                        onUseExistingAccount={onUseExistingAccount}
                       />
                     </Box>
                   ) : (
@@ -1329,6 +1331,7 @@ export type ClientProps = {
   onClaimWallet?: () => void;
   onSecurityCenterClicked?: () => void;
   onRefresh: (showSpinner?: boolean, fields?: string[]) => Promise<void>;
+  onUseExistingAccount?: (emailAddress: string) => void;
   isHeaderClicked: boolean;
   isWalletLoading?: boolean;
   setShowMessagesInHeader?: (v: boolean) => void;

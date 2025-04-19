@@ -254,12 +254,15 @@ export const getConversations = async (
 };
 
 export const getRemoteAttachment = async (
-  message: DecodedMessage,
+  message: DecodedMessage<RemoteAttachment>,
 ): Promise<Attachment | undefined> => {
   try {
     const xmtp = await getXmtpClientFromLocal();
     if (!xmtp) {
       throw new Error('no XMTP client found');
+    }
+    if (!message.content) {
+      throw new Error('no content found');
     }
     const remoteAttachment: RemoteAttachment = message.content;
     const attachment: Attachment = await RemoteAttachmentCodec.load(
@@ -293,13 +296,10 @@ const getXmtpClient = async (
 
       // create the new XMTP client
       xmtpLocalEncryptionKey = crypto.getRandomValues(new Uint8Array(32));
-      const newClient = await Client.create(
-        getXmtpSigner(address, signer),
-        xmtpLocalEncryptionKey,
-        {
-          ...xmtpOpts,
-        },
-      );
+      const newClient = await Client.create(getXmtpSigner(address, signer), {
+        ...xmtpOpts,
+        dbEncryptionKey: xmtpLocalEncryptionKey,
+      });
 
       // store the local encryption key and address
       await setXmtpLocalKey(address, xmtpLocalEncryptionKey);
@@ -318,24 +318,13 @@ const getXmtpClient = async (
       return xmtpClients[address.toLowerCase()];
     }
 
-    // restore from locally stored encryption key with a dummy signer, since we do not
-    // expect to sign any messages when the encryption key is already established.
-    const dummySigner: XmtpSigner = {
-      type: 'EOA',
-      getIdentifier: () => {
-        return getIdentifierFromAddress(address);
-      },
-      signMessage: async (message: string): Promise<Uint8Array> => {
-        return new Uint8Array();
-      },
-    };
-    const existingClient = await Client.create(
-      dummySigner,
-      xmtpLocalEncryptionKey,
-      {
-        ...xmtpOpts,
-      },
-    );
+    // restore from locally stored encryption key, since we do not expect to
+    // sign any messages when the encryption key is already established.
+    const identifier = getIdentifierFromAddress(address);
+    const existingClient = await Client.build(identifier, {
+      ...xmtpOpts,
+      dbEncryptionKey: xmtpLocalEncryptionKey,
+    });
 
     // store the existing client in memory for use
     xmtpClients[address.toLowerCase()] = existingClient;

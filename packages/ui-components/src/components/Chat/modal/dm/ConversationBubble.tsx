@@ -5,6 +5,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {DecodedMessage} from '@xmtp/browser-sdk';
+import type {RemoteAttachment} from '@xmtp/content-type-remote-attachment';
 import {ContentTypeRemoteAttachment} from '@xmtp/content-type-remote-attachment';
 import {ContentTypeText} from '@xmtp/content-type-text';
 import React, {useRef, useState} from 'react';
@@ -24,7 +25,6 @@ import LinkWarningModal from '../LinkWarningModal';
 import {useConversationBubbleStyles} from '../styles';
 
 export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
-  address,
   message,
   onBlockTopic,
   renderCallback,
@@ -70,7 +70,7 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
       setRenderedContent(
         <Box>
           <Linkify componentDecorator={componentDecorator}>
-            <Emoji>{message.content}</Emoji>
+            <Emoji>{message.content as string}</Emoji>
           </Linkify>
         </Box>,
       );
@@ -78,7 +78,9 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
     } else if (message.contentType.sameAs(ContentTypeRemoteAttachment)) {
       // decrypt the attachment data
       setIsLoading(true);
-      const attachment = await getRemoteAttachment(message);
+      const attachment = await getRemoteAttachment(
+        message as DecodedMessage<RemoteAttachment>,
+      );
       if (attachment) {
         // create a file reference for download
         const objectURL = URL.createObjectURL(

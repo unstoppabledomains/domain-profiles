@@ -170,10 +170,12 @@ export const WalletProvider: React.FC<
     ) => void;
     onClaimWallet?: () => void;
     onSecurityCenterClicked?: () => void;
+    onUseExistingAccount?: (emailAddress: string) => void;
     setIsFetching?: (v?: boolean) => void;
     isHeaderClicked: boolean;
     setIsHeaderClicked?: (v: boolean) => void;
     setAuthAddress?: (v: string) => void;
+    setAuthDomain?: (v: string) => void;
     setShowMessagesInHeader?: (v: boolean) => void;
     initialState?: WalletConfigState;
     initialLoginState?: TokenRefreshResponse;
@@ -190,9 +192,11 @@ export const WalletProvider: React.FC<
   onLoginInitiated,
   onClaimWallet,
   onSecurityCenterClicked,
+  onUseExistingAccount,
   setButtonComponent,
   setIsFetching,
   setAuthAddress,
+  setAuthDomain,
   isHeaderClicked,
   setShowMessagesInHeader,
   setIsHeaderClicked,
@@ -924,17 +928,22 @@ export const WalletProvider: React.FC<
     setConfigState(WalletConfigState.OnboardWithCustody);
   };
 
-  const handleLogout = async () => {
+  const handleLogout = async (opts?: {clearForm?: boolean}) => {
     // clear input variables
-    setOneTimeCode(undefined);
-    setPersistKeys(forceRememberOnDevice);
-    setEmailAddress(undefined);
-    setRecoveryPhrase(undefined);
-    setRecoveryPhraseConfirmation(undefined);
+    if (opts?.clearForm) {
+      setOneTimeCode(undefined);
+      setPersistKeys(forceRememberOnDevice);
+      setEmailAddress(undefined);
+      setRecoveryPhrase(undefined);
+      setRecoveryPhraseConfirmation(undefined);
+    }
 
     // clear authenticated address if necessary
     if (setAuthAddress) {
       setAuthAddress('');
+    }
+    if (setAuthDomain) {
+      setAuthDomain('');
     }
 
     // disable session lock
@@ -944,9 +953,11 @@ export const WalletProvider: React.FC<
     await saveState({});
 
     // reset configuration state
-    setConfigState(
-      initialState ? initialState : WalletConfigState.PasswordEntry,
-    );
+    if (opts?.clearForm) {
+      setConfigState(
+        initialState ? initialState : WalletConfigState.PasswordEntry,
+      );
+    }
   };
 
   const handleKeyDown: React.KeyboardEventHandler = event => {
@@ -966,12 +977,15 @@ export const WalletProvider: React.FC<
     // process operation specific logic
     if (configState === WalletConfigState.NeedsOnboarding) {
       // switch to onboarding mode
+      await handleLogout({clearForm: true});
       processNeedsOnboarding();
     } else if (configState === WalletConfigState.OnboardWithCustody) {
       // submit new wallet request
+      await handleLogout({clearForm: true});
       await processOnboardWithCustody();
     } else if (configState === WalletConfigState.OtpEntry) {
       // submit the one time code
+      await handleLogout({clearForm: false});
       await processOtp();
     } else if (configState === WalletConfigState.PasswordEntry) {
       // submit sign in request
@@ -1038,7 +1052,7 @@ export const WalletProvider: React.FC<
       }
 
       // continue waiting for completed state
-      await sleep(1000);
+      await sleep(5000);
     }
 
     // reset the confetti
@@ -1386,7 +1400,7 @@ export const WalletProvider: React.FC<
                     {t('wallet.successDescription')}
                   </Typography>
                 </Box>
-                <Button variant="outlined" onClick={handleLogout}>
+                <Button variant="outlined" onClick={() => handleLogout()}>
                   {t('header.signOut')}
                 </Button>
               </OperationStatus>
@@ -1401,6 +1415,7 @@ export const WalletProvider: React.FC<
                 onRefresh={handleRefresh}
                 onClaimWallet={onClaimWallet}
                 onSecurityCenterClicked={onSecurityCenterClicked}
+                onUseExistingAccount={onUseExistingAccount}
                 isWalletLoading={isWalletLoading}
                 isHeaderClicked={isHeaderClicked}
                 setIsHeaderClicked={setIsHeaderClicked}

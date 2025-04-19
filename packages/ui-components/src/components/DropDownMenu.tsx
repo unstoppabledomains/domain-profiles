@@ -259,7 +259,7 @@ const DropDownMenu: React.FC<Props> = ({
         >
           <SecurityOutlinedIcon className={classes.settingsIcon} />
           <Typography className={classes.font}>
-            {t('wallet.securityCenter')}
+            {t('wallet.claimWalletCtaButton')}
           </Typography>
         </div>
       )}

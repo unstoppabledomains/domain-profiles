@@ -53,6 +53,7 @@ export const Wallet: React.FC<
     loginState?: TokenRefreshResponse;
     banner?: React.ReactNode;
     setAuthAddress?: (v: string) => void;
+    setAuthDomain?: (v: string) => void;
     onLoginInitiated?: (
       emailAddress: string,
       password: string,
@@ -65,6 +66,7 @@ export const Wallet: React.FC<
     onSettingsClick?: () => void;
     onMessagesClick?: () => void;
     onMessagePopoutClick?: (address?: string) => void;
+    onUseExistingAccount?: (emailAddress: string) => void;
   }
 > = ({
   emailAddress,
@@ -92,7 +94,9 @@ export const Wallet: React.FC<
   onSettingsClick,
   onMessagesClick,
   onMessagePopoutClick,
+  onUseExistingAccount,
   setAuthAddress,
+  setAuthDomain,
   setButtonComponent,
 }) => {
   const {classes} = useStyles();
@@ -207,11 +211,13 @@ export const Wallet: React.FC<
         onUpdate={handleAccessToken}
         onClaimWallet={handleClaimWallet}
         onSecurityCenterClicked={handleSecurityCenterOpen}
+        onUseExistingAccount={onUseExistingAccount}
         setButtonComponent={setButtonComponent}
         setIsFetching={setIsFetching}
         isHeaderClicked={isHeaderClicked}
         setIsHeaderClicked={setIsHeaderClicked}
         setAuthAddress={setAuthAddress}
+        setAuthDomain={setAuthDomain}
         setShowMessagesInHeader={setShowMessagesInHeader}
         showMessages={
           theme.wallet.type === 'upio' && showMessages && !showMessagesInHeader
@@ -238,7 +244,7 @@ export const Wallet: React.FC<
           />
         </Box>
       )}
-      {showClaimWalletModal && (
+      {showClaimWalletModal && onUseExistingAccount && (
         <Modal
           title={t('wallet.claimWalletTitle')}
           open={true}
@@ -249,6 +255,7 @@ export const Wallet: React.FC<
           <ClaimWalletModal
             onClaimInitiated={onLoginInitiated}
             onComplete={handleClaimComplete}
+            onUseExistingAccount={onUseExistingAccount}
           />
         </Modal>
       )}

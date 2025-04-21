@@ -9,6 +9,7 @@ import React, {useEffect, useState} from 'react';
 import useIsMounted from 'react-is-mounted-hook';
 import {useStyles} from 'styles/pages/index.styles';
 import {GlobalStyles} from 'tss-react';
+import useAsyncEffect from 'use-async-effect';
 
 import config from '@unstoppabledomains/config';
 import type {DomainProfileTabType} from '@unstoppabledomains/ui-components';
@@ -35,8 +36,8 @@ const WalletPage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [walletState] = useFireblocksState();
   const {showPinCta} = useWeb3Context({enforcePin: true});
-  const [authAddress, setAuthAddress] = useState<string>('');
-  const [authDomain, setAuthDomain] = useState<string>('');
+  const [authAddress, setAuthAddress] = useState<string>();
+  const [authDomain, setAuthDomain] = useState<string>();
   const [authAvatar, setAuthAvatar] = useState<string>();
   const [authButton, setAuthButton] = useState<React.ReactNode>();
   const [authComplete, setAuthComplete] = useState(false);
@@ -58,14 +59,40 @@ const WalletPage = () => {
       return;
     }
     if (Object.keys(walletState).length > 0) {
-      void localStorageWrapper.clear({type: 'local'});
-      void localStorageWrapper.clear({type: 'session'});
+      void handleLogout();
       sessionStorage.clear();
       window.location.reload();
       return;
     }
     setIsReloadChecked(true);
   }, [walletState, recoveryToken, emailAddress]);
+
+  const handleLogout = async () => {
+    // clear local storage and session storage
+    await Promise.all([
+      localStorageWrapper.clear({type: 'local'}),
+      localStorageWrapper.clear({type: 'session'}),
+    ]);
+
+    // clear state variables
+    setAuthAddress(undefined);
+    setAuthDomain(undefined);
+  };
+
+  useAsyncEffect(async () => {
+    if (authAddress !== undefined) {
+      await localStorageWrapper.setItem(
+        DomainProfileKeys.AuthAddress,
+        authAddress,
+      );
+    }
+    if (authDomain !== undefined) {
+      await localStorageWrapper.setItem(
+        DomainProfileKeys.AuthDomain,
+        authDomain,
+      );
+    }
+  }, [authAddress, authDomain]);
 
   // load the existing wallet if singed in
   useEffect(() => {
@@ -142,20 +169,32 @@ const WalletPage = () => {
     setAuthComplete(true);
   };
 
+  const handleUseExistingAccount = async (existingEmailAddress: string) => {
+    // sign the user out and prepare to use the existing email account
+    setIsReloadChecked(true);
+    setEmailAddress(existingEmailAddress);
+    await handleLogout();
+
+    // set the window location including the existing email address
+    window.location.href = `${window.location.pathname}?${EMAIL_PARAM}=${existingEmailAddress}`;
+  };
+
   const renderWallet = () => (
     <Wallet
       mode={authAddress ? 'portfolio' : 'basic'}
       disableBasicHeader={true}
       emailAddress={emailAddress}
-      address={authAddress}
-      domain={authDomain}
+      address={authAddress !== undefined ? authAddress : ''}
+      domain={authDomain !== undefined ? authDomain : ''}
       avatarUrl={authAvatar}
       recoveryToken={recoveryToken}
       showMessages={true}
       onUpdate={(_t: DomainProfileTabType) => {
         handleAuthComplete();
       }}
+      onUseExistingAccount={handleUseExistingAccount}
       setAuthAddress={setAuthAddress}
+      setAuthDomain={setAuthDomain}
       setButtonComponent={setAuthButton}
       isNewUser={!emailAddress}
       fullScreenModals={isMobile}

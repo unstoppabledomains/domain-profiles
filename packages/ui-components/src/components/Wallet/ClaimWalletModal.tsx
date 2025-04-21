@@ -2,6 +2,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 // eslint-disable-next-line no-restricted-imports
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -62,6 +63,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   passwordIcon: {
     margin: theme.spacing(0.5),
   },
+  emailInUse: {
+    color: theme.palette.error.main,
+  },
 }));
 
 const WALLET_PASSWORD_MIN_LENGTH = 12;
@@ -78,18 +82,21 @@ type Props = {
     state: TokenRefreshResponse,
   ) => void;
   onComplete: (accessToken: string) => void;
+  onUseExistingAccount: (emailAddress: string) => void;
 };
 
 const ClaimWalletModal: React.FC<Props> = ({
   custodyWallet: initialCustodyWallet,
   onClaimInitiated,
   onComplete,
+  onUseExistingAccount,
 }) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
   const [claimStatus, setClaimStatus] = useState<TokenRefreshResponse>();
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const [emailError, setEmailError] = useState<string>();
   const [errorMessage, setErrorMessage] = useState<string>();
   const [passwordError, setPasswordError] = useState<string>();
@@ -98,6 +105,7 @@ const ClaimWalletModal: React.FC<Props> = ({
   const [recoveryPhrase, setRecoveryPhrase] = useState<string>();
   const [oneTimeCode, setOneTimeCode] = useState<string>();
   const [custodyWallet, setCustodyWallet] = useState(initialCustodyWallet);
+  const [showSignOut, setShowSignOut] = useState(false);
   const [state, saveState] = useFireblocksState();
 
   useEffect(() => {
@@ -115,6 +123,7 @@ const ClaimWalletModal: React.FC<Props> = ({
     setIsDirty(true);
     setEmailError(undefined);
     setPasswordError(undefined);
+    setShowSignOut(false);
     if (id === 'recoveryPhrase') {
       setRecoveryPhrase(value);
     } else if (id === 'emailAddress') {
@@ -145,6 +154,21 @@ const ClaimWalletModal: React.FC<Props> = ({
     }
   };
 
+  const handleSignOut = async () => {
+    if (!emailAddress) {
+      return;
+    }
+
+    setIsSigningOut(true);
+    onUseExistingAccount(emailAddress);
+  };
+
+  const handleClearEmail = () => {
+    setEmailAddress('');
+    setRecoveryPhrase('');
+    handleInputChange('emailAddress', '');
+  };
+
   const processPassword = async () => {
     if (!custodyWallet?.secret) {
       return;
@@ -159,7 +183,7 @@ const ClaimWalletModal: React.FC<Props> = ({
     // check for email already onboarded
     const onboardStatus = await getOnboardingStatus(emailAddress);
     if (onboardStatus?.active) {
-      setEmailError(t('wallet.emailInUse'));
+      setShowSignOut(true);
       return;
     }
 
@@ -314,7 +338,7 @@ const ClaimWalletModal: React.FC<Props> = ({
             disabled={isSaving}
           />
         )}
-        {!claimStatus && (
+        {!claimStatus && !showSignOut && (
           <ManageInput
             id="emailAddress"
             value={emailAddress}
@@ -329,7 +353,7 @@ const ClaimWalletModal: React.FC<Props> = ({
             errorText={emailError}
           />
         )}
-        {!claimStatus && (
+        {!claimStatus && !showSignOut && (
           <ManageInput
             mt={1}
             id="recoveryPhrase"
@@ -346,30 +370,59 @@ const ClaimWalletModal: React.FC<Props> = ({
             errorText={passwordError}
           />
         )}
+        {showSignOut && emailAddress && (
+          <Box display="flex" justifyContent="center" textAlign="center">
+            <Typography variant="body1" className={classes.emailInUse}>
+              <Markdown>{t('wallet.emailInUse', {emailAddress})}</Markdown>
+            </Typography>
+          </Box>
+        )}
       </Box>
       {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
       <Box mt={3} className={classes.content}>
-        <LoadingButton
-          fullWidth
-          onClick={handleSave}
-          variant="contained"
-          disabled={
-            !isDirty || !custodyWallet || !!emailError || !!passwordError
-          }
-          loading={isSaving}
-          loadingIndicator={
-            savingMessage ? (
-              <Box display="flex" alignItems="center">
-                <CircularProgress color="inherit" size={16} />
-                <Box ml={1}>{savingMessage}</Box>
-              </Box>
-            ) : undefined
-          }
-        >
-          {claimStatus
-            ? t('wallet.completeSetup')
-            : t('wallet.claimWalletCtaButton')}
-        </LoadingButton>
+        {!showSignOut && (
+          <LoadingButton
+            fullWidth
+            onClick={handleSave}
+            variant="contained"
+            disabled={
+              !isDirty || !custodyWallet || !!emailError || !!passwordError
+            }
+            loading={isSaving}
+            loadingIndicator={
+              savingMessage ? (
+                <Box display="flex" alignItems="center">
+                  <CircularProgress color="inherit" size={16} />
+                  <Box ml={1}>{savingMessage}</Box>
+                </Box>
+              ) : undefined
+            }
+          >
+            {claimStatus
+              ? t('wallet.completeSetup')
+              : t('wallet.claimWalletCtaButton')}
+          </LoadingButton>
+        )}
+        {showSignOut && emailAddress && (
+          <>
+            <Box mt={1}>
+              <Button variant="contained" fullWidth onClick={handleClearEmail}>
+                {t('wallet.chooseDifferentEmail')}
+              </Button>
+            </Box>
+            <Box mt={1}>
+              <LoadingButton
+                fullWidth
+                color="warning"
+                variant="outlined"
+                onClick={handleSignOut}
+                loading={isSigningOut}
+              >
+                {t('wallet.signOutWithCaution', {emailAddress})}
+              </LoadingButton>
+            </Box>
+          </>
+        )}
       </Box>
     </Box>
   );

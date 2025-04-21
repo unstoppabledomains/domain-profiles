@@ -63,7 +63,10 @@ import {
   useTranslationContext,
 } from '../../lib';
 import {notifyEvent} from '../../lib/error';
-import type {TransactionLockStatusResponse} from '../../lib/types/fireBlocks';
+import type {
+  TokenRefreshResponse,
+  TransactionLockStatusResponse,
+} from '../../lib/types/fireBlocks';
 import type {SerializedIdentityResponse} from '../../lib/types/identity';
 import {UnstoppableMessaging, localStorageWrapper} from '../Chat';
 import CallToAction from '../Chat/modal/CallToAction';
@@ -237,6 +240,7 @@ export const Client: React.FC<ClientProps> = ({
   onRefresh,
   onSecurityCenterClicked,
   onUseExistingAccount,
+  onLoginInitiated,
   setIsHeaderClicked,
   setShowMessagesInHeader,
   isHeaderClicked,
@@ -303,7 +307,13 @@ export const Client: React.FC<ClientProps> = ({
 
   // empty state flag
   const isEmptyState =
-    !cryptoValue && !collectiblesValue && !domainsValue && domains.length === 0;
+    // check crypto value
+    !cryptoValue &&
+    // check collectibles value
+    !collectiblesValue &&
+    // ensure domains are loaded
+    !domainsValue &&
+    domains.length === 0;
 
   // initialize wallet security features
   useAsyncEffect(async () => {
@@ -1041,6 +1051,7 @@ export const Client: React.FC<ClientProps> = ({
                         onBuyClicked={handleClickedBuy}
                         onReceiveClicked={handleClickedReceive}
                         onUseExistingAccount={onUseExistingAccount}
+                        onClaimInitiated={onLoginInitiated}
                       />
                     </Box>
                   ) : (
@@ -1332,6 +1343,11 @@ export type ClientProps = {
   onSecurityCenterClicked?: () => void;
   onRefresh: (showSpinner?: boolean, fields?: string[]) => Promise<void>;
   onUseExistingAccount?: (emailAddress: string) => void;
+  onLoginInitiated?: (
+    emailAddress: string,
+    password: string,
+    state: TokenRefreshResponse,
+  ) => void;
   isHeaderClicked: boolean;
   isWalletLoading?: boolean;
   setShowMessagesInHeader?: (v: boolean) => void;

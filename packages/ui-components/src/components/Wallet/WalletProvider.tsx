@@ -1418,6 +1418,7 @@ export const WalletProvider: React.FC<
                 onClaimWallet={onClaimWallet}
                 onSecurityCenterClicked={onSecurityCenterClicked}
                 onUseExistingAccount={onUseExistingAccount}
+                onLoginInitiated={onLoginInitiated}
                 isWalletLoading={isWalletLoading}
                 isHeaderClicked={isHeaderClicked}
                 setIsHeaderClicked={setIsHeaderClicked}

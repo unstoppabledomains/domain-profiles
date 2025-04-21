@@ -244,7 +244,7 @@ const ClaimWalletModal: React.FC<Props> = ({
       if (c?.status === 'COMPLETED') {
         break;
       }
-      await sleep(1000);
+      await sleep(3000);
     }
 
     // set state to SELF_CUSTODY now that claiming is complete
@@ -262,6 +262,10 @@ const ClaimWalletModal: React.FC<Props> = ({
     if (onClaimInitiated) {
       onClaimInitiated(emailAddress, recoveryPhrase, signInToken);
     }
+
+    // clear bootstrap state now that the user has begun the claim process
+    // to self custody, clearing all the custody data.
+    await saveState({});
 
     // prompt the user to confirm the one-time code, which will complete the
     // sign-in process and generate a wallet access token.

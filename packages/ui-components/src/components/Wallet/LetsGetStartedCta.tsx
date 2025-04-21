@@ -13,6 +13,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {useWeb3Context} from '../../hooks';
 import {useTranslationContext} from '../../lib';
+import type {TokenRefreshResponse} from '../../lib/types/fireBlocks';
 import {localStorageWrapper} from '../Chat';
 import Modal from '../Modal';
 import ClaimWalletModal from './ClaimWalletModal';
@@ -81,6 +82,11 @@ type Props = {
   onReceiveClicked: () => void;
   onBuyClicked: () => void;
   onUseExistingAccount?: (emailAddress: string) => void;
+  onClaimInitiated?: (
+    emailAddress: string,
+    password: string,
+    state: TokenRefreshResponse,
+  ) => void;
 };
 
 export const BuyCryptoButton: React.FC<Props> = ({onBuyClicked}) => {
@@ -132,25 +138,26 @@ export const LetsGetStartedCta: React.FC<Props> = props => {
       setShowPasswordCta(false);
       return;
     }
-    await localStorageWrapper.setItem(passwordCtaConfirmField, 'true');
     setShowPasswordCta(true);
   }, []);
 
   const handleSkipClicked = async () => {
-    handleClose();
+    await localStorageWrapper.setItem(passwordCtaConfirmField, 'true');
+    handleClosePasswordCta();
   };
 
-  const handleSetPasswordClicked = () => {
+  const handleSetPasswordClicked = async () => {
+    await localStorageWrapper.setItem(passwordCtaConfirmField, 'true');
     setShowClaimWallet(true);
   };
 
-  const handleClose = () => {
+  const handleClosePasswordCta = () => {
     setShowPasswordCta(false);
   };
 
   const handleComplete = (token: string) => {
     setAccessToken(token);
-    handleClose();
+    handleClosePasswordCta();
   };
 
   return (
@@ -167,10 +174,16 @@ export const LetsGetStartedCta: React.FC<Props> = props => {
         </Box>
       </Box>
       {showPasswordCta && (
-        <Modal open={showPasswordCta} onClose={handleClose} noModalHeader>
+        <Modal
+          open={showPasswordCta}
+          onClose={handleClosePasswordCta}
+          noModalHeader
+          isConfirmation
+        >
           <Box className={classes.modal}>
             {showClaimWallet && props.onUseExistingAccount ? (
               <ClaimWalletModal
+                onClaimInitiated={props.onClaimInitiated}
                 onComplete={handleComplete}
                 onUseExistingAccount={props.onUseExistingAccount}
               />

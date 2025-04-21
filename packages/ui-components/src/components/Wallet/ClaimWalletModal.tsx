@@ -2,6 +2,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 // eslint-disable-next-line no-restricted-imports
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -61,6 +62,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   passwordIcon: {
     margin: theme.spacing(0.5),
+  },
+  emailInUse: {
+    color: theme.palette.error.main,
   },
 }));
 
@@ -159,6 +163,12 @@ const ClaimWalletModal: React.FC<Props> = ({
     onUseExistingAccount(emailAddress);
   };
 
+  const handleClearEmail = () => {
+    setEmailAddress('');
+    setRecoveryPhrase('');
+    handleInputChange('emailAddress', '');
+  };
+
   const processPassword = async () => {
     if (!custodyWallet?.secret) {
       return;
@@ -174,7 +184,6 @@ const ClaimWalletModal: React.FC<Props> = ({
     const onboardStatus = await getOnboardingStatus(emailAddress);
     if (onboardStatus?.active) {
       setShowSignOut(true);
-      setEmailError(t('wallet.emailInUse', {emailAddress}));
       return;
     }
 
@@ -329,7 +338,7 @@ const ClaimWalletModal: React.FC<Props> = ({
             disabled={isSaving}
           />
         )}
-        {!claimStatus && (
+        {!claimStatus && !showSignOut && (
           <ManageInput
             id="emailAddress"
             value={emailAddress}
@@ -361,6 +370,13 @@ const ClaimWalletModal: React.FC<Props> = ({
             errorText={passwordError}
           />
         )}
+        {showSignOut && emailAddress && (
+          <Box display="flex" justifyContent="center" textAlign="center">
+            <Typography variant="body1" className={classes.emailInUse}>
+              <Markdown>{t('wallet.emailInUse', {emailAddress})}</Markdown>
+            </Typography>
+          </Box>
+        )}
       </Box>
       {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
       <Box mt={3} className={classes.content}>
@@ -388,17 +404,24 @@ const ClaimWalletModal: React.FC<Props> = ({
           </LoadingButton>
         )}
         {showSignOut && emailAddress && (
-          <Box mt={1}>
-            <LoadingButton
-              fullWidth
-              color="warning"
-              variant="contained"
-              onClick={handleSignOut}
-              loading={isSigningOut}
-            >
-              {t('wallet.signOutWithCaution')}
-            </LoadingButton>
-          </Box>
+          <>
+            <Box mt={1}>
+              <Button variant="contained" fullWidth onClick={handleClearEmail}>
+                {t('wallet.chooseDifferentEmail')}
+              </Button>
+            </Box>
+            <Box mt={1}>
+              <LoadingButton
+                fullWidth
+                color="warning"
+                variant="outlined"
+                onClick={handleSignOut}
+                loading={isSigningOut}
+              >
+                {t('wallet.signOutWithCaution', {emailAddress})}
+              </LoadingButton>
+            </Box>
+          </>
         )}
       </Box>
     </Box>

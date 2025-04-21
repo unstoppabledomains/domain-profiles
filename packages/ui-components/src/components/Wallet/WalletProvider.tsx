@@ -431,6 +431,8 @@ export const WalletProvider: React.FC<
             : configState === WalletConfigState.PasswordEntry
             ? recoveryToken
               ? t('common.continue')
+              : initialEmailAddress
+              ? t('wallet.beginSetupAs', {emailAddress: initialEmailAddress})
               : t('wallet.beginSetup')
             : configState === WalletConfigState.OtpEntry
             ? t('wallet.completeSetup')

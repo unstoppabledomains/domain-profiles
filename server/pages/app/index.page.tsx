@@ -170,8 +170,13 @@ const WalletPage = () => {
   };
 
   const handleUseExistingAccount = async (existingEmailAddress: string) => {
+    // sign the user out and prepare to use the existing email account
+    setIsReloadChecked(true);
     setEmailAddress(existingEmailAddress);
     await handleLogout();
+
+    // set the window location including the existing email address
+    window.location.href = `${window.location.pathname}?${EMAIL_PARAM}=${existingEmailAddress}`;
   };
 
   const renderWallet = () => (

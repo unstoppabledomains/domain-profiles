@@ -727,7 +727,7 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
           >
             {!featureFlags?.variations?.udMeServiceDomainsEnableManagement ? (
               <Alert severity="info">{t('common.comingSoon')}</Alert>
-            ) : (
+            ) : isMfaEnabled ? (
               <Box className={classes.flexContainer}>
                 <ManageInput
                   value={
@@ -783,6 +783,10 @@ const SecurityCenterModal: React.FC<Props> = ({accessToken}) => {
                   </Box>
                 )}
               </Box>
+            ) : (
+              <Alert severity="warning">
+                {t('wallet.largeTxPrerequisite')}
+              </Alert>
             )}
           </WalletPreference>
           <WalletPreference

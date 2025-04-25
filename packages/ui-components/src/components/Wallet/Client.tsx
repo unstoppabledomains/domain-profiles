@@ -300,6 +300,7 @@ export const Client: React.FC<ClientProps> = ({
   const [selectedNftCollection, setSelectedNftCollection] =
     useState<TokenEntry>();
   const [selectedNft, setSelectedNft] = useState<Nft>();
+  const [isNftModalOpen, setIsNftModalOpen] = useState(false);
   const [isNftLoading, setIsNftLoading] = useState(false);
 
   // owner address
@@ -539,6 +540,11 @@ export const Client: React.FC<ClientProps> = ({
     setTxLockStatus(status);
   };
 
+  const handleTransferNft = () => {
+    setIsNftModalOpen(false);
+    setIsSend(true);
+  };
+
   // configure a CTA to prompt the user to set their password if the wallet
   // is in custody and has a crypto balance
   const showPasswordCta = async () => {
@@ -768,11 +774,17 @@ export const Client: React.FC<ClientProps> = ({
         const nft = nftList[0];
         nft.symbol = collection.symbol;
         setSelectedNft(nft);
+        setIsNftModalOpen(true);
       }
     } else {
       // view the collection NFT list
       setSelectedNftCollection(collection);
     }
+  };
+
+  const handleCloseNftModal = () => {
+    setIsNftModalOpen(false);
+    setSelectedNft(undefined);
   };
 
   const handleViewSwapToken = (token: TokenEntry) => {
@@ -859,6 +871,7 @@ export const Client: React.FC<ClientProps> = ({
 
   const handleCancelToken = () => {
     setSelectedToken(undefined);
+    setSelectedNft(undefined);
     handleCancelAction();
   };
 
@@ -924,6 +937,7 @@ export const Client: React.FC<ClientProps> = ({
               onClickReceive={handleClickedReceive}
               wallets={wallets}
               initialSelectedToken={selectedToken}
+              initialSelectedNft={selectedNft}
             />
           </Box>
         ) : isSwap && accessToken ? (
@@ -1268,11 +1282,12 @@ export const Client: React.FC<ClientProps> = ({
           </TabContext>
         )}
       </Box>
-      {selectedNft && (
+      {selectedNft && isNftModalOpen && (
         <NftModal
-          open={true}
+          open={isNftModalOpen}
           nft={selectedNft}
-          handleClose={() => setSelectedNft(undefined)}
+          handleClose={handleCloseNftModal}
+          handleTransferNft={handleTransferNft}
         />
       )}
       {domainToManage && (

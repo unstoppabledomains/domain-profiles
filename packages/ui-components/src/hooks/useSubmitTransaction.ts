@@ -3,6 +3,7 @@ import {useEffect, useRef, useState} from 'react';
 import {
   SendCryptoStatusMessage,
   cancelPendingOperations,
+  createSolanaTokenTransfer,
   createTransactionOperation,
   createTransferOperation,
   getOperationStatus,
@@ -22,13 +23,7 @@ import {
 } from '../lib/types/fireBlocks';
 import type {AccountAsset, GetOperationResponse} from '../lib/types/fireBlocks';
 import {createErc20TransferTx} from '../lib/wallet/evm/token';
-import {
-  broadcastTx,
-  createNativeTransferTx,
-  createSplTransferTx,
-  signTransaction,
-  waitForTx,
-} from '../lib/wallet/solana/transaction';
+import {waitForTx} from '../lib/wallet/solana/transaction';
 import useDomainConfig from './useDomainConfig';
 import useFireblocksMessageSigner from './useFireblocksMessageSigner';
 import useResolverKeys from './useResolverKeys';
@@ -129,40 +124,25 @@ export const useSubmitTransaction = ({
       // handle an Solana SPL token transfer
       if (token.address && token.type === TokenType.Spl) {
         try {
-          // create the transaction that must be signed
-          setStatusMessage(SendCryptoStatusMessage.STARTING_TRANSACTION);
-          const tx = await createSplTransferTx(
+          // submit the transaction to be signed by the wallet
+          setStatusMessage(SendCryptoStatusMessage.SIGNING);
+          const txResult = await createSolanaTokenTransfer(
+            accessToken,
             token.walletAddress,
             recipientAddress,
-            token.address,
             parseFloat(amount),
-            fireblocksMessageSigner,
-            accessToken,
+            token.address,
+            otpToken,
           );
-
-          // sign and wait for the signature value
-          setStatusMessage(SendCryptoStatusMessage.SIGNING);
-          const signedTx = await signTransaction(
-            tx,
-            token.walletAddress,
-            fireblocksMessageSigner,
-            accessToken,
-            false,
-          );
-
-          // submit the transaction
-          setStatusMessage(SendCryptoStatusMessage.SUBMITTING_TRANSACTION);
-          const txHash = await broadcastTx(
-            signedTx,
-            token.walletAddress,
-            accessToken,
-          );
+          if (!txResult?.hash) {
+            throw new Error('Error submitting transaction');
+          }
 
           // wait for transaction confirmation
           setStatusMessage(SendCryptoStatusMessage.WAITING_FOR_TRANSACTION);
           setShowSuccessAnimation(true);
-          setTransactionId(txHash);
-          await waitForTx(txHash, token.walletAddress, accessToken);
+          setTransactionId(txResult.hash);
+          await waitForTx(txResult.hash, token.walletAddress, accessToken);
 
           // operation is complete
           setStatusMessage(SendCryptoStatusMessage.TRANSACTION_COMPLETED);
@@ -195,35 +175,25 @@ export const useSubmitTransaction = ({
       // handle Solana native transfer
       if (asset.blockchainAsset.blockchain.id.toLowerCase() === 'solana') {
         try {
-          // create the transaction that must be signed
-          setStatusMessage(SendCryptoStatusMessage.STARTING_TRANSACTION);
-          const fromAddress = asset.address;
-          const tx = await createNativeTransferTx(
-            fromAddress,
+          // submit the transaction to be signed by the wallet
+          setStatusMessage(SendCryptoStatusMessage.SIGNING);
+          const txResult = await createSolanaTokenTransfer(
+            accessToken,
+            token.walletAddress,
             recipientAddress,
             parseFloat(amount),
-            accessToken,
+            undefined,
+            otpToken,
           );
-
-          // sign and wait for the signature value
-          setStatusMessage(SendCryptoStatusMessage.SIGNING);
-          const signedTx = await signTransaction(
-            tx,
-            fromAddress,
-            fireblocksMessageSigner,
-            accessToken,
-            false,
-          );
-
-          // submit the transaction
-          setStatusMessage(SendCryptoStatusMessage.SUBMITTING_TRANSACTION);
-          const txHash = await broadcastTx(signedTx, fromAddress, accessToken);
+          if (!txResult?.hash) {
+            throw new Error('Error submitting transaction');
+          }
 
           // wait for transaction confirmation
           setStatusMessage(SendCryptoStatusMessage.WAITING_FOR_TRANSACTION);
           setShowSuccessAnimation(true);
-          setTransactionId(txHash);
-          await waitForTx(txHash, fromAddress, accessToken);
+          setTransactionId(txResult.hash);
+          await waitForTx(txResult.hash, token.walletAddress, accessToken);
 
           // operation is complete
           setStatusMessage(SendCryptoStatusMessage.TRANSACTION_COMPLETED);

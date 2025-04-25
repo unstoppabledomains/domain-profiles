@@ -32,6 +32,7 @@ import type {
   GetOperationResponse,
   GetOperationResponseError,
   GetOperationStatusResponse,
+  GetSolanaSplTransferResponse,
   GetTokenResponse,
   RecoveryStatusResponse,
   TokenRefreshResponse,
@@ -206,6 +207,58 @@ export const createSignatureOperation = async (
   } catch (e) {
     notifyEvent(e, 'warning', 'Wallet', 'Signature', {
       meta: {accountId, assetId, message},
+    });
+    if (
+      e instanceof TransactionRuleMfaRequiredError ||
+      e instanceof TransactionRuleEmailOtpRequiredError
+    ) {
+      throw e;
+    }
+  }
+  return undefined;
+};
+
+export const createSolanaTokenTransfer = async (
+  accessToken: string,
+  fromWalletAddress: string,
+  toWalletAddress: string,
+  tokenAmount: number,
+  tokenAddress?: string,
+  otpToken?: string,
+): Promise<GetSolanaSplTransferResponse | undefined> => {
+  try {
+    // build headers, including the optional OTP token if provided
+    const headers = buildHeadersWithAuth(accessToken, otpToken);
+
+    // request the transfer
+    const maybeTransferOperation = await fetchApi<
+      GetSolanaSplTransferResponse | GetOperationResponseError
+    >(`/user/${fromWalletAddress}/wallet/solana/transfer`, {
+      method: 'POST',
+      mode: 'cors',
+      headers,
+      host: config.PROFILE.HOST_URL,
+      acceptStatusCodes: [400], // for custom validation response handling
+      body: JSON.stringify({
+        destinationWalletAddress: toWalletAddress,
+        tokenAddress,
+        tokenAmount,
+        waitForConfirmation: false,
+      }),
+    });
+
+    // if the response is a 400, check the error code and possibly throw an error
+    // when the code is related to transaction rules
+    if (isOperationResponseError(maybeTransferOperation)) {
+      handleTransactionRuleError(maybeTransferOperation);
+      return undefined;
+    }
+
+    // return the operation
+    return maybeTransferOperation;
+  } catch (e) {
+    notifyEvent(e, 'warning', 'Wallet', 'Signature', {
+      meta: {fromWalletAddress, toWalletAddress, tokenAddress, tokenAmount},
     });
     if (
       e instanceof TransactionRuleMfaRequiredError ||

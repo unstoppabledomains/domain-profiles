@@ -14,7 +14,7 @@ import {
 } from '../../actions/fireBlocksActions';
 import {prepareRecipientWallet} from '../../actions/walletActions';
 import {useFireblocksState} from '../../hooks';
-import type {SerializedWalletBalance, TokenEntry} from '../../lib';
+import type {Nft, SerializedWalletBalance, TokenEntry} from '../../lib';
 import {TokenType, getBootstrapState, useTranslationContext} from '../../lib';
 import {sleep} from '../../lib/sleep';
 import type {AccountAsset} from '../../lib/types/fireBlocks';
@@ -143,6 +143,7 @@ type Props = {
   accessToken: string;
   wallets: SerializedWalletBalance[];
   initialSelectedToken?: TokenEntry;
+  initialSelectedNft?: Nft;
 };
 
 const Send: React.FC<Props> = ({
@@ -152,6 +153,7 @@ const Send: React.FC<Props> = ({
   accessToken,
   wallets,
   initialSelectedToken,
+  initialSelectedNft,
 }) => {
   const [t] = useTranslationContext();
   const [state] = useFireblocksState();
@@ -183,6 +185,13 @@ const Send: React.FC<Props> = ({
     void handleSelectToken(initialSelectedToken);
   }, [initialSelectedToken]);
 
+  useEffect(() => {
+    if (!initialSelectedNft) {
+      return;
+    }
+    void handleSelectNft(initialSelectedNft);
+  }, [initialSelectedNft]);
+
   const resetForm = () => {
     setResolvedDomain('');
     setRecipientAddress('');
@@ -201,6 +210,51 @@ const Send: React.FC<Props> = ({
       return;
     }
     resetForm();
+  };
+
+  const handleSelectNft = async (nft: Nft) => {
+    if (
+      !nft.symbol ||
+      !nft.collection ||
+      !nft.name ||
+      !nft.image_url ||
+      !nft.mint
+    ) {
+      return;
+    }
+
+    // find the associated wallet
+    const wallet = wallets.find(
+      w =>
+        getBlockchainDisplaySymbol(w.symbol) ===
+        getBlockchainDisplaySymbol(nft.symbol!),
+    );
+    if (!wallet) {
+      return;
+    }
+
+    // default to 1 token to send (since it's an NFT)
+    setAmount('1');
+
+    // define a token entry from the NFT to define the token
+    // transfer operation
+    const token: TokenEntry = {
+      type: nft.symbol === 'SOL' ? TokenType.Spl : TokenType.Erc721,
+      symbol: nft.symbol,
+      address: nft.mint,
+      name: nft.name,
+      ticker: nft.name,
+      imageUrl: nft.image_url,
+      walletAddress: wallet.address,
+      walletName: wallet.name,
+      value: 0,
+      tokenConversionUsd: nft.floorPrice?.value || 0,
+      balance: 1,
+      walletBlockChainLink: wallet.blockchainScanUrl,
+    };
+
+    // pass the NFT token entry to the token selection handler
+    await handleSelectToken(token);
   };
 
   const handleSelectToken = async (token: TokenEntry) => {
@@ -395,8 +449,12 @@ const Send: React.FC<Props> = ({
           blockchainName={selectedToken.walletName}
           symbol={selectedToken.ticker}
           amountInDollars={
-            '$' +
-            (parseFloat(amount) * selectedToken.tokenConversionUsd).toFixed(2)
+            selectedToken.tokenConversionUsd
+              ? '$' +
+                (parseFloat(amount) * selectedToken.tokenConversionUsd).toFixed(
+                  2,
+                )
+              : ''
           }
         />
       </Box>
@@ -482,20 +540,22 @@ const Send: React.FC<Props> = ({
               asset={selectedToken}
             />
           </Box>
-          <AmountInput
-            gasFeeEstimate={
-              selectedToken.symbol === selectedToken.ticker
-                ? gasFeeEstimate
-                : gasFeeEstimate
-                ? '0'
-                : ''
-            }
-            gasFeeError={gasFeeError}
-            amountInputRef={amountInputRef}
-            token={selectedToken}
-            initialAmount={amount}
-            onTokenAmountChange={handleAmountChange}
-          />
+          {!initialSelectedNft && (
+            <AmountInput
+              gasFeeEstimate={
+                selectedToken.symbol === selectedToken.ticker
+                  ? gasFeeEstimate
+                  : gasFeeEstimate
+                  ? '0'
+                  : ''
+              }
+              gasFeeError={gasFeeError}
+              amountInputRef={amountInputRef}
+              token={selectedToken}
+              initialAmount={amount}
+              onTokenAmountChange={handleAmountChange}
+            />
+          )}
           <Box className={cx(classes.fullWidth, classes.footer)}>
             <Box />
             <Box display="flex" mt={3} mb={1}>

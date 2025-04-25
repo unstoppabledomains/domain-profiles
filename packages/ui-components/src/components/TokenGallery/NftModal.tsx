@@ -1,6 +1,7 @@
 import Close from '@mui/icons-material/Close';
 import OpenInNew from '@mui/icons-material/OpenInNew';
 import PortraitOutlinedIcon from '@mui/icons-material/PortraitOutlined';
+import SendIcon from '@mui/icons-material/Send';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
@@ -216,6 +217,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export interface NftModalProps {
   handleClose: () => void;
+  handleTransferNft?: () => void;
   domain?: string;
   address?: string;
   open: boolean;
@@ -227,6 +229,7 @@ const NftModal: React.FC<NftModalProps> = ({
   address,
   open,
   handleClose,
+  handleTransferNft,
   nft,
 }: NftModalProps) => {
   const {classes, cx} = useStyles();
@@ -399,6 +402,18 @@ const NftModal: React.FC<NftModalProps> = ({
                   </Button>
                 </Box>
               )}
+              {handleTransferNft && (
+                <Box mt={2}>
+                  <Button
+                    variant="contained"
+                    startIcon={<SendIcon />}
+                    onClick={handleTransferNft}
+                    size="small"
+                  >
+                    {t('common.send')}
+                  </Button>
+                </Box>
+              )}
               {avatarClicked && domain && address && (
                 <SelectNftPopup
                   domain={domain}
@@ -420,7 +435,7 @@ const NftModal: React.FC<NftModalProps> = ({
             )}
             {(nft.acquiredDate ||
               nft.rarity?.rank ||
-              nft.saleDetails ||
+              nft.saleDetails?.primary?.cost ||
               nft.floorPrice) && (
               <section className={classes.details}>
                 <Typography variant="subtitle2" className={classes.sectionName}>

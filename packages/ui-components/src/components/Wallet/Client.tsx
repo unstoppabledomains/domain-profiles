@@ -759,6 +759,7 @@ export const Client: React.FC<ClientProps> = ({
 
   const handleTokenClicked = (token: TokenEntry) => {
     setSelectedToken(token);
+    setSelectedNft(undefined);
   };
 
   const handleNftClicked = async (collection: TokenEntry) => {
@@ -791,6 +792,7 @@ export const Client: React.FC<ClientProps> = ({
   const handleViewSwapToken = (token: TokenEntry) => {
     setSelectedToken(token);
     setIsSwap(false);
+    setSelectedNft(undefined);
   };
 
   const handleClickedChat = () => {
@@ -820,6 +822,7 @@ export const Client: React.FC<ClientProps> = ({
     setIsBuy(false);
     setIsSwap(false);
     setIsChat(false);
+    setSelectedNft(undefined);
   };
 
   const handleClickedSwap = () => {
@@ -838,6 +841,7 @@ export const Client: React.FC<ClientProps> = ({
     setIsSend(false);
     setIsReceive(false);
     setIsChat(false);
+    setSelectedNft(undefined);
   };
 
   const handleClickedBuy = () => {
@@ -846,6 +850,7 @@ export const Client: React.FC<ClientProps> = ({
     setIsReceive(false);
     setIsSwap(false);
     setIsChat(false);
+    setSelectedNft(undefined);
   };
 
   const handleClickedReceive = () => {
@@ -854,6 +859,7 @@ export const Client: React.FC<ClientProps> = ({
     setIsBuy(false);
     setIsSwap(false);
     setIsChat(false);
+    setSelectedNft(undefined);
   };
 
   const handleCancelAction = () => {
@@ -863,6 +869,9 @@ export const Client: React.FC<ClientProps> = ({
     setIsBuy(false);
     setIsSwap(false);
     setIsChat(false);
+    setSelectedNft(undefined);
+    setSelectedNftCollection(undefined);
+    setSelectedToken(undefined);
 
     // if message tab was clicked, go to home
     if (tabValue === ClientTabType.Messages) {

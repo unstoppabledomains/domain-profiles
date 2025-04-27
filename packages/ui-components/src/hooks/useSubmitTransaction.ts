@@ -22,7 +22,10 @@ import {
   TransactionRuleMfaRequiredError,
 } from '../lib/types/fireBlocks';
 import type {AccountAsset, GetOperationResponse} from '../lib/types/fireBlocks';
-import {createErc20TransferTx} from '../lib/wallet/evm/token';
+import {
+  createErc20TransferTx,
+  createErc721TransferTx,
+} from '../lib/wallet/evm/token';
 import {waitForTx} from '../lib/wallet/solana/transaction';
 import useDomainConfig from './useDomainConfig';
 import useFireblocksMessageSigner from './useFireblocksMessageSigner';
@@ -224,8 +227,8 @@ export const useSubmitTransaction = ({
       }
 
       // create a transfer transaction if we are working with
-      // an ERC-20 token on an EVM chain
-      const transferErc20Tx =
+      // an ERC-20 or ERC-721 token on an EVM chain
+      const transferErcTx =
         asset.blockchainAsset.blockchain.networkId &&
         token.address &&
         token.type === TokenType.Erc20
@@ -237,17 +240,29 @@ export const useSubmitTransaction = ({
               toAddress: recipientAddress,
               amount: parseFloat(amount),
             })
+          : asset.blockchainAsset.blockchain.networkId &&
+            token.address &&
+            token.address.split('/').length === 2 &&
+            token.type === TokenType.Erc721
+          ? await createErc721TransferTx({
+              accessToken,
+              chainId: asset.blockchainAsset.blockchain.networkId,
+              tokenAddress: token.address.split('/')[0],
+              tokenId: token.address.split('/')[1],
+              fromAddress: token.walletAddress,
+              toAddress: recipientAddress,
+            })
           : undefined;
 
       // create new transfer request, depending on token type
       setStatusMessage(SendCryptoStatusMessage.STARTING_TRANSACTION);
       const operationResponse =
-        transferErc20Tx && asset.accountId
+        transferErcTx && asset.accountId
           ? await createTransactionOperation(
               accessToken,
               asset.accountId,
               asset.id,
-              transferErc20Tx,
+              transferErcTx,
               otpToken,
             )
           : await createTransferOperation(

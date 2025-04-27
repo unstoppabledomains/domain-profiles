@@ -540,7 +540,8 @@ export const Client: React.FC<ClientProps> = ({
     setTxLockStatus(status);
   };
 
-  const handleTransferNft = () => {
+  const handleTransferNft = (nft: Nft) => {
+    setSelectedNft(nft);
     setIsNftModalOpen(false);
     setIsSend(true);
   };
@@ -987,6 +988,7 @@ export const Client: React.FC<ClientProps> = ({
               accessToken={accessToken}
               collection={selectedNftCollection}
               onCancelClick={handleCancelNftCollection}
+              onTransferNft={handleTransferNft}
             />
           </Box>
         ) : (

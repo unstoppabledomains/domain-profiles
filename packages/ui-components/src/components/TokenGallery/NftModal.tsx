@@ -217,7 +217,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export interface NftModalProps {
   handleClose: () => void;
-  handleTransferNft?: () => void;
+  handleTransferNft?: (nft: Nft) => void;
   domain?: string;
   address?: string;
   open: boolean;
@@ -407,7 +407,7 @@ const NftModal: React.FC<NftModalProps> = ({
                   <Button
                     variant="contained"
                     startIcon={<SendIcon />}
-                    onClick={handleTransferNft}
+                    onClick={() => handleTransferNft(nft)}
                     size="small"
                   >
                     {t('common.send')}

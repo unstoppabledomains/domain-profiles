@@ -85,6 +85,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     borderRadius: '50%',
     boxShadow: theme.shadows[6],
   },
+  assetLogoNft: {
+    borderRadius: theme.shape.borderRadius,
+  },
   sendAssetContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -230,6 +233,12 @@ const Send: React.FC<Props> = ({
         getBlockchainDisplaySymbol(nft.symbol!),
     );
     if (!wallet) {
+      return;
+    }
+
+    // validate the chain is either SOL or an EVM chain with a mint address
+    // that contains two parts, the contract address and the token ID.
+    if (nft.symbol !== 'SOL' && nft.mint.split('/').length !== 2) {
       return;
     }
 
@@ -521,7 +530,12 @@ const Send: React.FC<Props> = ({
       <Box className={classes.contentWrapper}>
         <Box className={classes.selectAssetContainer}>
           <Box className={classes.sendAssetContainer}>
-            <img src={selectedToken.imageUrl} className={classes.assetLogo} />
+            <img
+              src={selectedToken.imageUrl}
+              className={cx(classes.assetLogo, {
+                [classes.assetLogoNft]: !!initialSelectedNft,
+              })}
+            />
           </Box>
           <Box className={classes.recipientWrapper}>
             <AddressInput

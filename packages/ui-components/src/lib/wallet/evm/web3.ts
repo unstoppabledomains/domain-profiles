@@ -1,4 +1,5 @@
 import {erc20Abi} from 'abitype/abis';
+import {erc721ABI} from 'wagmi';
 import {Web3} from 'web3';
 import {HttpProvider} from 'web3-providers-http';
 
@@ -10,7 +11,16 @@ interface Web3Auth {
   accessToken: string;
 }
 
-export const getContract = (
+export const getContractDecimals = async (
+  address: string,
+  auth: Web3Auth,
+): Promise<number> => {
+  const erc20Contract = getErc20Contract(address, auth);
+  const decimals = await erc20Contract.methods.decimals.call([]).call();
+  return Number(decimals);
+};
+
+export const getErc20Contract = (
   address: string,
   auth: Web3Auth,
   fromAddress?: string,
@@ -22,13 +32,15 @@ export const getContract = (
   });
 };
 
-export const getContractDecimals = async (
+export const getErc721Contract = (
   address: string,
   auth: Web3Auth,
-): Promise<number> => {
-  const erc20Contract = getContract(address, auth);
-  const decimals = await erc20Contract.methods.decimals.call([]).call();
-  return Number(decimals);
+  fromAddress?: string,
+) => {
+  const web3 = getWeb3(auth);
+  return new web3.eth.Contract(erc721ABI, address, {
+    from: fromAddress,
+  });
 };
 
 export const getWeb3 = (auth: Web3Auth): Web3 => {

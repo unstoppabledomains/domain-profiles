@@ -1,9 +1,10 @@
 import {erc20Abi} from 'abitype/abis';
-import {erc721ABI} from 'wagmi';
 import {Web3} from 'web3';
 import {HttpProvider} from 'web3-providers-http';
 
 import config from '@unstoppabledomains/config';
+
+import {erc721Abi} from './abi';
 
 interface Web3Auth {
   chainSymbol: string;
@@ -38,7 +39,7 @@ export const getErc721Contract = (
   fromAddress?: string,
 ) => {
   const web3 = getWeb3(auth);
-  return new web3.eth.Contract(erc721ABI, address, {
+  return new web3.eth.Contract(erc721Abi, address, {
     from: fromAddress,
   });
 };

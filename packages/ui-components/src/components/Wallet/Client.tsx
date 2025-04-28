@@ -769,6 +769,8 @@ export const Client: React.FC<ClientProps> = ({
         collection.symbol,
         collection.walletAddress,
         collection.address,
+        undefined,
+        true,
       );
       const nftList = nftData?.[collection.symbol]?.nfts;
       if (nftList && nftList.length > 0) {

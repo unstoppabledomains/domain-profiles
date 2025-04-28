@@ -83,6 +83,7 @@ interface Props {
   placeholder?: boolean;
   compact?: boolean;
   onClick?: (selected: Nft) => void;
+  onTransferNft?: (nft: Nft) => void;
 }
 
 const NftCard = ({
@@ -92,6 +93,7 @@ const NftCard = ({
   compact,
   placeholder,
   onClick,
+  onTransferNft,
 }: Props) => {
   const [t] = useTranslationContext();
   const videoRef = useRef(null);
@@ -248,6 +250,13 @@ const NftCard = ({
 
   const handleSetPfpClicked = () => {
     setPfpModalOpen(true);
+  };
+
+  const handleTransferNft = (selectedNft: Nft) => {
+    if (onTransferNft) {
+      onTransferNft(selectedNft);
+      handleClose();
+    }
   };
 
   const handleToggleCollectionVisibility = (v: boolean) => {
@@ -430,6 +439,7 @@ const NftCard = ({
         {open && (
           <NftModal
             handleClose={handleClose}
+            handleTransferNft={onTransferNft ? handleTransferNft : undefined}
             open={open}
             nft={nft}
             domain={domain}

@@ -1,9 +1,11 @@
+import {utils} from 'ethers';
+
 import {getBlockchainSymbolFromChainId} from '../../../components/Manage/common/verification/types';
 import type {SerializedWalletBalance} from '../../types/domain';
 import {TokenType} from '../../types/domain';
 import type {CreateTransaction} from '../../types/fireBlocks';
 import type {TokenEntry} from '../../types/wallet';
-import {getContract, getContractDecimals} from './web3';
+import {getContractDecimals, getErc20Contract, getErc721Contract} from './web3';
 
 export const createErc20TransferTx = async (opts: {
   chainId: number;
@@ -15,7 +17,7 @@ export const createErc20TransferTx = async (opts: {
 }): Promise<CreateTransaction> => {
   // ERC-20 contract instance for sending a specific token
   const chainSymbol = getBlockchainSymbolFromChainId(opts.chainId) || '';
-  const erc20Contract = getContract(
+  const erc20Contract = getErc20Contract(
     opts.tokenAddress,
     {
       chainSymbol,
@@ -39,6 +41,42 @@ export const createErc20TransferTx = async (opts: {
     to: opts.tokenAddress,
     data: erc20Contract.methods
       .transfer(opts.toAddress, normalizedAmt)
+      .encodeABI(),
+    value: '0',
+  };
+};
+
+export const createErc721TransferTx = async (opts: {
+  chainId: number;
+  accessToken: string;
+  tokenAddress: string;
+  tokenId: string;
+  fromAddress: string;
+  toAddress: string;
+}): Promise<CreateTransaction> => {
+  // ERC-20 contract instance for sending a specific token
+  const chainSymbol = getBlockchainSymbolFromChainId(opts.chainId) || '';
+  const erc721Contract = getErc721Contract(
+    opts.tokenAddress,
+    {
+      chainSymbol,
+      ownerAddress: opts.fromAddress,
+      accessToken: opts.accessToken,
+    },
+    opts.fromAddress,
+  );
+
+  // normalize the token ID
+  const normalizedTokenId = opts.tokenId.startsWith('0x')
+    ? opts.tokenId
+    : utils.hexlify(BigInt(opts.tokenId));
+
+  // create the transaction that should be signed to execute ERC-20 transfer
+  return {
+    chainId: opts.chainId,
+    to: opts.tokenAddress,
+    data: erc721Contract.methods
+      .safeTransferFrom(opts.fromAddress, opts.toAddress, normalizedTokenId)
       .encodeABI(),
     value: '0',
   };

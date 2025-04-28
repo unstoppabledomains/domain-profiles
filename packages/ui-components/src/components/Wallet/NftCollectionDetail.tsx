@@ -44,9 +44,14 @@ type Props = {
   accessToken: string;
   collection: TokenEntry;
   onCancelClick: () => void;
+  onTransferNft: (nft: Nft) => void;
 };
 
-const NftCollectionDetail: React.FC<Props> = ({collection, onCancelClick}) => {
+const NftCollectionDetail: React.FC<Props> = ({
+  collection,
+  onCancelClick,
+  onTransferNft,
+}) => {
   const {classes} = useStyles();
   const [hasMore, setHasMore] = useState(false);
   const [cursor, setCursor] = useState<string>();
@@ -68,6 +73,7 @@ const NftCollectionDetail: React.FC<Props> = ({collection, onCancelClick}) => {
       collection.walletAddress,
       collection.address,
       cursor,
+      true,
     );
     if (data?.[collection.symbol]) {
       // normalize NFT data
@@ -104,7 +110,11 @@ const NftCollectionDetail: React.FC<Props> = ({collection, onCancelClick}) => {
               ? nfts.map((nft, index) => (
                   <Grid key={`nft-${index}`} item xs={6}>
                     <Box className={classes.cardContainer}>
-                      <NftCard nft={nft} key={index} />
+                      <NftCard
+                        nft={nft}
+                        key={index}
+                        onTransferNft={onTransferNft}
+                      />
                     </Box>
                   </Grid>
                 ))

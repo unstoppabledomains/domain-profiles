@@ -34,6 +34,7 @@ export const getAsset = (
     if (opts?.token) {
       const isToken =
         opts.token.type === TokenType.Erc20 ||
+        opts.token.type === TokenType.Erc721 ||
         opts.token.type === TokenType.Spl;
       return (
         opts.token.walletName.toLowerCase() ===

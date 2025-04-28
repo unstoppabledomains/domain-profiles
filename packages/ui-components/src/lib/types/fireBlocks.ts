@@ -135,6 +135,11 @@ export interface GetOperationStatusResponse {
   };
 }
 
+export interface GetSolanaSplTransferResponse {
+  hash: string;
+  confirmed: boolean;
+}
+
 export interface GetTokenResponse {
   code?: 'SUCCESS' | 'PROCESSING';
   accessToken: string;
@@ -285,7 +290,10 @@ export interface VerifyTokenResponse {
 }
 
 export const isOperationResponseError = (
-  response: GetOperationResponse | GetOperationResponseError,
+  response: unknown,
 ): response is GetOperationResponseError => {
+  if (!response) {
+    return false;
+  }
   return typeof response === 'object' && 'code' in response;
 };

@@ -108,7 +108,9 @@ export const SendConfirm: React.FC<Props> = ({
           <Typography variant="h4" textAlign="center">
             {amount} {getBlockchainDisplaySymbol(symbol)}
           </Typography>
-          <Typography variant="body2">{amountInDollars}</Typography>
+          {amountInDollars && (
+            <Typography variant="body2">{amountInDollars}</Typography>
+          )}
           <Box className={classes.contentContainer} mt={3}>
             <Box
               display="flex"

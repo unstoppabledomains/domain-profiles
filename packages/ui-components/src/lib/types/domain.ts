@@ -550,6 +550,7 @@ export const TldCache = new Keyv<string[]>({
 export enum TokenType {
   Native = 'native',
   Erc20 = 'erc20',
+  Erc721 = 'erc721',
   Spl = 'spl',
   Nft = 'nft',
 }

@@ -73,6 +73,7 @@ const NftCollectionDetail: React.FC<Props> = ({
       collection.walletAddress,
       collection.address,
       cursor,
+      true,
     );
     if (data?.[collection.symbol]) {
       // normalize NFT data

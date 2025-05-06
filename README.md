@@ -1,6 +1,6 @@
 # Unstoppable Domains Profile Manager
 
-A set of common tools to manage your Unstoppable Domain 🛠️
+Set of common tools to manage your Unstoppable Domain 🛠️
 
 [![CI Status](https://github.com/unstoppabledomains/domain-profiles/actions/workflows/push.yml/badge.svg)](https://github.com/unstoppabledomains/domain-profiles/actions/workflows/push.yml)
 

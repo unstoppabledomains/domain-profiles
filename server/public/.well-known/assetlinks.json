@@ -1,0 +1,12 @@
+[
+    {
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.up.wallet",
+        "sha256_cert_fingerprints": [
+          "86:D1:2E:CC:D7:6C:06:96:37:78:48:87:60:64:2E:72:89:6A:E0:B7:D7:9D:C2:85:A8:D5:22:25:8B:C2:D2:9F"
+        ]
+      }
+    }
+  ]

@@ -16,7 +16,7 @@
             ],
             "components": [
               {
-                "/": "/wallet/*",
+                "/": "/app/*",
                 "comment": "Matches any URL with path that starts with /wallet/"
               }
             ]

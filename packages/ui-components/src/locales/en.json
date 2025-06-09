@@ -868,7 +868,7 @@
     "clear": "Clear",
     "noSearchResultsFor": "No profiles matching \"{{searchTerm}}\"",
     "orTryPurchase": "or choose an available domain below",
-    "searchProfiles": "Enter a name or address",
+    "searchProfiles": "Search for domains",
     "searchResultsFor": "Profiles matching \"{{searchTerm}}\"",
     "tryAnotherSearch": "Try another domain or wallet address"
   },

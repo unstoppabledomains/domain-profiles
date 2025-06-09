@@ -84,6 +84,7 @@ import {
   Logo,
   MANAGE_DOMAIN_PARAM,
   NFTGalleryCarousel,
+  NftTag,
   ProfilePicture,
   ProfileSearchBar,
   Registry,
@@ -113,7 +114,6 @@ import {
   useUnstoppableMessaging,
   useWeb3Context,
 } from '@unstoppabledomains/ui-components';
-import {NftTag} from '@unstoppabledomains/ui-components/build/src/components/TokenGallery/NftGalleryData';
 import {
   getValidIcannEndings,
   getValidWeb3Endings,

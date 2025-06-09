@@ -937,38 +937,39 @@ const DomainProfile = ({
                     </Tooltip>
                   }
                 />
-                {profileData?.profile && (
-                  <Box mt={-0.5}>
-                    <LeftBarContentCollapse
-                      id="followers"
-                      icon={<PeopleOutlinedIcon />}
-                      header={
-                        <Box display="flex">
-                          <Box
-                            className={classes.followCount}
-                            onClick={handleViewFollowingClick}
-                          >
-                            <Typography>
-                              {`${
-                                profileData.social?.followingCount || 0
-                              } following`}
-                            </Typography>
+                {profileData?.profile &&
+                  profileData?.display?.mode !== 'portfolio' && (
+                    <Box mt={-0.5}>
+                      <LeftBarContentCollapse
+                        id="followers"
+                        icon={<PeopleOutlinedIcon />}
+                        header={
+                          <Box display="flex">
+                            <Box
+                              className={classes.followCount}
+                              onClick={handleViewFollowingClick}
+                            >
+                              <Typography>
+                                {`${
+                                  profileData.social?.followingCount || 0
+                                } following`}
+                              </Typography>
+                            </Box>
+                            <Box className={classes.followCount}>·</Box>
+                            <Box
+                              className={classes.followCount}
+                              onClick={handleViewFollowersClick}
+                            >
+                              <Typography>{`${
+                                (profileData.social?.followerCount || 0) +
+                                optimisticFollowCount
+                              } followers`}</Typography>
+                            </Box>
                           </Box>
-                          <Box className={classes.followCount}>·</Box>
-                          <Box
-                            className={classes.followCount}
-                            onClick={handleViewFollowersClick}
-                          >
-                            <Typography>{`${
-                              (profileData.social?.followerCount || 0) +
-                              optimisticFollowCount
-                            } followers`}</Typography>
-                          </Box>
-                        </Box>
-                      }
-                    />
-                  </Box>
-                )}
+                        }
+                      />
+                    </Box>
+                  )}
                 {hasAddresses && (
                   <LeftBarContentCollapse
                     id="addresses"
@@ -1408,6 +1409,18 @@ const DomainProfile = ({
                           );
                         })}
                     </Box>
+                  </Box>
+                )}
+                {profileData?.display?.mode === 'portfolio' && (
+                  <Box mt={-5}>
+                    <DomainWalletTransactions
+                      id="profile"
+                      wallets={walletBalances}
+                      domain={domain}
+                      boxShadow={0}
+                      isError={isWalletBalanceError}
+                      verified={tokenId !== undefined}
+                    />
                   </Box>
                 )}
               </>

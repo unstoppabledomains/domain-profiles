@@ -740,7 +740,8 @@ const DomainProfile = ({
       >
         <Grid item xs={12} sm={12} md={4} className={classes.item}>
           <Box className={classes.leftPanel}>
-            {profileData?.profile?.imageType === 'default' ? (
+            {profileData?.profile?.imageType === 'default' &&
+            profileData?.display?.mode === 'portfolio' ? (
               <Box className={classes.emptyProfilePicture} />
             ) : (
               <Box className={classes.profilePicture}>

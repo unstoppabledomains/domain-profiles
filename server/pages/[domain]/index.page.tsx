@@ -740,21 +740,25 @@ const DomainProfile = ({
       >
         <Grid item xs={12} sm={12} md={4} className={classes.item}>
           <Box className={classes.leftPanel}>
-            <Box className={classes.profilePicture}>
-              <ProfilePicture
-                src={
-                  tokenId || isOwner === undefined
-                    ? imagePath
-                    : 'https://storage.googleapis.com/unstoppable-client-assets/images/domains/dns-logo.svg'
-                }
-                domain={domain}
-                imageType={
-                  tokenId || isOwner === undefined
-                    ? profileData?.profile?.imageType
-                    : 'offChain'
-                }
-              />
-            </Box>
+            {profileData?.profile?.imageType === 'default' ? (
+              <Box className={classes.emptyProfilePicture} />
+            ) : (
+              <Box className={classes.profilePicture}>
+                <ProfilePicture
+                  src={
+                    tokenId || isOwner === undefined
+                      ? imagePath
+                      : 'https://storage.googleapis.com/unstoppable-client-assets/images/domains/dns-logo.svg'
+                  }
+                  domain={domain}
+                  imageType={
+                    tokenId || isOwner === undefined
+                      ? profileData?.profile?.imageType
+                      : 'offChain'
+                  }
+                />
+              </Box>
+            )}
             {profileData?.profile?.displayName && (
               <Box>
                 <Box mt={4}>

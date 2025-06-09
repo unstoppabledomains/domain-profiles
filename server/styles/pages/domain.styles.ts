@@ -73,6 +73,18 @@ export const useStyles = makeStyles()((theme: Theme) => ({
       left: theme.spacing(2),
     },
   },
+  emptyProfilePicture: {
+    display: 'flex',
+    justifyContent: 'center',
+    zIndex: 100,
+    height: PROFILE_PICTURE_SIZE_MOBILE / 2,
+    [theme.breakpoints.up('sm')]: {
+      height: PROFILE_PICTURE_SIZE_DESKTOP / 2 + 11,
+    },
+    [theme.breakpoints.up('md')]: {
+      justifyContent: 'flex-start',
+    },
+  },
   profilePicture: {
     display: 'flex',
     justifyContent: 'center',

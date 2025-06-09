@@ -694,39 +694,41 @@ const DomainProfile = ({
             <Box className={classes.searchContainer}>
               <ProfileSearchBar setWeb3Deps={setWeb3Deps} />
             </Box>
-            {tokenId && isOwner !== undefined && (
-              <Box className={classes.loginContainer}>
-                {authDomain ? (
-                  <>
-                    {featureFlags?.variations
-                      ?.ecommerceServiceUsersEnableChat && (
-                      <Box className={classes.chatContainer}>
-                        <UnstoppableMessaging
-                          address={authAddress}
-                          disableSupportBubble
-                        />
-                      </Box>
-                    )}
-                    <AccountButton
-                      domain={domain}
-                      domainOwner={ownerAddress}
-                      authAddress={authAddress}
-                      authDomain={authDomain}
-                      setAuthAddress={setAuthAddress}
+            {tokenId &&
+              isOwner !== undefined &&
+              profileData?.display?.mode !== 'portfolio' && (
+                <Box className={classes.loginContainer}>
+                  {authDomain ? (
+                    <>
+                      {featureFlags?.variations
+                        ?.ecommerceServiceUsersEnableChat && (
+                        <Box className={classes.chatContainer}>
+                          <UnstoppableMessaging
+                            address={authAddress}
+                            disableSupportBubble
+                          />
+                        </Box>
+                      )}
+                      <AccountButton
+                        domain={domain}
+                        domainOwner={ownerAddress}
+                        authAddress={authAddress}
+                        authDomain={authDomain}
+                        setAuthAddress={setAuthAddress}
+                      />
+                    </>
+                  ) : (
+                    <LoginButton
+                      method={LoginMethod.Wallet}
+                      loading={false}
+                      isWhiteBg
+                      hidden={false}
+                      clicked={loginClicked}
+                      onLoginComplete={handleLoginComplete}
                     />
-                  </>
-                ) : (
-                  <LoginButton
-                    method={LoginMethod.Wallet}
-                    loading={false}
-                    isWhiteBg
-                    hidden={false}
-                    clicked={loginClicked}
-                    onLoginComplete={handleLoginComplete}
-                  />
-                )}
-              </Box>
-            )}
+                  )}
+                </Box>
+              )}
           </Box>
         </Box>
       </Box>
@@ -798,54 +800,56 @@ const DomainProfile = ({
                 </Box>
               </Box>
             )}
-            {isOwner !== undefined && tokenId && (
-              <Box className={classes.menuButtonContainer}>
-                {(isOwner || !authDomain) && (
-                  <ChipControlButton
-                    data-testid="edit-profile-button"
-                    onClick={handleManageDomainModalOpen}
-                    icon={<EditOutlinedIcon />}
-                    label={t('manage.manageProfile')}
-                    sx={{marginRight: 1}}
-                  />
-                )}
-                {!isOwner ? (
-                  <>
-                    {authDomain && (
-                      <ChipControlButton
-                        data-testid="chat-button"
-                        onClick={() => setOpenChat(domain)}
-                        icon={<ChatIcon />}
-                        label={t('push.chat')}
-                        sx={{marginRight: 1}}
-                      />
-                    )}
-                    {(!authDomain ||
-                      isDomainValidForManagement(authDomain)) && (
-                      <Box mr={1}>
-                        <FollowButton
-                          handleLogin={() => setLoginClicked(true)}
-                          setWeb3Deps={setWeb3Deps}
-                          authDomain={authDomain}
-                          domain={domain}
-                          authAddress={authAddress}
-                          onFollowClick={handleFollowClick}
-                          onUnfollowClick={handleUnfollowClick}
+            {isOwner !== undefined &&
+              tokenId &&
+              profileData?.display?.mode !== 'portfolio' && (
+                <Box className={classes.menuButtonContainer}>
+                  {(isOwner || !authDomain) && (
+                    <ChipControlButton
+                      data-testid="edit-profile-button"
+                      onClick={handleManageDomainModalOpen}
+                      icon={<EditOutlinedIcon />}
+                      label={t('manage.manageProfile')}
+                      sx={{marginRight: 1}}
+                    />
+                  )}
+                  {!isOwner ? (
+                    <>
+                      {authDomain && (
+                        <ChipControlButton
+                          data-testid="chat-button"
+                          onClick={() => setOpenChat(domain)}
+                          icon={<ChatIcon />}
+                          label={t('push.chat')}
+                          sx={{marginRight: 1}}
                         />
-                      </Box>
-                    )}
-                  </>
-                ) : (
-                  <ChipControlButton
-                    data-testid="buy-crypto-button"
-                    onClick={handleBuyCrypto}
-                    icon={<AttachMoneyIcon />}
-                    label={t('profile.buyCrypto')}
-                    variant="outlined"
-                  />
-                )}
-              </Box>
-            )}
+                      )}
+                      {(!authDomain ||
+                        isDomainValidForManagement(authDomain)) && (
+                        <Box mr={1}>
+                          <FollowButton
+                            handleLogin={() => setLoginClicked(true)}
+                            setWeb3Deps={setWeb3Deps}
+                            authDomain={authDomain}
+                            domain={domain}
+                            authAddress={authAddress}
+                            onFollowClick={handleFollowClick}
+                            onUnfollowClick={handleUnfollowClick}
+                          />
+                        </Box>
+                      )}
+                    </>
+                  ) : (
+                    <ChipControlButton
+                      data-testid="buy-crypto-button"
+                      onClick={handleBuyCrypto}
+                      icon={<AttachMoneyIcon />}
+                      label={t('profile.buyCrypto')}
+                      variant="outlined"
+                    />
+                  )}
+                </Box>
+              )}
             {isLoaded && (
               <>
                 <Box mt={3}>
@@ -1503,7 +1507,7 @@ const DomainProfile = ({
                       ? 'expanded'
                       : 'collapsed'
                   }
-                  initialCategory={
+                  fixedCategory={
                     profileData?.display?.mode === 'portfolio'
                       ? NftTag.Domain
                       : undefined

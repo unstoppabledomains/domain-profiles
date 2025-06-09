@@ -30,7 +30,7 @@ export interface TokenGalleryProps {
   hideConfigureButton?: boolean;
   hideToggleButton?: boolean;
   initialState?: 'expanded' | 'collapsed';
-  initialCategory?: NftTag;
+  fixedCategory?: NftTag;
   title?: string;
   onNftClick?: (nft: Nft) => void;
 }
@@ -105,7 +105,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
   hideConfigureButton,
   hideToggleButton,
   initialState,
-  initialCategory,
+  fixedCategory,
   title,
   onNftClick,
 }: TokenGalleryProps) => {
@@ -304,7 +304,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
           tokenCount={tokenCount}
           setTokenCount={setTokenCount}
           totalCount={totalCount}
-          initialCategory={initialCategory}
+          fixedCategory={fixedCategory}
           onNftClick={onNftClick}
         />
       ) : (

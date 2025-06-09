@@ -87,6 +87,7 @@ interface Props {
   tokenCount: number;
   setTokenCount: (arg0: number) => void;
   totalCount?: number;
+  initialCategory?: NftTag;
 }
 
 const NftGalleryView = ({
@@ -99,6 +100,7 @@ const NftGalleryView = ({
   tokenCount,
   setTokenCount,
   totalCount,
+  initialCategory,
 }: Props) => {
   // state management
   const imagesPerPage = 10;
@@ -110,7 +112,7 @@ const NftGalleryView = ({
   // filter management
   const defaultVisibility = {
     [FilterType.Category]: {
-      [NftTag.All]: true,
+      [initialCategory || NftTag.All]: true,
     },
     [FilterType.Chain]: {
       [NftTag.All]: true,
@@ -124,6 +126,12 @@ const NftGalleryView = ({
   const [selectedSymbol, setSelectedSymbol] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (initialCategory) {
+      setSelectedCategory([initialCategory]);
+    }
+  }, [initialCategory]);
 
   useEffect(() => {
     setVisibility(FilterType.Chain, selectedSymbol);
@@ -347,7 +355,7 @@ const NftGalleryView = ({
                     getFilterOption('DAO Voting', NftTag.DAO),
                     getFilterOption('Deeds', NftTag.Deed),
                     getFilterOption('Developer', NftTag.Developer),
-                    getFilterOption('Web3 Domains', NftTag.Domain),
+                    getFilterOption('Domains', NftTag.Domain),
                     getFilterOption('Education', NftTag.Education),
                     getFilterOption('Gaming', NftTag.Gaming),
                     getFilterOption('Tickets', NftTag.Ticket),

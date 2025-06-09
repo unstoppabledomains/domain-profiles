@@ -82,6 +82,7 @@ export enum DomainFieldTypes {
   Portfolio = 'portfolio',
   WalletBalances = 'walletBalances',
   IsListedForSale = 'isListedForSale',
+  Display = 'display',
 }
 
 export enum DomainProfileKeys {
@@ -219,6 +220,11 @@ export type SerializedBulkDomainResponse = {
   domains: string[];
 };
 
+export type SerializedDisplayAttributes = {
+  hidden?: boolean;
+  mode?: 'web3' | 'portfolio';
+};
+
 export type SerializedDomainCryptoVerification = {
   id: number;
   symbol: string;
@@ -285,9 +291,6 @@ export type SerializedDomainProfileAttributes = {
   showDomainSuggestion?: boolean;
   showFeaturedCommunity?: boolean;
   showFeaturedPartner?: boolean;
-
-  // UD blue status
-  udBlue?: boolean;
 };
 
 export type SerializedDomainProfileSocialAccountsUserInfo = {
@@ -377,6 +380,7 @@ export type SerializedProfileSearch = {
 
 export type SerializedPublicDomainProfileData = {
   profile?: SerializedDomainProfileAttributes;
+  display?: SerializedDisplayAttributes;
   social?: SerializedSocialAttributes;
   socialAccounts?: Record<
     DomainProfileSocialMedia | DomainProfileSocialMediaAutoPopulated,

@@ -113,6 +113,7 @@ import {
   useUnstoppableMessaging,
   useWeb3Context,
 } from '@unstoppabledomains/ui-components';
+import {NftTag} from '@unstoppabledomains/ui-components/build/src/components/TokenGallery/NftGalleryData';
 import {
   getValidIcannEndings,
   getValidWeb3Endings,
@@ -153,7 +154,11 @@ const DomainProfile = ({
   const {enqueueSnackbar} = useSnackbar();
   const {mappedResolverKeys} = useResolverKeys();
   const {isChatOpen, setOpenChat} = useUnstoppableMessaging();
-  const {nfts, nftSymbolVisible, expanded: nftShowAll} = useTokenGallery();
+  const {
+    nfts,
+    nftSymbolVisible,
+    expanded: tokenGalleryExpanded,
+  } = useTokenGallery();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isReloadRequested, setIsReloadRequested] = useState(false);
   const {setWeb3Deps} = useWeb3Context();
@@ -199,6 +204,10 @@ const DomainProfile = ({
 
   const isEnsDomain = isExternalDomain(domain);
   const {data: ensDomainStatus} = useEnsDomainStatus(domain, isEnsDomain);
+
+  // token gallery visibility
+  const nftShowAll =
+    profileData?.display?.mode === 'portfolio' || tokenGalleryExpanded;
 
   // format social platform data
   const socialsInfo: SerializedDomainProfileSocialAccountsUserInfo = {};
@@ -1066,200 +1075,206 @@ const DomainProfile = ({
                       id="marketPrice"
                     />
                   )}
-                <Box
-                  mb={-0.5}
-                  mt={-0.5}
-                  className={classes.otherDomainsLabel}
-                  onClick={() =>
-                    window.open(
-                      `https://dapp.webacy.com/unstoppable/${domain}`,
-                      '_blank',
-                    )
-                  }
-                >
-                  <LeftBarContentCollapse
-                    icon={<HealthAndSafetyOutlinedIcon />}
-                    header={
-                      <Box display="flex" alignItems="center">
-                        <Typography mr={1}>{t('webacy.riskScore')}</Typography>
-                        {profileData?.webacy && (
+                {profileData?.display?.mode === 'web3' && (
+                  <Box
+                    mb={-0.5}
+                    mt={-0.5}
+                    className={classes.otherDomainsLabel}
+                    onClick={() =>
+                      window.open(
+                        `https://dapp.webacy.com/unstoppable/${domain}`,
+                        '_blank',
+                      )
+                    }
+                  >
+                    <LeftBarContentCollapse
+                      icon={<HealthAndSafetyOutlinedIcon />}
+                      header={
+                        <Box display="flex" alignItems="center">
+                          <Typography mr={1}>
+                            {t('webacy.riskScore')}
+                          </Typography>
+                          {profileData?.webacy && (
+                            <Tooltip
+                              arrow
+                              title={
+                                profileData.webacy.issues.length > 0 ? (
+                                  profileData.webacy.issues.map(issue => (
+                                    <>
+                                      <Typography variant="caption">
+                                        {
+                                          issue.categories
+                                            ?.wallet_characteristics
+                                            ?.description
+                                        }
+                                      </Typography>
+                                      <List
+                                        dense
+                                        sx={{listStyleType: 'disc', pl: 4}}
+                                      >
+                                        {issue.tags.map(tag => (
+                                          <ListItem sx={{display: 'list-item'}}>
+                                            <Typography variant="caption">
+                                              {tag.name}
+                                            </Typography>
+                                          </ListItem>
+                                        ))}
+                                      </List>
+                                    </>
+                                  ))
+                                ) : (
+                                  <Typography variant="caption">
+                                    {t('webacy.riskScoreDescription')}
+                                  </Typography>
+                                )
+                              }
+                            >
+                              <Chip
+                                color={
+                                  profileData.webacy.high
+                                    ? 'error'
+                                    : profileData.webacy.medium
+                                    ? 'default'
+                                    : 'success'
+                                }
+                                size="small"
+                                icon={
+                                  profileData.webacy.high ? (
+                                    <OutlinedFlagIcon
+                                      className={classes.riskScoreIcon}
+                                    />
+                                  ) : profileData.webacy.medium ? (
+                                    <CheckCircleOutlinedIcon
+                                      className={classes.riskScoreIcon}
+                                    />
+                                  ) : (
+                                    <CheckCircleOutlinedIcon
+                                      className={classes.riskScoreIcon}
+                                    />
+                                  )
+                                }
+                                label={
+                                  profileData.webacy.high
+                                    ? t('webacy.high')
+                                    : profileData.webacy.medium
+                                    ? t('webacy.medium')
+                                    : t('webacy.low')
+                                }
+                              />
+                            </Tooltip>
+                          )}
+                          {isOwner &&
+                            profileData?.webacy &&
+                            !profileData.webacy.high &&
+                            !profileData.webacy.medium && (
+                              <Tooltip
+                                title={
+                                  <Typography variant="caption">
+                                    {t('webacy.share')}
+                                  </Typography>
+                                }
+                              >
+                                <IconButton
+                                  size="small"
+                                  className={classes.riskScoreShareButton}
+                                  onClick={handleShareRiskScore}
+                                >
+                                  <IosShareIcon
+                                    className={classes.riskScoreShareIcon}
+                                  />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                        </Box>
+                      }
+                      id="webacy"
+                    />
+                  </Box>
+                )}
+                {profileData?.bitscrunch &&
+                  profileData?.display?.mode === 'web3' && (
+                    <LeftBarContentCollapse
+                      icon={<HealthAndSafetyOutlinedIcon />}
+                      header={
+                        <Box display="flex" alignItems="center">
+                          <Typography mr={1}>
+                            {t('bitscrunch.riskScore')}
+                          </Typography>
                           <Tooltip
                             arrow
                             title={
-                              profileData.webacy.issues.length > 0 ? (
-                                profileData.webacy.issues.map(issue => (
-                                  <>
-                                    <Typography variant="caption">
-                                      {
-                                        issue.categories?.wallet_characteristics
-                                          ?.description
-                                      }
-                                    </Typography>
-                                    <List
-                                      dense
-                                      sx={{listStyleType: 'disc', pl: 4}}
-                                    >
-                                      {issue.tags.map(tag => (
-                                        <ListItem sx={{display: 'list-item'}}>
-                                          <Typography variant="caption">
-                                            {tag.name}
-                                          </Typography>
-                                        </ListItem>
-                                      ))}
-                                    </List>
-                                  </>
-                                ))
-                              ) : (
-                                <Typography variant="caption">
-                                  {t('webacy.riskScoreDescription')}
-                                </Typography>
-                              )
+                              <Typography variant="caption">
+                                {t('bitscrunch.riskScoreDescription')}
+                              </Typography>
                             }
                           >
                             <Chip
                               color={
-                                profileData.webacy.high
-                                  ? 'error'
-                                  : profileData.webacy.medium
+                                profileData.bitscrunch.wallet.metric_values
+                                  .wallet_score.excellent
+                                  ? 'success'
+                                  : profileData.bitscrunch.wallet.metric_values
+                                      .wallet_score.good
+                                  ? 'info'
+                                  : profileData.bitscrunch.wallet.metric_values
+                                      .wallet_score.normal
                                   ? 'default'
-                                  : 'success'
+                                  : profileData.bitscrunch.wallet.metric_values
+                                      .wallet_score.risk
+                                  ? 'warning'
+                                  : 'error'
                               }
                               size="small"
                               icon={
-                                profileData.webacy.high ? (
+                                profileData.bitscrunch.wallet.metric_values
+                                  .wallet_score.excellent ? (
+                                  <CheckCircleOutlinedIcon
+                                    className={classes.riskScoreIcon}
+                                  />
+                                ) : profileData.bitscrunch.wallet.metric_values
+                                    .wallet_score.good ? (
+                                  <CheckCircleOutlinedIcon
+                                    className={classes.riskScoreIcon}
+                                  />
+                                ) : profileData.bitscrunch.wallet.metric_values
+                                    .wallet_score.normal ? (
+                                  <CheckCircleOutlinedIcon
+                                    className={classes.riskScoreIcon}
+                                  />
+                                ) : profileData.bitscrunch.wallet.metric_values
+                                    .wallet_score.risk ? (
                                   <OutlinedFlagIcon
                                     className={classes.riskScoreIcon}
                                   />
-                                ) : profileData.webacy.medium ? (
-                                  <CheckCircleOutlinedIcon
-                                    className={classes.riskScoreIcon}
-                                  />
                                 ) : (
-                                  <CheckCircleOutlinedIcon
+                                  <OutlinedFlagIcon
                                     className={classes.riskScoreIcon}
                                   />
                                 )
                               }
                               label={
-                                profileData.webacy.high
-                                  ? t('webacy.high')
-                                  : profileData.webacy.medium
-                                  ? t('webacy.medium')
-                                  : t('webacy.low')
+                                profileData.bitscrunch.wallet.metric_values
+                                  .wallet_score.excellent
+                                  ? t('bitscrunch.excellent')
+                                  : profileData.bitscrunch.wallet.metric_values
+                                      .wallet_score.good
+                                  ? t('bitscrunch.good')
+                                  : profileData.bitscrunch.wallet.metric_values
+                                      .wallet_score.normal
+                                  ? t('bitscrunch.normal')
+                                  : profileData.bitscrunch.wallet.metric_values
+                                      .wallet_score.risk
+                                  ? t('bitscrunch.risk')
+                                  : t('bitscrunch.highRisk')
                               }
                             />
                           </Tooltip>
-                        )}
-                        {isOwner &&
-                          profileData?.webacy &&
-                          !profileData.webacy.high &&
-                          !profileData.webacy.medium && (
-                            <Tooltip
-                              title={
-                                <Typography variant="caption">
-                                  {t('webacy.share')}
-                                </Typography>
-                              }
-                            >
-                              <IconButton
-                                size="small"
-                                className={classes.riskScoreShareButton}
-                                onClick={handleShareRiskScore}
-                              >
-                                <IosShareIcon
-                                  className={classes.riskScoreShareIcon}
-                                />
-                              </IconButton>
-                            </Tooltip>
-                          )}
-                      </Box>
-                    }
-                    id="webacy"
-                  />
-                </Box>
-                {profileData?.bitscrunch && (
-                  <LeftBarContentCollapse
-                    icon={<HealthAndSafetyOutlinedIcon />}
-                    header={
-                      <Box display="flex" alignItems="center">
-                        <Typography mr={1}>
-                          {t('bitscrunch.riskScore')}
-                        </Typography>
-                        <Tooltip
-                          arrow
-                          title={
-                            <Typography variant="caption">
-                              {t('bitscrunch.riskScoreDescription')}
-                            </Typography>
-                          }
-                        >
-                          <Chip
-                            color={
-                              profileData.bitscrunch.wallet.metric_values
-                                .wallet_score.excellent
-                                ? 'success'
-                                : profileData.bitscrunch.wallet.metric_values
-                                    .wallet_score.good
-                                ? 'info'
-                                : profileData.bitscrunch.wallet.metric_values
-                                    .wallet_score.normal
-                                ? 'default'
-                                : profileData.bitscrunch.wallet.metric_values
-                                    .wallet_score.risk
-                                ? 'warning'
-                                : 'error'
-                            }
-                            size="small"
-                            icon={
-                              profileData.bitscrunch.wallet.metric_values
-                                .wallet_score.excellent ? (
-                                <CheckCircleOutlinedIcon
-                                  className={classes.riskScoreIcon}
-                                />
-                              ) : profileData.bitscrunch.wallet.metric_values
-                                  .wallet_score.good ? (
-                                <CheckCircleOutlinedIcon
-                                  className={classes.riskScoreIcon}
-                                />
-                              ) : profileData.bitscrunch.wallet.metric_values
-                                  .wallet_score.normal ? (
-                                <CheckCircleOutlinedIcon
-                                  className={classes.riskScoreIcon}
-                                />
-                              ) : profileData.bitscrunch.wallet.metric_values
-                                  .wallet_score.risk ? (
-                                <OutlinedFlagIcon
-                                  className={classes.riskScoreIcon}
-                                />
-                              ) : (
-                                <OutlinedFlagIcon
-                                  className={classes.riskScoreIcon}
-                                />
-                              )
-                            }
-                            label={
-                              profileData.bitscrunch.wallet.metric_values
-                                .wallet_score.excellent
-                                ? t('bitscrunch.excellent')
-                                : profileData.bitscrunch.wallet.metric_values
-                                    .wallet_score.good
-                                ? t('bitscrunch.good')
-                                : profileData.bitscrunch.wallet.metric_values
-                                    .wallet_score.normal
-                                ? t('bitscrunch.normal')
-                                : profileData.bitscrunch.wallet.metric_values
-                                    .wallet_score.risk
-                                ? t('bitscrunch.risk')
-                                : t('bitscrunch.highRisk')
-                            }
-                          />
-                        </Tooltip>
-                      </Box>
-                    }
-                    id="bitscrunch"
-                  />
-                )}
-                {ipfsHash && (
+                        </Box>
+                      }
+                      id="bitscrunch"
+                    />
+                  )}
+                {ipfsHash && profileData?.display?.mode === 'web3' && (
                   <LeftBarContentCollapse
                     icon={<LaunchOutlinedIcon />}
                     header={
@@ -1387,73 +1402,77 @@ const DomainProfile = ({
         </Grid>
         {isLoaded ? (
           <Grid item xs={12} sm={12} md={8} className={classes.item}>
-            {isOwner !== undefined && !tokenId && (
-              <Box className={classes.tokenizeInfoContainer}>
-                <Grid container spacing={1}>
-                  <Grid item xs={12} md={4}>
-                    <img
-                      className={classes.tokenizeImage}
-                      src="https://storage.googleapis.com/unstoppable-client-assets/nft-gallery/nft-gallery-config.png"
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={8}>
-                    <Box
-                      display="flex"
-                      flexDirection="column"
-                      justifyContent="center"
-                      height="100%"
-                    >
-                      <Typography variant="body2" mb={2}>
-                        {t('profile.learnAboutTokenization', {domain})}
-                      </Typography>
-                      <Box>
-                        <ChipControlButton
-                          data-testid="tokenize-button"
-                          onClick={handleTokenizationClick}
-                          icon={<TokenOutlinedIcon />}
-                          label={t('profile.learnAboutTokenizationButton', {
-                            domain,
-                          })}
-                          sx={{marginTop: 1}}
-                          variant="filled"
-                        />
+            {isOwner !== undefined &&
+              !tokenId &&
+              profileData?.display?.mode === 'web3' && (
+                <Box className={classes.tokenizeInfoContainer}>
+                  <Grid container spacing={1}>
+                    <Grid item xs={12} md={4}>
+                      <img
+                        className={classes.tokenizeImage}
+                        src="https://storage.googleapis.com/unstoppable-client-assets/nft-gallery/nft-gallery-config.png"
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={8}>
+                      <Box
+                        display="flex"
+                        flexDirection="column"
+                        justifyContent="center"
+                        height="100%"
+                      >
+                        <Typography variant="body2" mb={2}>
+                          {t('profile.learnAboutTokenization', {domain})}
+                        </Typography>
+                        <Box>
+                          <ChipControlButton
+                            data-testid="tokenize-button"
+                            onClick={handleTokenizationClick}
+                            icon={<TokenOutlinedIcon />}
+                            label={t('profile.learnAboutTokenizationButton', {
+                              domain,
+                            })}
+                            sx={{marginTop: 1}}
+                            variant="filled"
+                          />
+                        </Box>
                       </Box>
-                    </Box>
+                    </Grid>
                   </Grid>
+                </Box>
+              )}
+            {profileData?.display?.mode === 'web3' && (
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={6}>
+                  <TokensPortfolio
+                    wallets={walletBalances
+                      ?.filter(
+                        w =>
+                          (w.totalValueUsdAmt && w.totalValueUsdAmt > 0) ||
+                          (w.txns?.data && w.txns.data.length > 0),
+                      )
+                      .sort(
+                        (a, b) =>
+                          (b.totalValueUsdAmt || 0) - (a.totalValueUsdAmt || 0),
+                      )}
+                    domain={domain}
+                    boxShadow={3}
+                    isError={isWalletBalanceError}
+                    verified={tokenId !== undefined}
+                  />
                 </Grid>
-              </Box>
+                <Grid item xs={12} md={6}>
+                  <DomainWalletTransactions
+                    id="profile"
+                    wallets={walletBalances}
+                    domain={domain}
+                    boxShadow={3}
+                    isError={isWalletBalanceError}
+                    verified={tokenId !== undefined}
+                  />
+                </Grid>
+              </Grid>
             )}
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <TokensPortfolio
-                  wallets={walletBalances
-                    ?.filter(
-                      w =>
-                        (w.totalValueUsdAmt && w.totalValueUsdAmt > 0) ||
-                        (w.txns?.data && w.txns.data.length > 0),
-                    )
-                    .sort(
-                      (a, b) =>
-                        (b.totalValueUsdAmt || 0) - (a.totalValueUsdAmt || 0),
-                    )}
-                  domain={domain}
-                  boxShadow={3}
-                  isError={isWalletBalanceError}
-                  verified={tokenId !== undefined}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <DomainWalletTransactions
-                  id="profile"
-                  wallets={walletBalances}
-                  domain={domain}
-                  boxShadow={3}
-                  isError={isWalletBalanceError}
-                  verified={tokenId !== undefined}
-                />
-              </Grid>
-            </Grid>
-            {tokenId === undefined && (
+            {tokenId === undefined && profileData?.display?.mode === 'web3' && (
               <Box className={classes.tokenizeWarningContainer}>
                 <InfoOutlinedIcon className={classes.infoIconDark} />
                 <Typography ml={1} variant="caption">
@@ -1473,6 +1492,22 @@ const DomainProfile = ({
                   ownerAddress={ownerAddress}
                   profileServiceUrl={config.PROFILE.HOST_URL}
                   hideConfigureButton={true}
+                  hideToggleButton={profileData?.display?.mode === 'portfolio'}
+                  initialState={
+                    profileData?.display?.mode === 'portfolio'
+                      ? 'expanded'
+                      : 'collapsed'
+                  }
+                  initialCategory={
+                    profileData?.display?.mode === 'portfolio'
+                      ? NftTag.Domain
+                      : undefined
+                  }
+                  title={
+                    profileData?.display?.mode === 'portfolio'
+                      ? t('common.domainPortfolio')
+                      : undefined
+                  }
                 />
               )}
             {tokenId &&
@@ -1726,6 +1761,8 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
   const {params} = props;
   const profileServiceUrl = config.PROFILE.HOST_URL;
   const domain = params.domain.toLowerCase();
+
+  // search page redirect
   const redirectToSearch = {
     redirect: {
       destination: `${
@@ -1734,6 +1771,14 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         searchTerm: domain,
         searchRef: 'domainprofile',
       })}`,
+      permanent: false,
+    },
+  };
+
+  // domain listing redirect
+  const redirectToDomainListing = {
+    redirect: {
+      destination: `${config.UNSTOPPABLE_WEBSITE_URL}/d/${domain}`,
       permanent: false,
     },
   };
@@ -1770,6 +1815,7 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
         DomainFieldTypes.Records,
         DomainFieldTypes.Market,
         DomainFieldTypes.Portfolio,
+        DomainFieldTypes.Display,
       ]),
       getHumanityCheckStatus({name: domain}),
     ]);
@@ -1786,6 +1832,11 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
   // Redirecting to /search if the domain isn't purchased yet, trying to increase conversion
   if (!profileData?.profile?.domainPurchased) {
     return redirectToSearch;
+  }
+
+  // Redirect to domain listing page if the domain is specified as hidden
+  if (profileData?.display?.hidden) {
+    return redirectToDomainListing;
   }
 
   // set display name to domain if not already set

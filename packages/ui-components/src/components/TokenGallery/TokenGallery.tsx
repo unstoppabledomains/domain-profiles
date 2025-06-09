@@ -12,6 +12,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import NFTGalleryCarousel from '../../components/TokenGallery/NFTGalleryCarousel';
 import NftFirstTimeGalleryContainer from '../../components/TokenGallery/NftFirstTimeGalleryContainer';
+import type {NftTag} from '../../components/TokenGallery/NftGalleryData';
 import {getNextNftPageFn} from '../../components/TokenGallery/NftGalleryData';
 import {NftGalleryManager} from '../../components/TokenGallery/NftGalleryManager';
 import NftGalleryView from '../../components/TokenGallery/NftGalleryView';
@@ -27,6 +28,10 @@ export interface TokenGalleryProps {
   ownerAddress: string;
   profileServiceUrl: string;
   hideConfigureButton?: boolean;
+  hideToggleButton?: boolean;
+  initialState?: 'expanded' | 'collapsed';
+  initialCategory?: NftTag;
+  title?: string;
 }
 
 export const useStyles = makeStyles()((theme: Theme) => ({
@@ -97,6 +102,10 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
   ownerAddress,
   profileServiceUrl,
   hideConfigureButton,
+  hideToggleButton,
+  initialState,
+  initialCategory,
+  title,
 }: TokenGalleryProps) => {
   const {classes, cx} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
@@ -145,6 +154,13 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
     }
     void getNextNftPage(true);
   }, [isOwner]);
+
+  // set the initial state of the NFT gallery
+  useEffect(() => {
+    if (initialState === 'expanded') {
+      setExpanded(true);
+    }
+  }, [initialState]);
 
   // recursively load remaining NFT gallery data pages in the background
   // so they are available to the user later
@@ -206,7 +222,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
       <div className={classes.nftGalleryHeader}>
         <Typography className={classes.sectionHeader} variant="h6">
           <PhotoLibraryOutlinedIcon className={classes.headerIcon} />
-          {t('profile.gallery')}
+          {title || t('profile.gallery')}
           <Typography
             variant="body2"
             className={classes.nftCount}
@@ -229,37 +245,39 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
               hasNfts
             />
           )}
-          <Box className={classes.nftShowAll}>
-            {expanded ? (
-              <Button
-                variant="text"
-                data-testid="nftGallery-show-all-link"
-                startIcon={<CloseFullscreenOutlinedIcon />}
-                className={classes.nftGalleryLinks}
-                size="small"
-                onClick={async () => {
-                  setExpanded(!expanded);
-                  return false;
-                }}
-              >
-                {t('profile.collapse')}
-              </Button>
-            ) : (
-              <Button
-                variant="text"
-                data-testid="nftGallery-show-all-link"
-                startIcon={<OpenInFullOutlinedIcon />}
-                className={classes.nftGalleryLinks}
-                size="small"
-                onClick={async () => {
-                  setExpanded(!expanded);
-                  return false;
-                }}
-              >
-                {t('common.expand')}
-              </Button>
-            )}
-          </Box>
+          {!hideToggleButton && (
+            <Box className={classes.nftShowAll}>
+              {expanded ? (
+                <Button
+                  variant="text"
+                  data-testid="nftGallery-show-all-link"
+                  startIcon={<CloseFullscreenOutlinedIcon />}
+                  className={classes.nftGalleryLinks}
+                  size="small"
+                  onClick={async () => {
+                    setExpanded(!expanded);
+                    return false;
+                  }}
+                >
+                  {t('profile.collapse')}
+                </Button>
+              ) : (
+                <Button
+                  variant="text"
+                  data-testid="nftGallery-show-all-link"
+                  startIcon={<OpenInFullOutlinedIcon />}
+                  className={classes.nftGalleryLinks}
+                  size="small"
+                  onClick={async () => {
+                    setExpanded(!expanded);
+                    return false;
+                  }}
+                >
+                  {t('common.expand')}
+                </Button>
+              )}
+            </Box>
+          )}
         </div>
       </div>
       {nfts?.filter(nft => nft.public).length === 0 &&
@@ -284,6 +302,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
           tokenCount={tokenCount}
           setTokenCount={setTokenCount}
           totalCount={totalCount}
+          initialCategory={initialCategory}
         />
       ) : (
         <NFTGalleryCarousel

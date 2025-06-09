@@ -18,7 +18,7 @@ import {NftGalleryManager} from '../../components/TokenGallery/NftGalleryManager
 import NftGalleryView from '../../components/TokenGallery/NftGalleryView';
 import useTokenGallery from '../../hooks/useTokenGallery';
 import useWeb3Context from '../../hooks/useWeb3Context';
-import type {NftMintItem, NftResponse} from '../../lib';
+import type {Nft, NftMintItem, NftResponse} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 
 export interface TokenGalleryProps {
@@ -32,6 +32,7 @@ export interface TokenGalleryProps {
   initialState?: 'expanded' | 'collapsed';
   initialCategory?: NftTag;
   title?: string;
+  onNftClick?: (nft: Nft) => void;
 }
 
 export const useStyles = makeStyles()((theme: Theme) => ({
@@ -106,6 +107,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
   initialState,
   initialCategory,
   title,
+  onNftClick,
 }: TokenGalleryProps) => {
   const {classes, cx} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
@@ -303,6 +305,7 @@ const TokenGallery: React.FC<TokenGalleryProps> = ({
           setTokenCount={setTokenCount}
           totalCount={totalCount}
           initialCategory={initialCategory}
+          onNftClick={onNftClick}
         />
       ) : (
         <NFTGalleryCarousel

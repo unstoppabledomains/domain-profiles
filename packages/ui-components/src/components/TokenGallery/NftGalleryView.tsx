@@ -85,9 +85,10 @@ interface Props {
   nftSymbolVisible: Record<string, boolean | undefined>;
   isAllNftsLoaded: boolean;
   tokenCount: number;
-  setTokenCount: (arg0: number) => void;
   totalCount?: number;
   initialCategory?: NftTag;
+  onNftClick?: (nft: Nft) => void;
+  setTokenCount: (arg0: number) => void;
 }
 
 const NftGalleryView = ({
@@ -98,9 +99,10 @@ const NftGalleryView = ({
   isOwner,
   isAllNftsLoaded,
   tokenCount,
-  setTokenCount,
   totalCount,
   initialCategory,
+  onNftClick,
+  setTokenCount,
 }: Props) => {
   // state management
   const imagesPerPage = 10;
@@ -500,6 +502,7 @@ const NftGalleryView = ({
                           domain={domain}
                           address={address}
                           key={index}
+                          onClick={onNftClick}
                         />
                       </Box>
                     </Grid>

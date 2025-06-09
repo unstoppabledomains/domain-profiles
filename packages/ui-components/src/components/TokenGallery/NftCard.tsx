@@ -16,10 +16,12 @@ import React, {useEffect, useRef, useState} from 'react';
 import type {MouseEvent} from 'react';
 import VisibilitySensor from 'react-visibility-sensor';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {CryptoIcon} from '../../components/Image/CryptoIcon';
 import type {Nft} from '../../lib';
+import {isDomainValidForManagement} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 import type {CurrenciesType} from '../../lib/types/blockchain';
 import SelectNftPopup from '../Manage/Tabs/Profile/SelectNftPopup';
@@ -214,6 +216,21 @@ const NftCard = ({
       }
     }
   }, [isVisible]);
+
+  useEffect(() => {
+    if (!nft.image_url) {
+      return;
+    }
+
+    // for domains, use the metadata image service instead of the provided image_url
+    if (isDomainValidForManagement(nft.name)) {
+      nft.image_url = getMetadataImage(nft.name);
+    }
+  }, [nft]);
+
+  const getMetadataImage = (d: string) => {
+    return `${config.UNSTOPPABLE_METADATA_ENDPOINT}/image-src/${d}?withOverlay=true`;
+  };
 
   const shouldRenderVideo = () => {
     if (nft.video_url && !nft.image_url) {

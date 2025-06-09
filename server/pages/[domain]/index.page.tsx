@@ -53,6 +53,7 @@ import type {
   Blockchain,
   CurrenciesType,
   DomainBadgesResponse,
+  Nft,
   PersonaIdentity,
   SerializedCryptoWalletBadge,
   SerializedDomainProfileSocialAccountsUserInfo,
@@ -282,6 +283,10 @@ const DomainProfile = ({
 
   const handleClickToCopy = () => {
     enqueueSnackbar(t('common.copied'), {variant: 'success'});
+  };
+
+  const handlePortfolioNftClick = (nft: Nft) => {
+    window.open(`${config.UNSTOPPABLE_WEBSITE_URL}/d/${nft.name}`, '_blank');
   };
 
   const handleBuyCrypto = () => {
@@ -1506,6 +1511,11 @@ const DomainProfile = ({
                   title={
                     profileData?.display?.mode === 'portfolio'
                       ? t('common.domainPortfolio')
+                      : undefined
+                  }
+                  onNftClick={
+                    profileData?.display?.mode === 'portfolio'
+                      ? handlePortfolioNftClick
                       : undefined
                   }
                 />

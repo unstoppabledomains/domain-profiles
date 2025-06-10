@@ -1118,7 +1118,8 @@ const DomainProfile = ({
                       }
                     />
                   )}
-                {(profileData?.market?.primary?.cost || 0) > 0 &&
+                {profileData?.display?.mode === 'web3' &&
+                  (profileData?.market?.primary?.cost || 0) > 0 &&
                   profileData?.market?.primary?.date && (
                     <LeftBarContentCollapse
                       icon={<ManageHistoryOutlinedIcon />}

@@ -72,6 +72,7 @@ import {
   CryptoAddresses,
   CustomBadges,
   DomainFieldTypes,
+  DomainListGrid,
   DomainListModal,
   DomainProfileKeys,
   DomainProfileModal,
@@ -85,7 +86,6 @@ import {
   Logo,
   MANAGE_DOMAIN_PARAM,
   NFTGalleryCarousel,
-  NftTag,
   ProfilePicture,
   ProfileSearchBar,
   Registry,
@@ -1568,7 +1568,16 @@ const DomainProfile = ({
                 </Typography>
               </Box>
             )}
-            {profileData?.cryptoVerifications &&
+            {profileData?.display?.mode === 'portfolio' && (
+              <DomainListGrid
+                id="domainGrid"
+                title={t('common.domains')}
+                retrieveDomains={retrieveOwnerDomains}
+                totalCount={profileData?.portfolio?.account?.domainCount}
+              />
+            )}
+            {profileData?.display?.mode === 'web3' &&
+              profileData?.cryptoVerifications &&
               profileData.cryptoVerifications.length > 0 && (
                 <TokenGallery
                   domain={domain}
@@ -1577,27 +1586,6 @@ const DomainProfile = ({
                   ownerAddress={ownerAddress}
                   profileServiceUrl={config.PROFILE.HOST_URL}
                   hideConfigureButton={true}
-                  hideToggleButton={profileData?.display?.mode === 'portfolio'}
-                  initialState={
-                    profileData?.display?.mode === 'portfolio'
-                      ? 'expanded'
-                      : 'collapsed'
-                  }
-                  fixedCategory={
-                    profileData?.display?.mode === 'portfolio'
-                      ? NftTag.Domain
-                      : undefined
-                  }
-                  title={
-                    profileData?.display?.mode === 'portfolio'
-                      ? t('common.domainPortfolio')
-                      : undefined
-                  }
-                  onNftClick={
-                    profileData?.display?.mode === 'portfolio'
-                      ? handlePortfolioNftClick
-                      : undefined
-                  }
                 />
               )}
             {tokenId &&

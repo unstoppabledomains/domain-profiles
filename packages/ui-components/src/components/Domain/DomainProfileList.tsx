@@ -3,6 +3,7 @@ import KeyboardArrowRightOutlinedIcon from '@mui/icons-material/KeyboardArrowRig
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import Grid from '@mui/material/Grid';
 import Pagination from '@mui/material/Pagination';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -12,8 +13,11 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import type {Nft} from '../../lib';
 import {useTranslationContext} from '../../lib';
 import type {Web3Dependencies} from '../../lib/types/web3';
+import {NftTag} from '../TokenGallery';
+import NftCard from '../TokenGallery/NftCard';
 import {DomainPreview} from './DomainPreview';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -94,6 +98,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
     height: '100%',
     width: '100%',
   },
+  infinitescroll: {
+    paddingRight: '1px',
+    paddingLeft: '1px',
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
+  },
   infiniteScrollLoading: {
     width: '100%',
     alignItems: 'center',
@@ -104,6 +114,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   loadingSpinner: {
     color: 'inherit',
+  },
+  cardContainer: {
+    position: 'relative',
   },
 }));
 
@@ -120,6 +133,7 @@ type DomainProfileListProps = {
   setWeb3Deps?: (value: Web3Dependencies | undefined) => void;
   hasMore?: boolean;
   rowStyle?: string;
+  variant?: 'list' | 'grid';
 };
 
 const DomainProfileList: React.FC<DomainProfileListProps> = ({
@@ -135,6 +149,7 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
   onClick,
   hasMore = false,
   rowStyle,
+  variant = 'list',
 }) => {
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
@@ -148,10 +163,33 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
     }
   };
 
+  const handleGridClick = (selected: Nft) => {
+    window.open(
+      `${config.UNSTOPPABLE_WEBSITE_URL}/d/${selected.name}`,
+      '_blank',
+    );
+  };
+
+  const getDomainNft = (domain: string): Nft => {
+    return {
+      name: domain,
+      link: `${config.UNSTOPPABLE_WEBSITE_URL}/d/${domain}`,
+      image_url: `${config.UNSTOPPABLE_METADATA_ENDPOINT}/image-src/${domain}?withOverlay=true`,
+      description: domain,
+      collection: 'Unstoppable Domains',
+      collectionLink: config.UNSTOPPABLE_WEBSITE_URL,
+      tags: [NftTag.Domain],
+      public: true,
+    };
+  };
+
   return withInfiniteScroll && onLastPage ? (
     <Box className={classes.scrollableContainer} id={`scrollableDiv-${id}`}>
       <InfiniteScroll
-        scrollableTarget={`scrollableDiv-${id}`}
+        className={classes.infinitescroll}
+        scrollableTarget={
+          variant === 'list' ? `scrollableDiv-${id}` : undefined
+        }
         hasMore={hasMore}
         loader={
           <Box className={classes.infiniteScrollLoading}>
@@ -162,38 +200,54 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
         dataLength={domains.length}
         scrollThreshold={0.7}
       >
-        {domains.map((domain, i) => (
-          <Box key={`domainList-${domain}-${i}`}>
-            <a
-              className={cx(rowStyle || classes.row, {
-                [classes.rowFirst]: i === 0,
-              })}
-              onClick={onClick ? () => onClick(domain) : undefined}
-              href={!onClick ? `${config.UD_ME_BASE_URL}/${domain}` : undefined}
-              key={domain}
-            >
-              <div className={classes.leftContent}>
-                {showNumber && (
-                  <Typography className={classes.number}>
-                    {(page - 1) * itemsPerPage + i + 1}
-                  </Typography>
-                )}
-                <DomainPreview
-                  domain={domain}
-                  size={30}
-                  setWeb3Deps={setWeb3Deps}
-                />
-                <Typography variant="body2" className={classes.domainText}>
-                  {domain}
-                </Typography>
-              </div>
-              <KeyboardArrowRightOutlinedIcon
-                className={classes.arrowRightIcon}
-              />
-            </a>
-          </Box>
-        ))}
-        {hasMore && !isLoading && (
+        <Grid container spacing={2}>
+          {domains.map((domain, i) =>
+            variant === 'list' ? (
+              <Grid item xs={12} key={`domainList-${domain}-${i}`}>
+                <a
+                  className={cx(rowStyle || classes.row, {
+                    [classes.rowFirst]: i === 0,
+                  })}
+                  onClick={onClick ? () => onClick(domain) : undefined}
+                  href={
+                    !onClick ? `${config.UD_ME_BASE_URL}/${domain}` : undefined
+                  }
+                  key={domain}
+                >
+                  <div className={classes.leftContent}>
+                    {showNumber && (
+                      <Typography className={classes.number}>
+                        {(page - 1) * itemsPerPage + i + 1}
+                      </Typography>
+                    )}
+                    <DomainPreview
+                      domain={domain}
+                      size={30}
+                      setWeb3Deps={setWeb3Deps}
+                    />
+                    <Typography variant="body2" className={classes.domainText}>
+                      {domain}
+                    </Typography>
+                  </div>
+                  <KeyboardArrowRightOutlinedIcon
+                    className={classes.arrowRightIcon}
+                  />
+                </a>
+              </Grid>
+            ) : (
+              <Grid key={`domainGrid-${domain}-${i}`} item xs={6} sm={3} md={3}>
+                <Box className={classes.cardContainer}>
+                  <NftCard
+                    nft={getDomainNft(domain)}
+                    key={i}
+                    onClick={handleGridClick}
+                  />
+                </Box>
+              </Grid>
+            ),
+          )}
+        </Grid>
+        {hasMore && !isLoading && variant === 'list' && (
           <Button
             startIcon={<ArrowDownwardIcon />}
             onClick={() => onLastPage()}

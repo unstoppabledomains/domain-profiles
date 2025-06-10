@@ -53,7 +53,7 @@ export type SerializedNftMetadata = {
   image_url: string;
   pfp_uri?: string;
   description: string;
-  video_url: string;
+  video_url?: string;
   collection: string;
   collectionLink?: string;
   tags?: string[];

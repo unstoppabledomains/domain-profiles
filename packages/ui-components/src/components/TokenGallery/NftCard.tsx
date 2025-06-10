@@ -218,7 +218,7 @@ const NftCard = ({
   }, [isVisible]);
 
   useEffect(() => {
-    if (!nft.image_url) {
+    if (!nft) {
       return;
     }
 

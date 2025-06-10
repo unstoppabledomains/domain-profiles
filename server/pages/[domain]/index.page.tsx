@@ -72,6 +72,7 @@ import {
   CryptoAddresses,
   CustomBadges,
   DomainFieldTypes,
+  DomainListGrid,
   DomainListModal,
   DomainProfileKeys,
   DomainProfileModal,
@@ -85,7 +86,6 @@ import {
   Logo,
   MANAGE_DOMAIN_PARAM,
   NFTGalleryCarousel,
-  NftTag,
   ProfilePicture,
   ProfileSearchBar,
   Registry,
@@ -1026,7 +1026,7 @@ const DomainProfile = ({
                       />
                     </Box>
                   )}
-                {hasAddresses && (
+                {profileData?.display?.mode === 'web3' && hasAddresses && (
                   <LeftBarContentCollapse
                     id="addresses"
                     icon={<WalletOutlinedIcon />}
@@ -1063,60 +1063,61 @@ const DomainProfile = ({
                     }
                   />
                 )}
-                {(profileData?.portfolio?.account?.domainCount || 0) > 1 && (
-                  <LeftBarContentCollapse
-                    id="domains"
-                    icon={<ListOutlinedIcon />}
-                    header={
-                      <Box
-                        className={classes.otherDomainsLabel}
-                        onClick={handleOtherDomainsModalOpen}
-                        display="flex"
-                        alignItems="center"
-                      >
-                        <Typography>
-                          {t('profile.otherDomains', {
-                            count:
-                              profileData!.portfolio!.account.domainCount - 1,
-                          })}
-                        </Typography>
-                        <Typography ml={1} variant="body2">
-                          {profileData?.portfolio?.account?.valueAmt
-                            ? ` (${numeral(
-                                profileData.portfolio.account.valueAmt / 100,
-                              ).format('$0.00a')})`
-                            : ''}
-                        </Typography>
-                      </Box>
-                    }
-                    content={
-                      profileData?.portfolio?.account?.valueAmt ? (
-                        <Box mt={1}>
-                          <Typography className={classes.description}>
-                            {t('profile.portfolioValueVerbose', {
-                              domain,
+                {profileData?.display?.mode === 'web3' &&
+                  (profileData?.portfolio?.account?.domainCount || 0) > 1 && (
+                    <LeftBarContentCollapse
+                      id="domains"
+                      icon={<ListOutlinedIcon />}
+                      header={
+                        <Box
+                          className={classes.otherDomainsLabel}
+                          onClick={handleOtherDomainsModalOpen}
+                          display="flex"
+                          alignItems="center"
+                        >
+                          <Typography>
+                            {t('profile.otherDomains', {
                               count:
-                                profileData!.portfolio!.account.domainCount,
-                              value: numeral(
-                                profileData.portfolio.account.valueAmt / 100,
-                              ).format('$0.00a'),
+                                profileData!.portfolio!.account.domainCount - 1,
                             })}
-                            <Box mt={1}>
-                              <Button
-                                color="info"
-                                size="small"
-                                variant="contained"
-                                onClick={handleOtherDomainsModalOpen}
-                              >
-                                {t('profile.clickToViewPortfolio')}
-                              </Button>
-                            </Box>
+                          </Typography>
+                          <Typography ml={1} variant="body2">
+                            {profileData?.portfolio?.account?.valueAmt
+                              ? ` (${numeral(
+                                  profileData.portfolio.account.valueAmt / 100,
+                                ).format('$0.00a')})`
+                              : ''}
                           </Typography>
                         </Box>
-                      ) : undefined
-                    }
-                  />
-                )}
+                      }
+                      content={
+                        profileData?.portfolio?.account?.valueAmt ? (
+                          <Box mt={1}>
+                            <Typography className={classes.description}>
+                              {t('profile.portfolioValueVerbose', {
+                                domain,
+                                count:
+                                  profileData!.portfolio!.account.domainCount,
+                                value: numeral(
+                                  profileData.portfolio.account.valueAmt / 100,
+                                ).format('$0.00a'),
+                              })}
+                              <Box mt={1}>
+                                <Button
+                                  color="info"
+                                  size="small"
+                                  variant="contained"
+                                  onClick={handleOtherDomainsModalOpen}
+                                >
+                                  {t('profile.clickToViewPortfolio')}
+                                </Button>
+                              </Box>
+                            </Typography>
+                          </Box>
+                        ) : undefined
+                      }
+                    />
+                  )}
                 {(profileData?.market?.primary?.cost || 0) > 0 &&
                   profileData?.market?.primary?.date && (
                     <LeftBarContentCollapse
@@ -1470,7 +1471,7 @@ const DomainProfile = ({
                 {profileData?.display?.mode === 'portfolio' &&
                   walletBalances &&
                   walletBalances.length > 0 && (
-                    <Box mt={-5}>
+                    <Box mt={-3}>
                       <DomainWalletTransactions
                         id="profile"
                         wallets={walletBalances}
@@ -1568,7 +1569,16 @@ const DomainProfile = ({
                 </Typography>
               </Box>
             )}
-            {profileData?.cryptoVerifications &&
+            {profileData?.display?.mode === 'portfolio' && (
+              <DomainListGrid
+                id="domainGrid"
+                title={t('common.domains')}
+                retrieveDomains={retrieveOwnerDomains}
+                totalCount={profileData?.portfolio?.account?.domainCount}
+              />
+            )}
+            {profileData?.display?.mode === 'web3' &&
+              profileData?.cryptoVerifications &&
               profileData.cryptoVerifications.length > 0 && (
                 <TokenGallery
                   domain={domain}
@@ -1577,27 +1587,6 @@ const DomainProfile = ({
                   ownerAddress={ownerAddress}
                   profileServiceUrl={config.PROFILE.HOST_URL}
                   hideConfigureButton={true}
-                  hideToggleButton={profileData?.display?.mode === 'portfolio'}
-                  initialState={
-                    profileData?.display?.mode === 'portfolio'
-                      ? 'expanded'
-                      : 'collapsed'
-                  }
-                  fixedCategory={
-                    profileData?.display?.mode === 'portfolio'
-                      ? NftTag.Domain
-                      : undefined
-                  }
-                  title={
-                    profileData?.display?.mode === 'portfolio'
-                      ? t('common.domainPortfolio')
-                      : undefined
-                  }
-                  onNftClick={
-                    profileData?.display?.mode === 'portfolio'
-                      ? handlePortfolioNftClick
-                      : undefined
-                  }
                 />
               )}
             {tokenId &&
@@ -1932,7 +1921,7 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
   // set display name to domain if not already set
   if (profileData?.profile && !profileData.profile?.displayName) {
     if (profileData.display?.mode === 'portfolio') {
-      profileData.profile.displayName = 'Seller Portfolio';
+      profileData.profile.displayName = 'Seller Profile';
     } else {
       profileData.profile.displayName = domain;
     }
@@ -1940,7 +1929,7 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
 
   // set a random banner image if one not specified
   if (!profileData?.profile?.coverPath) {
-    profileData.profile.coverPath = `https://picsum.photos/seed/${domain}/1200/200`;
+    profileData.profile.coverPath = `https://static.vecteezy.com/system/resources/previews/037/044/875/non_2x/abstract-colorful-technology-line-wave-background-modern-purple-blue-gradient-flowing-wave-lines-futuristic-technology-concept-illustration-pro-vector.jpg`;
   }
 
   return {

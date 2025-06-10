@@ -41,6 +41,9 @@ const defaultProps = (): DomainProfilePageProps => {
         showFeaturedPartner: false,
         tokenGalleryEnabled: false,
       },
+      display: {
+        mode: 'web3',
+      },
       social: {
         followerCount: 0,
         followingCount: 0,

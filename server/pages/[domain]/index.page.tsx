@@ -244,6 +244,10 @@ const DomainProfile = ({
   // retrieve on-chain record data
   const addressRecords = parseRecords(records || {}, mappedResolverKeys);
   const domainSellerEmail = profileData?.profile?.publicDomainSellerEmail;
+  const udMeEmail = `${domain}@${config.UD_ME_BASE_URL.replace(
+    'https://',
+    '',
+  )}`;
   const isForSale = Boolean(domainSellerEmail);
   const ipfsHash = records['ipfs.html.value'];
   const tokenId = metadata.tokenId ? (metadata.tokenId as string) : undefined;
@@ -280,6 +284,39 @@ const DomainProfile = ({
     socialsInfo,
     domainAvatar: uploadedImagePath,
   });
+
+  const handleEmailOwner = () => {
+    // open an email with populated subject and body to the udMe email
+    // of the domain owner
+    window.open(
+      `mailto:${udMeEmail}?subject=${encodeURIComponent(
+        t('profile.interestEmailSubject', {
+          domain,
+        }),
+      )}&body=${encodeURIComponent(
+        t('profile.interestEmailBody', {
+          domain,
+        }),
+      )}`,
+      '_blank',
+    );
+  };
+
+  const handleSharePage = async () => {
+    try {
+      await navigator.share({
+        title: t('profile.shareDomainTitle', {
+          domain,
+        }),
+        text: t('profile.shareDomainBody', {
+          domain,
+        }),
+        url: `${config.UD_ME_BASE_URL}/${domain}`,
+      });
+    } catch (e) {
+      notifyEvent(e, 'error', 'Profile', 'Popup');
+    }
+  };
 
   const handleClickToCopy = () => {
     enqueueSnackbar(t('common.copied'), {variant: 'success'});
@@ -805,56 +842,75 @@ const DomainProfile = ({
                 </Box>
               </Box>
             )}
-            {isOwner !== undefined &&
-              tokenId &&
-              profileData?.display?.mode !== 'portfolio' && (
-                <Box className={classes.menuButtonContainer}>
-                  {(isOwner || !authDomain) && (
+            {isOwner !== undefined && tokenId && (
+              <>
+                {profileData?.display?.mode !== 'portfolio' ? (
+                  <Box className={classes.menuButtonContainer}>
+                    {(isOwner || !authDomain) && (
+                      <ChipControlButton
+                        data-testid="edit-profile-button"
+                        onClick={handleManageDomainModalOpen}
+                        icon={<EditOutlinedIcon />}
+                        label={t('manage.manageProfile')}
+                        sx={{marginRight: 1}}
+                      />
+                    )}
+                    {!isOwner ? (
+                      <>
+                        {authDomain && (
+                          <ChipControlButton
+                            data-testid="chat-button"
+                            onClick={() => setOpenChat(domain)}
+                            icon={<ChatIcon />}
+                            label={t('push.chat')}
+                            sx={{marginRight: 1}}
+                          />
+                        )}
+                        {(!authDomain ||
+                          isDomainValidForManagement(authDomain)) && (
+                          <Box mr={1}>
+                            <FollowButton
+                              handleLogin={() => setLoginClicked(true)}
+                              setWeb3Deps={setWeb3Deps}
+                              authDomain={authDomain}
+                              domain={domain}
+                              authAddress={authAddress}
+                              onFollowClick={handleFollowClick}
+                              onUnfollowClick={handleUnfollowClick}
+                            />
+                          </Box>
+                        )}
+                      </>
+                    ) : (
+                      <ChipControlButton
+                        data-testid="buy-crypto-button"
+                        onClick={handleBuyCrypto}
+                        icon={<AttachMoneyIcon />}
+                        label={t('profile.buyCrypto')}
+                        variant="outlined"
+                      />
+                    )}
+                  </Box>
+                ) : (
+                  <Box className={classes.menuButtonContainer}>
                     <ChipControlButton
-                      data-testid="edit-profile-button"
-                      onClick={handleManageDomainModalOpen}
-                      icon={<EditOutlinedIcon />}
-                      label={t('manage.manageProfile')}
+                      data-testid="contact-button"
+                      onClick={handleEmailOwner}
+                      icon={<ChatIcon />}
+                      label={t('profile.messaging.message')}
                       sx={{marginRight: 1}}
                     />
-                  )}
-                  {!isOwner ? (
-                    <>
-                      {authDomain && (
-                        <ChipControlButton
-                          data-testid="chat-button"
-                          onClick={() => setOpenChat(domain)}
-                          icon={<ChatIcon />}
-                          label={t('push.chat')}
-                          sx={{marginRight: 1}}
-                        />
-                      )}
-                      {(!authDomain ||
-                        isDomainValidForManagement(authDomain)) && (
-                        <Box mr={1}>
-                          <FollowButton
-                            handleLogin={() => setLoginClicked(true)}
-                            setWeb3Deps={setWeb3Deps}
-                            authDomain={authDomain}
-                            domain={domain}
-                            authAddress={authAddress}
-                            onFollowClick={handleFollowClick}
-                            onUnfollowClick={handleUnfollowClick}
-                          />
-                        </Box>
-                      )}
-                    </>
-                  ) : (
                     <ChipControlButton
-                      data-testid="buy-crypto-button"
-                      onClick={handleBuyCrypto}
-                      icon={<AttachMoneyIcon />}
-                      label={t('profile.buyCrypto')}
+                      data-testid="share-button"
+                      onClick={handleSharePage}
+                      icon={<IosShareIcon />}
+                      label={t('profile.share')}
                       variant="outlined"
                     />
-                  )}
-                </Box>
-              )}
+                  </Box>
+                )}
+              </>
+            )}
             {isLoaded && (
               <>
                 <Box mt={3}>
@@ -1411,18 +1467,20 @@ const DomainProfile = ({
                     </Box>
                   </Box>
                 )}
-                {profileData?.display?.mode === 'portfolio' && (
-                  <Box mt={-5}>
-                    <DomainWalletTransactions
-                      id="profile"
-                      wallets={walletBalances}
-                      domain={domain}
-                      boxShadow={0}
-                      isError={isWalletBalanceError}
-                      verified={tokenId !== undefined}
-                    />
-                  </Box>
-                )}
+                {profileData?.display?.mode === 'portfolio' &&
+                  walletBalances &&
+                  walletBalances.length > 0 && (
+                    <Box mt={-5}>
+                      <DomainWalletTransactions
+                        id="profile"
+                        wallets={walletBalances}
+                        domain={domain}
+                        boxShadow={0}
+                        isError={isWalletBalanceError}
+                        verified={tokenId !== undefined}
+                      />
+                    </Box>
+                  )}
               </>
             )}
           </Box>

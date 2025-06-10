@@ -1938,6 +1938,11 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
     }
   }
 
+  // set a random banner image if one not specified
+  if (!profileData?.profile?.coverPath) {
+    profileData.profile.coverPath = `https://picsum.photos/seed/${domain}/1200/200`;
+  }
+
   return {
     props: {
       profileServiceUrl,

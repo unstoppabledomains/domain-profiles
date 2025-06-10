@@ -1931,7 +1931,11 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
 
   // set display name to domain if not already set
   if (profileData?.profile && !profileData.profile?.displayName) {
-    profileData.profile.displayName = domain;
+    if (profileData.display?.mode === 'portfolio') {
+      profileData.profile.displayName = 'Seller Portfolio';
+    } else {
+      profileData.profile.displayName = domain;
+    }
   }
 
   return {

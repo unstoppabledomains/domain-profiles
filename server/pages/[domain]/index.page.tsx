@@ -56,6 +56,7 @@ import type {
   Nft,
   PersonaIdentity,
   SerializedCryptoWalletBadge,
+  SerializedDomainBasicListData,
   SerializedDomainProfileSocialAccountsUserInfo,
   SerializedPublicDomainProfileData,
   SerializedRecommendation,
@@ -671,7 +672,7 @@ const DomainProfile = ({
   };
 
   const retrieveFollowers = async (cursor?: number | string) => {
-    const retData: {domains: string[]; cursor?: number} = {
+    const retData: SerializedDomainBasicListData = {
       domains: [],
       cursor: undefined,
     };
@@ -692,20 +693,12 @@ const DomainProfile = ({
   };
 
   const retrieveOwnerDomains = async (cursor?: number | string) => {
-    const retData: {domains: string[]; cursor?: string} = {
-      domains: [],
-      cursor: undefined,
-    };
     try {
-      const domainData = await getOwnerDomains(ownerAddress, cursor as string);
-      if (domainData) {
-        retData.domains = domainData.data.map(f => f.domain);
-        retData.cursor = domainData.meta.pagination.cursor;
-      }
+      return await getOwnerDomains(ownerAddress, cursor as string);
     } catch (e) {
       console.error('error retrieving owner domains', e);
     }
-    return retData;
+    return undefined;
   };
 
   return (

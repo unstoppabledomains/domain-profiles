@@ -7,6 +7,12 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {DOMAIN_LIST_PAGE_SIZE} from '../../actions';
 import Modal from '../../components/Modal';
+import {isDomainBasicListData, isDomainFullListData} from '../../lib';
+import type {
+  SerializedDomainBasicListData,
+  SerializedDomainFullListData,
+  SerializedDomainListEntry,
+} from '../../lib';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import DomainProfileList from './DomainProfileList';
 
@@ -35,13 +41,15 @@ type ModalProps = {
   fullScreen?: boolean;
   retrieveDomains: (
     cursor?: number | string,
-  ) => Promise<{domains: string[]; cursor?: number | string}>;
+  ) => Promise<
+    SerializedDomainFullListData | SerializedDomainBasicListData | undefined
+  >;
   setWeb3Deps?: (value: Web3Dependencies | undefined) => void;
 };
 
 export const DomainListModal = (props: ModalProps) => {
   const {classes} = useStyles({fullScreen: props.fullScreen});
-  const [domains, setDomains] = useState<string[]>([]);
+  const [domains, setDomains] = useState<SerializedDomainListEntry[]>([]);
   const [cursor, setCursor] = useState<number | string>();
   const [isLoading, setIsLoading] = useState(true);
   const [retrievedAll, setRetrievedAll] = useState(false);
@@ -64,14 +72,26 @@ export const DomainListModal = (props: ModalProps) => {
     }
     setIsLoading(true);
     const resp = await props.retrieveDomains(cursor);
-    if (resp.domains.length) {
-      setDomains(d => [...d, ...resp.domains]);
-      setCursor(resp.cursor);
-      if (resp.domains.length < DOMAIN_LIST_PAGE_SIZE) {
+    if (isDomainFullListData(resp)) {
+      if (resp?.data && resp.data.length) {
+        setDomains(d => [...d, ...resp.data]);
+        setCursor(resp.meta.pagination.cursor);
+        if (resp.data.length < DOMAIN_LIST_PAGE_SIZE) {
+          setRetrievedAll(true);
+        }
+      } else {
         setRetrievedAll(true);
       }
-    } else {
-      setRetrievedAll(true);
+    } else if (isDomainBasicListData(resp)) {
+      if (resp?.domains && resp.domains.length) {
+        setDomains(d => [...d, ...resp.domains.map(domain => ({domain}))]);
+        setCursor(resp.cursor);
+        if (resp.domains.length < DOMAIN_LIST_PAGE_SIZE) {
+          setRetrievedAll(true);
+        }
+      } else {
+        setRetrievedAll(true);
+      }
     }
     setIsLoading(false);
   };

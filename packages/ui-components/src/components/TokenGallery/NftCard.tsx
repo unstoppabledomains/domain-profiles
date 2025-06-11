@@ -1,3 +1,4 @@
+import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined';
 import CollectionsOutlinedIcon from '@mui/icons-material/CollectionsOutlined';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -34,6 +35,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
     height: 15,
     marginRight: theme.spacing(1),
   },
+  listedIcon: {
+    width: 15,
+    height: 15,
+    marginRight: theme.spacing(0.5),
+  },
   nftImage: {
     justifyContent: 'center',
     verticalAlign: 'center',
@@ -54,6 +60,16 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   placeholderTxt: {
     color: theme.palette.neutralShades[600],
+  },
+  listedNameTxt: {
+    fontWeight: 'bold',
+  },
+  listedPriceTxt: {
+    color: theme.palette.success.main,
+    fontWeight: 'bold',
+  },
+  unlistedPriceTxt: {
+    color: theme.palette.neutralShades[400],
   },
   loadingContainer: {
     display: 'flex',
@@ -363,7 +379,13 @@ const NftCard = ({
                   />
                 )}
                 {nft.name ? (
-                  <Typography>{nft.name}</Typography>
+                  <Typography
+                    className={cx({
+                      [classes.listedNameTxt]: nft.variant === 'listed',
+                    })}
+                  >
+                    {nft.name}
+                  </Typography>
                 ) : (
                   placeholder && (
                     <Skeleton width="300px" height={25} variant="text" />
@@ -383,14 +405,21 @@ const NftCard = ({
             <Typography
               className={cx('NFT-collection', {
                 [classes.placeholderTxt]: placeholder,
+                [classes.listedPriceTxt]: nft.variant === 'listed',
+                [classes.unlistedPriceTxt]: nft.variant === 'unlisted',
               })}
               variant="caption"
             >
-              {nft?.collection
-                ? nft.collection
-                : placeholder && (
-                    <Skeleton width="75%" height={22} variant="text" />
-                  )}
+              <Box display="flex" alignItems="center">
+                {nft?.variant === 'listed' && (
+                  <AddShoppingCartOutlinedIcon className={classes.listedIcon} />
+                )}
+                {nft?.collection
+                  ? nft.collection
+                  : placeholder && (
+                      <Skeleton width="75%" height={22} variant="text" />
+                    )}
+              </Box>
             </Typography>
           </Box>
         )}

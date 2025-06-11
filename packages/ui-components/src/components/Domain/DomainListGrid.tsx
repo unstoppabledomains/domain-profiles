@@ -7,6 +7,10 @@ import React, {useEffect, useState} from 'react';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {DOMAIN_LIST_PAGE_SIZE} from '../../actions';
+import type {
+  SerializedDomainFullListData,
+  SerializedDomainListEntry,
+} from '../../lib';
 import {useTranslationContext} from '../../lib';
 import DomainProfileList from './DomainProfileList';
 
@@ -58,13 +62,13 @@ type GridProps = {
   totalCount?: number;
   retrieveDomains: (
     cursor?: number | string,
-  ) => Promise<{domains: string[]; cursor?: number | string}>;
+  ) => Promise<SerializedDomainFullListData | undefined>;
 };
 
 export const DomainListGrid = (props: GridProps) => {
   const [t] = useTranslationContext();
   const {classes} = useStyles();
-  const [domains, setDomains] = useState<string[]>([]);
+  const [domains, setDomains] = useState<SerializedDomainListEntry[]>([]);
   const [cursor, setCursor] = useState<number | string>();
   const [isLoading, setIsLoading] = useState(true);
   const [retrievedAll, setRetrievedAll] = useState(false);
@@ -80,10 +84,10 @@ export const DomainListGrid = (props: GridProps) => {
     }
     setIsLoading(true);
     const resp = await props.retrieveDomains(cursor);
-    if (resp.domains.length) {
-      setDomains(d => [...d, ...resp.domains]);
-      setCursor(resp.cursor);
-      if (resp.domains.length < DOMAIN_LIST_PAGE_SIZE) {
+    if (resp?.data && resp.data.length) {
+      setDomains(d => [...d, ...resp.data]);
+      setCursor(resp.meta.pagination.cursor);
+      if (resp.data.length < DOMAIN_LIST_PAGE_SIZE) {
         setRetrievedAll(true);
       }
     } else {

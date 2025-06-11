@@ -14,6 +14,7 @@ export enum Network {
 export type Nft = SerializedNftMetadata & {
   toggleVisibility?: (symbol: string, mint: string, visible: boolean) => void;
   peerNfts?: Nft[];
+  variant?: 'listed' | 'unlisted';
 };
 
 export type NftMintItem = NftRequestItem & {

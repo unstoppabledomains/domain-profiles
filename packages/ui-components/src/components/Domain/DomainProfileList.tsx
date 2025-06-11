@@ -13,8 +13,8 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import type {Nft} from '../../lib';
-import {useTranslationContext} from '../../lib';
+import type {Nft, SerializedDomainListEntry} from '../../lib';
+import {isDomainListEntry, useTranslationContext} from '../../lib';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import {NftTag} from '../TokenGallery';
 import NftCard from '../TokenGallery/NftCard';
@@ -122,7 +122,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 type DomainProfileListProps = {
   id: string;
-  domains: string[];
+  domains: SerializedDomainListEntry[] | string[];
   isLoading: boolean;
   showNumber?: boolean;
   itemsPerPage?: number;
@@ -170,17 +170,33 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
     );
   };
 
-  const getDomainNft = (domain: string): Nft => {
+  const getDomainNft = (domain: string | SerializedDomainListEntry): Nft => {
     return {
-      name: domain,
-      link: `${config.UNSTOPPABLE_WEBSITE_URL}/d/${domain}`,
-      image_url: `${config.UNSTOPPABLE_METADATA_ENDPOINT}/image-src/${domain}?withOverlay=true`,
-      description: domain,
-      collection: 'Unstoppable Domains',
+      name: getDomainName(domain),
+      link: `${config.UNSTOPPABLE_WEBSITE_URL}/d/${getDomainName(domain)}`,
+      image_url: `${
+        config.UNSTOPPABLE_METADATA_ENDPOINT
+      }/image-src/${getDomainName(domain)}?withOverlay=true`,
+      description: getDomainName(domain),
+      collection:
+        typeof domain === 'string' || !domain.listing?.priceFormattedUsd
+          ? 'Unlisted'
+          : domain.listing.priceFormattedUsd,
+      variant:
+        typeof domain === 'string' || !domain.listing?.priceFormattedUsd
+          ? 'unlisted'
+          : 'listed',
       collectionLink: config.UNSTOPPABLE_WEBSITE_URL,
       tags: [NftTag.Domain],
       public: true,
     };
+  };
+
+  const getDomainName = (domain: string | SerializedDomainListEntry) => {
+    if (isDomainListEntry(domain)) {
+      return domain.domain;
+    }
+    return domain;
   };
 
   return withInfiniteScroll && onLastPage ? (
@@ -201,18 +217,28 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
         scrollThreshold={0.7}
       >
         <Grid container spacing={2}>
-          {domains.map((domain, i) =>
+          {domains.map((domainEntry, i) =>
             variant === 'list' ? (
-              <Grid item xs={12} key={`domainList-${domain}-${i}`}>
+              <Grid
+                item
+                xs={12}
+                key={`domainList-${getDomainName(domainEntry)}-${i}`}
+              >
                 <a
                   className={cx(rowStyle || classes.row, {
                     [classes.rowFirst]: i === 0,
                   })}
-                  onClick={onClick ? () => onClick(domain) : undefined}
-                  href={
-                    !onClick ? `${config.UD_ME_BASE_URL}/${domain}` : undefined
+                  onClick={
+                    onClick
+                      ? () => onClick(getDomainName(domainEntry))
+                      : undefined
                   }
-                  key={domain}
+                  href={
+                    !onClick
+                      ? `${config.UD_ME_BASE_URL}/${getDomainName(domainEntry)}`
+                      : undefined
+                  }
+                  key={getDomainName(domainEntry)}
                 >
                   <div className={classes.leftContent}>
                     {showNumber && (
@@ -221,12 +247,12 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
                       </Typography>
                     )}
                     <DomainPreview
-                      domain={domain}
+                      domain={getDomainName(domainEntry)}
                       size={30}
                       setWeb3Deps={setWeb3Deps}
                     />
                     <Typography variant="body2" className={classes.domainText}>
-                      {domain}
+                      {getDomainName(domainEntry)}
                     </Typography>
                   </div>
                   <KeyboardArrowRightOutlinedIcon
@@ -235,10 +261,16 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
                 </a>
               </Grid>
             ) : (
-              <Grid key={`domainGrid-${domain}-${i}`} item xs={6} sm={3} md={3}>
+              <Grid
+                key={`domainGrid-${getDomainName(domainEntry)}-${i}`}
+                item
+                xs={6}
+                sm={3}
+                md={3}
+              >
                 <Box className={classes.cardContainer}>
                   <NftCard
-                    nft={getDomainNft(domain)}
+                    nft={getDomainNft(domainEntry)}
                     key={i}
                     onClick={handleGridClick}
                   />
@@ -272,14 +304,14 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
             (page - 1) * itemsPerPage,
             (page - 1) * itemsPerPage + itemsPerPage,
           )
-          .map((domain, i) => (
+          .map((domainEntry, i) => (
             <>
               <a
                 className={cx(rowStyle || classes.row, {
                   [classes.rowFirst]: i === 0,
                 })}
-                href={`${config.UD_ME_BASE_URL}/${domain}`}
-                key={domain}
+                href={`${config.UD_ME_BASE_URL}/${getDomainName(domainEntry)}`}
+                key={getDomainName(domainEntry)}
               >
                 <div className={classes.leftContent}>
                   {showNumber && (
@@ -288,12 +320,12 @@ const DomainProfileList: React.FC<DomainProfileListProps> = ({
                     </Typography>
                   )}
                   <DomainPreview
-                    domain={domain}
+                    domain={getDomainName(domainEntry)}
                     size={30}
                     setWeb3Deps={setWeb3Deps}
                   />
                   <Typography className={classes.domainText}>
-                    {domain}
+                    {getDomainName(domainEntry)}
                   </Typography>
                 </div>
                 <KeyboardArrowRightOutlinedIcon

@@ -225,6 +225,11 @@ export type SerializedDisplayAttributes = {
   mode?: 'web3' | 'portfolio';
 };
 
+export type SerializedDomainBasicListData = {
+  domains: string[];
+  cursor?: number | string;
+};
+
 export type SerializedDomainCryptoVerification = {
   id: number;
   symbol: string;
@@ -234,10 +239,8 @@ export type SerializedDomainCryptoVerification = {
   type: string;
 };
 
-export type SerializedDomainListData = {
-  data: Array<{
-    domain: string;
-  }>;
+export type SerializedDomainFullListData = {
+  data: SerializedDomainListEntry[];
   meta: {
     total_count: number;
     pagination: {
@@ -246,6 +249,13 @@ export type SerializedDomainListData = {
     };
   };
   address: string;
+};
+
+export type SerializedDomainListEntry = {
+  domain: string;
+  listing?: SerializedMarketplaceListing;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  meta?: Record<string, any>;
 };
 
 export type SerializedDomainMarket = {
@@ -260,6 +270,7 @@ export type SerializedDomainMarket = {
     };
   };
   secondary?: SerializedSecondarySale[];
+  listing?: SerializedMarketplaceListing;
 };
 
 export type SerializedDomainProfileAttributes = {
@@ -339,6 +350,14 @@ export type SerializedFollowerListData = {
   };
   relationship_type: 'following' | 'followers';
   domain: string;
+};
+
+export type SerializedMarketplaceListing = {
+  status: string;
+  price: number;
+  priceFormattedUsd: string;
+  updatedAt: string;
+  expiresAt: string;
 };
 
 export type SerializedPortfolioSummary = {
@@ -919,6 +938,36 @@ export const getDomainSignatureExpiryKey = (domain: string): string => {
 
 export const getDomainSignatureValueKey = (domain: string): string => {
   return `${DomainProfileKeys.Signature}-value-${domain}`;
+};
+
+export const isDomainBasicListData = (
+  data:
+    | SerializedDomainFullListData
+    | SerializedDomainBasicListData
+    | undefined,
+): data is SerializedDomainBasicListData => {
+  if (!data) {
+    return false;
+  }
+  return 'domains' in data;
+};
+
+export const isDomainFullListData = (
+  data:
+    | SerializedDomainFullListData
+    | SerializedDomainBasicListData
+    | undefined,
+): data is SerializedDomainFullListData => {
+  if (!data) {
+    return false;
+  }
+  return 'data' in data;
+};
+
+export const isDomainListEntry = (
+  data: SerializedDomainListEntry | string,
+): data is SerializedDomainListEntry => {
+  return typeof data === 'object' && 'domain' in data;
 };
 
 export const isValidIdentity = (maybeIdentity: string): boolean => {

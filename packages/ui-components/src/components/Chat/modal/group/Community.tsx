@@ -29,6 +29,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import config from '@unstoppabledomains/config';
 
 import {joinBadgeGroupChat} from '../../../../actions/messageActions';
+import type {SerializedDomainBasicListData} from '../../../../lib';
 import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../../lib/types/badge';
@@ -260,7 +261,7 @@ export const Community: React.FC<CommunityProps> = ({
     startIndex?: number | string,
   ) => {
     const pageSize = 10;
-    const retData: {domains: string[]; cursor?: number} = {
+    const retData: SerializedDomainBasicListData = {
       domains: [],
       cursor: undefined,
     };

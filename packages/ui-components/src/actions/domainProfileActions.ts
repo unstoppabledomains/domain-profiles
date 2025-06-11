@@ -10,7 +10,7 @@ import type {
   DomainFieldTypes,
   ImageData,
   SerializedBulkDomainResponse,
-  SerializedDomainListData,
+  SerializedDomainFullListData,
   SerializedFollowerListData,
   SerializedProfileSearch,
   SerializedPublicDomainProfileData,
@@ -133,7 +133,7 @@ export const getOwnerDomains = async (
   cursor?: string,
   strict?: boolean,
   forceRefresh?: boolean,
-): Promise<SerializedDomainListData | undefined> => {
+): Promise<SerializedDomainFullListData | undefined> => {
   // validate the provided address
   if (!address) {
     return undefined;

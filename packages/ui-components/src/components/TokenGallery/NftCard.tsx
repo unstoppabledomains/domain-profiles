@@ -30,6 +30,9 @@ import NftImage from './NftImage';
 import NftModal from './NftModal';
 
 const useStyles = makeStyles()((theme: Theme) => ({
+  clickableTitle: {
+    cursor: 'pointer',
+  },
   currencyIcon: {
     width: 15,
     height: 15,
@@ -316,7 +319,13 @@ const NftCard = ({
   return (
     <>
       <style>{css}</style>
-      <Box className={'NFT-container'} data-testid={'nft-card'}>
+      <Box
+        className={cx('NFT-container', {
+          [classes.clickableTitle]: !!onClick,
+        })}
+        onClick={onClick ? handleClick : undefined}
+        data-testid={'nft-card'}
+      >
         <Box className={'NFT-image-container'}>
           {shouldRenderVideo() ? (
             <VisibilitySensor

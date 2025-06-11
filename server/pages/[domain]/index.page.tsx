@@ -913,81 +913,83 @@ const DomainProfile = ({
                       : ''}
                   </Typography>
                 </Box>
-                <LeftBarContentCollapse
-                  id="ownerAddress"
-                  icon={
-                    <CopyToClipboard
-                      stringToCopy={ownerAddress}
-                      onCopy={handleClickToCopy}
-                    >
-                      <CopyContentIcon
-                        className={classes.contentCopyIconButton}
-                      />
-                    </CopyToClipboard>
-                  }
-                  header={
-                    <Tooltip
-                      title={
-                        profileData?.portfolio?.wallet.primaryDomain ? (
-                          <Box display="flex" flexDirection="column">
-                            <Typography variant="body2">
-                              {t('profile.primaryDomain', {
-                                address: truncateEthAddress(ownerAddress),
-                                domain:
-                                  profileData.portfolio.wallet.primaryDomain,
-                              })}
-                            </Typography>
-                            <Box mt={1} display="flex">
-                              <CopyToClipboard
-                                stringToCopy={ownerAddress}
-                                onCopy={handleClickToCopy}
-                              >
-                                <Typography
-                                  className={
-                                    classes.reverseResolutionProfileLink
-                                  }
-                                >
-                                  {t('profile.copyAddress')}
-                                </Typography>
-                              </CopyToClipboard>
-                              {domain.toLowerCase() !==
-                                profileData?.portfolio?.wallet?.primaryDomain?.toLowerCase() && (
-                                <Link
-                                  className={
-                                    classes.reverseResolutionProfileLink
-                                  }
-                                  href={`${config.UD_ME_BASE_URL}/${profileData?.portfolio?.wallet?.primaryDomain}`}
-                                >
-                                  <Typography>
-                                    {t('profile.viewProfile')}
-                                  </Typography>
-                                </Link>
-                              )}
-                            </Box>
-                          </Box>
-                        ) : (
-                          ''
-                        )
-                      }
-                    >
-                      <Typography
-                        onClick={handleOwnerAddressClick}
-                        className={classes.ownerAddressLabel}
+                {profileData?.display?.mode !== 'portfolio' && (
+                  <LeftBarContentCollapse
+                    id="ownerAddress"
+                    icon={
+                      <CopyToClipboard
+                        stringToCopy={ownerAddress}
+                        onCopy={handleClickToCopy}
                       >
-                        {t(
-                          tokenId
-                            ? 'profile.ownerAddress'
-                            : 'profile.resolvesToAddress',
-                          {
-                            address: truncateEthAddress(ownerAddress),
-                          },
-                        )}
-                      </Typography>
-                    </Tooltip>
-                  }
-                />
+                        <CopyContentIcon
+                          className={classes.contentCopyIconButton}
+                        />
+                      </CopyToClipboard>
+                    }
+                    header={
+                      <Tooltip
+                        title={
+                          profileData?.portfolio?.wallet.primaryDomain ? (
+                            <Box display="flex" flexDirection="column">
+                              <Typography variant="body2">
+                                {t('profile.primaryDomain', {
+                                  address: truncateEthAddress(ownerAddress),
+                                  domain:
+                                    profileData.portfolio.wallet.primaryDomain,
+                                })}
+                              </Typography>
+                              <Box mt={1} display="flex">
+                                <CopyToClipboard
+                                  stringToCopy={ownerAddress}
+                                  onCopy={handleClickToCopy}
+                                >
+                                  <Typography
+                                    className={
+                                      classes.reverseResolutionProfileLink
+                                    }
+                                  >
+                                    {t('profile.copyAddress')}
+                                  </Typography>
+                                </CopyToClipboard>
+                                {domain.toLowerCase() !==
+                                  profileData?.portfolio?.wallet?.primaryDomain?.toLowerCase() && (
+                                  <Link
+                                    className={
+                                      classes.reverseResolutionProfileLink
+                                    }
+                                    href={`${config.UD_ME_BASE_URL}/${profileData?.portfolio?.wallet?.primaryDomain}`}
+                                  >
+                                    <Typography>
+                                      {t('profile.viewProfile')}
+                                    </Typography>
+                                  </Link>
+                                )}
+                              </Box>
+                            </Box>
+                          ) : (
+                            ''
+                          )
+                        }
+                      >
+                        <Typography
+                          onClick={handleOwnerAddressClick}
+                          className={classes.ownerAddressLabel}
+                        >
+                          {t(
+                            tokenId
+                              ? 'profile.ownerAddress'
+                              : 'profile.resolvesToAddress',
+                            {
+                              address: truncateEthAddress(ownerAddress),
+                            },
+                          )}
+                        </Typography>
+                      </Tooltip>
+                    }
+                  />
+                )}
                 {profileData?.profile &&
-                  profileData?.display?.mode !== 'portfolio' && (
+                  profileData?.display?.mode === 'web3' && (
                     <Box mt={-0.5}>
                       <LeftBarContentCollapse
                         id="followers"

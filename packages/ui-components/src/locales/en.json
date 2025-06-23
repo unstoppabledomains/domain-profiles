@@ -315,7 +315,7 @@
     "rightClickMenu": "Context menu",
     "rightClickMenuDescription": "Easy access to your wallet from any webpage, with a right click.",
     "sherlockAssistant": "Sherlock Assistant",
-    "sherlockAssistantDescription": "Gain insight into apps by automatically detecting wallets associated with onchain domains. Overlay rich identity details in real time.",
+    "sherlockAssistantDescription": "Experimental feature: Gain insight into apps by automatically detecting wallets associated with onchain domains. Overlay rich identity details in real time. **May cause compatibility issues with some websites.**",
     "sidePanel": "Side Panel",
     "unsupportedChain": "Cannot connect to unsupported network ({{originalChainId}}). This browser extension supports Ethereum, Polygon, Base and Solana networks.",
     "version": "Version",

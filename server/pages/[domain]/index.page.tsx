@@ -1904,8 +1904,8 @@ export async function getServerSideProps(props: DomainProfileServerSideProps) {
     console.error(`error loading domain profile for ${domain}`, String(e));
   }
 
-  // Redirecting to /search if the domain isn't purchased yet, trying to increase conversion
-  if (!profileData?.profile?.domainPurchased) {
+  // Redirecting to /search if the domain isn't yet onchain, trying to increase conversion
+  if (!profileData?.profile?.imagePath) {
     return redirectToSearch;
   }
 

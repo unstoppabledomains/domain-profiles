@@ -1,2 +1,2 @@
-export * from "./types";
-export {default as notifyBugsnag, getBugsnag} from "./notifyBugsnag";
+export * from './types';
+export {default as notifyBugsnag} from './notifyBugsnag';

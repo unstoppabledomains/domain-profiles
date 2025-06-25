@@ -615,115 +615,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bugsnag/browser-performance@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "@bugsnag/browser-performance@npm:2.2.0"
-  dependencies:
-    "@bugsnag/core-performance": ^2.2.0
-    "@bugsnag/cuid": ^3.0.2
-    "@bugsnag/delivery-fetch-performance": ^2.2.0
-    "@bugsnag/request-tracker-performance": ^2.2.0
-  checksum: 1f13696e51ebdd41de40c7961c484f9ce35021f9405e265e530d7160a20bd983ba6a34565d03e98c608ac28a39825537d8f18eecd088290ccaab53375a14502b
-  languageName: node
-  linkType: hard
-
-"@bugsnag/browser@npm:^7.22.3":
-  version: 7.22.3
-  resolution: "@bugsnag/browser@npm:7.22.3"
-  dependencies:
-    "@bugsnag/core": ^7.19.0
-  checksum: 099477ec2b2d60bc454c2347c76b31cce8a988d79e7bb74f878a10664d1aa6de91b6bc6eb4d0459cf62f603d0331ad1357934f97b09e6972c68f6b486200a089
-  languageName: node
-  linkType: hard
-
-"@bugsnag/core-performance@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "@bugsnag/core-performance@npm:2.2.0"
-  checksum: 47f8e1fbc01520ccdc3e071de1168c9ac9647d8dcba2790cf32c2dd7b460289b76b41830ed5913812da6d37bee17fb4ec1266378b64be3525924908aefb7ae4c
-  languageName: node
-  linkType: hard
-
-"@bugsnag/core@npm:^7.19.0":
-  version: 7.19.0
-  resolution: "@bugsnag/core@npm:7.19.0"
-  dependencies:
-    "@bugsnag/cuid": ^3.0.0
-    "@bugsnag/safe-json-stringify": ^6.0.0
-    error-stack-parser: ^2.0.3
-    iserror: 0.0.2
-    stack-generator: ^2.0.3
-  checksum: 324e1aa7bd62bd478c4e8459b2f54c71b4fb20d26075363a07be039f0cc65702b5996cee2e7955d0763b6535358376d45ef385cb9e24717441e1925de6aa5753
-  languageName: node
-  linkType: hard
-
-"@bugsnag/cuid@npm:^3.0.0, @bugsnag/cuid@npm:^3.0.2":
-  version: 3.0.2
-  resolution: "@bugsnag/cuid@npm:3.0.2"
-  checksum: cf85d78f0107b25bcfc4396e5c2cf7eb58a28777f07b9c6e976d529417a8284bb69ec715f13917c2b6ad3803e7bb563621b0374c31e09d4c6b3156aba9939955
-  languageName: node
-  linkType: hard
-
-"@bugsnag/delivery-fetch-performance@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "@bugsnag/delivery-fetch-performance@npm:2.2.0"
-  dependencies:
-    "@bugsnag/core-performance": ^2.2.0
-  checksum: 495f4f2589f081473d1850c33c9209b8b09700e303dab7131a61fd77de63405ccb54746c496ec1db9d03824760bc7651e303cf0720ad875400f54d72b2356804
-  languageName: node
-  linkType: hard
-
-"@bugsnag/js@npm:^7.16.2":
-  version: 7.22.3
-  resolution: "@bugsnag/js@npm:7.22.3"
-  dependencies:
-    "@bugsnag/browser": ^7.22.3
-    "@bugsnag/node": ^7.22.3
-  checksum: 22960017e8f0b52ca7a1c3fd0832b1a9fffddd1fdf03af6ccb6a9934e133a170c84757546ac11cfc8a948734eb001c75e94c556049ceb176545eb2aa8d6dec7d
-  languageName: node
-  linkType: hard
-
-"@bugsnag/node@npm:^7.22.3":
-  version: 7.22.3
-  resolution: "@bugsnag/node@npm:7.22.3"
-  dependencies:
-    "@bugsnag/core": ^7.19.0
-    byline: ^5.0.0
-    error-stack-parser: ^2.0.2
-    iserror: ^0.0.2
-    pump: ^3.0.0
-    stack-generator: ^2.0.3
-  checksum: b654095b4223e326c0c2f814566be01b32c71769ebe0a7bd60bc275ec1460440de4ffd219a2a6c62bbdf215bfc3fd41879ad76a6103c6b64fb9bf57199087241
-  languageName: node
-  linkType: hard
-
-"@bugsnag/plugin-react@npm:^7.16.2":
-  version: 7.19.0
-  resolution: "@bugsnag/plugin-react@npm:7.19.0"
-  peerDependencies:
-    "@bugsnag/core": ^7.0.0
-  peerDependenciesMeta:
-    "@bugsnag/core":
-      optional: true
-  checksum: b245c24df126da9bb413972ade7f1a947ba161ddfb837a980d2be7329ab43feee437d0fb7390a9eaa0cd251f5a41f38c53878bb5601d891ecfe511f5e3671251
-  languageName: node
-  linkType: hard
-
-"@bugsnag/request-tracker-performance@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "@bugsnag/request-tracker-performance@npm:2.2.0"
-  dependencies:
-    "@bugsnag/core-performance": ^2.2.0
-  checksum: 641342b545bd053926e653116c472c1067c867e83f951a556f4fd4ff8b9a25d05c988eda273b555bf7cfcdb43d2b5d9dfb3ddc7006c83a73b15cf910c65f0a6f
-  languageName: node
-  linkType: hard
-
-"@bugsnag/safe-json-stringify@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "@bugsnag/safe-json-stringify@npm:6.0.0"
-  checksum: 74f5d96af5f2f14be038ff939093329cdc6b3cc94eca6ce5ecd9e66a6d30819bcfd22f99c0ff229de56c0ef601cbca292f86ef5c9940ed2692bc9e005ac1f261
-  languageName: node
-  linkType: hard
-
 "@chainsafe/is-ip@npm:^2.0.1":
   version: 2.0.2
   resolution: "@chainsafe/is-ip@npm:2.0.2"
@@ -5485,9 +5376,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@unstoppabledomains/config@workspace:packages/config"
   dependencies:
-    "@bugsnag/browser-performance": ^2.2.0
-    "@bugsnag/js": ^7.16.2
-    "@bugsnag/plugin-react": ^7.16.2
     "@types/lodash": ^4.14.199
     "@types/lodash.merge": ^4.6.7
     lodash: ^4.17.21
@@ -7864,13 +7752,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"byline@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "byline@npm:5.0.0"
-  checksum: 737ca83e8eda2976728dae62e68bc733aea095fab08db4c6f12d3cee3cf45b6f97dce45d1f6b6ff9c2c947736d10074985b4425b31ce04afa1985a4ef3d334a7
-  languageName: node
-  linkType: hard
-
 "cacache@npm:^17.0.0":
   version: 17.1.4
   resolution: "cacache@npm:17.1.4"
@@ -9563,15 +9444,6 @@ __metadata:
   dependencies:
     is-arrayish: ^0.2.1
   checksum: c1c2b8b65f9c91b0f9d75f0debaa7ec5b35c266c2cac5de412c1a6de86d4cbae04ae44e510378cb14d032d0645a36925d0186f8bb7367bcc629db256b743a001
-  languageName: node
-  linkType: hard
-
-"error-stack-parser@npm:^2.0.2, error-stack-parser@npm:^2.0.3":
-  version: 2.1.4
-  resolution: "error-stack-parser@npm:2.1.4"
-  dependencies:
-    stackframe: ^1.3.4
-  checksum: 3b916d2d14c6682f287c8bfa28e14672f47eafe832701080e420e7cdbaebb2c50293868256a95706ac2330fe078cf5664713158b49bc30d7a5f2ac229ded0e18
   languageName: node
   linkType: hard
 
@@ -12637,13 +12509,6 @@ __metadata:
   version: 1.0.0
   resolution: "isarray@npm:1.0.0"
   checksum: f032df8e02dce8ec565cf2eb605ea939bdccea528dbcf565cdf92bfa2da9110461159d86a537388ef1acef8815a330642d7885b29010e8f7eac967c9993b65ab
-  languageName: node
-  linkType: hard
-
-"iserror@npm:0.0.2, iserror@npm:^0.0.2":
-  version: 0.0.2
-  resolution: "iserror@npm:0.0.2"
-  checksum: e22080b3a650289303039ad804875bdd8a41af467c5cc8f844529d8bc2b2613f449214aa04cc9c541c219f501e3c6943528dc5ed18ca9fc73e00ee45723f7106
   languageName: node
   linkType: hard
 
@@ -18842,28 +18707,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stack-generator@npm:^2.0.3":
-  version: 2.0.10
-  resolution: "stack-generator@npm:2.0.10"
-  dependencies:
-    stackframe: ^1.3.4
-  checksum: 4fc3978a934424218a0aa9f398034e1f78153d5ff4f4ff9c62478c672debb47dd58de05b09fc3900530cbb526d72c93a6e6c9353bacc698e3b1c00ca3dda0c47
-  languageName: node
-  linkType: hard
-
 "stack-utils@npm:^2.0.3":
   version: 2.0.6
   resolution: "stack-utils@npm:2.0.6"
   dependencies:
     escape-string-regexp: ^2.0.0
   checksum: 052bf4d25bbf5f78e06c1d5e67de2e088b06871fa04107ca8d3f0e9d9263326e2942c8bedee3545795fc77d787d443a538345eef74db2f8e35db3558c6f91ff7
-  languageName: node
-  linkType: hard
-
-"stackframe@npm:^1.3.4":
-  version: 1.3.4
-  resolution: "stackframe@npm:1.3.4"
-  checksum: bae1596873595c4610993fa84f86a3387d67586401c1816ea048c0196800c0646c4d2da98c2ee80557fd9eff05877efe33b91ba6cd052658ed96ddc85d19067d
   languageName: node
   linkType: hard
 

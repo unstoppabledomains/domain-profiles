@@ -9,7 +9,18 @@
                    "comment": "Matches any URL whose path starts with / to handle domain profiles"
                }
              ]
-           }
+           },
+           {
+            "appIDs": [
+              "22QSRWWPVJ.io.up.app"
+            ],
+            "components": [
+              {
+                "/": "/app/*",
+                "comment": "Matches any URL with path that starts with /wallet/"
+              }
+            ]
+          }
        ]
    }
 }

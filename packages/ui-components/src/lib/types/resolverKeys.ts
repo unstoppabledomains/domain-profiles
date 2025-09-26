@@ -1,8 +1,8 @@
 import cloneDeep from 'lodash/cloneDeep';
-import type EnsResolverKeysJson from 'uns/ens-resolver-keys.json';
-import cachedEnsResolverKeys from 'uns/ens-resolver-keys.json';
-import type UnsResolverKeysJson from 'uns/resolver-keys.json';
-import cachedUnsResolverKeys from 'uns/resolver-keys.json';
+import type EnsResolverKeysJson from '@unstoppabledomains/uns/ens-resolver-keys.json';
+import cachedEnsResolverKeys from '@unstoppabledomains/uns/ens-resolver-keys.json';
+import type UnsResolverKeysJson from '@unstoppabledomains/uns/resolver-keys.json';
+import cachedUnsResolverKeys from '@unstoppabledomains/uns/resolver-keys.json';
 
 import type {MappedResolverKey} from './pav3';
 import {ADDRESS_REGEX, MULTI_CHAIN_ADDRESS_REGEX} from './records';

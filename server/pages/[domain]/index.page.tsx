@@ -245,10 +245,6 @@ const DomainProfile = ({
   // retrieve on-chain record data
   const addressRecords = parseRecords(records || {}, mappedResolverKeys);
   const domainSellerEmail = profileData?.profile?.publicDomainSellerEmail;
-  const udMeEmail = `${domain}@${config.UD_ME_BASE_URL.replace(
-    'https://',
-    '',
-  )}`;
   const isForSale = Boolean(domainSellerEmail);
   const ipfsHash = records['ipfs.html.value'];
   const tokenId = metadata.tokenId ? (metadata.tokenId as string) : undefined;
@@ -285,23 +281,6 @@ const DomainProfile = ({
     socialsInfo,
     domainAvatar: uploadedImagePath,
   });
-
-  const handleEmailOwner = () => {
-    // open an email with populated subject and body to the udMe email
-    // of the domain owner
-    window.open(
-      `mailto:${udMeEmail}?subject=${encodeURIComponent(
-        t('profile.interestEmailSubject', {
-          domain,
-        }),
-      )}&body=${encodeURIComponent(
-        t('profile.interestEmailBody', {
-          domain,
-        }),
-      )}`,
-      '_blank',
-    );
-  };
 
   const handleSharePage = async () => {
     try {
@@ -886,13 +865,6 @@ const DomainProfile = ({
                   </Box>
                 ) : (
                   <Box className={classes.menuButtonContainer}>
-                    <ChipControlButton
-                      data-testid="contact-button"
-                      onClick={handleEmailOwner}
-                      icon={<ChatIcon />}
-                      label={t('profile.messaging.message')}
-                      sx={{marginRight: 1}}
-                    />
                     <ChipControlButton
                       data-testid="share-button"
                       onClick={handleSharePage}

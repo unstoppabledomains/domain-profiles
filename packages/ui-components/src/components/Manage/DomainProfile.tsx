@@ -4,7 +4,6 @@ import CollectionsOutlinedIcon from '@mui/icons-material/CollectionsOutlined';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
-import MailLockOutlinedIcon from '@mui/icons-material/MailLockOutlined';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import SellOutlinedIcon from '@mui/icons-material/SellOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
@@ -47,7 +46,6 @@ import {DomainListModal} from '../Domain';
 import {Badges as BadgesTab} from './Tabs/Badges';
 import {Crypto as CryptoTab} from './Tabs/Crypto';
 import {DnsRecords as DnsRecordsTab} from './Tabs/DnsRecords';
-import {Email as EmailTab} from './Tabs/Email';
 import {ListForSale as ListForSaleTab} from './Tabs/ListForSale';
 import {Profile as ProfileTab} from './Tabs/Profile';
 import {Reverse as ReverseTab} from './Tabs/Reverse';
@@ -450,17 +448,6 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                     value={DomainProfileTabType.TokenGallery}
                     disabled={!web3Deps?.address && !isOwner}
                   />
-                  <Tab
-                    icon={<MailLockOutlinedIcon />}
-                    iconPosition="top"
-                    label={
-                      <Box className={classes.tabLabel}>
-                        {t('manage.email')}
-                      </Box>
-                    }
-                    value={DomainProfileTabType.Email}
-                    disabled={!web3Deps?.address && !isOwner}
-                  />
                   {isListForSaleSupported && (
                     <Tab
                       icon={<SellOutlinedIcon />}
@@ -524,17 +511,7 @@ export const DomainProfile: React.FC<DomainProfileProps> = ({
                   setButtonComponent={setButtonComponent}
                 />
               </TabPanel>
-              <TabPanel
-                value={DomainProfileTabType.Email}
-                className={cx(classes.tabContentItem)}
-              >
-                <EmailTab
-                  address={address}
-                  domain={domain}
-                  onUpdate={onUpdateWrapper}
-                  setButtonComponent={setButtonComponent}
-                />
-              </TabPanel>
+
               <TabPanel
                 value={DomainProfileTabType.ListForSale}
                 className={cx(classes.tabContentItem)}
@@ -658,7 +635,6 @@ export type DomainProfileProps = {
 export enum DomainProfileTabType {
   Badges = 'badges',
   Crypto = 'crypto',
-  Email = 'email',
   ListForSale = 'listForSale',
   Profile = 'profile',
   Reverse = 'reverse',

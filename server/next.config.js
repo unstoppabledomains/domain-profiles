@@ -149,11 +149,10 @@ const nextConfig = {
             ttl: 3600, // 1 hour
           }),
           {key: 'X-Frame-Options', value: 'DENY'},
-          {key: 'Content-Security-Policy', value: "frame-ancestors 'none'"},
           {
             key: 'Content-Security-Policy',
             value:
-              'connect-src * data: blob:; img-src * data: blob:; object-src *',
+              "connect-src * data: blob:; img-src * data: blob:; object-src *; frame-ancestors 'none'",
           },
         ],
       })),
@@ -166,11 +165,10 @@ const nextConfig = {
             purgableBy: ['Domain/:domain', 'CryptoWallet/update'],
           }),
           {key: 'X-Frame-Options', value: 'DENY'},
-          {key: 'Content-Security-Policy', value: "frame-ancestors 'none'"},
           {
             key: 'Content-Security-Policy',
             value:
-              'connect-src * data: blob:; img-src * data: blob:; object-src *',
+              "connect-src * data: blob:; img-src * data: blob:; object-src *; frame-ancestors 'none'",
           },
         ],
       },
@@ -182,11 +180,10 @@ const nextConfig = {
             ttl: 86400, // 1 day 
           }),
           {key: 'X-Frame-Options', value: 'DENY'},
-          {key: 'Content-Security-Policy', value: "frame-ancestors 'none'"},
           {
             key: 'Content-Security-Policy',
             value:
-              'connect-src * data: blob:; img-src * data: blob:; object-src *',
+              "connect-src * data: blob:; img-src * data: blob:; object-src *; frame-ancestors 'none'",
           },
         ],
       },
@@ -198,11 +195,10 @@ const nextConfig = {
             ttl: 3600, // 1 hour
           }),
           {key: 'X-Frame-Options', value: 'DENY'},
-          {key: 'Content-Security-Policy', value: "frame-ancestors 'none'"},
           {
             key: 'Content-Security-Policy',
             value:
-              'connect-src * data: blob:; img-src * data: blob:; object-src *',
+              "connect-src * data: blob:; img-src * data: blob:; object-src *; frame-ancestors 'none'",
           },
         ],
       },

@@ -135,7 +135,11 @@ const nextConfig = {
       // Default headers for any path
       {
         source: '/:path*',
-        headers,
+        headers: [
+          ...headers,
+          {key: 'X-Frame-Options', value: 'DENY'},
+          {key: 'Content-Security-Policy', value: "frame-ancestors 'none'"},
+        ],
       },
       // Headers for common landing pages
       ...['/', "/wallet"].map(source => ({
@@ -144,10 +148,11 @@ const nextConfig = {
           ...fastlyCacheHeaders({
             ttl: 3600, // 1 hour
           }),
+          {key: 'X-Frame-Options', value: 'DENY'},
           {
             key: 'Content-Security-Policy',
             value:
-              'connect-src * data: blob:; img-src * data: blob:; object-src *',
+              "connect-src * data: blob:; img-src * data: blob:; object-src *; frame-ancestors 'none'",
           },
         ],
       })),
@@ -159,10 +164,11 @@ const nextConfig = {
             ttl: 3600, // 1 hour
             purgableBy: ['Domain/:domain', 'CryptoWallet/update'],
           }),
+          {key: 'X-Frame-Options', value: 'DENY'},
           {
             key: 'Content-Security-Policy',
             value:
-              'connect-src * data: blob:; img-src * data: blob:; object-src *',
+              "connect-src * data: blob:; img-src * data: blob:; object-src *; frame-ancestors 'none'",
           },
         ],
       },
@@ -173,10 +179,11 @@ const nextConfig = {
           ...fastlyCacheHeaders({
             ttl: 86400, // 1 day 
           }),
+          {key: 'X-Frame-Options', value: 'DENY'},
           {
             key: 'Content-Security-Policy',
             value:
-              'connect-src * data: blob:; img-src * data: blob:; object-src *',
+              "connect-src * data: blob:; img-src * data: blob:; object-src *; frame-ancestors 'none'",
           },
         ],
       },
@@ -187,10 +194,11 @@ const nextConfig = {
           ...fastlyCacheHeaders({
             ttl: 3600, // 1 hour
           }),
+          {key: 'X-Frame-Options', value: 'DENY'},
           {
             key: 'Content-Security-Policy',
             value:
-              'connect-src * data: blob:; img-src * data: blob:; object-src *',
+              "connect-src * data: blob:; img-src * data: blob:; object-src *; frame-ancestors 'none'",
           },
         ],
       },

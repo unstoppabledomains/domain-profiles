@@ -1,9 +1,8 @@
-import AddIcon from '@mui/icons-material/Add';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
+import QrCodeIcon from '@mui/icons-material/QrCode';
 import UpdateOutlinedIcon from '@mui/icons-material/UpdateOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
@@ -11,7 +10,7 @@ import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getProfileData, useFeatureFlags} from '../../../actions';
+import {getProfileData} from '../../../actions';
 import {
   confirmRecordUpdate,
   getRegistrationMessage,
@@ -26,7 +25,8 @@ import type {
   SerializedPublicDomainProfileData,
 } from '../../../lib';
 import {DomainFieldTypes, useTranslationContext} from '../../../lib';
-import {notifyError} from '../../../lib/error';
+import {notifyEvent} from '../../../lib/error';
+import {getMappedRecordKeysForUpdate} from '../../../lib/types/resolverKeys';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import AddCurrencyModal from '../common/AddCurrencyModal';
 import CurrencyInput from '../common/CurrencyInput';
@@ -36,6 +36,7 @@ import {
   getMultichainAddressRecords,
   getSingleChainAddressRecords,
 } from '../common/currencyRecords';
+import type {ManageTabProps} from '../common/types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -45,28 +46,28 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
     justifyItems: 'center',
-    [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing(-3),
-    },
+    width: '100%',
   },
   pendingTxContainer: {
     display: 'flex',
+    width: '100%',
     marginTop: theme.spacing(1),
     padding: theme.spacing(1),
-    backgroundColor: theme.palette.primary.main,
+    background: theme.palette.heroText,
     justifyContent: 'center',
+    borderRadius: theme.shape.borderRadius,
   },
   pendingTxText: {
-    color: theme.palette.white,
+    color: theme.palette.background.paper,
   },
   pendingTxIcon: {
-    color: theme.palette.white,
-    marginRight: theme.spacing(1),
+    color: theme.palette.background.paper,
+    marginRight: theme.spacing(2),
     width: '50px',
     height: '50px',
   },
   button: {
-    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(1),
   },
   icon: {
     color: theme.palette.neutralShades[600],
@@ -79,13 +80,24 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
+export const Crypto: React.FC<CryptoProps> = ({
+  address,
+  domain,
+  setButtonComponent,
+  filterFn,
+  updateFn,
+  hideHeader,
+  hideVerifyButtons,
+}) => {
   const {classes} = useStyles();
   const {web3Deps, setWeb3Deps} = useWeb3Context();
-  const {data: featureFlags} = useFeatureFlags(false, domain);
-  const {unsResolverKeys: resolverKeys, loading: resolverKeysLoading} =
-    useResolverKeys();
+  const {
+    unsResolverKeys: legacyResolverKeys,
+    mappedResolverKeys,
+    loading: resolverKeysLoading,
+  } = useResolverKeys();
   const [saveClicked, setSaveClicked] = useState(false);
+  const [isSignatureSuccess, setIsSignatureSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isPendingTx, setIsPendingTx] = useState<boolean>();
@@ -102,8 +114,43 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
     }
 
     // retrieve records and determine if there are pending transactions
+    setIsLoading(true);
     void loadRecords();
-  }, [resolverKeysLoading]);
+  }, [resolverKeysLoading, domain]);
+
+  useEffect(() => {
+    setButtonComponent(<></>);
+  }, []);
+
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+    setButtonComponent(
+      <Box display="flex" flexDirection="column" width="100%">
+        <LoadingButton
+          variant="outlined"
+          onClick={handleOpenModal}
+          disabled={isPendingTx}
+          className={classes.button}
+          startIcon={<QrCodeIcon />}
+          loading={isModalOpened}
+          fullWidth
+        >
+          {t('manage.addCurrency')}
+        </LoadingButton>
+        <LoadingButton
+          variant="contained"
+          onClick={handleSave}
+          loading={isSaving}
+          disabled={isPendingTx}
+          fullWidth
+        >
+          {t('manage.startRecordUpdate')}
+        </LoadingButton>
+      </Box>,
+    );
+  }, [isPendingTx, isSaving, isLoading, isModalOpened, records]);
 
   const loadRecords = async () => {
     const data = await getProfileData(domain, [
@@ -118,9 +165,18 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
     setIsLoading(false);
   };
 
-  const handleSave = () => {
-    setSaveClicked(true);
+  const handleSave = async () => {
     setIsSaving(true);
+    if (updateFn) {
+      // request the update function
+      await updateFn(records);
+
+      // update page state and return
+      setIsPendingTx(true);
+      setIsSaving(false);
+      return;
+    }
+    setSaveClicked(true);
   };
 
   const handleRecordUpdate = async (
@@ -138,9 +194,11 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
           signature,
         },
       );
-      if (updateRequest) {
+      if (updateRequest?.transaction.messageToSign) {
         // retrieve confirmation signature
-        const txSignature = await getSignature(updateRequest.message);
+        const txSignature = await getSignature(
+          updateRequest.transaction.messageToSign,
+        );
         if (txSignature) {
           // submit confirmation signature to complete transaction
           if (
@@ -148,7 +206,7 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
               domain,
               updateRequest.operationId,
               updateRequest.dependencyId,
-              txSignature,
+              {signature: txSignature},
               {
                 expires: expiry,
                 signature,
@@ -158,6 +216,7 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
             // record updates successful
             setIsSaving(false);
             setIsPendingTx(true);
+            setIsSignatureSuccess(true);
             return;
           }
         }
@@ -169,29 +228,52 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
   };
 
   const handleInputChange = (id: string, value: string) => {
-    records[id] = value;
-    setFilteredRecords({
-      ...records,
+    // require mapped resolver keys to be initialized
+    if (!mappedResolverKeys) {
+      return;
+    }
+
+    // find the associated mapped resolver key for the provided ID
+    const keys = getMappedRecordKeysForUpdate(id, mappedResolverKeys);
+
+    keys.map(k => {
+      records[k] = value;
+      setFilteredRecords({
+        ...records,
+      });
     });
   };
 
   const handleInputDelete = (ids: string[]) => {
+    // require mapped resolver keys to be initialized
+    if (!mappedResolverKeys) {
+      return;
+    }
+
+    // iterate the deleted IDs
     ids.map(id => {
-      deletedRecords.push(id);
-      handleInputChange(id, '');
+      // find the associated mapped resolver key for the provided ID
+      const keys = getMappedRecordKeysForUpdate(id, mappedResolverKeys);
+      keys.map(k => {
+        deletedRecords.push(k);
+        handleInputChange(k, '');
+      });
     });
   };
 
   const handleAddNewAddress = ({versions}: NewAddressRecord) => {
     const newValidAddresses = versions.filter(v => !v.deprecated);
-    const newValidKeys = newValidAddresses.map(v => v.key);
+    const newValidKeys = newValidAddresses
+      .map(v => v.key)
+      // don't add keys that are already included in records
+      .filter(k => !Object.keys(records).includes(k));
     const newAddressRecords = newValidKeys.reduce(
       (acc, key) => ({...acc, [key]: ''}), // Adding new address records with empty values
       {},
     );
     setFilteredRecords({
-      ...records,
       ...newAddressRecords,
+      ...records,
     });
   };
 
@@ -227,7 +309,9 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
       // sign a message linking the domain and secondary wallet address
       return await web3Deps.signer.signMessage(msg);
     } catch (signError) {
-      notifyError(signError, {msg: 'signature error'}, 'warning');
+      notifyEvent(signError, 'warning', 'Profile', 'Signature', {
+        msg: 'signature error',
+      });
     }
     return undefined;
   };
@@ -261,19 +345,26 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
       }
       return true;
     } catch (e) {
-      notifyError(e, {msg: 'error validating wallet'}, 'warning');
+      notifyEvent(e, 'warning', 'Profile', 'Signature', {
+        msg: 'error validating wallet',
+      });
     }
     return false;
   };
 
   const renderMultiChainAddresses = () => {
-    const recordsToRender = getMultichainAddressRecords(records, resolverKeys);
+    const recordsToRender = getMultichainAddressRecords(
+      records,
+      legacyResolverKeys,
+      mappedResolverKeys,
+    );
 
     return recordsToRender.map(multiChainRecord => (
       <MultiChainInput
         key={multiChainRecord.currency}
         versions={multiChainRecord.versions}
         currency={multiChainRecord.currency as CurrenciesType}
+        name={multiChainRecord.name}
         domain={domain}
         ownerAddress={address}
         onDelete={handleInputDelete}
@@ -281,14 +372,24 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
         profileData={profileData}
         uiDisabled={!!isPendingTx}
         setWeb3Deps={setWeb3Deps}
+        saveClicked={isSignatureSuccess}
+        hideEndAdornment={hideVerifyButtons}
       />
     ));
   };
 
   const renderSingleChainAddresses = () => {
-    const recordsToRender = getSingleChainAddressRecords(records, resolverKeys);
+    const recordsToRender = getSingleChainAddressRecords(
+      records,
+      legacyResolverKeys,
+      mappedResolverKeys,
+    );
     return recordsToRender.map(singleChainAddressRecord => {
-      const {currency, key, value} = singleChainAddressRecord;
+      const {currency, key, value, mappedResolverKey} =
+        singleChainAddressRecord;
+      if (!mappedResolverKey) {
+        return;
+      }
       return (
         <CurrencyInput
           key={key}
@@ -296,46 +397,34 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
           domain={domain}
           ownerAddress={address}
           value={value}
-          recordKey={key}
+          mappedResolverKey={mappedResolverKey}
           onDelete={handleInputDelete}
           onChange={handleInputChange}
           uiDisabled={!!isPendingTx}
           profileData={profileData}
           setWeb3Deps={setWeb3Deps}
+          saveClicked={isSignatureSuccess}
+          hideEndAdornment={hideVerifyButtons}
         />
       );
     });
   };
 
-  // show coming soon if feature flag disabled
-  if (!featureFlags.variations?.udMeServiceDomainsEnableManagement) {
-    return (
-      <Box className={classes.container}>
+  return (
+    <Box className={classes.container}>
+      {!hideHeader && (
         <TabHeader
           icon={<MonetizationOnOutlinedIcon />}
           description={t('manage.cryptoAddressesDescription')}
           learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001181827-add-crypto-addresses"
         />
-        <Typography variant="h5" className={classes.title}>
-          {t('manage.comingSoon')}
-        </Typography>
-      </Box>
-    );
-  }
-
-  return (
-    <Box className={classes.container}>
-      <TabHeader
-        icon={<MonetizationOnOutlinedIcon />}
-        description={t('manage.cryptoAddressesDescription')}
-        learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001181827-add-crypto-addresses"
-      />
+      )}
       {isLoading ? (
         <Box display="flex" justifyContent="center" mt={1}>
           <CircularProgress />
         </Box>
       ) : (
-        <Box>
+        <>
           {isPendingTx && (
             <Box className={classes.pendingTxContainer}>
               <UpdateOutlinedIcon className={classes.pendingTxIcon} />
@@ -349,55 +438,35 @@ export const Crypto: React.FC<CryptoProps> = ({address, domain, filterFn}) => {
               </Box>
             </Box>
           )}
-          <Box mt={2}>
+          <Box mt={2} width="100%">
             {renderSingleChainAddresses()}
             {renderMultiChainAddresses()}
           </Box>
-          <Button
-            variant="outlined"
-            onClick={handleOpenModal}
-            disabled={isPendingTx}
-            className={classes.button}
-            startIcon={<AddIcon />}
-            fullWidth
-          >
-            {t('manage.addCurrency')}
-          </Button>
-          <LoadingButton
-            variant="contained"
-            onClick={handleSave}
-            loading={isSaving}
-            disabled={isPendingTx}
-            className={classes.button}
-            fullWidth
-          >
-            {t('manage.startRecordUpdate')}
-          </LoadingButton>
           <ProfileManager
             domain={domain}
             ownerAddress={address}
             setWeb3Deps={setWeb3Deps}
+            saveComplete={!isSaving}
             saveClicked={saveClicked}
             setSaveClicked={setSaveClicked}
             onSignature={handleRecordUpdate}
             forceWalletConnected={true}
           />
-          {isModalOpened && (
-            <AddCurrencyModal
-              open={isModalOpened}
-              onClose={handleCloseModal}
-              onAddNewAddress={handleAddNewAddress}
-              isEns={false}
-            />
-          )}
-        </Box>
+          <AddCurrencyModal
+            open={isModalOpened}
+            onClose={handleCloseModal}
+            onAddNewAddress={handleAddNewAddress}
+            isEns={false}
+          />
+        </>
       )}
     </Box>
   );
 };
 
-export type CryptoProps = {
-  address: string;
-  domain: string;
+export type CryptoProps = ManageTabProps & {
   filterFn?: (k: string) => boolean;
+  updateFn?: (records: Record<string, string>) => Promise<void>;
+  hideHeader?: boolean;
+  hideVerifyButtons?: boolean;
 };

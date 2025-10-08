@@ -32,7 +32,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   copyLinkText: {
     fontWeight: theme.typography.fontWeightMedium,
-    color: theme.palette.common.black,
+    color: theme.palette.getContrastText(theme.palette.background.default),
   },
   twitterIcon: {
     marginLeft: 2,
@@ -149,6 +149,7 @@ const ShareMenu: React.FC<ShareMenuProps> = ({
         onClick={handleChipClick}
         icon={<ShareIcon />}
         label={t('profile.share')}
+        variant="outlined"
       />
       <Menu
         id="simple-menu"

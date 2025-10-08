@@ -10,8 +10,8 @@ describe('<DomainPreview />', () => {
     await waitFor(() => {
       expect(screen.getByTestId('domain-preview-main-img')).toBeInTheDocument();
       const avatarImg = screen.getByRole('img');
-      expect(avatarImg).toHaveProperty(
-        'src',
+      expect(avatarImg).toHaveProperty('src');
+      expect(avatarImg.getAttribute('src')).toContain(
         'https://api.ud-staging.com/metadata/image-src/foo.crypto?withOverlay=false',
       );
     });

@@ -2,7 +2,7 @@ import {useState} from 'react';
 
 import {getDomainNfts} from '../../actions';
 import type {Nft, NftMintItem, NftResponse} from '../../lib';
-import {notifyError} from '../../lib/error';
+import {notifyEvent} from '../../lib/error';
 
 export enum NftTag {
   All = 'all',
@@ -38,6 +38,7 @@ interface Props {
   setNfts: (value: Nft[]) => void;
   setNftSymbolVisible: (value: Record<string, boolean | undefined>) => void;
   setTokenCount: (value: number) => void;
+  setTotalCount: (value: number) => void;
 }
 
 export const getNextNftPageFn = (
@@ -66,6 +67,7 @@ export const getNextNftPageFn = (
     const newNfts: Nft[] = [];
     if (props.nfts.length === 0) {
       // retrieve NFTs from all chains for the first time
+      let totalCount = 0;
       const allSymbols = await getNftData();
       if (!allSymbols || Object.keys(allSymbols).length === 0) {
         return;
@@ -77,6 +79,7 @@ export const getNextNftPageFn = (
           if (allSymbols[symbol].nfts.length === 0) {
             return;
           }
+          totalCount += allSymbols[symbol].totalCount || 0;
           allSymbols[symbol].nfts.forEach(nft => {
             nft.symbol = symbol;
             nft.verified = allSymbols[symbol].verified;
@@ -89,6 +92,7 @@ export const getNextNftPageFn = (
           props.nftSymbolVisible[symbol] = allSymbols[symbol].verified;
         });
       setNftCursors(nftCursors);
+      props.setTotalCount(totalCount);
       props.setNftSymbolVisible(props.nftSymbolVisible);
     } else {
       // retrieved paged data associated with next cursor
@@ -175,12 +179,8 @@ export const getNextNftPageFn = (
   }
 
   const isImageUrl = (url?: string): boolean => {
-    try {
-      if (url?.toLowerCase().startsWith('https://')) {
-        return true;
-      }
-    } catch (e) {
-      notifyError(e, {msg: 'unable to parse url'}, 'warning');
+    if (url?.toLowerCase().startsWith('https://')) {
+      return true;
     }
     return false;
   };
@@ -193,7 +193,9 @@ export const getNextNftPageFn = (
       props.setNftDataLoading(true);
       return await getDomainNfts(props.domain, symbols, cursor);
     } catch (e) {
-      notifyError(e, {msg: 'error retrieving NFT data'});
+      notifyEvent(e, 'error', 'TokenGallery', 'Fetch', {
+        msg: 'error retrieving NFT data',
+      });
     } finally {
       props.setNftDataLoading(false);
     }

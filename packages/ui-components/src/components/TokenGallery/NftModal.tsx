@@ -1,5 +1,8 @@
 import Close from '@mui/icons-material/Close';
 import OpenInNew from '@mui/icons-material/OpenInNew';
+import PortraitOutlinedIcon from '@mui/icons-material/PortraitOutlined';
+import SendIcon from '@mui/icons-material/Send';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
@@ -9,15 +12,17 @@ import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import {useTheme} from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import React from 'react';
+import {alpha} from '@mui/system/colorManipulator';
+import numeral from 'numeral';
+import React, {useState} from 'react';
 
-import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {CryptoIcon} from '../../components/Image/CryptoIcon';
 import type {Nft} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 import type {CurrenciesType} from '../../lib/types/blockchain';
+import SelectNftPopup from '../Manage/Tabs/Profile/SelectNftPopup';
 import NftImage from './NftImage';
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -27,7 +32,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'center',
     [theme.breakpoints.down('sm')]: {
       '&.MuiBackdrop-root': {
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        backgroundColor: alpha(theme.palette.common.black, 0.7),
         filter: 'blur(0.5rem)',
       },
     },
@@ -37,7 +42,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   nftGrid: {
     overflowY: 'scroll',
     maxHeight: '100vh',
-    background: 'rgba(0, 0, 0, 0.8)',
+    background: alpha(theme.palette.common.black, 0.7),
     backdropFilter: 'blur(50px)',
     width: theme.spacing(145),
     p: theme.spacing(3),
@@ -122,13 +127,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
     borderTopRightRadius: '1.5rem',
     borderBottomRightRadius: '1.5rem',
     padding: theme.spacing(4),
-    color: '#fff',
+    color: theme.palette.common.white,
   },
   currencyIcon: {
-    width: 15,
-    height: 15,
-    marginLeft: '0.2rem',
-    paddingTop: '0.3rem',
+    marginRight: theme.spacing(1),
+    width: '25px',
+    height: '25px',
   },
   description: {
     paddingTop: '3rem',
@@ -153,7 +157,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   button: {
     marginTop: '2rem',
-    color: '#fff',
+    color: theme.palette.common.white,
     borderColor: 'rgba(255, 255, 255, 0.7)',
   },
   newWindowIcon: {
@@ -161,7 +165,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   descriptionLink: {
     fontWeight: 'bold',
-    color: '#fff',
+    color: theme.palette.common.white,
     textDecoration: 'none',
   },
   closeIconSection: {
@@ -178,15 +182,25 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 
   closeIcon: {
-    color: '#fff',
+    color: theme.palette.common.white,
   },
 
   detailsText: {
     display: 'flex',
-    flexFlow: 'row',
+    flexFlow: 'wrap',
+  },
+
+  attributeContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    marginRight: theme.spacing(1),
+    backgroundColor: theme.palette.neutralShades[600],
+    borderRadius: theme.shape.borderRadius,
+    padding: theme.spacing(1),
   },
 
   detailSections: {
+    marginBottom: theme.spacing(1),
     marginRight: '1.5rem',
     [theme.breakpoints.only('sm')]: {
       fontSize: '12px',
@@ -203,30 +217,26 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export interface NftModalProps {
   handleClose: () => void;
+  handleTransferNft?: (nft: Nft) => void;
+  domain?: string;
+  address?: string;
   open: boolean;
   nft: Nft;
 }
 
 const NftModal: React.FC<NftModalProps> = ({
+  domain,
+  address,
   open,
   handleClose,
+  handleTransferNft,
   nft,
 }: NftModalProps) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
+  const [avatarClicked, setAvatarClicked] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  let udMeLink: string | undefined;
-  if (nft?.mint) {
-    const contractAddress = nft.mint.split('/')[0];
-    if (
-      config.UNSTOPPABLE_CONTRACT_ADDRESS.includes(
-        contractAddress.toLowerCase(),
-      )
-    ) {
-      udMeLink = `${config.UD_ME_BASE_URL}/${nft.name}`;
-    }
-  }
 
   const handleContractAddress = (contract: string, index = 0) => {
     const splitContract = contract?.split('/');
@@ -242,7 +252,7 @@ const NftModal: React.FC<NftModalProps> = ({
       <Link
         data-testid={'contract-details'}
         className={cx(classes.descriptionLink, classes.contractLink)}
-        href={nft.link}
+        href={index === 0 && nft.collectionLink ? nft.collectionLink : nft.link}
         target={'_blank'}
       >
         <Typography variant={'subtitle2'}>
@@ -288,9 +298,8 @@ const NftModal: React.FC<NftModalProps> = ({
     );
   };
 
-  const handleTitle = (): string => {
-    if (!nft.collection) return nft.name;
-    return nft.collection;
+  const getCollectionTitle = (): string => {
+    return nft.collection || nft.name;
   };
 
   return open ? (
@@ -342,14 +351,79 @@ const NftModal: React.FC<NftModalProps> = ({
               </section>
             )}
             <section>
-              <Typography variant="body1">
-                {handleTitle()}
+              <Box
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                width="100%"
+              >
                 <CryptoIcon
                   currency={nft.symbol as CurrenciesType}
-                  classes={{root: classes.currencyIcon}}
+                  className={classes.currencyIcon}
                 />
+                <Typography variant="body1">
+                  {nft.collectionLink ? (
+                    <a
+                      className={classes.descriptionLink}
+                      href={`${nft.collectionLink}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {getCollectionTitle()}
+                    </a>
+                  ) : (
+                    getCollectionTitle()
+                  )}
+                </Typography>
+              </Box>
+              <Typography variant="h4">
+                {nft.link ? (
+                  <a
+                    href={`${nft.link}`}
+                    className={classes.descriptionLink}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {nft.name}
+                  </a>
+                ) : (
+                  nft.name
+                )}
               </Typography>
-              <Typography variant="h4">{nft.name}</Typography>
+              {nft.owner && nft.pfp_uri && (
+                <Box mt={1}>
+                  <Button
+                    startIcon={<PortraitOutlinedIcon />}
+                    onClick={() => setAvatarClicked(true)}
+                    variant="contained"
+                    size="small"
+                  >
+                    {t('nftCollection.setAsAvatar')}
+                  </Button>
+                </Box>
+              )}
+              {handleTransferNft && (
+                <Box mt={2}>
+                  <Button
+                    variant="contained"
+                    startIcon={<SendIcon />}
+                    onClick={() => handleTransferNft(nft)}
+                    size="small"
+                  >
+                    {t('common.send')}
+                  </Button>
+                </Box>
+              )}
+              {avatarClicked && domain && address && (
+                <SelectNftPopup
+                  domain={domain}
+                  address={address}
+                  popupOpen={avatarClicked}
+                  imageUrl={nft.image_url}
+                  pfpURI={nft.pfp_uri}
+                  handlePopupClose={() => setAvatarClicked(false)}
+                />
+              )}
             </section>
             {nft.description && (
               <section className={classes.description}>
@@ -359,23 +433,138 @@ const NftModal: React.FC<NftModalProps> = ({
                 {handleDescription(nft.description, nft.link)}
               </section>
             )}
-            {(nft.symbol || nft.mint) && (
+            {(nft.acquiredDate ||
+              nft.rarity?.rank ||
+              nft.saleDetails?.primary?.cost ||
+              nft.floorPrice) && (
               <section className={classes.details}>
                 <Typography variant="subtitle2" className={classes.sectionName}>
                   {t('nftCollection.nftDetails')}
                 </Typography>
                 <div className={classes.detailsText}>
-                  {nft.symbol && (
+                  {nft.acquiredDate && (
+                    <div className={classes.detailSections}>
+                      <Typography
+                        className={classes.nftDetailsSectionName}
+                        data-testid={'token-id-header'}
+                        variant="body1"
+                      >
+                        {t('nftCollection.hodlDays')}
+                      </Typography>
+                      <Typography variant="subtitle2">
+                        {Math.ceil(
+                          Math.abs(
+                            new Date().getTime() -
+                              new Date(nft.acquiredDate).getTime(),
+                          ) /
+                            (1000 * 3600 * 24),
+                        )}
+                      </Typography>
+                    </div>
+                  )}
+                  {nft.rarity?.rank && (
+                    <div className={classes.detailSections}>
+                      <Typography
+                        className={classes.nftDetailsSectionName}
+                        data-testid={'token-id-header'}
+                        variant="body1"
+                      >
+                        {t('nftCollection.rarity')}
+                      </Typography>
+                      <Typography variant="subtitle2">
+                        {nft.rarity.rank}
+                        {nft.supply && ` / ${nft.supply}`}
+                      </Typography>
+                    </div>
+                  )}
+                  {nft.saleDetails?.primary?.cost &&
+                  nft.saleDetails.primary.cost > 0 ? (
                     <div className={classes.detailSections}>
                       <Typography
                         className={classes.nftDetailsSectionName}
                         variant="body1"
                       >
-                        {t('nftCollection.blockchain')}
+                        {t('nftCollection.mintPrice')}
                       </Typography>
-                      <Typography variant="subtitle2">{nft.symbol}</Typography>
+                      <Typography variant="subtitle2">
+                        {numeral(nft.saleDetails.primary.cost).format('$0.00')}
+                      </Typography>
+                    </div>
+                  ) : null}
+                  {nft.saleDetails?.secondary &&
+                    nft.saleDetails.secondary.length > 0 &&
+                    nft.saleDetails.secondary[0].payment?.valueUsd &&
+                    nft.saleDetails.secondary[0].payment.valueUsd > 0 && (
+                      <div className={classes.detailSections}>
+                        <Typography
+                          className={classes.nftDetailsSectionName}
+                          variant="body1"
+                        >
+                          {t('nftCollection.secondaryPrice')}
+                        </Typography>
+                        <Typography variant="subtitle2">
+                          {numeral(
+                            nft.saleDetails.secondary[0].payment.valueUsd,
+                          ).format('$0.00')}
+                        </Typography>
+                      </div>
+                    )}
+                  {nft.floorPrice?.value && nft.floorPrice.value > 0 && (
+                    <div className={classes.detailSections}>
+                      <Typography
+                        className={classes.nftDetailsSectionName}
+                        variant="body1"
+                      >
+                        {t('badges.floorPrice')}
+                      </Typography>
+                      <Typography variant="subtitle2">
+                        {nft.floorPrice.currency === 'USD'
+                          ? numeral(nft.floorPrice.value).format('$0.00')
+                          : `${numeral(nft.floorPrice.value).format('0.00')} ${
+                              nft.floorPrice.currency
+                            }`}
+                      </Typography>
                     </div>
                   )}
+                </div>
+              </section>
+            )}
+            {nft.traits && Object.keys(nft.traits).length > 0 && (
+              <section className={classes.details}>
+                <Typography variant="subtitle2" className={classes.sectionName}>
+                  {t('nftCollection.attributes')}
+                </Typography>
+                <Box className={classes.detailsText}>
+                  {Object.keys(nft.traits)
+                    .filter(trait => typeof nft.traits![trait] !== 'object')
+                    .map(trait => (
+                      <div
+                        key={trait}
+                        className={cx(
+                          classes.detailSections,
+                          classes.attributeContainer,
+                        )}
+                      >
+                        <Typography
+                          className={classes.nftDetailsSectionName}
+                          variant="caption"
+                        >
+                          {trait}
+                        </Typography>
+                        <Typography variant="caption" fontWeight="bold">
+                          {nft.traits![trait]}
+                        </Typography>
+                      </div>
+                    ))}
+                </Box>
+              </section>
+            )}
+            {(nft.collection || nft.mint) && (
+              <section className={classes.details}>
+                <Typography variant="subtitle2" className={classes.sectionName}>
+                  {t('verifiedWallets.token')}
+                </Typography>
+                <div className={classes.detailsText}>
                   {nft.mint?.includes('/') && (
                     <div className={classes.detailSections}>
                       <Typography
@@ -402,27 +591,6 @@ const NftModal: React.FC<NftModalProps> = ({
                   )}
                 </div>
               </section>
-            )}
-            {nft.link && (
-              <Button
-                variant="outlined"
-                className={classes.button}
-                onClick={() => window.open(nft.link, '_blank')}
-              >
-                <OpenInNew className={classes.newWindowIcon} />
-                {t('nftCollection.viewInMarketplace')}
-              </Button>
-            )}
-            {udMeLink && (
-              <Button
-                variant="outlined"
-                className={classes.button}
-                onClick={() => window.open(udMeLink, '_blank')}
-                data-testid="modal-udmelink"
-              >
-                <OpenInNew className={classes.newWindowIcon} />
-                {t('nftCollection.viewUdMeProfile')}
-              </Button>
             )}
           </div>
         </Grid>

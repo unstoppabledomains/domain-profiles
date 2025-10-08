@@ -1,24 +1,58 @@
-export type Severity = 'info' | 'warning' | 'error';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type {
+  BugsnagErrorClasses,
+  BugsnagErrorContexts,
+  SeverityLevel,
+} from '@unstoppabledomains/config';
+import {notifyBugsnag} from '@unstoppabledomains/config';
 
-export const notifyError = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  error: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  additionalMetaData?: Record<string, any>,
-  // default severity for bugsnag if not set it warning for handled exceptions and error for unhandled
-  severity?: Severity,
+export type ErrorMetadata = {
+  msg?: string;
+  meta?: Record<string, any>;
+};
+
+export const notifyEvent = (
+  event: any,
+  severity: SeverityLevel,
+  appContext: keyof typeof BugsnagErrorContexts,
+  errorClass: keyof typeof BugsnagErrorClasses,
+  metadata?: ErrorMetadata,
+  forceSend?: boolean,
 ) => {
-  switch (severity) {
-    case 'info':
-      // eslint-disable-next-line no-console
-      console.info(error?.message ? error.message : error, additionalMetaData);
-      break;
-    case 'warning':
-      // eslint-disable-next-line no-console
-      console.warn(error?.message ? error.message : error, additionalMetaData);
-      break;
-    default:
-      // eslint-disable-next-line no-console
-      console.error(error, additionalMetaData);
+  try {
+    let sendToBugsnag = forceSend || false;
+    const logData = [
+      event?.message ? event.message : event || 'event',
+      metadata
+        ? JSON.stringify({
+            metadata,
+          })
+        : undefined,
+    ].filter(d => d !== undefined);
+    switch (severity) {
+      case 'info':
+        // eslint-disable-next-line no-console
+        console.info(...logData);
+        break;
+      case 'warning':
+        // eslint-disable-next-line no-console
+        console.warn(...logData);
+        break;
+      default:
+        // eslint-disable-next-line no-console
+        console.error(...logData);
+        sendToBugsnag = true;
+    }
+    if (sendToBugsnag) {
+      notifyBugsnag({
+        error: event,
+        appContext,
+        errorClass,
+        severity,
+        metadata,
+      });
+    }
+  } catch (e) {
+    // gracefully handle exception
   }
 };

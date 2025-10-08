@@ -4,6 +4,7 @@ export default function getDevelopmentConfig(): ConfigOverride {
   return {
     APP_ENV: 'development',
     UD_ME_BASE_URL: 'http://localhost:3000',
+    UP_IO_BASE_URL: 'http://localhost:3000',
     UNSTOPPABLE_WEBSITE_URL: 'http://localhost:3000',
     UNSTOPPABLE_API_URL: 'http://localhost:8080',
     MESSAGING: {

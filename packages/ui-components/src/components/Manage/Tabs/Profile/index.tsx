@@ -29,11 +29,12 @@ import {
   isExternalDomain,
   useTranslationContext,
 } from '../../../../lib';
-import {notifyError} from '../../../../lib/error';
+import {notifyEvent} from '../../../../lib/error';
 import {ProfileManager} from '../../../Wallet/ProfileManager';
 import {DomainProfileTabType} from '../../DomainProfile';
 import BulkUpdateLoadingButton from '../../common/BulkUpdateLoadingButton';
 import ManageInput from '../../common/ManageInput';
+import type {ManageTabProps} from '../../common/types';
 import {Header} from './Header';
 import ManagePublicVisibility from './ManagePublicVisibility';
 
@@ -41,15 +42,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing(-3),
-    },
+    width: '100%',
   },
   divider: {
     marginTop: theme.spacing(2),
-  },
-  button: {
-    marginTop: theme.spacing(3),
   },
   textLimit: {
     fontSize: '0.8125rem',
@@ -90,10 +86,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const Profile: React.FC<ProfileProps> = ({
+export const Profile: React.FC<ManageTabProps> = ({
   address,
   domain,
   onUpdate,
+  onLoaded,
+  setButtonComponent,
 }) => {
   const {classes} = useStyles();
   const {enqueueSnackbar} = useSnackbar();
@@ -130,8 +128,37 @@ export const Profile: React.FC<ProfileProps> = ({
   }>({data: null, file: null});
 
   useEffect(() => {
+    setIsLoaded(false);
+    setButtonComponent(<></>);
     setFireRequest(true);
-  }, []);
+  }, [domain]);
+
+  useEffect(() => {
+    if (!isLoaded) {
+      return;
+    }
+    setButtonComponent(
+      <BulkUpdateLoadingButton
+        address={address}
+        count={updatedCount}
+        isBulkUpdate={isBulkUpdate}
+        setIsBulkUpdate={setIsBulkUpdate}
+        variant="contained"
+        loading={isSaving}
+        onClick={handleSave}
+        disabled={!dirtyFlag}
+        errorMessage={updateErrorMessage}
+      />,
+    );
+  }, [
+    address,
+    updatedCount,
+    isBulkUpdate,
+    isSaving,
+    dirtyFlag,
+    updateErrorMessage,
+    isLoaded,
+  ]);
 
   useEffect(() => {
     Object.keys(publicVisibilityValues).map(k => {
@@ -149,6 +176,11 @@ export const Profile: React.FC<ProfileProps> = ({
     try {
       // only proceed if signature available
       if (domain && signature && expiry) {
+        // callback to indicate signature was collected
+        if (onLoaded) {
+          onLoaded(true);
+        }
+
         // retrieve user profile data from profile API
         const existingData = await getProfileUserData(
           domain,
@@ -230,7 +262,9 @@ export const Profile: React.FC<ProfileProps> = ({
       }
     } catch (e) {
       setUpdateErrorMessage(t('manage.updateError'));
-      notifyError(e, {msg: 'unable to manage user profile'});
+      notifyEvent(e, 'error', 'Profile', 'Fetch', {
+        msg: 'unable to manage user profile',
+      });
     }
   };
 
@@ -313,6 +347,7 @@ export const Profile: React.FC<ProfileProps> = ({
         github: {},
         linkedin: {},
         lens: {},
+        farcaster: {},
       };
     }
     updatedUserProfile.socialAccounts[id] = {
@@ -330,6 +365,7 @@ export const Profile: React.FC<ProfileProps> = ({
       setDirtyFlag(true);
     }
     handleInputChange('imagePath', url);
+    handleInputChange('imageType', 'offChain');
     setProfileImage({data: url, file: null});
   };
 
@@ -391,7 +427,7 @@ export const Profile: React.FC<ProfileProps> = ({
             }
             coverSrc={profileCover.data}
             ownerAddress={address}
-            uiDisabled={false}
+            uiDisabled={!isLoaded}
             isExternalDomain={isExternalDomain(domain)}
             handleAvatarUpload={handleAvatarUpload}
             handleUrlEntry={handleUrlEntry}
@@ -399,6 +435,7 @@ export const Profile: React.FC<ProfileProps> = ({
             handleUploadError={handleUploadError}
             handlePictureChange={handleNftAvatarChange}
           />
+
           <Box className={classes.sectionHeader}>
             <Box display="flex">
               <Typography variant="h6">{t('manage.mainInfo')}</Typography>
@@ -415,6 +452,7 @@ export const Profile: React.FC<ProfileProps> = ({
             />
           </Box>
           <ManageInput
+            mt={2}
             id="displayName"
             value={userProfile?.profile?.displayName}
             label={t('manage.displayName')}
@@ -427,8 +465,10 @@ export const Profile: React.FC<ProfileProps> = ({
             isCardOpen={isCardOpen}
             setPublicVisibilityValues={setPublicVisibilityValues}
             setIsCardOpen={setIsCardOpen}
+            disabled={!isLoaded}
           />
           <ManageInput
+            mt={2}
             id="description"
             value={userProfile?.profile?.description}
             label={t('manage.description')}
@@ -443,6 +483,7 @@ export const Profile: React.FC<ProfileProps> = ({
             isCardOpen={isCardOpen}
             setPublicVisibilityValues={setPublicVisibilityValues}
             setIsCardOpen={setIsCardOpen}
+            disabled={!isLoaded}
           />
           <Box display="flex" justifyContent="end">
             <Typography color="textSecondary" className={classes.textLimit}>
@@ -450,6 +491,7 @@ export const Profile: React.FC<ProfileProps> = ({
             </Typography>
           </Box>
           <ManageInput
+            mt={2}
             id="location"
             value={userProfile?.profile?.location}
             label={t('manage.location')}
@@ -461,8 +503,10 @@ export const Profile: React.FC<ProfileProps> = ({
             isCardOpen={isCardOpen}
             setPublicVisibilityValues={setPublicVisibilityValues}
             setIsCardOpen={setIsCardOpen}
+            disabled={!isLoaded}
           />
           <ManageInput
+            mt={2}
             id="web2Url"
             value={userProfile?.profile?.web2Url}
             label={t('manage.website')}
@@ -476,6 +520,7 @@ export const Profile: React.FC<ProfileProps> = ({
             isCardOpen={isCardOpen}
             setPublicVisibilityValues={setPublicVisibilityValues}
             setIsCardOpen={setIsCardOpen}
+            disabled={!isLoaded}
           />
           <Divider className={classes.divider} />
           <Box className={classes.sectionHeader}>
@@ -484,6 +529,7 @@ export const Profile: React.FC<ProfileProps> = ({
             </Box>
           </Box>
           <ManageInput
+            mt={2}
             id="twitter"
             value={userProfile?.socialAccounts?.twitter.location}
             label={'Twitter (X)'}
@@ -492,8 +538,10 @@ export const Profile: React.FC<ProfileProps> = ({
             onChange={handleSocialInputChange}
             disableTextTrimming
             stacked={false}
+            disabled={!isLoaded}
           />
           <ManageInput
+            mt={2}
             id="discord"
             value={userProfile?.socialAccounts?.discord.location}
             label={'Discord'}
@@ -502,8 +550,10 @@ export const Profile: React.FC<ProfileProps> = ({
             onChange={handleSocialInputChange}
             disableTextTrimming
             stacked={false}
+            disabled={!isLoaded}
           />
           <ManageInput
+            mt={2}
             id="youtube"
             value={userProfile?.socialAccounts?.youtube.location}
             label={'YouTube'}
@@ -512,8 +562,10 @@ export const Profile: React.FC<ProfileProps> = ({
             onChange={handleSocialInputChange}
             disableTextTrimming
             stacked={false}
+            disabled={!isLoaded}
           />
           <ManageInput
+            mt={2}
             id="reddit"
             value={userProfile?.socialAccounts?.reddit.location}
             label={'Reddit'}
@@ -522,8 +574,10 @@ export const Profile: React.FC<ProfileProps> = ({
             onChange={handleSocialInputChange}
             disableTextTrimming
             stacked={false}
+            disabled={!isLoaded}
           />
           <ManageInput
+            mt={2}
             id="telegram"
             value={userProfile?.socialAccounts?.telegram.location}
             label={'Telegram'}
@@ -532,8 +586,10 @@ export const Profile: React.FC<ProfileProps> = ({
             onChange={handleSocialInputChange}
             disableTextTrimming
             stacked={false}
+            disabled={!isLoaded}
           />
           <ManageInput
+            mt={2}
             id="github"
             value={userProfile?.socialAccounts?.github.location}
             label={'Github'}
@@ -542,8 +598,10 @@ export const Profile: React.FC<ProfileProps> = ({
             onChange={handleSocialInputChange}
             disableTextTrimming
             stacked={false}
+            disabled={!isLoaded}
           />
           <ManageInput
+            mt={2}
             id="linkedin"
             value={userProfile?.socialAccounts?.linkedin.location}
             label={'Linkedin'}
@@ -552,22 +610,17 @@ export const Profile: React.FC<ProfileProps> = ({
             onChange={handleSocialInputChange}
             disableTextTrimming
             stacked={false}
-          />
-          <BulkUpdateLoadingButton
-            address={address}
-            count={updatedCount}
-            isBulkUpdate={isBulkUpdate}
-            setIsBulkUpdate={setIsBulkUpdate}
-            variant="contained"
-            loading={isSaving}
-            onClick={handleSave}
-            className={classes.button}
-            disabled={!dirtyFlag}
-            errorMessage={updateErrorMessage}
+            disabled={!isLoaded}
           />
         </>
       ) : (
-        <Box display="flex" justifyContent="center">
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          width="100%"
+          mt={3}
+        >
           <CircularProgress />
         </Box>
       )}
@@ -578,16 +631,8 @@ export const Profile: React.FC<ProfileProps> = ({
         saveClicked={fireRequest}
         setSaveClicked={setFireRequest}
         onSignature={handleProfileData}
+        closeAfterSignature={true}
       />
     </Box>
   );
-};
-
-export type ProfileProps = {
-  address: string;
-  domain: string;
-  onUpdate(
-    tab: DomainProfileTabType,
-    data?: SerializedUserDomainProfileData,
-  ): void;
 };

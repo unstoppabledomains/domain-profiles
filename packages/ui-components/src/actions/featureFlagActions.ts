@@ -1,9 +1,10 @@
+import {useRouter} from 'next/router';
 import {useQuery} from 'react-query';
 
 import config, {getLaunchDarklyDefaults} from '@unstoppabledomains/config';
 import type {LaunchDarklyCamelFlagSet} from '@unstoppabledomains/config';
 
-import {notifyError} from '../lib/error';
+import {notifyEvent} from '../lib/error';
 import {fetchApi} from '../lib/fetchApi';
 
 const BASE_QUERY_KEY = 'featureFlags';
@@ -34,7 +35,9 @@ export const fetchFeatureFlags = async (
       variations: {...DEFAULT_FEATURE_FLAGS.variations, ...featureFlags},
     };
   } catch (e) {
-    notifyError(e);
+    notifyEvent(e, 'warning', 'Request', 'Fetch', {
+      msg: 'error retrieving feature flags',
+    });
   }
   return DEFAULT_FEATURE_FLAGS;
 };
@@ -43,9 +46,18 @@ export const useFeatureFlags = (
   shouldRefetch = false,
   domainName: string = '',
 ) => {
+  // retrieve domain name from path if possible
+  const router = useRouter();
+  const fallbackDomainName =
+    router?.query?.domain && typeof router.query.domain === 'string'
+      ? router.query.domain
+      : undefined;
+  const domain = domainName || fallbackDomainName;
+
+  // query feature flags
   const query = useQuery(
-    [...queryKey.featureFlags(), domainName],
-    (): Promise<FeatureFlags> => fetchFeatureFlags(domainName),
+    [...queryKey.featureFlags(), domain],
+    (): Promise<FeatureFlags> => fetchFeatureFlags(domain),
     {
       cacheTime: Infinity,
       staleTime: Infinity,

@@ -50,12 +50,12 @@ const useStyles = makeStyles<void, 'error'>()(
       borderRadius: theme.shape.borderRadius,
       [`&.${classes.error}`]: {
         borderRadius: theme.shape.borderRadius,
-        borderColor: 'red',
+        borderColor: theme.palette.error.main,
       },
       '& input': {
         borderRadius: theme.shape.borderRadius,
         position: 'relative',
-        backgroundColor: theme.palette.common.white,
+        backgroundColor: theme.palette.background.default,
         fontSize: 16,
         width: '100%',
         padding: theme.spacing(1, 1.5),
@@ -68,7 +68,7 @@ const useStyles = makeStyles<void, 'error'>()(
     },
     input: {
       position: 'relative',
-      backgroundColor: theme.palette.common.white,
+      backgroundColor: theme.palette.background.default,
       width: '100%',
       transition: theme.transitions.create('border-color'),
       height: 24,
@@ -93,6 +93,9 @@ const useStyles = makeStyles<void, 'error'>()(
     },
     formErrorContainer: {
       marginTop: theme.spacing(1),
+    },
+    formError: {
+      color: theme.palette.error.main,
     },
     // Loading
     loadingContainer: {
@@ -127,7 +130,7 @@ const useStyles = makeStyles<void, 'error'>()(
     visibilityBtn: {
       borderRadius: '20px',
       borderColor: theme.palette.neutralShades[400],
-      color: theme.palette.common.black,
+      color: theme.palette.getContrastText(theme.palette.background.default),
       fontSize: '14px',
     },
     cardBtnContainer: {
@@ -150,7 +153,7 @@ const useStyles = makeStyles<void, 'error'>()(
     },
     cardTitle: {
       fontSize: '16px',
-      color: '#000000',
+      color: theme.palette.getContrastText(theme.palette.background.default),
       fontWeight: 700,
       marginBottom: '0px',
     },
@@ -163,7 +166,7 @@ const useStyles = makeStyles<void, 'error'>()(
       marginLeft: '6px',
     },
     iconButton: {
-      color: '#000000',
+      color: theme.palette.getContrastText(theme.palette.background.default),
     },
   }),
 );

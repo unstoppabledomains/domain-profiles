@@ -1,6 +1,7 @@
+import QueryString from 'qs';
+
 import config from '@unstoppabledomains/config';
 
-import {notifyError} from '../lib/error';
 import {fetchApi} from '../lib/fetchApi';
 import type {
   DomainBadgesResponse,
@@ -10,21 +11,14 @@ import type {
   DomainCryptoVerificationBodyPOST,
   EnsDomainStatusResponse,
   SerializedDomainRank,
+  SerializedTxns,
 } from '../lib/types/domain';
+import {TldCache} from '../lib/types/domain';
 
 export const getDomainBadges = async (
   domain: string,
   {withoutPartners}: {forceRefresh?: boolean; withoutPartners?: boolean} = {},
 ): Promise<DomainBadgesResponse> => {
-  // request a badge refresh but do not wait for the processing
-  // to be completed before continuing. Some badge operations
-  // are lengthy and would significantly impact response time.
-  // Calling in this way allows processing to happen in background
-  // and request to return immediately with the existing badges.
-  fetchApi(`/domains/${domain}/sync_badges`).catch(e =>
-    notifyError(e, {msg: 'error syncing badges'}, 'warning'),
-  );
-
   // retrieve badge data from profile API
   const data = await fetchApi(
     `/public/${domain}/badges?partners=${withoutPartners ? 'false' : 'true'}`,
@@ -32,13 +26,13 @@ export const getDomainBadges = async (
       host: config.PROFILE.HOST_URL,
     },
   );
-  const badges = data?.badges?.map((badge: SerializedCryptoWalletBadge) => {
-    return {
-      ...badge,
-      active: true,
-      expired: false,
-    };
-  });
+  const badges =
+    data?.badges?.map((badge: SerializedCryptoWalletBadge) => {
+      return {
+        ...badge,
+        expired: false,
+      };
+    }) || [];
 
   // add partner badges to the response if available
   data?.partners?.map((partnerBadge: SerializedCryptoWalletBadge) => {
@@ -89,7 +83,7 @@ export const getEnsDomainStatus = async (
   });
 };
 
-export const getReverseResolution = async (
+export const getStrictReverseResolution = async (
   address: string,
 ): Promise<string | undefined> => {
   const resolutionResponse = await fetchApi(
@@ -99,6 +93,99 @@ export const getReverseResolution = async (
     },
   );
   return resolutionResponse?.name;
+};
+
+export const getTransactionsByAddress = async (
+  address: string,
+  accessToken: string,
+  symbol: string,
+  cursor?: string,
+): Promise<SerializedTxns | undefined> => {
+  // retrieve transaction data for this address
+  const data = await fetchApi(
+    `/user/${address}/transactions?${QueryString.stringify({
+      cursor,
+      symbols: symbol,
+      forceRefresh: Date.now(),
+    })}`,
+    {
+      host: config.PROFILE.HOST_URL,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+  if (!data || !data[symbol.toUpperCase()]) {
+    return;
+  }
+  return data[symbol.toUpperCase()];
+};
+
+export const getTransactionsByDomain = async (
+  domain: string,
+  symbol: string,
+  cursor?: string,
+): Promise<SerializedTxns | undefined> => {
+  // retrieve transaction data for this domain
+  const data = await fetchApi(
+    `/public/${domain}/transactions?${QueryString.stringify({
+      symbols: symbol,
+      cursor,
+    })}`,
+    {
+      host: config.PROFILE.HOST_URL,
+    },
+  );
+  if (!data || !data[symbol.toUpperCase()]) {
+    return;
+  }
+  return data[symbol.toUpperCase()];
+};
+
+// getIcannTlds retrieves list of all known ICANN domains
+export const getValidIcannEndings = async (): Promise<string[]> => {
+  try {
+    // get cached TLD data
+    const cachedTlds = await TldCache.get('web2');
+    if (cachedTlds) {
+      return cachedTlds;
+    }
+
+    // retrieve new TLD data
+    const icannResponse = await fetch(
+      `https://data.iana.org/TLD/tlds-alpha-by-domain.txt`,
+    );
+    if (icannResponse.ok) {
+      const icannData = await icannResponse.text();
+      const tlds = icannData.split(/\n/);
+      if (tlds.length > 1) {
+        const icannTlds = [...new Set(tlds.slice(1).map(d => d.toLowerCase()))];
+        await TldCache.set('web2', icannTlds);
+        return icannTlds;
+      }
+    }
+  } catch (e) {
+    // fail silently
+  }
+  return [];
+};
+
+export const getValidWeb3Endings = async (): Promise<string[]> => {
+  // get cached TLD data
+  const cachedTlds = await TldCache.get('web3');
+  if (cachedTlds) {
+    return cachedTlds;
+  }
+
+  // retrieve new TLD data
+  const data = await fetchApi(`/supported_tlds`, {
+    host: config.RESOLUTION.BASE_URL,
+  });
+  if (!data?.tlds) {
+    return [];
+  }
+  await TldCache.set('web3', data.tlds);
+  return data.tlds;
 };
 
 export const getVerificationMessage = async (

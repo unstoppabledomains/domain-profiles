@@ -17,10 +17,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     minHeight: AVATAR_PLACEHOLDER_SIZE,
   },
   headerContainer: {
-    backgroundColor: '#192B55',
+    background: theme.palette.heroText,
     borderTopRightRadius: theme.shape.borderRadius,
     borderTopLeftRadius: theme.shape.borderRadius,
-    color: theme.palette.white,
+    color: theme.palette.getContrastText(theme.palette.primary.main),
   },
   iconContainer: {
     position: 'absolute',
@@ -37,7 +37,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     padding: theme.spacing(1),
   },
   descriptionText: {
-    color: theme.palette.white,
+    color: theme.palette.getContrastText(theme.palette.primary.main),
   },
   round: {
     display: 'flex',
@@ -46,7 +46,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
     borderRadius: '50%',
-    backgroundColor: theme.palette.white,
+    backgroundColor: theme.palette.background.paper,
     zIndex: 1,
     [theme.breakpoints.up('sm')]: {
       flex: '1 0 auto',
@@ -60,7 +60,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     position: 'relative',
     backgroundColor: theme.palette.secondary.main,
     borderRadius: '50%',
-    border: `6px solid ${theme.palette.white}`,
+    border: `6px solid ${theme.palette.background.paper}`,
     '&::before': {
       content: '""',
       position: 'absolute',
@@ -85,11 +85,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
       width: AVATAR_SIZE,
       height: AVATAR_SIZE,
       padding: theme.spacing(2),
-      fill: theme.palette.white,
+      fill: theme.palette.background.paper,
     },
   },
   learnMoreLink: {
-    color: theme.palette.white,
+    color: theme.palette.getContrastText(theme.palette.primary.main),
     fontSize: theme.typography.body2.fontSize,
   },
 }));

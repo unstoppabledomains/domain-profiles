@@ -15,6 +15,8 @@ steps:
       - APP_VERSION=$COMMIT_SHA
       - '--build-arg'
       - CLIENT_URL=$_CLIENT_URL
+      - '--build-arg'
+      - BUGSNAG_API_KEY=$_BUGSNAG_API_KEY
     id: Build
   - name: gcr.io/cloud-builders/docker
     args:
@@ -51,7 +53,11 @@ substitutions:
   _AR_HOSTNAME: us-central1-docker.pkg.dev
   _PLATFORM: managed
   _SERVICE_NAME: ud-me-stag
+  _BUGSNAG_API_KEY: 4a72fb23d3ddc00054db744c3006f0cd
   _GATEWAY_API_KEY_SECRET: kong_consumer_stag_ud-me:1
+  _GCS_STORAGE_BUCKET_FOR_CLOUDBUILD: "ud-staging-cloudbuild-logs"
+logsBucket: "$_GCS_STORAGE_BUCKET_FOR_CLOUDBUILD"
+
 tags:
   - gcp-cloud-build-deploy-cloud-run
   - gcp-cloud-build-deploy-cloud-run-managed

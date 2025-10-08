@@ -18,9 +18,11 @@ export const getVerificationProvider = (
           domain={props.domain}
           setVerified={props.setVerified}
           setWeb3Deps={props.setWeb3Deps}
+          ownerAddress={props.ownerAddress}
         ></SolanaVerificationButton>
       );
     case 'ETH':
+    case 'BASE':
     case 'MATIC':
     case 'FTM':
     case 'AVAX':
@@ -31,6 +33,7 @@ export const getVerificationProvider = (
           domain={props.domain}
           setVerified={props.setVerified}
           setWeb3Deps={props.setWeb3Deps}
+          ownerAddress={props.ownerAddress}
         ></EvmVerificationButton>
       );
     case 'BTC':
@@ -41,6 +44,7 @@ export const getVerificationProvider = (
           domain={props.domain}
           setVerified={props.setVerified}
           setWeb3Deps={props.setWeb3Deps}
+          ownerAddress={props.ownerAddress}
         ></BitcoinVerificationButton>
       );
     default:

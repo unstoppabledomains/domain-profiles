@@ -1,5 +1,5 @@
+import AddHomeOutlinedIcon from '@mui/icons-material/AddHomeOutlined';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
-import FingerprintOutlinedIcon from '@mui/icons-material/FingerprintOutlined';
 import SwapHorizOutlinedIcon from '@mui/icons-material/SwapHorizOutlined';
 import UpdateOutlinedIcon from '@mui/icons-material/UpdateOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -12,11 +12,7 @@ import truncateEthAddress from 'truncate-eth-address';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {
-  getProfileData,
-  getReverseResolution,
-  useFeatureFlags,
-} from '../../../actions';
+import {getProfileData, getStrictReverseResolution} from '../../../actions';
 import {
   confirmRecordUpdate,
   getRegistrationMessage,
@@ -25,9 +21,10 @@ import {
 } from '../../../actions/pav3Actions';
 import {useWeb3Context} from '../../../hooks';
 import {DomainFieldTypes, useTranslationContext} from '../../../lib';
-import {notifyError} from '../../../lib/error';
+import {notifyEvent} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import {TabHeader} from '../common/TabHeader';
+import type {ManageTabProps} from '../common/types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
@@ -37,9 +34,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
     justifyItems: 'center',
-    [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing(-3),
-    },
   },
   reverseContainer: {
     display: 'flex',
@@ -68,27 +62,28 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     marginTop: theme.spacing(1),
     padding: theme.spacing(1),
-    backgroundColor: theme.palette.primary.main,
+    background: theme.palette.heroText,
     justifyContent: 'center',
+    borderRadius: theme.shape.borderRadius,
   },
   pendingTxText: {
-    color: theme.palette.white,
+    color: theme.palette.background.paper,
   },
   pendingTxIcon: {
-    color: theme.palette.white,
-    marginRight: theme.spacing(1),
+    color: theme.palette.background.paper,
+    marginRight: theme.spacing(2),
     width: '50px',
     height: '50px',
   },
-  button: {
-    marginTop: theme.spacing(2),
-  },
 }));
 
-export const Reverse: React.FC<ReverseProps> = ({address, domain}) => {
+export const Reverse: React.FC<ManageTabProps> = ({
+  address,
+  domain,
+  setButtonComponent,
+}) => {
   const {classes} = useStyles();
   const {web3Deps, setWeb3Deps} = useWeb3Context();
-  const {data: featureFlags} = useFeatureFlags(false, domain);
   const [saveClicked, setSaveClicked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -99,8 +94,31 @@ export const Reverse: React.FC<ReverseProps> = ({address, domain}) => {
 
   useEffect(() => {
     // retrieve records and determine if there are pending transactions
+    setIsLoading(true);
+    setButtonComponent(<></>);
     void loadRecords();
-  }, []);
+  }, [domain]);
+
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+    setButtonComponent(
+      isReverse ? (
+        <></>
+      ) : (
+        <LoadingButton
+          variant="contained"
+          onClick={handleSave}
+          loading={isSaving}
+          disabled={isPendingTx || isReverse}
+          fullWidth
+        >
+          {t('manage.startRecordUpdate')}
+        </LoadingButton>
+      ),
+    );
+  }, [isSaving, isPendingTx, isReverse, isLoading]);
 
   const loadRecords = async () => {
     const [profileData, resolutionData] = await Promise.all([
@@ -108,7 +126,7 @@ export const Reverse: React.FC<ReverseProps> = ({address, domain}) => {
         DomainFieldTypes.Records,
         DomainFieldTypes.CryptoVerifications,
       ]),
-      getReverseResolution(address),
+      getStrictReverseResolution(address),
     ]);
     if (profileData?.metadata) {
       setIsReverse(!!profileData.metadata.reverse);
@@ -135,9 +153,11 @@ export const Reverse: React.FC<ReverseProps> = ({address, domain}) => {
         expires: expiry,
         signature,
       });
-      if (updateRequest) {
+      if (updateRequest?.transaction.messageToSign) {
         // retrieve confirmation signature
-        const txSignature = await getSignature(updateRequest.message);
+        const txSignature = await getSignature(
+          updateRequest.transaction.messageToSign,
+        );
         if (txSignature) {
           // submit confirmation signature to complete transaction
           if (
@@ -145,7 +165,7 @@ export const Reverse: React.FC<ReverseProps> = ({address, domain}) => {
               domain,
               updateRequest.operationId,
               updateRequest.dependencyId,
-              txSignature,
+              {signature: txSignature},
               {
                 expires: expiry,
                 signature,
@@ -195,7 +215,9 @@ export const Reverse: React.FC<ReverseProps> = ({address, domain}) => {
       }
       return true;
     } catch (e) {
-      notifyError(e, {msg: 'error validating wallet'}, 'warning');
+      notifyEvent(e, 'warning', 'Profile', 'Signature', {
+        msg: 'error validating wallet',
+      });
     }
     return false;
   };
@@ -211,26 +233,12 @@ export const Reverse: React.FC<ReverseProps> = ({address, domain}) => {
       // sign a message linking the domain and secondary wallet address
       return await web3Deps.signer.signMessage(msg);
     } catch (signError) {
-      notifyError(signError, {msg: 'signature error'}, 'warning');
+      notifyEvent(signError, 'warning', 'Profile', 'Signature', {
+        msg: 'signature error',
+      });
     }
     return undefined;
   };
-
-  // show coming soon if feature flag disabled
-  if (!featureFlags.variations?.udMeServiceDomainsEnableManagement) {
-    return (
-      <Box className={classes.container}>
-        <TabHeader
-          icon={<SwapHorizOutlinedIcon />}
-          description={t('manage.reverseResolutionDescription', {domain})}
-          learnMoreLink="https://support.unstoppabledomains.com/support/solutions/articles/48001217257-what-is-and-how-to-setup-reverse-resolution"
-        />
-        <Typography variant="h5" className={classes.title}>
-          {t('manage.comingSoon')}
-        </Typography>
-      </Box>
-    );
-  }
 
   return (
     <Box className={classes.container}>
@@ -274,9 +282,7 @@ export const Reverse: React.FC<ReverseProps> = ({address, domain}) => {
               </Box>
             ) : (
               <Box>
-                <FingerprintOutlinedIcon
-                  className={classes.iconNotConfigured}
-                />
+                <AddHomeOutlinedIcon className={classes.iconNotConfigured} />
                 <Typography variant="h5">
                   {t('manage.setupReverseResolution')}
                 </Typography>
@@ -293,22 +299,12 @@ export const Reverse: React.FC<ReverseProps> = ({address, domain}) => {
               </Box>
             )}
           </Box>
-          {!isReverse && (
-            <LoadingButton
-              variant="contained"
-              onClick={handleSave}
-              loading={isSaving}
-              disabled={isPendingTx || isReverse}
-              className={classes.button}
-              fullWidth
-            >
-              {t('manage.startRecordUpdate')}
-            </LoadingButton>
-          )}
+
           <ProfileManager
             domain={domain}
             ownerAddress={address}
             setWeb3Deps={setWeb3Deps}
+            saveComplete={!isSaving}
             saveClicked={saveClicked}
             setSaveClicked={setSaveClicked}
             onSignature={handleRecordUpdate}
@@ -318,9 +314,4 @@ export const Reverse: React.FC<ReverseProps> = ({address, domain}) => {
       )}
     </Box>
   );
-};
-
-export type ReverseProps = {
-  address: string;
-  domain: string;
 };

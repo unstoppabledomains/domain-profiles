@@ -9,7 +9,7 @@ import type {SerializedNftMetadata} from '../../lib/types/nfts';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
-    boxShadow: '0px 1px 0px #DDDDDF, 0px 0px 0px 1px #DDDDDF',
+    boxShadow: theme.shadows[6],
     borderRadius: 8,
     padding: theme.spacing(2),
     height: 230,
@@ -43,7 +43,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   price: {
     fontWeight: 600,
     fontSize: 12,
-    color: theme.palette.white,
+    color: theme.palette.common.white,
     background: 'rgba(0, 0, 0, 0.16)',
     backdropFilter: 'blur(50px)',
     borderRadius: 4,
@@ -84,7 +84,7 @@ const NftListing: React.FC<Props> = ({listings}) => {
             className={classes.image}
           >
             <Typography className={classes.price}>
-              {listing.price?.value} {listing.price?.currency}
+              {listing.floorPrice?.value} {listing.floorPrice?.currency}
             </Typography>
           </a>
         </Grid>
@@ -112,7 +112,7 @@ const NftListing: React.FC<Props> = ({listings}) => {
                 className={classes.image}
               >
                 <Typography className={classes.price}>
-                  {listing.price?.value} {listing.price?.currency}
+                  {listing.floorPrice?.value} {listing.floorPrice?.currency}
                 </Typography>
               </a>
             </Grid>

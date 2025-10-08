@@ -1,5 +1,5 @@
-import {getProfileResolution} from '../../../actions/domainProfileActions';
-import {notifyError} from '../../../lib/error';
+import {getProfileReverseResolution} from '../../../actions/domainProfileActions';
+import {notifyEvent} from '../../../lib/error';
 import {getCachedResolution, setCachedResolution} from '../storage';
 import type {AddressResolution} from '../types';
 
@@ -10,7 +10,7 @@ export const getAddressMetadata = async (
   const sanitizedValue = addressOrDomain.replace('eip155:', '').toLowerCase();
 
   // check cache for resolution
-  const cachedResolution = getCachedResolution(sanitizedValue);
+  const cachedResolution = await getCachedResolution(sanitizedValue);
   if (cachedResolution) {
     return cachedResolution;
   }
@@ -18,13 +18,15 @@ export const getAddressMetadata = async (
   // attempt resolution
   try {
     // retrieve the reverse resolution details
-    const resolution = await getProfileResolution(sanitizedValue);
+    const resolution = await getProfileReverseResolution(sanitizedValue);
     if (resolution?.address) {
-      setCachedResolution(resolution);
+      await setCachedResolution(resolution);
       return resolution;
     }
   } catch (e) {
-    notifyError(e, {msg: 'error looking up reverse resolution'});
+    notifyEvent(e, 'error', 'Messaging', 'Resolution', {
+      msg: 'error looking up reverse resolution',
+    });
   }
 
   // return the address metadata

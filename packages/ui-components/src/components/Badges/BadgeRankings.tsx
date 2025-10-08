@@ -1,4 +1,5 @@
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Tooltip from '@mui/material/Tooltip';
@@ -30,7 +31,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   contentContainer: {
     minHeight: 437,
-    boxShadow: '0px 1px 0px #DDDDDF, 0px 0px 0px 1px #DDDDDF',
+    boxShadow: theme.shadows[1],
     borderRadius: 8,
     padding: theme.spacing(2),
   },
@@ -92,14 +93,16 @@ const BadgeRankings: React.FC<Props> = ({
           </Tooltip>
         </Typography>
         <div className={classes.contentContainer}>
-          <DomainProfileList
-            id={'domainRankings'}
-            domains={domains}
-            isLoading={false}
-            showNumber
-            itemsPerPage={5}
-            withPagination={false}
-          />
+          <Box sx={{height: '350px'}}>
+            <DomainProfileList
+              id={'domainRankings'}
+              domains={domains}
+              isLoading={false}
+              showNumber
+              itemsPerPage={5}
+              withPagination={false}
+            />
+          </Box>
           {domains.length > 5 && (
             <Button
               variant="outlined"

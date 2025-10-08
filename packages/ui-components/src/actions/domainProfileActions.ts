@@ -4,31 +4,47 @@ import {useQuery} from 'react-query';
 import config from '@unstoppabledomains/config';
 
 import type {AddressResolution} from '../components/Chat/types';
-import type {NftResponse} from '../lib';
-import {NftPageSize} from '../lib';
+import {isDomainValidForManagement} from '../lib/domain/format';
 import {fetchApi} from '../lib/fetchApi';
 import type {
   DomainFieldTypes,
   ImageData,
   SerializedBulkDomainResponse,
-  SerializedDomainListData,
+  SerializedDomainFullListData,
   SerializedFollowerListData,
   SerializedProfileSearch,
   SerializedPublicDomainProfileData,
+  SerializedRecommendation,
   SerializedUserDomainProfileData,
 } from '../lib/types/domain';
 import {DomainProfileSocialMedia} from '../lib/types/domain';
+import type {NftResponse} from '../lib/types/nfts';
+import {NftPageSize} from '../lib/types/nfts';
 
 export const DOMAIN_LIST_PAGE_SIZE = 8;
 
 const queryKey = {
-  followStatus: () => ['domainProfile', 'followingStatus'],
+  followStatus: (d1: string, d2: string) => [
+    'domainProfile',
+    'followingStatus',
+    d1,
+    d2,
+  ],
 };
 
 export const checkIfFollowingDomainProfile = async (
   followerDomain: string,
   followeeDomain: string,
 ): Promise<boolean> => {
+  // validate domain formats
+  if (
+    !isDomainValidForManagement(followerDomain) ||
+    !isDomainValidForManagement(followeeDomain)
+  ) {
+    return false;
+  }
+
+  // make the request
   const respJson = await fetchApi(
     `/followers/${followeeDomain}/follow-status/${followerDomain}`,
     {
@@ -67,6 +83,21 @@ export const followDomainProfile = async (
   });
 };
 
+export const getDomainConnections = async (
+  domain: string,
+  opts?: {
+    xmtpOnly?: boolean;
+    recommendationsOnly?: boolean;
+  },
+): Promise<SerializedRecommendation[]> => {
+  const queryStringParams = QueryString.stringify({
+    xmtpOnly: opts?.xmtpOnly,
+    recommendationsOnly: opts?.recommendationsOnly,
+  });
+  const domainProfileUrl = `/public/${domain}/connections?${queryStringParams}`;
+  return await fetchApi(domainProfileUrl, {host: config.PROFILE.HOST_URL});
+};
+
 export const getDomainNfts = async (
   domain: string,
   symbols?: string,
@@ -100,11 +131,21 @@ export const getFollowers = async (
 export const getOwnerDomains = async (
   address: string,
   cursor?: string,
-): Promise<SerializedDomainListData | undefined> => {
+  strict?: boolean,
+  forceRefresh?: boolean,
+): Promise<SerializedDomainFullListData | undefined> => {
+  // validate the provided address
+  if (!address) {
+    return undefined;
+  }
+
+  // fetch the owner domains
   const domainProfileUrl = `/user/${address.toLowerCase()}/domains?${QueryString.stringify(
     {
       take: DOMAIN_LIST_PAGE_SIZE,
+      strict,
       cursor,
+      forceRefresh: forceRefresh ? Date.now() : undefined,
     },
     {skipNulls: true},
   )}`;
@@ -126,12 +167,28 @@ export const getProfileData = async (
   return await fetchApi(domainProfileUrl, {host: config.PROFILE.HOST_URL});
 };
 
-export const getProfileResolution = async (
+export const getProfileReverseResolution = async (
   address: string,
 ): Promise<AddressResolution | undefined> => {
-  return await fetchApi(`/resolve/${address}`, {
+  // return defined reverse resolution name if available
+  const reverseResolution = await fetchApi(`/resolve/${address}`, {
     host: config.PROFILE.HOST_URL,
   });
+  if (reverseResolution?.name) {
+    return reverseResolution;
+  }
+
+  // return first owner domain as a fallback
+  const ownerDomains = await getOwnerDomains(address, undefined, true);
+  if (ownerDomains?.data && ownerDomains.data.length > 0) {
+    return {
+      address,
+      name: ownerDomains.data[0].domain,
+    };
+  }
+
+  // return undefined if no domains available
+  return undefined;
 };
 
 export const getProfileUserData = async (
@@ -175,7 +232,7 @@ export const setProfileUserData = async (
   bulkUpdate?: boolean,
 ): Promise<SerializedBulkDomainResponse> => {
   const compareField = <T>(original?: T, updated?: T): T | undefined => {
-    if (original !== updated) {
+    if (bulkUpdate || original !== updated) {
       return updated;
     }
     return undefined;
@@ -224,7 +281,7 @@ export const setProfileUserData = async (
           updatedProfile.profile?.publicDomainSellerEmail,
         ),
 
-        // image fields
+        // image data fields
         data: {
           image: profileImage,
           cover: coverImage,
@@ -383,7 +440,7 @@ export const useDomainProfileFollowStatus = (
   followeeDomain: string,
 ) => {
   return useQuery(
-    queryKey.followStatus(),
+    queryKey.followStatus(followerDomain, followeeDomain),
     async (): Promise<{
       isFollowing: boolean;
       followerDomain: string;

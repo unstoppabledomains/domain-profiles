@@ -98,13 +98,17 @@ const useStyles = makeStyles()((theme: Theme) => ({
     ...theme.containers.modalContent,
     display: 'flex',
     justifyContent: 'center',
+    height: '100%',
+    width: '100%',
   },
   column: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'column',
+    maxWidth: '500px',
     width: '100%',
+    height: '100%',
   },
   prompt: {
     overflowWrap: 'break-word',
@@ -124,11 +128,18 @@ const useStyles = makeStyles()((theme: Theme) => ({
   modalRoot: {
     left: '0 !important',
     bottom: '0 !important',
-    [theme.breakpoints.down('md')]: {
-      maxWidth: 432,
+    [theme.breakpoints.down('sm')]: {
+      maxWidth: 'calc(100vw)',
+    },
+  },
+  modalFullScreen: {
+    '& .MuiDialog-container .MuiDialog-paper': {
+      margin: 0,
+      width: '100%',
     },
   },
   modalHeader: {
+    backgroundColor: theme.palette.background.paper,
     width: '100%',
     display: 'flex',
     alignItems: 'center',
@@ -141,8 +152,22 @@ const useStyles = makeStyles()((theme: Theme) => ({
     fontWeight: theme.typography.fontWeightBold,
   },
   modalContent: {
+    backgroundColor: theme.palette.background.paper,
     padding: theme.spacing(3),
     paddingTop: 0,
+    height: '100%',
+  },
+  udConfigContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: '505px',
+    minHeight: '485px',
+    height: '100%',
+    [theme.breakpoints.down('sm')]: {
+      maxWidth: 'calc(100vw)',
+    },
   },
 }));
 

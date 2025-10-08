@@ -13,12 +13,14 @@ export const useConversationBubbleStyles = makeStyles<{
     marginRight: theme.spacing(1),
     marginBottom: theme.spacing(3.5),
     backgroundColor: theme.palette.primary.main,
-    color: 'white',
+    color: theme.palette.getContrastText(theme.palette.primary.main),
+    cursor: 'pointer',
   },
   msgContainer: {
     display: 'flex',
     flexDirection: 'column',
     marginBottom: theme.spacing(1),
+    position: 'relative',
   },
   msg: {
     overflow: 'hidden',
@@ -28,34 +30,95 @@ export const useConversationBubbleStyles = makeStyles<{
     display: 'inline-block',
     wordBreak: 'break-word',
   },
+  optionsContainer: {
+    marginTop: theme.spacing(2),
+    marginRight: theme.spacing(-10),
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    display: 'flex',
+  },
+  emojiContainer: {
+    alignItems: 'center',
+    backgroundColor: theme.palette.background.default,
+    boxShadow: theme.shadows[1],
+    marginTop: theme.spacing(4),
+    marginRight: theme.spacing(1),
+    borderRadius: theme.shape.borderRadius,
+    position: 'absolute',
+    display: 'flex',
+    zIndex: 1001,
+    right: 0,
+    top: 0,
+  },
+  emoji: {
+    margin: theme.spacing(1),
+    cursor: 'pointer',
+  },
+  reactionContainer: {
+    display: 'flex',
+    marginTop: theme.spacing(-1),
+    marginBottom: theme.spacing(0.5),
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    zIndex: 1000,
+  },
+  reaction: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: theme.shadows[1],
+    backgroundColor: theme.palette.background.default,
+    borderRadius: '50%',
+    marginRight: theme.spacing(-0.5),
+    width: '22px',
+    height: '22px',
+  },
+  blockColor: {
+    color: theme.palette.error.main,
+  },
+  optionsIconOn: {
+    color: theme.palette.neutralShades[400],
+  },
+  optionsIconOff: {
+    color: theme.palette.background.paper,
+  },
   leftRow: {
+    position: 'relative',
     display: 'inline-block',
     textAlign: 'left',
   },
   leftMargin: {
-    marginRight: theme.spacing(5),
+    marginRight: theme.spacing(10),
   },
   rightRow: {
     display: 'inline-block',
     textAlign: 'right',
   },
   rightMargin: {
-    marginLeft: theme.spacing(5),
+    marginLeft: theme.spacing(10),
   },
   left: {
     borderTopRightRadius: theme.spacing(2.5),
     borderBottomRightRadius: theme.spacing(2.5),
     backgroundColor: isAttachment
-      ? theme.palette.common.white
+      ? theme.palette.background.default
       : theme.palette.grey[100],
+    color: theme.palette.getContrastText(
+      isAttachment ? theme.palette.background.default : theme.palette.grey[100],
+    ),
   },
   right: {
     borderTopLeftRadius: theme.spacing(2.5),
     borderBottomLeftRadius: theme.spacing(2.5),
     backgroundColor: isAttachment
-      ? theme.palette.common.white
+      ? theme.palette.background.default
       : theme.palette.primary.main,
-    color: theme.palette.common.white,
+    color: theme.palette.getContrastText(
+      isAttachment
+        ? theme.palette.background.default
+        : theme.palette.primary.main,
+    ),
   },
   leftFirst: {
     borderTopLeftRadius: theme.spacing(2.5),
@@ -70,8 +133,9 @@ export const useConversationBubbleStyles = makeStyles<{
     borderBottomRightRadius: theme.spacing(2.5),
   },
   chatDisplayName: {
-    color: theme.palette.neutralShades[800],
-    fontSize: 10,
+    color: theme.palette.neutralShades[700],
+    fontSize: 11,
+    fontWeight: 'bold',
   },
   chatTimestamp: {
     color: theme.palette.neutralShades[400],
@@ -83,15 +147,25 @@ export const useConversationBubbleStyles = makeStyles<{
     cursor: 'pointer',
     textDecoration: 'underline',
   },
+  encryptedStateWarning: {
+    color: theme.palette.warning.main,
+  },
+  encryptStateIcon: {
+    color: theme.palette.neutralShades[500],
+    marginLeft: theme.spacing(0.5),
+    marginRight: theme.spacing(0.5),
+    width: '10px',
+    height: '10px',
+  },
   imageAttachmentRight: {
     borderRadius: theme.spacing(2.5, 2.5, 0, 2.5),
-    margin: theme.spacing(-1, -2, 0, -2),
+    margin: theme.spacing(-1, -2, -2, -2),
     cursor: 'pointer',
     maxWidth: '250px',
   },
   imageAttachmentLeft: {
     borderRadius: theme.spacing(2.5, 2.5, 2.5, 0),
-    margin: theme.spacing(-1, -2, 0, -2),
+    margin: theme.spacing(-1, -2, -2, -2),
     cursor: 'pointer',
     maxWidth: '250px',
   },
@@ -125,6 +199,15 @@ export const useConversationBubbleStyles = makeStyles<{
   loadingIcon: {
     color: 'inherit',
   },
+  metadata: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    color: theme.palette.neutralShades[500],
+    marginBottom: theme.spacing(1),
+  },
   unsupportedMediaText: {
     fontStyle: 'italic',
   },
@@ -152,7 +235,7 @@ export const useConversationComposeStyles = makeStyles<{
     }`,
     borderRadius: theme.shape.borderRadius,
     paddingLeft: 12,
-    backgroundColor: theme.palette.white,
+    backgroundColor: theme.palette.background.default,
   },
   textboxInput: {
     fontSize: 16,
@@ -176,7 +259,7 @@ export const useConversationComposeStyles = makeStyles<{
     color: theme.palette.primary.main,
   },
   sendIconError: {
-    color: 'red',
+    color: theme.palette.error.main,
   },
   attachIcon: {
     color: theme.palette.neutralShades[500],
@@ -189,8 +272,10 @@ export const useConversationComposeStyles = makeStyles<{
 
 export const useConversationStyles = makeStyles<{
   isChatRequest?: boolean;
-}>()((theme: Theme, {isChatRequest}) => ({
+  fullScreen?: boolean;
+}>()((theme: Theme, {isChatRequest, fullScreen}) => ({
   cardContainer: {
+    backgroundColor: 'transparent',
     padding: theme.spacing(1),
     border: 'none',
     height: '100%',
@@ -215,13 +300,15 @@ export const useConversationStyles = makeStyles<{
   conversationContainer: {
     display: 'flex',
     flexDirection: 'column-reverse',
-    borderBottom: isChatRequest ? undefined : '1px dashed #eeeeee',
+    borderBottom: isChatRequest
+      ? undefined
+      : `1px dashed ${theme.palette.neutralShades[200]}`,
     overflowY: 'auto',
     overflowX: 'hidden',
     overscrollBehavior: 'contain',
-    height: '430px',
+    height: fullScreen ? 'calc(100vh - 170px)' : '430px',
     [theme.breakpoints.down('sm')]: {
-      height: 'calc(100vh - 200px)',
+      height: 'calc(100vh - 170px)',
     },
   },
   composeContainer: {
@@ -229,8 +316,8 @@ export const useConversationStyles = makeStyles<{
     marginRight: theme.spacing(1),
   },
   avatar: {
-    backgroundColor: 'white',
-    color: 'white',
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.getContrastText(theme.palette.primary.main),
     height: 35,
     width: 35,
   },
@@ -270,7 +357,7 @@ export const useConversationStyles = makeStyles<{
     marginBottom: theme.spacing(1),
   },
   acceptContainer: {
-    borderTop: '1px dashed #eeeeee',
+    borderTop: `1px dashed ${theme.palette.neutralShades[200]}`,
     color: theme.palette.neutralShades[600],
     marginTop: theme.spacing(1.5),
     paddingTop: theme.spacing(1.5),

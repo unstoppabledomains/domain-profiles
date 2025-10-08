@@ -34,6 +34,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 interface Props {
   domain: string;
+  address: string;
   nfts: Nft[];
   nftSymbolVisible: Record<string, boolean | undefined>;
   autoPlay?: boolean;
@@ -45,6 +46,7 @@ interface Props {
 
 const NFTGalleryCarousel = ({
   domain,
+  address,
   nfts,
   nftSymbolVisible,
   showPlaceholder,
@@ -147,13 +149,14 @@ const NFTGalleryCarousel = ({
             <>
               {visibleNfts.map((nft, index) => (
                 <SwiperSlide
-                  key={index}
+                  key={`${index}-slide`}
                   data-testid={`nft-carousel-item-${index}`}
                 >
                   <NftCard
                     nft={nft}
-                    key={index}
+                    key={`${index}-card`}
                     domain={domain}
+                    address={address}
                     compact={true}
                   />
                 </SwiperSlide>
@@ -166,15 +169,18 @@ const NFTGalleryCarousel = ({
                         compact={true}
                         nft={{
                           link: placeholder.link || badgeData.linkUrl || '',
-                          collection: placeholder.price
+                          collection: placeholder.floorPrice
                             ? t('nftCollection.addToCollection', {
                                 value: parseFloat(
-                                  placeholders[index].price!.value.toFixed(4),
+                                  placeholders[index].floorPrice!.value.toFixed(
+                                    4,
+                                  ),
                                 ),
-                                currency: placeholders[index].price!.currency,
+                                currency:
+                                  placeholders[index].floorPrice!.currency,
                               })
                             : placeholder.name || badgeData.name,
-                          name: placeholder.price
+                          name: placeholder.floorPrice
                             ? t('cards.available')
                             : t('apps.featured'),
                           description: badgeData.description,
@@ -184,6 +190,7 @@ const NFTGalleryCarousel = ({
                           video_url: '',
                         }}
                         domain={domain}
+                        address={address}
                         placeholder={true}
                       />
                     </SwiperSlide>
@@ -214,6 +221,7 @@ const NFTGalleryCarousel = ({
                   symbol: '',
                 }}
                 domain={domain}
+                address={address}
                 placeholder={true}
               />
             </Grid>

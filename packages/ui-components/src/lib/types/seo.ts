@@ -4,13 +4,15 @@ import type {
 } from './domain';
 
 export const DEFAULT_SEO_DESCRIPTION =
-  'Domain profiles give holders a way to associate extra pieces of metadata with their domains.';
-export type GetSeoTagsProps = {
+  'Domain profiles give users a way to build a portable Web3 identity for their Unstoppable Domains.';
+export type GetDomainSeoTagsProps = {
   domain?: string;
   title: string;
+  description?: string;
   profileData?: SerializedPublicDomainProfileData | null | undefined;
   socialsInfo?: SerializedDomainProfileSocialAccountsUserInfo;
   domainAvatar?: string | null;
 };
 
 export const UD_TWITTER_HANDLE = 'unstoppableweb';
+export const UP_IO_TWITTER_HANDLE = 'upiowallet';

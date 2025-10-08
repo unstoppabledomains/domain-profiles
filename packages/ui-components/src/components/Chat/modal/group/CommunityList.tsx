@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import type {GroupDTO, IMessageIPFS} from '@pushprotocol/restapi';
 import Bluebird from 'bluebird';
 import React, {useEffect, useState} from 'react';
 
@@ -11,6 +12,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {useFeatureFlags} from '../../../../actions';
 import {getDomainBadges} from '../../../../actions/domainActions';
 import {getProfileData} from '../../../../actions/domainProfileActions';
+import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../../lib/types/badge';
 import {
@@ -55,15 +57,21 @@ export const CommunityList: React.FC<CommunityListProps> = ({
   domain,
   pushKey,
   searchTerm,
+  incomingMessage,
   setActiveCommunity,
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
   const {data: featureFlags} = useFeatureFlags(false, domain);
   const [badges, setBadges] = useState<SerializedCryptoWalletBadge[]>();
-  const [inGroupMap, setInGroupMap] = useState<Record<string, boolean>>({});
-  const [isUdBlue, setIsUdBlue] = useState<boolean>(false);
+  const [inGroupMap, setInGroupMap] = useState<
+    Record<string, GroupDTO | undefined>
+  >({});
+  const [allGroupMap, setAllGroupMap] = useState<
+    Record<string, GroupDTO | undefined>
+  >({});
   const [loadingText, setLoadingText] = useState<string>();
+  const [isSorted, setIsSorted] = useState(false);
 
   useEffect(() => {
     // only load once when domain is first defined
@@ -73,48 +81,67 @@ export const CommunityList: React.FC<CommunityListProps> = ({
     void loadBadges();
   }, [domain]);
 
-  const loadBadges = async () => {
-    // query user badges
-    setLoadingText(t('push.loadingCommunities'));
-    const [badgeData, domainProfile] = await Promise.all([
-      getDomainBadges(domain, {withoutPartners: true}),
-      getProfileData(domain, [DomainFieldTypes.Profile], Date.now()),
-    ]);
-
-    // determine group membership
-    const groups: Record<string, boolean> = {};
-    await Bluebird.map(
-      badgeData.list,
-      async b => {
-        if (!b.groupChatId) {
-          return;
-        }
-        const groupData = await getGroupInfo(b.groupChatId);
-        if (groupData) {
-          const groupWallets = groupData.members.map(m =>
-            m.wallet.replace('eip155:', '').toLowerCase(),
-          );
-          groups[b.groupChatId] = groupWallets.includes(address.toLowerCase());
-        }
-        return;
-      },
-      {concurrency: 3},
+  useEffect(() => {
+    if (!badges) {
+      return;
+    }
+    const activeGroupCount = badges.filter(b => inGroup(b.groupChatId)).length;
+    const renderedGroupCount = badges.filter(
+      b => b.groupChatLatestMessage,
+    ).length;
+    setIsSorted(
+      activeGroupCount === 0 || activeGroupCount === renderedGroupCount,
     );
+  }, [badges]);
 
-    // save user state
-    setInGroupMap(groups);
-    setBadges(badgeData.list.filter(b => !filteredBadgeCodes.includes(b.code)));
-    if (domainProfile?.profile?.udBlue) {
-      setIsUdBlue(
-        domainProfile.profile.udBlue ||
-          !featureFlags.variations
-            ?.ecommerceServiceUsersEnableChatCommunityUdBlue,
+  const loadBadges = async () => {
+    try {
+      // query user badges
+      setLoadingText(t('push.loadingCommunities'));
+      const [badgeData, domainProfile] = await Promise.all([
+        getDomainBadges(domain, {withoutPartners: true}),
+        getProfileData(domain, [DomainFieldTypes.Profile], Date.now()),
+      ]);
+
+      // determine group membership
+      const allGroups: Record<string, GroupDTO | undefined> = {};
+      const inGroups: Record<string, GroupDTO | undefined> = {};
+      await Bluebird.map(
+        badgeData.list,
+        async b => {
+          if (!b.groupChatId) {
+            return;
+          }
+          const groupData = await getGroupInfo(b.groupChatId);
+          if (groupData) {
+            const groupWallets = groupData.members.map(m =>
+              m.wallet.replace('eip155:', '').toLowerCase(),
+            );
+            if (groupWallets.includes(address.toLowerCase())) {
+              inGroups[b.groupChatId] = groupData;
+            }
+            allGroups[b.groupChatId] = groupData;
+          }
+          return;
+        },
+        {concurrency: 3},
       );
+
+      // save user state
+      setInGroupMap(inGroups);
+      setAllGroupMap(allGroups);
+      setBadges(
+        badgeData.list.filter(b => !filteredBadgeCodes.includes(b.code)),
+      );
+    } catch (e) {
+      notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
+        msg: 'error loading badges',
+      });
     }
     setLoadingText(undefined);
   };
 
-  const reloadBadges = async () => {
+  const refreshBadges = async () => {
     if (!badges) {
       return;
     }
@@ -125,7 +152,7 @@ export const CommunityList: React.FC<CommunityListProps> = ({
     if (!chatId) {
       return false;
     }
-    return inGroupMap[chatId];
+    return inGroupMap[chatId] !== undefined;
   };
 
   const handleGetBadge = () => {
@@ -161,12 +188,14 @@ export const CommunityList: React.FC<CommunityListProps> = ({
               address={address}
               badge={badge}
               inGroup={inGroup(badge.groupChatId)}
-              isUdBlue={isUdBlue}
+              groupInfo={allGroupMap[badge.code]}
               pushKey={pushKey}
               onReload={loadBadges}
-              onRefresh={reloadBadges}
+              onRefresh={refreshBadges}
               searchTerm={searchTerm}
+              incomingMessage={incomingMessage}
               setActiveCommunity={setActiveCommunity}
+              visible={!inGroup(badge.groupChatId) || isSorted}
             />
           </Box>
         ))}
@@ -186,6 +215,7 @@ export type CommunityListProps = {
   domain: string;
   pushKey: string;
   searchTerm?: string;
+  incomingMessage?: IMessageIPFS;
   setActiveCommunity: (v: SerializedCryptoWalletBadge) => void;
 };
 

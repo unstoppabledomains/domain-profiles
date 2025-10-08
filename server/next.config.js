@@ -3,6 +3,7 @@ const assert = require('assert');
 const path = require('path');
 const {createSecureHeaders} = require('next-secure-headers');
 const contentSecurityPolicy = require('./contentSecurityPolicy');
+const TerserPlugin = require('terser-webpack-plugin');
 const locales = require('./locales.json');
 
 // transpile any required modules
@@ -68,6 +69,8 @@ const nextConfig = {
   compress: false,
   reactStrictMode: true,
   pageExtensions: ['page.tsx', 'api.ts'],
+  // source maps are used in bugsnag to make it easier to map production errors to a line of code
+  productionBrowserSourceMaps: true,
   experimental: {
     externalDir: true,
     forceSwcTransforms: true,
@@ -90,7 +93,12 @@ const nextConfig = {
       ...config.resolve.fallback,
       fs: false,
     };
-    return config;
+    return {
+      ...config,
+      optimization: {
+        minimizer: [new TerserPlugin()]
+      }
+    }
   },
   i18n: {
     locales: locales.locales.map(({code}) => code),
@@ -102,11 +110,7 @@ const nextConfig = {
         source: '/favicon.ico',
         destination:
           'https://storage.googleapis.com/unstoppable-client-assets/images/favicon/favicon.ico',
-      },
-      {
-        source: '/robots.txt',
-        destination: '/api/robots',
-      },
+      }
     ];
   },
   async headers() {
@@ -131,19 +135,24 @@ const nextConfig = {
       // Default headers for any path
       {
         source: '/:path*',
-        headers,
+        headers: [
+          ...headers,
+          {key: 'X-Frame-Options', value: 'DENY'},
+          {key: 'Content-Security-Policy', value: "frame-ancestors 'none'"},
+        ],
       },
-      // Headers for homepage
-      ...['/'].map(source => ({
+      // Headers for common landing pages
+      ...['/', "/wallet"].map(source => ({
         source,
         headers: [
           ...fastlyCacheHeaders({
-            ttl: 86400, // 1 day
+            ttl: 3600, // 1 hour
           }),
+          {key: 'X-Frame-Options', value: 'DENY'},
           {
             key: 'Content-Security-Policy',
             value:
-              'connect-src * data: blob:; img-src * data: blob:; object-src *',
+              "connect-src * data: blob:; img-src * data: blob:; object-src *; frame-ancestors 'none'",
           },
         ],
       })),
@@ -152,13 +161,14 @@ const nextConfig = {
         source: '/:domain',
         headers: [
           ...fastlyCacheHeaders({
-            ttl: 86400, // 1 day
+            ttl: 3600, // 1 hour
             purgableBy: ['Domain/:domain', 'CryptoWallet/update'],
           }),
+          {key: 'X-Frame-Options', value: 'DENY'},
           {
             key: 'Content-Security-Policy',
             value:
-              'connect-src * data: blob:; img-src * data: blob:; object-src *',
+              "connect-src * data: blob:; img-src * data: blob:; object-src *; frame-ancestors 'none'",
           },
         ],
       },
@@ -167,12 +177,13 @@ const nextConfig = {
         source: '/badge/:badgeCode',
         headers: [
           ...fastlyCacheHeaders({
-            ttl: 86400,
+            ttl: 86400, // 1 day 
           }),
+          {key: 'X-Frame-Options', value: 'DENY'},
           {
             key: 'Content-Security-Policy',
             value:
-              'connect-src * data: blob:; img-src * data: blob:; object-src *',
+              "connect-src * data: blob:; img-src * data: blob:; object-src *; frame-ancestors 'none'",
           },
         ],
       },
@@ -183,10 +194,11 @@ const nextConfig = {
           ...fastlyCacheHeaders({
             ttl: 3600, // 1 hour
           }),
+          {key: 'X-Frame-Options', value: 'DENY'},
           {
             key: 'Content-Security-Policy',
             value:
-              'connect-src * data: blob:; img-src * data: blob:; object-src *',
+              "connect-src * data: blob:; img-src * data: blob:; object-src *; frame-ancestors 'none'",
           },
         ],
       },

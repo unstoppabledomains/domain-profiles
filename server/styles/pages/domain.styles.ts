@@ -8,11 +8,10 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 export const useStyles = makeStyles()((theme: Theme) => ({
   container: {
-    background: theme.palette.common.white,
+    background: theme.palette.background.default,
     display: 'flex',
     flexDirection: 'column',
     flex: '1 1 auto',
-    paddingBottom: theme.spacing(16),
   },
   content: {
     ...theme.containers.main,
@@ -35,7 +34,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   },
   headWrapper: {
     position: 'relative',
-    backgroundColor: '#192B55',
+    backgroundColor: theme.palette.primaryShades[900],
     height: 148,
     [theme.breakpoints.up('md')]: {
       height: 200,
@@ -72,6 +71,18 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     zIndex: 102,
     [theme.breakpoints.down('sm')]: {
       left: theme.spacing(2),
+    },
+  },
+  emptyProfilePicture: {
+    display: 'flex',
+    justifyContent: 'center',
+    zIndex: 100,
+    height: PROFILE_PICTURE_SIZE_MOBILE / 2,
+    [theme.breakpoints.up('sm')]: {
+      height: PROFILE_PICTURE_SIZE_DESKTOP / 2 + 11,
+    },
+    [theme.breakpoints.up('md')]: {
+      justifyContent: 'flex-start',
     },
   },
   profilePicture: {
@@ -111,7 +122,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     color: theme.palette.secondary.main,
   },
   headerIcon: {
-    color: theme.palette.neutralShades[600],
+    color: theme.palette.getContrastText(theme.palette.background.default),
     marginRight: theme.spacing(1),
   },
   sectionHeaderContainer: {
@@ -156,8 +167,28 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     borderRadius: theme.shape.borderRadius,
     marginLeft: theme.spacing(1.5),
   },
+  tokenizeInfoContainer: {
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: theme.palette.primaryShades[100],
+    color: theme.palette.neutralShades[800],
+    padding: theme.spacing(2),
+    marginTop: theme.spacing(4),
+    marginBottom: theme.spacing(-4),
+    textAlign: 'center',
+  },
+  tokenizeImage: {
+    height: '225px',
+    margin: theme.spacing(-5),
+  },
+  tokenizeWarningContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: theme.palette.warningShades[100],
+    padding: theme.spacing(0.5),
+  },
   badgeCount: {
-    color: theme.palette.neutralShades[600],
+    color: theme.palette.wallet.text.primary,
     marginLeft: theme.spacing(1),
   },
   badgeHeader: {
@@ -165,7 +196,13 @@ export const useStyles = makeStyles()((theme: Theme) => ({
   },
   infoIcon: {
     marginLeft: theme.spacing(1),
-    color: theme.palette.neutralShades[200],
+    color: theme.palette.neutralShades[400],
+    width: '20px',
+    height: '20px',
+  },
+  infoIconDark: {
+    marginLeft: theme.spacing(1),
+    color: theme.palette.wallet.text.primary,
     width: '20px',
     height: '20px',
   },
@@ -221,7 +258,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     marginRight: theme.spacing(1),
   },
   reverseResolutionProfileLink: {
-    color: theme.palette.white,
+    color: theme.palette.getContrastText(theme.palette.neutralShades[600]),
     transition: theme.transitions.create('color'),
     fontWeight: 'bold',
     fontSize: theme.typography.body2.fontSize,
@@ -331,16 +368,6 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     fontSize: theme.typography.caption.fontSize,
     maxWidth: 220,
   },
-  humanityVerifiedTooltipLink: {
-    display: 'block',
-    fontSize: 'inherit',
-    color: theme.palette.greyShades[200],
-    transition: theme.transitions.create('color'),
-    '&:hover': {
-      textDecoration: 'none',
-      color: theme.palette.white,
-    },
-  },
   featuredTooltipLink: {
     fontSize: 'inherit',
     color: theme.palette.greyShades[200],
@@ -357,6 +384,9 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     },
   },
   otherDomainsLabel: {
+    cursor: 'pointer',
+  },
+  ownerAddressLabel: {
     cursor: 'pointer',
   },
   footer: {

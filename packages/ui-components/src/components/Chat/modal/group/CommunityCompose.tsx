@@ -15,13 +15,14 @@ import config from '@unstoppabledomains/config';
 import {useFeatureFlags} from '../../../../actions/featureFlagActions';
 import {ProfileManager} from '../../../../components/Wallet/ProfileManager';
 import {fetchApi} from '../../../../lib';
-import {notifyError} from '../../../../lib/error';
+import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedUserDomainProfileData} from '../../../../lib/types/domain';
 import {DomainProfileKeys} from '../../../../lib/types/domain';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
 import {sendMessage, sendRemoteAttachment} from '../../protocol/push';
 import {formatFileSize} from '../../protocol/xmtp';
+import {localStorageWrapper} from '../../storage';
 import {useConversationComposeStyles} from '../styles';
 
 export const CommunityCompose: React.FC<CommunityComposeProps> = ({
@@ -51,7 +52,12 @@ export const CommunityCompose: React.FC<CommunityComposeProps> = ({
 
   // set the primary domain and wallet address at page load time
   useEffect(() => {
-    setAuthDomain(localStorage.getItem(DomainProfileKeys.AuthDomain));
+    const loadAuth = async () => {
+      setAuthDomain(
+        await localStorageWrapper.getItem(DomainProfileKeys.AuthDomain),
+      );
+    };
+    void loadAuth();
   }, [address]);
 
   // detect if user clicks outside the compose textbox
@@ -130,7 +136,9 @@ export const CommunityCompose: React.FC<CommunityComposeProps> = ({
       setTextboxTerm('');
       setErrorMessage('');
     } catch (e) {
-      notifyError(e, {msg: 'error sending message'});
+      notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
+        msg: 'error sending message',
+      });
       setErrorMessage(t('push.errorSendingMessage'));
     } finally {
       setIsSending(false);
@@ -187,7 +195,9 @@ export const CommunityCompose: React.FC<CommunityComposeProps> = ({
         }
       }
     } catch (e) {
-      notifyError(e, {msg: 'unable to load user profile'});
+      notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
+        msg: 'unable to load user profile',
+      });
     }
   };
 
@@ -201,7 +211,7 @@ export const CommunityCompose: React.FC<CommunityComposeProps> = ({
       return;
     }
 
-    if (uploadFile && storageApiKey) {
+    if (uploadFile && storageApiKey && authDomain) {
       try {
         // retrieve the attachment from device
         setIsSending(true);
@@ -211,13 +221,15 @@ export const CommunityCompose: React.FC<CommunityComposeProps> = ({
           chatId,
           address,
           pushKey,
-          storageApiKey,
+          authDomain,
           uploadFile,
         );
         sendCallback(sentMessage);
         setErrorMessage('');
       } catch (e) {
-        notifyError(e, {msg: 'error uploading file'});
+        notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
+          msg: 'error uploading file',
+        });
         setErrorMessage(t('push.errorSendingAttachment'));
       } finally {
         setUploadFile(undefined);

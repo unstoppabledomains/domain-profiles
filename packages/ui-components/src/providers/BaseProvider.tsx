@@ -6,9 +6,9 @@ import React from 'react';
 import {QueryClient, QueryClientProvider} from 'react-query';
 import {createEmotionSsrAdvancedApproach} from 'tss-react/nextJs';
 
-import {lightTheme} from '@unstoppabledomains/ui-kit/styles';
-
 import {TranslationProvider} from '../lib';
+import type {ThemeMode} from '../styles/theme';
+import {lightTheme} from '../styles/theme/udme';
 import Web3ContextProvider from './Web3ContextProvider';
 
 // setup query client
@@ -31,25 +31,43 @@ export const {EmotionCacheProvider, withEmotionCache} =
 type Props = {
   children: React.ReactNode;
   theme?: Theme;
+  mode?: ThemeMode;
+  setMode?: (v?: ThemeMode) => void;
 };
 
-const BaseProvider: React.FC<Props> = ({children, theme = lightTheme}) => {
+export const ThemeSwitcherContext = React.createContext<{
+  mode?: ThemeMode;
+  setMode?: (v?: ThemeMode) => void;
+}>({});
+
+const BaseProvider: React.FC<Props> = ({
+  children,
+  theme = lightTheme,
+  mode,
+  setMode,
+}) => {
+  const value = {
+    mode,
+    setMode,
+  };
   return (
     <TranslationProvider>
       <EmotionCacheProvider>
         <QueryClientProvider client={queryClient}>
-          <ThemeProvider theme={theme}>
-            {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-            <CssBaseline enableColorScheme />
-            <SnackbarProvider
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-            >
-              <Web3ContextProvider>{children}</Web3ContextProvider>
-            </SnackbarProvider>
-          </ThemeProvider>
+          <ThemeSwitcherContext.Provider value={value}>
+            <ThemeProvider theme={theme}>
+              {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+              <CssBaseline enableColorScheme />
+              <SnackbarProvider
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'left',
+                }}
+              >
+                <Web3ContextProvider>{children}</Web3ContextProvider>
+              </SnackbarProvider>
+            </ThemeProvider>
+          </ThemeSwitcherContext.Provider>
         </QueryClientProvider>
       </EmotionCacheProvider>
     </TranslationProvider>

@@ -2,23 +2,29 @@
 import DownloadIcon from '@mui/icons-material/Download';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import type {DecodedMessage} from '@xmtp/browser-sdk';
+import type {RemoteAttachment} from '@xmtp/content-type-remote-attachment';
 import {ContentTypeRemoteAttachment} from '@xmtp/content-type-remote-attachment';
-import type {DecodedMessage} from '@xmtp/xmtp-js';
-import {ContentTypeText} from '@xmtp/xmtp-js';
-import React, {useEffect, useRef, useState} from 'react';
+import {ContentTypeText} from '@xmtp/content-type-text';
+import React, {useRef, useState} from 'react';
 import Emoji from 'react-emoji-render';
 import Linkify from 'react-linkify';
 import Zoom from 'react-medium-image-zoom';
+import useAsyncEffect from 'use-async-effect';
 
-import {notifyError} from '../../../../lib/error';
+import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
-import {formatFileSize, getRemoteAttachment} from '../../protocol/xmtp';
+import {
+  formatFileSize,
+  getRemoteAttachment,
+  getXmtpInboxId,
+} from '../../protocol/xmtp';
 import LinkWarningModal from '../LinkWarningModal';
 import {useConversationBubbleStyles} from '../styles';
 
 export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
-  address,
   message,
   onBlockTopic,
   renderCallback,
@@ -30,15 +36,19 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
   const [renderedContent, setRenderedContent] = useState<React.ReactElement>();
   const [clickedUrl, setClickedUrl] = useState<string>();
   const {cx, classes} = useConversationBubbleStyles({isAttachment});
+  const [clientInboxId, setClientInboxId] = useState<string>();
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     if (renderCallback) {
       renderCallback(messageRef);
     }
     try {
-      void renderContent();
+      setClientInboxId(await getXmtpInboxId());
+      await renderContent();
     } catch (e) {
-      notifyError(e, {msg: 'error loading message'});
+      notifyEvent(e, 'error', 'Messaging', 'XMTP', {
+        msg: 'error loading message',
+      });
       setRenderedContent(<Box>{t('push.errorLoadingMessage')}</Box>);
     }
   }, []);
@@ -60,7 +70,7 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
       setRenderedContent(
         <Box>
           <Linkify componentDecorator={componentDecorator}>
-            <Emoji>{message.content}</Emoji>
+            <Emoji>{message.content as string}</Emoji>
           </Linkify>
         </Box>,
       );
@@ -68,7 +78,9 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
     } else if (message.contentType.sameAs(ContentTypeRemoteAttachment)) {
       // decrypt the attachment data
       setIsLoading(true);
-      const attachment = await getRemoteAttachment(message);
+      const attachment = await getRemoteAttachment(
+        message as DecodedMessage<RemoteAttachment>,
+      );
       if (attachment) {
         // create a file reference for download
         const objectURL = URL.createObjectURL(
@@ -85,8 +97,7 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
               <Zoom>
                 <img
                   className={
-                    message.senderAddress.toLowerCase() ===
-                    address.toLowerCase()
+                    message.senderInboxId === clientInboxId
                       ? classes.imageAttachmentRight
                       : classes.imageAttachmentLeft
                   }
@@ -121,7 +132,7 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
       } else {
         // show the fallback message if there was a problem getting attachment
         setRenderedContent(
-          <Box>{message.contentFallback || t('push.attachment')}</Box>,
+          <Box>{message.fallback || t('push.attachment')}</Box>,
         );
       }
       setIsLoading(false);
@@ -132,17 +143,17 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
     <Box
       ref={messageRef}
       className={cx(
-        message.senderAddress.toLowerCase() === address.toLowerCase()
+        message.senderInboxId === clientInboxId
           ? classes.rightRow
           : classes.leftRow,
-        message.senderAddress.toLowerCase() === address.toLowerCase()
+        message.senderInboxId === clientInboxId
           ? classes.rightMargin
           : classes.leftMargin,
       )}
     >
       <Box
         className={cx(
-          message.senderAddress.toLowerCase() === address.toLowerCase()
+          message.senderInboxId === clientInboxId
             ? classes.rightRow
             : classes.leftRow,
         )}
@@ -152,10 +163,10 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
             variant="body2"
             className={cx(
               classes.msg,
-              message.senderAddress.toLowerCase() === address.toLowerCase()
+              message.senderInboxId === clientInboxId
                 ? classes.right
                 : classes.left,
-              message.senderAddress.toLowerCase() === address.toLowerCase()
+              message.senderInboxId === clientInboxId
                 ? classes.rightFirst
                 : classes.leftFirst,
             )}
@@ -163,7 +174,7 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
             {isLoading ? (
               <Box
                 className={
-                  message.senderAddress.toLowerCase() === address.toLowerCase()
+                  message.senderInboxId === clientInboxId
                     ? classes.loadingContainerRight
                     : classes.loadingContainerLeft
                 }
@@ -177,9 +188,17 @@ export const ConversationBubble: React.FC<ConversationBubbleProps> = ({
               renderedContent
             )}
           </Typography>
-          <Typography variant="caption" className={classes.chatTimestamp}>
-            {message.sent.toLocaleTimeString()}
-          </Typography>
+          <Tooltip
+            title={new Date(
+              Number(message.sentAtNs / 1000000n),
+            ).toLocaleTimeString()}
+          >
+            <Typography variant="caption" className={classes.chatTimestamp}>
+              {new Date(
+                Number(message.sentAtNs / 1000000n),
+              ).toLocaleTimeString()}
+            </Typography>
+          </Tooltip>
         </Box>
       </Box>
       {clickedUrl && (

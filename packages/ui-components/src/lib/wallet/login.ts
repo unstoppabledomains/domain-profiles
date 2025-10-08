@@ -1,10 +1,13 @@
+import truncateEthAddress from 'truncate-eth-address';
+
 import config from '@unstoppabledomains/config';
 
-import {getReverseResolution} from '../../actions/domainActions';
+import {getProfileReverseResolution} from '../../actions';
+import {localStorageWrapper} from '../../components/Chat/storage';
 import {DomainProfileKeys} from '../../lib/types/domain';
 import type {LoginResult} from '../../lib/types/wallet';
 import {getUAuth} from '../../lib/uauth';
-import {notifyError} from '../error';
+import {notifyEvent} from '../error';
 
 export const loginWithAddress = async (
   address?: string,
@@ -20,7 +23,8 @@ export const loginWithAddress = async (
       // wait for wallet connection
       loginResult.address = address.toLowerCase();
       loginResult.domain =
-        (await getReverseResolution(loginResult.address)) || 'Wallet';
+        (await getProfileReverseResolution(loginResult.address))?.name ||
+        truncateEthAddress(address);
     } else {
       // complete the login with UD flow
       const uauth = await getUAuth({
@@ -35,7 +39,7 @@ export const loginWithAddress = async (
       // determine the user's primary domain (if available)
       loginResult.address = authorization.idToken.wallet_address.toLowerCase();
       loginResult.domain =
-        (await getReverseResolution(loginResult.address)) ||
+        (await getProfileReverseResolution(loginResult.address))?.name ||
         authorization.idToken.sub;
     }
 
@@ -47,11 +51,11 @@ export const loginWithAddress = async (
     // store the domain to be displayed in the UX, defaulting to the
     // user's primary domain if available and falling back to the one
     // provided at login time if not available
-    localStorage.setItem(
+    await localStorageWrapper.setItem(
       DomainProfileKeys.AuthDomain,
       loginResult.domain.toLowerCase(),
     );
-    localStorage.setItem(
+    await localStorageWrapper.setItem(
       DomainProfileKeys.AuthAddress,
       loginResult.address.toLowerCase(),
     );
@@ -59,7 +63,9 @@ export const loginWithAddress = async (
     // return the login result
     return loginResult;
   } catch (loginError) {
-    notifyError(loginError, {msg: 'login error'});
+    notifyEvent(loginError, 'error', 'Profile', 'Authorization', {
+      msg: 'login error',
+    });
     throw loginError;
   }
 };

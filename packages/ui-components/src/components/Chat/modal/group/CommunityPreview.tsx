@@ -9,43 +9,47 @@ import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
+import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Skeleton from '@mui/material/Skeleton';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
-import type {IMessageIPFS} from '@pushprotocol/restapi';
+import type {GroupDTO, IMessageIPFS} from '@pushprotocol/restapi';
 import moment from 'moment';
 import numeral from 'numeral';
 import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
-import {getReverseResolution} from '../../../../actions';
+import {getProfileReverseResolution} from '../../../../actions';
 import {getBadge} from '../../../../actions/badgeActions';
 import {joinBadgeGroupChat} from '../../../../actions/messageActions';
-import LearnMoreUdBlue from '../../../../components/LearnMoreUdBlue';
-import {notifyError} from '../../../../lib/error';
+import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {
   SerializedBadgeInfo,
   SerializedCryptoWalletBadge,
 } from '../../../../lib/types/badge';
 import {
+  MessageType,
   PUSH_DECRYPT_ERROR_MESSAGE,
   acceptGroupInvite,
+  decryptMessage,
   getLatestMessage,
 } from '../../protocol/push';
 import {fromCaip10Address} from '../../types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   communityContainer: {
+    backgroundColor: 'transparent',
     position: 'relative',
     marginBottom: theme.spacing(2),
     marginLeft: theme.spacing(0.25),
     marginRight: theme.spacing(0.25),
   },
   communityGradient: {
-    backgroundImage: `linear-gradient(225deg, ${theme.palette.white} 0%, ${theme.palette.blueGreyShades[100]} 100%)`,
+    backgroundImage: `linear-gradient(225deg, ${theme.palette.background.default} 0%, ${theme.palette.blueGreyShades[100]} 100%)`,
   },
   communityTitle: {
     display: 'flex',
@@ -56,10 +60,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
     cursor: 'pointer',
   },
   actionContainer: {
+    display: 'flex',
     margin: theme.spacing(1),
+    width: '100%',
   },
   actionButton: {
     marginRight: theme.spacing(1),
+    width: '100%',
   },
   contentContainer: {
     display: 'flex',
@@ -78,8 +85,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginBottom: theme.spacing(2),
   },
   joinedBadgeIcon: {
-    backgroundColor: theme.palette.white,
-    color: theme.palette.white,
+    backgroundColor: theme.palette.background.paper,
+    color: theme.palette.getContrastText(theme.palette.background.paper),
     fill: theme.palette.success.main,
     borderRadius: '50%',
   },
@@ -115,6 +122,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     top: 0,
     right: 0,
   },
+  loadingText: {
+    marginLeft: theme.spacing(1),
+    whiteSpace: 'nowrap',
+  },
 }));
 
 const maxDescriptionLength = 125;
@@ -123,22 +134,21 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
   address,
   badge,
   inGroup,
-  isUdBlue,
   pushKey,
-  onReload,
+  groupInfo,
   onRefresh,
+  incomingMessage,
   searchTerm,
   setActiveCommunity,
+  visible,
 }) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
   const [latestMessage, setLatestMessage] = useState<string>();
   const [latestTimestamp, setLatestTimestamp] = useState<string>();
-  const [joining, setJoining] = useState<boolean>();
-  const [leaving, setLeaving] = useState<boolean>();
+  const [joiningState, setJoiningState] = useState<string>();
   const [errorMsg, setErrorMsg] = useState<string>();
   const [badgeInfo, setBadgeInfo] = useState<SerializedBadgeInfo>();
-  const [udBlueModalOpen, setUdBlueModalOpen] = useState(false);
 
   useEffect(() => {
     // only load once when badge is first defined
@@ -148,52 +158,78 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
     void Promise.all([loadBadge(), loadLatest()]);
   }, [badge]);
 
+  useEffect(() => {
+    if (!incomingMessage) {
+      return;
+    }
+    if (badge.groupChatId !== incomingMessage.toDID) {
+      return;
+    }
+    void loadLatest(incomingMessage);
+  }, [incomingMessage]);
+
   const loadBadge = async () => {
     setBadgeInfo(await getBadge(badge.code));
   };
 
-  const loadLatest = async () => {
+  const loadLatest = async (msg?: IMessageIPFS) => {
     if (inGroup && badge.groupChatId) {
       // latest state already retrieved
-      if (badge.groupChatTimestamp) {
+      if (badge.groupChatTimestamp && !msg) {
         setLatestTimestamp(moment(badge.groupChatTimestamp).fromNow());
         setLatestMessage(badge.groupChatLatestMessage);
         return;
       }
 
-      // retrieve latest state since it is missing
-      const msgData = await getLatestMessage(
-        badge.groupChatId,
-        address,
-        pushKey,
-      );
-      if (msgData && msgData.length > 0 && msgData[0].timestamp) {
-        const msgBody = renderMessagePreview(msgData[0]);
-        const fromUser = fromCaip10Address(msgData[0].fromCAIP10);
-        if (fromUser && msgBody) {
-          const fromDomain =
-            fromUser.toLowerCase() === address.toLowerCase()
-              ? t('common.you')
-              : (await getReverseResolution(fromUser)) || fromUser;
-          setLatestTimestamp(moment(msgData[0].timestamp).fromNow());
-          setLatestMessage(`${fromDomain}: ${msgBody}`);
+      try {
+        // retrieve latest state since it is missing
+        const msgData = msg
+          ? await decryptMessage(address, pushKey, msg)
+          : await getLatestMessage(badge.groupChatId, address, pushKey);
+        if (msgData?.timestamp) {
+          const msgBody = renderMessagePreview(msgData);
+          const fromUser = fromCaip10Address(msgData.fromCAIP10);
+          if (fromUser && msgBody) {
+            const fromDomain =
+              fromUser.toLowerCase() === address.toLowerCase()
+                ? t('common.you')
+                : (await getProfileReverseResolution(fromUser))?.name ||
+                  fromUser;
+            setLatestTimestamp(moment(msgData.timestamp).fromNow());
+            setLatestMessage(
+              msgData.messageType === MessageType.Meta
+                ? msgBody
+                : `${fromDomain}: ${msgBody}`,
+            );
 
-          // set group chat state
-          badge.groupChatTimestamp = msgData[0].timestamp;
-          badge.groupChatLatestMessage = `${fromDomain}: ${msgBody}`;
-          await onRefresh();
-          return;
+            // set group chat state
+            badge.groupChatTimestamp = msgData.timestamp;
+            badge.groupChatLatestMessage =
+              msgData.messageType === MessageType.Meta
+                ? msgBody
+                : `${fromDomain}: ${msgBody}`;
+            return;
+          }
         }
-      }
 
-      // latest message not available
-      setLatestMessage(t('push.noGroupMessages'));
-      badge.groupChatLatestMessage = t('push.noGroupMessages');
+        // latest message not available
+        setLatestMessage(t('push.noGroupMessages'));
+        badge.groupChatLatestMessage = t('push.noGroupMessages');
+      } catch (e) {
+        notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
+          msg: 'error retrieving latest message',
+        });
+      } finally {
+        // always callback after group lookup complete, regardless of the
+        // success result. Tells the caller that rendering is complete.
+        await onRefresh();
+      }
     }
   };
 
   const renderMessagePreview = (message: IMessageIPFS) => {
     try {
+      // parse the message
       if (!message.messageObj) {
         message.messageObj = {
           content:
@@ -202,6 +238,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
               : t('push.unsupportedContent'),
         };
       }
+
       // build message text to render
       const messageToRender =
         typeof message.messageObj === 'string'
@@ -214,6 +251,18 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
         PUSH_DECRYPT_ERROR_MESSAGE.toLowerCase()
       ) {
         return;
+      }
+
+      // display special preview for metadata events
+      if (message.messageType === MessageType.Meta) {
+        if (messageToRender.toLowerCase().includes('add')) {
+          return t('push.userJoinedGroup');
+        } else if (messageToRender.toLowerCase().includes('remove')) {
+          return t('push.userLeftGroup');
+        }
+      } else if (message.messageType === MessageType.Media) {
+        // special handling for attachments preview
+        return t('push.attachment');
       }
       return messageToRender;
     } catch (e) {
@@ -228,15 +277,9 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
   };
 
   const handleChatClicked = async () => {
-    // check UD blue status
-    if (!isUdBlue) {
-      setUdBlueModalOpen(true);
-      return;
-    }
-
     // retrieve group Chat ID from messaging API
     try {
-      setJoining(true);
+      setJoiningState(t('push.joiningGroupState'));
       setErrorMsg(undefined);
       if (!inGroup) {
         const groupChatInfo = await joinBadgeGroupChat(
@@ -247,6 +290,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
         if (groupChatInfo?.groupChatId) {
           // accept the chat request for the user and change to the
           // group conversation panel
+          setJoiningState(t('push.acceptingInviteState'));
           await acceptGroupInvite(groupChatInfo.groupChatId, address, pushKey);
         }
         badge.groupChatId = groupChatInfo?.groupChatId;
@@ -254,26 +298,12 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
       setActiveCommunity(badge);
     } catch (e) {
       // unable to join group
-      notifyError(e, {msg: 'error joining group'});
+      notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
+        msg: 'error joining group',
+      });
       setErrorMsg(t('push.joinCommunityError'));
     } finally {
-      setJoining(false);
-    }
-  };
-
-  const handleLeaveClicked = async () => {
-    if (!badge.groupChatId) {
-      return;
-    }
-    setLeaving(true);
-    try {
-      await joinBadgeGroupChat(badge.code, address, pushKey, true);
-      await onReload();
-    } catch (e) {
-      notifyError(e, {msg: 'error leaving group'});
-      setErrorMsg(t('push.leaveCommunityError'));
-    } finally {
-      setLeaving(false);
+      setJoiningState(undefined);
     }
   };
 
@@ -301,21 +331,38 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
         <CardHeader
           title={
             <Box className={classes.clickable} onClick={handleChatClicked}>
-              <Typography
-                className={classes.communityTitle}
-                variant="subtitle2"
-              >
-                {badge.name}
-              </Typography>
-              {inGroup && latestMessage ? (
+              {visible ? (
+                <Typography
+                  className={classes.communityTitle}
+                  variant="subtitle2"
+                >
+                  {badge.name}
+                </Typography>
+              ) : (
+                <Skeleton variant="text" sx={{maxWidth: '250px'}} />
+              )}
+              {visible && inGroup && latestMessage ? (
                 <Typography variant="caption" className={classes.latestMessage}>
                   {latestMessage}
                 </Typography>
               ) : !inGroup && badgeInfo ? (
-                <Typography variant="caption">
-                  {numeral(badgeInfo.usage.holders).format('0a')}{' '}
-                  {t('badges.holder')}
-                </Typography>
+                <Tooltip
+                  title={
+                    badgeInfo
+                      ? t('badges.holderAndSubscriberCount', {
+                          subscribed: numeral(
+                            groupInfo ? groupInfo.members.length : 0,
+                          ).format('0a'),
+                        })
+                      : ''
+                  }
+                >
+                  <Typography variant="caption">
+                    {t('badges.holders', {
+                      holders: numeral(badgeInfo.usage.holders).format('0a'),
+                    })}
+                  </Typography>
+                </Tooltip>
               ) : (
                 <Skeleton variant="text" sx={{maxWidth: '75px'}} />
               )}
@@ -323,22 +370,29 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
           }
           avatar={
             inGroup ? (
-              <Badge
-                anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
-                overlap="circular"
-                badgeContent={
-                  <CheckCircleIcon
-                    fontSize="small"
-                    className={classes.joinedBadgeIcon}
+              visible ? (
+                <Badge
+                  anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+                  overlap="circular"
+                  badgeContent={
+                    <CheckCircleIcon
+                      fontSize="small"
+                      className={classes.joinedBadgeIcon}
+                    />
+                  }
+                >
+                  <Avatar
+                    onClick={handleMoreInfoClicked}
+                    className={classes.communityIcon}
+                    src={badge.logo}
                   />
-                }
-              >
-                <Avatar
-                  onClick={handleMoreInfoClicked}
+                </Badge>
+              ) : (
+                <Skeleton
+                  variant="circular"
                   className={classes.communityIcon}
-                  src={badge.logo}
                 />
-              </Badge>
+              )
             ) : (
               <Avatar
                 onClick={handleMoreInfoClicked}
@@ -348,7 +402,8 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
             )
           }
           action={
-            latestTimestamp && (
+            latestTimestamp &&
+            visible && (
               <Box className={classes.latestTimestamp}>
                 <Typography variant="caption">{latestTimestamp}</Typography>
               </Box>
@@ -368,24 +423,25 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
               <Box className={classes.actionContainer}>
                 <LoadingButton
                   onClick={handleChatClicked}
-                  loading={joining}
+                  fullWidth={true}
+                  loading={joiningState !== undefined}
+                  loadingIndicator={
+                    <Box display="flex" alignItems="center">
+                      <CircularProgress size={16} color="inherit" />
+                      <Typography
+                        className={classes.loadingText}
+                        variant="caption"
+                      >
+                        {joiningState}...
+                      </Typography>
+                    </Box>
+                  }
                   size="small"
                   variant="contained"
                   className={classes.actionButton}
                 >
                   {inGroup ? t('push.chat') : t('push.join')}
                 </LoadingButton>
-                {inGroup && (
-                  <LoadingButton
-                    onClick={handleLeaveClicked}
-                    loading={leaving}
-                    size="small"
-                    variant="text"
-                    className={classes.actionButton}
-                  >
-                    {t('push.leave')}
-                  </LoadingButton>
-                )}
               </Box>
               {errorMsg && (
                 <>
@@ -400,12 +456,6 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
         )}
       </Card>
       {inGroup && <Divider variant="fullWidth" />}
-      {udBlueModalOpen && (
-        <LearnMoreUdBlue
-          isOpen={udBlueModalOpen}
-          handleClose={() => setUdBlueModalOpen(false)}
-        />
-      )}
     </>
   ) : null;
 };
@@ -414,9 +464,11 @@ export type CommunityPreviewProps = {
   address: string;
   badge: SerializedCryptoWalletBadge;
   inGroup: boolean;
-  isUdBlue: boolean;
   pushKey: string;
   searchTerm?: string;
+  visible?: boolean;
+  groupInfo?: GroupDTO;
+  incomingMessage?: IMessageIPFS;
   onReload: () => Promise<void>;
   onRefresh: () => Promise<void>;
   setActiveCommunity: (v: SerializedCryptoWalletBadge) => void;

@@ -1,5 +1,5 @@
 import ChatIcon from '@mui/icons-material/ChatOutlined';
-import Avatar from '@mui/material/Avatar';
+import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -15,7 +15,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {getProfileData} from '../../actions';
 import {splitDomain} from '../../lib/domain/format';
 import getImageUrl from '../../lib/domain/getImageUrl';
-import {notifyError} from '../../lib/error';
+import {notifyEvent} from '../../lib/error';
 import useTranslationContext from '../../lib/i18n';
 import type {SerializedPublicDomainProfileData} from '../../lib/types/domain';
 import {
@@ -25,6 +25,7 @@ import {
   Web2SuffixesList,
 } from '../../lib/types/domain';
 import type {Web3Dependencies} from '../../lib/types/web3';
+import {localStorageWrapper} from '../Chat/storage';
 import ChipControlButton from '../ChipControlButton';
 import FollowButton from './FollowButton';
 
@@ -43,7 +44,7 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
     marginTop: theme.spacing(2),
   },
   contentContainer: {
-    width: '250px',
+    width: '280px',
     marginTop: theme.spacing(-2.5),
   },
   footerContainer: {
@@ -60,14 +61,19 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
   },
   avatarMain: {
     color: theme.palette.primary.main,
-    backgroundColor: 'white',
-    border: '2px solid white',
+    backgroundColor: theme.palette.background.default,
+    border: `2px solid ${theme.palette.background.default}`,
+    borderRadius: '50%',
+    height: `${size}px`,
+    width: `${size}px`,
+    cursor: 'pointer',
   },
   avatarCard: {
     marginRight: theme.spacing(1),
     color: theme.palette.primary.main,
-    backgroundColor: 'white',
-    border: '2px solid white',
+    backgroundColor: theme.palette.background.default,
+    border: `2px solid ${theme.palette.background.default}`,
+    borderRadius: '50%',
     cursor: 'pointer',
     width: '75px',
     height: '75px',
@@ -76,7 +82,7 @@ const useStyles = makeStyles<{size: number}>()((theme: Theme, {size}) => ({
     cursor: 'pointer',
   },
   greyBg: {
-    backgroundColor: '#F6F6F6',
+    backgroundColor: theme.palette.neutralShades[200],
   },
 }));
 
@@ -84,6 +90,9 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
   domain,
   size,
   chatUser,
+  avatarPath,
+  avatarDescription,
+  secondaryDescription,
   setOpenChat,
   setWeb3Deps,
 }) => {
@@ -96,22 +105,30 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
   const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
   const popoverId = `mouse-popover-${domain}`;
   const {extension} = splitDomain(domain);
-  const avatarPath =
-    extension === DomainSuffixes.Ens
+  const normalizedAvatarPath =
+    avatarPath ||
+    (extension === DomainSuffixes.Ens
       ? getImageUrl('/domains/ens-logo.svg')
       : Web2SuffixesList.includes(extension)
       ? getImageUrl('/domains/dns-logo.svg')
-      : `${config.UNSTOPPABLE_METADATA_ENDPOINT}/image-src/${domain}?withOverlay=false`;
+      : `${
+          config.UNSTOPPABLE_METADATA_ENDPOINT
+        }/image-src/${domain}?withOverlay=false&ref=${Date.now()}`);
   const isMouseOver = Boolean(anchorEl);
 
   // read from local storage on page load
   useEffect(() => {
-    setAuthAddress(
-      localStorage.getItem(DomainProfileKeys.AuthAddress) || undefined,
-    );
-    setAuthDomain(
-      localStorage.getItem(DomainProfileKeys.AuthDomain) || undefined,
-    );
+    const loadAuth = async () => {
+      setAuthAddress(
+        (await localStorageWrapper.getItem(DomainProfileKeys.AuthAddress)) ||
+          undefined,
+      );
+      setAuthDomain(
+        (await localStorageWrapper.getItem(DomainProfileKeys.AuthDomain)) ||
+          undefined,
+      );
+    };
+    void loadAuth();
   }, []);
 
   // fetch profile data only when popup is requested
@@ -128,7 +145,9 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
           setProfileData(profileJSON);
         }
       } catch (e) {
-        notifyError(e, {msg: 'error fetching profile data'}, 'warning');
+        notifyEvent(e, 'warning', 'Profile', 'Fetch', {
+          msg: 'error fetching profile data',
+        });
       }
     };
     void fetchData();
@@ -146,19 +165,43 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
     window.location.href = `${config.UD_ME_BASE_URL}/${domain}`;
   };
 
+  const handleImgError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    // determine what fallback image should be used if the requested image fails
+    // to load, which depends on the type of domain.
+    const fallbackImgUrl =
+      extension === DomainSuffixes.Ens
+        ? getImageUrl('/domains/ens-logo.svg')
+        : Web2SuffixesList.includes(extension)
+        ? getImageUrl('/domains/dns-logo.svg')
+        : `${config.UNSTOPPABLE_METADATA_ENDPOINT}/image-src/${domain}?withOverlay=false`;
+
+    // ensure the fallback image is different from the image that already failed
+    if (fallbackImgUrl.toLowerCase() === e.currentTarget.src.toLowerCase()) {
+      e.currentTarget.src = '';
+      return;
+    }
+
+    // set the fallback image
+    e.currentTarget.src = fallbackImgUrl;
+  };
+
   return (
-    <div
+    <Box
       aria-owns={isMouseOver ? popoverId : undefined}
       aria-haspopup="true"
+      display="flex"
+      alignItems="center"
       onMouseEnter={handlePopoverOpen}
       onMouseLeave={handlePopoverClose}
     >
-      <Avatar
-        src={avatarPath}
+      <img
+        src={normalizedAvatarPath}
         onClick={handleViewProfile}
+        onError={handleImgError}
         className={classes.avatarMain}
         data-testid="domain-preview-main-img"
       />
+      {avatarDescription}
       <Popover
         id={popoverId}
         open={isMouseOver}
@@ -181,9 +224,10 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
         <Card>
           <CardHeader
             avatar={
-              <Avatar
+              <img
                 onClick={handleViewProfile}
-                src={avatarPath}
+                onError={handleImgError}
+                src={normalizedAvatarPath}
                 className={classes.avatarCard}
               />
             }
@@ -205,6 +249,7 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
                   {profileData?.profile?.description}
                 </Typography>
               </div>
+              <div className={classes.contentItem}>{secondaryDescription}</div>
               <div className={classes.footerContainer}>
                 <div>
                   <Typography
@@ -226,6 +271,12 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
             </div>
             {setWeb3Deps && (
               <Box className={classes.actionContainer}>
+                <ChipControlButton
+                  onClick={handleViewProfile}
+                  icon={<PermIdentityOutlinedIcon />}
+                  label={t('profile.viewProfile')}
+                  sx={{marginRight: 1}}
+                />
                 {authDomain &&
                   authAddress &&
                   authDomain.toLowerCase() !== domain.toLowerCase() && (
@@ -246,6 +297,7 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
                       icon={<ChatIcon />}
                       label={t('push.chat')}
                       sx={{marginLeft: 1}}
+                      variant="outlined"
                     />
                   )}
               </Box>
@@ -253,7 +305,7 @@ export const DomainPreview: React.FC<DomainPreviewProps> = ({
           </CardContent>
         </Card>
       </Popover>
-    </div>
+    </Box>
   );
 };
 
@@ -261,6 +313,9 @@ export type DomainPreviewProps = {
   domain: string;
   size: number;
   chatUser?: string;
+  avatarPath?: string;
+  avatarDescription?: React.ReactNode;
+  secondaryDescription?: React.ReactNode;
   setOpenChat?: (s?: string) => void;
   setWeb3Deps?: (value: Web3Dependencies | undefined) => void;
 };

@@ -19,7 +19,7 @@ class MyDocument extends Document {
           {/* 3072x3072 iOS friendly icon */}
           <link rel="apple-touch-icon" href={appleTouchIcon} />
           <meta httpEquiv="Content-type" content="text/html" charSet="UTF-8" />
-          <meta name="theme-color" content={theme.palette.common.white} />
+          <meta name="theme-color" content={theme.palette.background.default} />
         </Head>
         <body>
           <Main />

@@ -1,8 +1,10 @@
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
-import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
+import BlockIcon from '@mui/icons-material/Block';
+import GroupsIcon from '@mui/icons-material/GroupOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MoreVertOutlinedIcon from '@mui/icons-material/MoreVertOutlined';
+import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -16,7 +18,10 @@ import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import {styled} from '@mui/material/styles';
-import type {IMessageIPFS} from '@pushprotocol/restapi';
+import type {GroupDTO, IMessageIPFS} from '@pushprotocol/restapi';
+import Bluebird from 'bluebird';
+import CopyModule from 'clipboard-copy';
+import {useSnackbar} from 'notistack';
 import type {MouseEvent} from 'react';
 import React, {useEffect, useState} from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
@@ -24,11 +29,22 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import config from '@unstoppabledomains/config';
 
 import {joinBadgeGroupChat} from '../../../../actions/messageActions';
-import {notifyError} from '../../../../lib/error';
+import type {SerializedDomainBasicListData} from '../../../../lib';
+import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../../lib/types/badge';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
-import {PUSH_PAGE_SIZE, decryptMessage, getMessages} from '../../protocol/push';
+import {DomainListModal} from '../../../Domain';
+import {
+  PUSH_PAGE_SIZE,
+  getGroupInfo,
+  getMessages,
+  getPushUser,
+  updateBlockedList,
+} from '../../protocol/push';
+import {getAddressMetadata} from '../../protocol/resolution';
+import type {Reaction} from '../../protocol/types';
+import {fromCaip10Address} from '../../types';
 import CallToAction from '../CallToAction';
 import {useConversationStyles} from '../styles';
 import CommunityCompose from './CommunityCompose';
@@ -48,18 +64,26 @@ export const Community: React.FC<CommunityProps> = ({
   pushKey,
   incomingMessage,
   storageApiKey,
+  fullScreen,
   setWeb3Deps,
   onBack,
-  onClose,
 }) => {
-  const {classes} = useConversationStyles({isChatRequest: false});
+  const {classes} = useConversationStyles({isChatRequest: false, fullScreen});
   const [t] = useTranslationContext();
+  const {enqueueSnackbar} = useSnackbar();
   const [isLoading, setIsLoading] = useState(true);
-  const [isRenderedMessage, setIsRenderedMessage] = useState(false);
+  const [isMember, setIsMember] = useState(true);
+  const [isLeaving, setIsLeaving] = useState(false);
+  const [isViewableMessage, setIsViewableMessage] = useState(false);
+  const [isViewingMemberList, setIsViewingMemberList] = useState(false);
+  const [isViewingBlockedList, setIsViewingBlockedList] = useState(false);
+  const [emojiReactions, setEmojiReactions] = useState<Reaction[]>([]);
+  const [groupInfo, setGroupInfo] = useState<GroupDTO>();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [pushMessages, setPushMessages] = useState<IMessageIPFS[]>([]);
   const [sentMessage, setSentMessage] = useState<IMessageIPFS>();
+  const [blockedAddresses, setBlockedAddresses] = useState<string[]>([]);
 
   useEffect(() => {
     if (!badge.groupChatId) {
@@ -74,14 +98,7 @@ export const Community: React.FC<CommunityProps> = ({
     }
     const processMessage = async () => {
       if (incomingMessage.toDID === badge.groupChatId) {
-        const decryptedMsg = await decryptMessage(
-          address,
-          pushKey,
-          incomingMessage,
-        );
-        if (decryptedMsg) {
-          setPushMessages([decryptedMsg, ...pushMessages]);
-        }
+        setPushMessages([incomingMessage, ...pushMessages]);
       }
     };
     void processMessage();
@@ -128,7 +145,9 @@ export const Community: React.FC<CommunityProps> = ({
         setPushMessages([...pushMessages, ...previousMessages.slice(1)]);
       }
     } catch (e) {
-      notifyError(e, {msg: 'error fetching previous conversations'});
+      notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
+        msg: 'error fetching previous conversations',
+      });
     }
   };
 
@@ -139,16 +158,33 @@ export const Community: React.FC<CommunityProps> = ({
         return;
       }
 
+      // retrieve blocked users
+      const pushUser = await getPushUser(address);
+      if (pushUser?.profile?.blockedUsersList) {
+        setBlockedAddresses(
+          pushUser.profile.blockedUsersList
+            .map(a => fromCaip10Address(a)?.toLowerCase() || '')
+            .filter(a => a.length > 0),
+        );
+      }
+
       // render the existing messages if available
-      const initialMessages = await getMessages(
-        badge.groupChatId,
-        address,
-        pushKey,
+      const [initialMessages, group] = await Promise.all([
+        getMessages(badge.groupChatId, address, pushKey),
+        getGroupInfo(badge.groupChatId),
+      ]);
+      setIsMember(
+        group?.members
+          .map(m => fromCaip10Address(m.wallet)?.toLowerCase())
+          .includes(address.toLowerCase()) || false,
       );
+      setGroupInfo(group);
       setHasMoreMessages(initialMessages.length >= PUSH_PAGE_SIZE);
       setPushMessages(initialMessages);
     } catch (e) {
-      notifyError(e, {msg: 'error loading conversation'});
+      notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
+        msg: 'error loading conversation',
+      });
     } finally {
       // loading complete
       setIsLoading(false);
@@ -156,7 +192,7 @@ export const Community: React.FC<CommunityProps> = ({
   };
 
   const handleOnRender = (ref: React.RefObject<HTMLElement>) => {
-    setIsRenderedMessage(true);
+    setIsViewableMessage(true);
   };
 
   const handleOnRenderAndScroll = (ref: React.RefObject<HTMLElement>) => {
@@ -164,6 +200,10 @@ export const Community: React.FC<CommunityProps> = ({
     ref.current?.scrollIntoView({
       behavior: 'auto',
     });
+  };
+
+  const handleClickToCopy = () => {
+    enqueueSnackbar(t('common.copied'), {variant: 'success'});
   };
 
   const handleOpenMenu = (e: MouseEvent<HTMLElement>) => {
@@ -174,11 +214,84 @@ export const Community: React.FC<CommunityProps> = ({
     setAnchorEl(null);
   };
 
+  const handleShareInvite = async () => {
+    await CopyModule(
+      `${config.UD_ME_BASE_URL}/${authDomain}?openBadgeCode=${badge.code}&action=invite`,
+    );
+    handleClickToCopy();
+  };
+
   const handleLeaveChat = async () => {
     if (!badge.groupChatId) {
       return;
     }
+    setIsLeaving(true);
     await joinBadgeGroupChat(badge.code, address, pushKey, true);
+  };
+
+  const handleGroupList = () => {
+    setIsViewingMemberList(true);
+  };
+
+  const handleBlockedList = () => {
+    setIsViewingBlockedList(true);
+  };
+
+  const handleRetrieveMembers = async (startIndex?: number | string) => {
+    return await handleRetrieveDomainList(
+      groupInfo?.members.map(m => m.wallet) || [],
+      startIndex,
+    );
+  };
+
+  const handleUnblockDomain = async (domain: string) => {
+    setIsViewingBlockedList(false);
+    const domainInfo = await getAddressMetadata(domain);
+    if (domainInfo) {
+      await handleBlockSender(undefined, domainInfo.address);
+    }
+  };
+
+  const handleRetrieveBlocked = async (startIndex?: number | string) => {
+    return await handleRetrieveDomainList(blockedAddresses, startIndex);
+  };
+
+  const handleRetrieveDomainList = async (
+    list: string[],
+    startIndex?: number | string,
+  ) => {
+    const pageSize = 10;
+    const retData: SerializedDomainBasicListData = {
+      domains: [],
+      cursor: undefined,
+    };
+
+    // validate start index
+    if (!startIndex) {
+      startIndex = 0;
+    }
+    if (typeof startIndex !== 'number') {
+      return retData;
+    }
+
+    // retrieve domain info for next page of addresses
+    const domains = await Bluebird.map(
+      list.slice(startIndex, startIndex + pageSize),
+      async m => {
+        const memberAddr = fromCaip10Address(m);
+        if (!memberAddr) {
+          return '';
+        }
+        const addressData = await getAddressMetadata(memberAddr);
+        return addressData?.name || memberAddr;
+      },
+      {concurrency: 3},
+    );
+
+    // return the member data
+    retData.domains = domains;
+    retData.cursor = startIndex + pageSize;
+    return retData;
   };
 
   const handleMoreInfo = () => {
@@ -190,29 +303,51 @@ export const Community: React.FC<CommunityProps> = ({
     }
   };
 
-  const handleBlockSender = (id: string) => {
-    // TODO - placeholder to block sender of a group message
-    notifyError(
-      new Error('TODO - not yet implemented'),
-      {msg: `block sender ${id}`},
-      'warning',
-    );
+  const handleBlockSender = async (
+    blockCaip10?: string,
+    unblockCaip10?: string,
+  ) => {
+    const blockedAddress = fromCaip10Address(blockCaip10);
+    const unblockedAddress = fromCaip10Address(unblockCaip10);
+    if (blockedAddress || unblockedAddress) {
+      setBlockedAddresses(
+        (
+          await updateBlockedList(
+            address,
+            pushKey,
+            blockedAddress ? [blockedAddress] : [],
+            unblockedAddress ? [unblockedAddress] : [],
+          )
+        ).map(a => a.toLowerCase()),
+      );
+    }
   };
 
   const renderedPushMessages = pushMessages
+    // filter duplicates
     .filter(
       (message, index) =>
+        message.messageType &&
         pushMessages.findIndex(item => item.timestamp === message.timestamp) ===
-        index,
+          index,
     )
+    // render conversation bubbles
     .map(message => (
       <CommunityConversationBubble
+        key={message.link}
         address={address}
         message={message}
-        key={message.timestamp}
-        onBlockTopic={() => handleBlockSender(message.fromCAIP10)}
+        pushKey={pushKey}
+        blocked={blockedAddresses
+          .map(a => a.toLowerCase())
+          .includes(fromCaip10Address(message.fromCAIP10)?.toLowerCase() || '')}
+        onBlockUser={async () => await handleBlockSender(message.fromCAIP10)}
+        onUnblockUser={async () =>
+          await handleBlockSender(undefined, message.fromCAIP10)
+        }
+        emojiReactions={emojiReactions}
+        setEmojiReactions={setEmojiReactions}
         renderCallback={
-          pushMessages.length > 0 &&
           message.timestamp! >= pushMessages[0].timestamp!
             ? handleOnRenderAndScroll
             : handleOnRender
@@ -221,7 +356,11 @@ export const Community: React.FC<CommunityProps> = ({
     ));
 
   return (
-    <Card className={classes.cardContainer} variant="outlined">
+    <Card
+      style={{border: 'none', boxShadow: 'none'}}
+      className={classes.cardContainer}
+      variant="outlined"
+    >
       <CardHeader
         title={
           <Box className={classes.headerTitleContainer}>
@@ -240,15 +379,16 @@ export const Community: React.FC<CommunityProps> = ({
         action={
           <Box className={classes.headerActionContainer}>
             {authDomain && (
-              <Tooltip title={t('profile.moreInformation')}>
+              <Tooltip title={t('push.moreGroupInfo')}>
                 <InfoOutlinedIcon
                   className={classes.headerCloseIcon}
                   onClick={handleMoreInfo}
                 />
               </Tooltip>
             )}
-            <Tooltip title={t('common.more')}>
+            <Tooltip title={t('common.options')}>
               <IconButton
+                disabled={!isMember}
                 onClick={handleOpenMenu}
                 className={classes.headerCloseIcon}
               >
@@ -263,6 +403,44 @@ export const Community: React.FC<CommunityProps> = ({
               anchorOrigin={{horizontal: 'right', vertical: 'bottom'}}
             >
               <MenuItem
+                onClick={() => {
+                  handleGroupList();
+                }}
+              >
+                <ListItemIcon>
+                  <GroupsIcon fontSize="small" />
+                </ListItemIcon>
+                <Typography variant="body2">
+                  {t('push.memberCount', {
+                    count: groupInfo?.members.length || 0,
+                  })}
+                </Typography>
+              </MenuItem>
+              {blockedAddresses.length > 0 && (
+                <MenuItem
+                  onClick={() => {
+                    handleBlockedList();
+                  }}
+                >
+                  <ListItemIcon>
+                    <BlockIcon fontSize="small" />
+                  </ListItemIcon>
+                  <Typography variant="body2">
+                    {t('push.blockCount', {
+                      count: blockedAddresses.length,
+                    })}
+                  </Typography>
+                </MenuItem>
+              )}
+              <MenuItem onClick={handleShareInvite}>
+                <ListItemIcon>
+                  <ShareOutlinedIcon fontSize="small" />
+                </ListItemIcon>
+                <Typography variant="body2">
+                  {t('push.shareInviteLink')}
+                </Typography>
+              </MenuItem>
+              <MenuItem
                 onClick={async () => {
                   await handleLeaveChat();
                   handleCloseMenu();
@@ -270,20 +448,13 @@ export const Community: React.FC<CommunityProps> = ({
                 }}
               >
                 <ListItemIcon>
-                  <LogoutIcon fontSize="small" />
+                  {isLeaving ? (
+                    <CircularProgress size={16} color="inherit" />
+                  ) : (
+                    <LogoutIcon fontSize="small" />
+                  )}
                 </ListItemIcon>
                 <Typography variant="body2">{t('push.leave')}</Typography>
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  handleCloseMenu();
-                  onClose();
-                }}
-              >
-                <ListItemIcon>
-                  <CloseOutlinedIcon fontSize="small" />
-                </ListItemIcon>
-                <Typography variant="body2">{t('common.close')}</Typography>
               </MenuItem>
             </Menu>
           </Box>
@@ -291,17 +462,32 @@ export const Community: React.FC<CommunityProps> = ({
       />
       <CardContent>
         <Box className={classes.conversationContainer} id="scrollable-div">
-          {isLoading ? (
-            <Box className={classes.loadingContainer}>
-              <CircularProgress className={classes.loadingSpinner} />
-              <Typography className={classes.loadingText}>
-                {t('push.loadingConversation')}
-              </Typography>
-            </Box>
-          ) : badge.groupChatId ? (
+          {!isMember ? (
+            <CallToAction
+              icon="LockOutlinedIcon"
+              title={t('push.noGroupAccess')}
+              subTitle={t('push.noGroupAccessDescription')}
+              buttonText={t('push.noGroupAccessButton')}
+              handleButtonClick={onBack}
+              loading={isLoading}
+            />
+          ) : (
+            !isViewableMessage && (
+              <CallToAction
+                icon="ForumOutlinedIcon"
+                title={t('push.joinedGroupChat')}
+                subTitle={t('push.joinedGroupChatDescription')}
+                loading={isLoading}
+              />
+            )
+          )}
+          {isMember && badge.groupChatId && (
             <InfiniteScroll
               inverse={true}
-              style={{display: 'flex', flexDirection: 'column-reverse'}}
+              style={{
+                display: isViewableMessage ? 'flex' : 'none',
+                flexDirection: 'column-reverse',
+              }}
               className={classes.infiniteScroll}
               scrollableTarget="scrollable-div"
               hasMore={hasMoreMessages}
@@ -316,15 +502,6 @@ export const Community: React.FC<CommunityProps> = ({
             >
               {renderedPushMessages}
             </InfiniteScroll>
-          ) : (
-            <CallToAction icon="CloudOffIcon" title={t('push.chatNotReady')} />
-          )}
-          {!isLoading && !isRenderedMessage && (
-            <CallToAction
-              icon="ForumOutlinedIcon"
-              title={t('push.joinedGroupChat')}
-              subTitle={t('push.joinedGroupChatDescription')}
-            />
           )}
         </Box>
       </CardContent>
@@ -340,6 +517,31 @@ export const Community: React.FC<CommunityProps> = ({
           />
         )}
       </CardContentNoPadding>
+      {isViewingMemberList && (
+        <DomainListModal
+          id="groupMembers"
+          title={t('push.memberCount', {count: groupInfo?.members.length || 0})}
+          subtitle={t('push.memberCountDescription', {name: badge.name})}
+          open={isViewingMemberList}
+          onClose={() => setIsViewingMemberList(false)}
+          onClick={(domain: string) =>
+            window.open(`${config.UD_ME_BASE_URL}/${domain}`, '_blank')
+          }
+          retrieveDomains={handleRetrieveMembers}
+          setWeb3Deps={setWeb3Deps}
+        />
+      )}
+      {isViewingBlockedList && (
+        <DomainListModal
+          id="blockedMembers"
+          title={t('push.blockCount', {count: blockedAddresses.length})}
+          subtitle={t('push.clickToUnblock')}
+          open={isViewingBlockedList}
+          onClose={() => setIsViewingBlockedList(false)}
+          onClick={handleUnblockDomain}
+          retrieveDomains={handleRetrieveBlocked}
+        />
+      )}
     </Card>
   );
 };
@@ -351,6 +553,7 @@ export type CommunityProps = {
   pushKey: string;
   incomingMessage?: IMessageIPFS;
   storageApiKey?: string;
+  fullScreen?: boolean;
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;
   onBack: () => void;
   onClose: () => void;

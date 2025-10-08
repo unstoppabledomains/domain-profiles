@@ -45,7 +45,7 @@ const useStyles = makeStyles<StyleProps>()(
         : DEFAULT_BADGE_SIZE,
     },
     badgeTierStandard: {
-      border: `2px solid white`,
+      border: `2px solid ${theme.palette.background.default}`,
     },
     badgeTierFeatured2: {
       border: `2px solid ${theme.palette.neutralShades[500]}`,
@@ -102,13 +102,17 @@ const useStyles = makeStyles<StyleProps>()(
         ? theme.typography.subtitle2.fontSize
         : theme.typography.subtitle1.fontSize,
       fontWeight: theme.typography.fontWeightMedium,
-      color: small ? 'inherit' : theme.palette.common.black,
+      color: small ? 'inherit' : undefined,
       textOverflow: 'ellipsis',
       overflow: 'hidden',
       whiteSpace: 'nowrap',
     },
     hiddenTitle: {
       color: theme.palette.neutralShades[400],
+    },
+    hiddenIcon: {
+      filter: 'grayscale(100%)',
+      boxShadow: theme.shadows[1],
     },
     infoIcon: {
       fontSize: theme.typography.h6.fontSize,
@@ -132,6 +136,7 @@ type Props = SerializedCryptoWalletBadge & {
   setWeb3Deps?: (value: Web3Dependencies | undefined) => void;
   authWallet?: string;
   authDomain?: string;
+  disablePopup?: boolean;
 };
 
 const Badge: React.FC<Props> = ({
@@ -152,6 +157,7 @@ const Badge: React.FC<Props> = ({
   setWeb3Deps,
   authWallet,
   authDomain,
+  disablePopup,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -264,6 +270,7 @@ const Badge: React.FC<Props> = ({
                   {
                     [classes.badgeTierFeatured2]: gallery?.tier === 2,
                     [classes.badgeTierFeatured3]: gallery?.tier === 3,
+                    [classes.hiddenIcon]: hidden,
                   },
                 )}
                 src={logo}
@@ -284,33 +291,35 @@ const Badge: React.FC<Props> = ({
           </Grid>
         </BadgeCount>
       </WithTooltip>
-      <BadgePopupModal
-        small={small}
-        isOpenModal={isOpenModal}
-        handleShowModal={handleShowModal}
-        logo={logo}
-        linkUrl={linkUrl}
-        description={description}
-        name={name}
-        badgeCode={code}
-        holdersFeatured={holdersFeatured}
-        holdersRemaining={holdersRemaining}
-        holders={holders}
-        profile={profile}
-        domain={domain}
-        primarySponsor={primarySponsor}
-        allSponsors={allSponsors}
-        sponsorshipAvailable={sponsorshipAvailable}
-        groupChatAvailable={
-          featureFlags.variations?.ecommerceServiceUsersEnableChatCommunity &&
-          !filteredBadgeCodes.includes(code)
-        }
-        rank={rank}
-        setWeb3Deps={setWeb3Deps}
-        authWallet={authWallet}
-        authorizedAddresses={authorizedAddresses}
-        authDomain={authDomain}
-      />
+      {isOpenModal && !disablePopup && (
+        <BadgePopupModal
+          small={small}
+          isOpenModal={isOpenModal}
+          handleShowModal={handleShowModal}
+          logo={logo}
+          linkUrl={linkUrl}
+          description={description}
+          name={name}
+          badgeCode={code}
+          holdersFeatured={holdersFeatured}
+          holdersRemaining={holdersRemaining}
+          holders={holders}
+          profile={profile}
+          domain={domain}
+          primarySponsor={primarySponsor}
+          allSponsors={allSponsors}
+          sponsorshipAvailable={sponsorshipAvailable}
+          groupChatAvailable={
+            featureFlags.variations?.ecommerceServiceUsersEnableChatCommunity &&
+            !filteredBadgeCodes.includes(code)
+          }
+          rank={rank}
+          setWeb3Deps={setWeb3Deps}
+          authWallet={authWallet}
+          authorizedAddresses={authorizedAddresses}
+          authDomain={authDomain}
+        />
+      )}
     </div>
   );
 };

@@ -3,6 +3,45 @@
 All notable changes to this project will be documented in this file. This
 project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.0.52
+
+- Add TLDs to list of Web2 domain suffixes
+
+## 0.0.42
+
+- Add .ca to list of Web2 domain suffixes
+
+## 0.0.41
+
+- Unstoppable Lite Wallet components
+- Update to latest Fireblocks SDK for improved performance
+
+## 0.0.40
+
+- Disable chat setup dialog auto-focus on open
+
+## 0.0.39
+
+- Group chat dynamic preview and sorting
+- Improved styling for group chat media
+
+## 0.0.38
+
+- Group chat emoji reaction support
+- Group chat media support
+
+## 0.0.37
+
+- Block list support for group chat
+
+## 0.0.36
+
+- Update Web3 attachment uploads to w3-up service
+
+## 0.0.35
+
+- Group chat support
+
 ## 0.0.34
 
 - XMTP portable consent

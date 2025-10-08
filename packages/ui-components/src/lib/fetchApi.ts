@@ -1,10 +1,15 @@
 import config from '@unstoppabledomains/config';
 
-import {notifyError} from './error';
+import {notifyEvent} from './error';
+
+// the default fetch timeout
+const DEFAULT_TIMEOUT_MS = 300 * 1000; // 5 minutes
 
 export interface FetchOptions extends RequestInit {
   host?: string;
   forceRefresh?: boolean;
+  acceptStatusCodes?: number[];
+  timeout?: number;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -36,21 +41,55 @@ export const fetchApi = async <T = any>(
     };
   }
 
+  // prepare the abort controller to send a signal to fetch when the
+  // request timeout has been exceeded
+  const requestTimeout = options.timeout || DEFAULT_TIMEOUT_MS;
+  const cancelController = new AbortController();
+  options.signal = cancelController.signal;
+
+  // set a timer to fire at the requested timeout
+  const cancelTimer = setTimeout(() => {
+    const cancelMsg = `request timeout after ${requestTimeout}ms`;
+    notifyEvent(new Error(cancelMsg), 'error', 'Request', 'Fetch', {
+      meta: {url},
+    });
+    cancelController.abort(cancelMsg);
+  }, requestTimeout);
+
   // make the request
-  return fetch(url, options).then(async (res: Response) => {
-    if (!res.ok) {
-      const severity = res.status < 500 ? 'warning' : 'error';
-      notifyError(
-        new Error(`error fetching API`),
-        {status: res.status, url},
-        severity,
-      );
+  return fetch(url, options)
+    .then(async (res: Response) => {
+      if (!res.ok && !options.acceptStatusCodes?.includes(res.status)) {
+        const severity = res.status >= 429 ? 'error' : 'warning';
+        notifyEvent(
+          new Error(`unexpected response code`),
+          severity,
+          'Request',
+          'Fetch',
+          {
+            msg: 'unexpected response code',
+            meta: {status: res.status, url},
+          },
+        );
+        return undefined;
+      }
+      try {
+        const contentType =
+          res.headers.get('Content-Type') || res.headers.get('content-type');
+        return typeof contentType === 'string' &&
+          contentType.toLowerCase().includes('application/json')
+          ? await res.json()
+          : await res.text();
+      } catch (e) {
+        return undefined;
+      }
+    })
+    .catch(e => {
+      notifyEvent(e, 'error', 'Request', 'Fetch', {
+        msg: 'fetch error',
+        meta: {url},
+      });
       return undefined;
-    }
-    try {
-      return await res.json();
-    } catch (e) {
-      return undefined;
-    }
-  });
+    })
+    .finally(() => clearTimeout(cancelTimer));
 };

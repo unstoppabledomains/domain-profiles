@@ -3,11 +3,14 @@ import CloudOffIcon from '@mui/icons-material/CloudOff';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
 import GroupsIcon from '@mui/icons-material/Groups';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import Markdown from 'markdown-to-jsx';
 import React from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -31,6 +34,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
   emptyButton: {
     marginTop: theme.spacing(2),
   },
+  loadingSpinnerContainer: {
+    marginTop: theme.spacing(2),
+    height: '100px',
+  },
+  loadingSpinner: {
+    color: theme.palette.neutralShades[400],
+  },
 }));
 
 export const CallToAction: React.FC<CallToActionProps> = ({
@@ -38,6 +48,8 @@ export const CallToAction: React.FC<CallToActionProps> = ({
   title,
   subTitle,
   buttonText,
+  loading,
+  children,
   handleButtonClick,
 }) => {
   const {classes} = useStyles();
@@ -54,14 +66,23 @@ export const CallToAction: React.FC<CallToActionProps> = ({
         <ForumOutlinedIcon className={classes.emptyIcon} />
       ) : icon === 'EmojiEventsOutlinedIcon' ? (
         <EmojiEventsOutlinedIcon className={classes.emptyIcon} />
+      ) : icon === 'NotificationsActiveOutlinedIcon' ? (
+        <NotificationsActiveOutlinedIcon className={classes.emptyIcon} />
       ) : (
-        icon === 'NotificationsActiveOutlinedIcon' && (
-          <NotificationsActiveOutlinedIcon className={classes.emptyIcon} />
+        icon === 'LockOutlinedIcon' && (
+          <LockOutlinedIcon className={classes.emptyIcon} />
         )
       )}
       <Typography variant="h6">{title}</Typography>
-      <Typography variant="body2">{subTitle}</Typography>
-      {buttonText && handleButtonClick && (
+      <Typography mt={1} variant="body2">
+        {typeof subTitle === 'string' ? (
+          <Markdown>{subTitle}</Markdown>
+        ) : (
+          subTitle
+        )}
+      </Typography>
+      {children}
+      {buttonText && handleButtonClick ? (
         <Button
           variant="contained"
           onClick={handleButtonClick}
@@ -69,6 +90,10 @@ export const CallToAction: React.FC<CallToActionProps> = ({
         >
           {buttonText}
         </Button>
+      ) : (
+        <Box className={classes.loadingSpinnerContainer}>
+          {loading && <CircularProgress className={classes.loadingSpinner} />}
+        </Box>
       )}
     </Box>
   );
@@ -81,11 +106,14 @@ export type CallToActionProps = {
     | 'ForumOutlinedIcon'
     | 'EmojiEventsOutlinedIcon'
     | 'GroupsIcon'
-    | 'NotificationsActiveOutlinedIcon';
-  title: string;
+    | 'NotificationsActiveOutlinedIcon'
+    | 'LockOutlinedIcon';
+  title: React.ReactNode | string;
   subTitle?: React.ReactNode;
   buttonText?: string;
+  loading?: boolean;
   handleButtonClick?: () => void;
+  children?: React.ReactNode;
 };
 
 export default CallToAction;

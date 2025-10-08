@@ -13,17 +13,22 @@ import type {
   SerializedPublicDomainProfileData,
   Web3Dependencies,
 } from '../../../lib';
-import {CurrencyToName, useTranslationContext} from '../../../lib';
+import {useTranslationContext} from '../../../lib';
 import type {ResolverKeyName} from '../../../lib/types/resolverKeys';
 import {MultichainKeyToLocaleKey} from '../../../lib/types/resolverKeys';
 import {CryptoIcon} from '../../Image';
 import {useStyles} from './CurrencyInput';
 import FormError from './FormError';
-import {isTokenDeprecated, isValidRecordKeyValue} from './currencyRecords';
+import {
+  getParentNetworkSymbol,
+  isTokenDeprecated,
+  isValidMappedResolverKeyValue,
+} from './currencyRecords';
 import VerifyAdornment from './verification/VerifyAdornment';
 
 type Props = {
   currency: CurrenciesType;
+  name: string;
   domain: string;
   ownerAddress: string;
   versions: MultiChainAddressVersion[];
@@ -32,10 +37,13 @@ type Props = {
   profileData?: SerializedPublicDomainProfileData;
   uiDisabled: boolean;
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;
+  saveClicked: boolean;
+  hideEndAdornment?: boolean;
 };
 
 const MultiChainInput: React.FC<Props> = ({
   currency,
+  name,
   domain,
   ownerAddress,
   onChange,
@@ -44,6 +52,8 @@ const MultiChainInput: React.FC<Props> = ({
   profileData,
   uiDisabled,
   setWeb3Deps,
+  saveClicked,
+  hideEndAdornment,
 }) => {
   const [t] = useTranslationContext();
   const {classes} = useStyles();
@@ -77,12 +87,10 @@ const MultiChainInput: React.FC<Props> = ({
               <div className={classes.currencyIconContainer}>
                 <CryptoIcon
                   currency={currency}
-                  classes={{root: classes.currencyIcon}}
+                  className={classes.currencyIcon}
                 />
               </div>
-              <span className={classes.currency}>
-                {CurrencyToName[currency] || currency}
-              </span>
+              <span className={classes.currency}>{name || currency}</span>
             </div>
 
             <div className={classes.removeButtonContainer}>
@@ -103,7 +111,11 @@ const MultiChainInput: React.FC<Props> = ({
         <Grid item xs={12}>
           <div className={classes.rightControlWrapper}>
             <div className={classes.inputWrapper}>
-              {versions.map(({key, version, value = ''}) => {
+              {versions.map(({key, version, value = '', mappedResolverKey}) => {
+                if (!mappedResolverKey) {
+                  return;
+                }
+
                 const isDeprecated = isTokenDeprecated(key, unsResolverKeys);
 
                 const handleChange = ({
@@ -112,7 +124,7 @@ const MultiChainInput: React.FC<Props> = ({
                   const newValue = target.value.trim();
                   const isValid =
                     !newValue ||
-                    isValidRecordKeyValue(key, newValue, unsResolverKeys);
+                    isValidMappedResolverKeyValue(newValue, mappedResolverKey);
 
                   setValues({...values, [key]: newValue});
                   setErrors({...errors, [key]: !isValid});
@@ -122,11 +134,13 @@ const MultiChainInput: React.FC<Props> = ({
                   }
                 };
 
+                const currencySymbol =
+                  getParentNetworkSymbol(mappedResolverKey) || currency;
                 const placeholder = t('manage.enterYourAddress', {
                   currency:
                     (MultichainKeyToLocaleKey[key] &&
                       t(MultichainKeyToLocaleKey[key])) ||
-                    CurrencyToName[currency] ||
+                    mappedResolverKey.name ||
                     currency,
                 });
 
@@ -148,20 +162,24 @@ const MultiChainInput: React.FC<Props> = ({
                         )
                       }
                       endAdornment={
-                        <VerifyAdornment
-                          addressCurrent={value}
-                          domain={domain}
-                          ownerAddress={ownerAddress}
-                          profileData={profileData}
-                          currency={currency}
-                          setWeb3Deps={setWeb3Deps}
-                          uiDisabled={uiDisabled}
-                        />
+                        hideEndAdornment ? undefined : (
+                          <VerifyAdornment
+                            addressCurrent={value}
+                            domain={domain}
+                            ownerAddress={ownerAddress}
+                            profileData={profileData}
+                            currency={currencySymbol}
+                            setWeb3Deps={setWeb3Deps}
+                            uiDisabled={false}
+                            saveClicked={saveClicked}
+                          />
+                        )
                       }
                     />
                     {(errors[key] || isDeprecated) && (
                       <div className={classes.multinputError}>
                         <FormError
+                          className={classes.formError}
                           message={
                             isDeprecated
                               ? t('manage.legacyToken')

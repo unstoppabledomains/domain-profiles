@@ -141,7 +141,12 @@ export const SetupModal: React.FC<SetupModalProps> = ({
   };
 
   return (
-    <Dialog className={classes.container} open={open} onClose={() => onClose()}>
+    <Dialog
+      className={classes.container}
+      open={open}
+      onClose={() => onClose()}
+      disableEnforceFocus
+    >
       <DialogContent>
         <Box className={classes.headerContainer}>
           <img

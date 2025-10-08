@@ -1,7 +1,44 @@
+import type {SerializedPriceHistory, TokenType} from './domain';
+
+export enum CustodyState {
+  CUSTODY = 'CUSTODY',
+  SELF_CUSTODY = 'SELF_CUSTODY',
+  CLAIMING = 'CLAIMING',
+}
+
+export interface CustodyWallet {
+  secret?: string;
+  state: CustodyState;
+  status: 'COMPLETED' | 'QUEUED' | 'PROCESSING';
+  addresses?: Record<string, string>;
+}
+
 export interface LoginResult {
   address: string;
   domain: string;
 }
+
+export const SUPPORTED_SIGNING_SYMBOLS = ['ETH', 'MATIC', 'POL', 'SOL', 'BTC'];
+
+export type TokenEntry = {
+  address?: string;
+  type: TokenType;
+  symbol: string;
+  name: string;
+  ticker: string;
+  value: number;
+  tokenConversionUsd: number;
+  balance: number;
+  pctChange?: number;
+  imageUrl?: string;
+  history?: SerializedPriceHistory[];
+  walletAddress: string;
+  walletBlockChainLink: string;
+  walletName: string;
+  walletType?: string;
+};
+
+export const WALLET_CARD_HEIGHT = 285;
 
 export type WagmiConnectorType =
   | 'injected'
@@ -9,8 +46,11 @@ export type WagmiConnectorType =
   | 'walletConnect'
   | 'coinbaseWallet';
 
-interface walletProps {
-  connectorType: WagmiConnectorType;
+export interface WalletAccountResponse {
+  emailAddress: string;
+  active: boolean;
+  clock: number;
+  records?: Record<string, string>;
 }
 
 export enum WalletName {
@@ -23,9 +63,24 @@ export enum WalletName {
   Brave = 'Brave',
   Phantom = 'Phantom',
   Kresus = 'Kresus',
+  UnstoppableWalletReact = 'UnstoppableWalletReact',
+  UnstoppableWalletExtension = 'UnstoppableWalletExtension',
+}
+
+interface walletProps {
+  connectorType: WagmiConnectorType;
 }
 
 export const WalletOptions: Record<WalletName, walletProps> = {
+  [WalletName.Phantom]: {
+    connectorType: 'metaMask',
+  },
+  [WalletName.UnstoppableWalletReact]: {
+    connectorType: 'walletConnect',
+  },
+  [WalletName.UnstoppableWalletExtension]: {
+    connectorType: 'injected',
+  },
   [WalletName.MetaMask]: {
     connectorType: 'metaMask',
   },
@@ -45,9 +100,6 @@ export const WalletOptions: Record<WalletName, walletProps> = {
     connectorType: 'metaMask',
   },
   [WalletName.Brave]: {
-    connectorType: 'metaMask',
-  },
-  [WalletName.Phantom]: {
     connectorType: 'metaMask',
   },
   [WalletName.Kresus]: {

@@ -51,11 +51,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     padding: theme.spacing(2),
     borderRadius: theme.spacing(1),
     border: 'none',
-    boxShadow:
-      '0px 8px 24px 0px rgba(0, 0, 0, 0.08), 0px 0px 0px 1px #DDDDDF, 0px 1px 0px 0px #DDDDDF',
-  },
-  heading: {
-    color: '#62626A',
+    boxShadow: theme.shadows[6],
   },
   divider: {
     margin: `${theme.spacing(1.5)} 0`,
@@ -177,11 +173,7 @@ const ComposeMessage: React.FC<Props> = props => {
                 mb: '8px',
               }}
             >
-              <Typography
-                variant="body1"
-                align="left"
-                className={classes.heading}
-              >
+              <Typography variant="body1" align="left">
                 {t('profile.messaging.from')}
               </Typography>
               <Chip variant="outlined" label={authDomain} />
@@ -194,11 +186,7 @@ const ComposeMessage: React.FC<Props> = props => {
                 mb: '24px',
               }}
             >
-              <Typography
-                variant="body1"
-                align="left"
-                className={classes.heading}
-              >
+              <Typography variant="body1" align="left">
                 {t('profile.messaging.to')}
               </Typography>
               <Chip

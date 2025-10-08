@@ -32,7 +32,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     justifyContent: 'space-between',
   },
   modalTitle: {
-    color: theme.palette.common.black,
+    color: theme.palette.getContrastText(theme.palette.background.paper),
   },
   modalSubTitle: {
     color: theme.palette.neutralShades[600],
@@ -93,7 +93,7 @@ const VerificationInfoModal: React.FC<Props> = ({
         setWeb3Deps(undefined);
       }
     } catch (e) {
-      notifyEvent(e, 'warning', 'WALLET', 'Signature');
+      notifyEvent(e, 'warning', 'Wallet', 'Signature');
     }
   }, [setWeb3Deps]);
 

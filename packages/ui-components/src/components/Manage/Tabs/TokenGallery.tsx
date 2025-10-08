@@ -11,25 +11,20 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {getDomainNfts} from '../../../actions';
 import {useWeb3Context} from '../../../hooks';
-import type {NftResponse, SerializedUserDomainProfileData} from '../../../lib';
+import type {NftResponse} from '../../../lib';
 import {useTranslationContext} from '../../../lib';
 import {Manager} from '../../TokenGallery/NftGalleryManager';
 import {DomainProfileTabType} from '../DomainProfile';
 import {TabHeader} from '../common/TabHeader';
+import type {ManageTabProps} from '../common/types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing(-3),
-    },
   },
   infoContainer: {
     marginBottom: theme.spacing(2),
-  },
-  button: {
-    marginTop: theme.spacing(3),
   },
   icon: {
     color: theme.palette.neutralShades[600],
@@ -42,10 +37,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const TokenGallery: React.FC<TokenGalleryProps> = ({
+export const TokenGallery: React.FC<ManageTabProps> = ({
   address,
   domain,
   onUpdate,
+  setButtonComponent,
 }) => {
   const {classes} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
@@ -57,8 +53,27 @@ export const TokenGallery: React.FC<TokenGalleryProps> = ({
     useState<Record<string, NftResponse>>();
 
   useEffect(() => {
+    setIsLoaded(false);
+    setButtonComponent(<></>);
     void loadSettings();
-  }, []);
+  }, [domain]);
+
+  useEffect(() => {
+    if (!isLoaded) {
+      return;
+    }
+    setButtonComponent(
+      <LoadingButton
+        variant="contained"
+        disabled={saveInProgress}
+        loading={saveInProgress}
+        onClick={handleSaveClicked}
+        fullWidth
+      >
+        {t('common.save')}
+      </LoadingButton>,
+    );
+  }, [saveInProgress, isLoaded]);
 
   const loadSettings = async () => {
     setNftAddressRecords(await getDomainNfts(domain));
@@ -103,15 +118,6 @@ export const TokenGallery: React.FC<TokenGalleryProps> = ({
             setModalOpen={setSaveInProgress}
             getNextNftPage={async () => {}}
           />
-          <LoadingButton
-            variant="contained"
-            disabled={saveInProgress}
-            className={classes.button}
-            loading={saveInProgress}
-            onClick={handleSaveClicked}
-          >
-            {t('common.save')}
-          </LoadingButton>
         </>
       ) : (
         <Box display="flex" justifyContent="center">
@@ -120,13 +126,4 @@ export const TokenGallery: React.FC<TokenGalleryProps> = ({
       )}
     </Box>
   );
-};
-
-export type TokenGalleryProps = {
-  address: string;
-  domain: string;
-  onUpdate(
-    tab: DomainProfileTabType,
-    data?: SerializedUserDomainProfileData,
-  ): void;
 };

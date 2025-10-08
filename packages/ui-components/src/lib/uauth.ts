@@ -1,9 +1,8 @@
-import type UAuth from '@uauth/js';
+import UAuth from '@uauth/js';
 
 import config from '@unstoppabledomains/config';
-import Resolution from '@unstoppabledomains/resolution';
 
-import {loadUnstoppableDomainsResolution} from './resolution/unstoppableDomainsLoader';
+import {loadUnstoppableDomainsResolution} from './resolution/unstoppableDomainsResolution';
 
 interface GetUAuthOptions {
   clientId?: string;
@@ -18,8 +17,7 @@ export async function getUAuth({
   humanityCheck,
 }: GetUAuthOptions = {}): Promise<UAuth> {
   if (!uauth) {
-    const UAuth = (await import('@uauth/js')).default;
-    const sourceConfig = await loadUnstoppableDomainsResolution();
+    const udResolution = loadUnstoppableDomainsResolution();
     let fallbackIssuer =
       config.APP_ENV !== 'production'
         ? 'https://auth.ud-staging.com'
@@ -33,7 +31,7 @@ export async function getUAuth({
       redirectUri: redirectUri || config.LOGIN_WITH_UNSTOPPABLE.REDIRECT_URI,
       scope: humanityCheck ? 'openid humanity_check' : 'openid wallet',
       fallbackIssuer,
-      resolution: new Resolution({sourceConfig}),
+      resolution: udResolution,
     });
   }
 

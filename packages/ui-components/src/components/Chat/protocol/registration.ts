@@ -1,11 +1,3 @@
-import {fetcher} from '@xmtp/proto';
-import {Signature} from '@xmtp/xmtp-js';
-import Bluebird from 'bluebird';
-
-import {registerXmtpTopic} from '../../../actions/messageActions';
-import type {TopicRegistration} from '../types';
-import {getSignedPublicKey, getXmtpClient, signMessage} from './xmtp';
-
 export interface TopicMetadata {
   topic: string;
   peerAddress: string;
@@ -17,6 +9,8 @@ export const registerClientTopics = async (
   address: string,
   topics: TopicMetadata[],
 ): Promise<void> => {
+  // TODO: AJQ future XMTP v3 work, register topics for push notifications
+  /*
   // the signed public key is common to all the signatures
   const signedPublicKey = await getSignedPublicKey(address);
 
@@ -64,4 +58,5 @@ export const registerClientTopics = async (
     ),
     registrations,
   );
+  */
 };

@@ -36,15 +36,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
     fontWeight: 'bold',
     whiteSpace: 'nowrap',
   },
-  uauth: {
-    background: theme.palette.primary.main,
-  },
-  uauthWhite: {
-    background: theme.palette.common.white,
-    color: theme.palette.common.black,
+  uauthPaper: {
+    background: theme.palette.background.paper,
+    color: theme.palette.getContrastText(theme.palette.background.paper),
     '&:hover': {
-      background: theme.palette.common.white,
-      color: theme.palette.common.black,
+      background: theme.palette.background.paper,
+      color: theme.palette.getContrastText(theme.palette.background.paper),
     },
   },
 }));
@@ -156,7 +153,7 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
           fullWidth
           size="large"
           className={cx(classes.button, {
-            [classes.uauthWhite]: isUauth || isWhiteBg,
+            [classes.uauthPaper]: isUauth || isWhiteBg,
           })}
           onClick={handleClick}
           onMouseEnter={() => setHovering(true)}

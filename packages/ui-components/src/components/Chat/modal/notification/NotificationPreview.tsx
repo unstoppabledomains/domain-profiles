@@ -15,6 +15,7 @@ import type {PayloadData} from '../../types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   notificationContainer: {
+    backgroundColor: 'transparent',
     marginBottom: theme.spacing(2),
     marginRight: theme.spacing(0),
   },
@@ -58,7 +59,11 @@ export const NotificationPreview: React.FC<NotificationPreviewProps> = ({
   };
 
   return isSearchTermMatch() ? (
-    <Card className={classes.notificationContainer} elevation={0}>
+    <Card
+      style={{border: 'none', boxShadow: 'none'}}
+      className={classes.notificationContainer}
+      elevation={0}
+    >
       <CardHeader
         title={
           <Typography

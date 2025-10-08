@@ -10,6 +10,7 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import Markdown from 'markdown-to-jsx';
 import React from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -48,6 +49,7 @@ export const CallToAction: React.FC<CallToActionProps> = ({
   subTitle,
   buttonText,
   loading,
+  children,
   handleButtonClick,
 }) => {
   const {classes} = useStyles();
@@ -73,8 +75,13 @@ export const CallToAction: React.FC<CallToActionProps> = ({
       )}
       <Typography variant="h6">{title}</Typography>
       <Typography mt={1} variant="body2">
-        {subTitle}
+        {typeof subTitle === 'string' ? (
+          <Markdown>{subTitle}</Markdown>
+        ) : (
+          subTitle
+        )}
       </Typography>
+      {children}
       {buttonText && handleButtonClick ? (
         <Button
           variant="contained"
@@ -101,11 +108,12 @@ export type CallToActionProps = {
     | 'GroupsIcon'
     | 'NotificationsActiveOutlinedIcon'
     | 'LockOutlinedIcon';
-  title: string;
+  title: React.ReactNode | string;
   subTitle?: React.ReactNode;
   buttonText?: string;
   loading?: boolean;
   handleButtonClick?: () => void;
+  children?: React.ReactNode;
 };
 
 export default CallToAction;

@@ -25,7 +25,6 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {getProfileReverseResolution} from '../../../../actions';
 import {getBadge} from '../../../../actions/badgeActions';
 import {joinBadgeGroupChat} from '../../../../actions/messageActions';
-import LearnMoreUdBlue from '../../../../components/LearnMoreUdBlue';
 import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {
@@ -43,13 +42,14 @@ import {fromCaip10Address} from '../../types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   communityContainer: {
+    backgroundColor: 'transparent',
     position: 'relative',
     marginBottom: theme.spacing(2),
     marginLeft: theme.spacing(0.25),
     marginRight: theme.spacing(0.25),
   },
   communityGradient: {
-    backgroundImage: `linear-gradient(225deg, ${theme.palette.white} 0%, ${theme.palette.blueGreyShades[100]} 100%)`,
+    backgroundImage: `linear-gradient(225deg, ${theme.palette.background.default} 0%, ${theme.palette.blueGreyShades[100]} 100%)`,
   },
   communityTitle: {
     display: 'flex',
@@ -85,8 +85,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginBottom: theme.spacing(2),
   },
   joinedBadgeIcon: {
-    backgroundColor: theme.palette.white,
-    color: theme.palette.white,
+    backgroundColor: theme.palette.background.paper,
+    color: theme.palette.getContrastText(theme.palette.background.paper),
     fill: theme.palette.success.main,
     borderRadius: '50%',
   },
@@ -134,7 +134,6 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
   address,
   badge,
   inGroup,
-  isUdBlue,
   pushKey,
   groupInfo,
   onRefresh,
@@ -150,7 +149,6 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
   const [joiningState, setJoiningState] = useState<string>();
   const [errorMsg, setErrorMsg] = useState<string>();
   const [badgeInfo, setBadgeInfo] = useState<SerializedBadgeInfo>();
-  const [udBlueModalOpen, setUdBlueModalOpen] = useState(false);
 
   useEffect(() => {
     // only load once when badge is first defined
@@ -218,7 +216,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
         setLatestMessage(t('push.noGroupMessages'));
         badge.groupChatLatestMessage = t('push.noGroupMessages');
       } catch (e) {
-        notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+        notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
           msg: 'error retrieving latest message',
         });
       } finally {
@@ -279,12 +277,6 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
   };
 
   const handleChatClicked = async () => {
-    // check UD blue status
-    if (!isUdBlue) {
-      setUdBlueModalOpen(true);
-      return;
-    }
-
     // retrieve group Chat ID from messaging API
     try {
       setJoiningState(t('push.joiningGroupState'));
@@ -306,7 +298,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
       setActiveCommunity(badge);
     } catch (e) {
       // unable to join group
-      notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+      notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
         msg: 'error joining group',
       });
       setErrorMsg(t('push.joinCommunityError'));
@@ -464,12 +456,6 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
         )}
       </Card>
       {inGroup && <Divider variant="fullWidth" />}
-      {udBlueModalOpen && (
-        <LearnMoreUdBlue
-          isOpen={udBlueModalOpen}
-          handleClose={() => setUdBlueModalOpen(false)}
-        />
-      )}
     </>
   ) : null;
 };
@@ -478,7 +464,6 @@ export type CommunityPreviewProps = {
   address: string;
   badge: SerializedCryptoWalletBadge;
   inGroup: boolean;
-  isUdBlue: boolean;
   pushKey: string;
   searchTerm?: string;
   visible?: boolean;

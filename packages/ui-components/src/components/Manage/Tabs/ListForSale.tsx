@@ -13,21 +13,23 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {getProfileUserData, setProfileUserData} from '../../../actions';
 import {useWeb3Context} from '../../../hooks';
 import type {SerializedUserDomainProfileData} from '../../../lib';
-import {DomainFieldTypes, useTranslationContext} from '../../../lib';
+import {
+  DomainFieldTypes,
+  isEmailValid,
+  useTranslationContext,
+} from '../../../lib';
 import {notifyEvent} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import {DomainProfileTabType} from '../DomainProfile';
 import BulkUpdateLoadingButton from '../common/BulkUpdateLoadingButton';
 import ManageInput from '../common/ManageInput';
 import {TabHeader} from '../common/TabHeader';
+import type {ManageTabProps} from '../common/types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing(-3),
-    },
   },
   checkboxContainer: {
     marginTop: theme.spacing(2),
@@ -39,9 +41,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   infoContainer: {
     marginBottom: theme.spacing(3),
-  },
-  button: {
-    marginTop: theme.spacing(4),
   },
   icon: {
     color: theme.palette.neutralShades[600],
@@ -57,10 +56,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const ListForSale: React.FC<ListForSale> = ({
+export const ListForSale: React.FC<ManageTabProps> = ({
   address,
   domain,
   onUpdate,
+  setButtonComponent,
 }) => {
   const {classes} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
@@ -78,8 +78,37 @@ export const ListForSale: React.FC<ListForSale> = ({
     useState<SerializedUserDomainProfileData>();
 
   useEffect(() => {
+    setIsLoaded(false);
+    setButtonComponent(<></>);
     setFireRequest(true);
-  }, []);
+  }, [domain]);
+
+  useEffect(() => {
+    if (!isLoaded) {
+      return;
+    }
+    setButtonComponent(
+      <BulkUpdateLoadingButton
+        address={address}
+        count={updatedCount}
+        isBulkUpdate={isBulkUpdate}
+        setIsBulkUpdate={setIsBulkUpdate}
+        variant="contained"
+        onClick={handleSave}
+        loading={isSaving}
+        disabled={!dirtyFlag}
+        errorMessage={updateErrorMessage}
+      />,
+    );
+  }, [
+    address,
+    updatedCount,
+    isBulkUpdate,
+    isSaving,
+    dirtyFlag,
+    updateErrorMessage,
+    isLoaded,
+  ]);
 
   // handleProfileData fired once the ProfileManager has obtained a primary domain
   // signature and expiration time from the user.
@@ -140,7 +169,7 @@ export const ListForSale: React.FC<ListForSale> = ({
       }
     } catch (e) {
       setUpdateErrorMessage(t('manage.updateError'));
-      notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+      notifyEvent(e, 'error', 'Profile', 'Fetch', {
         msg: 'unable to manage user profile',
       });
     }
@@ -161,11 +190,7 @@ export const ListForSale: React.FC<ListForSale> = ({
     });
     setIsListingEnabled(false);
     if (id === 'publicDomainSellerEmail') {
-      setIsInvalidEmail(
-        !value.match(
-          /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-        ),
-      );
+      setIsInvalidEmail(!isEmailValid(value));
     }
   };
 
@@ -188,6 +213,7 @@ export const ListForSale: React.FC<ListForSale> = ({
       {isLoaded ? (
         <>
           <ManageInput
+            mt={2}
             id="publicDomainSellerEmail"
             value={userProfile?.profile?.publicDomainSellerEmail}
             label={t('manage.listForSaleEmail')}
@@ -225,18 +251,6 @@ export const ListForSale: React.FC<ListForSale> = ({
               />
             </FormGroup>
           </Box>
-          <BulkUpdateLoadingButton
-            address={address}
-            count={updatedCount}
-            isBulkUpdate={isBulkUpdate}
-            setIsBulkUpdate={setIsBulkUpdate}
-            variant="contained"
-            onClick={handleSave}
-            loading={isSaving}
-            className={classes.button}
-            disabled={!dirtyFlag}
-            errorMessage={updateErrorMessage}
-          />
         </>
       ) : (
         <Box display="flex" justifyContent="center">
@@ -253,13 +267,4 @@ export const ListForSale: React.FC<ListForSale> = ({
       />
     </Box>
   );
-};
-
-export type ListForSale = {
-  address: string;
-  domain: string;
-  onUpdate(
-    tab: DomainProfileTabType,
-    data?: SerializedUserDomainProfileData,
-  ): void;
 };

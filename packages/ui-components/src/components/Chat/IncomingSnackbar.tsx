@@ -1,8 +1,8 @@
-import {alpha} from '@mui/material/';
 import Avatar from '@mui/material/Avatar';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {alpha} from '@mui/system/colorManipulator';
 import {SnackbarContent} from 'notistack';
 import React, {useEffect, useState} from 'react';
 
@@ -35,8 +35,8 @@ const useStyles = makeStyles<{variant: SnackbarVariant}>()(
     avatar: {
       marginRight: theme.spacing(1),
       color: theme.palette.primary.main,
-      backgroundColor: 'white',
-      border: '2px solid white',
+      backgroundColor: theme.palette.background.default,
+      border: `2px solid ${theme.palette.background.default}`,
       width: 50,
       height: 50,
     },
@@ -86,7 +86,7 @@ export const IncomingChatSnackbar = React.forwardRef<
           setAvatarUrl(addressMetadata.avatarUrl);
         }
       } catch (e) {
-        notifyEvent(e, 'warning', 'MESSAGING', 'Resolution', {
+        notifyEvent(e, 'warning', 'Messaging', 'Resolution', {
           msg: 'error looking up reverse resolution',
         });
       }

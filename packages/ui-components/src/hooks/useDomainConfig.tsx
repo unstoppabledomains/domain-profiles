@@ -3,9 +3,15 @@ import {useContext} from 'react';
 import {DomainConfigContext} from '../providers/DomainConfigProvider';
 
 const useDomainConfig = () => {
-  const {isOpen, setIsOpen, configTab, setConfigTab} =
-    useContext(DomainConfigContext);
-  if (!setIsOpen || !setConfigTab) {
+  const {
+    isOpen,
+    setIsOpen,
+    configTab,
+    setConfigTab,
+    showSuccessAnimation,
+    setShowSuccessAnimation,
+  } = useContext(DomainConfigContext);
+  if (!setIsOpen || !setConfigTab || !setShowSuccessAnimation) {
     throw new Error(
       'Expected useDomainConfig to be called within <DomainConfigProvider />',
     );
@@ -15,6 +21,8 @@ const useDomainConfig = () => {
     setIsOpen,
     configTab,
     setConfigTab,
+    showSuccessAnimation,
+    setShowSuccessAnimation,
   };
 };
 

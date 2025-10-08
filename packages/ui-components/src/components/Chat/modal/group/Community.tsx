@@ -20,6 +20,7 @@ import Typography from '@mui/material/Typography';
 import {styled} from '@mui/material/styles';
 import type {GroupDTO, IMessageIPFS} from '@pushprotocol/restapi';
 import Bluebird from 'bluebird';
+import CopyModule from 'clipboard-copy';
 import {useSnackbar} from 'notistack';
 import type {MouseEvent} from 'react';
 import React, {useEffect, useState} from 'react';
@@ -28,12 +29,11 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import config from '@unstoppabledomains/config';
 
 import {joinBadgeGroupChat} from '../../../../actions/messageActions';
+import type {SerializedDomainBasicListData} from '../../../../lib';
 import {notifyEvent} from '../../../../lib/error';
 import useTranslationContext from '../../../../lib/i18n';
 import type {SerializedCryptoWalletBadge} from '../../../../lib/types/badge';
 import type {Web3Dependencies} from '../../../../lib/types/web3';
-import type {CopyModule} from '../../../CopyToClipboard';
-import {noop} from '../../../CopyToClipboard';
 import {DomainListModal} from '../../../Domain';
 import {
   PUSH_PAGE_SIZE,
@@ -64,10 +64,11 @@ export const Community: React.FC<CommunityProps> = ({
   pushKey,
   incomingMessage,
   storageApiKey,
+  fullScreen,
   setWeb3Deps,
   onBack,
 }) => {
-  const {classes} = useConversationStyles({isChatRequest: false});
+  const {classes} = useConversationStyles({isChatRequest: false, fullScreen});
   const [t] = useTranslationContext();
   const {enqueueSnackbar} = useSnackbar();
   const [isLoading, setIsLoading] = useState(true);
@@ -144,7 +145,7 @@ export const Community: React.FC<CommunityProps> = ({
         setPushMessages([...pushMessages, ...previousMessages.slice(1)]);
       }
     } catch (e) {
-      notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+      notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
         msg: 'error fetching previous conversations',
       });
     }
@@ -181,7 +182,7 @@ export const Community: React.FC<CommunityProps> = ({
       setHasMoreMessages(initialMessages.length >= PUSH_PAGE_SIZE);
       setPushMessages(initialMessages);
     } catch (e) {
-      notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+      notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
         msg: 'error loading conversation',
       });
     } finally {
@@ -213,17 +214,11 @@ export const Community: React.FC<CommunityProps> = ({
     setAnchorEl(null);
   };
 
-  const handleShareInvite = () => {
-    void (import('clipboard-copy') as Promise<CopyModule>).then(
-      (mod: CopyModule) => {
-        mod
-          .default(
-            `${config.UD_ME_BASE_URL}/${authDomain}?openBadgeCode=${badge.code}&action=invite`,
-          )
-          .then(handleClickToCopy)
-          .catch(noop);
-      },
+  const handleShareInvite = async () => {
+    await CopyModule(
+      `${config.UD_ME_BASE_URL}/${authDomain}?openBadgeCode=${badge.code}&action=invite`,
     );
+    handleClickToCopy();
   };
 
   const handleLeaveChat = async () => {
@@ -266,7 +261,7 @@ export const Community: React.FC<CommunityProps> = ({
     startIndex?: number | string,
   ) => {
     const pageSize = 10;
-    const retData: {domains: string[]; cursor?: number} = {
+    const retData: SerializedDomainBasicListData = {
       domains: [],
       cursor: undefined,
     };
@@ -361,7 +356,11 @@ export const Community: React.FC<CommunityProps> = ({
     ));
 
   return (
-    <Card className={classes.cardContainer} variant="outlined">
+    <Card
+      style={{border: 'none', boxShadow: 'none'}}
+      className={classes.cardContainer}
+      variant="outlined"
+    >
       <CardHeader
         title={
           <Box className={classes.headerTitleContainer}>
@@ -433,11 +432,7 @@ export const Community: React.FC<CommunityProps> = ({
                   </Typography>
                 </MenuItem>
               )}
-              <MenuItem
-                onClick={() => {
-                  handleShareInvite();
-                }}
-              >
+              <MenuItem onClick={handleShareInvite}>
                 <ListItemIcon>
                   <ShareOutlinedIcon fontSize="small" />
                 </ListItemIcon>
@@ -558,6 +553,7 @@ export type CommunityProps = {
   pushKey: string;
   incomingMessage?: IMessageIPFS;
   storageApiKey?: string;
+  fullScreen?: boolean;
   setWeb3Deps: (value: Web3Dependencies | undefined) => void;
   onBack: () => void;
   onClose: () => void;

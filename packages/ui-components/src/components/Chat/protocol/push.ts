@@ -52,7 +52,7 @@ export const acceptGroupInvite = async (
       });
     }
   } catch (e) {
-    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
       msg: 'error accepting group invitation',
     });
   }
@@ -64,7 +64,7 @@ export const decryptMessage = async (
   msg: IMessageIPFS,
 ): Promise<IMessageIPFS | undefined> => {
   if (msg.link) {
-    const cachedMsg = getLocalKey<IMessageIPFS>(msg.link);
+    const cachedMsg = await getLocalKey<IMessageIPFS>(msg.link);
     if (cachedMsg) {
       return cachedMsg;
     }
@@ -83,11 +83,11 @@ export const decryptMessage = async (
     );
 
     if (msg.link && decryptedMessage) {
-      setLocalKey<IMessageIPFS>(msg.link, decryptedMessage);
+      await setLocalKey<IMessageIPFS>(msg.link, decryptedMessage);
       return decryptedMessage;
     }
   } catch (e) {
-    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
       msg: 'error decrypting message',
     });
   }
@@ -130,7 +130,7 @@ export const decryptMessageWithPGP = async (
       }
     }
   } catch (err) {
-    notifyEvent(err, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(err, 'error', 'Messaging', 'PushProtocol', {
       msg: 'error decrypting message',
     });
     return undefined;
@@ -152,7 +152,7 @@ export const getGroupInfo = async (chatId?: string) => {
       chatId,
     });
   } catch (e) {
-    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
       msg: 'error getting group',
     });
     return;
@@ -187,7 +187,7 @@ export const getLatestMessage = async (
       return await decryptMessage(address, pushKey, encryptedMsg[0]);
     }
   } catch (e) {
-    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
       msg: 'error retrieving latest message',
     });
   }
@@ -220,7 +220,7 @@ export const getMessages = async (
       limit: PUSH_PAGE_SIZE,
     });
   } catch (e) {
-    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
       msg: 'error retrieving chat history',
     });
   }
@@ -232,7 +232,7 @@ export const getPushUser = async (
   address: string,
 ): Promise<PushAPI.IUser | undefined> => {
   // attempt to retrieve user from cache
-  const cachedUser = getLocalKey<PushAPI.IUser>(address);
+  const cachedUser = await getLocalKey<PushAPI.IUser>(address);
   if (cachedUser) {
     return cachedUser;
   }
@@ -244,11 +244,11 @@ export const getPushUser = async (
       env: config.APP_ENV === 'production' ? ENV.PROD : ENV.STAGING,
     });
     if (pushUser) {
-      setLocalKey(address, pushUser);
+      await setLocalKey(address, pushUser);
       return pushUser;
     }
   } catch (e) {
-    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
       msg: 'error getting push user',
     });
   }
@@ -386,7 +386,7 @@ export const updateBlockedList = async (
 
   // update the protocol list with blocked users and update the
   // cached push user in local storage
-  setLocalKey(
+  await setLocalKey(
     address,
     await PushAPI.user.profile.update({
       account: getAddressAccount(address),
@@ -431,7 +431,7 @@ export const updateBlockedList = async (
     ]);
   } catch (e) {
     // graceful failure
-    notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+    notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
       msg: 'unable to update block list registration',
     });
   }

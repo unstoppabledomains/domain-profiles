@@ -19,6 +19,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
+    width: '100%',
+    marginBottom: theme.spacing(-2),
   },
   button: {
     marginBottom: theme.spacing(0.5),
@@ -64,6 +66,7 @@ const BulkUpdateLoadingButton: React.FC<
         className={classes.button}
         disabled={props.disabled}
         color={props.errorMessage ? 'error' : 'primary'}
+        fullWidth
       >
         {props.errorMessage ? (
           <Box display="flex" alignItems="center">

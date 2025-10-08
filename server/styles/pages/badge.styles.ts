@@ -8,7 +8,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
-    background: theme.palette.common.white,
+    background: theme.palette.background.default,
     display: 'flex',
     flexDirection: 'column',
     flex: '1 1 auto',
@@ -87,7 +87,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     fontSize: 14,
     textTransform: 'uppercase',
     background: theme.palette.neutralShades[200],
-    color: 'black',
+    color: theme.palette.getContrastText(theme.palette.background.default),
     padding: '2px 6px',
     borderRadius: '4px',
     marginBottom: theme.spacing(2),
@@ -167,10 +167,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     position: 'absolute',
     right: theme.spacing(1),
     bottom: theme.spacing(1),
-    color: theme.palette.common.white,
+    color: theme.palette.background.default,
   },
   shareMenu: {
-    color: theme.palette.common.white,
+    color: theme.palette.background.default,
   },
   description: {
     fontSize: theme.typography.body1.fontSize,

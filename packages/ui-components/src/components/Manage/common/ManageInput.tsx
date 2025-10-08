@@ -2,6 +2,8 @@ import CheckIcon from '@mui/icons-material/Check';
 import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
 import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import FormControl from '@mui/material/FormControl';
@@ -13,7 +15,7 @@ import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import React from 'react';
+import React, {useState} from 'react';
 
 import type {DomainProfileVisibilityValues} from '../../../lib';
 import {useTranslationContext} from '../../../lib';
@@ -23,13 +25,16 @@ import FormError from './FormError';
 interface ManageInputProps {
   id: string;
   value?: string;
-  label: string | JSX.Element;
+  mt?: number;
+  label?: string | JSX.Element;
   placeholder: string;
   error?: boolean;
   errorText?: string;
   disabled?: boolean;
   deprecated?: boolean;
+  onClick?: () => void;
   onChange: (id: string, value: string) => void;
+  onKeyDown?: React.KeyboardEventHandler;
   // if true, the input will allow adding multiple lines of text. Else, one line
   // only.  Defaults to false.
   multiline?: boolean;
@@ -55,6 +60,7 @@ interface ManageInputProps {
     cardOpen: boolean;
     id: string | null;
   };
+  type?: string;
   setPublicVisibilityValues?: React.Dispatch<
     React.SetStateAction<DomainProfileVisibilityValues>
   > | null;
@@ -64,6 +70,8 @@ interface ManageInputProps {
       id: string | null;
     }>
   >;
+  inputRef?: React.RefObject<HTMLInputElement>;
+  autoComplete?: string;
 }
 
 const ManageInput: React.FC<ManageInputProps> = ({
@@ -72,10 +80,13 @@ const ManageInput: React.FC<ManageInputProps> = ({
   label,
   placeholder,
   error,
+  mt,
   errorText,
   disabled = false,
   deprecated = false,
+  onClick,
   onChange,
+  onKeyDown,
   multiline = false,
   helperText,
   labelIcon = null,
@@ -83,6 +94,8 @@ const ManageInput: React.FC<ManageInputProps> = ({
   stacked = true,
   maxLength,
   rows,
+  inputRef,
+  type = 'text',
   startAdornment = null,
   endAdornment = null,
   classes: classesOverride,
@@ -90,14 +103,24 @@ const ManageInput: React.FC<ManageInputProps> = ({
   setPublicVisibilityValues,
   isCardOpen,
   setIsCardOpen,
+  autoComplete,
 }) => {
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
+  const [currentType, setCurrentType] = useState(type);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const showPasswordAdornment = type === 'password' && !endAdornment;
+
   const handleChange = ({target}: React.ChangeEvent<HTMLInputElement>) => {
     onChange(
       target.id,
       disableTextTrimming ? target.value : target.value.trim(),
     );
+  };
+
+  const handlePasswordVisibilityClicked = () => {
+    setCurrentType(currentType === 'password' ? 'text' : 'password');
+    setPasswordVisible(!passwordVisible);
   };
 
   const handleAdornmentClick = (e: {stopPropagation: () => void}) => {
@@ -188,52 +211,86 @@ const ManageInput: React.FC<ManageInputProps> = ({
   }
 
   return (
-    <FormControl className={classes.formMargin} fullWidth>
-      <Grid container>
-        <Grid
-          item
-          className={classes.labelGridItem}
-          xs={12}
-          sm={stacked ? 12 : 3}
-        >
-          <div className={classes.labelAndIconDiv}>
-            {labelIcon && <div className={classes.labelIcon}>{labelIcon}</div>}
-            <InputLabel
-              focused={false}
-              htmlFor={id}
-              className={cx(classes.formLabel, classes.formControlInputLabel)}
-            >
-              {label}
-            </InputLabel>
-          </div>
-        </Grid>
-        <Grid item xs={12} sm={stacked ? 12 : 9}>
-          <OutlinedInput
-            id={id}
-            disabled={disabled || deprecated}
-            error={error}
-            minRows={rows}
-            maxRows={rows}
-            value={value || ''}
-            inputProps={{
-              'data-testid': `input-${id}`,
-              className: !endAdornment && error ? classes.error : '',
-              maxLength,
-            }}
-            multiline={multiline}
-            placeholder={placeholder}
-            onChange={handleChange}
-            classes={{
-              root: cx(classes.inputRoot, classesOverride?.root),
-              input: cx(classes.input, classesOverride?.input),
-              adornedStart: classesOverride?.adornedStart,
-              adornedEnd: classesOverride?.adornedEnd,
-            }}
-            startAdornment={startAdornment}
-            endAdornment={
-              endAdornment
-                ? endAdornment
-                : setPublicVisibilityValues && (
+    <Box mt={mt} width="100%" className={classes.formMargin}>
+      <FormControl className={classes.formMargin} fullWidth>
+        <Grid container>
+          <Grid
+            item
+            className={classes.labelGridItem}
+            xs={12}
+            sm={stacked ? 12 : 3}
+          >
+            {label && (
+              <div className={classes.labelAndIconDiv}>
+                {labelIcon && (
+                  <div className={classes.labelIcon}>{labelIcon}</div>
+                )}
+                <InputLabel
+                  focused={false}
+                  htmlFor={id}
+                  className={cx(
+                    classes.formLabel,
+                    classes.formControlInputLabel,
+                  )}
+                >
+                  {label}
+                </InputLabel>
+              </div>
+            )}
+          </Grid>
+          <Grid item xs={12} sm={stacked ? 12 : 9}>
+            <OutlinedInput
+              id={id}
+              disabled={disabled || deprecated}
+              error={error}
+              minRows={rows}
+              maxRows={rows}
+              inputRef={inputRef}
+              value={value || ''}
+              type={currentType}
+              onClick={onClick}
+              inputProps={{
+                'data-testid': `input-${id}`,
+                className:
+                  !endAdornment && !showPasswordAdornment && error
+                    ? classes.error
+                    : '',
+                maxLength,
+                onClick,
+              }}
+              autoComplete={autoComplete}
+              multiline={multiline}
+              placeholder={placeholder}
+              onChange={handleChange}
+              onKeyDown={onKeyDown}
+              fullWidth
+              classes={{
+                root: cx(classes.inputRoot, classesOverride?.root),
+                input: cx(classes.input, classesOverride?.input),
+                adornedStart: classesOverride?.adornedStart,
+                adornedEnd: classesOverride?.adornedEnd,
+              }}
+              startAdornment={startAdornment}
+              endAdornment={
+                showPasswordAdornment ? (
+                  <IconButton
+                    className={classes.passwordIcon}
+                    onClick={handlePasswordVisibilityClicked}
+                  >
+                    {passwordVisible ? (
+                      <Tooltip title={t('common.passwordHide')}>
+                        <VisibilityOffOutlinedIcon />
+                      </Tooltip>
+                    ) : (
+                      <Tooltip title={t('common.passwordShow')}>
+                        <VisibilityOutlinedIcon />
+                      </Tooltip>
+                    )}
+                  </IconButton>
+                ) : endAdornment ? (
+                  endAdornment
+                ) : (
+                  setPublicVisibilityValues && (
                     <InputAdornment
                       position="end"
                       style={{paddingRight: '15px', position: 'relative'}}
@@ -261,19 +318,24 @@ const ManageInput: React.FC<ManageInputProps> = ({
                       <BasicCard></BasicCard>
                     </InputAdornment>
                   )
-            }
-          />
-          {helperText && <FormHelperText>{helperText}</FormHelperText>}
-          {(deprecated || (error && errorText)) && (
-            <div className={classes.formErrorContainer}>
-              <FormError
-                message={deprecated ? t('manage.legacyToken') : errorText ?? ''}
-              />
-            </div>
-          )}
+                )
+              }
+            />
+            {helperText && <FormHelperText>{helperText}</FormHelperText>}
+            {(deprecated || (error && errorText)) && (
+              <div className={classes.formErrorContainer}>
+                <FormError
+                  className={classes.formError}
+                  message={
+                    deprecated ? t('manage.legacyToken') : errorText ?? ''
+                  }
+                />
+              </div>
+            )}
+          </Grid>
         </Grid>
-      </Grid>
-    </FormControl>
+      </FormControl>
+    </Box>
   );
 };
 

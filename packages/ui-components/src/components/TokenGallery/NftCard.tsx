@@ -1,6 +1,8 @@
+import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined';
 import CollectionsOutlinedIcon from '@mui/icons-material/CollectionsOutlined';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import PortraitOutlinedIcon from '@mui/icons-material/PortraitOutlined';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
@@ -10,24 +12,36 @@ import MenuItem from '@mui/material/MenuItem';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
 import React, {useEffect, useRef, useState} from 'react';
 import type {MouseEvent} from 'react';
 import VisibilitySensor from 'react-visibility-sensor';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import {CryptoIcon} from '../../components/Image/CryptoIcon';
 import type {Nft} from '../../lib';
+import {isDomainValidForManagement} from '../../lib';
 import useTranslationContext from '../../lib/i18n';
 import type {CurrenciesType} from '../../lib/types/blockchain';
+import SelectNftPopup from '../Manage/Tabs/Profile/SelectNftPopup';
 import NftImage from './NftImage';
 import NftModal from './NftModal';
 
 const useStyles = makeStyles()((theme: Theme) => ({
+  clickableTitle: {
+    cursor: 'pointer',
+  },
   currencyIcon: {
     width: 15,
     height: 15,
     marginRight: theme.spacing(1),
+  },
+  listedIcon: {
+    width: 15,
+    height: 15,
+    marginRight: theme.spacing(0.5),
   },
   nftImage: {
     justifyContent: 'center',
@@ -49,6 +63,16 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   placeholderTxt: {
     color: theme.palette.neutralShades[600],
+  },
+  listedNameTxt: {
+    fontWeight: 'bold',
+  },
+  listedPriceTxt: {
+    color: theme.palette.success.main,
+    fontWeight: 'bold',
+  },
+  unlistedPriceTxt: {
+    color: theme.palette.neutralShades[400],
   },
   loadingContainer: {
     display: 'flex',
@@ -74,34 +98,47 @@ const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 interface Props {
-  domain: string;
+  domain?: string;
+  address?: string;
   nft: Nft;
   placeholder?: boolean;
   compact?: boolean;
+  onClick?: (selected: Nft) => void;
+  onTransferNft?: (nft: Nft) => void;
 }
 
-const NftCard = ({nft, compact, placeholder}: Props) => {
+const NftCard = ({
+  domain,
+  address,
+  nft,
+  compact,
+  placeholder,
+  onClick,
+  onTransferNft,
+}: Props) => {
   const [t] = useTranslationContext();
   const videoRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
   const {classes, cx} = useStyles();
   const [open, setOpen] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [pfpModalOpen, setPfpModalOpen] = useState(false);
+  const theme = useTheme();
 
   const css = `
   .NFT-container {
     display: flex;
     flex-direction: column;
     width: 100%;
-    background-color: white;
+    background-color: ${theme.palette.background.paper};
     padding-top: 0px;
     transition: all 0.3s ease 0s;
     border-radius: 12px;
-    box-shadow: 0px 1px 0px #DDDDDF, 0px 0px 0px 1px #DDDDDF;
+    box-shadow: ${theme.shadows[3]};
     overflow: hidden;
   }
   .NFT-container:hover {
-    box-shadow: rgba(0, 0, 0, 0.22) 0px 5px 10px;
+    box-shadow: ${theme.shadows[6]};
     transform: translate3d(0px, -2px, 0px);
     transition: all 0.3s ease 0s;
   }
@@ -172,6 +209,12 @@ const NftCard = ({nft, compact, placeholder}: Props) => {
   const handleClose = () => setOpen(false);
 
   const handleClick = async () => {
+    // use custom onClick if provided
+    if (onClick) {
+      onClick(nft);
+      return;
+    }
+
     //only open modal if feature flag is set
     if (!nft.link) {
       return;
@@ -192,6 +235,21 @@ const NftCard = ({nft, compact, placeholder}: Props) => {
       }
     }
   }, [isVisible]);
+
+  useEffect(() => {
+    if (!nft) {
+      return;
+    }
+
+    // for domains, use the metadata image service instead of the provided image_url
+    if (isDomainValidForManagement(nft.name)) {
+      nft.image_url = getMetadataImage(nft.name);
+    }
+  }, [nft]);
+
+  const getMetadataImage = (d: string) => {
+    return `${config.UNSTOPPABLE_METADATA_ENDPOINT}/image-src/${d}?withOverlay=true`;
+  };
 
   const shouldRenderVideo = () => {
     if (nft.video_url && !nft.image_url) {
@@ -226,6 +284,17 @@ const NftCard = ({nft, compact, placeholder}: Props) => {
     }
   };
 
+  const handleSetPfpClicked = () => {
+    setPfpModalOpen(true);
+  };
+
+  const handleTransferNft = (selectedNft: Nft) => {
+    if (onTransferNft) {
+      onTransferNft(selectedNft);
+      handleClose();
+    }
+  };
+
   const handleToggleCollectionVisibility = (v: boolean) => {
     if (nft.symbol && nft.mint) {
       const collectionId = nft.mint!.split('/')[0];
@@ -250,7 +319,13 @@ const NftCard = ({nft, compact, placeholder}: Props) => {
   return (
     <>
       <style>{css}</style>
-      <Box className={'NFT-container'} data-testid={'nft-card'}>
+      <Box
+        className={cx('NFT-container', {
+          [classes.clickableTitle]: !!onClick,
+        })}
+        onClick={onClick ? handleClick : undefined}
+        data-testid={'nft-card'}
+      >
         <Box className={'NFT-image-container'}>
           {shouldRenderVideo() ? (
             <VisibilitySensor
@@ -309,11 +384,17 @@ const NftCard = ({nft, compact, placeholder}: Props) => {
                 {nft.symbol && (
                   <CryptoIcon
                     currency={nft.symbol as CurrenciesType}
-                    classes={{root: classes.currencyIcon}}
+                    className={classes.currencyIcon}
                   />
                 )}
                 {nft.name ? (
-                  <Typography>{nft.name}</Typography>
+                  <Typography
+                    className={cx({
+                      [classes.listedNameTxt]: nft.variant === 'listed',
+                    })}
+                  >
+                    {nft.name}
+                  </Typography>
                 ) : (
                   placeholder && (
                     <Skeleton width="300px" height={25} variant="text" />
@@ -333,14 +414,21 @@ const NftCard = ({nft, compact, placeholder}: Props) => {
             <Typography
               className={cx('NFT-collection', {
                 [classes.placeholderTxt]: placeholder,
+                [classes.listedPriceTxt]: nft.variant === 'listed',
+                [classes.unlistedPriceTxt]: nft.variant === 'unlisted',
               })}
               variant="caption"
             >
-              {nft?.collection
-                ? nft.collection
-                : placeholder && (
-                    <Skeleton width="75%" height={22} variant="text" />
-                  )}
+              <Box display="flex" alignItems="center">
+                {nft?.variant === 'listed' && (
+                  <AddShoppingCartOutlinedIcon className={classes.listedIcon} />
+                )}
+                {nft?.collection
+                  ? nft.collection
+                  : placeholder && (
+                      <Skeleton width="75%" height={22} variant="text" />
+                    )}
+              </Box>
             </Typography>
           </Box>
         )}
@@ -351,6 +439,22 @@ const NftCard = ({nft, compact, placeholder}: Props) => {
           transformOrigin={{horizontal: 'right', vertical: 'top'}}
           anchorOrigin={{horizontal: 'right', vertical: 'bottom'}}
         >
+          {nft.pfp_uri && (
+            <MenuItem
+              data-testid="nft-set-pfp"
+              onClick={async () => {
+                handleCloseMenu();
+                handleSetPfpClicked();
+              }}
+            >
+              <ListItemIcon>
+                <PortraitOutlinedIcon fontSize="small" />
+              </ListItemIcon>
+              <Typography variant="body2">
+                {t('nftCollection.setAsAvatar')}
+              </Typography>
+            </MenuItem>
+          )}
           <MenuItem
             data-testid="nft-card-hide-nft"
             onClick={async () => {
@@ -387,7 +491,26 @@ const NftCard = ({nft, compact, placeholder}: Props) => {
             </Typography>
           </MenuItem>
         </Menu>
-        <NftModal handleClose={handleClose} open={open} nft={nft} />
+        {open && (
+          <NftModal
+            handleClose={handleClose}
+            handleTransferNft={onTransferNft ? handleTransferNft : undefined}
+            open={open}
+            nft={nft}
+            domain={domain}
+            address={address}
+          />
+        )}
+        {pfpModalOpen && domain && address && (
+          <SelectNftPopup
+            domain={domain}
+            address={address}
+            popupOpen={pfpModalOpen}
+            imageUrl={nft.image_url}
+            pfpURI={nft.pfp_uri}
+            handlePopupClose={() => setPfpModalOpen(false)}
+          />
+        )}
       </Box>
       {compact && (
         <Box mt={1} display="flex" flexDirection="column">

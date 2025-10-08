@@ -12,21 +12,26 @@ export const useStyles = makeStyles<
 >()((theme: Theme, {isSaleActive}, classes) => ({
   container: {
     position: 'relative',
-    background: theme.palette.neutralShades[100],
+    background: theme.palette.background.default,
+    justifyContent: 'space-between',
     display: 'flex',
     flexDirection: 'column',
     flex: '1 1 auto',
     height: '100%',
-    minHeight: '970px',
   },
   content: {
+    display: 'flex',
+    alignItems: 'center',
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
-    marginTop: theme.spacing(15),
+    height: '100%',
   },
   item: {
     justifyContent: 'center',
     display: 'flex',
+  },
+  button: {
+    marginTop: theme.spacing(1),
   },
   searchContainer: {
     display: 'flex',
@@ -35,9 +40,30 @@ export const useStyles = makeStyles<
     maxWidth: '650px',
     width: '100%',
   },
+  walletContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: theme.palette.background.paper,
+    marginTop: theme.spacing(3),
+    padding: theme.spacing(2),
+    boxShadow: theme.shadows[3],
+  },
+  walletInfoContainer: {
+    width: '535px',
+  },
+  walletPortfolioContainer: {
+    width: '420px',
+  },
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+    height: '100%',
+  },
   sectionTitle: {
-    fontSize: 60,
-    lineHeight: '64px',
     fontFamily: "'Helvetica Neue', sans-serif",
     fontWeight: 900,
     textAlign: 'center',
@@ -45,8 +71,6 @@ export const useStyles = makeStyles<
     marginBottom: theme.spacing(7),
     [theme.breakpoints.down('sm')]: {
       marginBottom: theme.spacing(4),
-      fontSize: 32,
-      lineHeight: '40px',
     },
   },
   sectionSubTitle: {
@@ -148,12 +172,11 @@ export const useStyles = makeStyles<
   },
   footerContainer: {
     padding: theme.spacing(2),
-    position: 'absolute',
-    bottom: 0,
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
     justifyContent: 'center',
+    marginTop: theme.spacing(5),
   },
   footerContent: {
     display: 'flex',
@@ -171,5 +194,52 @@ export const useStyles = makeStyles<
   },
   copyright: {
     color: theme.palette.neutralShades[600],
+  },
+  manageContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    width: '520px',
+    [theme.breakpoints.down('sm')]: {
+      width: '100%',
+    },
+  },
+  manageIcon: {
+    width: '30px',
+    height: '30px',
+  },
+  manageTitle: {
+    display: 'flex',
+    width: '100%',
+    color: theme.palette.getContrastText(theme.palette.background.default),
+    marginTop: theme.spacing(1),
+    marginRight: theme.spacing(-6),
+  },
+  upperContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    width: '100%',
+    maxHeight: '520px',
+    textAlign: 'center',
+  },
+  lowerContainer: {
+    display: 'flex',
+    marginTop: theme.spacing(1),
+    width: '100%',
+    [theme.breakpoints.down('md')]: {
+      marginRight: theme.spacing(3),
+    },
+  },
+  errorIcon: {
+    color: theme.palette.error.main,
+    height: '55px',
+    width: '55px',
+  },
+  successIcon: {
+    color: theme.palette.success.main,
+    height: '55px',
+    width: '55px',
   },
 }));

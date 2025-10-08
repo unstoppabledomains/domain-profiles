@@ -3,8 +3,9 @@ import type {SerializedDomainMarket} from './domain';
 export enum Network {
   Mainnet = '1',
   Goerli = '5',
+  Sepolia = '11155111',
   Polygon = '137',
-  Mumbai = '80001',
+  Amoy = '80002',
   Binance = '56',
   Avalanche = '43114',
   Fantom = '250',
@@ -13,6 +14,7 @@ export enum Network {
 export type Nft = SerializedNftMetadata & {
   toggleVisibility?: (symbol: string, mint: string, visible: boolean) => void;
   peerNfts?: Nft[];
+  variant?: 'listed' | 'unlisted';
 };
 
 export type NftMintItem = NftRequestItem & {
@@ -50,8 +52,9 @@ export type SerializedNftMetadata = {
   link: string;
   name: string;
   image_url: string;
+  pfp_uri?: string;
   description: string;
-  video_url: string;
+  video_url?: string;
   collection: string;
   collectionLink?: string;
   tags?: string[];

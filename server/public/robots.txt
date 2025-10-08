@@ -1,0 +1,8 @@
+# Explicitly block Googlebot and Adsbot
+User-agent: Googlebot
+User-agent: AdsBot-Google
+Disallow: /
+
+# Generally block everything else
+User-agent: *
+Disallow: /

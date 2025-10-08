@@ -6,6 +6,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import Markdown from 'markdown-to-jsx';
 import React, {useEffect, useState} from 'react';
 
 import config from '@unstoppabledomains/config';
@@ -14,20 +15,22 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {getProfileUserData, setProfileUserData} from '../../../actions';
 import {useWeb3Context} from '../../../hooks';
 import type {SerializedUserDomainProfileData} from '../../../lib';
-import {DomainFieldTypes, useTranslationContext} from '../../../lib';
+import {
+  DomainFieldTypes,
+  isEmailValid,
+  useTranslationContext,
+} from '../../../lib';
 import {notifyEvent} from '../../../lib/error';
 import {ProfileManager} from '../../Wallet/ProfileManager';
 import BulkUpdateLoadingButton from '../common/BulkUpdateLoadingButton';
 import ManageInput from '../common/ManageInput';
 import {TabHeader} from '../common/TabHeader';
+import type {ManageTabProps} from '../common/types';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    [theme.breakpoints.down('sm')]: {
-      marginRight: theme.spacing(-3),
-    },
   },
   checkboxContainer: {
     marginTop: theme.spacing(2),
@@ -39,9 +42,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   infoContainer: {
     marginBottom: theme.spacing(3),
-  },
-  button: {
-    marginTop: theme.spacing(4),
   },
   mailIcon: {
     color: theme.palette.neutralShades[600],
@@ -57,7 +57,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-export const Email: React.FC<EmailProps> = ({address, domain}) => {
+export const Email: React.FC<ManageTabProps> = ({
+  address,
+  domain,
+  setButtonComponent,
+}) => {
   const {classes} = useStyles();
   const {setWeb3Deps} = useWeb3Context();
   const [t] = useTranslationContext();
@@ -74,8 +78,37 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
     useState<SerializedUserDomainProfileData>();
 
   useEffect(() => {
+    setIsLoaded(false);
+    setButtonComponent(<></>);
     setFireRequest(true);
-  }, []);
+  }, [domain]);
+
+  useEffect(() => {
+    if (!isLoaded) {
+      return;
+    }
+    setButtonComponent(
+      <BulkUpdateLoadingButton
+        address={address}
+        count={updatedCount}
+        isBulkUpdate={isBulkUpdate}
+        setIsBulkUpdate={setIsBulkUpdate}
+        variant="contained"
+        onClick={handleSave}
+        loading={isSaving}
+        disabled={!dirtyFlag}
+        errorMessage={updateErrorMessage}
+      />,
+    );
+  }, [
+    address,
+    updatedCount,
+    isBulkUpdate,
+    isSaving,
+    dirtyFlag,
+    updateErrorMessage,
+    isLoaded,
+  ]);
 
   // handleProfileData fired once the ProfileManager has obtained a primary domain
   // signature and expiration time from the user.
@@ -126,7 +159,7 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
       }
     } catch (e) {
       setUpdateErrorMessage(t('manage.updateError'));
-      notifyEvent(e, 'error', 'PROFILE', 'Fetch', {
+      notifyEvent(e, 'error', 'Profile', 'Fetch', {
         msg: 'unable to manage user profile',
       });
     }
@@ -153,11 +186,7 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
     });
 
     if (id === 'privateEmail') {
-      setIsInvalidEmail(
-        !value.match(
-          /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-        ),
-      );
+      setIsInvalidEmail(!isEmailValid(value));
     }
   };
 
@@ -189,6 +218,7 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
       {isLoaded ? (
         <>
           <ManageInput
+            mt={2}
             id="privateEmail"
             value={userProfile?.profile?.privateEmail}
             label={t('manage.privateEmail')}
@@ -227,31 +257,22 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
                     <Typography
                       variant="caption"
                       className={classes.enableDescription}
+                      component="div"
                     >
-                      {t('manage.enableEmailForAddressDescription', {
-                        privateAddress: userProfile?.profile?.privateEmail
-                          ? userProfile.profile.privateEmail
-                          : t('manage.yourPrivateEmail'),
-                        udMeAddress: `${domain}@${config.MESSAGING.EMAIL_DOMAIN}`,
-                      })}
+                      <Markdown>
+                        {t('manage.enableEmailForAddressDescription', {
+                          privateAddress: userProfile?.profile?.privateEmail
+                            ? userProfile.profile.privateEmail
+                            : t('manage.yourPrivateEmail'),
+                          udMeAddress: `${domain}@${config.MESSAGING.EMAIL_DOMAIN}`,
+                        })}
+                      </Markdown>
                     </Typography>
                   </Box>
                 }
               />
             </FormGroup>
           </Box>
-          <BulkUpdateLoadingButton
-            address={address}
-            count={updatedCount}
-            isBulkUpdate={isBulkUpdate}
-            setIsBulkUpdate={setIsBulkUpdate}
-            variant="contained"
-            onClick={handleSave}
-            loading={isSaving}
-            className={classes.button}
-            disabled={!dirtyFlag}
-            errorMessage={updateErrorMessage}
-          />
         </>
       ) : (
         <Box display="flex" justifyContent="center">
@@ -268,9 +289,4 @@ export const Email: React.FC<EmailProps> = ({address, domain}) => {
       />
     </Box>
   );
-};
-
-export type EmailProps = {
-  address: string;
-  domain: string;
 };

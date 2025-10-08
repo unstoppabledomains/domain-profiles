@@ -10,7 +10,9 @@ import React from 'react';
 import {QueryClient, QueryClientProvider} from 'react-query';
 
 import * as uiComponents from '@unstoppabledomains/ui-components';
-import defaultTheme from '@unstoppabledomains/ui-kit/styles';
+
+// create default theme
+const defaultTheme = uiComponents.getTheme();
 
 // Instantiate query client for each render so that we do not leak state between tests
 const createTestQueryClient = () =>

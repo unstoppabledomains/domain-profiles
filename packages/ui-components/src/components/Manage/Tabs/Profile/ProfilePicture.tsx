@@ -24,6 +24,7 @@ import {
   useTranslationContext,
 } from '../../../../lib';
 import {AddAvatarPopup} from './AddAvatarPopup';
+import SelectNftPopup from './SelectNftPopup';
 import SelectUrlPopup from './SelectUrlPopup';
 
 const AVATAR_SIZE = 120;
@@ -46,7 +47,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
     borderRadius: '50%',
-    backgroundColor: theme.palette.white,
+    backgroundColor: theme.palette.background.paper,
     zIndex: 1,
     [theme.breakpoints.up('sm')]: {
       flex: '1 0 auto',
@@ -68,7 +69,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     position: 'relative',
     backgroundColor: theme.palette.primary.main,
     borderRadius: '50%',
-    border: `6px solid ${theme.palette.white}`,
+    border: `6px solid ${theme.palette.background.paper}`,
     cursor: 'pointer',
     '&::before': {
       content: '""',
@@ -126,7 +127,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
   },
   buttonWhite: {
-    color: theme.palette.white,
+    color: theme.palette.background.paper,
   },
   buttonDisabled: {
     '&.Mui-disabled': {
@@ -137,7 +138,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   buttonWhiteDisabled: {
     '&.Mui-disabled': {
-      color: theme.palette.white,
+      color: theme.palette.background.paper,
     },
   },
   buttonIcon: {
@@ -148,7 +149,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     color: theme.palette.neutralShades[600],
   },
   iconWhite: {
-    fill: theme.palette.white,
+    fill: theme.palette.background.paper,
   },
   iconGrey: {
     width: 24,
@@ -160,7 +161,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     zIndex: 1,
   },
   dividerWhite: {
-    backgroundColor: theme.palette.white,
+    backgroundColor: theme.palette.background.paper,
     opacity: 0.24,
   },
 }));
@@ -204,6 +205,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
   const {classes, cx} = useStyles();
   const [avatarPopupOpen, setAvatarPopupOpen] = useState(false);
   const [urlPopupOpen, setUrlPopupOpen] = useState(false);
+  const [nftPopupOpen, setNftPopupOpen] = useState(false);
   const [onChainImageUrl, setOnChainImageUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
   const isMounted = useIsMounted();
@@ -246,6 +248,15 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
 
   const handleUrlPopupClose = () => {
     setUrlPopupOpen(false);
+  };
+
+  const handleNftPopupOpen = () => {
+    setNftPopupOpen(true);
+  };
+
+  const handleNftPopupClose = () => {
+    setNftPopupOpen(false);
+    handleAvatarPopupClose();
   };
 
   const handleAvatarPopupOpen = () => {
@@ -459,6 +470,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
             popupOpen={avatarPopupOpen}
             handleAvatarPopupClose={handleAvatarPopupClose}
             handleUrlPopupOpen={handleUrlPopupOpen}
+            handleNftPopupOpen={handleNftPopupOpen}
             handleUploadClick={handleAvatarUploadClick}
           />
         )}
@@ -469,6 +481,15 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
           popupOpen={urlPopupOpen}
           handlePopupClose={handleUrlPopupClose}
           handleSelectUrlClick={handleSelectUrlClick}
+        />
+      )}
+
+      {nftPopupOpen && (
+        <SelectNftPopup
+          domain={domain}
+          address={ownerAddress}
+          popupOpen={nftPopupOpen}
+          handlePopupClose={handleNftPopupClose}
         />
       )}
     </Grid>

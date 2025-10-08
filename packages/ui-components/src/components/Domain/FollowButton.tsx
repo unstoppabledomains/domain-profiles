@@ -1,9 +1,11 @@
-import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
-import RemoveIcon from '@mui/icons-material/Remove';
+import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
+import PersonRemoveOutlinedIcon from '@mui/icons-material/PersonRemoveOutlined';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import type {Theme} from '@mui/material/styles';
+import { useTheme} from '@mui/material/styles';
+import {useSnackbar} from 'notistack';
 import React, {useEffect, useState} from 'react';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
@@ -21,7 +23,8 @@ import ChipControlButton from '../ChipControlButton';
 const useStyles = makeStyles<{color?: string}>()((theme: Theme, {color}) => ({
   followButtonSmall: {
     marginLeft: theme.spacing(0.5),
-    color: color || 'white',
+    color:
+      color || theme.palette.getContrastText(theme.palette.neutralShades[500]),
   },
 }));
 
@@ -49,6 +52,8 @@ const FollowButton: React.FC<FollowButtonProps> = ({
   small,
 }) => {
   const {classes} = useStyles({color});
+  const theme = useTheme();
+  const {enqueueSnackbar} = useSnackbar();
   const {data: followStatus, isLoading} = useDomainProfileFollowStatus(
     authDomain,
     domain,
@@ -57,6 +62,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     followStatus?.isFollowing ?? false,
   );
   const [followClicked, setFollowClicked] = useState(false);
+  const [isMouseOver, setIsMouseOver] = useState(false);
   const [t] = useTranslationContext();
 
   useEffect(() => {
@@ -70,6 +76,10 @@ const FollowButton: React.FC<FollowButtonProps> = ({
       setIsFollowing(followStatus.isFollowing);
     }
   }, [isLoading, followStatus]);
+
+  const handleMouseOver = () => {
+    setIsMouseOver(!isMouseOver);
+  };
 
   const handleClick = () => {
     if (!authDomain || !authAddress) {
@@ -98,6 +108,10 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     }
   };
 
+  const handleError = () => {
+    enqueueSnackbar(t('profile.followError', {domain}), {variant: 'error'});
+  };
+
   return (
     <>
       {small ? (
@@ -108,29 +122,87 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         >
           <IconButton
             onClick={handleClick}
+            onMouseEnter={handleMouseOver}
+            onMouseLeave={handleMouseOver}
             data-testid="follow-button"
             className={classes.followButtonSmall}
+            disableRipple={true}
             size="small"
           >
             {isFollowing ? (
-              <RemoveIcon
-                fontSize="inherit"
-                sx={{'&&': {color: color || 'white'}}}
-              />
+              isMouseOver ? (
+                <PersonRemoveOutlinedIcon
+                  width="16px"
+                  height="16px"
+                  fontSize="inherit"
+                  sx={{
+                    '&&': {
+                      color:
+                        color ||
+                        theme.palette.getContrastText(
+                          theme.palette.neutralShades[500],
+                        ),
+                    },
+                  }}
+                />
+              ) : (
+                <CheckIcon
+                  width="16px"
+                  height="16px"
+                  fontSize="inherit"
+                  sx={{
+                    '&&': {
+                      color:
+                        color ||
+                        theme.palette.getContrastText(
+                          theme.palette.neutralShades[500],
+                        ),
+                    },
+                  }}
+                />
+              )
             ) : (
-              <AddIcon
+              <PersonAddAltOutlinedIcon
+                width="16px"
+                height="16px"
                 fontSize="inherit"
-                sx={{'&&': {color: color || 'white'}}}
+                sx={{
+                  '&&': {
+                    color:
+                      color ||
+                      theme.palette.getContrastText(
+                        theme.palette.neutralShades[500],
+                      ),
+                  },
+                }}
               />
             )}
           </IconButton>
         </Tooltip>
       ) : (
         <ChipControlButton
+          onMouseEnter={handleMouseOver}
+          onMouseLeave={handleMouseOver}
           onClick={handleClick}
-          icon={!isFollowing ? <AddIcon /> : <CheckIcon />}
-          label={isFollowing ? t('profile.following') : t('profile.follow')}
+          sx={{width: '100px'}}
+          icon={
+            !isFollowing ? (
+              <PersonAddAltOutlinedIcon />
+            ) : isMouseOver ? (
+              <PersonRemoveOutlinedIcon />
+            ) : (
+              <CheckIcon />
+            )
+          }
+          label={
+            isFollowing
+              ? isMouseOver
+                ? t('profile.unfollow')
+                : t('profile.following')
+              : t('profile.follow')
+          }
           data-testid="follow-button"
+          variant="outlined"
         />
       )}
       <ProfileManager
@@ -140,6 +212,8 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         saveClicked={followClicked}
         setSaveClicked={setFollowClicked}
         onSignature={handleCallback}
+        onFailed={handleError}
+        closeAfterSignature={true}
       />
     </>
   );

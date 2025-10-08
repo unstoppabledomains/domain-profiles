@@ -3,86 +3,91 @@ import Alert from '@mui/lab/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
+import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import type {Signer} from 'ethers';
 import Markdown from 'markdown-to-jsx';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import truncateEthAddress from 'truncate-eth-address';
-import {WagmiConfig, configureChains, createConfig, mainnet} from 'wagmi';
-import {CoinbaseWalletConnector} from 'wagmi/connectors/coinbaseWallet';
-import {InjectedConnector} from 'wagmi/connectors/injected';
-import {MetaMaskConnector} from 'wagmi/connectors/metaMask';
-import {WalletConnectConnector} from 'wagmi/connectors/walletConnect';
-import {publicProvider} from 'wagmi/providers/public';
-
-import config from '@unstoppabledomains/config';
 
 import AccessEthereum from '../../components/Wallet/AccessEthereum';
+import useFireblocksMessageSigner from '../../hooks/useFireblocksMessageSigner';
+import useFireblocksState from '../../hooks/useFireblocksState';
+import useFireblocksTxSigner from '../../hooks/useFireblocksTxSigner';
+import useWeb3Context from '../../hooks/useWeb3Context';
 import useTranslationContext from '../../lib/i18n';
+import {WalletName} from '../../lib/types/wallet';
 import type {Web3Dependencies} from '../../lib/types/web3';
+import {
+  ReactSigner,
+  UD_COMPLETED_SIGNATURE,
+} from '../../lib/wallet/reactSigner';
+import {getBootstrapState} from '../../lib/wallet/storage/state';
 import useAccessWalletStyles from '../../styles/components/accessWallet.styles';
+import {isEthAddress} from '../Chat/protocol/resolution';
+import {DomainProfileTabType} from '../Manage/DomainProfile';
+import {SignMessage as UnstoppableWalletMessageSigner} from './SignMessage';
+import {SignTx as UnstoppableWalletTxSigner} from './SignTx';
+import {Wallet as UnstoppableWalletConfig} from './Wallet';
 
 type Props = {
   address?: string;
+  isMpcWallet?: boolean;
+  isMpcPromptDisabled?: boolean;
+  hideHeader?: boolean;
+  fullScreen?: boolean;
   message?: React.ReactNode;
   prompt?: boolean;
   onComplete?: (web3Deps?: Web3Dependencies) => void;
   onReconnect?: () => void;
+  onClose: () => void;
 };
 
-const AccessWallet = (props: Props) => {
+export const AccessWallet = (props: Props) => {
   const {classes} = useAccessWalletStyles();
   const [error, setError] = useState('');
   const [t] = useTranslationContext();
 
-  // theming variables for the QR modal
-  const themeVariables = {
-    '--wcm-z-index': '100000',
-  };
+  // selected wallet state
+  const [selectedWallet, setSelectedWallet] = useState<WalletName>();
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Set up wagmi config
-  const {chains, publicClient, webSocketPublicClient} = configureChains(
-    [mainnet],
-    [publicProvider()],
-  );
-  const wagmiConfig = createConfig({
-    autoConnect: false,
-    connectors: [
-      new MetaMaskConnector({chains}),
-      new WalletConnectConnector({
-        chains,
-        options: {
-          projectId: config.WALLETCONNECT_PROJECT_ID,
-          qrModalOptions: {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            themeVariables: themeVariables as any,
-          },
-          metadata: {
-            name: t('nftCollection.unstoppableDomains'),
-            description: t('nftCollection.unstoppableDomainsDescription'),
-            url: config.UD_ME_BASE_URL,
-            icons: [config.UD_LOGO_URL],
-          },
-        },
-      }),
-      new CoinbaseWalletConnector({
-        chains,
-        options: {
-          appName: 'wagmi',
-        },
-      }),
-      new InjectedConnector({
-        chains,
-        options: {
-          shimDisconnect: true,
-        },
-      }),
-    ],
-    publicClient,
-    webSocketPublicClient,
-  });
+  // Unstoppable wallet signature state variables
+  const [state] = useFireblocksState();
+  const fireblocksMessageSigner = useFireblocksMessageSigner();
+  const fireblocksTxSigner = useFireblocksTxSigner();
+  const [udConfigButton, setUdConfigButton] = useState<React.ReactNode>(<></>);
+  const [udConfigSuccess, setUdConfigSuccess] = useState(false);
+  const {messageToSign, setMessageToSign, txToSign, setTxToSign} =
+    useWeb3Context({enforcePin: true});
+
+  // automatically select a connected Unstoppable Wallet if one of the managed
+  // addresses matches the requested address
+  useEffect(() => {
+    if (state && Object.keys(state).length > 0 && props.address) {
+      const bootstrapState = getBootstrapState(state);
+      if (
+        bootstrapState?.assets?.find(
+          a => a.address.toLowerCase() === props.address?.toLowerCase(),
+        )
+      ) {
+        setSelectedWallet(WalletName.UnstoppableWalletReact);
+        void handleUdWalletConnected(DomainProfileTabType.Wallet);
+      }
+    }
+    setIsLoaded(true);
+  }, [state, props.address]);
+
+  // automatically select the embedded Unstoppable Wallet if the MPC flag is set
+  // and the browser extension is not installed
+  useEffect(() => {
+    if (props.isMpcWallet && !window.unstoppable) {
+      setSelectedWallet(WalletName.UnstoppableWalletReact);
+    }
+  }, [props.isMpcWallet]);
 
   const handleWalletConnected = (web3Deps?: Web3Dependencies) => {
     setError('');
@@ -92,7 +97,13 @@ const AccessWallet = (props: Props) => {
       }
       return;
     }
-    if (props.address.toLowerCase() === web3Deps?.address.toLowerCase()) {
+    const addresses = [
+      web3Deps?.address,
+      ...(web3Deps?.unstoppableWallet?.addresses || []),
+    ];
+    if (
+      addresses.map(a => a?.toLowerCase()).includes(props.address.toLowerCase())
+    ) {
       if (props.onComplete) {
         props.onComplete(web3Deps);
       }
@@ -109,59 +120,169 @@ const AccessWallet = (props: Props) => {
     }
   };
 
+  const handleUdWalletConnected = async (_type: DomainProfileTabType) => {
+    // retrieve an access token if one was not provided
+    setUdConfigSuccess(true);
+
+    // query accounts belonging to the UD wallet
+    const bootstrapState = getBootstrapState(state);
+    const allAddresses = bootstrapState?.assets?.map(a => a.address) || [];
+
+    // validate addresses located
+    const ethAddresses = [
+      ...new Set(allAddresses.filter(a => isEthAddress(a))),
+    ];
+    if (ethAddresses.length === 0) {
+      return;
+    }
+
+    // determine whether to prompt for signatures based on access wallet param. Allows
+    // the logic calling for access wallet to determine if a prompt is necessary.
+    const promptForSignatures = !props.isMpcPromptDisabled;
+
+    // initialize a react signature UX component that can be called back
+    // by a signature request hook
+    const udWalletSigner = new ReactSigner(
+      ethAddresses[0],
+      promptForSignatures
+        ? {
+            setMessage: setMessageToSign,
+            setTx: setTxToSign,
+          }
+        : {
+            signMessageWithFireblocks: fireblocksMessageSigner,
+            signTxWithFireblocks: fireblocksTxSigner,
+          },
+    );
+
+    // raise success events
+    handleWalletConnected({
+      address: ethAddresses[0],
+      signer: udWalletSigner as unknown as Signer,
+      unstoppableWallet: {
+        addresses: ethAddresses,
+        promptForSignatures,
+      },
+    });
+  };
+
+  const handleUdWalletSignature = (messageSignature?: string) => {
+    if (!messageSignature) {
+      UD_COMPLETED_SIGNATURE.push('');
+      if (props.onComplete) {
+        props.onComplete();
+      }
+      return;
+    }
+    UD_COMPLETED_SIGNATURE.push(messageSignature);
+  };
+
   return (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    <WagmiConfig config={wagmiConfig}>
-      <div className={classes.root}>
-        <div className={classes.column}>
-          {error && (
-            <Box display="flex" flexDirection="column" justifyContent="center">
-              <Alert
-                action={
-                  props.onReconnect ? (
-                    <Button
-                      onClick={props.onReconnect}
-                      color="inherit"
-                      size="small"
-                    >
-                      {t('auth.retry')}
-                    </Button>
-                  ) : undefined
-                }
-                severity="error"
-              >
-                <Markdown>{error}</Markdown>
-              </Alert>
-            </Box>
-          )}
-          {props.message && (
-            <Typography align="center" variant="h5">
-              {props.message}
-            </Typography>
-          )}
-          {props.prompt && props.address && (
-            <Typography
-              align="center"
-              className={classes.prompt}
-              component="div"
+    <div className={classes.root}>
+      <div className={classes.column}>
+        {error && (
+          <Box display="flex" flexDirection="column" justifyContent="center">
+            <Alert
+              action={
+                props.onReconnect ? (
+                  <Button
+                    onClick={props.onReconnect}
+                    color="inherit"
+                    size="small"
+                  >
+                    {t('auth.retry')}
+                  </Button>
+                ) : undefined
+              }
+              severity="error"
             >
-              {t('auth.walletAddress')}:
-              <div className={classes.ethWalletAddress}>{props.address}</div>
-            </Typography>
-          )}
+              <Markdown>{error}</Markdown>
+            </Alert>
+          </Box>
+        )}
+        {props.message && (
+          <Typography align="center" variant="h5" mb={2}>
+            {props.message}
+          </Typography>
+        )}
+        {props.prompt && props.address && (
+          <Typography align="center" className={classes.prompt} component="div">
+            {t('auth.walletAddressRequired')}:
+            <div className={classes.ethWalletAddress}>{props.address}</div>
+          </Typography>
+        )}
+        {isLoaded && (
           <div className={classes.column}>
-            <AccessEthereum
-              onComplete={handleWalletConnected}
-              onReconnect={props.onReconnect}
-            />
+            {selectedWallet !== WalletName.UnstoppableWalletReact ? (
+              <AccessEthereum
+                address={props.address}
+                isMpcWallet={props.isMpcWallet}
+                onComplete={handleWalletConnected}
+                onReconnect={props.onReconnect}
+                onClose={props.onClose}
+                selectedWallet={selectedWallet}
+                setSelectedWallet={setSelectedWallet}
+              />
+            ) : (
+              <Grid
+                item
+                xs={12}
+                display="flex"
+                justifyContent="center"
+                height="100%"
+                width="100%"
+              >
+                <Box className={classes.udConfigContainer}>
+                  {(!messageToSign && !txToSign) || !udConfigSuccess ? (
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      justifyContent="space-between"
+                      height="100%"
+                    >
+                      <UnstoppableWalletConfig
+                        address={''}
+                        domain={''}
+                        onUpdate={handleUdWalletConnected}
+                        setButtonComponent={setUdConfigButton}
+                      />
+                      <Box width="100%" mt={2}>
+                        {udConfigButton}
+                      </Box>
+                    </Box>
+                  ) : messageToSign ? (
+                    <>
+                      <UnstoppableWalletMessageSigner
+                        address={props.address}
+                        hideHeader={props.hideHeader}
+                        message={messageToSign}
+                        onComplete={handleUdWalletSignature}
+                      />
+                    </>
+                  ) : (
+                    txToSign && (
+                      <>
+                        <UnstoppableWalletTxSigner
+                          hideHeader={props.hideHeader}
+                          chainId={txToSign.chainId}
+                          contractAddress={txToSign.to}
+                          data={txToSign.data}
+                          value={txToSign.value}
+                          onComplete={handleUdWalletSignature}
+                        />
+                      </>
+                    )
+                  )}
+                </Box>
+              </Grid>
+            )}
           </div>
-        </div>
+        )}
       </div>
-    </WagmiConfig>
+    </div>
   );
 };
-
-export default AccessWallet;
 
 type ModalProps = Props & {
   open: boolean;
@@ -170,17 +291,30 @@ type ModalProps = Props & {
 };
 
 export const AccessWalletModal = (props: ModalProps) => {
-  const {classes, theme} = useAccessWalletStyles();
+  const {classes, cx, theme} = useAccessWalletStyles();
+  const {web3Deps} = useWeb3Context();
   const [t] = useTranslationContext();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const ConnectWalletWrapper = isMobile ? Popover : Dialog;
+  const ConnectWalletWrapper = isMobile && !props.fullScreen ? Popover : Dialog;
+
+  const onCloseWrapper = () => {
+    if (web3Deps?.unstoppableWallet) {
+      UD_COMPLETED_SIGNATURE.push('');
+    }
+    props.onClose();
+  };
 
   return (
     <ConnectWalletWrapper
       open={props.open}
-      onClose={props.onClose}
+      onClose={onCloseWrapper}
+      fullScreen={props.fullScreen}
+      fullWidth={props.fullScreen}
       classes={{paper: classes.modalRoot}}
-      {...(isMobile
+      className={cx({
+        [classes.modalFullScreen]: props.fullScreen,
+      })}
+      {...(isMobile && !props.fullScreen
         ? {
             anchorOrigin: {
               vertical: 'bottom',
@@ -194,21 +328,30 @@ export const AccessWalletModal = (props: ModalProps) => {
           }
         : {})}
     >
-      <div className={classes.modalHeader} data-testid={'access-wallet-modal'}>
-        <Typography className={classes.modalTitle}>
-          {t('auth.accessWallet')}
-        </Typography>
-        <IconButton onClick={props.onClose} size="medium">
-          <CloseIcon />
-        </IconButton>
-      </div>
+      {!props.hideHeader && (
+        <div
+          className={classes.modalHeader}
+          data-testid={'access-wallet-modal'}
+        >
+          <Typography className={classes.modalTitle}>
+            {t('auth.accessWallet')}
+          </Typography>
+          <IconButton onClick={onCloseWrapper} size="medium">
+            <CloseIcon />
+          </IconButton>
+        </div>
+      )}
       <div className={classes.modalContent}>
         <AccessWallet
           address={props.address}
           onComplete={props.onComplete}
           onReconnect={props.onReconnect}
+          onClose={onCloseWrapper}
+          hideHeader={props.hideHeader}
           prompt={props.prompt}
           message={props.message}
+          isMpcWallet={props.isMpcWallet}
+          isMpcPromptDisabled={props.isMpcPromptDisabled}
         />
       </div>
     </ConnectWalletWrapper>

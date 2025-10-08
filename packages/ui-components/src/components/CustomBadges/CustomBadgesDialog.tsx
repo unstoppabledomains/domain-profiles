@@ -25,7 +25,7 @@ import useTranslationContext from '../../lib/i18n';
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     '& .MuiDialogContent-root': {
-      backgroundColor: '#fff',
+      backgroundColor: theme.palette.background.default,
       width: '420px',
     },
   },
@@ -75,9 +75,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
   badgePreviewContainer: {
     marginTop: 16,
-    background: '#FFFFFF',
-    boxShadow:
-      '0px 1px 0px #DDDDDF, 0px 0px 0px 1px #DDDDDF, 0px 8px 24px rgba(0, 0, 0, 0.08)',
+    background: theme.palette.background.default,
+    boxShadow: theme.shadows[6],
     borderRadius: '8px',
     width: '254px',
     height: '72px',
@@ -127,7 +126,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
   badgeExistsText: {
     marginTop: 24,
-    color: '#62626A',
+    color: theme.palette.neutralShades[600],
     textAlign: 'center',
   },
 }));
@@ -211,7 +210,7 @@ const CustomBadgesDialog: React.FC<Props> = ({open, handleClose}) => {
             });
           }
         } catch (e) {
-          notifyEvent(e, 'error', 'BADGES', 'Fetch');
+          notifyEvent(e, 'error', 'Badges', 'Fetch');
           return e;
         }
       }

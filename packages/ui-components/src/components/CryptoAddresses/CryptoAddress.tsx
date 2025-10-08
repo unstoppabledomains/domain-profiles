@@ -1,4 +1,7 @@
+import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
 import InfoIcon from '@mui/icons-material/Info';
+import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
 import Menu from '@mui/material/Menu';
@@ -15,6 +18,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import CopyToClipboard from '../../components/CopyToClipboard';
 import {CryptoIcon} from '../../components/Image/CryptoIcon';
 import {useDomainConfig} from '../../hooks';
+import {getBlockScanUrl} from '../../lib';
 import {displayShortCryptoAddress} from '../../lib/displayCryptoAddress';
 import useTranslationContext from '../../lib/i18n';
 import type {CurrenciesType} from '../../lib/types/blockchain';
@@ -32,8 +36,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
   row: {
     borderRadius: (theme.shape.borderRadius as number) * 25,
     padding: theme.spacing(0.75, 1),
-    backgroundColor: theme.palette.neutralShades[100],
-    border: `1px solid ${theme.palette.neutralShades[100]}`,
+    backgroundColor: theme.palette.background.paper,
+    border: `1px solid ${theme.palette.background.paper}`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -45,7 +49,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
       'border-color',
     ]),
     '&:hover': {
-      backgroundColor: theme.palette.white,
+      backgroundColor: theme.palette.background.default,
       boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.08)',
       borderColor: theme.palette.neutralShades[200],
     },
@@ -83,17 +87,17 @@ const useStyles = makeStyles()((theme: Theme) => ({
     userSelect: 'none',
   },
   infoIcon: {
-    color: '#D18411',
+    color: theme.palette.warning.main,
   },
   tooltipContainer: {
     textAlign: 'center',
   },
   verifyLink: {
-    color: '#72E6FC',
+    color: theme.palette.secondary.main,
     fontSize: '13px',
     padding: 0,
   },
-  copyIcon: {
+  actionIcon: {
     width: 16,
     height: 16,
     display: 'flex',
@@ -109,8 +113,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
     fontWeight: theme.typography.fontWeightMedium,
     transition: theme.transitions.create('background-color'),
   },
-  menuCopyIcon: {
+  menuActionIcon: {
     marginRight: theme.spacing(1),
+    height: '14px',
+    width: '14px',
   },
 }));
 
@@ -134,7 +140,6 @@ const CryptoAddress: React.FC<Props> = ({
   ownerAddress,
   isOwner,
   showWarning = false,
-  domain,
   profileData,
   chain,
   onCryptoAddressCopied: handleCryptoAddressCopied,
@@ -183,8 +188,12 @@ const CryptoAddress: React.FC<Props> = ({
     });
   }, [currency, address, profileData, showWarning]);
 
-  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleMultiAddressClick = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
+  };
+
+  const handleSingleAddressClick = (addr: string) => {
+    window.open(getBlockScanUrl(currency, addr), '_blank');
   };
 
   const handleClose = () => {
@@ -205,21 +214,28 @@ const CryptoAddress: React.FC<Props> = ({
   };
 
   const showTooltip = showWarning && !isVerified && isSupported(currency);
+  const isSingleAddress = Object.keys(filteredVersions || []).length <= 1;
+  const isSingleAddressWithLink =
+    isSingleAddress && getBlockScanUrl(currency, address);
+
   const item = (
     <div
       key={currency}
       className={classes.row}
-      onClick={filteredVersions ? handleClick : undefined}
+      onClick={
+        isSingleAddressWithLink
+          ? () => handleSingleAddressClick(address)
+          : isSingleAddress
+          ? undefined
+          : handleMultiAddressClick
+      }
     >
       <Tooltip
         title={`${currency}${filteredVersions ? versionName : ''}`}
         placement="bottom"
         arrow
       >
-        <CryptoIcon
-          currency={currency}
-          classes={{root: classes.currencyIcon}}
-        />
+        <CryptoIcon currency={currency} className={classes.currencyIcon} />
       </Tooltip>
       {chain && <span className={classes.chain}>{chain}</span>}
       <Typography className={classes.address}>
@@ -265,10 +281,20 @@ const CryptoAddress: React.FC<Props> = ({
             />
           </Tooltip>
         </ClickAwayListener>
-      ) : (
+      ) : isSingleAddressWithLink ? (
+        <LaunchOutlinedIcon
+          titleAccess={t('profile.openAddress')}
+          className={classes.actionIcon}
+        />
+      ) : isSingleAddress ? (
         <CopyContentIcon
           titleAccess={t('profile.copyAddress')}
-          className={classes.copyIcon}
+          className={classes.actionIcon}
+        />
+      ) : (
+        <ExpandMoreOutlinedIcon
+          titleAccess={t('profile.viewAddress')}
+          className={classes.actionIcon}
         />
       )}
     </div>
@@ -283,35 +309,60 @@ const CryptoAddress: React.FC<Props> = ({
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleClose}
+            transformOrigin={{horizontal: 'right', vertical: 'top'}}
+            anchorOrigin={{horizontal: 'right', vertical: 'bottom'}}
             classes={{list: classes.menuList}}
           >
-            {Object.keys(filteredVersions).map(version => (
-              <CopyToClipboard
-                key={`${currency}_${version}`}
-                onCopy={
-                  showTooltip && isOwner ? undefined : handleCryptoAddressCopied
-                }
-                stringToCopy={
-                  showTooltip && isOwner ? '' : filteredVersions[version]
-                }
-              >
+            {Object.keys(filteredVersions)
+              .sort((a, b) => a.localeCompare(b))
+              .map(version => (
                 <MenuItem className={classes.menuItem} onClick={handleClose}>
-                  <CopyContentIcon
-                    titleAccess={t('profile.copyAddress')}
-                    className={classes.menuCopyIcon}
-                  />
-                  {version}
+                  {getBlockScanUrl(currency, filteredVersions[version]) ? (
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      onClick={() =>
+                        handleSingleAddressClick(filteredVersions[version])
+                      }
+                    >
+                      <LaunchOutlinedIcon
+                        titleAccess={t('profile.openAddress')}
+                        className={classes.menuActionIcon}
+                      />
+                      <Typography variant="body2">{version}</Typography>
+                    </Box>
+                  ) : (
+                    <CopyToClipboard
+                      key={`${currency}_${version}`}
+                      onCopy={
+                        showTooltip && isOwner
+                          ? undefined
+                          : handleCryptoAddressCopied
+                      }
+                      stringToCopy={
+                        showTooltip && isOwner ? '' : filteredVersions[version]
+                      }
+                    >
+                      <Box display="flex">
+                        <CopyContentIcon
+                          titleAccess={t('profile.copyAddress')}
+                          className={classes.menuActionIcon}
+                        />
+                        <Typography variant="body2">{version}</Typography>
+                      </Box>
+                    </CopyToClipboard>
+                  )}
                 </MenuItem>
-              </CopyToClipboard>
-            ))}
+              ))}
           </Menu>
         </>
+      ) : isSingleAddressWithLink ? (
+        item
       ) : (
         <CopyToClipboard
-          onCopy={
-            showTooltip && isOwner ? undefined : handleCryptoAddressCopied
-          }
-          stringToCopy={showTooltip && isOwner ? '' : address}
+          onCopy={handleCryptoAddressCopied}
+          stringToCopy={address}
         >
           {item}
         </CopyToClipboard>

@@ -1,3 +1,7 @@
+import Keyv from 'keyv';
+
+import {isEmailValid} from '../isEmailValid';
+import type {BitscrunchRiskScore} from './bitscrunch';
 import type {WebacyRiskScore} from './webacy';
 
 export enum AffiliateTier {
@@ -21,6 +25,7 @@ export enum AffiliateTier {
   ThirtyFiveApril2022 = 'thirty-five-april-2022',
   ThirtyFebruary2022 = 'thirty-february-2022',
 }
+
 export const DOMAIN_PROFILE_VISIBILITY_VALUES: DomainProfileVisibilityValues = {
   displayNamePublic: false,
   descriptionPublic: false,
@@ -30,7 +35,6 @@ export const DOMAIN_PROFILE_VISIBILITY_VALUES: DomainProfileVisibilityValues = {
   imagePathPublic: true,
   coverPathPublic: true,
 };
-
 export const DOMAIN_SOCIAL_VISIBILITY_VALUES: SocialProfileVisibilityValues = {
   youtubePublic: false,
   twitterPublic: false,
@@ -45,6 +49,8 @@ export type DiscordUserInfo = {
   kind: DomainProfileSocialMedia.Discord;
   userName: string;
 } | null;
+
+export type DomainBannerType = 'receive' | 'send' | 'buy';
 
 export type DomainCryptoVerificationBodyPOST = {
   symbol: string;
@@ -65,23 +71,37 @@ export enum DomainFieldTypes {
   HumanityCheck = 'humanityCheck',
   Messaging = 'messaging',
   Profile = 'profile',
+  Social = 'social',
   SocialAccounts = 'socialAccounts',
   Records = 'records',
   ReferralCode = 'referralCode',
   ReferralTier = 'referralTier',
   WebacyScore = 'webacyScore',
+  BitscrunchScore = 'bitscrunchScore',
   Market = 'market',
   Portfolio = 'portfolio',
   WalletBalances = 'walletBalances',
+  IsListedForSale = 'isListedForSale',
+  Display = 'display',
 }
 
 export enum DomainProfileKeys {
+  AccessToken = 'localAccessToken',
   AuthAddress = 'authAddress',
   AuthDomain = 'authDomain',
   Messaging = 'web3-messaging',
+  MessagingIntro = 'web3-messaging-intro',
   Signature = 'domain-sig',
   Resolution = 'reverse-resolution',
   GenericKeyValue = 'kv',
+  EncryptedPIN = 'encryptedPin',
+  LockStatus = 'lockStatus',
+  WalletBalances = 'wallet-balances',
+  WalletTransactions = 'wallet-transactions',
+  WalletSwapMode = 'wallet-swap-mode',
+  BannerHealthCheck = 'banner-health-check',
+  BannerSwapIntro = 'banner-swap-intro',
+  Banner = 'banner',
 }
 
 export enum DomainProfileSocialMedia {
@@ -97,6 +117,7 @@ export enum DomainProfileSocialMedia {
 // social media not configured by user but is displayed if exists
 export enum DomainProfileSocialMediaAutoPopulated {
   Lens = 'lens',
+  Farcaster = 'farcaster',
 }
 
 export type DomainProfileVisibilityValues = {
@@ -137,11 +158,16 @@ export type EnsDomainExpiryResponse = {
   expiresAt?: string | null;
   isAvailable?: boolean;
 };
-
 export type EnsDomainStatusResponse = EnsDomainExpiryResponse & {
   rentPrice?: number;
   registrationFees?: number;
 };
+
+export type FarcasterUserInfo = {
+  kind: DomainProfileSocialMediaAutoPopulated.Farcaster;
+  userName: string;
+  url: string;
+} | null;
 
 export type GithubUserInfo = {
   kind: DomainProfileSocialMedia.Github;
@@ -165,6 +191,8 @@ export type LinkedinUserInfo = {
 } | null;
 
 export const MANAGEABLE_DOMAIN_LABEL = /^[a-z\d-]{1,253}$/;
+
+export const MANAGE_DOMAIN_PARAM = 'manage';
 
 export const MAX_BIO_LENGTH = 200;
 
@@ -192,18 +220,27 @@ export type SerializedBulkDomainResponse = {
   domains: string[];
 };
 
+export type SerializedDisplayAttributes = {
+  hidden?: boolean;
+  mode?: 'web3' | 'portfolio';
+};
+
+export type SerializedDomainBasicListData = {
+  domains: string[];
+  cursor?: number | string;
+};
+
 export type SerializedDomainCryptoVerification = {
   id: number;
   symbol: string;
   address: string;
   plaintextMessage: string;
   signedMessage: string;
+  type: string;
 };
 
-export type SerializedDomainListData = {
-  data: Array<{
-    domain: string;
-  }>;
+export type SerializedDomainFullListData = {
+  data: SerializedDomainListEntry[];
   meta: {
     total_count: number;
     pagination: {
@@ -212,6 +249,13 @@ export type SerializedDomainListData = {
     };
   };
   address: string;
+};
+
+export type SerializedDomainListEntry = {
+  domain: string;
+  listing?: SerializedMarketplaceListing;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  meta?: Record<string, any>;
 };
 
 export type SerializedDomainMarket = {
@@ -226,6 +270,7 @@ export type SerializedDomainMarket = {
     };
   };
   secondary?: SerializedSecondarySale[];
+  listing?: SerializedMarketplaceListing;
 };
 
 export type SerializedDomainProfileAttributes = {
@@ -257,9 +302,6 @@ export type SerializedDomainProfileAttributes = {
   showDomainSuggestion?: boolean;
   showFeaturedCommunity?: boolean;
   showFeaturedPartner?: boolean;
-
-  // UD blue status
-  udBlue?: boolean;
 };
 
 export type SerializedDomainProfileSocialAccountsUserInfo = {
@@ -271,6 +313,7 @@ export type SerializedDomainProfileSocialAccountsUserInfo = {
   [DomainProfileSocialMedia.Github]?: GithubUserInfo;
   [DomainProfileSocialMedia.Linkedin]?: LinkedinUserInfo;
   [DomainProfileSocialMediaAutoPopulated.Lens]?: LensUserInfo;
+  [DomainProfileSocialMediaAutoPopulated.Farcaster]?: FarcasterUserInfo;
 };
 
 export interface SerializedDomainRank {
@@ -309,11 +352,21 @@ export type SerializedFollowerListData = {
   domain: string;
 };
 
+export type SerializedMarketplaceListing = {
+  status: string;
+  price: number;
+  priceFormattedUsd: string;
+  updatedAt: string;
+  expiresAt: string;
+};
+
 export type SerializedPortfolioSummary = {
   wallet: {
     address: string;
     primaryDomain?: string;
     domainCount: number;
+    value?: string;
+    valueAmt?: number;
   };
   account: {
     domainCount: number;
@@ -346,6 +399,7 @@ export type SerializedProfileSearch = {
 
 export type SerializedPublicDomainProfileData = {
   profile?: SerializedDomainProfileAttributes;
+  display?: SerializedDisplayAttributes;
   social?: SerializedSocialAttributes;
   socialAccounts?: Record<
     DomainProfileSocialMedia | DomainProfileSocialMediaAutoPopulated,
@@ -358,9 +412,25 @@ export type SerializedPublicDomainProfileData = {
   referralTier?: AffiliateTier;
   walletBalances?: SerializedWalletBalance[];
   webacy?: WebacyRiskScore;
+  bitscrunch?: BitscrunchRiskScore;
   messaging?: MessagingAttributes;
   market?: SerializedDomainMarket;
   portfolio?: SerializedPortfolioSummary;
+  isListedForSale?: boolean;
+};
+
+export type SerializedRecommendation = {
+  address: string;
+  domain?: string;
+  imageUrl?: string;
+  imageType?: string;
+  reasons: SerializedRecommendationReason[];
+  score: number;
+};
+
+export type SerializedRecommendationReason = {
+  id: string;
+  description: string;
 };
 
 export type SerializedSecondarySale = {
@@ -392,7 +462,7 @@ export type SerializedTx = {
     link: string;
     label?: string;
   };
-  type: 'nft' | 'native' | 'erc20';
+  type: TokenType;
   imageUrl?: string;
   value: number;
   gas: number;
@@ -431,9 +501,11 @@ export type SerializedWalletBalance = SerializedWalletToken & {
   blockchainScanUrl: string;
   totalValueUsd?: string;
   totalValueUsdAmt?: number;
+  walletType?: string;
 };
 
 export type SerializedWalletNftCollection = {
+  collectionId?: string;
   category?: string;
   contractAddresses: string[];
   collectionImageUrl?: string;
@@ -450,9 +522,10 @@ export type SerializedWalletNftCollection = {
 };
 
 export type SerializedWalletToken = {
-  type: 'native' | 'erc20';
+  type: TokenType.Erc20 | TokenType.Native | TokenType.Spl;
   address: string;
   symbol: string;
+  gasCurrency: string;
   name: string;
   logoUrl?: string;
   balance?: string;
@@ -475,7 +548,8 @@ export type SocialAccountUserInfo =
   | TelegramUserInfo
   | GithubUserInfo
   | LinkedinUserInfo
-  | LensUserInfo;
+  | LensUserInfo
+  | FarcasterUserInfo;
 
 export type SocialProfileVisibilityValues = {
   youtubePublic: boolean;
@@ -492,6 +566,18 @@ export type TelegramUserInfo = {
   userName: string;
 } | null;
 
+export const TldCache = new Keyv<string[]>({
+  ttl: 1000 * 60 * 60, // 1 hour
+});
+
+export enum TokenType {
+  Native = 'native',
+  Erc20 = 'erc20',
+  Erc721 = 'erc721',
+  Spl = 'spl',
+  Nft = 'nft',
+}
+
 export type TwitterUserInfo = {
   kind: DomainProfileSocialMedia.Twitter;
   screenName: string;
@@ -504,7 +590,334 @@ export type TwitterUserInfo = {
 export const UD_BLUE_BADGE_CODE = 'UdBlue';
 
 export enum Web2Suffixes {
+  Ac = 'ac',
+  Academy = 'academy',
+  Accountants = 'accountants',
+  Actor = 'actor',
+  Africa = 'africa',
+  Ag = 'ag',
+  Agency = 'agency',
+  Ai = 'ai',
+  Airforce = 'airforce',
+  Apartments = 'apartments',
+  Archi = 'archi',
+  Army = 'army',
+  Asia = 'asia',
+  Associates = 'associates',
+  Attorney = 'attorney',
+  Auction = 'auction',
+  Band = 'band',
+  Bargains = 'bargains',
+  Bayern = 'bayern',
+  Bet = 'bet',
+  Bike = 'bike',
+  Bingo = 'bingo',
+  Bio = 'bio',
+  Biz = 'biz',
+  Black = 'black',
+  Blue = 'blue',
+  Boston = 'boston',
+  Bot = 'bot',
+  Boutique = 'boutique',
+  Broker = 'broker',
+  Builders = 'builders',
+  Business = 'business',
+  Bz = 'bz',
+  Ca = 'ca',
+  Cab = 'cab',
+  Cafe = 'cafe',
+  Camera = 'camera',
+  Camp = 'camp',
+  Capital = 'capital',
+  Cards = 'cards',
+  Care = 'care',
+  Careers = 'careers',
+  Cash = 'cash',
+  Casino = 'casino',
+  Catering = 'catering',
+  Cc = 'cc',
+  Center = 'center',
+  Charity = 'charity',
+  Chat = 'chat',
+  Cheap = 'cheap',
+  Church = 'church',
+  City = 'city',
+  Claims = 'claims',
+  Cleaning = 'cleaning',
+  Clinic = 'clinic',
+  Clothing = 'clothing',
+  Club = 'club',
+  Co = 'co',
+  Coach = 'coach',
+  Codes = 'codes',
+  Coffee = 'coffee',
   Com = 'com',
+  Comag = 'comag',
+  Community = 'community',
+  Company = 'company',
+  Computer = 'computer',
+  Condos = 'condos',
+  Construction = 'construction',
+  Consulting = 'consulting',
+  Contact = 'contact',
+  Contractors = 'contractors',
+  Cool = 'cool',
+  Coupons = 'coupons',
+  Credit = 'credit',
+  Creditcard = 'creditcard',
+  Cruises = 'cruises',
+  Dance = 'dance',
+  Dating = 'dating',
+  De = 'de',
+  Deal = 'deal',
+  Deals = 'deals',
+  Degree = 'degree',
+  Delivery = 'delivery',
+  Democrat = 'democrat',
+  Dental = 'dental',
+  Dentist = 'dentist',
+  Design = 'design',
+  Diamonds = 'diamonds',
+  Digital = 'digital',
+  Direct = 'direct',
+  Directory = 'directory',
+  Discount = 'discount',
+  Doctor = 'doctor',
+  Dog = 'dog',
+  Domains = 'domains',
+  Education = 'education',
+  Email = 'email',
+  Energy = 'energy',
+  Engineer = 'engineer',
+  Engineering = 'engineering',
+  Enterprises = 'enterprises',
+  Equipment = 'equipment',
+  Estate = 'estate',
+  Events = 'events',
+  Exchange = 'exchange',
+  Expert = 'expert',
+  Exposed = 'exposed',
+  Express = 'express',
+  Fail = 'fail',
+  Family = 'family',
+  Fan = 'fan',
+  Farm = 'farm',
+  Finance = 'finance',
+  Financial = 'financial',
+  Fish = 'fish',
+  Fitness = 'fitness',
+  Flights = 'flights',
+  Florist = 'florist',
+  Football = 'football',
+  Forex = 'forex',
+  Forsale = 'forsale',
+  Foundation = 'foundation',
+  Fun = 'fun',
+  Fund = 'fund',
+  Furniture = 'furniture',
+  Futbol = 'futbol',
+  Fyi = 'fyi',
+  Gallery = 'gallery',
+  Games = 'games',
+  Gifts = 'gifts',
+  Gives = 'gives',
+  Glass = 'glass',
+  Global = 'global',
+  Gm = 'gm',
+  Gmbh = 'gmbh',
+  Gold = 'gold',
+  Golf = 'golf',
+  Graphics = 'graphics',
+  Gratis = 'gratis',
+  Green = 'green',
+  Gripe = 'gripe',
+  Group = 'group',
+  Guide = 'guide',
+  Guru = 'guru',
+  Haus = 'haus',
+  Healthcare = 'healthcare',
+  Hockey = 'hockey',
+  Holdings = 'holdings',
+  Holiday = 'holiday',
+  Hospital = 'hospital',
+  Host = 'host',
+  House = 'house',
+  Id = 'id',
+  Immo = 'immo',
+  Immobilien = 'immobilien',
+  Industries = 'industries',
+  Info = 'info',
+  Institute = 'institute',
+  Insure = 'insure',
+  International = 'international',
+  Investments = 'investments',
+  Io = 'io',
+  It = 'it',
+  Jetzt = 'jetzt',
+  Jewelry = 'jewelry',
+  Kaufen = 'kaufen',
+  Kim = 'kim',
+  Kitchen = 'kitchen',
+  Land = 'land',
+  Lawyer = 'lawyer',
+  Lease = 'lease',
+  Legal = 'legal',
+  Lgbt = 'lgbt',
+  Life = 'life',
+  Lighting = 'lighting',
+  Limited = 'limited',
+  Limo = 'limo',
+  Live = 'live',
+  Llc = 'llc',
+  Loans = 'loans',
+  Lotto = 'lotto',
+  Ltd = 'ltd',
+  Ltda = 'ltda',
+  Luxe = 'luxe',
+  Maison = 'maison',
+  Management = 'management',
+  Market = 'market',
+  Marketing = 'marketing',
+  Markets = 'markets',
+  Mba = 'mba',
+  Me = 'me',
+  Media = 'media',
+  Melbourne = 'melbourne',
+  Memorial = 'memorial',
+  Miami = 'miami',
+  Mn = 'mn',
+  Mobi = 'mobi',
+  Moda = 'moda',
+  Moi = 'moi',
+  Money = 'money',
+  Mortgage = 'mortgage',
+  Movie = 'movie',
+  Navy = 'navy',
+  Net = 'net',
+  Netag = 'netag',
+  Network = 'network',
+  News = 'news',
+  Ninja = 'ninja',
+  Nl = 'nl',
+  Now = 'now',
+  Nrw = 'nrw',
+  Nyc = 'nyc',
+  Observer = 'observer',
+  Onl = 'onl',
+  Online = 'online',
+  Org = 'org',
+  Orgag = 'orgag',
+  Organic = 'organic',
+  Partners = 'partners',
+  Parts = 'parts',
+  Pet = 'pet',
+  Photography = 'photography',
+  Photos = 'photos',
+  Pictures = 'pictures',
+  Pink = 'pink',
+  Pizza = 'pizza',
+  Place = 'place',
+  Plumbing = 'plumbing',
+  Plus = 'plus',
+  Poker = 'poker',
+  Press = 'press',
+  Pro = 'pro',
+  Productions = 'productions',
+  Promo = 'promo',
+  Properties = 'properties',
+  Pub = 'pub',
+  Pw = 'pw',
+  Realty = 'realty',
+  Recipes = 'recipes',
+  Red = 'red',
+  Rehab = 'rehab',
+  Reise = 'reise',
+  Reisen = 'reisen',
+  Rentals = 'rentals',
+  Repair = 'repair',
+  Report = 'report',
+  Republican = 'republican',
+  Restaurant = 'restaurant',
+  Reviews = 'reviews',
+  Rich = 'rich',
+  Rip = 'rip',
+  Rocks = 'rocks',
+  Run = 'run',
+  Sale = 'sale',
+  Salon = 'salon',
+  Sarl = 'sarl',
+  Sc = 'sc',
+  School = 'school',
+  Schule = 'schule',
+  Services = 'services',
+  Sh = 'sh',
+  Shiksha = 'shiksha',
+  Shoes = 'shoes',
+  Shopping = 'shopping',
+  Show = 'show',
+  Singles = 'singles',
+  Site = 'site',
+  Ski = 'ski',
+  Sl = 'sl',
+  Soccer = 'soccer',
+  Social = 'social',
+  Software = 'software',
+  Solar = 'solar',
+  Solutions = 'solutions',
+  Space = 'space',
+  Srl = 'srl',
+  Store = 'store',
+  Studio = 'studio',
+  Style = 'style',
+  Supplies = 'supplies',
+  Supply = 'supply',
+  Support = 'support',
+  Surgery = 'surgery',
+  Sydney = 'sydney',
+  Systems = 'systems',
+  Tax = 'tax',
+  Taxi = 'taxi',
+  Team = 'team',
+  Tech = 'tech',
+  Technology = 'technology',
+  Tennis = 'tennis',
+  Theater = 'theater',
+  Tienda = 'tienda',
+  Tips = 'tips',
+  Tires = 'tires',
+  Today = 'today',
+  Tools = 'tools',
+  Tours = 'tours',
+  Town = 'town',
+  Toys = 'toys',
+  Trading = 'trading',
+  Training = 'training',
+  Uk = 'uk',
+  University = 'university',
+  Uno = 'uno',
+  Us = 'us',
+  Vacations = 'vacations',
+  Vc = 'vc',
+  Ventures = 'ventures',
+  Vet = 'vet',
+  Viajes = 'viajes',
+  Video = 'video',
+  Villas = 'villas',
+  Vin = 'vin',
+  Vip = 'vip',
+  Vision = 'vision',
+  Vote = 'vote',
+  Voto = 'voto',
+  Voyage = 'voyage',
+  Watch = 'watch',
+  Website = 'website',
+  Wine = 'wine',
+  Work = 'work',
+  Works = 'works',
+  World = 'world',
+  Wtf = 'wtf',
+  Xyz = 'xyz',
+  Zone = 'zone',
 }
 
 export const Web2SuffixesList = Object.entries(Web2Suffixes).map(([_, v]) => {
@@ -518,6 +931,48 @@ export type YoutubeUserInfo = {
   channelUrl: string;
   subscriberCount: number;
 } | null;
+
+export const getDomainSignatureExpiryKey = (domain: string): string => {
+  return `${DomainProfileKeys.Signature}-expiry-${domain}`;
+};
+
+export const getDomainSignatureValueKey = (domain: string): string => {
+  return `${DomainProfileKeys.Signature}-value-${domain}`;
+};
+
+export const isDomainBasicListData = (
+  data:
+    | SerializedDomainFullListData
+    | SerializedDomainBasicListData
+    | undefined,
+): data is SerializedDomainBasicListData => {
+  if (!data) {
+    return false;
+  }
+  return 'domains' in data;
+};
+
+export const isDomainFullListData = (
+  data:
+    | SerializedDomainFullListData
+    | SerializedDomainBasicListData
+    | undefined,
+): data is SerializedDomainFullListData => {
+  if (!data) {
+    return false;
+  }
+  return 'data' in data;
+};
+
+export const isDomainListEntry = (
+  data: SerializedDomainListEntry | string,
+): data is SerializedDomainListEntry => {
+  return typeof data === 'object' && 'domain' in data;
+};
+
+export const isValidIdentity = (maybeIdentity: string): boolean => {
+  return isEmailValid(maybeIdentity);
+};
 
 export const kbToMb = (kb: number): number => {
   return kb / 1000 / 1024;

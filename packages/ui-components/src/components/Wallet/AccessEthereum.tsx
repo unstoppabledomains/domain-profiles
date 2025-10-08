@@ -5,27 +5,58 @@ import type {Theme} from '@mui/material/styles';
 import type {GetWalletClientResult} from '@wagmi/core';
 import type {Signer} from 'ethers';
 import React, {useEffect, useState} from 'react';
-import {useConnect, useDisconnect, useWalletClient} from 'wagmi';
+import {
+  WagmiConfig,
+  configureChains,
+  createConfig,
+  mainnet,
+  useConnect,
+  useDisconnect,
+  useWalletClient,
+} from 'wagmi';
 import type {Connector} from 'wagmi';
+import {CoinbaseWalletConnector} from 'wagmi/connectors/coinbaseWallet';
+import {InjectedConnector} from 'wagmi/connectors/injected';
+import {MetaMaskConnector} from 'wagmi/connectors/metaMask';
+import {WalletConnectConnector} from 'wagmi/connectors/walletConnect';
+import {publicProvider} from 'wagmi/providers/public';
 
+import config from '@unstoppabledomains/config';
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 import WalletButton from '../../components/Wallet/WalletButton';
 import useTranslationContext from '../../lib/i18n';
 import {sleep} from '../../lib/sleep';
-import type {WagmiConnectorType, WalletName} from '../../lib/types/wallet';
-import {WalletOptions} from '../../lib/types/wallet';
+import type {WagmiConnectorType} from '../../lib/types/wallet';
+import {WalletName, WalletOptions} from '../../lib/types/wallet';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import {WalletClientSigner} from '../../lib/wallet/signer';
 
+// declare the Lite Wallet extension EIP-1193 injected provider property
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    unstoppable?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    upio?: any;
+  }
+}
 export interface AccessEthereumProps {
+  address?: string;
   onComplete: (web3Deps?: Web3Dependencies) => void;
   onError?: (message: string) => void;
+  onReconnect?: () => void;
+  onClose?: () => void;
+  selectedWallet?: WalletName;
+  setSelectedWallet: (w: WalletName) => void;
+  isMpcWallet?: boolean;
 }
 
 export const useStyles = makeStyles()((theme: Theme) => ({
   listContainer: {
-    outline: `2px solid ${theme.palette.white}`,
+    display: 'flex',
+    justifyContent: 'center',
+    outline: `2px solid ${theme.palette.background.paper}`,
     outlineOffset: -1,
   },
   button: {
@@ -43,12 +74,92 @@ export const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 const AccessEthereum: React.FC<AccessEthereumProps> = ({
+  address,
+  isMpcWallet,
   onComplete,
   onError,
+  selectedWallet,
+  setSelectedWallet,
+}) => {
+  // theming variables for the QR modal
+  const themeVariables = {
+    '--wcm-z-index': '100000',
+  };
+
+  // Set up wagmi config
+  const [t] = useTranslationContext();
+  const {chains, publicClient, webSocketPublicClient} = configureChains(
+    [mainnet],
+    [publicProvider()],
+  );
+  const wagmiConfig = createConfig({
+    autoConnect: false,
+    connectors: [
+      new MetaMaskConnector({chains}),
+      new WalletConnectConnector({
+        chains,
+        options: {
+          projectId: config.WALLETCONNECT_PROJECT_ID,
+          qrModalOptions: {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            themeVariables: themeVariables as any,
+          },
+          metadata: {
+            name: t('nftCollection.unstoppableDomains'),
+            description: t('nftCollection.unstoppableDomainsDescription'),
+            url: config.UD_ME_BASE_URL,
+            icons: [config.UD_LOGO_URL],
+          },
+        },
+      }),
+      new CoinbaseWalletConnector({
+        chains,
+        options: {
+          appName: 'wagmi',
+        },
+      }),
+      // an injected provider to connect to the Unstoppable Domains Lite Wallet
+      // browser extension, injected info DOM with window.unstoppable property
+      // as EIP-1193 Ethereum provider.
+      new InjectedConnector({
+        chains,
+        options: {
+          shimDisconnect: true,
+          getProvider: () => {
+            return typeof window !== 'undefined'
+              ? window.unstoppable
+              : undefined;
+          },
+        },
+      }),
+    ],
+    publicClient,
+    webSocketPublicClient,
+  });
+
+  return (
+    <WagmiConfig config={wagmiConfig}>
+      <AccessEthereumConnectors
+        address={address}
+        onComplete={onComplete}
+        onError={onError}
+        selectedWallet={selectedWallet}
+        setSelectedWallet={setSelectedWallet}
+        isMpcWallet={isMpcWallet}
+      />
+    </WagmiConfig>
+  );
+};
+
+const AccessEthereumConnectors: React.FC<AccessEthereumProps> = ({
+  isMpcWallet,
+  onComplete,
+  onError,
+  selectedWallet,
+  setSelectedWallet,
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
-  const [selectedWallet, setSelectedWallet] = useState<WalletName>();
   const [selectedConnector, setSelectedConnector] = useState<Connector>();
 
   // wagmi hooks
@@ -68,10 +179,38 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
   }, []);
 
   useEffect(() => {
+    // only proceed for lite wallet connections when the extension
+    // is already installed
+    if (
+      !isMpcWallet ||
+      !window.unstoppable ||
+      !connectors ||
+      connectors.length === 0
+    ) {
+      return;
+    }
+
+    // find the UD wallet extension
+    const udExtensionConnector = getConnector('injected');
+    if (!udExtensionConnector) {
+      return;
+    }
+
+    // select the UD wallet extension
+    void handleClick(
+      WalletName.UnstoppableWalletExtension,
+      udExtensionConnector,
+    );
+  }, [connectors, isMpcWallet]);
+
+  useEffect(() => {
     if (!connectedSigner) {
       return;
     }
-    void handleConnected(connectedSigner.account.address, connectedSigner);
+    void handleWagmiWalletConnected(
+      connectedSigner.account.address,
+      connectedSigner,
+    );
   }, [connectedSigner]);
 
   useEffect(() => {
@@ -84,8 +223,16 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
   }, [connectError]);
 
   const handleClick = async (walletName: WalletName, connector: Connector) => {
-    setSelectedConnector(connector);
+    // set the selected wallet name
     setSelectedWallet(walletName);
+
+    // alternative connector logic for Unstoppable Wallet
+    if (walletName === WalletName.UnstoppableWalletReact) {
+      return;
+    }
+
+    // pass control to the selected connector
+    setSelectedConnector(connector);
     for (let i = 0; i < 10; i++) {
       try {
         const connectedAddress = await connectAsync({connector});
@@ -99,7 +246,7 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
     }
   };
 
-  const handleConnected = async (
+  const handleWagmiWalletConnected = async (
     address: string,
     signer: GetWalletClientResult,
   ) => {
@@ -142,29 +289,53 @@ const AccessEthereum: React.FC<AccessEthereumProps> = ({
       </Box>
       <>
         <Grid container className={classes.listContainer}>
-          {Object.keys(WalletOptions).map((k, i) => {
-            const connector = getConnector(
-              WalletOptions[k as WalletName].connectorType,
-            );
-            if (!connector) {
-              return null;
-            }
-            return (
-              <Grid
-                item
-                xs={4}
-                key={`walletButton-container-${connector.id}-${i}`}
-              >
-                <WalletButton
-                  key={`walletButton-${connector.id}-${i}`}
-                  name={k as WalletName}
-                  disabled={!connector.ready}
-                  loading={isLoading && selectedWallet === (k as WalletName)}
-                  onClick={() => handleClick(k as WalletName, connector)}
-                />
-              </Grid>
-            );
-          })}
+          {Object.keys(WalletOptions)
+            .filter(k => {
+              // hide the integrated Lite Wallet button if the extension is installed
+              if (
+                k === WalletName.UnstoppableWalletReact &&
+                window.unstoppable !== undefined
+              ) {
+                return false;
+              }
+
+              // hide the Lite Wallet extension button if it is not installed
+              if (
+                k === WalletName.UnstoppableWalletExtension &&
+                window.unstoppable === undefined
+              ) {
+                return false;
+              }
+
+              // show the button
+              return true;
+            })
+            .slice(0, 9)
+            .map((k, i) => {
+              const connector = getConnector(
+                WalletOptions[k as WalletName].connectorType,
+              );
+              if (!connector) {
+                return null;
+              }
+              return (
+                <Grid
+                  item
+                  xs={4}
+                  key={`walletButton-container-${connector.id}-${i}`}
+                >
+                  <WalletButton
+                    key={`walletButton-${connector.id}-${i}`}
+                    name={k as WalletName}
+                    disabled={
+                      selectedConnector !== undefined || !connector.ready
+                    }
+                    loading={isLoading && selectedWallet === (k as WalletName)}
+                    onClick={() => handleClick(k as WalletName, connector)}
+                  />
+                </Grid>
+              );
+            })}
         </Grid>
       </>
     </>

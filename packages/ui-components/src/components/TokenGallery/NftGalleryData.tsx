@@ -193,7 +193,7 @@ export const getNextNftPageFn = (
       props.setNftDataLoading(true);
       return await getDomainNfts(props.domain, symbols, cursor);
     } catch (e) {
-      notifyEvent(e, 'error', 'TOKEN_GALLERY', 'Fetch', {
+      notifyEvent(e, 'error', 'TokenGallery', 'Fetch', {
         msg: 'error retrieving NFT data',
       });
     } finally {

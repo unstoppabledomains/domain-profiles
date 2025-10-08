@@ -9,8 +9,6 @@ import type {ReactElement} from 'react';
 import React from 'react';
 import {QueryClient, QueryClientProvider} from 'react-query';
 
-import defaultTheme from '@unstoppabledomains/ui-kit/styles';
-
 import * as actions from '../actions';
 import {TranslationProvider} from '../lib';
 import {
@@ -20,6 +18,10 @@ import {
   UnstoppableMessagingProvider,
   Web3ContextProvider,
 } from '../providers';
+import {getTheme} from '../styles/theme/getTheme';
+
+// create a mock default theme
+const defaultTheme = getTheme();
 
 // Instantiate query client for each render so that we do not leak state between tests
 const createTestQueryClient = () =>

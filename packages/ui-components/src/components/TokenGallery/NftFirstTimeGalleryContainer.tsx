@@ -33,17 +33,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
     marginBottom: theme.spacing(-4),
   },
   nftGalleryFirstTimeHeader: {
-    color: '#62626A',
+    color: theme.palette.neutralShades[600],
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
   },
 }));
 
-const NftFirstTimeGalleryContainer = ({
-  profileServiceUrl,
-  children,
-  className,
-}: Props) => {
+const NftFirstTimeGalleryContainer = ({children, className}: Props) => {
   const [t] = useTranslationContext();
   const {classes, cx} = useStyles();
 

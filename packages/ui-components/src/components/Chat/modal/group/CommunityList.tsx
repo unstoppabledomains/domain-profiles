@@ -70,7 +70,6 @@ export const CommunityList: React.FC<CommunityListProps> = ({
   const [allGroupMap, setAllGroupMap] = useState<
     Record<string, GroupDTO | undefined>
   >({});
-  const [isUdBlue, setIsUdBlue] = useState<boolean>(false);
   const [loadingText, setLoadingText] = useState<string>();
   const [isSorted, setIsSorted] = useState(false);
 
@@ -134,13 +133,8 @@ export const CommunityList: React.FC<CommunityListProps> = ({
       setBadges(
         badgeData.list.filter(b => !filteredBadgeCodes.includes(b.code)),
       );
-      setIsUdBlue(
-        domainProfile?.profile?.udBlue ||
-          !featureFlags.variations
-            ?.ecommerceServiceUsersEnableChatCommunityUdBlue,
-      );
     } catch (e) {
-      notifyEvent(e, 'error', 'MESSAGING', 'PushProtocol', {
+      notifyEvent(e, 'error', 'Messaging', 'PushProtocol', {
         msg: 'error loading badges',
       });
     }
@@ -195,7 +189,6 @@ export const CommunityList: React.FC<CommunityListProps> = ({
               badge={badge}
               inGroup={inGroup(badge.groupChatId)}
               groupInfo={allGroupMap[badge.code]}
-              isUdBlue={isUdBlue}
               pushKey={pushKey}
               onReload={loadBadges}
               onRefresh={refreshBadges}

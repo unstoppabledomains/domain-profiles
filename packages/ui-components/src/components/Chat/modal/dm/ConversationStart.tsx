@@ -11,19 +11,24 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
 import React, {useState} from 'react';
+import truncateEthAddress from 'truncate-eth-address';
 
 import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
+import type {SerializedRecommendation} from '../../../../lib';
 import useTranslationContext from '../../../../lib/i18n';
 import {getAddressMetadata, isEthAddress} from '../../protocol/resolution';
+import type {ConversationMeta} from '../../protocol/xmtp';
 import {isXmtpUser} from '../../protocol/xmtp';
 import type {AddressResolution} from '../../types';
 import {TabType} from '../../types';
 import CallToAction from '../CallToAction';
 import Search from '../Search';
+import ConversationSuggestions from './ConversationSuggestions';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   cardContainer: {
+    backgroundColor: 'transparent',
     padding: theme.spacing(1),
     border: 'none',
     height: '100%',
@@ -69,6 +74,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   resultStatus: {
     display: 'flex',
     flexDirection: 'column',
+    textAlign: 'left',
   },
   chatAvailability: {
     display: 'flex',
@@ -97,12 +103,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
     backgroundColor: theme.palette.primary.main,
     height: 50,
     width: 50,
-    color: 'white',
+    color: theme.palette.getContrastText(theme.palette.primary.main),
   },
 }));
 
 export const ConversationStart: React.FC<ConversationStartProps> = ({
   address,
+  conversations,
   onBack,
   onClose,
   selectedCallback,
@@ -113,6 +120,7 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
   const [loading, setLoading] = useState(false);
   const [isAvailable, setIsAvailable] = useState<boolean>();
   const [selectedPeer, setSelectedPeer] = useState<AddressResolution>();
+  const [suggestions, setSuggestions] = useState<SerializedRecommendation[]>();
 
   const handleSearch = async (searchTerm: string) => {
     // wait for a valid search term
@@ -131,16 +139,20 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
     }
   };
 
-  const handleSelect = () => {
-    if (!selectedPeer) {
+  const handleSelect = (peer?: AddressResolution) => {
+    if (!peer && !selectedPeer) {
       return;
     }
     setLoading(true);
-    selectedCallback(selectedPeer);
+    selectedCallback(peer || selectedPeer!);
   };
 
   return (
-    <Card className={classes.cardContainer} variant="outlined">
+    <Card
+      style={{border: 'none', boxShadow: 'none'}}
+      className={classes.cardContainer}
+      variant="outlined"
+    >
       <CardHeader
         title={t('push.newMessage')}
         action={
@@ -172,14 +184,15 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
               classes.resultContainer,
               isAvailable ? classes.available : classes.notAvailable,
             )}
-            onClick={isAvailable ? handleSelect : undefined}
+            onClick={isAvailable ? () => handleSelect() : undefined}
           >
-            {selectedPeer.avatarUrl && (
-              <Avatar src={selectedPeer.avatarUrl} className={classes.avatar} />
-            )}
+            <Avatar src={selectedPeer.avatarUrl} className={classes.avatar} />
             <Box className={classes.resultStatus}>
               <Typography variant="subtitle2">
-                {selectedPeer.name || selectedPeer.address}
+                {selectedPeer.name ||
+                  `${t('common.wallet')} ${truncateEthAddress(
+                    selectedPeer.address,
+                  )}`}
               </Typography>
               <Box
                 className={cx(
@@ -202,9 +215,24 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
         {!selectedPeer && !loading && (
           <CallToAction
             icon={'ForumOutlinedIcon'}
-            title={t('push.chatNew')}
-            subTitle={t('push.chatNewDescription')}
-          />
+            title={
+              suggestions
+                ? `${t('common.recommended')} ${t('common.connections')}`
+                : t('push.chatNew')
+            }
+            subTitle={
+              suggestions
+                ? t('push.chatNewRecommendations')
+                : t('push.chatNewDescription')
+            }
+          >
+            <ConversationSuggestions
+              address={address}
+              conversations={conversations}
+              onSelect={handleSelect}
+              onSuggestionsLoaded={setSuggestions}
+            />
+          </CallToAction>
         )}
       </CardContent>
     </Card>
@@ -213,6 +241,7 @@ export const ConversationStart: React.FC<ConversationStartProps> = ({
 
 export type ConversationStartProps = {
   address: string;
+  conversations?: ConversationMeta[];
   onBack: () => void;
   onClose: () => void;
   selectedCallback: (peerAddress: AddressResolution) => void;

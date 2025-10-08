@@ -1,6 +1,7 @@
 import AddLinkIcon from '@mui/icons-material/AddLink';
 import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowRightOutlinedIcon from '@mui/icons-material/KeyboardArrowRightOutlined';
+import StarOutlinedIcon from '@mui/icons-material/StarOutlined';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -83,6 +84,7 @@ type Props = {
   popupOpen: boolean;
   handleAvatarPopupClose: () => void;
   handleUrlPopupOpen: () => void;
+  handleNftPopupOpen: () => void;
   handleUploadClick: (event: {target: HTMLInputElement}) => void;
 };
 
@@ -91,6 +93,7 @@ export const AddAvatarPopup: React.FC<Props> = ({
   popupOpen,
   handleAvatarPopupClose,
   handleUrlPopupOpen,
+  handleNftPopupOpen,
   handleUploadClick,
 }) => {
   const {classes, cx} = useStyles();
@@ -153,23 +156,26 @@ export const AddAvatarPopup: React.FC<Props> = ({
           variant="outlined"
           color="inherit"
           disabled={uiDisabled}
-          onClick={handleUrlPopupOpen}
+          onClick={handleNftPopupOpen}
           classes={{
             startIcon: classes.buttonIconContainer,
             disabled: classes.buttonDisabled,
           }}
           className={classes.button}
           startIcon={
-            <AddLinkIcon color="primary" className={classes.buttonStartIcon} />
+            <StarOutlinedIcon
+              color="primary"
+              className={classes.buttonStartIcon}
+            />
           }
           endIcon={
             <KeyboardArrowRightOutlinedIcon className={classes.buttonEndIcon} />
           }
         >
           <div className={classes.buttonText}>
-            {t('manage.enterAvatarUrl')}
+            {t('manage.selectNft')}
             <Typography variant="body2" color="textSecondary">
-              {t('manage.avatarUrlRequirements')}
+              {t('manage.selectNftDescription')}
             </Typography>
           </div>
         </Button>

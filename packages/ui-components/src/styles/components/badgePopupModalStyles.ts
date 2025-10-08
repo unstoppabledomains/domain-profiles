@@ -4,7 +4,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   dialogContainer: {
-    backgroundColor: 'black',
+    backgroundColor: theme.palette.common.black,
     width: '961px',
     display: 'flex',
     alignItems: 'flex-start',
@@ -234,7 +234,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
   holdersRemaining: {
     backgroundColor: theme.palette.secondary.main,
-    color: theme.palette.white,
+    color: theme.palette.getContrastText(theme.palette.secondary.main),
     border: '2px solid white',
   },
 }));

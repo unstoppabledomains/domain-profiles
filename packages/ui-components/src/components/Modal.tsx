@@ -4,16 +4,20 @@ import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import type {ModalProps as MuiModalProps} from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
+import type {Breakpoint} from '@mui/material/styles';
+import {useTheme} from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import React from 'react';
 
 import useTranslationContext from '../lib/i18n';
 import useStyles from '../styles/components/modal.styles';
+import {TitleWithBackButton} from './Wallet';
 
 export type ModalProps = {
-  title: string | JSX.Element;
+  title?: string | JSX.Element;
   open: boolean;
   centerHeader?: boolean;
-  onClose: (e: unknown) => void;
+  onClose: () => void;
   children: React.ReactNode;
   /**
    * Disables modal backdrop and ESC clicks to close the dialog https://v4.mui.com/components/dialogs/#confirmation-dialogs
@@ -21,11 +25,13 @@ export type ModalProps = {
    */
   isConfirmation?: boolean;
   noContentPadding?: boolean;
+  noContentMargin?: boolean;
   titleStyle?: string;
   dialogPaperStyle?: string;
   includeHeaderPadding?: boolean;
   noModalHeader?: boolean;
-  maxWidth?: DialogProps['maxWidth'];
+  fullScreen?: boolean;
+  maxWidth?: Breakpoint;
 };
 
 /**
@@ -40,25 +46,23 @@ const Modal: React.FC<ModalProps> = ({
   children,
   isConfirmation = false,
   centerHeader = false,
+  noContentMargin = false,
   noContentPadding = false,
   includeHeaderPadding = false,
   noModalHeader = false,
-  maxWidth = false,
+  fullScreen,
+  maxWidth,
 }) => {
   const {classes, cx} = useStyles();
   const [t] = useTranslationContext();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleCloseOnBlur: MuiModalProps['onClose'] = event => {
     if (isConfirmation) {
       return;
     }
-    onClose(event);
-  };
-
-  const handleCloseButtonClick: React.MouseEventHandler<
-    HTMLButtonElement
-  > = event => {
-    onClose(event);
+    onClose();
   };
 
   const dialogProps: DialogProps = {
@@ -69,8 +73,20 @@ const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <Dialog {...dialogProps}>
-      <div className={classes.modalContent} data-testid={`${title}-modal`}>
+    <Dialog
+      {...dialogProps}
+      fullWidth={isMobile}
+      fullScreen={fullScreen}
+      className={cx({
+        [classes.fullScreen]: fullScreen,
+      })}
+    >
+      <div
+        className={cx(classes.modalContent, {
+          [classes.modalContentNoMargin]: noContentMargin,
+        })}
+        data-testid={`${title}-modal`}
+      >
         {!noModalHeader && (
           <div
             className={cx(classes.modalHeader, {
@@ -78,20 +94,26 @@ const Modal: React.FC<ModalProps> = ({
               [classes.modalHeaderPadding]: includeHeaderPadding,
             })}
           >
-            <Typography
-              variant="h5"
-              color="primary"
-              className={cx(titleStyle ?? '', classes.bold)}
-            >
-              {title}
-            </Typography>
-            <IconButton
-              onClick={handleCloseButtonClick}
-              aria-label={t('common.close')}
-              size="large"
-            >
-              <CloseIcon />
-            </IconButton>
+            {fullScreen && typeof title === 'string' ? (
+              <TitleWithBackButton label={title} onCancelClick={onClose} />
+            ) : (
+              <>
+                <Typography
+                  variant="h5"
+                  color="primary"
+                  className={cx(titleStyle ?? classes.titleStyle, classes.bold)}
+                >
+                  {title}
+                </Typography>
+                <IconButton
+                  onClick={onClose}
+                  aria-label={t('common.close')}
+                  size="large"
+                >
+                  <CloseIcon />
+                </IconButton>
+              </>
+            )}
           </div>
         )}
         <div

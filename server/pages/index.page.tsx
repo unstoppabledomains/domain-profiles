@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import Footer from 'components/app/Footer';
 import {NextSeo} from 'next-seo';
 import React from 'react';
 import {useStyles} from 'styles/pages/index.styles';
@@ -9,7 +10,7 @@ import {GlobalStyles} from 'tss-react';
 import config from '@unstoppabledomains/config';
 import {
   ProfileSearchBar,
-  getSeoTags,
+  getDomainSeoTags,
   useTranslationContext,
   useWeb3Context,
 } from '@unstoppabledomains/ui-components';
@@ -36,7 +37,7 @@ const HomePage = () => {
   const [t] = useTranslationContext();
   const [firstNFTCard, secondNFTCard] = getRandomNftCards(nftCardsArray);
 
-  const seoTags = getSeoTags({
+  const seoTags = getDomainSeoTags({
     title: t('nftCollection.unstoppableDomains'),
   });
 
@@ -54,64 +55,40 @@ const HomePage = () => {
           },
         }}
       />
-      <Grid
-        container
-        className={classes.content}
-        data-testid="mainContentContainer"
-      >
-        <Grid item xs={12} className={classes.item}>
-          <Box className={classes.rightBlock}>
-            <img
-              src={firstNFTCard}
-              alt="nft-card-1"
-              className={cx(classes.cardImage, classes.cardImageTop)}
-            />
-            <img
-              src={secondNFTCard}
-              alt="nft-card-2"
-              className={cx(classes.cardImage, classes.cardImageBottom)}
-            />
-          </Box>
+      <Box className={classes.content}>
+        <Grid container data-testid="mainContentContainer">
+          <Grid item xs={12} className={classes.item}>
+            <Box className={classes.rightBlock}>
+              <img
+                src={firstNFTCard}
+                alt="nft-card-1"
+                className={cx(classes.cardImage, classes.cardImageTop)}
+              />
+              <img
+                src={secondNFTCard}
+                alt="nft-card-2"
+                className={cx(classes.cardImage, classes.cardImageBottom)}
+              />
+            </Box>
+          </Grid>
+          <Grid item xs={12} className={classes.item}>
+            <Typography className={classes.sectionTitle}>
+              Unstoppable Profiles
+            </Typography>
+          </Grid>
+          <Grid item xs={12} className={classes.item}>
+            <Typography className={classes.sectionSubTitle}>
+              Find your friends and connect with the world in Web3.
+            </Typography>
+          </Grid>
+          <Grid item xs={12} className={classes.item}>
+            <Box className={classes.searchContainer}>
+              <ProfileSearchBar variant="homepage" setWeb3Deps={setWeb3Deps} />
+            </Box>
+          </Grid>
         </Grid>
-        <Grid item xs={12} className={classes.item}>
-          <Typography className={classes.sectionTitle}>
-            Unstoppable Profiles
-          </Typography>
-        </Grid>
-        <Grid item xs={12} className={classes.item}>
-          <Typography className={classes.sectionSubTitle}>
-            Find your friends and connect with the world in Web3.
-          </Typography>
-        </Grid>
-        <Grid item xs={12} className={classes.item}>
-          <Box className={classes.searchContainer}>
-            <ProfileSearchBar variant="homepage" setWeb3Deps={setWeb3Deps} />
-          </Box>
-        </Grid>
-      </Grid>
-      <Box className={classes.footerContainer}>
-        <Box className={classes.footerContent}>
-          <Typography className={classes.copyright} variant="body2">
-            {t('footer.copyright')}
-          </Typography>
-        </Box>
-        <Box className={classes.footerContent}>
-          <Typography variant="caption">
-            <a
-              className={classes.footerLink}
-              href="https://unstoppabledomains.com/terms"
-            >
-              {t('footer.terms')}
-            </a>
-            <a
-              className={classes.footerLink}
-              href="https://unstoppabledomains.com/privacy-policy"
-            >
-              {t('footer.privacyPolicy')}
-            </a>
-          </Typography>
-        </Box>
       </Box>
+      <Footer />
     </Box>
   );
 };

@@ -1,9 +1,7 @@
-import ButtonBase from '@mui/material/ButtonBase';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
 import type {Theme} from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import Image from 'next/image';
 import React from 'react';
 
@@ -12,23 +10,24 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import getImageUrl from '../../lib/domain/getImageUrl';
 import useTranslationContext from '../../lib/i18n';
 import {WalletName} from '../../lib/types/wallet';
+import WalletIcon from './WalletIcon';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   cardRoot: {
     textAlign: 'center',
     cursor: 'pointer',
     padding: theme.spacing(2.5, 0),
-    border: `1px dashed ${theme.palette.neutralShades[100]}`,
+    border: `1px dashed ${theme.palette.wallet.text.secondary}`,
     userSelect: 'none',
     transition: theme.transitions.create('background-color'),
     '&:hover': {
       backgroundColor: theme.palette.background.default,
     },
     '&:active': {
-      backgroundColor: theme.palette.pressedPaper,
+      backgroundColor:
+        theme.palette.mode === 'light' ? theme.palette.pressedPaper : undefined,
     },
   },
-
   noBorder: {
     border: 'none',
     padding: 0,
@@ -42,23 +41,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
       backgroundColor: 'transparent',
     },
   },
-  buttonRoot: {
-    display: 'flex',
-    width: '100%',
-    height: '64px',
-    justifyContent: 'flex-start',
-    borderRadius: theme.shape.borderRadius,
-  },
   cardContent: {
     position: 'relative',
-    display: 'flex',
-    justifyContent: 'center',
-    flexDirection: 'column',
-  },
-  buttonContent: {
-    position: 'relative',
-    minHeight: 88,
-    alignItems: 'flex-start',
     display: 'flex',
     justifyContent: 'center',
     flexDirection: 'column',
@@ -67,6 +51,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     justifyContent: 'center',
     marginBottom: theme.spacing(1.5),
+    height: '100%',
   },
   cardLogoBorder: {
     display: 'flex',
@@ -79,41 +64,29 @@ const useStyles = makeStyles()((theme: Theme) => ({
     height: '60px',
     width: '60px',
   },
-  buttonLogo: {
-    marginRight: theme.spacing(2),
-    marginLeft: theme.spacing(1),
-    width: 32,
-  },
   image: {
     display: 'flex',
+  },
+  icon: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cardTitle: {
     fontFamily: "'Inter', sans-serif",
     fontSize: theme.typography.body2.fontSize,
     fontWeight: theme.typography.fontWeightBold,
-    color: theme.palette.neutralShades[600],
+    color: theme.palette.wallet.text.primary,
   },
   cardTitleHorizontal: {
     fontWeight: theme.typography.fontWeightMedium,
-    color: theme.palette.common.black,
-  },
-  buttonTitle: {
-    fontWeight: 600,
-    lineHeight: '24px',
-    fontSize: theme.typography.body1.fontSize,
-    color: theme.palette.white,
+    color: theme.palette.getContrastText(theme.palette.background.default),
   },
   cardTip: {
-    color: theme.palette.grey[600],
-    fontSize: theme.typography.body2.fontSize,
-  },
-  buttonTip: {
-    opacity: '72.16%',
-    color: theme.palette.white,
+    color: theme.palette.wallet.text.primary,
     fontSize: theme.typography.body2.fontSize,
   },
   highlighted: {
-    background: theme.palette.heroText,
     fontWeight: theme.typography.fontWeightBold,
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
@@ -122,7 +95,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   delimiter: {
     marginRight: theme.spacing(1),
     fontWeight: theme.typography.fontWeightBold,
-    color: theme.palette.grey[600],
+    color: theme.palette.wallet.text.primary,
   },
   disabled: {
     pointerEvents: 'none',
@@ -136,7 +109,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     transform: 'translateY(-50%)',
   },
   loader: {
-    color: theme.palette.white,
+    color:
+      theme.palette.primary.contrastText ||
+      theme.palette.getContrastText(theme.palette.primary.main),
   },
   metamaskBackground: {
     backgroundColor: '#25292E',
@@ -163,6 +138,7 @@ type CardTemplateProps = {
   title: string;
   tip?: React.ReactNode;
   iconUrl: string;
+  icon?: React.ReactNode;
   highlighted?: boolean;
   iconOnly?: boolean;
   borderless?: boolean;
@@ -171,22 +147,11 @@ type CardTemplateProps = {
   size?: number;
 };
 
-type ButtonTemplateProps = {
-  onClick?: () => void;
-  disabled?: boolean;
-  title: string;
-  tip?: React.ReactNode;
-  iconUrl: string;
-  highlighted?: boolean;
-  buttonBackground?: string;
-  loading?: boolean;
-  size?: number;
-};
-
 const CardTemplate: React.FC<CardTemplateProps> = ({
   title,
   tip,
   highlighted,
+  icon,
   iconUrl,
   disabled,
   loading,
@@ -214,6 +179,8 @@ const CardTemplate: React.FC<CardTemplateProps> = ({
       >
         {loading ? (
           <CircularProgress size={size} color="primary" />
+        ) : icon ? (
+          icon
         ) : (
           <Image
             src={getImageUrl(iconUrl)}
@@ -252,77 +219,16 @@ const CardTemplate: React.FC<CardTemplateProps> = ({
   );
 };
 
-const ButtonTemplate: React.FC<ButtonTemplateProps> = ({
-  title,
-  tip,
-  highlighted,
-  iconUrl,
-  disabled,
-  onClick,
-  buttonBackground,
-  loading,
-  size = 32,
-}) => {
-  const [t] = useTranslationContext();
-  const {classes, cx} = useStyles();
-  return (
-    <ButtonBase
-      onClick={onClick}
-      className={cx(
-        classes.buttonRoot,
-        {[classes.disabled]: disabled},
-        buttonBackground,
-      )}
-      disabled={loading}
-    >
-      <div className={classes.buttonLogo}>
-        {loading ? (
-          <CircularProgress size={30} className={classes.loader} />
-        ) : (
-          <Image
-            src={getImageUrl(iconUrl)}
-            className={classes.image}
-            height={size}
-            width={size}
-            unoptimized={true}
-          />
-        )}
-      </div>
-      <div className={classes.buttonContent}>
-        <Typography variant="h6" className={classes.buttonTitle}>
-          {title}
-        </Typography>
-        <Typography className={classes.buttonTip}>
-          {highlighted && (
-            <>
-              <span className={classes.highlighted}>
-                {t('claimDomains.beta')}
-              </span>
-              <span className={classes.delimiter}>&middot;</span>
-            </>
-          )}
-          {tip}
-        </Typography>
-      </div>
-    </ButtonBase>
-  );
-};
-
-export enum Variant {
-  card = 'card',
-  button = 'button',
-}
-
 type Props = {
   name: WalletName;
   disabled?: boolean;
   onClick?: () => void;
-  variant?: Variant;
   loading?: boolean;
   hideTipText?: boolean;
   iconOnly?: boolean;
   borderless?: boolean;
   horizontal?: boolean;
+  icon?: React.ReactNode;
   iconUrl?: string;
   highlightedOverride?: boolean;
   size?: number;
@@ -332,15 +238,15 @@ const WalletButton: React.FC<Props> = ({
   name,
   onClick,
   disabled = false,
-  variant = Variant.card,
   loading = false,
   hideTipText = false,
   iconOnly = false,
   borderless = false,
   horizontal = false,
+  icon,
   iconUrl = '',
   highlightedOverride = false,
-  size,
+  size = 40,
 }) => {
   const {classes} = useStyles();
   const [t] = useTranslationContext();
@@ -356,6 +262,7 @@ const WalletButton: React.FC<Props> = ({
     iconOnly,
     highlighted: false,
     highlightedOverride,
+    icon,
     iconUrl,
     buttonBackground: '',
     borderless,
@@ -363,37 +270,29 @@ const WalletButton: React.FC<Props> = ({
     size,
   };
   const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
   switch (name) {
+    // show the same button for both the integrated and extension versions
+    // of the MPC wallet instance. At runtime, only the extension button
+    // will be displayed if the extension is installed. Otherwise integrated
+    // UX will be offered so that user does not have to install anything.
+    case WalletName.UnstoppableWalletReact:
+    case WalletName.UnstoppableWalletExtension:
+      props.title = theme.wallet.titleShort;
+      props.icon = <WalletIcon size={size} beta={true} />;
+      break;
     case WalletName.MetaMask:
       props.title = 'MetaMask';
       props.iconUrl = '/wallet-button/metamask.svg';
-      if (variant === Variant.button) {
-        props.buttonBackground = classes.metamaskBackground;
-      }
       break;
     case WalletName.WalletConnect:
       props.title = 'WalletConnect';
       props.iconUrl = '/wallet-button/wallet-connect.svg';
-      if (variant === Variant.button) {
-        props.buttonBackground = classes.walletConnectBackground;
-        props.iconUrl = '/wallet-button/wallet-connect-white.svg';
-        props.tip = 'Trust Wallet, Rainbow, etc.';
-      }
       break;
     case WalletName.CoinbaseWallet:
       props.title = 'Coinbase';
       props.iconUrl = '/wallet-button/coinbase.svg';
       props.tip = '';
-      if (variant === Variant.button) {
-        props.buttonBackground = classes.coinbaseBackground;
-        props.iconUrl = '/wallet-button/coinbase-white.svg';
-        props.tip = '';
-        if (!isDesktop) {
-          props.title = 'Open in Coinbase Wallet';
-        }
-      }
       break;
     case WalletName.Brave:
       props.iconUrl = '/wallet-button/brave.svg';
@@ -422,9 +321,6 @@ const WalletButton: React.FC<Props> = ({
       break;
     default:
       break;
-  }
-  if (variant === Variant.button) {
-    return <ButtonTemplate {...props} />;
   }
   return <CardTemplate {...props} />;
 };

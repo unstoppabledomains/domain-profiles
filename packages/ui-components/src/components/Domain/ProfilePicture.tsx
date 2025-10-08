@@ -25,8 +25,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: PROFILE_PICTURE_SIZE_MOBILE,
     height: PROFILE_PICTURE_SIZE_MOBILE,
     borderRadius: '50%',
-    border: `6px solid ${theme.palette.common.white} !important`,
-    backgroundColor: theme.palette.white,
+    border: `6px solid ${theme.palette.background.default} !important`,
+    backgroundColor: theme.palette.background.default,
     [theme.breakpoints.up('sm')]: {
       width: PROFILE_PICTURE_SIZE_DESKTOP,
       height: PROFILE_PICTURE_SIZE_DESKTOP,
@@ -62,7 +62,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
     },
   },
   udBlueTooltipText: {
-    color: theme.palette.white,
     fontSize: 13,
     fontWeight: theme.typography.fontWeightBold,
     lineHeight: 1.53,
@@ -210,7 +209,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
       )}
       <div>
         <div className={classes.theCardHover} data-testid={'avatar'}>
-          {src && imageType !== 'default' ? (
+          {src ? (
             <>
               <div className={cx(classes.theBack)}>
                 <div>

@@ -18,7 +18,7 @@ import type {Web3Dependencies} from '../../lib/types/web3';
 const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     padding: '24px',
-    boxShadow: '0px 1px 0px #DDDDDF, 0px 0px 0px 1px #DDDDDF',
+    boxShadow: theme.shadows[6],
     borderRadius: 8,
     display: 'flex',
     flexDirection: 'column',
@@ -71,7 +71,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   badgeLogo: {
     width: 100,
     height: 100,
-    border: '4px solid #FFFFFF',
+    border: `4px solid ${theme.palette.background.default}`,
     borderRadius: 100,
   },
   modalContentContainer: {

@@ -10,7 +10,7 @@ export const getAddressMetadata = async (
   const sanitizedValue = addressOrDomain.replace('eip155:', '').toLowerCase();
 
   // check cache for resolution
-  const cachedResolution = getCachedResolution(sanitizedValue);
+  const cachedResolution = await getCachedResolution(sanitizedValue);
   if (cachedResolution) {
     return cachedResolution;
   }
@@ -20,11 +20,11 @@ export const getAddressMetadata = async (
     // retrieve the reverse resolution details
     const resolution = await getProfileReverseResolution(sanitizedValue);
     if (resolution?.address) {
-      setCachedResolution(resolution);
+      await setCachedResolution(resolution);
       return resolution;
     }
   } catch (e) {
-    notifyEvent(e, 'error', 'MESSAGING', 'Resolution', {
+    notifyEvent(e, 'error', 'Messaging', 'Resolution', {
       msg: 'error looking up reverse resolution',
     });
   }

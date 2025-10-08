@@ -2,6 +2,7 @@ export interface AddressResolution {
   address: string;
   name?: string;
   avatarUrl?: string;
+  imageType?: 'onChain' | 'offChain' | 'default';
 }
 
 export const ChatModalQueryString = 'open-chat-window';
@@ -18,6 +19,7 @@ export enum ConfigurationState {
 export interface InitChatOptions {
   skipXmtp?: boolean;
   skipPush?: boolean;
+  silent?: boolean;
 }
 
 export enum MessagingSignatureType {

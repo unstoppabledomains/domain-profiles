@@ -13,6 +13,7 @@ import type {
   SerializedDomainRank,
   SerializedTxns,
 } from '../lib/types/domain';
+import {TldCache} from '../lib/types/domain';
 
 export const getDomainBadges = async (
   domain: string,
@@ -29,7 +30,6 @@ export const getDomainBadges = async (
     data?.badges?.map((badge: SerializedCryptoWalletBadge) => {
       return {
         ...badge,
-        active: true,
         expired: false,
       };
     }) || [];
@@ -75,27 +75,6 @@ export const getDomainRankings = async (
   );
 };
 
-export const getDomainTransactions = async (
-  domain: string,
-  symbol: string,
-  cursor?: string,
-): Promise<SerializedTxns | undefined> => {
-  // retrieve badge data from profile API
-  const data = await fetchApi(
-    `/public/${domain}/transactions?${QueryString.stringify({
-      symbols: symbol,
-      cursor,
-    })}`,
-    {
-      host: config.PROFILE.HOST_URL,
-    },
-  );
-  if (!data || !data[symbol.toUpperCase()]) {
-    return;
-  }
-  return data[symbol.toUpperCase()];
-};
-
 export const getEnsDomainStatus = async (
   domain: string,
 ): Promise<EnsDomainStatusResponse> => {
@@ -114,6 +93,99 @@ export const getStrictReverseResolution = async (
     },
   );
   return resolutionResponse?.name;
+};
+
+export const getTransactionsByAddress = async (
+  address: string,
+  accessToken: string,
+  symbol: string,
+  cursor?: string,
+): Promise<SerializedTxns | undefined> => {
+  // retrieve transaction data for this address
+  const data = await fetchApi(
+    `/user/${address}/transactions?${QueryString.stringify({
+      cursor,
+      symbols: symbol,
+      forceRefresh: Date.now(),
+    })}`,
+    {
+      host: config.PROFILE.HOST_URL,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+  if (!data || !data[symbol.toUpperCase()]) {
+    return;
+  }
+  return data[symbol.toUpperCase()];
+};
+
+export const getTransactionsByDomain = async (
+  domain: string,
+  symbol: string,
+  cursor?: string,
+): Promise<SerializedTxns | undefined> => {
+  // retrieve transaction data for this domain
+  const data = await fetchApi(
+    `/public/${domain}/transactions?${QueryString.stringify({
+      symbols: symbol,
+      cursor,
+    })}`,
+    {
+      host: config.PROFILE.HOST_URL,
+    },
+  );
+  if (!data || !data[symbol.toUpperCase()]) {
+    return;
+  }
+  return data[symbol.toUpperCase()];
+};
+
+// getIcannTlds retrieves list of all known ICANN domains
+export const getValidIcannEndings = async (): Promise<string[]> => {
+  try {
+    // get cached TLD data
+    const cachedTlds = await TldCache.get('web2');
+    if (cachedTlds) {
+      return cachedTlds;
+    }
+
+    // retrieve new TLD data
+    const icannResponse = await fetch(
+      `https://data.iana.org/TLD/tlds-alpha-by-domain.txt`,
+    );
+    if (icannResponse.ok) {
+      const icannData = await icannResponse.text();
+      const tlds = icannData.split(/\n/);
+      if (tlds.length > 1) {
+        const icannTlds = [...new Set(tlds.slice(1).map(d => d.toLowerCase()))];
+        await TldCache.set('web2', icannTlds);
+        return icannTlds;
+      }
+    }
+  } catch (e) {
+    // fail silently
+  }
+  return [];
+};
+
+export const getValidWeb3Endings = async (): Promise<string[]> => {
+  // get cached TLD data
+  const cachedTlds = await TldCache.get('web3');
+  if (cachedTlds) {
+    return cachedTlds;
+  }
+
+  // retrieve new TLD data
+  const data = await fetchApi(`/supported_tlds`, {
+    host: config.RESOLUTION.BASE_URL,
+  });
+  if (!data?.tlds) {
+    return [];
+  }
+  await TldCache.set('web3', data.tlds);
+  return data.tlds;
 };
 
 export const getVerificationMessage = async (

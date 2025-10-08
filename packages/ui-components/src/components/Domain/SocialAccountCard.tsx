@@ -14,6 +14,7 @@ import CardContent from '@mui/material/CardContent';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type {Theme} from '@mui/material/styles';
+import {capitalize} from 'lodash';
 import React from 'react';
 
 import DiscordIcon from '@unstoppabledomains/ui-kit/icons/Discord';
@@ -28,6 +29,7 @@ import {
   DomainProfileSocialMedia,
   DomainProfileSocialMediaAutoPopulated,
 } from '../../lib/types/domain';
+import FarcasterIcon from '../Image/FarcasterIcon';
 
 const useStyles = makeStyles<void, 'actionIcon'>()(
   (theme: Theme, _params, classes) => ({
@@ -87,6 +89,7 @@ const useStyles = makeStyles<void, 'actionIcon'>()(
       borderRadius: '50%',
       width: 30,
       height: 30,
+      filter: theme.palette.mode === 'dark' ? 'invert(1)' : undefined,
     },
     divider: {
       marginTop: theme.spacing(2),
@@ -199,14 +202,14 @@ const useStyles = makeStyles<void, 'actionIcon'>()(
     },
     tooltipData: {},
     verifiedBadge: {
-      backgroundColor: theme.palette.white,
-      color: theme.palette.white,
+      backgroundColor: theme.palette.background.default,
+      color: theme.palette.getContrastText(theme.palette.background.default),
       fill: theme.palette.success.main,
       borderRadius: '50%',
     },
     nonVerifiedBadge: {
-      backgroundColor: theme.palette.white,
-      color: theme.palette.white,
+      backgroundColor: theme.palette.background.default,
+      color: theme.palette.getContrastText(theme.palette.background.default),
       fill: theme.palette.warning.main,
       borderRadius: '50%',
     },
@@ -305,11 +308,21 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
         return {
           Icon: LensIcon,
           displayName: socialInfo.url
-            .replace('https://lenster.xyz/u/', '@')
+            .replace('https://hey.xyz/u/', '')
+            .replace('https://lenster.xyz/u/', '')
             .replaceAll('.lens', ''),
           metricValue: '',
           metricName: '',
           link: socialInfo.url.replaceAll('.lens', ''),
+        };
+      }
+      case DomainProfileSocialMediaAutoPopulated.Farcaster: {
+        return {
+          Icon: FarcasterIcon,
+          displayName: socialInfo.url.replaceAll('https://warpcast.com/', ''),
+          metricValue: '',
+          metricName: '',
+          link: socialInfo.url,
         };
       }
     }
@@ -332,6 +345,7 @@ const SocialAccountCard: React.FC<SocialAccountCardProps> = ({
           className={i === 0 ? classes.tooltipTitle : classes.tooltipData}
           variant="caption"
         >
+          {socialInfo?.kind ? `${capitalize(socialInfo.kind)}: ` : ''}
           {v}
         </Typography>
       </div>

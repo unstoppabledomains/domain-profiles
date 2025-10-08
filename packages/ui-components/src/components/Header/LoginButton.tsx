@@ -12,6 +12,7 @@ import {makeStyles} from '@unstoppabledomains/ui-kit/styles';
 import {AccessWalletModal} from '../../components/Wallet/AccessWallet';
 import useWeb3Context from '../../hooks/useWeb3Context';
 import useTranslationContext from '../../lib/i18n';
+import {sleep} from '../../lib/sleep';
 import type {Web3Dependencies} from '../../lib/types/web3';
 import {loginWithAddress} from '../../lib/wallet/login';
 import UnstoppableAnimated from '../Image/UnstoppableAnimated';
@@ -35,15 +36,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
     fontWeight: 'bold',
     whiteSpace: 'nowrap',
   },
-  uauth: {
-    background: theme.palette.primary.main,
-  },
-  uauthWhite: {
-    background: theme.palette.common.white,
-    color: theme.palette.common.black,
+  uauthPaper: {
+    background: theme.palette.background.paper,
+    color: theme.palette.getContrastText(theme.palette.background.paper),
     '&:hover': {
-      background: theme.palette.common.white,
-      color: theme.palette.common.black,
+      background: theme.palette.background.paper,
+      color: theme.palette.getContrastText(theme.palette.background.paper),
     },
   },
 }));
@@ -82,6 +80,7 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
   const {setWeb3Deps} = useWeb3Context();
   const [hovering, setHovering] = useState(false);
   const [accessWalletOpen, setAccessWalletOpen] = useState(false);
+  const [clickedReconnect, setClickedReconnect] = useState(false);
   const isUauth = method === LoginMethod.Uauth;
   const isWallet = method === LoginMethod.Wallet;
 
@@ -90,6 +89,25 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
       void handleClick();
     }
   }, [props.clicked]);
+
+  useEffect(() => {
+    // ignore when reconnect flag is not set
+    if (!clickedReconnect) {
+      return;
+    }
+    const reload = async () => {
+      if (accessWalletOpen) {
+        // close the access wallet modal
+        setAccessWalletOpen(false);
+      } else {
+        // open the access wallet modal
+        await sleep(250);
+        setClickedReconnect(false);
+        setAccessWalletOpen(true);
+      }
+    };
+    void reload();
+  }, [clickedReconnect, accessWalletOpen]);
 
   if (loading) {
     return <ButtonSkeleton big={big} />;
@@ -121,6 +139,10 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
     }
   };
 
+  const handleReconnect = () => {
+    setClickedReconnect(true);
+  };
+
   return (
     <>
       <Tooltip title={t('auth.connectToLogin')}>
@@ -131,7 +153,7 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
           fullWidth
           size="large"
           className={cx(classes.button, {
-            [classes.uauthWhite]: isUauth || isWhiteBg,
+            [classes.uauthPaper]: isUauth || isWhiteBg,
           })}
           onClick={handleClick}
           onMouseEnter={() => setHovering(true)}
@@ -157,6 +179,7 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
         open={accessWalletOpen}
         message={t('auth.connectToLogin')}
         onClose={() => setAccessWalletOpen(false)}
+        onReconnect={handleReconnect}
       />
     </>
   );

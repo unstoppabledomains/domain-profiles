@@ -16,6 +16,7 @@ import * as domainActions from '@unstoppabledomains/ui-components/src/actions/do
 import * as domainProfileActions from '@unstoppabledomains/ui-components/src/actions/domainProfileActions';
 import * as featureFlagActions from '@unstoppabledomains/ui-components/src/actions/featureFlagActions';
 import * as identityActions from '@unstoppabledomains/ui-components/src/actions/identityActions';
+import * as pav3Actions from '@unstoppabledomains/ui-components/src/actions/pav3Actions';
 import * as push from '@unstoppabledomains/ui-components/src/components/Chat/protocol/push';
 import * as chatStorage from '@unstoppabledomains/ui-components/src/components/Chat/storage';
 import * as nftImage from '@unstoppabledomains/ui-components/src/components/TokenGallery/NftImage';
@@ -39,6 +40,9 @@ const defaultProps = (): DomainProfilePageProps => {
         showFeaturedCommunity: false,
         showFeaturedPartner: false,
         tokenGalleryEnabled: false,
+      },
+      display: {
+        mode: 'web3',
       },
       social: {
         followerCount: 0,
@@ -81,6 +85,11 @@ const defaultProps = (): DomainProfilePageProps => {
           public: false,
         },
         lens: {
+          location: 'foo',
+          verified: true,
+          public: false,
+        },
+        farcaster: {
           location: 'foo',
           verified: true,
           public: false,
@@ -128,6 +137,7 @@ const defaultTokenGalleryData = (): SerializedPublicDomainProfileData => {
         address: 'test-eth-address',
         plaintextMessage: 'message',
         signedMessage: 'signature',
+        type: 'external',
       },
     ],
   };
@@ -199,13 +209,27 @@ describe('<DomainProfile />', () => {
     jest
       .spyOn(featureFlagActions, 'fetchFeatureFlags')
       .mockResolvedValue(featureFlagActions.DEFAULT_FEATURE_FLAGS);
-    jest.spyOn(identityActions, 'getIdentity').mockResolvedValue({
+    jest.spyOn(identityActions, 'getHumanityCheckStatus').mockResolvedValue({
       id: 'personaId',
       createdAt: Date.now(),
       name: 'foo.crypto',
       status: PersonaInquiryStatus.COMPLETED,
     });
     jest.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
+    jest.spyOn(pav3Actions, 'getAllResolverKeys').mockResolvedValue([
+      {
+        type: 'CRYPTO',
+        subType: 'CRYPTO_TOKEN',
+        name: 'Ether',
+        shortName: 'ETH',
+        key: 'token.EVM.ETH.ETH.address',
+        mapping: {
+          isPreferred: true,
+          from: ['crypto.ETH.address'],
+          to: 'crypto.ETH.address',
+        },
+      },
+    ]);
   });
 
   it('should display a basic domain profile page', async () => {
@@ -215,21 +239,20 @@ describe('<DomainProfile />', () => {
     });
   });
 
-  it('renders a share menu button', async () => {
+  it('does not render the buy crypto button by default', async () => {
+    customRender(<DomainProfile {...defaultProps()} />);
+    expect(screen.queryByTestId('buy-crypto-button')).not.toBeInTheDocument();
+  });
+
+  it('always renders the edit profile button', async () => {
     customRender(<DomainProfile {...defaultProps()} />);
     await waitFor(() => {
-      expect(screen.getByRole('button', {name: 'Share'})).toBeInTheDocument();
+      expect(screen.queryByTestId('edit-profile-button')).toBeInTheDocument();
     });
   });
 
   it('renders display name, domain name, description, location, email, profile image, web3 site, for sale block', async () => {
     customRender(<DomainProfile {...defaultProps()} />);
-
-    await waitFor(() => {
-      const infoExpandButton = screen.getByTestId('expand-moreInfo');
-      expect(infoExpandButton).toBeInTheDocument();
-      userEvent.click(infoExpandButton);
-    });
 
     await waitFor(() => {
       expect(
@@ -360,7 +383,7 @@ describe('Token gallery for multiple blockchains', () => {
     jest
       .spyOn(featureFlagActions, 'fetchFeatureFlags')
       .mockResolvedValue(featureFlagActions.DEFAULT_FEATURE_FLAGS);
-    jest.spyOn(identityActions, 'getIdentity').mockResolvedValue({
+    jest.spyOn(identityActions, 'getHumanityCheckStatus').mockResolvedValue({
       id: 'personaId',
       createdAt: Date.now(),
       name: 'foo.crypto',
@@ -665,7 +688,7 @@ describe('Token gallery for single blockchain', () => {
     jest
       .spyOn(featureFlagActions, 'fetchFeatureFlags')
       .mockResolvedValue(featureFlagActions.DEFAULT_FEATURE_FLAGS);
-    jest.spyOn(identityActions, 'getIdentity').mockResolvedValue({
+    jest.spyOn(identityActions, 'getHumanityCheckStatus').mockResolvedValue({
       id: 'personaId',
       createdAt: Date.now(),
       name: 'foo.crypto',
@@ -793,7 +816,7 @@ describe('Token gallery carousel', () => {
     jest
       .spyOn(featureFlagActions, 'fetchFeatureFlags')
       .mockResolvedValue(featureFlagActions.DEFAULT_FEATURE_FLAGS);
-    jest.spyOn(identityActions, 'getIdentity').mockResolvedValue({
+    jest.spyOn(identityActions, 'getHumanityCheckStatus').mockResolvedValue({
       id: 'personaId',
       createdAt: Date.now(),
       name: 'foo.crypto',
@@ -1111,10 +1134,9 @@ describe('Owner operations', () => {
     jest.spyOn(featureFlagActions, 'fetchFeatureFlags').mockResolvedValue({
       variations: {
         ...featureFlagActions.DEFAULT_FEATURE_FLAGS.variations!,
-        udMeServiceDomainsEnableManagement: true,
       },
     });
-    jest.spyOn(identityActions, 'getIdentity').mockResolvedValue({
+    jest.spyOn(identityActions, 'getHumanityCheckStatus').mockResolvedValue({
       id: 'personaId',
       createdAt: Date.now(),
       name: 'foo.crypto',
@@ -1207,6 +1229,13 @@ describe('Owner operations', () => {
         }
         return null;
       });
+  });
+
+  it('renders a buy crypto button for the owner', async () => {
+    customRender(<DomainProfile {...tokenGalleryProps} />);
+    await waitFor(() => {
+      expect(screen.getByTestId('buy-crypto-button')).toBeInTheDocument();
+    });
   });
 
   it('should render the hidden tag in category menu', async () => {
@@ -1329,9 +1358,9 @@ describe('Owner operations', () => {
   it('does not render the chat or follow buttons on own domain', async () => {
     customRender(<DomainProfile {...tokenGalleryProps} />);
 
-    // validate only the share button is present
+    // validate only the buy crypto button is present
     await waitFor(() => {
-      expect(screen.queryByTestId('share-button')).toBeInTheDocument();
+      expect(screen.queryByTestId('buy-crypto-button')).toBeInTheDocument();
       expect(screen.queryByTestId('edit-profile-button')).toBeInTheDocument();
       expect(screen.queryByTestId('chat-button')).not.toBeInTheDocument();
       expect(screen.queryByTestId('follow-button')).not.toBeInTheDocument();
@@ -1347,7 +1376,7 @@ describe('Owner operations', () => {
     // mock XMTP endpoints
     const mockXmtpUser = jest
       .spyOn(chatStorage, 'getXmtpLocalKey')
-      .mockReturnValue(undefined);
+      .mockResolvedValue(undefined);
 
     // render a domain other than the logged in user domain
     customRender(

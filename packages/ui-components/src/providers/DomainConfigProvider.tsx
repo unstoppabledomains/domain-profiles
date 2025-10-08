@@ -1,6 +1,10 @@
+import Box from '@mui/material/Box';
 import React, {useState} from 'react';
+import Animation from 'react-canvas-confetti/dist/presets/fireworks';
 
 import {DomainProfileTabType} from '../components';
+import {AccessWalletModal} from '../components/Wallet/AccessWallet';
+import {useWeb3Context} from '../hooks';
 
 type Props = {
   children: React.ReactNode;
@@ -14,10 +18,15 @@ export const DomainConfigContext = React.createContext<{
   isOpen?: boolean;
   setConfigTab?: SetTab;
   configTab?: string;
+  showSuccessAnimation?: boolean;
+  setShowSuccessAnimation?: SetBool;
 }>({});
 
 const DomainConfigProvider: React.FC<Props> = ({children}) => {
   const [isOpen, setIsOpen] = useState<boolean>();
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState<boolean>();
+  const {web3Deps, messageToSign, setMessageToSign, txToSign, setTxToSign} =
+    useWeb3Context();
   const [configTab, setConfigTab] = useState<DomainProfileTabType>(
     DomainProfileTabType.Profile,
   );
@@ -27,11 +36,38 @@ const DomainConfigProvider: React.FC<Props> = ({children}) => {
     setIsOpen,
     configTab,
     setConfigTab,
+    showSuccessAnimation,
+    setShowSuccessAnimation,
   };
+
+  // handleClose ensures the messages are cleared from queue
+  const handleClose = () => {
+    setMessageToSign('');
+    setTxToSign(undefined);
+  };
+
+  // indicates that something is available for signing
+  const isMessage = messageToSign || txToSign;
 
   return (
     <DomainConfigContext.Provider value={value}>
       {children}
+      {web3Deps?.unstoppableWallet?.promptForSignatures && isMessage && (
+        <AccessWalletModal
+          prompt={false}
+          address={web3Deps.address}
+          open={true}
+          onClose={handleClose}
+          isMpcWallet={true}
+          fullScreen={web3Deps.unstoppableWallet.fullScreenModal}
+          hideHeader={web3Deps.unstoppableWallet.fullScreenModal}
+        />
+      )}
+      {showSuccessAnimation && (
+        <Box sx={{position: 'relative', zIndex: 1000000}}>
+          <Animation autorun={{speed: 3, duration: 1000}} />
+        </Box>
+      )}
     </DomainConfigContext.Provider>
   );
 };

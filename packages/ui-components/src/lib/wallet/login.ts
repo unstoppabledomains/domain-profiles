@@ -1,6 +1,9 @@
+import truncateEthAddress from 'truncate-eth-address';
+
 import config from '@unstoppabledomains/config';
 
 import {getProfileReverseResolution} from '../../actions';
+import {localStorageWrapper} from '../../components/Chat/storage';
 import {DomainProfileKeys} from '../../lib/types/domain';
 import type {LoginResult} from '../../lib/types/wallet';
 import {getUAuth} from '../../lib/uauth';
@@ -21,7 +24,7 @@ export const loginWithAddress = async (
       loginResult.address = address.toLowerCase();
       loginResult.domain =
         (await getProfileReverseResolution(loginResult.address))?.name ||
-        'Wallet';
+        truncateEthAddress(address);
     } else {
       // complete the login with UD flow
       const uauth = await getUAuth({
@@ -48,11 +51,11 @@ export const loginWithAddress = async (
     // store the domain to be displayed in the UX, defaulting to the
     // user's primary domain if available and falling back to the one
     // provided at login time if not available
-    localStorage.setItem(
+    await localStorageWrapper.setItem(
       DomainProfileKeys.AuthDomain,
       loginResult.domain.toLowerCase(),
     );
-    localStorage.setItem(
+    await localStorageWrapper.setItem(
       DomainProfileKeys.AuthAddress,
       loginResult.address.toLowerCase(),
     );
@@ -60,7 +63,7 @@ export const loginWithAddress = async (
     // return the login result
     return loginResult;
   } catch (loginError) {
-    notifyEvent(loginError, 'error', 'PROFILE', 'Authorization', {
+    notifyEvent(loginError, 'error', 'Profile', 'Authorization', {
       msg: 'login error',
     });
     throw loginError;

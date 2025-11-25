@@ -3132,6 +3132,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@unstoppabledomains/ui-kit@npm:^0.3.24":
+  version: 0.3.25
+  resolution: "@unstoppabledomains/ui-kit@npm:0.3.25"
+  dependencies:
+    "@emotion/react": ^11.0.0
+    "@emotion/styled": ^11.0.0
+    "@mui/icons-material": ^5.8.4
+    "@mui/lab": ^5.0.0-alpha.66
+    "@mui/material": ^5.3.1
+    tss-react: ^4.0.0
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    "@types/react-dom": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 241dd5a96823f4cdea02abb2243dab0f4414df7f1bfe11184112dcbdabb801f111a7661ea00f41009626416aa8b35f1836562514fdfd10e30ce29fc8aae84f79
+  languageName: node
+  linkType: hard
+
 "@wagmi/connectors@npm:3.1.3":
   version: 3.1.3
   resolution: "@wagmi/connectors@npm:3.1.3"
@@ -7338,13 +7362,13 @@ __metadata:
   linkType: hard
 
 "js-yaml@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "js-yaml@npm:4.1.0"
+  version: 4.1.1
+  resolution: "js-yaml@npm:4.1.1"
   dependencies:
     argparse: ^2.0.1
   bin:
     js-yaml: bin/js-yaml.js
-  checksum: c7830dfd456c3ef2c6e355cc5a92e6700ceafa1d14bba54497b34a99f0376cecbb3e9ac14d3e5849b426d5a5140709a66237a8c991c675431271c4ce5504151a
+  checksum: ea2339c6930fe048ec31b007b3c90be2714ab3e7defcc2c27ebf30c74fd940358f29070b4345af0019ef151875bf3bc3f8644bea1bab0372652b5044813ac02d
   languageName: node
   linkType: hard
 
@@ -11077,7 +11101,7 @@ __metadata:
   dependencies:
     "@unstoppabledomains/config": ^0.0.5
     "@unstoppabledomains/ui-components": ^0.0.21
-    "@unstoppabledomains/ui-kit": ^0.3.15
+    "@unstoppabledomains/ui-kit": ^0.3.24
     eslint: ^8.22.0
     eslint-plugin-i18n-json: ^3.1.0
     next: ^12.3.4
